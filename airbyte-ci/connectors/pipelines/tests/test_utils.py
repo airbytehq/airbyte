@@ -6,13 +6,14 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines import utils
 from tests.utils import pick_a_random_connector
 
 
 @pytest.mark.parametrize(
-    "ctx, expected",
+    ("ctx", "expected"),
     [
         (
             mock.MagicMock(
@@ -131,7 +132,7 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
 
     not_modified_java_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA)
     modified_java_connector = pick_a_random_connector(
-        language=ConnectorLanguage.JAVA, other_picked_connectors=[not_modified_java_connector]
+        language=ConnectorLanguage.JAVA, other_picked_connectors=[not_modified_java_connector],
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
@@ -168,7 +169,7 @@ def test_no_modified_files_in_connector_directory():
     assert result == frozenset()
 
 
-@pytest.mark.anyio
+@pytest.mark.anyio()
 async def test_check_path_in_workdir(dagger_client):
     connector = Connector("source-openweather")
     container = (

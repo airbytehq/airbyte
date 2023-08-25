@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -35,12 +36,11 @@ class DixaStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         return stream_slice
 
     def backoff_time(self, response: requests.Response):
-        """
-        The rate limit is 10 requests per minute, so we sleep
+        """The rate limit is 10 requests per minute, so we sleep
         for defined backoff_sleep time (default is 60 sec) before we continue.
 
         See https://support.dixa.help/en/articles/174-export-conversations-via-api
@@ -56,21 +56,17 @@ class IncrementalDixaStream(DixaStream):
         yield from response.json()
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        """
-        Uses the `updated_at` field, which is a Unix timestamp with millisecond precision.
-        """
+        """Uses the `updated_at` field, which is a Unix timestamp with millisecond precision."""
         current_stream_state = current_stream_state or {}
         return {
             self.cursor_field: max(
                 current_stream_state.get(self.cursor_field, self.start_timestamp),
                 latest_record.get(self.cursor_field, self.start_timestamp),
-            )
+            ),
         }
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs):
-        """
-        Returns slices of size self.batch_size.
-        """
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs):
+        """Returns slices of size self.batch_size."""
         slices = []
 
         stream_state = stream_state or {}
@@ -96,9 +92,7 @@ class IncrementalDixaStream(DixaStream):
 
 
 class ConversationExport(IncrementalDixaStream):
-    """
-    https://support.dixa.help/en/articles/174-export-conversations-via-api
-    """
+    """https://support.dixa.help/en/articles/174-export-conversations-via-api."""
 
     def path(self, **kwargs) -> str:
         return "conversation_export"
@@ -106,9 +100,7 @@ class ConversationExport(IncrementalDixaStream):
 
 class SourceDixa(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Check connectivity using one day's worth of data.
-        """
+        """Check connectivity using one day's worth of data."""
         try:
             config["authenticator"] = TokenAuthenticator(token=config["api_token"])
             stream = ConversationExport(config)

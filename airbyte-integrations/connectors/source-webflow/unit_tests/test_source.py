@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from source_webflow.source import SourceWebflow
@@ -16,7 +15,7 @@ def test_check_connection(mocker):
         assert source.check_connection(logger_mock, config_mock) == (True, None)
         logger_mock.info.assert_called_once()
         my_regex = r"Successfully connected.*" + str(fake_info_record)
-        TestCase().assertRegex(logger_mock.method_calls[0].args[0], my_regex)
+        assert re.search(my_regex, logger_mock.method_calls[0].args[0])
 
 
 def test_streams(mocker):

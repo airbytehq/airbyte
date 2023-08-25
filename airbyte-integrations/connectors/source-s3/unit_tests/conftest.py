@@ -10,11 +10,12 @@ from pathlib import Path
 from typing import Any, List, Mapping
 
 import requests  # noqa
-from airbyte_cdk import AirbyteLogger
 from netifaces import AF_INET, ifaddresses, interfaces
 from pytest import fixture
 from requests.exceptions import ConnectionError  # noqa
 from source_s3 import SourceS3
+
+from airbyte_cdk import AirbyteLogger
 
 logger = AirbyteLogger()
 
@@ -31,7 +32,7 @@ def pytest_generate_tests(metafunc: Any) -> None:
 
 
 def pytest_sessionfinish(session: Any, exitstatus: Any) -> None:
-    """whole test run finishes."""
+    """Whole test run finishes."""
     shutil.rmtree(TMP_FOLDER, ignore_errors=True)
 
 
@@ -49,8 +50,7 @@ def config_fixture(tmp_path):
             fp,
         )
     source = SourceS3()
-    config = source.read_config(config_file)
-    return config
+    return source.read_config(config_file)
 
 
 def get_local_ip() -> str:
@@ -62,7 +62,8 @@ def get_local_ip() -> str:
         if not ip.startswith("127."):
             return ip
 
-    assert False, "not found an non-localhost interface"
+    msg = "not found an non-localhost interface"
+    raise AssertionError(msg)
 
 
 @fixture(scope="session")
@@ -73,5 +74,4 @@ def minio_credentials() -> Mapping[str, Any]:
     config_file.write_text(config_template.read_text().replace("<local_ip>", get_local_ip()))
 
     with open(str(config_file)) as f:
-        credentials = json.load(f)
-    return credentials
+        return json.load(f)

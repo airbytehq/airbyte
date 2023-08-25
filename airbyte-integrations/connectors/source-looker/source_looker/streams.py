@@ -10,11 +10,12 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
+from prance import ResolvingParser
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from prance import ResolvingParser
 
 API_VERSION = "3.1"
 
@@ -86,7 +87,7 @@ class LookerException(Exception):
 
 
 class BaseLookerStream(HttpStream, ABC):
-    """Base looker class"""
+    """Base looker class."""
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
@@ -114,7 +115,7 @@ class BaseLookerStream(HttpStream, ABC):
 
 class SwaggerParser(BaseLookerStream):
     """Convertor Swagger file to stream schemas
-    https://<domain>/api/<api_version>/swagger.json
+    https://<domain>/api/<api_version>/swagger.json.
     """
 
     class Endpoint:
@@ -136,7 +137,6 @@ class SwaggerParser(BaseLookerStream):
                 continue
             get_data = methods["get"]
             parts = path.split("/")
-            # self.logger.warning("dddddd %s" % path)
             name = CUSTOM_STREAM_NAMES.get(path)
             if not name:
                 name = "/".join(parts[-2:]) if parts[-1].endswith("}") else parts[-1]
@@ -145,7 +145,7 @@ class SwaggerParser(BaseLookerStream):
 
             schema = get_data["responses"]["200"]["schema"]
             endpoints[name] = self.Endpoint(
-                name=name, path=path, schema=self.format_schema(schema), summary=get_data["summary"], operation_id=get_data["operationId"]
+                name=name, path=path, schema=self.format_schema(schema), summary=get_data["summary"], operation_id=get_data["operationId"],
             )
 
         # stream "lookml_dashboards" uses same endpoints
@@ -166,10 +166,10 @@ class SwaggerParser(BaseLookerStream):
         return endpoints
 
     @classmethod
-    def format_schema(cls, schema: Mapping[str, Any], key: str = None) -> Dict[str, Any]:
+    def format_schema(cls, schema: Mapping[str, Any], key: Optional[str] = None) -> Dict[str, Any]:
         """Clean and validates all swagger "response" schemas
         The Looker swagger file includes custom Locker fields (x-looker-...) and
-        it doesn't support multi typing( ["null", "..."])
+        it doesn't support multi typing( ["null", "..."]).
         """
         updated_schema: Dict[str, Any] = {}
         object_type: Union[str, List[str]] = schema.get("type")
@@ -205,7 +205,7 @@ class LookerStream(BaseLookerStream, ABC):
     parent_slice_key = "id"
     custom_slice_key: str = None
 
-    def __init__(self, name: str, swagger_parser: SwaggerParser, request_params: Mapping[str, Any] = None, **kwargs: Any):
+    def __init__(self, name: str, swagger_parser: SwaggerParser, request_params: Optional[Mapping[str, Any]] = None, **kwargs: Any):
         self._swagger_parser = swagger_parser
         self._name = name
         self._request_params = request_params
@@ -213,20 +213,20 @@ class LookerStream(BaseLookerStream, ABC):
 
     @property
     def endpoint(self) -> SwaggerParser.Endpoint:
-        """Extracts endpoint options"""
+        """Extracts endpoint options."""
         return self._swagger_parser.get_endpoints()[self._name]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str]]]:
-        """not all streams have primary key"""
+        """Not all streams have primary key."""
         if self.get_json_schema()["properties"].get("id"):
             return "id"
         return None
 
-    def generate_looker_stream(self, name: str, request_params: Mapping[str, Any] = None) -> "LookerStream":
-        """Generate a stream object. It can be used for loading of parent data"""
+    def generate_looker_stream(self, name: str, request_params: Optional[Mapping[str, Any]] = None) -> "LookerStream":
+        """Generate a stream object. It can be used for loading of parent data."""
         return LookerStream(
-            name, authenticator=self.authenticator, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params
+            name, authenticator=self.authenticator, swagger_parser=self._swagger_parser, domain=self._domain, request_params=request_params,
         )
 
     def get_parent_endpoints(self) -> List[SwaggerParser.Endpoint]:
@@ -245,7 +245,8 @@ class LookerStream(BaseLookerStream, ABC):
         for endpoint in self._swagger_parser.get_endpoints().values():
             if endpoint.path.endswith(parent_path):
                 return [endpoint]
-        raise LookerException(f"not found the parent endpoint: {parent_path}")
+        msg = f"not found the parent endpoint: {parent_path}"
+        raise LookerException(msg)
 
     @property
     def name(self) -> str:
@@ -253,7 +254,7 @@ class LookerStream(BaseLookerStream, ABC):
 
     @classmethod
     def format_null_in_schema(cls, schema: Mapping[str, Any]):
-        """Add 'null' to schema type field
+        """Add 'null' to schema type field.
 
         Output:
             {
@@ -268,7 +269,6 @@ class LookerStream(BaseLookerStream, ABC):
             }
 
         """
-
         for key, value_schema in schema.items():
             if isinstance(value_schema, dict):
                 schema_type = value_schema.get("type")
@@ -322,7 +322,7 @@ class LookerStream(BaseLookerStream, ABC):
 
 
 class ContentMetadata(LookerStream):
-    """ContentMetadata stream has personal customization. Because it has several parent streams"""
+    """ContentMetadata stream has personal customization. Because it has several parent streams."""
 
     parent_slice_key = "content_metadata_id"
     custom_slice_key = "content_metadata_id"
@@ -346,7 +346,7 @@ class QueryHistory(BaseLookerStream):
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """this is a workaround: the Airbyte CDK forces for save the latest state after reading of all records"""
+        """This is a workaround: the Airbyte CDK forces for save the latest state after reading of all records."""
         if self._is_finished:
             return 1
         return 100
@@ -360,13 +360,12 @@ class QueryHistory(BaseLookerStream):
         self._is_finished = False
 
     def get_query_client_id(self, stream_state: MutableMapping[str, Any]) -> str:
-        """
-         The query client_id is used for filtering because this query metadata is added to a response of this request
+        """The query client_id is used for filtering because this query metadata is added to a response of this request
         and the connector should skip our request information.
          Values of the client_id is unique for every request body. it must be changed if any query symbol is changed.
         But for incremental logic we have to add dynamic filter conditions. The single query's updating is stream_state value
         thus it can be used as a part of client_id values. e.g.:
-            stream_state 2050-01-01T00:00:00Z -> client_id AiRbYtE225246479800000
+            stream_state 2050-01-01T00:00:00Z -> client_id AiRbYtE225246479800000.
         """
         latest_created_time = (stream_state or {}).get(self.cursor_field)
         timestamp = 0
@@ -424,7 +423,8 @@ class QueryHistory(BaseLookerStream):
         for i in range(len(records)):
             record = records[i]
             if record.get("looker_error"):
-                raise LookerException(f"Locker Error: {record['looker_error']}")
+                msg = f"Locker Error: {record['looker_error']}"
+                raise LookerException(msg)
             if (record.get("query.client_id") or "").startswith(self.airbyte_client_id_prefix):
                 # skip all native connector's requests
                 continue
@@ -451,7 +451,7 @@ class QueryHistory(BaseLookerStream):
 class RunLooks(LookerStream):
     """ "
     Runs ready looks' requests
-    Docs: https://docs.looker.com/reference/api-and-integration/api-reference/v4.0/look#run_look
+    Docs: https://docs.looker.com/reference/api-and-integration/api-reference/v4.0/look#run_look.
     """
 
     @property
@@ -471,7 +471,7 @@ class RunLooks(LookerStream):
 
     def stream_slices(self, sync_mode: SyncMode, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream = self.generate_looker_stream(
-            "search_looks", request_params={"id": ",".join(self._run_look_ids), "limit": "10000", "fields": "id,title,model(id)"}
+            "search_looks", request_params={"id": ",".join(self._run_look_ids), "limit": "10000", "fields": "id,title,model(id)"},
         )
         found_look_ids = []
         for slice in parent_stream.stream_slices(sync_mode=sync_mode):
@@ -480,18 +480,18 @@ class RunLooks(LookerStream):
                     item["model"] = item.pop("model")["id"]
                 found_look_ids.append(item["id"])
                 yield item
-        diff_ids = set(self._run_look_ids) - set(str(id) for id in found_look_ids)
+        diff_ids = set(self._run_look_ids) - {str(id) for id in found_look_ids}
         if diff_ids:
-            raise LookerException(f"not found run_look_ids: {diff_ids}")
+            msg = f"not found run_look_ids: {diff_ids}"
+            raise LookerException(msg)
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         for record in super().parse_response(response=response, stream_slice=stream_slice, **kwargs):
             yield {self._get_run_look_key(stream_slice): {k.replace(".", "_"): v for k, v in record.items()}}
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        For a given LookML model and field, looks up its type and generates
-        its properties for the run_look endpoint JSON Schema
+        """For a given LookML model and field, looks up its type and generates
+        its properties for the run_look endpoint JSON Schema.
         """
         properties = {}
         for look_info in self.stream_slices(sync_mode=None):
@@ -505,7 +505,6 @@ class RunLooks(LookerStream):
                 "type": ["null", "object"],
                 "additionalProperties": True,
             }
-        # raise LookerException(properties)
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
@@ -522,15 +521,15 @@ class RunLooks(LookerStream):
                 explores[field.split(".")[0]].append(field)
             return explores
 
-        raise LookerException(f"not found fields for the look ID: {look_id}")
+        msg = f"not found fields for the look ID: {look_id}"
+        raise LookerException(msg)
 
     def _get_explore_field_types(self, model: str, explore: str) -> Mapping[str, Any]:
-        """
-        For a given LookML model and explore, looks up its dimensions/measures
-        and their types for run_look endpoint JSON Schema generation
+        """For a given LookML model and explore, looks up its dimensions/measures
+        and their types for run_look endpoint JSON Schema generation.
         """
         stream = self.generate_looker_stream(
-            "explore_models", request_params={"fields": "fields(dimensions(name, type),measures(name, type))"}
+            "explore_models", request_params={"fields": "fields(dimensions(name, type),measures(name, type))"},
         )
         slice = {"lookml_model_name": model, "explore_name": explore}
         data = next(stream.read_records(sync_mode=None, stream_slice=slice))["fields"]
@@ -550,7 +549,7 @@ class RunLooks(LookerStream):
 
 
 class Dashboards(LookerStream):
-    """Customization for dashboards stream because for 2 diff stream there is single endpoint only"""
+    """Customization for dashboards stream because for 2 diff stream there is single endpoint only."""
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs: Any) -> Iterable[Mapping]:
         for record in super().parse_response(response=response, stream_slice=stream_slice, **kwargs):

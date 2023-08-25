@@ -24,7 +24,7 @@ def test_jobs_resource_list(requests_mock):
                 "reportTypeId": "channel_basic_a2",
                 "createTime": "2021-10-25T19:48:36Z",
             },
-        ]
+        ],
     }
 
     mock_jobs_call = requests_mock.get("https://youtubereporting.googleapis.com/v1/jobs", json=json_result)
@@ -139,7 +139,7 @@ def test_channel_reports_path():
             "endTime": datetime.datetime(2021, 10, 26, 7, 0, tzinfo=datetime.timezone.utc),
             "createTime": datetime.datetime(2021, 10, 27, 4, 59, 46, 114806, tzinfo=datetime.timezone.utc),
             "downloadUrl": downloadUrl,
-        }
+        },
     }
 
     path = stream.path(stream_state={}, stream_slice=stream_slice, next_page_token=None)
@@ -192,10 +192,10 @@ def test_backoff_429_per_minute_limit():
                             "quota_metric": "youtubereporting.googleapis.com/free_quota_requests",
                             "service": "youtubereporting.googleapis.com",
                         },
-                    }
+                    },
                 ],
-            }
-        }
+            },
+        },
     )
     assert CustomBackoffMixin().should_retry(response) is True
 
@@ -219,10 +219,10 @@ def test_backoff_429_per_day_limit():
                             "quota_metric": "youtubereporting.googleapis.com/free_quota_requests",
                             "service": "youtubereporting.googleapis.com",
                         },
-                    }
+                    },
                 ],
-            }
-        }
+            },
+        },
     )
     custom_mixin = CustomBackoffMixin()
     custom_mixin.logger = MagicMock()

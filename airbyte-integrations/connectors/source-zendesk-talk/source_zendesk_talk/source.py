@@ -6,12 +6,13 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from requests.auth import HTTPBasicAuth
 from source_zendesk_talk.streams import (
     AccountOverview,
     Addresses,
@@ -43,7 +44,9 @@ class SourceZendeskTalk(AbstractSource):
             elif auth["auth_type"] == "api_token":
                 return HTTPBasicAuth(username=f'{auth["email"]}/token', password=auth["api_token"])
             else:
-                raise Exception(f"Not implemented authorization method: {auth['auth_type']}")
+                msg = f"Not implemented authorization method: {auth['auth_type']}"
+                raise Exception(msg)
+        return None
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
@@ -51,7 +54,8 @@ class SourceZendeskTalk(AbstractSource):
 
         account_info = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)), None)
         if not account_info:
-            raise RuntimeError("Unable to read account information, please check the permissions of your token")
+            msg = "Unable to read account information, please check the permissions of your token"
+            raise RuntimeError(msg)
 
         return True, None
 

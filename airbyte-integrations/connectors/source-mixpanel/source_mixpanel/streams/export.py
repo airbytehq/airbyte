@@ -4,20 +4,20 @@
 
 import json
 from functools import cache
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from source_mixpanel.property_transformation import transform_property_names
 
-from ..property_transformation import transform_property_names
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 
 
 class ExportSchema(MixpanelStream):
-    """
-    Export helper stream for dynamic schema extraction.
+    """Export helper stream for dynamic schema extraction.
     :: reqs_per_hour_limit: int - property is set to the value of 1 million,
        to get the sleep time close to the zero, while generating dynamic schema.
        When `reqs_per_hour_limit = 0` - it means we skip this limits.
@@ -31,8 +31,7 @@ class ExportSchema(MixpanelStream):
         return "events/properties/top"
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
-        """
-        response.json() example:
+        """response.json() example:
         {
             "$browser": {
                 "count": 6
@@ -56,11 +55,10 @@ class ExportSchema(MixpanelStream):
             "$event_count": {},
             "$origin_end": {},
             "$origin_start": {}
-        }
+        }.
         """
         records = response.json()
-        for property_name in records:
-            yield property_name
+        yield from records
 
 
 class Export(DateSlicesMixin, IncrementalMixpanelStream):
@@ -97,8 +95,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return super().should_retry(response)
 
     def iter_dicts(self, lines):
-        """
-        The incoming stream has to be JSON lines format.
+        """The incoming stream has to be JSON lines format.
         From time to time for some reason, the one record can be split into multiple lines.
         We try to combine such split parts into one record only if parts go nearby.
         """
@@ -139,9 +136,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                     "mp_processing_time_ms": 1623886083321,
                     "noninteraction": true
                 }
-            }
+            }.
         """
-
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
         for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
             # transform record into flat dict structure
@@ -159,13 +155,11 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
+        """:return: A dict of the JSON schema representing this stream.
 
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-
         schema = super().get_json_schema()
 
         # Set whether to allow additional properties for engage and export endpoints
@@ -184,7 +178,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return schema
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         # additional filter by timestamp because required start date and end date only allow to filter by date
@@ -195,6 +189,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return params
 
     def request_kwargs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"stream": True}

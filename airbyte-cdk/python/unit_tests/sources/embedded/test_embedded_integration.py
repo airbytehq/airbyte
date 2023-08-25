@@ -6,6 +6,8 @@ import unittest
 from typing import Any, Mapping, Optional
 from unittest.mock import MagicMock
 
+import pytest
+
 from airbyte_cdk.sources.embedded.base_integration import BaseEmbeddedIntegration
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import (
@@ -39,8 +41,8 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
             "properties": {
                 "test": {
                     "type": "string",
-                }
-            }
+                },
+            },
         })
         self.config = {"test": "abc"}
         self.integration = TestIntegration(self.source, self.config)
@@ -61,14 +63,7 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
             AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test", data={"test": 3}, emitted_at=3)),
         ]
         result = list(self.integration._load_data("test", None))
-        self.assertEqual(
-            result,
-            [
-                {"data": {"test": 1}, "id": "1"},
-                {"data": {"test": 2}, "id": "2"},
-                {"data": {"test": 3}, "id": "3"},
-            ],
-        )
+        assert result == [{"data": {"test": 1}, "id": "1"}, {"data": {"test": 2}, "id": "2"}, {"data": {"test": 3}, "id": "3"}]
         self.source.discover.assert_called_once_with(self.config)
         self.source.read.assert_called_once_with(
             self.config,
@@ -79,15 +74,15 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
                         sync_mode=SyncMode.incremental,
                         destination_sync_mode=DestinationSyncMode.append,
                         primary_key=[["test"]],
-                    )
-                ]
+                    ),
+                ],
             ),
             None,
         )
 
     def test_failed_check(self):
         self.config = {"test": 123}
-        with self.assertRaises(AirbyteTracedException) as error:
+        with pytest.raises(AirbyteTracedException) as error:
             TestIntegration(self.source, self.config)
         assert str(error.exception) == "123 is not of type 'string'"
 
@@ -99,12 +94,7 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
             AirbyteMessage(type=Type.STATE, state=state),
         ]
         result = list(self.integration._load_data("test", None))
-        self.assertEqual(
-            result,
-            [
-                {"data": {"test": 1}, "id": "1"},
-            ],
-        )
+        assert result == [{"data": {"test": 1}, "id": "1"}]
         self.integration.last_state = state
 
     def test_incremental(self):
@@ -119,8 +109,8 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
                         sync_mode=SyncMode.incremental,
                         destination_sync_mode=DestinationSyncMode.append,
                         primary_key=[["test"]],
-                    )
-                ]
+                    ),
+                ],
             ),
             state,
         )
@@ -136,8 +126,8 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
                         sync_mode=SyncMode.incremental,
                         destination_sync_mode=DestinationSyncMode.append,
                         primary_key=[["test"]],
-                    )
-                ]
+                    ),
+                ],
             ),
             None,
         )
@@ -153,8 +143,8 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
                         stream=self.stream2,
                         sync_mode=SyncMode.full_refresh,
                         destination_sync_mode=DestinationSyncMode.append,
-                    )
-                ]
+                    ),
+                ],
             ),
             state,
         )

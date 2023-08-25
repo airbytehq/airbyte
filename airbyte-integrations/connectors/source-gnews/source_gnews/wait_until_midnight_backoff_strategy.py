@@ -7,15 +7,14 @@ from datetime import datetime, timedelta
 from typing import Any, Mapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
 
 
 @dataclass
 class WaitUntilMidnightBackoffStrategy(BackoffStrategy):
-    """
-    Backoff strategy that waits until next midnight
-    """
+    """Backoff strategy that waits until next midnight."""
 
     parameters: InitVar[Mapping[str, Any]]
     config: Config

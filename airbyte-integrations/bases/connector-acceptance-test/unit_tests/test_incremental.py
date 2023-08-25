@@ -11,6 +11,15 @@ from unittest.mock import MagicMock, patch
 
 import pendulum
 import pytest
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.tests import test_incremental
+from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
+from connector_acceptance_test.tests.test_incremental import (
+    compare_cursor_with_threshold,
+    future_state_configuration_fixture,
+    future_state_fixture,
+)
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -25,14 +34,6 @@ from airbyte_protocol.models import (
     StreamDescriptor,
     SyncMode,
     Type,
-)
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
-from connector_acceptance_test.tests import test_incremental
-from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
-from connector_acceptance_test.tests.test_incremental import (
-    compare_cursor_with_threshold,
-    future_state_configuration_fixture,
-    future_state_fixture,
 )
 
 pytestmark = [
@@ -53,7 +54,7 @@ def build_state_message(state: dict) -> AirbyteMessage:
 
 
 def build_per_stream_state_message(
-    descriptor: StreamDescriptor, stream_state: Optional[dict[str, Any]], data: Optional[dict[str, Any]] = None
+    descriptor: StreamDescriptor, stream_state: Optional[dict[str, Any]], data: Optional[dict[str, Any]] = None,
 ) -> AirbyteMessage:
     if data is None:
         data = stream_state
@@ -61,13 +62,13 @@ def build_per_stream_state_message(
     return AirbyteMessage(
         type=Type.STATE,
         state=AirbyteStateMessage(
-            type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=descriptor, stream_state=stream_state_blob), data=data
+            type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=descriptor, stream_state=stream_state_blob), data=data,
         ),
     )
 
 
 @pytest.mark.parametrize(
-    "record_value, state_value, threshold_days, expected_result",
+    ("record_value", "state_value", "threshold_days", "expected_result"),
     [
         (datetime(2020, 10, 10), datetime(2020, 10, 9), 0, True),
         (datetime(2020, 10, 10), datetime(2020, 10, 11), 0, False),
@@ -94,7 +95,7 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
 
 @pytest.mark.parametrize("cursor_type", ["date", "string"])
 @pytest.mark.parametrize(
-    "records1, records2, latest_state, threshold_days, expected_error",
+    ("records1", "records2", "latest_state", "threshold_days", "expected_error"),
     [
         ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-02", 0, does_not_raise()),
         (
@@ -144,12 +145,11 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
 @pytest.mark.parametrize(
     "run_per_stream_test",
     [
-        # pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
 async def test_incremental_two_sequential_reads(
-    mocker, records1, records2, latest_state, threshold_days, cursor_type, expected_error, run_per_stream_test
+    mocker, records1, records2, latest_state, threshold_days, cursor_type, expected_error, run_per_stream_test,
 ):
     input_config = IncrementalConfig(threshold_days=threshold_days)
     cursor_paths = {"test_stream": ["date"]}
@@ -164,8 +164,8 @@ async def test_incremental_two_sequential_reads(
                 sync_mode=SyncMode.incremental,
                 destination_sync_mode=DestinationSyncMode.overwrite,
                 cursor_field=["date"],
-            )
-        ]
+            ),
+        ],
     )
 
     if run_per_stream_test:
@@ -197,7 +197,7 @@ async def test_incremental_two_sequential_reads(
 
 
 @pytest.mark.parametrize(
-    "stream_name, cursor_type, cursor_paths, records1, records2, latest_state, expected_error",
+    ("stream_name", "cursor_type", "cursor_paths", "records1", "records2", "latest_state", "expected_error"),
     [
         (
             "test_stream",
@@ -227,7 +227,7 @@ async def test_incremental_two_sequential_reads(
     ],
 )
 async def test_incremental_two_sequential_reads_state_invalid(
-    mocker, stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test
+    mocker, stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test,
 ):
     input_config = IncrementalConfig()
     catalog = ConfiguredAirbyteCatalog(
@@ -242,8 +242,8 @@ async def test_incremental_two_sequential_reads_state_invalid(
                 destination_sync_mode=DestinationSyncMode.overwrite,
                 default_cursor_field=["dateCreated"],
                 cursor_field=["dateCreated"],
-            )
-        ]
+            ),
+        ],
     )
 
     if run_per_stream_test:
@@ -252,7 +252,7 @@ async def test_incremental_two_sequential_reads_state_invalid(
             build_per_stream_state_message(descriptor=StreamDescriptor(name=stream_name), stream_state=latest_state),
         ]
     else:
-        stream_state = dict()
+        stream_state = {}
         stream_state[stream_name] = latest_state
         call_read_output_messages = [
             *build_messages_from_record_data(stream_name, records1),
@@ -277,7 +277,7 @@ async def test_incremental_two_sequential_reads_state_invalid(
 
 
 @pytest.mark.parametrize(
-    "records, state_records, threshold_days, expected_error",
+    ("records", "state_records", "threshold_days", "expected_error"),
     [
         pytest.param(
             [
@@ -621,13 +621,13 @@ async def test_per_stream_read_with_multiple_states(mocker, records, state_recor
                 destination_sync_mode=DestinationSyncMode.overwrite,
                 cursor_field=["date"],
             ),
-        ]
+        ],
     )
 
     if run_per_stream_test:
         call_read_output_messages = [
             build_per_stream_state_message(
-                descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None)
+                descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None),
             )
             if record["type"] == Type.STATE
             else build_record_message(record["name"], record["data"])
@@ -636,7 +636,7 @@ async def test_per_stream_read_with_multiple_states(mocker, records, state_recor
         call_read_with_state_output_messages = [
             [
                 build_per_stream_state_message(
-                    descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None)
+                    descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None),
                 )
                 if record["type"] == Type.STATE
                 else build_record_message(stream=record["name"], data=record["data"])
@@ -695,8 +695,8 @@ def test_config_skip_test():
                         sync_mode=SyncMode.incremental,
                         destination_sync_mode=DestinationSyncMode.overwrite,
                         cursor_field=["date"],
-                    )
-                ]
+                    ),
+                ],
             ),
             cursor_paths={},
             docker_runner=docker_runner_mock,
@@ -707,13 +707,13 @@ def test_config_skip_test():
 
 
 @pytest.mark.parametrize(
-    "read_output, expectation",
+    ("read_output", "expectation"),
     [
         pytest.param([], pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"),
         pytest.param(
             [
                 AirbyteMessage(
-                    type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"date": "2022-10-04"}, emitted_at=111)
+                    type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"date": "2022-10-04"}, emitted_at=111),
                 ),
                 AirbyteMessage(
                     type=Type.STATE,
@@ -742,7 +742,7 @@ def test_config_skip_test():
                         ),
                         data={"date": "2022-10-04"},
                     ),
-                )
+                ),
             ],
             does_not_raise(),
         ),
@@ -766,8 +766,8 @@ async def test_state_with_abnormally_large_values(mocker, read_output, expectati
                         sync_mode=SyncMode.incremental,
                         destination_sync_mode=DestinationSyncMode.overwrite,
                         cursor_field=["date"],
-                    )
-                ]
+                    ),
+                ],
             ),
             future_state=mocker.MagicMock(),
             docker_runner=docker_runner_mock,
@@ -775,7 +775,7 @@ async def test_state_with_abnormally_large_values(mocker, read_output, expectati
 
 
 @pytest.mark.parametrize(
-    "test_strictness_level, inputs, expect_fail, expect_skip",
+    ("test_strictness_level", "inputs", "expect_fail", "expect_skip"),
     [
         pytest.param(
             Config.TestStrictnessLevel.high,
@@ -829,10 +829,10 @@ def test_future_state_configuration_fixture(mocker, test_strictness_level, input
 
 
 TEST_AIRBYTE_STREAM_A = AirbyteStream(
-    name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+    name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
 )
 TEST_AIRBYTE_STREAM_B = AirbyteStream(
-    name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+    name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
 )
 
 TEST_CONFIGURED_AIRBYTE_STREAM_A = ConfiguredAirbyteStream(
@@ -852,7 +852,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRB
 
 
 @pytest.mark.parametrize(
-    "test_strictness_level, configured_catalog, states, missing_streams, expect_fail",
+    ("test_strictness_level", "configured_catalog", "states", "missing_streams", "expect_fail"),
     [
         pytest.param(
             Config.TestStrictnessLevel.high,
@@ -864,7 +864,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRB
                         "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
                         "stream_descriptor": {"name": "test_stream_a"},
                     },
-                }
+                },
             ],
             [EmptyStreamConfiguration(name="test_stream_b", bypass_reason="no good reason")],
             False,
@@ -880,7 +880,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRB
                         "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
                         "stream_descriptor": {"name": "test_stream_a"},
                     },
-                }
+                },
             ],
             [EmptyStreamConfiguration(name="test_stream_b")],
             True,
@@ -896,7 +896,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRB
                         "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
                         "stream_descriptor": {"name": "test_stream_a"},
                     },
-                }
+                },
             ],
             [EmptyStreamConfiguration(name="test_stream_b")],
             False,
@@ -912,7 +912,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRB
                         "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
                         "stream_descriptor": {"name": "test_stream_a"},
                     },
-                }
+                },
             ],
             [],
             True,
@@ -928,7 +928,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(streams=[TEST_CONFIGURED_AIRB
                         "stream_state": {"airbytehq/integration-test": {"updated_at": "2121-06-30T10:22:10Z"}},
                         "stream_descriptor": {"name": "test_stream_a"},
                     },
-                }
+                },
             ],
             [],
             False,

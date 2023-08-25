@@ -29,7 +29,7 @@ def oauth_config_fixture(access_token):
             "client_id": "111111111",
             "client_secret": "secret_1111111111",
             "access_token": access_token,
-        }
+        },
     }
 
 

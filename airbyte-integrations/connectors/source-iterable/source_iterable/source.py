@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import requests.exceptions
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -61,8 +62,7 @@ from .streams import (
 
 
 class SourceIterable(AbstractSource):
-    """
-    Note: there are some redundant endpoints
+    """Note: there are some redundant endpoints
     (e.g. [`export/userEvents`](https://api.iterable.com/api/docs#export_exportUserEvents)
     and [`events/{email}`](https://api.iterable.com/api/docs#events_User_events)).
     In this case it's better to use the one which takes params as a query param rather than as part of the url param.
@@ -148,6 +148,6 @@ class SourceIterable(AbstractSource):
                     CustomEvent(authenticator=authenticator, **date_range),
                     HostedUnsubscribeClick(authenticator=authenticator, **date_range),
                     Events(authenticator=authenticator),
-                ]
+                ],
             )
         return streams

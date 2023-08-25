@@ -24,9 +24,8 @@ class Model(BaseModel):
 
     @validator("dimensions", "metrics")
     def check_field_reference_forrmat(cls, value):
-        """
-        Defines rules for nested strings, for fields: dimensions, metrics.
-        General rule: the `ga:` prefix is defined for each field
+        """Defines rules for nested strings, for fields: dimensions, metrics.
+        General rule: the `ga:` prefix is defined for each field.
         """
         for v in value:
             if "ga:" not in v:
@@ -43,12 +42,11 @@ class Model(BaseModel):
 
 
 class Explainer:
-    """
-    ERRORS_MAPPING holds an external `Pydantic.ValidationError` types and their placeholders.
+    """ERRORS_MAPPING holds an external `Pydantic.ValidationError` types and their placeholders.
     {
         key: str = <Pydantic.ValidationError Type>,
         value: tuple(str, list) = (<explainable message>, <list as placeholder>
-    }
+    }.
 
     """
 
@@ -77,24 +75,23 @@ class Explainer:
                 self.errors_mapping.get(error_type)[1].append((field_name, f"{_type} is required"))
 
     def explain(self, errors: List[Dict]):
-        """
-        General Errors are explained first.
+        """General Errors are explained first.
         Such as:
             - missing required field
-            - presence of non-permitted fields
+            - presence of non-permitted fields.
 
         Type Errors are explained last.
         If model attribute has invalid type provided, like list, but str was required and etc:
             - str is required,
             - ...
         """
-
         self.parse(errors)
 
         for error_type in self.errors_mapping:
             msg, errors = self.errors_mapping.get(error_type)
             if errors:
                 return f"{msg} {errors}"
+        return None
 
 
 @dataclass

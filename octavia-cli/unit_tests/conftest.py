@@ -5,11 +5,11 @@
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_api_client(mocker):
     return mocker.Mock()
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_telemetry_client(mocker):
     return mocker.Mock()

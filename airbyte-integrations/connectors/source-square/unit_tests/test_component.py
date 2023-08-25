@@ -10,16 +10,17 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from source_square.components import SquareSubstreamIncrementalSync
 from source_square.source import SourceSquare
+
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
+from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 CURSOR_GRANULARITY = "PT0.000001S"
 
 
-@pytest.fixture
+@pytest.fixture()
 def req_mock():
     with requests_mock.Mocker() as mock:
         yield mock
@@ -66,7 +67,7 @@ def test_refresh_access_token(req_mock):
 
 
 @pytest.mark.parametrize(
-    "state, last_record, expected, expected_stream_slice, records",
+    ("state", "last_record", "expected", "expected_stream_slice", "records"),
     [
         (
             {},
@@ -121,7 +122,7 @@ def test_substream_incremental_sync(state, last_record, expected, expected_strea
 
 
 @pytest.mark.parametrize(
-    "last_record, records, expected_data",
+    ("last_record", "records", "expected_data"),
     [
         (
             {"updated_at": "2022-09-05T10:10:10.000000Z"},

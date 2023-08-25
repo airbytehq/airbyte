@@ -62,10 +62,7 @@ class ColumnInfo:
 
 
 def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[ColumnInfo]) -> str:
-    """
-    Convert a dataframe to an HTML table.
-    """
-
+    """Convert a dataframe to an HTML table."""
     # convert true and false to checkmarks and x's
     df.replace({True: "✅", False: "❌"}, inplace=True)
 
@@ -109,8 +106,8 @@ def calculated_report_columns(row: pd.Series) -> dict:
     last_build_status = row.iloc[-1]
     second_to_last_build_status = True if len(row) == 1 else row.iloc[-2]
 
-    only_failed_last_build = last_build_status == False and second_to_last_build_status == True
-    failed_last_build_two_builds = last_build_status == False and second_to_last_build_status == False
+    only_failed_last_build = last_build_status is False and second_to_last_build_status is True
+    failed_last_build_two_builds = last_build_status is False and second_to_last_build_status is False
 
     test_report_url = f"https://connectors.airbyte.com/files/generated_reports/test_summary/{row.name}/index.html"
 
@@ -127,9 +124,8 @@ def enhance_nightly_report(nightly_report_df: pd.DataFrame) -> str:
     nightly_report_df = nightly_report_df.reindex(sorted(nightly_report_df.columns), axis=1)
 
     calculated_report_columns_df = nightly_report_df.apply(lambda row: calculated_report_columns(row), axis="columns", result_type="expand")
-    enhance_nightly_report_df = pd.concat([nightly_report_df, calculated_report_columns_df], axis="columns")
+    return pd.concat([nightly_report_df, calculated_report_columns_df], axis="columns")
 
-    return enhance_nightly_report_df
 
 
 def nightly_report_df_to_md(nightly_report_df: pd.DataFrame) -> str:
@@ -141,8 +137,8 @@ def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, conne
 
     total = len(specific_connector_type_df)
     tested = len(specific_connector_type_df[specific_connector_type_df["last_build_status"].notna()])
-    success = len(specific_connector_type_df[specific_connector_type_df["last_build_status"] == True])
-    failure = len(specific_connector_type_df[specific_connector_type_df["last_build_status"] == False])
+    success = len(specific_connector_type_df[specific_connector_type_df["last_build_status"] is True])
+    failure = len(specific_connector_type_df[specific_connector_type_df["last_build_status"] is False])
 
     # Safely calculate percentage and Handle the case where there are no tests, or divide by zero
     success_percent = 0
@@ -160,9 +156,8 @@ def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, conne
 
 def get_latest_nightly_report_df(nightly_report_complete_df: pd.DataFrame) -> pd.DataFrame:
     nightly_report_complete_df = nightly_report_complete_df.sort_values(by=["parent_prefix"])
-    latest_run = nightly_report_complete_df.iloc[-1]
+    return nightly_report_complete_df.iloc[-1]
 
-    return latest_run
 
 
 # Templates
@@ -179,8 +174,8 @@ def render_connector_nightly_report_md(nightly_report_connector_matrix_df: pd.Da
     template = env.get_template("connector_nightly_report.md")
 
     enhanced_nightly_report_df = enhance_nightly_report(nightly_report_connector_matrix_df)
-    failed_last_build_only_df = enhanced_nightly_report_df[enhanced_nightly_report_df["only_failed_last_build"] == True]
-    failed_last_build_two_builds_df = enhanced_nightly_report_df[enhanced_nightly_report_df["failed_last_build_two_builds"] == True]
+    failed_last_build_only_df = enhanced_nightly_report_df[enhanced_nightly_report_df["only_failed_last_build"] is True]
+    failed_last_build_two_builds_df = enhanced_nightly_report_df[enhanced_nightly_report_df["failed_last_build_two_builds"] is True]
 
     total_connectors = len(nightly_report_connector_matrix_df)
 
@@ -243,8 +238,8 @@ def render_connector_test_summary_html(connector_name: str, connector_test_summa
 
 @deep_copy_params
 def render_connector_test_badge(test_summary: pd.DataFrame) -> str:
-    number_of_passes = len(test_summary[test_summary["success"] == True])
-    number_of_fails = len(test_summary[test_summary["success"] == False])
+    number_of_passes = len(test_summary[test_summary["success"] is True])
+    number_of_fails = len(test_summary[test_summary["success"] is False])
     latest_test = test_summary.iloc[0]
 
     logo_svg_string = '<svg version="1.0" xmlns="http://www.w3.org/2000/svg"\n width="32.000000pt" height="32.000000pt" viewBox="0 0 32.000000 32.000000"\n preserveAspectRatio="xMidYMid meet">\n\n<g transform="translate(0.000000,32.000000) scale(0.100000,-0.100000)"\nfill="#000000" stroke="none">\n<path d="M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z"/>\n<path d="M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\n10 15 6 0 10 -7 10 -15z"/>\n</g>\n</svg>\n'
@@ -261,7 +256,7 @@ def render_connector_test_badge(test_summary: pd.DataFrame) -> str:
     if number_of_fails > 0:
         message += f"✘ {number_of_fails}"
 
-    if latest_test["success"] == True:
+    if latest_test["success"] is True:
         color = "green"
 
     badge_dict = {
@@ -274,6 +269,5 @@ def render_connector_test_badge(test_summary: pd.DataFrame) -> str:
         "logoSvg": logo_svg_string,
     }
 
-    json_string = json.dumps(badge_dict)
+    return json.dumps(badge_dict)
 
-    return json_string

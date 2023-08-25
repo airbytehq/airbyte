@@ -12,8 +12,7 @@ sentry_logger = get_dagster_logger("sentry")
 
 
 def setup_dagster_sentry():
-    """
-    Setup the sentry SDK for Dagster if SENTRY_DSN is defined for the environment.
+    """Setup the sentry SDK for Dagster if SENTRY_DSN is defined for the environment.
 
     Additionally TRACES_SAMPLE_RATE can be set 0-1 otherwise will default to 0.
 
@@ -57,20 +56,14 @@ def setup_dagster_sentry():
 
 
 def _is_context(context):
-    """
-    Check if the given object is a valid context object.
-    """
+    """Check if the given object is a valid context object."""
     return (
-        isinstance(context, OpExecutionContext)
-        or isinstance(context, SensorEvaluationContext)
-        or isinstance(context, AssetExecutionContext)
+        isinstance(context, (AssetExecutionContext, OpExecutionContext, SensorEvaluationContext))
     )
 
 
 def _get_context_from_args_kwargs(args, kwargs):
-    """
-    Given args and kwargs from a function call, return the context object if it exists.
-    """
+    """Given args and kwargs from a function call, return the context object if it exists."""
     # if the first arg is a context object, return it
     if len(args) > 0 and _is_context(args[0]):
         return args[0]
@@ -80,15 +73,14 @@ def _get_context_from_args_kwargs(args, kwargs):
         return kwargs["context"]
 
     # otherwise raise an error
+    msg = "No context provided to Sentry Transaction. When using @instrument, ensure that the asset/op has a context as the first argument."
     raise Exception(
-        f"No context provided to Sentry Transaction. When using @instrument, ensure that the asset/op has a context as the first argument."
+        msg,
     )
 
 
 def _with_sentry_op_asset_transaction(context: OpExecutionContext):
-    """
-    Start or continue a Sentry transaction for the Dagster Op/Asset
-    """
+    """Start or continue a Sentry transaction for the Dagster Op/Asset."""
     op_name = context.op_def.name
     job_name = context.job_name
 
@@ -110,9 +102,7 @@ def _with_sentry_op_asset_transaction(context: OpExecutionContext):
 
 
 def capture_asset_op_context(func):
-    """
-    Capture Dagster OP context for Sentry Error handling
-    """
+    """Capture Dagster OP context for Sentry Error handling."""
 
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
@@ -129,9 +119,7 @@ def capture_asset_op_context(func):
 
 
 def capture_sensor_context(func):
-    """
-    Capture Dagster Sensor context for Sentry Error handling
-    """
+    """Capture Dagster Sensor context for Sentry Error handling."""
 
     @functools.wraps(func)
     def wrapped_fn(*args, **kwargs):
@@ -146,8 +134,7 @@ def capture_sensor_context(func):
 
 
 def capture_exceptions(func):
-    """
-    Note: This is nessesary as Dagster captures exceptions and logs them before Sentry can.
+    """Note: This is nessesary as Dagster captures exceptions and logs them before Sentry can.
 
     Captures exceptions thrown by Dagster Ops and forwards them to Sentry
     before re-throwing them for Dagster.
@@ -172,9 +159,7 @@ def capture_exceptions(func):
 
 
 def start_sentry_transaction(func):
-    """
-    Start a Sentry transaction for the Dagster Op/Asset
-    """
+    """Start a Sentry transaction for the Dagster Op/Asset."""
 
     def wrapped_fn(*args, **kwargs):
         context = _get_context_from_args_kwargs(args, kwargs)
@@ -185,8 +170,7 @@ def start_sentry_transaction(func):
 
 
 def instrument_asset_op(func):
-    """
-    Instrument a Dagster Op/Asset with Sentry.
+    """Instrument a Dagster Op/Asset with Sentry.
 
     This should be used as a decorator after Dagster's `@op`, or `@asset`
     and the function to be handled.
@@ -209,8 +193,7 @@ def instrument_asset_op(func):
 
 
 def instrument_sensor(func):
-    """
-    Instrument a Dagster Sensor with Sentry.
+    """Instrument a Dagster Sensor with Sentry.
 
     This should be used as a decorator after Dagster's `@sensor`
     and the function to be handled.

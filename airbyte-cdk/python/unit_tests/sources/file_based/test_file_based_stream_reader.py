@@ -6,10 +6,11 @@ from io import IOBase
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pytest
+from pydantic import AnyUrl
+
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from pydantic import AnyUrl
 from unit_tests.sources.file_based.helpers import make_remote_files
 
 reader = AbstractFileBasedStreamReader
@@ -31,7 +32,7 @@ FILEPATHS = [
     "a/c", "a/c.csv", "a/c.csv.gz", "a/c.jsonl",
     "a/b/c", "a/b/c.csv", "a/b/c.csv.gz", "a/b/c.jsonl",
     "a/c/c", "a/c/c.csv", "a/c/c.csv.gz", "a/c/c.jsonl",
-    "a/b/c/d", "a/b/c/d.csv", "a/b/c/d.csv.gz", "a/b/c/d.jsonl"
+    "a/b/c/d", "a/b/c/d.csv", "a/b/c/d.csv.gz", "a/b/c/d.jsonl",
 ]
 FILES = make_remote_files(FILEPATHS)
 
@@ -63,7 +64,7 @@ class TestSpec(AbstractFileBasedSpec):
 
 
 @pytest.mark.parametrize(
-    "globs,config,expected_matches,expected_path_prefixes",
+    ("globs", "config", "expected_matches", "expected_path_prefixes"),
     [
         pytest.param([], DEFAULT_CONFIG, set(), set(), id="no-globs"),
         pytest.param([""], DEFAULT_CONFIG, set(), set(), id="empty-string"),
@@ -123,5 +124,5 @@ class TestSpec(AbstractFileBasedSpec):
 def test_globs_and_prefixes_from_globs(globs: List[str], config: Mapping[str, Any], expected_matches: Set[str], expected_path_prefixes: Set[str]) -> None:
     reader = TestStreamReader()
     reader.config = TestSpec(**config)
-    assert set([f.uri for f in reader.filter_files_by_globs_and_start_date(FILES, globs)]) == expected_matches
+    assert {f.uri for f in reader.filter_files_by_globs_and_start_date(FILES, globs)} == expected_matches
     assert set(reader.get_prefixes_from_globs(globs)) == expected_path_prefixes

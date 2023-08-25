@@ -8,7 +8,7 @@ from octavia_cli import base_commands
 
 
 class TestOctaviaCommand:
-    @pytest.fixture
+    @pytest.fixture()
     def octavia_command(self):
         octavia_command = base_commands.OctaviaCommand("test_command")
         assert isinstance(octavia_command, click.Command)
@@ -31,11 +31,11 @@ class TestOctaviaCommand:
             octavia_command.make_context("my_info_name", ["arg1", "arg2"], parent=mock_parent_ctx, foo="foo", bar="bar")
             if isinstance(error, click.exceptions.Exit) and error.exit_code == 0:
                 mock_telemetry_client.send_command_telemetry.assert_called_with(
-                    mock_parent_ctx, extra_info_name="my_info_name", is_help=True
+                    mock_parent_ctx, extra_info_name="my_info_name", is_help=True,
                 )
             else:
                 mock_telemetry_client.send_command_telemetry.assert_called_with(
-                    mock_parent_ctx, error=error, extra_info_name="my_info_name"
+                    mock_parent_ctx, error=error, extra_info_name="my_info_name",
                 )
 
     def test_invoke(self, mocker, octavia_command, mock_telemetry_client):

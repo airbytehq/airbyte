@@ -25,16 +25,14 @@ from .helpers import construct_file_schema, get_gcs_blobs, get_stream_name, read
 
 class SourceGCS(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
-        """
-        Check to see if a client can be created and list the files in the bucket.
-        """
+        """Check to see if a client can be created and list the files in the bucket."""
         try:
             blobs = get_gcs_blobs(config)
             if not blobs:
                 return AirbyteConnectionStatus(status=Status.FAILED, message="No compatible file found in bucket")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!s}")
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         streams = []
@@ -50,7 +48,7 @@ class SourceGCS(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
         logger.info("Start reading")
         blobs = get_gcs_blobs(config)

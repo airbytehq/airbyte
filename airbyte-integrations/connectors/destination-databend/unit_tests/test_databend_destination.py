@@ -6,6 +6,9 @@ from datetime import datetime
 from typing import Dict
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
+from destination_databend.destination import DatabendClient, DestinationDatabend
+from pytest import fixture
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -16,18 +19,16 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_databend.destination import DatabendClient, DestinationDatabend
-from pytest import fixture
 
 
-@fixture
+@fixture()
 def logger() -> MagicMock:
     return MagicMock()
 
 
-@fixture
+@fixture()
 def config() -> Dict[str, str]:
-    args = {
+    return {
         "database": "default",
         "username": "root",
         "password": "root",
@@ -35,7 +36,6 @@ def config() -> Dict[str, str]:
         "port": 8081,
         "table": "default",
     }
-    return args
 
 
 @fixture(name="mock_connection")
@@ -46,7 +46,7 @@ def async_connection_cursor_mock():
     return connection, cursor
 
 
-@fixture
+@fixture()
 def configured_stream1() -> ConfiguredAirbyteStream:
     return ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -62,7 +62,7 @@ def configured_stream1() -> ConfiguredAirbyteStream:
     )
 
 
-@fixture
+@fixture()
 def configured_stream2() -> ConfiguredAirbyteStream:
     return ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -78,7 +78,7 @@ def configured_stream2() -> ConfiguredAirbyteStream:
     )
 
 
-@fixture
+@fixture()
 def airbyte_message1() -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
@@ -90,7 +90,7 @@ def airbyte_message1() -> AirbyteMessage:
     )
 
 
-@fixture
+@fixture()
 def airbyte_message2() -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
@@ -102,7 +102,7 @@ def airbyte_message2() -> AirbyteMessage:
     )
 
 
-@fixture
+@fixture()
 def airbyte_state_message() -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE)
 

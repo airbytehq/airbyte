@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest as pytest
-from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
+import pytest
 from source_klarna import SourceKlarna
 from source_klarna.source import KlarnaStream
+
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 
 
 @pytest.fixture(name="source_klarna")
@@ -15,7 +16,7 @@ def get_source_klarna():
 
 @pytest.fixture(name="klarna_config")
 def get_klarna_config():
-    return dict(playground=False, region="eu", username="user", password="password")
+    return {"playground": False, "region": "eu", "username": "user", "password": "password"}
 
 
 @pytest.fixture(name="klarna_stream")

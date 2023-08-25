@@ -8,15 +8,18 @@ import logging
 import re
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Tuple
 
 import pendulum
 import requests
+from pendulum import DateTime
+
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.core import IncrementalMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from pendulum import DateTime
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
 
 logger = logging.getLogger("airbyte")
 
@@ -44,9 +47,9 @@ class YandexMetricaStream(HttpStream, ABC):
     def path(
         self,
         *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         pass
 
@@ -58,7 +61,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return False
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"Content-Type": "application/x-ymetrika+json"}
 
@@ -66,8 +69,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return None
 
     def evaluate_logrequest(self):
-        """
-        Clean logs of the processed request prepared for downloading.
+        """Clean logs of the processed request prepared for downloading.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
         """
@@ -89,8 +91,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return response.json().get("log_request_evaluation", {}).get("possible") if response.status_code == 200 else False
 
     def create_logrequest(self):
-        """
-        Creates logs request.
+        """Creates logs request.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/createlogrequest.html
         """
@@ -112,8 +113,7 @@ class YandexMetricaStream(HttpStream, ABC):
         return response.json().get("log_request", {}).get("request_id")
 
     def wait_for_job(self, logrequest_id: str) -> Tuple[str, int]:
-        """
-        Returns information about logs request.
+        """Returns information about logs request.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/getlogrequest.html
         """
@@ -138,7 +138,9 @@ class YandexMetricaStream(HttpStream, ABC):
             logger.info("Sleeping for 60 seconds, waiting for report getting ready")
             time.sleep(60)
         if job_status != "processed":
-            raise Exception(f"Export Job processing failed, skipping reading stream {self.name}")
+            msg = f"Export Job processing failed, skipping reading stream {self.name}"
+            raise Exception(msg)
+        return None
 
     def download_report_part(self, logrequest_id: str, part_number: int) -> Iterable[Mapping]:
         request_headers = self.request_headers(stream_state={})
@@ -159,8 +161,7 @@ class YandexMetricaStream(HttpStream, ABC):
             yield row
 
     def clean_logrequest(self, logrequest_id: str):
-        """
-        Clean logs of the processed request prepared for downloading.
+        """Clean logs of the processed request prepared for downloading.
 
         See: https://yandex.com/dev/metrika/doc/api2/logs/queries/clean.html
         """
@@ -202,13 +203,13 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         pass
 
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
+    def filter_by_state(self, stream_state: Optional[Mapping[str, Any]] = None, record: Optional[Mapping[str, Any]] = None) -> bool:
         record_value = record.get(self.cursor_field)
         cursor_value = max((stream_state or {}).get(self.cursor_field, self.config.get("start_date")), record_value)
         max_state = max(self.state.get(self.cursor_field), cursor_value)
@@ -218,9 +219,9 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         for record in self.fetch_records(stream_state or {}):
             if self.filter_by_state(stream_state=stream_state, record=record):

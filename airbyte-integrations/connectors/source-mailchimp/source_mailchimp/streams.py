@@ -5,13 +5,16 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 logger = logging.getLogger("airbyte")
 
@@ -20,7 +23,7 @@ class MailChimpStream(HttpStream, ABC):
     primary_key = "id"
     page_size = 1000
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.current_offset = 0
         self.data_center = kwargs["authenticator"].data_center
@@ -46,8 +49,8 @@ class MailChimpStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
         params = {"count": self.page_size}
@@ -64,19 +67,18 @@ class MailChimpStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """The responce entry that contains useful data"""
-        pass
+        """The responce entry that contains useful data."""
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         try:
             yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
             )
         except requests.exceptions.JSONDecodeError:
             logger.error(f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
@@ -88,11 +90,9 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
 
     @property
     def filter_field(self):
@@ -103,8 +103,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return self.cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_state = latest_record.get(self.cursor_field)
@@ -112,7 +111,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return {self.cursor_field: max(latest_state, current_state)}
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slice_ = {}
         stream_state = stream_state or {}
@@ -147,7 +146,7 @@ class Campaigns(IncrementalMailChimpStream):
 
 
 class Automations(IncrementalMailChimpStream):
-    """Doc Link: https://mailchimp.com/developer/marketing/api/automation/get-automation-info/"""
+    """Doc Link: https://mailchimp.com/developer/marketing/api/automation/get-automation-info/."""
 
     cursor_field = "create_time"
     data_field = "automations"
@@ -168,7 +167,7 @@ class EmailActivity(IncrementalMailChimpStream):
         self.campaign_id = campaign_id
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
         if self.campaign_id:
@@ -183,13 +182,12 @@ class EmailActivity(IncrementalMailChimpStream):
                 slice_[self.filter_field] = cursor_value
             yield slice_
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
         return f"reports/{campaign_id}/email-activity"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the campaign_id and cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         campaign_id = latest_record.get("campaign_id")

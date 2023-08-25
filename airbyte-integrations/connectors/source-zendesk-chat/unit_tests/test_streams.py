@@ -28,9 +28,8 @@ TEST_CONFIG.update(**{"authenticator": ZendeskAuthentication(TEST_CONFIG).get_au
 
 
 class TestFullRefreshStreams:
-    """
-    STREAMS:
-        Accounts, Shortcuts, Triggers, Departments, Goals, Skills, Roles, RoutingSettings
+    """STREAMS:
+    Accounts, Shortcuts, Triggers, Departments, Goals, Skills, Roles, RoutingSettings.
     """
 
     @pytest.mark.parametrize(
@@ -52,7 +51,7 @@ class TestFullRefreshStreams:
         assert expected == stream.request_kwargs(stream_state=None)
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (Accounts, "5"),
             (Departments, "5"),
@@ -74,7 +73,7 @@ class TestFullRefreshStreams:
         assert result == int(expected)
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (Accounts, "account"),
             (Departments, "departments"),
@@ -92,7 +91,7 @@ class TestFullRefreshStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, expected_cursor",
+        ("stream_cls", "expected_cursor"),
         [
             (Accounts, "MTU4MD"),
             (Departments, "c1Mzc"),
@@ -115,7 +114,7 @@ class TestFullRefreshStreams:
         assert result == {"cursor": [expected_cursor]}
 
     @pytest.mark.parametrize(
-        "stream_cls, next_page_token, expected",
+        ("stream_cls", "next_page_token", "expected"),
         [
             (Accounts, {"cursor": "MTU4MD"}, {"limit": 100, "cursor": "MTU4MD"}),
             (Departments, {"cursor": "c1Mzc"}, {"limit": 100, "cursor": "c1Mzc"}),
@@ -133,7 +132,7 @@ class TestFullRefreshStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
+        ("stream_cls", "test_response", "expected"),
         [
             (Accounts, [{"id": "123"}], [{"id": "123"}]),
             (Departments, {"id": "123"}, [{"id": "123"}]),
@@ -155,13 +154,12 @@ class TestFullRefreshStreams:
 
 
 class TestTimeIncrementalStreams:
-    """
-    STREAMS:
-        AgentTimelines, Chats
+    """STREAMS:
+    AgentTimelines, Chats.
     """
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (AgentTimelines, 1000),
             (Chats, 1000),
@@ -173,7 +171,7 @@ class TestTimeIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (AgentTimelines, "start_time"),
             (Chats, "update_timestamp"),
@@ -185,7 +183,7 @@ class TestTimeIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
+        ("stream_cls", "test_response", "expected"),
         [
             (AgentTimelines, {"end_time": "123"}, {"start_time": "123"}),
             (Chats, {"end_time": "123"}, {"start_time": "123"}),
@@ -201,7 +199,7 @@ class TestTimeIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, current_state, last_record, expected",
+        ("stream_cls", "current_state", "last_record", "expected"),
         [
             (AgentTimelines, {}, {"start_time": "2021-01-01"}, {"start_time": "2021-01-01T00:00:00Z"}),
             (Chats, {"update_timestamp": "2022-02-02"}, {"update_timestamp": "2022-03-03"}, {"update_timestamp": "2022-03-03T00:00:00Z"}),
@@ -213,7 +211,7 @@ class TestTimeIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, stream_state, next_page_token, expected",
+        ("stream_cls", "stream_state", "next_page_token", "expected"),
         [
             (AgentTimelines, {}, {"start_time": "123"}, {"limit": 1000, "start_time": "123", "fields": "agent_timeline(*)"}),
             (Chats, {"update_timestamp": "2022-02-02"}, {"start_time": "234"}, {"limit": 1000, "start_time": "234", "fields": "chats(*)"}),
@@ -225,7 +223,7 @@ class TestTimeIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
+        ("stream_cls", "test_response", "expected"),
         [
             (
                 AgentTimelines,
@@ -248,7 +246,7 @@ class TestTimeIncrementalStreams:
         assert list(result) == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (AgentTimelines, "incremental/agent_timeline"),
             (Chats, "incremental/chats"),
@@ -261,13 +259,12 @@ class TestTimeIncrementalStreams:
 
 
 class TestIdIncrementalStreams:
-    """
-    STREAMS:
-        Agents, Bans
+    """STREAMS:
+    Agents, Bans.
     """
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (Agents, "agents"),
             (Bans, "bans"),
@@ -279,7 +276,7 @@ class TestIdIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (Agents, "id"),
             (Bans, "id"),
@@ -291,7 +288,7 @@ class TestIdIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, current_state, last_record, expected",
+        ("stream_cls", "current_state", "last_record", "expected"),
         [
             (Agents, {}, {"id": "1"}, {"id": "1"}),
             (Bans, {"id": "1"}, {"id": "2"}, {"id": "2"}),
@@ -303,7 +300,7 @@ class TestIdIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
+        ("stream_cls", "test_response", "expected"),
         [
             (Agents, [{"id": "2"}], {"since_id": "2"}),
         ],
@@ -318,7 +315,7 @@ class TestIdIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, test_response, expected",
+        ("stream_cls", "test_response", "expected"),
         [
             (Agents, {"id": "2"}, [{"id": "2"}]),
         ],
@@ -332,7 +329,7 @@ class TestIdIncrementalStreams:
         assert list(result) == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, stream_state, next_page_token, expected",
+        ("stream_cls", "stream_state", "next_page_token", "expected"),
         [
             (Agents, {}, {"since_id": "1"}, {"limit": 100, "since_id": "1"}),
             (Bans, {"id": "1"}, {"since_id": "2"}, {"limit": 100, "since_id": "2"}),

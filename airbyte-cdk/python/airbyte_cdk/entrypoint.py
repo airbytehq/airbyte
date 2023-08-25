@@ -14,6 +14,8 @@ from functools import wraps
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
+from requests import PreparedRequest, Response, Session
+
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -23,7 +25,6 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
 
@@ -31,7 +32,7 @@ VALID_URL_SCHEMES = ["https"]
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-class AirbyteEntrypoint(object):
+class AirbyteEntrypoint:
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
 
@@ -62,7 +63,7 @@ class AirbyteEntrypoint(object):
 
         # discover
         discover_parser = subparsers.add_parser(
-            "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser]
+            "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser],
         )
         required_discover_parser = discover_parser.add_argument_group("required named arguments")
         required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
@@ -74,7 +75,7 @@ class AirbyteEntrypoint(object):
         required_read_parser = read_parser.add_argument_group("required named arguments")
         required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
         required_read_parser.add_argument(
-            "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
+            "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read",
         )
 
         return main_parser.parse_args(args)
@@ -82,7 +83,8 @@ class AirbyteEntrypoint(object):
     def run(self, parsed_args: argparse.Namespace) -> Iterable[str]:
         cmd = parsed_args.command
         if not cmd:
-            raise Exception("No command passed")
+            msg = "No command passed"
+            raise Exception(msg)
 
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
@@ -147,7 +149,7 @@ class AirbyteEntrypoint(object):
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(
-        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
+        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]],
     ) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
@@ -202,9 +204,7 @@ def launch(source: Source, args: List[str]) -> None:
 
 
 def _init_internal_request_filter() -> None:
-    """
-    Wraps the Python requests library to prevent sending requests to internal URL endpoints.
-    """
+    """Wraps the Python requests library to prevent sending requests to internal URL endpoints."""
     wrapped_fn = Session.send
 
     @wraps(wrapped_fn)
@@ -214,23 +214,25 @@ def _init_internal_request_filter() -> None:
         if parsed_url.scheme not in VALID_URL_SCHEMES:
             raise ValueError(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
-                + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
+                + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}",
             )
 
         if not parsed_url.hostname:
-            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+            msg = "Invalid URL specified: The endpoint that data is being requested from is not a valid URL"
+            raise ValueError(msg)
 
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
             if is_private:
                 raise ValueError(
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
-                    + "connectors only support requesting data from public API endpoints."
+                    + "connectors only support requesting data from public API endpoints.",
                 )
         except socket.gaierror:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
             # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
-            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified.")
+            msg = f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified."
+            raise ValueError(msg)
 
         return wrapped_fn(self, request, **kwargs)
 
@@ -238,9 +240,7 @@ def _init_internal_request_filter() -> None:
 
 
 def _is_private_url(hostname: str, port: int) -> bool:
-    """
-    Helper method that checks if any of the IP addresses associated with a hostname belong to a private network.
-    """
+    """Helper method that checks if any of the IP addresses associated with a hostname belong to a private network."""
     address_info_entries = socket.getaddrinfo(hostname, port)
     for entry in address_info_entries:
         # getaddrinfo() returns entries in the form of a 5-tuple where the IP is stored as the sockaddr. For IPv4 this
@@ -262,6 +262,7 @@ def main() -> None:
     source = impl()
 
     if not isinstance(source, Source):
-        raise Exception("Source implementation provided does not implement Source class!")
+        msg = "Source implementation provided does not implement Source class!"
+        raise Exception(msg)
 
     launch(source, sys.argv[1:])

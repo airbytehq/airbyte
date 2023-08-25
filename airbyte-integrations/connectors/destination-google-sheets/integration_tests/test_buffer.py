@@ -7,9 +7,10 @@ import io
 from typing import Iterable
 
 import pytest
+from destination_google_sheets.buffer import WriteBufferMixin
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
-from destination_google_sheets.buffer import WriteBufferMixin
 
 # ----- PREPARE ENV -----
 
@@ -40,7 +41,7 @@ def test_logger():
 
 
 @pytest.mark.parametrize(
-    "buffer, stream_name",
+    ("buffer", "stream_name"),
     [
         (TEST_WRITE_BUFFER.records_buffer, "stream_1"),
         (TEST_WRITE_BUFFER.records_buffer, "stream_2"),
@@ -80,7 +81,7 @@ def test_add_to_buffer(input_messages=read_input_messages(TEST_RECORDS_PATH)):
 
 
 @pytest.mark.parametrize(
-    "stream_name, expected_count",
+    ("stream_name", "expected_count"),
     [
         ("stream_1", 7),
         ("stream_2", 6),
@@ -108,7 +109,7 @@ def test_clear_buffer(stream_name):
 
 
 @pytest.mark.parametrize(
-    "stream_name, record, expected",
+    ("stream_name", "record", "expected"),
     [
         ("stream_1", {"id": 123}, {"id": 123, "key1": "", "list": ""}),
         ("stream_2", {"id": 123, "key2": "value"}, {"id": 123, "key1": "", "list": ""}),
@@ -122,7 +123,7 @@ def test_normalize_record(stream_name, record, expected):
 
 
 @pytest.mark.parametrize(
-    "buffer, expected_len",
+    ("buffer", "expected_len"),
     [
         (TEST_WRITE_BUFFER.records_buffer, 0),
         (TEST_WRITE_BUFFER.stream_info, 0),

@@ -34,7 +34,7 @@ def test_get_auth_header(config):
 
 
 @pytest.mark.parametrize(
-    "patch, expected",
+    ("patch", "expected"),
     [
         (
             patch.object(Shop, "read_records", return_value=[{"shop": {"id": 123}}]),

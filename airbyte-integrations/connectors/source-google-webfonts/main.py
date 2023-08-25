@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_google_webfonts import SourceGoogleWebfonts
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceGoogleWebfonts()

@@ -7,13 +7,14 @@ import os
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
+from requests.auth import AuthBase
+
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
-from requests.auth import AuthBase
 
 from .streams import (
     Branches,
@@ -85,7 +86,7 @@ def get_authenticator(config: MutableMapping) -> AuthBase:
 
 
 class SourceGitlab(AbstractSource):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.__auth_params: Mapping[str, Any] = {}
         self.__groups_stream: Optional[GitlabStream] = None
@@ -99,7 +100,7 @@ class SourceGitlab(AbstractSource):
     def _groups_stream(self, config: MutableMapping[str, Any]) -> Groups:
         if not self.__groups_stream:
             auth_params = self._auth_params(config)
-            group_ids = list(map(lambda x: x["id"], self._get_group_list(config)))
+            group_ids = [x["id"] for x in self._get_group_list(config)]
             self.__groups_stream = Groups(group_ids=group_ids, **auth_params)
         return self.__groups_stream
 
@@ -117,7 +118,7 @@ class SourceGitlab(AbstractSource):
     def _auth_params(self, config: MutableMapping[str, Any]) -> Mapping[str, Any]:
         if not self.__auth_params:
             auth = get_authenticator(config)
-            self.__auth_params = dict(authenticator=auth, api_url=config["api_url"])
+            self.__auth_params = {"authenticator": auth, "api_url": config["api_url"]}
         return self.__auth_params
 
     def _get_group_list(self, config: MutableMapping[str, Any]) -> List[str]:
@@ -154,7 +155,7 @@ class SourceGitlab(AbstractSource):
                 return True, None
             return True, None  # in case there's no projects
         except Exception as error:
-            return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Gitlab API with the provided credentials - {error!r}"
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
         config = self._ensure_default_values(config)
@@ -165,7 +166,7 @@ class SourceGitlab(AbstractSource):
         merge_requests = MergeRequests(parent_stream=projects, start_date=config["start_date"], **auth_params)
         epics = Epics(parent_stream=groups, **auth_params)
 
-        streams = [
+        return [
             groups,
             projects,
             Branches(parent_stream=projects, repository_part=True, **auth_params),
@@ -190,4 +191,3 @@ class SourceGitlab(AbstractSource):
             Users(parent_stream=projects, **auth_params),
         ]
 
-        return streams

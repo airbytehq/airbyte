@@ -6,11 +6,12 @@ import re
 from unittest.mock import MagicMock
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 
 
 @pytest.mark.parametrize(
-    "test_name, headers, requested_header, regex, expected_value",
+    ("test_name", "headers", "requested_header", "regex", "expected_value"),
     [
         ("test_get_numeric_value_from_header", {"header": 1}, "header", None, 1),
         ("test_get_numeric_value_float_from_header", {"header": 1.2}, "header", None, 1.2),

@@ -8,8 +8,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_incre
 
 
 class ItemPaginationStrategy(PageIncrement):
-    """
-    Page increment strategy with subpages for the `items` stream.
+    """Page increment strategy with subpages for the `items` stream.
 
     From the `items` documentation https://developer.monday.com/api-reference/docs/items:
         Please note that you cannot return more than 100 items per query when using items at the root.
@@ -28,8 +27,7 @@ class ItemPaginationStrategy(PageIncrement):
         self._sub_page: Optional[int] = self.start_from_page
 
     def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Tuple[Optional[int], Optional[int]]]:
-        """
-        Determines page and subpage numbers for the `items` stream
+        """Determines page and subpage numbers for the `items` stream.
 
         Attributes:
             response: Contains `boards` and corresponding lists of `items` for each `board`

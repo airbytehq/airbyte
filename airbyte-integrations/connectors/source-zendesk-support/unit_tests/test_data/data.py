@@ -21,7 +21,7 @@ TICKET_EVENTS_STREAM_RESPONSE: dict = {
                     "audit_id": 123456,
                     "created_at": "2022-03-17T16:03:07Z",
                     "event_type": "Comment",
-                }
+                },
             ],
             "id": 999999,
             "ticket_id": 3,
@@ -32,7 +32,7 @@ TICKET_EVENTS_STREAM_RESPONSE: dict = {
             "system": {},
             "metadata": {},
             "event_type": "Audit",
-        }
+        },
     ],
     "next_page": "https://subdomain.zendesk.com/api/v2/stream.json?&start_time=1122334455&page=2",
     "count": 215,

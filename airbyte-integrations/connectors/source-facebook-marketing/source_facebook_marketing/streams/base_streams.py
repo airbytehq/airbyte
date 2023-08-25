@@ -11,17 +11,18 @@ from queue import Queue
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+
 from .common import deep_merge
 
 if TYPE_CHECKING:  # pragma: no cover
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
@@ -30,7 +31,7 @@ FACEBOOK_BATCH_ERROR_CODE = 960
 
 
 class FBMarketingStream(Stream, ABC):
-    """Base stream class"""
+    """Base stream class."""
 
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -57,18 +58,18 @@ class FBMarketingStream(Stream, ABC):
 
     @cached_property
     def fields(self) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
+        """List of fields that we want to query, for now just all properties from stream's schema."""
         return list(self.get_json_schema().get("properties", {}).keys())
 
     def _execute_batch(self, batch: FacebookAdsApiBatch) -> None:
-        """Execute batch, retry in case of failures"""
+        """Execute batch, retry in case of failures."""
         while batch:
             batch = batch.execute()
             if batch:
                 logger.info("Retry failed requests in batch")
 
     def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
-        """Execute list of requests in batches"""
+        """Execute list of requests in batches."""
         requests_q = Queue()
         records = []
         for r in pending_requests:
@@ -81,11 +82,12 @@ class FBMarketingStream(Stream, ABC):
         def reduce_batch_size(request: FacebookRequest):
             if self.max_batch_size == 1 and set(self.fields_exceptions) & set(request._fields):
                 logger.warning(
-                    f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}"
+                    f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}",
                 )
                 request._fields = [x for x in request._fields if x not in self.fields_exceptions]
             elif self.max_batch_size == 1:
-                raise RuntimeError("Batch request failed with only 1 request in it")
+                msg = "Batch request failed with only 1 request in it"
+                raise RuntimeError(msg)
             self.max_batch_size = ceil(self.max_batch_size / 2)
             logger.warning(f"Caught retryable error: Too much data was requested in batch. Reducing batch size to {self.max_batch_size}")
 
@@ -94,11 +96,13 @@ class FBMarketingStream(Stream, ABC):
             assert request, "Missing a request object"
             resp_body = response.json()
             if not isinstance(resp_body, dict):
-                raise RuntimeError(f"Batch request failed with response: {resp_body}")
+                msg = f"Batch request failed with response: {resp_body}"
+                raise RuntimeError(msg)
             elif resp_body.get("error", {}).get("message") == "Please reduce the amount of data you're asking for, then retry your request":
                 reduce_batch_size(request)
             elif resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
-                raise RuntimeError(f"Batch request failed with response: {resp_body}; unknown error code")
+                msg = f"Batch request failed with response: {resp_body}; unknown error code"
+                raise RuntimeError(msg)
             requests_q.put(request)
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
@@ -118,11 +122,11 @@ class FBMarketingStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """Main read method used by CDK"""
+        """Main read method used by CDK."""
         records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
         loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
         if self.use_batch:
@@ -143,7 +147,7 @@ class FBMarketingStream(Stream, ABC):
         """
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        """Parameters that should be passed to query_records method"""
+        """Parameters that should be passed to query_records method."""
         params = {"limit": self.page_size}
 
         if self._include_deleted:
@@ -152,7 +156,7 @@ class FBMarketingStream(Stream, ABC):
         return params
 
     def _filter_all_statuses(self) -> MutableMapping[str, Any]:
-        """Filter that covers all possible statuses thus including deleted/archived records"""
+        """Filter that covers all possible statuses thus including deleted/archived records."""
         filt_values = [
             "active",
             "archived",
@@ -178,7 +182,7 @@ class FBMarketingStream(Stream, ABC):
 
 
 class FBMarketingIncrementalStream(FBMarketingStream, ABC):
-    """Base class for incremental streams"""
+    """Base class for incremental streams."""
 
     cursor_field = "updated_time"
 
@@ -191,7 +195,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
             logger.error("The end_date must be after start_date.")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """Update stream state from latest record"""
+        """Update stream state from latest record."""
         potentially_new_records_in_the_past = self._include_deleted and not current_stream_state.get("include_deleted", False)
         record_value = latest_record[self.cursor_field]
         state_value = current_stream_state.get(self.cursor_field) or record_value
@@ -205,13 +209,12 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         }
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """Include state filter"""
+        """Include state filter."""
         params = super().request_params(**kwargs)
-        params = deep_merge(params, self._state_filter(stream_state=stream_state or {}))
-        return params
+        return deep_merge(params, self._state_filter(stream_state=stream_state or {}))
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Additional filters associated with state if any set"""
+        """Additional filters associated with state if any set."""
         state_value = stream_state.get(self.cursor_field)
         filter_value = self._start_date if not state_value else pendulum.parse(state_value)
 
@@ -232,18 +235,18 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
 
 class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
-    """The base class for streams that don't support filtering and return records sorted desc by cursor_value"""
+    """The base class for streams that don't support filtering and return records sorted desc by cursor_value."""
 
     enable_deleted = False  # API don't have any filtering, so implement include_deleted in code
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._cursor_value = None
         self._max_cursor_value = None
 
     @property
     def state(self) -> Mapping[str, Any]:
-        """State getter, get current state and serialize it to emmit Airbyte STATE message"""
+        """State getter, get current state and serialize it to emmit Airbyte STATE message."""
         if self._cursor_value:
             return {
                 self.cursor_field: self._cursor_value,
@@ -254,7 +257,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        """State setter, ignore state if current settings mismatch saved state"""
+        """State setter, ignore state if current settings mismatch saved state."""
         if self._include_deleted and not value.get("include_deleted"):
             logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
             return
@@ -262,7 +265,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         self._cursor_value = pendulum.parse(value[self.cursor_field])
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Don't have classic cursor filtering"""
+        """Don't have classic cursor filtering."""
         return {}
 
     def get_record_deleted_status(self, record) -> bool:
@@ -271,15 +274,15 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK
         - save initial state
         - save maximum value (it is the first one)
         - update state only when we reach the end
-        - stop reading when we reached the end
+        - stop reading when we reached the end.
         """
         records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
         for record in records_iter:

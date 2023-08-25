@@ -4,6 +4,7 @@
 
 import traceback
 from datetime import datetime
+from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
@@ -19,19 +20,16 @@ from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 
 class AirbyteTracedException(Exception):
-    """
-    An exception that should be emitted as an AirbyteTraceMessage
-    """
+    """An exception that should be emitted as an AirbyteTraceMessage."""
 
     def __init__(
         self,
-        internal_message: str = None,
-        message: str = None,
+        internal_message: Optional[str] = None,
+        message: Optional[str] = None,
         failure_type: FailureType = FailureType.system_error,
-        exception: BaseException = None,
+        exception: Optional[BaseException] = None,
     ):
-        """
-        :param internal_message: the internal error that caused the failure
+        """:param internal_message: the internal error that caused the failure
         :param message: a user-friendly message that indicates the cause of the error
         :param failure_type: the type of error
         :param exception: the exception that caused the error, from which the stack trace should be retrieved
@@ -43,9 +41,7 @@ class AirbyteTracedException(Exception):
         super().__init__(internal_message)
 
     def as_airbyte_message(self) -> AirbyteMessage:
-        """
-        Builds an AirbyteTraceMessage from the exception
-        """
+        """Builds an AirbyteTraceMessage from the exception."""
         now_millis = datetime.now().timestamp() * 1000.0
 
         trace_exc = self._exception or self
@@ -66,14 +62,13 @@ class AirbyteTracedException(Exception):
 
     def as_connection_status_message(self) -> AirbyteMessage:
         if self.failure_type == FailureType.config_error:
-            output_message = AirbyteMessage(
-                type=MessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.FAILED, message=self.message)
+            return AirbyteMessage(
+                type=MessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.FAILED, message=self.message),
             )
-            return output_message
+        return None
 
     def emit_message(self):
-        """
-        Prints the exception as an AirbyteTraceMessage.
+        """Prints the exception as an AirbyteTraceMessage.
         Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
         """
         message = self.as_airbyte_message().json(exclude_unset=True)
@@ -82,8 +77,7 @@ class AirbyteTracedException(Exception):
 
     @classmethod
     def from_exception(cls, exc: Exception, *args, **kwargs) -> "AirbyteTracedException":
-        """
-        Helper to create an AirbyteTracedException from an existing exception
-        :param exc: the exception that caused the error
+        """Helper to create an AirbyteTracedException from an existing exception
+        :param exc: the exception that caused the error.
         """
         return cls(internal_message=str(exc), exception=exc, *args, **kwargs)

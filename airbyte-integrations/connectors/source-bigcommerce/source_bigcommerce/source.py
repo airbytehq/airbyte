@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -37,9 +38,7 @@ class BigcommerceStream(HttpStream, ABC):
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-        """
-        This functions tries to handle the various date-time formats BigCommerce API returns and normalize the values to isoformat.
-        """
+        """This functions tries to handle the various date-time formats BigCommerce API returns and normalize the values to isoformat."""
         if "format" in field_schema and field_schema["format"] == "date-time":
             if not original_value:  # Some dates are empty strings: "".
                 return None
@@ -51,7 +50,8 @@ class BigcommerceStream(HttpStream, ABC):
                 except ValueError:
                     continue
             if not transformed_value:
-                raise ValueError(f"Unsupported date-time format for {original_value}")
+                msg = f"Unsupported date-time format for {original_value}"
+                raise ValueError(msg)
             return transformed_value
         return original_value
 
@@ -65,12 +65,13 @@ class BigcommerceStream(HttpStream, ABC):
         if meta:
             pagination = meta.get("pagination", None)
             if pagination and pagination.get("current_page") < pagination.get("total_pages"):
-                return dict(page=pagination.get("current_page") + 1)
+                return {"page": pagination.get("current_page") + 1}
             else:
                 return None
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         params.update({"sort": self.order_field})
@@ -81,7 +82,7 @@ class BigcommerceStream(HttpStream, ABC):
         return params
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         headers.update({"Accept": "application/json", "Content-Type": "application/json"})
@@ -107,7 +108,7 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
         if stream_state:
@@ -116,7 +117,7 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
             params[self.filter_field] = self.start_date
         return params
 
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+    def filter_records_newer_than_state(self, stream_state: Optional[Mapping[str, Any]] = None, records_slice: Optional[Mapping[str, Any]] = None) -> Iterable:
         if stream_state:
             for record in records_slice:
                 if record[self.cursor_field] >= stream_state.get(self.cursor_field):
@@ -127,10 +128,10 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
 
 class OrderSubstream(IncrementalBigcommerceStream):
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         orders_stream = Orders(
-            authenticator=self.authenticator, start_date=self.start_date, store_hash=self.store_hash, access_token=self.access_token
+            authenticator=self.authenticator, start_date=self.start_date, store_hash=self.store_hash, access_token=self.access_token,
         )
         for data in orders_stream.read_records(sync_mode=SyncMode.full_refresh):
             slice = super().read_records(stream_slice={"order_id": data["id"]}, **kwargs)
@@ -169,7 +170,7 @@ class Orders(IncrementalBigcommerceStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
             self.page = self.page + 1
-            return dict(page=self.page)
+            return {"page": self.page}
         else:
             return None
 
@@ -185,7 +186,7 @@ class Pages(IncrementalBigcommerceStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
@@ -200,7 +201,7 @@ class Brands(IncrementalBigcommerceStream):
         return f"catalog/{self.data_field}"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         params.update({"sort": self.order_field})
@@ -212,7 +213,7 @@ class Brands(IncrementalBigcommerceStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
@@ -227,7 +228,7 @@ class Categories(IncrementalBigcommerceStream):
         return f"catalog/{self.data_field}"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         params.update({"sort": self.order_field})
@@ -239,7 +240,7 @@ class Categories(IncrementalBigcommerceStream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def read_records(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
@@ -249,7 +250,7 @@ class Transactions(OrderSubstream):
     data_field = "transactions"
     cursor_field = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}"
 
@@ -257,10 +258,9 @@ class Transactions(OrderSubstream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
-        return params
+        return {"limit": self.limit}
 
 
 class OrderProducts(OrderSubstream):
@@ -268,7 +268,7 @@ class OrderProducts(OrderSubstream):
     data_field = "products"
     cursor_field = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}"
 
@@ -276,10 +276,9 @@ class OrderProducts(OrderSubstream):
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
-        return params
+        return {"limit": self.limit}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         return response.json() if len(response.content) > 0 else []
@@ -287,7 +286,7 @@ class OrderProducts(OrderSubstream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if len(response.content) > 0 and len(response.json()) == self.limit:
             self.page = self.page + 1
-            return dict(page=self.page)
+            return {"page": self.page}
         else:
             return None
 

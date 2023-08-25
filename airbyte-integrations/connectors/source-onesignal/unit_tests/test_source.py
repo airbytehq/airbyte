@@ -8,7 +8,7 @@ from pytest import fixture
 from source_onesignal.source import SourceOnesignal
 
 
-@fixture
+@fixture()
 def config():
     return {"config": {"user_auth_key": "", "start_date": "2021-01-01T00:00:00Z", "outcome_names": ""}}
 
@@ -22,7 +22,7 @@ def test_check_connection(mocker, requests_mock, config):
             {
                 "id": "92911750-242d-4260-9e00-9d9034f139ce",
                 "basic_auth_key": "your key",
-            }
+            },
         ],
     )
     assert source.check_connection(logger_mock, **config) == (True, None)

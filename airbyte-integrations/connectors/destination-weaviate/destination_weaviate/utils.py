@@ -58,6 +58,7 @@ def generate_id(record_id: Any) -> uuid.UUID:
             return uuid.UUID(int=id_int)
         hex_string = hashlib.md5(record_id.encode("UTF-8")).hexdigest()
         return uuid.UUID(hex=hex_string)
+    return None
 
 
 def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, Mapping[str, str]]:

@@ -9,12 +9,13 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping
 
+from pydantic import ValidationError
+
 from airbyte_cdk.connector import Connector
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic import ValidationError
 
 logger = logging.getLogger("airbyte")
 
@@ -24,16 +25,16 @@ class Destination(Connector, ABC):
 
     @abstractmethod
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-        """Implement to define how the connector writes data to the destination"""
+        """Implement to define how the connector writes data to the destination."""
 
     def _run_check(self, config: Mapping[str, Any]) -> AirbyteMessage:
         check_result = self.check(logger, config)
         return AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def _parse_input_stream(self, input_stream: io.TextIOWrapper) -> Iterable[AirbyteMessage]:
-        """Reads from stdin, converting to Airbyte messages"""
+        """Reads from stdin, converting to Airbyte messages."""
         for line in input_stream:
             try:
                 yield AirbyteMessage.parse_raw(line)
@@ -41,7 +42,7 @@ class Destination(Connector, ABC):
                 logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
-        self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper
+        self, config: Mapping[str, Any], configured_catalog_path: str, input_stream: io.TextIOWrapper,
     ) -> Iterable[AirbyteMessage]:
         catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
         input_messages = self._parse_input_stream(input_stream)
@@ -50,11 +51,9 @@ class Destination(Connector, ABC):
         logger.info("Writing complete.")
 
     def parse_args(self, args: List[str]) -> argparse.Namespace:
-        """
-        :param args: commandline arguments
+        """:param args: commandline arguments
         :return:
         """
-
         parent_parser = argparse.ArgumentParser(add_help=False)
         main_parser = argparse.ArgumentParser()
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
@@ -76,11 +75,13 @@ class Destination(Connector, ABC):
         parsed_args = main_parser.parse_args(args)
         cmd = parsed_args.command
         if not cmd:
-            raise Exception("No command entered. ")
+            msg = "No command entered. "
+            raise Exception(msg)
         elif cmd not in ["spec", "check", "write"]:
             # This is technically dead code since parse_args() would fail if this was the case
             # But it's non-obvious enough to warrant placing it here anyways
-            raise Exception(f"Unknown command entered: {cmd}")
+            msg = f"Unknown command entered: {cmd}"
+            raise Exception(msg)
 
         return parsed_args
 
@@ -88,7 +89,8 @@ class Destination(Connector, ABC):
 
         cmd = parsed_args.command
         if cmd not in self.VALID_CMDS:
-            raise Exception(f"Unrecognized command: {cmd}")
+            msg = f"Unrecognized command: {cmd}"
+            raise Exception(msg)
 
         spec = self.spec(logger)
         if cmd == "spec":

@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -29,8 +30,7 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Basic full refresh stream
 class ScaffoldSourceHttpStream(HttpStream, ABC):
-    """
-    TODO remove this comment
+    """TODO remove this comment.
 
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
@@ -59,8 +59,7 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
     url_base = "https://example-api.com/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
+        """TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
 
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
@@ -76,35 +75,30 @@ class ScaffoldSourceHttpStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        """TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
+        """TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response.
         """
         yield {}
 
 
 class Customers(ScaffoldSourceHttpStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """TODO: Change class name to match the table/data source this stream corresponds to."""
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "customer_id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        """TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
         should return "customers". Required.
         """
         return "customers"
@@ -112,9 +106,8 @@ class Customers(ScaffoldSourceHttpStream):
 
 # Basic incremental stream
 class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
+    """TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+    if you do not need to implement incremental sync for any streams, remove this class.
     """
 
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
@@ -122,8 +115,7 @@ class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
 
     @property
     def cursor_field(self) -> str:
-        """
-        TODO
+        """TODO:
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
@@ -132,17 +124,14 @@ class IncrementalScaffoldSourceHttpStream(ScaffoldSourceHttpStream, ABC):
         return []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        """Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         return {}
 
 
 class Employees(IncrementalScaffoldSourceHttpStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
+    """TODO: Change class name to match the table/data source this stream corresponds to."""
 
     # TODO: Fill in the cursor_field. Required.
     cursor_field = "start_date"
@@ -151,15 +140,13 @@ class Employees(IncrementalScaffoldSourceHttpStream):
     primary_key = "employee_id"
 
     def path(self, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
+        """TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
         """
         return "employees"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        """TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
 
         Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
         This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
@@ -177,14 +164,14 @@ class Employees(IncrementalScaffoldSourceHttpStream):
         till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
         the date query param.
         """
-        raise NotImplementedError("Implement stream slices or delete this method!")
+        msg = "Implement stream slices or delete this method!"
+        raise NotImplementedError(msg)
 
 
 # Source
 class SourceScaffoldSourceHttp(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        """TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API.
 
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -196,8 +183,7 @@ class SourceScaffoldSourceHttp(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
+        """TODO: Replace the streams below with your own streams.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """

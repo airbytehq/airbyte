@@ -6,11 +6,12 @@
 from copy import deepcopy
 
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams.common import AccountTypeException
+
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
 
 from .utils import command_check
 
@@ -27,7 +28,7 @@ def config_fixture(requests_mock):
     return config
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_gen(config):
     def inner(**kwargs):
         new_config = deepcopy(config)
@@ -50,7 +51,7 @@ def logger_mock_fixture(mocker):
     return mocker.patch("source_facebook_marketing.source.logger")
 
 
-@pytest.fixture
+@pytest.fixture()
 def fb_marketing():
     return SourceFacebookMarketing()
 
@@ -154,7 +155,7 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
 def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock):
     api_mock = mocker.Mock()
     api_mock.account.api_get.return_value = {"account": 123, "is_personal": 1}
-    mocker.patch('source_facebook_marketing.source.API', return_value=api_mock)
+    mocker.patch("source_facebook_marketing.source.API", return_value=api_mock)
 
     result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
 

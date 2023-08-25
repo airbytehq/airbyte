@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import backoff
 import requests
+
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
@@ -19,7 +20,7 @@ class CommerceToolsOauth2Authenticator(DeclarativeOauth2Authenticator):
         backoff.expo,
         DefaultBackoffException,
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_time=300,
     )
@@ -37,4 +38,5 @@ class CommerceToolsOauth2Authenticator(DeclarativeOauth2Authenticator):
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
             raise
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e

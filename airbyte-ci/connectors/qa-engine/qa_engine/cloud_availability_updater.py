@@ -59,7 +59,8 @@ def get_metadata_file_path(airbyte_repo_path: Path, connector: ConnectorQAReport
     connector_folder_name = connector.connector_technical_name
     metadata_file_path = airbyte_repo_path / f"airbyte-integrations/connectors/{connector_folder_name}/metadata.yaml"
     if not metadata_file_path.exists():
-        raise FileNotFoundError(f"Can't find the metadata file for {metadata_file_path}")
+        msg = f"Can't find the metadata file for {metadata_file_path}"
+        raise FileNotFoundError(msg)
     return metadata_file_path
 
 
@@ -71,7 +72,7 @@ def checkout_new_branch(airbyte_repo: git.Repo, new_branch_name: str) -> git.Hea
 
 
 def enable_in_cloud(connector: ConnectorQAReport, metadata_file_path: Path) -> Optional[Path]:
-    with open(metadata_file_path, "r") as f:
+    with open(metadata_file_path) as f:
         metadata = yaml.load(f)
         connector_already_enabled_in_cloud = get(metadata, "data.registries.cloud.enabled", False)
 
@@ -135,6 +136,7 @@ def create_pr(pr_title: str, pr_body: str, branch: str, labels: Optional[List]) 
         return response
     else:
         logger.warning(f"A PR already exists for branch {branch}")
+        return None
 
 
 def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connectors: List[ConnectorQAReport]) -> str:
@@ -168,11 +170,12 @@ def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connector
 def add_new_connector_to_cloud_catalog(airbyte_repo_path: Path, airbyte_repo: git.Repo, connector: ConnectorQAReport) -> bool:
     """Updates the local definitions mask on Airbyte cloud repo.
     Calls the generateCloudConnectorCatalog gradle task.
-    Commits these changes
+    Commits these changes.
 
     Args:
         airbyte_repo (git.Repo): The Airbyte Cloud repo instance.
         connector (ConnectorQAReport): The connector to add to a definitions mask.
+
     Returns:
         bool: Whether the connector was added or not.
     """

@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
 
 

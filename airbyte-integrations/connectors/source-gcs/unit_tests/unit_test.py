@@ -14,9 +14,9 @@ class TestGCSFunctions(unittest.TestCase):
     def setUp(self):
         # Initialize the mock config
         self.config = {
-            'service_account': '{"test_key": "test_value"}',
-            'gcs_bucket': 'test_bucket',
-            'gcs_path': 'test_path'
+            "service_account": '{"test_key": "test_value"}',
+            "gcs_bucket": "test_bucket",
+            "gcs_path": "test_path",
         }
 
     def test_construct_file_schema(self):
@@ -28,7 +28,7 @@ class TestGCSFunctions(unittest.TestCase):
             "type": "object",
             "properties": {
                 "id": {"type": "string"},
-                "name": {"type": "string"}
-            }
+                "name": {"type": "string"},
+            },
         }
-        self.assertEqual(schema, expected_schema)
+        assert schema == expected_schema

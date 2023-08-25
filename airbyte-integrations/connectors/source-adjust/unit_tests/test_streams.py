@@ -9,7 +9,7 @@ import pytest
 from source_adjust.source import AdjustReportStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream():
     return AdjustReportStream(
         connector=None,
@@ -54,7 +54,7 @@ def test_parse_response(stream):
             {
                 "device_type": "phone",
                 "app_token": "some id",
-            }
+            },
         ],
     }
     inputs = {

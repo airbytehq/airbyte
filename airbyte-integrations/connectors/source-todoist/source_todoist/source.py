@@ -5,6 +5,7 @@
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -13,9 +14,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 # Basic full refresh stream
 class TodoistStream(HttpStream):
-    """
-    Stream for Todoist REST API : https://developer.todoist.com/rest/v2/#overview
-    """
+    """Stream for Todoist REST API : https://developer.todoist.com/rest/v2/#overview."""
 
     @property
     def url_base(self) -> str:
@@ -25,7 +24,7 @@ class TodoistStream(HttpStream):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -33,7 +32,7 @@ class TodoistStream(HttpStream):
         yield from response.json()
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return self.name.title().lower()
 

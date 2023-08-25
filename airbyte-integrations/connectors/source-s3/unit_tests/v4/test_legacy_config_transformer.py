@@ -8,7 +8,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 
 
 @pytest.mark.parametrize(
-    "legacy_config, expected_config",
+    ("legacy_config", "expected_config"),
     [
         pytest.param(
             {
@@ -43,7 +43,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "validation_policy": "Emit Record",
                         "input_schema": '{"col1": "string", "col2": "integer"}',
                         "format": {"filetype": "avro"},
-                    }
+                    },
                 ],
             },
             id="test_convert_legacy_config",
@@ -70,7 +70,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "legacy_prefix": "",
                         "validation_policy": "Emit Record",
                         "format": {"filetype": "avro"},
-                    }
+                    },
                 ],
             },
             id="test_convert_no_optional_fields",
@@ -98,12 +98,12 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                         "validation_policy": "Emit Record",
                         "legacy_prefix": "a_prefix/",
                         "format": {"filetype": "avro"},
-                    }
-                ]
+                    },
+                ],
             }
-            , id="test_convert_with_multiple_path_patterns"
+            , id="test_convert_with_multiple_path_patterns",
         ),
-    ]
+    ],
 )
 def test_convert_legacy_config(legacy_config, expected_config):
     parsed_legacy_config = SourceS3Spec(**legacy_config)
@@ -113,7 +113,7 @@ def test_convert_legacy_config(legacy_config, expected_config):
 
 
 @pytest.mark.parametrize(
-    "file_type,legacy_format_config,expected_format_config, expected_error",
+    ("file_type", "legacy_format_config", "expected_format_config", "expected_error"),
     [
         pytest.param(
             "csv",
@@ -372,7 +372,7 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
                 "legacy_prefix": "",
                 "validation_policy": "Emit Record",
                 "format": expected_format_config,
-            }
+            },
         ],
     }
 

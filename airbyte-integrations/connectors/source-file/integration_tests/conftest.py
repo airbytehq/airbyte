@@ -7,7 +7,6 @@ import json
 import os
 import random
 import shutil
-import socket
 import string
 import tempfile
 import uuid
@@ -15,7 +14,7 @@ from pathlib import Path
 from typing import Mapping
 
 import boto3
-import pandas
+import pandas as pd
 import pytest
 from azure.storage.blob import BlobServiceClient
 from botocore.errorfactory import ClientError
@@ -77,14 +76,15 @@ def is_ssh_ready(ip, port):
                 password="abc123@456#",
             )
         return True
-    except (SSHException, socket.error):
+    except (OSError, SSHException):
         return False
 
 
 @pytest.fixture(scope="session")
 def move_sample_files_to_tmp():
     """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
-    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory."""
+    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory.
+    """
     sample_files = Path(HERE / "sample_files")
     shutil.copytree(sample_files, "/tmp/s3_sample_files")
     yield True
@@ -100,16 +100,16 @@ def ssh_service(move_sample_files_to_tmp, docker_ip, docker_services):
     return docker_ip
 
 
-@pytest.fixture
+@pytest.fixture()
 def provider_config(ssh_service):
     def lookup(name):
         providers = {
-            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=2222),
-            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=2222),
-            "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="abc123@456#", port=100),
-            "gcs": dict(storage="GCS"),
-            "s3": dict(storage="S3"),
-            "azure": dict(storage="AzBlob"),
+            "ssh": {"storage": "SSH", "host": ssh_service, "user": "user1", "password": "abc123@456#", "port": 2222},
+            "scp": {"storage": "SCP", "host": ssh_service, "user": "user1", "password": "abc123@456#", "port": 2222},
+            "sftp": {"storage": "SFTP", "host": ssh_service, "user": "user1", "password": "abc123@456#", "port": 100},
+            "gcs": {"storage": "GCS"},
+            "s3": {"storage": "S3"},
+            "azure": {"storage": "AzBlob"},
         }
         return providers[name]
 
@@ -117,11 +117,10 @@ def provider_config(ssh_service):
 
 
 def create_unique_gcs_bucket(storage_client, name: str) -> str:
+    """Make a unique bucket to which we'll upload the file.
+    (GCS buckets are part of a single global namespace.).
     """
-    Make a unique bucket to which we'll upload the file.
-    (GCS buckets are part of a single global namespace.)
-    """
-    for i in range(0, 5):
+    for _i in range(0, 5):
         bucket_name = f"{name}-{uuid.uuid1()}"
         try:
             bucket = storage_client.bucket(bucket_name)
@@ -132,12 +131,13 @@ def create_unique_gcs_bucket(storage_client, name: str) -> str:
             return bucket_name
         except Conflict:
             print(f"\nError: {bucket_name} already exists!")
+    return None
 
 
 @pytest.fixture(scope="session")
 def download_gcs_public_data():
     print("\nDownload public dataset from gcs to local /tmp")
-    df = pandas.read_csv("https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv")
+    df = pd.read_csv("https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv")
     tmp_file = tempfile.NamedTemporaryFile(delete=False)
     df.to_csv(tmp_file.name, index=False)
 
@@ -183,7 +183,7 @@ def private_aws_file(aws_credentials, cloud_bucket_name, download_gcs_public_dat
     yield f"{bucket_name}/myfile.csv"
 
     s3 = boto3.resource(
-        "s3", aws_access_key_id=aws_credentials["aws_access_key_id"], aws_secret_access_key=aws_credentials["aws_secret_access_key"]
+        "s3", aws_access_key_id=aws_credentials["aws_access_key_id"], aws_secret_access_key=aws_credentials["aws_secret_access_key"],
     )
     bucket = s3.Bucket(bucket_name)
     bucket.objects.all().delete()
@@ -203,7 +203,7 @@ def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data,
         else:
             azblob_client.create_container(name=container_name, metadata=None, public_access=None)
     blob_client = azblob_client.get_blob_client(container_name, "myfile.csv")
-    with open(download_gcs_public_data, "r") as f:
+    with open(download_gcs_public_data) as f:
         blob_client.upload_blob(f.read(), blob_type="BlockBlob", overwrite=True)
 
     yield f"{container_name}/myfile.csv"
@@ -214,11 +214,9 @@ def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data,
 
 @pytest.fixture(scope="session")
 def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
-    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
-        yield yld
+    yield from azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False)
 
 
 @pytest.fixture(scope="session")
 def public_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
-    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=True):
-        yield yld
+    yield from azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=True)

@@ -10,7 +10,7 @@ import pytest
 from source_trustpilot.streams import TrustpilotStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(TrustpilotStream, "path", "v0/example_endpoint")
@@ -47,7 +47,7 @@ def test_parse_response(patch_base_class):
     inputs = {"response": response}
 
     expected_parsed_object = {
-        "id": "12351241"
+        "id": "12351241",
     }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 

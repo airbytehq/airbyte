@@ -10,6 +10,7 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
@@ -275,12 +276,12 @@ class PostHttpStream(StubBasicReadHttpStream):
     http_method = "POST"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """Returns response data as is"""
+        """Returns response data as is."""
         yield response.json()
 
 
 class TestRequestBody:
-    """Suite of different tests for request bodies"""
+    """Suite of different tests for request bodies."""
 
     json_body = {"key": "value"}
     data_body = "key:value"
@@ -296,7 +297,7 @@ class TestRequestBody:
         mocker.patch.object(stream, "request_body_json", return_value=self.json_body)
 
         requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
-        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+        response = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
 
         assert response["content_type"] == "application/json"
         assert json.loads(response["body"]) == self.json_body
@@ -307,7 +308,7 @@ class TestRequestBody:
         mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
 
         requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
-        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+        response = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
 
         assert response["content_type"] is None
         assert response["body"] == self.data_body
@@ -318,13 +319,13 @@ class TestRequestBody:
         mocker.patch.object(stream, "request_body_data", return_value=self.form_body)
 
         requests_mock.register_uri("POST", stream.url_base, text=self.request2response)
-        response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+        response = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
 
         assert response["content_type"] == "application/x-www-form-urlencoded"
         assert response["body"] == self.urlencoded_form_body
 
     def test_text_json_body(self, mocker, requests_mock):
-        """checks a exception if both functions were overridden"""
+        """Checks a exception if both functions were overridden."""
         stream = PostHttpStream()
         mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
         mocker.patch.object(stream, "request_body_json", return_value=self.json_body)
@@ -333,7 +334,7 @@ class TestRequestBody:
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_body_for_all_methods(self, mocker, requests_mock):
-        """Stream must send a body for GET/POST/PATCH/PUT methods only"""
+        """Stream must send a body for GET/POST/PATCH/PUT methods only."""
         stream = PostHttpStream()
         methods = {
             "POST": True,
@@ -347,7 +348,7 @@ class TestRequestBody:
             stream.http_method = method
             mocker.patch.object(stream, "request_body_data", return_value=self.data_body)
             requests_mock.register_uri(method, stream.url_base, text=self.request2response)
-            response = list(stream.read_records(sync_mode=SyncMode.full_refresh))[0]
+            response = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
             if with_body:
                 assert response["body"] == self.data_body
             else:
@@ -362,7 +363,7 @@ class CacheHttpSubStream(HttpSubStream):
     url_base = "https://example.com"
     primary_key = ""
 
-    def __init__(self, parent):
+    def __init__(self, parent) -> None:
         super().__init__(parent=parent)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -407,7 +408,7 @@ def test_cache_response(mocker):
 class CacheHttpStreamWithSlices(CacheHttpStream):
     paths = ["", "search"]
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f'{stream_slice["path"]}' if stream_slice else ""
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -466,7 +467,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
 
 
 @pytest.mark.parametrize(
-    "api_response, expected_message",
+    ("api_response", "expected_message"),
     [
         ({"error": "something broke"}, "something broke"),
         ({"error": {"message": "something broke"}}, "something broke"),
@@ -516,7 +517,7 @@ def test_default_get_error_display_message_handles_http_error(mocker):
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, path, expected_full_url",[
+    ("test_name", "base_url", "path", "expected_full_url"),[
         ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url", "https://airbyte.io/", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url_and_leading_slash_on_path", "https://airbyte.io/", "/my_endpoint", "https://airbyte.io/my_endpoint"),
@@ -524,7 +525,7 @@ def test_default_get_error_display_message_handles_http_error(mocker):
         ("test_trailing_slash_on_path", "https://airbyte.io", "/my_endpoint/", "https://airbyte.io/my_endpoint/"),
         ("test_nested_path_no_leading_slash", "https://airbyte.io", "v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
         ("test_nested_path_with_leading_slash", "https://airbyte.io", "/v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
-    ]
+    ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
     actual_url = HttpStream._join_url(base_url, path)
@@ -532,7 +533,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
 
 
 @pytest.mark.parametrize(
-    "deduplicate_query_params, path, params, expected_url", [
+    ("deduplicate_query_params", "path", "params", "expected_url"), [
         pytest.param(True, "v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
         pytest.param(True, "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
         pytest.param(True, "v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
@@ -543,7 +544,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_duplicate_params_different_value"),
         pytest.param(False, "v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_same_params_different_value_no_deduplication"),
         pytest.param(False, "v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value1", id="test_same_params_same_value_no_deduplication"),
-    ]
+    ],
 )
 def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, params, expected_url):
     stream = StubBasicReadHttpStream(deduplicate_query_params)

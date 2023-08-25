@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Any, Mapping
 
 import pytest
+from destination_timeplus import DestinationTimeplus
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,12 +21,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_timeplus import DestinationTimeplus
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -68,7 +69,7 @@ def test_write(config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteC
                 },
                 emitted_at=int(datetime.now().timestamp()) * 1000,
             ),
-        )
+        ),
     ]
     dest = DestinationTimeplus()
     dest.write(config, configured_catalog, records)

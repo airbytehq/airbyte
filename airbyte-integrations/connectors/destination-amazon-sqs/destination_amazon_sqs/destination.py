@@ -8,10 +8,11 @@ from typing import Any, Iterable, Mapping
 from uuid import uuid4
 
 import boto3
+from botocore.exceptions import ClientError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from botocore.exceptions import ClientError
 
 
 class DestinationAmazonSqs(Destination):
@@ -33,9 +34,8 @@ class DestinationAmazonSqs(Destination):
         else:
             data = json.dumps(record.data)
 
-        message = {"MessageBody": data}
+        return {"MessageBody": data}
 
-        return message
 
     def add_attributes_to_message(self, record, message):
         attributes = {"airbyte_emitted_at": {"StringValue": str(record.emitted_at), "DataType": "String"}}
@@ -51,7 +51,8 @@ class DestinationAmazonSqs(Destination):
     def set_message_fifo_properties(self, message, message_group_id, use_content_dedupe=False):
         # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html
         if not message_group_id:
-            raise Exception("Failed to build message - Message Group ID is required for FIFO queues")
+            msg = "Failed to build message - Message Group ID is required for FIFO queues"
+            raise Exception(msg)
         else:
             message["MessageGroupId"] = message_group_id
         # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagededuplicationid-property.html
@@ -59,26 +60,18 @@ class DestinationAmazonSqs(Destination):
             message["MessageDeduplicationId"] = str(uuid4())
         # TODO: Support getting MessageDeduplicationId from a key in the record
         # if message_dedupe_id:
-        #     message['MessageDeduplicationId'] = message_dedupe_id
         return message
 
     # TODO: Support batch send
     # def send_batch_messages(messages, queue):
-    #     entry = {
-    #         'Id': "1",
-    #         'MessageBody': str(record.data),
-    #     }
-    #     response = queue.send_messages(Entries=messages)
     #     if 'Successful' in response:
     #         for status in response['Successful']:
-    #             print("Message sent: " + status['MessageId'])
     #     if 'Failed' in response:
     #         for status in response['Failed']:
-    #             print("Message sent: " + status['MessageId'])
 
     # https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_SendMessage.html
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
 
         # Required propeties
@@ -87,8 +80,6 @@ class DestinationAmazonSqs(Destination):
 
         # TODO: Implement optional params for batch
         # Optional Properties
-        # max_batch_size = config.get("max_batch_size", 10)
-        # send_as_batch = config.get("send_as_batch", False)
         message_delay = config.get("message_delay")
         message_body_key = config.get("message_body_key")
 
@@ -148,29 +139,28 @@ class DestinationAmazonSqs(Destination):
                 if self.queue_is_fifo(queue_url):
                     fifo = queue.attributes.get("FifoQueue", False)
                     if not fifo:
-                        raise Exception("FIFO Queue URL set but Queue is not FIFO")
+                        msg = "FIFO Queue URL set but Queue is not FIFO"
+                        raise Exception(msg)
 
                     message_group_id = config.get("message_group_id")
                     if message_group_id is None:
-                        raise Exception("Message Group ID is not set, but is required for FIFO Queues.")
+                        msg = "Message Group ID is not set, but is required for FIFO Queues."
+                        raise Exception(msg)
 
                     # TODO: Support referencing an ID inside the Record to use as de-dupe ID
-                    # message_dedupe_key = config.get("message_dedupe_key")
-                    # content_dedupe = queue.attributes.get('ContentBasedDeduplication')
                     # if content_dedupe == "false":
                     #     if message_dedupe_id is None:
-                    #         raise Exception("You must provide a Message Deduplication ID when ContentBasedDeduplication is not used.")
 
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
             else:
                 return AirbyteConnectionStatus(
-                    status=Status.FAILED, message="Amazon SQS Destination Config Check - Could not connect to queue"
+                    status=Status.FAILED, message="Amazon SQS Destination Config Check - Could not connect to queue",
                 )
         except ClientError as e:
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Amazon SQS Destination Config Check - Error in AWS Client: {str(e)}"
+                status=Status.FAILED, message=f"Amazon SQS Destination Config Check - Error in AWS Client: {e!s}",
             )
         except Exception as e:
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Amazon SQS Destination Config Check - An exception occurred: {str(e)}"
+                status=Status.FAILED, message=f"Amazon SQS Destination Config Check - An exception occurred: {e!s}",
             )

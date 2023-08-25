@@ -12,6 +12,8 @@ from unittest.mock import call, patch
 import pytest
 import requests
 import yaml
+from jsonschema.exceptions import ValidationError
+
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -26,7 +28,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from jsonschema.exceptions import ValidationError
 
 logger = logging.getLogger("airbyte")
 
@@ -39,8 +40,7 @@ EXTERNAL_CONNECTION_SPECIFICATION = {
 
 
 class MockManifestDeclarativeSource(ManifestDeclarativeSource):
-    """
-    Mock test class that is needed to monkey patch how we read from various files that make up a declarative source because of how our
+    """Mock test class that is needed to monkey patch how we read from various files that make up a declarative source because of how our
     tests write configuration files during testing. It is also used to properly namespace where files get written in specific
     cases like when we temporarily write files like spec.yaml to the package unit_tests, which is the directory where it will
     be read in during the tests.
@@ -48,7 +48,7 @@ class MockManifestDeclarativeSource(ManifestDeclarativeSource):
 
 
 class TestManifestDeclarativeSource:
-    @pytest.fixture
+    @pytest.fixture()
     def use_external_yaml_spec(self):
         # Our way of resolving the absolute path to root of the airbyte-cdk unit test directory where spec.yaml files should
         # be written to (i.e. ~/airbyte/airbyte-cdk/python/unit-tests) because that is where they are read from during testing.
@@ -185,7 +185,7 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
             "spec": {
@@ -197,7 +197,7 @@ class TestManifestDeclarativeSource:
                     "required": ["api_key"],
                     "additionalProperties": False,
                     "properties": {
-                        "api_key": {"type": "string", "airbyte_secret": True, "title": "API Key", "description": "Test API Key", "order": 0}
+                        "api_key": {"type": "string", "airbyte_secret": True, "title": "API Key", "description": "Test API Key", "order": 0},
                     },
                 },
             },
@@ -264,7 +264,7 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
@@ -322,7 +322,7 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
             "not_a_valid_field": "error",
@@ -377,7 +377,7 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream"},
         }
@@ -435,7 +435,7 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
@@ -443,7 +443,7 @@ class TestManifestDeclarativeSource:
             ManifestDeclarativeSource(source_config=manifest)
 
     @pytest.mark.parametrize(
-        "cdk_version, manifest_version, expected_error",
+        ("cdk_version", "manifest_version", "expected_error"),
         [
             pytest.param("0.35.0", "0.30.0", None, id="manifest_version_less_than_cdk_package_should_run"),
             pytest.param("1.5.0", "0.29.0", None, id="manifest_version_less_than_cdk_major_package_should_run"),
@@ -548,7 +548,7 @@ class TestManifestDeclarativeSource:
                 "schema_loader": {
                     "name": "{{ parameters.stream_name }}",
                     "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
-                }
+                },
             },
             "streams": [
                 {
@@ -558,7 +558,7 @@ class TestManifestDeclarativeSource:
                         "name": "{{ parameters.stream_name }}",
                         "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
@@ -612,7 +612,7 @@ class TestManifestDeclarativeSource:
                         },
                         "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
@@ -754,8 +754,8 @@ def response_log_message(response: dict) -> AirbyteMessage:
 
 def _create_request():
     url = "https://example.com/api"
-    headers = {'Content-Type': 'application/json'}
-    return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
+    headers = {"Content-Type": "application/json"}
+    return requests.Request("POST", url, headers=headers, json={"key": "value"}).prepare()
 
 
 def _create_response(body):
@@ -772,7 +772,7 @@ def _create_page(response_body):
     return response
 
 
-@pytest.mark.parametrize("test_name, manifest, pages, expected_records, expected_calls",[
+@pytest.mark.parametrize(("test_name", "manifest", "pages", "expected_records", "expected_calls"),[
     ("test_read_manifest_no_pagination_no_partitions",
      {
          "version": "0.34.2",
@@ -780,8 +780,8 @@ def _create_page(response_body):
          "check": {
              "type": "CheckStream",
              "stream_names": [
-                 "Rates"
-             ]
+                 "Rates",
+             ],
          },
          "streams": [
              {
@@ -794,14 +794,14 @@ def _create_page(response_body):
                          "$schema": "http://json-schema.org/schema#",
                          "properties": {
                              "ABC": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                              "AED": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                          },
-                         "type": "object"
-                     }
+                         "type": "object",
+                     },
                  },
                  "retriever": {
                      "type": "SimpleRetriever",
@@ -816,43 +816,43 @@ def _create_page(response_body):
                          "authenticator": {
                              "type": "ApiKeyAuthenticator",
                              "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
+                             "api_token": "{{ config['api_key'] }}",
+                         },
                      },
                      "record_selector": {
                          "type": "RecordSelector",
                          "extractor": {
                              "type": "DpathExtractor",
                              "field_path": [
-                                 "rates"
-                             ]
-                         }
+                                 "rates",
+                             ],
+                         },
                      },
                      "paginator": {
-                         "type": "NoPagination"
-                     }
-                 }
-             }
+                         "type": "NoPagination",
+                     },
+                 },
+             },
          ],
          "spec": {
              "connection_specification": {
                  "$schema": "http://json-schema.org/draft-07/schema#",
                  "type": "object",
                  "required": [
-                     "api_key"
+                     "api_key",
                  ],
                  "properties": {
                      "api_key": {
                          "type": "string",
                          "title": "API Key",
-                         "airbyte_secret": True
-                     }
+                         "airbyte_secret": True,
+                     },
                  },
-                 "additionalProperties": True
+                 "additionalProperties": True,
              },
              "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
+             "type": "Spec",
+         },
      },
      (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {"next": "next"}})) * 10,
      [{"ABC": 0}, {"AED": 1}],
@@ -864,8 +864,8 @@ def _create_page(response_body):
          "check": {
              "type": "CheckStream",
              "stream_names": [
-                 "Rates"
-             ]
+                 "Rates",
+             ],
          },
          "streams": [
              {
@@ -878,14 +878,14 @@ def _create_page(response_body):
                          "$schema": "http://json-schema.org/schema#",
                          "properties": {
                              "ABC": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                              "AED": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                          },
-                         "type": "object"
-                     }
+                         "type": "object",
+                     },
                  },
                  "transformations": [
                      {
@@ -894,10 +894,10 @@ def _create_page(response_body):
                              {
                                  "type": "AddedFieldDefinition",
                                  "path": ["added_field_key"],
-                                 "value": "added_field_value"
-                             }
-                         ]
-                     }
+                                 "value": "added_field_value",
+                             },
+                         ],
+                     },
                  ],
                  "retriever": {
                      "type": "SimpleRetriever",
@@ -912,43 +912,43 @@ def _create_page(response_body):
                          "authenticator": {
                              "type": "ApiKeyAuthenticator",
                              "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
+                             "api_token": "{{ config['api_key'] }}",
+                         },
                      },
                      "record_selector": {
                          "type": "RecordSelector",
                          "extractor": {
                              "type": "DpathExtractor",
                              "field_path": [
-                                 "rates"
-                             ]
-                         }
+                                 "rates",
+                             ],
+                         },
                      },
                      "paginator": {
-                         "type": "NoPagination"
-                     }
-                 }
-             }
+                         "type": "NoPagination",
+                     },
+                 },
+             },
          ],
          "spec": {
              "connection_specification": {
                  "$schema": "http://json-schema.org/draft-07/schema#",
                  "type": "object",
                  "required": [
-                     "api_key"
+                     "api_key",
                  ],
                  "properties": {
                      "api_key": {
                          "type": "string",
                          "title": "API Key",
-                         "airbyte_secret": True
-                     }
+                         "airbyte_secret": True,
+                     },
                  },
-                 "additionalProperties": True
+                 "additionalProperties": True,
              },
              "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
+             "type": "Spec",
+         },
      },
      (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {"next": "next"}})) * 10,
      [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
@@ -960,8 +960,8 @@ def _create_page(response_body):
          "check": {
              "type": "CheckStream",
              "stream_names": [
-                 "Rates"
-             ]
+                 "Rates",
+             ],
          },
          "streams": [
              {
@@ -974,17 +974,17 @@ def _create_page(response_body):
                          "$schema": "http://json-schema.org/schema#",
                          "properties": {
                              "ABC": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                              "AED": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                              "USD": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                          },
-                         "type": "object"
-                     }
+                         "type": "object",
+                     },
                  },
                  "retriever": {
                      "type": "SimpleRetriever",
@@ -999,17 +999,17 @@ def _create_page(response_body):
                          "authenticator": {
                              "type": "ApiKeyAuthenticator",
                              "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
+                             "api_token": "{{ config['api_key'] }}",
+                         },
                      },
                      "record_selector": {
                          "type": "RecordSelector",
                          "extractor": {
                              "type": "DpathExtractor",
                              "field_path": [
-                                 "rates"
-                             ]
-                         }
+                                 "rates",
+                             ],
+                         },
                      },
                      "paginator": {
                          "type": "DefaultPaginator",
@@ -1018,28 +1018,28 @@ def _create_page(response_body):
                          "page_token_option": {"inject_into": "path", "type": "RequestPath"},
                          "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 2},
                      },
-                 }
-             }
+                 },
+             },
          ],
          "spec": {
              "connection_specification": {
                  "$schema": "http://json-schema.org/draft-07/schema#",
                  "type": "object",
                  "required": [
-                     "api_key"
+                     "api_key",
                  ],
                  "properties": {
                      "api_key": {
                          "type": "string",
                          "title": "API Key",
-                         "airbyte_secret": True
-                     }
+                         "airbyte_secret": True,
+                     },
                  },
-                 "additionalProperties": True
+                 "additionalProperties": True,
              },
              "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
+             "type": "Spec",
+         },
      },
      (_create_page({"rates": [{"ABC": 0}, {"AED": 1}],"_metadata": {"next": "next"}}), _create_page({"rates": [{"USD": 2}],"_metadata": {}})) * 10,
      [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
@@ -1052,8 +1052,8 @@ def _create_page(response_body):
             "check": {
                 "type": "CheckStream",
                 "stream_names": [
-                    "Rates"
-                ]
+                    "Rates",
+                ],
             },
             "streams": [
                 {
@@ -1066,17 +1066,17 @@ def _create_page(response_body):
                             "$schema": "http://json-schema.org/schema#",
                             "properties": {
                                 "ABC": {
-                                    "type": "number"
+                                    "type": "number",
                                 },
                                 "AED": {
-                                    "type": "number"
+                                    "type": "number",
                                 },
                                 "partition": {
-                                    "type": "number"
-                                }
+                                    "type": "number",
+                                },
                             },
-                            "type": "object"
-                        }
+                            "type": "object",
+                        },
                     },
                     "retriever": {
                         "type": "SimpleRetriever",
@@ -1091,53 +1091,53 @@ def _create_page(response_body):
                             "authenticator": {
                                 "type": "ApiKeyAuthenticator",
                                 "header": "apikey",
-                                "api_token": "{{ config['api_key'] }}"
-                            }
+                                "api_token": "{{ config['api_key'] }}",
+                            },
                         },
                         "partition_router": {
                             "type": "ListPartitionRouter",
                             "values": ["0", "1"],
-                            "cursor_field": "partition"
+                            "cursor_field": "partition",
                         },
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {
                                 "type": "DpathExtractor",
                                 "field_path": [
-                                    "rates"
-                                ]
-                            }
+                                    "rates",
+                                ],
+                            },
                         },
                         "paginator": {
-                            "type": "NoPagination"
-                        }
-                    }
-                }
+                            "type": "NoPagination",
+                        },
+                    },
+                },
             ],
             "spec": {
                 "connection_specification": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
                     "required": [
-                        "api_key"
+                        "api_key",
                     ],
                     "properties": {
                         "api_key": {
                             "type": "string",
                             "title": "API Key",
-                            "airbyte_secret": True
-                        }
+                            "airbyte_secret": True,
+                        },
                     },
-                    "additionalProperties": True
+                    "additionalProperties": True,
                 },
                 "documentation_url": "https://example.org",
-                "type": "Spec"
-            }
+                "type": "Spec",
+            },
         },
         (_create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
          _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {"next": "next"}})),
         [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
-        [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)]
+        [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)],
     ),
     ("test_with_pagination_and_partition_router",
      {
@@ -1146,8 +1146,8 @@ def _create_page(response_body):
          "check": {
              "type": "CheckStream",
              "stream_names": [
-                 "Rates"
-             ]
+                 "Rates",
+             ],
          },
          "streams": [
              {
@@ -1160,17 +1160,17 @@ def _create_page(response_body):
                          "$schema": "http://json-schema.org/schema#",
                          "properties": {
                              "ABC": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                              "AED": {
-                                 "type": "number"
+                                 "type": "number",
                              },
                              "partition": {
-                                 "type": "number"
-                             }
+                                 "type": "number",
+                             },
                          },
-                         "type": "object"
-                     }
+                         "type": "object",
+                     },
                  },
                  "retriever": {
                      "type": "SimpleRetriever",
@@ -1185,22 +1185,22 @@ def _create_page(response_body):
                          "authenticator": {
                              "type": "ApiKeyAuthenticator",
                              "header": "apikey",
-                             "api_token": "{{ config['api_key'] }}"
-                         }
+                             "api_token": "{{ config['api_key'] }}",
+                         },
                      },
                      "partition_router": {
                          "type": "ListPartitionRouter",
                          "values": ["0", "1"],
-                         "cursor_field": "partition"
+                         "cursor_field": "partition",
                      },
                      "record_selector": {
                          "type": "RecordSelector",
                          "extractor": {
                              "type": "DpathExtractor",
                              "field_path": [
-                                 "rates"
-                             ]
-                         }
+                                 "rates",
+                             ],
+                         },
                      },
                      "paginator": {
                          "type": "DefaultPaginator",
@@ -1209,28 +1209,28 @@ def _create_page(response_body):
                          "page_token_option": {"inject_into": "path", "type": "RequestPath"},
                          "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": 2},
                      },
-                 }
-             }
+                 },
+             },
          ],
          "spec": {
              "connection_specification": {
                  "$schema": "http://json-schema.org/draft-07/schema#",
                  "type": "object",
                  "required": [
-                     "api_key"
+                     "api_key",
                  ],
                  "properties": {
                      "api_key": {
                          "type": "string",
                          "title": "API Key",
-                         "airbyte_secret": True
-                     }
+                         "airbyte_secret": True,
+                     },
                  },
-                 "additionalProperties": True
+                 "additionalProperties": True,
              },
              "documentation_url": "https://example.org",
-             "type": "Spec"
-         }
+             "type": "Spec",
+         },
      },
      (
              _create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
@@ -1238,8 +1238,8 @@ def _create_page(response_body):
              _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {}}),
      ),
      [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
-     [call({}, {"partition": "0"}, None), call({}, {"partition": "0"},{"next_page_token": "next"}), call({}, {"partition": "1"},None),]
-     )
+     [call({}, {"partition": "0"}, None), call({}, {"partition": "0"},{"next_page_token": "next"}), call({}, {"partition": "1"},None)],
+     ),
 ])
 def test_read_manifest_declarative_source(test_name, manifest, pages, expected_records, expected_calls):
     _stream_name = "Rates"
@@ -1252,6 +1252,6 @@ def test_read_manifest_declarative_source(test_name, manifest, pages, expected_r
 def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMessage]:
     source = ManifestDeclarativeSource(source_config=manifest)
     catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+        ConfiguredAirbyteStream(stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append),
     ])
     return list(source.read(logger, {}, catalog, {}))

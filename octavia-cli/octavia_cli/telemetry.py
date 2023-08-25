@@ -60,10 +60,10 @@ class TelemetryClient:
             command_names.insert(0, ctx.info_name)
         if ctx.parent is not None:
             self._create_command_name(ctx.parent, command_names)
-        return " ".join(command_names) if not extra_info_name else " ".join(command_names + [extra_info_name])
+        return " ".join(command_names) if not extra_info_name else " ".join([*command_names, extra_info_name])
 
     def send_command_telemetry(
-        self, ctx: click.Context, error: Optional[Exception] = None, extra_info_name: Optional[str] = None, is_help: bool = False
+        self, ctx: click.Context, error: Optional[Exception] = None, extra_info_name: Optional[str] = None, is_help: bool = False,
     ):
         """Send telemetry with the analytics client.
         The event name is the command name.
@@ -87,5 +87,5 @@ class TelemetryClient:
         }
         command_name = self._create_command_name(ctx, extra_info_name=extra_info_name)
         self.segment_client.track(
-            user_id=user_id, anonymous_id=anonymous_id, event=command_name, properties=segment_properties, context=segment_context
+            user_id=user_id, anonymous_id=anonymous_id, event=command_name, properties=segment_properties, context=segment_context,
         )

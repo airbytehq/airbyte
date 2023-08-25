@@ -6,7 +6,7 @@
 class BambooHrError(Exception):
     message = ""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(self.message)
 
 
@@ -19,6 +19,6 @@ class AvailableFieldsAccessDeniedError(BambooHrError):
 
 
 class CustomFieldsAccessDeniedError(Exception):
-    def __init__(self, denied_fields):
+    def __init__(self, denied_fields) -> None:
         self.message = f"Access to fields: {', '.join(denied_fields)} - denied. Please check your access level."
         super().__init__(self.message)

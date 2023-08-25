@@ -7,7 +7,7 @@ import re
 
 
 def get_all_manifest_paths(airbyte_integrations_path):
-    for connectors_path, connectors, files in os.walk(os.path.join(airbyte_integrations_path, "connectors")):
+    for connectors_path, connectors, _files in os.walk(os.path.join(airbyte_integrations_path, "connectors")):
         for connector in connectors:
             if connector.startswith("source-"):
                 source_name = connector.replace("source-", "")
@@ -21,7 +21,7 @@ def find_default_paginators(manifest_entity):
         return [manifest_entity]
 
     default_paginators = []
-    for key, value in manifest_entity.items():
+    for value in manifest_entity.values():
         if isinstance(value, dict):
             default_paginators.extend(find_default_paginators(value))
     return default_paginators
@@ -32,9 +32,8 @@ def has_default_paginator(manifest_lines):
 
 
 def remove_lines(lines):
-    """
-    This is a very imperfect implementation of remove DefaultPaginator.url_base. It is flawed because:
-    * If "type: DefaultPaginator" is after the property `url_base`, the property `url_base` will not be removed
+    """This is a very imperfect implementation of remove DefaultPaginator.url_base. It is flawed because:
+    * If "type: DefaultPaginator" is after the property `url_base`, the property `url_base` will not be removed.
     """
     line_iterator = iter(lines)
     while line := next(line_iterator, None):
@@ -54,7 +53,7 @@ def remove_lines(lines):
 
 
 def rewrite_manifest(manifest_path):
-    with open(manifest_path, "r") as manifest_file:
+    with open(manifest_path) as manifest_file:
         manifest_lines = manifest_file.readlines()
 
     if not has_default_paginator(manifest_lines):

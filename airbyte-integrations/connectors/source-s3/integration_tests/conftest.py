@@ -12,7 +12,7 @@ LOGGER = AirbyteLogger()
 
 
 def pytest_sessionfinish(session: Any, exitstatus: Any) -> None:
-    """tries to find and remove all temp buckets"""
+    """Tries to find and remove all temp buckets."""
     instance = TestIncrementalFileStreamS3()
     instance._s3_connect(instance.credentials)
     temp_buckets = []

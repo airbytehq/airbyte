@@ -10,7 +10,7 @@ from pytest import fixture
 from source_microsoft_dataverse.source import MicrosoftDataverseStream
 
 
-@fixture
+@fixture()
 def incremental_config():
     return {
         "url": "http://test-url",
@@ -21,7 +21,7 @@ def incremental_config():
 
         },
         "odata_maxpagesize": 100,
-        "authenticator": MagicMock()
+        "authenticator": MagicMock(),
     }
 
 
@@ -30,7 +30,7 @@ def incremental_config():
     [
         ({"stream_slice": None, "stream_state": {}, "next_page_token": None}, {}),
         ({"stream_slice": None, "stream_state": {}, "next_page_token": {"$skiptoken": "skiptoken"}}, {"$skiptoken": "skiptoken"}),
-        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {"$deltatoken": "delta"})
+        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {"$deltatoken": "delta"}),
     ],
 )
 def test_request_params(inputs, expected_params, incremental_config):
@@ -61,13 +61,13 @@ def test_parse_response(incremental_config):
     response.json.return_value = {
         "value": [
             {
-                "test-key": "test-value"
-            }
-        ]
+                "test-key": "test-value",
+            },
+        ],
     }
     inputs = {"response": response}
     expected_parsed_object = {
-        "test-key": "test-value"
+        "test-key": "test-value",
     }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
@@ -79,7 +79,7 @@ def test_request_headers(incremental_config):
         "Cache-Control": "no-cache",
         "OData-Version": "4.0",
         "Content-Type": "application/json",
-        "Prefer": "odata.maxpagesize=100"
+        "Prefer": "odata.maxpagesize=100",
     }
     assert stream.request_headers(**inputs) == expected_headers
 

@@ -14,13 +14,14 @@ from functools import lru_cache, wraps
 from typing import Any, Callable, List, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
 from source_s3.source_files_abstract.file_info import FileInfo
 
+from airbyte_cdk import AirbyteLogger
+
 
 def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callable:
-    """Runs a test function by a separate process with restricted memory"""
+    """Runs a test function by a separate process with restricted memory."""
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -41,12 +42,13 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
                 for index, stat in enumerate(top_stats[:print_limit], 1):
                     frame = stat.traceback[0]
                     filename = os.sep.join(frame.filename.split(os.sep)[-2:])
-                    log_messages.append("#%s: %s:%s: %.1f KiB" % (index, filename, frame.lineno, stat.size / 1024))
+                    log_messages.append(f"#{index}: {filename}:{frame.lineno}: {stat.size / 1024:.1f} KiB")
                     line = linecache.getline(frame.filename, frame.lineno).strip()
                     if line:
                         log_messages.append(f"    {line}")
                 traceback_log = "\n".join(log_messages)
-                assert False, f"Overuse of memory, used: {first_size_in_megabytes}Mb, limit: {max_memory_in_megabytes}Mb!!\n{traceback_log}"
+                msg = f"Overuse of memory, used: {first_size_in_megabytes}Mb, limit: {max_memory_in_megabytes}Mb!!\n{traceback_log}"
+                raise AssertionError(msg)
 
             return result
 
@@ -56,21 +58,21 @@ def memory_limit(max_memory_in_megabytes: int, print_limit: int = 20) -> Callabl
 
 
 def create_by_local_file(filepath: str) -> FileInfo:
-    "Generates a FileInfo instance for local files"
+    "Generates a FileInfo instance for local files."
     if not os.path.exists(filepath):
         return FileInfo(key=filepath, size=0, last_modified=datetime.now())
     return FileInfo(key=filepath, size=os.stat(filepath).st_size, last_modified=datetime.fromtimestamp(os.path.getmtime(filepath)))
 
 
 class AbstractTestParser(ABC):
-    """Prefix this class with Abstract so the tests don't run here but only in the children"""
+    """Prefix this class with Abstract so the tests don't run here but only in the children."""
 
     logger = AirbyteLogger()
     record_types: Mapping[str, Any] = {}
 
     @classmethod
     def _generate_row(cls, types: List[str]) -> List[Any]:
-        """Generates random values with request types"""
+        """Generates random values with request types."""
         row = []
         for needed_type in types:
             for json_type in cls.record_types:
@@ -93,7 +95,6 @@ class AbstractTestParser(ABC):
             return float(int_value) + random.random()
         elif typ == "integer":
             return random.randint(-sys.maxsize - 1, sys.maxsize)
-            # return random.randint(0, 1000)
         elif typ == "boolean":
             return random.choice([True, False, None])
         elif typ == "string":
@@ -109,7 +110,8 @@ class AbstractTestParser(ABC):
             return dt.time() if dt else None
         elif typ == "decimal":
             return Decimal((0, tuple([random.randint(1, 9) for _ in range(10)]), -4))
-        raise Exception(f"not supported type: {typ}")
+        msg = f"not supported type: {typ}"
+        raise Exception(msg)
 
     @classmethod
     @lru_cache(maxsize=None)
@@ -119,12 +121,12 @@ class AbstractTestParser(ABC):
     @classmethod
     @abstractmethod
     def cases(cls) -> Mapping[str, Any]:
-        """return a map of test_file dicts in structure:
+        """Return a map of test_file dicts in structure:
         {
            "small_file": {"AbstractFileParser": CsvParser(format, master_schema), "filepath": "...", "num_records": 5, "inferred_schema": {...}, line_checks:{}, fails: []},
            "big_file": {"AbstractFileParser": CsvParser(format, master_schema), "filepath": "...", "num_records": 16, "inferred_schema": {...}, line_checks:{}, fails: []}
         ]
-        note: line_checks index is 1-based to align with row numbers
+        note: line_checks index is 1-based to align with row numbers.
         """
 
     def _get_readmode(self, file_info: Mapping[str, Any]) -> str:
@@ -153,7 +155,7 @@ class AbstractTestParser(ABC):
                     [print(r) for r in file_info["AbstractFileParser"].stream_records(f, file_info_instance)]
                     self.logger.debug(str(e_info))
             else:
-                records = [r for r in file_info["AbstractFileParser"].stream_records(f, file_info_instance)]
+                records = list(file_info["AbstractFileParser"].stream_records(f, file_info_instance))
 
                 assert len(records) == file_info["num_records"]
                 for index, expected_record in file_info["line_checks"].items():

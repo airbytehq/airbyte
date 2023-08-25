@@ -41,14 +41,14 @@ _base_single_stream_scenario = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
                 {
-                    'default_cursor_field': ['_ab_source_file_last_modified'],
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -59,19 +59,19 @@ _base_single_stream_scenario = (
                                 "type": "integer",
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 )
 
@@ -138,14 +138,14 @@ _base_multi_stream_scenario = (
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
 
-        }
+        },
     )
     .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
                 {
-                    'default_cursor_field': ['_ab_source_file_last_modified'],
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
                         "type": "object",
                         "properties": {
@@ -156,10 +156,10 @@ _base_multi_stream_scenario = (
                                 "type": "integer",
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -169,7 +169,7 @@ _base_multi_stream_scenario = (
                 },
                 {
                     "json_schema": {
-                        'default_cursor_field': ['_ab_source_file_last_modified'],
+                        "default_cursor_field": ["_ab_source_file_last_modified"],
                         "type": "object",
                         "properties": {
                             "col1": {
@@ -179,10 +179,10 @@ _base_multi_stream_scenario = (
                                 "type": "integer",
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
                         },
                     },
@@ -190,8 +190,8 @@ _base_multi_stream_scenario = (
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 },
-            ]
-        }
+            ],
+        },
     )
 )
 
@@ -207,21 +207,18 @@ skip_record_scenario_single_stream = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "Skip Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
             {"data": {"col1": "val_a_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_a_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_b_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
             {"data": {"col1": "val_b_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # Skipped since previous record is malformed
             {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_logs({
         "read": [
@@ -237,7 +234,7 @@ skip_record_scenario_single_stream = (
                 "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
-        ]
+        ],
     })
 ).build()
 
@@ -259,28 +256,24 @@ skip_record_scenario_multi_stream = (
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
                     "validation_policy": "Skip Record",
-                }
+                },
 
-            ]
-        }
+            ],
+        },
     )
     .set_expected_records(
         [
             {"data": {"col1": "val_aa1_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa1_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa2_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
             {"data": {"col1": "val_aa2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # Skipped since previous record is malformed
             {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_bb1_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb1_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb2_11", "col2": "val_bb2_21", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},  # This record is skipped because it does not conform
             {"data": {"col1": "val_bb2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-        ]
+        ],
     )
     .set_expected_logs({
         "read": [
@@ -304,7 +297,7 @@ skip_record_scenario_multi_stream = (
                 "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
-        ]
+        ],
     })
 ).build()
 
@@ -320,9 +313,9 @@ emit_record_scenario_single_stream = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -331,10 +324,8 @@ emit_record_scenario_single_stream = (
             {"data": {"col1": "val_b_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},  # This record is skipped because it does not conform
             {"data": {"col1": "val_b_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_c_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_c_12", None: "val_c_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_c_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "c.csv"}, "stream": "stream1"},  # No more records from this stream are emitted after we hit a parse error
             {"data": {"col1": "val_d_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "d.csv"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_logs({
         "read": [
@@ -346,7 +337,7 @@ emit_record_scenario_single_stream = (
                 "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
-        ]
+        ],
     })
 ).build()
 
@@ -368,10 +359,10 @@ emit_record_scenario_multi_stream = (
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
                     "validation_policy": "Emit Record",
-                }
+                },
 
-            ]
-        }
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -380,8 +371,6 @@ emit_record_scenario_multi_stream = (
             {"data": {"col1": "val_aa2_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # This record is malformed so should not be emitted
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},  # Skipped since previous record is malformed
             {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_bb1_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb1_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
@@ -389,7 +378,7 @@ emit_record_scenario_multi_stream = (
             {"data": {"col1": "val_bb2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-        ]
+        ],
     )
     .set_expected_logs({
         "read": [
@@ -405,7 +394,7 @@ emit_record_scenario_multi_stream = (
                 "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
-        ]
+        ],
     })
 ).build()
 
@@ -421,9 +410,9 @@ wait_for_rediscovery_scenario_single_stream = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "Wait for Discover",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records([
         {"data": {"col1": "val_a_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.csv"}, "stream": "stream1"},
@@ -440,7 +429,7 @@ wait_for_rediscovery_scenario_single_stream = (
                 "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
-        ]
+        ],
     })
 ).build()
 
@@ -462,28 +451,18 @@ wait_for_rediscovery_scenario_multi_stream = (
                     "file_type": "csv",
                     "globs": ["b/*.csv"],
                     "validation_policy": "Wait for Discover",
-                }
+                },
 
-            ]
-        }
+            ],
+        },
     )
     .set_expected_records(
         [
             {"data": {"col1": "val_aa1_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_aa1_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a1.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa2_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a2.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_12", None: "val_aa3_22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa3_13", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a3.csv"}, "stream": "stream1"},
-            # {"data": {"col1": "val_aa4_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a/a4.csv"}, "stream": "stream1"},
             {"data": {"col1": "val_bb1_11", "col2": 1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
             {"data": {"col1": "val_bb1_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b1.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb2_11", "col2": "this is text that will trigger validation policy", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb2_12", "col2": 2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b2.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb3_11", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-            # {"data": {"col1": "val_bb3_12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b/b3.csv"}, "stream": "stream2"},
-        ]
+        ],
     )
     .set_expected_logs({
         "read": [
@@ -503,6 +482,6 @@ wait_for_rediscovery_scenario_multi_stream = (
                 "level": "WARN",
                 "message": "Could not cast the value to the expected type.: col2: value=this is text that will trigger validation policy,expected_type=integer",
             },
-        ]
+        ],
     })
 ).build()

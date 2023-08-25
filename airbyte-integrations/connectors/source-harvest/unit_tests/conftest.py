@@ -10,9 +10,8 @@ from pytest import fixture
 def config_fixture(requests_mock):
     url = "https://id.getharvest.com/api/v2/oauth2/token"
     requests_mock.get(url, json={})
-    config = {"account_id": "ID", "replication_start_date": "2021-01-01T21:20:07Z", "credentials": {"api_token": "TOKEN"}}
+    return {"account_id": "ID", "replication_start_date": "2021-01-01T21:20:07Z", "credentials": {"api_token": "TOKEN"}}
 
-    return config
 
 
 @fixture(name="replication_start_date")

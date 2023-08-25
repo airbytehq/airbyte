@@ -12,6 +12,7 @@ from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Union
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import Config, Record
@@ -20,9 +21,8 @@ logger = logging.getLogger("airbyte")
 
 
 class AverageSessionLengthRecordExtractor(RecordExtractor):
-    """
-    Create records from complex response structure
-    Issue: https://github.com/airbytehq/airbyte/issues/23145
+    """Create records from complex response structure
+    Issue: https://github.com/airbytehq/airbyte/issues/23145.
     """
 
     def extract_records(self, response: requests.Response) -> List[Record]:
@@ -39,9 +39,8 @@ class AverageSessionLengthRecordExtractor(RecordExtractor):
 
 
 class ActiveUsersRecordExtractor(RecordExtractor):
-    """
-    Create records from complex response structure
-    Issue: https://github.com/airbytehq/airbyte/issues/23145
+    """Create records from complex response structure
+    Issue: https://github.com/airbytehq/airbyte/issues/23145.
     """
 
     def extract_records(self, response: requests.Response) -> List[Record]:
@@ -58,9 +57,8 @@ class ActiveUsersRecordExtractor(RecordExtractor):
 
 @dataclass
 class EventsExtractor(RecordExtractor):
-    """
-    Response for event stream is a zip file with a list of gziped json files inside it.
-    Issue: https://github.com/airbytehq/airbyte/issues/23144
+    """Response for event stream is a zip file with a list of gziped json files inside it.
+    Issue: https://github.com/airbytehq/airbyte/issues/23144.
     """
 
     config: Config
@@ -76,9 +74,7 @@ class EventsExtractor(RecordExtractor):
         return schema["properties"]
 
     def _get_date_time_items_from_schema(self):
-        """
-        Get all properties from schema with format: 'date-time'
-        """
+        """Get all properties from schema with format: 'date-time'."""
         result = []
         schema = self._get_schema_root_properties()
         for key, value in schema.items():
@@ -87,9 +83,7 @@ class EventsExtractor(RecordExtractor):
         return result
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Transform 'date-time' items to RFC3339 format
-        """
+        """Transform 'date-time' items to RFC3339 format."""
         for item in record:
             if item in self.date_time_fields and record[item]:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
@@ -105,7 +99,7 @@ class EventsExtractor(RecordExtractor):
         except zipfile.BadZipFile:
             logger.exception(
                 f"Received an invalid zip file in response to URL: {response.request.url}."
-                f"The size of the response body is: {len(response.content)}"
+                f"The size of the response body is: {len(response.content)}",
             )
             return []
 

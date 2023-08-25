@@ -7,11 +7,12 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_kyriba.source import KyribaClient, KyribaStream
 
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(KyribaStream, "path", "v0/example_endpoint")
@@ -47,7 +48,7 @@ def test_next_page_token(patch_base_class):
             "links": {"next": "https://next"},
             "pageOffset": 0,
             "pageLimit": 100,
-        }
+        },
     }
     resp.json = MagicMock(return_value=resp_dict)
     inputs = {"response": resp}

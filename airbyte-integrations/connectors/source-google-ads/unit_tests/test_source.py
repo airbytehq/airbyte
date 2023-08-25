@@ -7,7 +7,6 @@ from collections import namedtuple
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
@@ -18,10 +17,12 @@ from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, AdGroupLabels, ServiceAccounts, chunk_date_range
 from source_google_ads.utils import GAQL
 
+from airbyte_cdk import AirbyteLogger
+
 from .common import MockErroringGoogleAdsClient, MockGoogleAdsClient, make_google_ads_exception
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_account_info(mocker):
     mocker.patch(
         "source_google_ads.source.SourceGoogleAds.get_account_info",
@@ -34,15 +35,14 @@ def stream_mock(mocker, config, customers):
     def mock(latest_record):
         mocker.patch("source_google_ads.streams.GoogleAdsStream.read_records", Mock(return_value=[latest_record]))
         google_api = GoogleAds(credentials=config["credentials"])
-        client = AdGroupAdReport(
-            start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], customers=customers
+        return AdGroupAdReport(
+            start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], customers=customers,
         )
-        return client
 
     return mock
 
 
-@pytest.fixture
+@pytest.fixture()
 def mocked_gads_api(mocker):
     def mock(response=None, failure_code=1, failure_msg="", error_type=""):
         def side_effect_func():
@@ -111,7 +111,7 @@ def test_chunk_date_range_without_end_date():
     start_date_str = "2022-01-24"
     conversion_window = 0
     slices = list(chunk_date_range(
-        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1, time_zone="UTC"
+        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1, time_zone="UTC",
     ))
     expected_response = [
         {"start_date": "2022-01-24", "end_date": "2022-01-24"},
@@ -183,18 +183,17 @@ def test_updated_state(stream_mock, latest_record, current_state, expected_state
 def stream_instance(query, api_mock, **kwargs):
     start_date = "2021-03-04"
     conversion_window_days = 14
-    instance = IncrementalCustomQuery(
+    return IncrementalCustomQuery(
         api=api_mock,
         conversion_window_days=conversion_window_days,
         start_date=start_date,
         config={"query": GAQL.parse(query), "table_name": "whatever_table"},
         **kwargs,
     )
-    return instance
 
 
 @pytest.mark.parametrize(
-    "original_query, expected_query",
+    ("original_query", "expected_query"),
     [
         (
             """
@@ -345,8 +344,7 @@ def test_get_json_schema_parse_query_with_end_date(mock_fields_meta_data, custom
 
 
 def test_google_type_conversion(mock_fields_meta_data, customers):
-    """
-    query may be invalid (fields incompatibility did not checked).
+    """Query may be invalid (fields incompatibility did not checked).
     But we are just testing types, without submitting the query and further steps.
     Doing that with all possible types.
     """
@@ -471,7 +469,7 @@ def test_check_connection_should_fail_when_api_call_fails(mocker):
 def test_end_date_is_not_in_the_future(customers):
     source = SourceGoogleAds()
     config = source.get_incremental_stream_config(
-        None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}, customers
+        None, {"end_date": today().add(days=1).to_date_string(), "conversion_window_days": 14, "start_date": "2020-01-23"}, customers,
     )
     assert config.get("end_date") == today().to_date_string()
 

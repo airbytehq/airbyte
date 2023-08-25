@@ -57,7 +57,7 @@ def test_pagination_issues():
         {"id": "3", "updated": "2022-01-01"},
         {"id": "4", "updated": "2022-01-01"},
         {"id": "5", "updated": "2022-01-01"},
-        {"id": "6", "updated": "2022-01-01"}
+        {"id": "6", "updated": "2022-01-01"},
     ]
 
 

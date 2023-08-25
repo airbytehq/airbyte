@@ -8,12 +8,13 @@ from unittest.mock import MagicMock
 
 import pytest
 import responses
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from freezegun import freeze_time
 from source_github import constants
 from source_github.source import SourceGithub
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
+
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .utils import command_check
 
@@ -40,10 +41,10 @@ def test_check_connection_repos_only():
 def test_check_connection_repos_and_org_repos():
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
     responses.add(
-        "GET", "https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}}
+        "GET", "https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}},
     )
     responses.add(
-        "GET", "https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2", "organization": {"login": "airbyte"}}
+        "GET", "https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2", "organization": {"login": "airbyte"}},
     )
     responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
     responses.add("GET", "https://api.github.com/orgs/org/repos", json=repos)
@@ -221,7 +222,7 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
         frozen_time.tick(delta=datetime.timedelta(seconds=seconds))
         called_args.append(seconds)
 
-    monkeypatch.setattr(time, 'sleep', sleep_mock)
+    monkeypatch.setattr(time, "sleep", sleep_mock)
 
     with freeze_time("2021-01-01 12:00:00") as frozen_time:
 

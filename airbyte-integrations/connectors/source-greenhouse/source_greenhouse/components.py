@@ -28,9 +28,9 @@ class GreenHouseSlicer(Cursor):
         yield {self.request_cursor_field: self._state.get(self.cursor_field, self.START_DATETIME)}
 
     def _max_dt_str(self, *args: str) -> Optional[str]:
-        new_state_candidates = list(map(lambda x: datetime.datetime.strptime(x, self.DATETIME_FORMAT), filter(None, args)))
+        new_state_candidates = [datetime.datetime.strptime(x, self.DATETIME_FORMAT) for x in filter(None, args)]
         if not new_state_candidates:
-            return
+            return None
         max_dt = max(new_state_candidates)
         # `.%f` gives us microseconds, we need milliseconds
         (dt, micro) = max_dt.strftime(self.DATETIME_FORMAT).split(".")
@@ -51,24 +51,18 @@ class GreenHouseSlicer(Cursor):
         self._state[self.cursor_field] = max_dt
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
-        implementation is irrelevant for greenhouse
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for greenhouse.
         """
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """
-        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice."""
         first_cursor_value = first.get(self.cursor_field)
         second_cursor_value = second.get(self.cursor_field)
         if first_cursor_value and second_cursor_value:
             return first_cursor_value >= second_cursor_value
-        elif first_cursor_value:
-            return True
-        else:
-            return False
+        return bool(first_cursor_value)
 
     def _parse_to_datetime(self, datetime_str: str) -> datetime.datetime:
         return datetime.datetime.strptime(datetime_str, self.DATETIME_FORMAT)
@@ -103,10 +97,10 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         for parent_stream_slice in self.parent_stream.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=self.get_stream_state()
+            sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=self.get_stream_state(),
         ):
             for parent_record in self.parent_stream.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
+                sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None,
             ):
                 parent_state_value = parent_record.get(self.parent_key)
                 yield {
@@ -117,12 +111,12 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
     def set_initial_state(self, stream_state: StreamState) -> None:
         if self.stream_slice_field in stream_state:
             return
-        substream_ids = map(lambda x: str(x), set(stream_state.keys()) | set(self._state.keys()))
+        substream_ids = (str(x) for x in set(stream_state.keys()) | set(self._state.keys()))
         for id_ in substream_ids:
             self._state[id_] = {
                 self.cursor_field: self._max_dt_str(
-                    stream_state.get(id_, {}).get(self.cursor_field), self._state.get(id_, {}).get(self.cursor_field)
-                )
+                    stream_state.get(id_, {}).get(self.cursor_field), self._state.get(id_, {}).get(self.cursor_field),
+                ),
             }
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
@@ -135,9 +129,8 @@ class GreenHouseSubstreamSlicer(GreenHouseSlicer):
             return
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
-        implementation is irrelevant for greenhouse
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for greenhouse.
         """
         return True
 

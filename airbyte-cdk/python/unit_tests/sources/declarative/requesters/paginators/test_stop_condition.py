@@ -4,6 +4,8 @@
 
 from unittest.mock import Mock, call
 
+from pytest import fixture
+
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condition import (
@@ -12,24 +14,23 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condi
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.types import Record
-from pytest import fixture
 
 ANY_RECORD = Mock()
 NO_RECORDS = []
 ANY_RESPONSE = Mock()
 
 
-@fixture
+@fixture()
 def mocked_cursor():
     return Mock(spec=Cursor)
 
 
-@fixture
+@fixture()
 def mocked_pagination_strategy():
     return Mock(spec=PaginationStrategy)
 
 
-@fixture
+@fixture()
 def mocked_stop_condition():
     return Mock(spec=PaginationStopCondition)
 
@@ -61,7 +62,7 @@ def test_given_last_record_meets_condition_when_next_page_token_then_do_not_chec
 
     StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition).next_page_token(
         ANY_RESPONSE,
-        [Mock(spec=Record), last_record]
+        [Mock(spec=Record), last_record],
     )
 
     mocked_stop_condition.is_met.assert_called_once_with(last_record)

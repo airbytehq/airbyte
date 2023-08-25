@@ -22,7 +22,6 @@
 #
 import logging
 import os
-from datetime import timedelta
 
 from cachelib.file import FileSystemCache
 from celery.schedules import crontab
@@ -38,8 +37,8 @@ def get_env_variable(var_name, default=None):
         if default is not None:
             return default
         else:
-            error_msg = "The environment variable {} was missing, abort...".format(var_name)
-            raise EnvironmentError(error_msg)
+            error_msg = f"The environment variable {var_name} was missing, abort..."
+            raise OSError(error_msg)
 
 
 DATABASE_DIALECT = get_env_variable("DATABASE_DIALECT")
@@ -50,14 +49,7 @@ DATABASE_PORT = get_env_variable("DATABASE_PORT")
 DATABASE_DB = get_env_variable("DATABASE_DB")
 
 # The SQLAlchemy connection string.
-SQLALCHEMY_DATABASE_URI = "%s://%s:%s@%s:%s/%s" % (
-    DATABASE_DIALECT,
-    DATABASE_USER,
-    DATABASE_PASSWORD,
-    DATABASE_HOST,
-    DATABASE_PORT,
-    DATABASE_DB,
-)
+SQLALCHEMY_DATABASE_URI = f"{DATABASE_DIALECT}://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}:{DATABASE_PORT}/{DATABASE_DB}"
 
 REDIS_HOST = get_env_variable("REDIS_HOST")
 REDIS_PORT = get_env_variable("REDIS_PORT")
@@ -67,7 +59,7 @@ REDIS_RESULTS_DB = get_env_variable("REDIS_RESULTS_DB", 1)
 RESULTS_BACKEND = FileSystemCache("/app/superset_home/sqllab")
 
 
-class CeleryConfig(object):
+class CeleryConfig:
     BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
     CELERY_IMPORTS = ("superset.sql_lab", "superset.tasks")
     CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_RESULTS_DB}"
@@ -104,6 +96,6 @@ try:
     import superset_config_docker
     from superset_config_docker import *  # noqa
 
-    logger.info(f"Loaded your Docker configuration at " f"[{superset_config_docker.__file__}]")
+    logger.info(f"Loaded your Docker configuration at [{superset_config_docker.__file__}]")
 except ImportError:
     logger.info("Using default Docker config...")

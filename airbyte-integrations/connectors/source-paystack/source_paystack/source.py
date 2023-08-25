@@ -13,8 +13,7 @@ from source_paystack.streams import Customers, Disputes, Invoices, Refunds, Sett
 
 class SourcePaystack(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Check connection by fetching customers
+        """Check connection by fetching customers.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -35,8 +34,7 @@ class SourcePaystack(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Returns list of streams output by the Paystack source connector
+        """Returns list of streams output by the Paystack source connector.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """

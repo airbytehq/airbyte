@@ -38,4 +38,4 @@ def test_get_authenticator(config):
     source = SourceJira()
     authenticator = source.get_authenticator(config=config)
 
-    assert authenticator.get_auth_header() == {'Authorization': 'Basic ZW1haWxAZW1haWwuY29tOnRva2Vu'}
+    assert authenticator.get_auth_header() == {"Authorization": "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu"}

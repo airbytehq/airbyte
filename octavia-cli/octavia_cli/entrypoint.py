@@ -4,9 +4,10 @@
 
 from typing import List, Optional, Tuple
 
-import airbyte_api_client
 import click
 import pkg_resources
+
+import airbyte_api_client
 from airbyte_api_client.api import workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
@@ -134,15 +135,15 @@ def octavia(
 
     click.echo(
         click.style(
-            f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {ctx.obj['WORKSPACE_ID']}.", fg="green"
-        )
+            f"🐙 - Octavia is targetting your Airbyte instance running at {airbyte_url} on workspace {ctx.obj['WORKSPACE_ID']}.", fg="green",
+        ),
     )
     if not ctx.obj["PROJECT_IS_INITIALIZED"]:
         click.echo(click.style("🐙 - Project is not yet initialized.", fg="red", bold=True))
 
 
 def get_api_client(
-    airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[List[ApiHttpHeader]]
+    airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[List[ApiHttpHeader]],
 ):
     client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api", username=airbyte_username, password=airbyte_password)
     api_client = airbyte_api_client.ApiClient(client_configuration)
@@ -181,7 +182,8 @@ def add_commands_to_octavia():
 
 @octavia.command(help="[NOT IMPLEMENTED] Delete resources")
 def delete() -> None:
-    raise click.ClickException("The delete command is not yet implemented.")
+    msg = "The delete command is not yet implemented."
+    raise click.ClickException(msg)
 
 
 add_commands_to_octavia()

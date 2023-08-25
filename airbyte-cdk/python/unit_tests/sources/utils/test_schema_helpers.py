@@ -13,11 +13,12 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import jsonref
+from pytest import fixture
+from pytest import raises as pytest_raises
+
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pytest import fixture
-from pytest import raises as pytest_raises
 
 logger = logging.getLogger("airbyte")
 
@@ -40,7 +41,7 @@ def create_schema(name: str, content: Mapping):
         f.write(json.dumps(content))
 
 
-@fixture
+@fixture()
 def spec_object():
     spec = {
         "connectionSpecification": {
@@ -53,7 +54,7 @@ def spec_object():
             },
         },
     }
-    yield ConnectorSpecification.parse_obj(spec)
+    return ConnectorSpecification.parse_obj(spec)
 
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
@@ -146,7 +147,7 @@ class TestResourceSchemaLoader:
                             "type": ["null", "object"],
                             "properties": {"k1": {"type": "string"}},
                         },
-                    ]
+                    ],
                 },
                 "obj": {
                     "type": ["null", "object"],
@@ -163,7 +164,7 @@ class TestResourceSchemaLoader:
                     "oneOf": [
                         {"type": "string"},
                         {"$ref": "shared_schema.json#/definitions/type_one"},
-                    ]
+                    ],
                 },
                 "obj": {"$ref": "shared_schema.json#/definitions/type_one"},
             },
@@ -176,7 +177,7 @@ class TestResourceSchemaLoader:
                     "type": ["null", "object"],
                     "properties": {"k1": {"type": "string"}},
                 },
-            }
+            },
         }
 
         create_schema("complex_schema", partial_schema)

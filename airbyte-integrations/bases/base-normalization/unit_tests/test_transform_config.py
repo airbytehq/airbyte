@@ -16,9 +16,7 @@ from normalization.transform_config.transform import TransformConfig
 
 
 class TestTransformConfig:
-    """
-    This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use
-    """
+    """This class is testing the transform config functionality that converts a destination_config.json into the adequate profiles.yml file for dbt to use."""
 
     @pytest.fixture(scope="class", autouse=True)
     def before_all_tests(self, request):
@@ -113,7 +111,8 @@ class TestTransformConfig:
         while not TransformConfig.is_port_free(test_port):
             test_port += 1
             if test_port > 65535:
-                raise RuntimeError("couldn't find a free port...")
+                msg = "couldn't find a free port..."
+                raise RuntimeError(msg)
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind(("localhost", test_port))
@@ -197,7 +196,8 @@ class TestTransformConfig:
 
         try:
             TransformConfig().transform_bigquery(input)
-            assert False, "transform_bigquery should have raised an exception"
+            msg = "transform_bigquery should have raised an exception"
+            raise AssertionError(msg)
         except ValueError:
             pass
 
@@ -206,7 +206,8 @@ class TestTransformConfig:
 
         try:
             TransformConfig().transform_bigquery(input)
-            assert False, "transform_bigquery should have raised an exception"
+            msg = "transform_bigquery should have raised an exception"
+            raise AssertionError(msg)
         except ValueError:
             pass
 
@@ -552,7 +553,7 @@ class TestTransformConfig:
     def test_parse(self):
         t = TransformConfig()
         assert {"integration_type": DestinationType.POSTGRES, "config": "config.json", "output_path": "out.yml"} == t.parse(
-            ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]
+            ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"],
         )
 
     def test_write_ssh_config(self):
@@ -591,5 +592,5 @@ class TestTransformConfig:
         }
         tmp_path = tempfile.TemporaryDirectory().name
         TransformConfig.write_ssh_config(tmp_path, original_config_input, transformed_config_input)
-        with open(os.path.join(tmp_path, "ssh.json"), "r") as f:
+        with open(os.path.join(tmp_path, "ssh.json")) as f:
             assert json.load(f) == expected

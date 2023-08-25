@@ -7,6 +7,7 @@ from datetime import timedelta
 import anyio
 import pytest
 from dagger import DaggerError
+
 from pipelines import bases
 
 pytestmark = [
@@ -24,7 +25,7 @@ class TestStep:
             await anyio.sleep(run_duration.total_seconds())
             return bases.StepResult(self, bases.StepStatus.SUCCESS)
 
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker):
         return mocker.Mock(secrets_to_mask=[])
 
@@ -43,7 +44,7 @@ class TestStep:
         assert step.retry_count == step.max_retries + 1
 
     @pytest.mark.parametrize(
-        "step_status, exc_info, max_retries, max_dagger_error_retries, expect_retry",
+        ("step_status", "exc_info", "max_retries", "max_dagger_error_retries", "expect_retry"),
         [
             (bases.StepStatus.SUCCESS, None, 0, 0, False),
             (bases.StepStatus.SUCCESS, None, 3, 0, False),
@@ -67,7 +68,7 @@ class TestStep:
         step.max_duration = timedelta(seconds=60)
         step.retry_delay = timedelta(seconds=0)
         step._run = mocker.AsyncMock(
-            side_effect=[bases.StepResult(step, step_status, exc_info=exc_info)] * (max(max_dagger_error_retries, max_retries) + 1)
+            side_effect=[bases.StepResult(step, step_status, exc_info=exc_info)] * (max(max_dagger_error_retries, max_retries) + 1),
         )
 
         step_result = await step.run()
@@ -80,7 +81,7 @@ class TestStep:
 
 
 class TestReport:
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker):
         return mocker.Mock()
 
@@ -91,7 +92,7 @@ class TestReport:
         assert not report.success
 
         report = bases.Report(
-            test_context, [bases.StepResult(None, bases.StepStatus.FAILURE), bases.StepResult(None, bases.StepStatus.SUCCESS)]
+            test_context, [bases.StepResult(None, bases.StepStatus.FAILURE), bases.StepResult(None, bases.StepStatus.SUCCESS)],
         )
         assert not report.success
 
@@ -99,7 +100,7 @@ class TestReport:
         assert report.success
 
         report = bases.Report(
-            test_context, [bases.StepResult(None, bases.StepStatus.SUCCESS), bases.StepResult(None, bases.StepStatus.SKIPPED)]
+            test_context, [bases.StepResult(None, bases.StepStatus.SUCCESS), bases.StepResult(None, bases.StepStatus.SKIPPED)],
         )
         assert report.success
 

@@ -8,7 +8,7 @@ from octavia_cli.apply.resources import NonExistingResourceError
 from octavia_cli.generate import commands
 
 
-@pytest.fixture
+@pytest.fixture()
 def context_object(mock_api_client, mock_telemetry_client):
     return {"PROJECT_IS_INITIALIZED": True, "API_CLIENT": mock_api_client, "WORKSPACE_ID": "foo", "TELEMETRY_CLIENT": mock_telemetry_client}
 
@@ -39,7 +39,7 @@ def test_invalid_definition_type(context_object):
 
 
 @pytest.mark.parametrize(
-    "command,resource_name,definition_type",
+    ("command", "resource_name", "definition_type"),
     [
         (commands.source, "my_source", "source"),
         (commands.destination, "my_destination", "destination"),
@@ -59,14 +59,14 @@ def test_generate_source_or_destination(mocker, context_object, command, resourc
     mock_renderer.write_yaml.assert_called_with(project_path=".")
 
 
-@pytest.fixture
+@pytest.fixture()
 def tmp_source_path(tmp_path):
     source_path = tmp_path / "my_source.yaml"
     source_path.write_text("foo")
     return source_path
 
 
-@pytest.fixture
+@pytest.fixture()
 def tmp_destination_path(tmp_path):
     destination_path = tmp_path / "my_destination.yaml"
     destination_path.write_text("foo")
@@ -74,7 +74,7 @@ def tmp_destination_path(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "source_created,destination_created",
+    ("source_created", "destination_created"),
     [(True, True), (False, True), (True, False), (False, False)],
 )
 def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destination_path, source_created, destination_created):
@@ -84,7 +84,7 @@ def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destin
 
     mock_resource_factory = mocker.Mock(side_effect=[mock_source, mock_destination])
     mocker.patch.object(
-        commands, "resources", mocker.Mock(factory=mock_resource_factory, NonExistingResourceError=NonExistingResourceError)
+        commands, "resources", mocker.Mock(factory=mock_resource_factory, NonExistingResourceError=NonExistingResourceError),
     )
     mocker.patch.object(commands, "ConnectionRenderer", mocker.Mock())
     mock_renderer = commands.ConnectionRenderer.return_value
@@ -98,7 +98,7 @@ def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destin
             [
                 mocker.call(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], tmp_source_path),
                 mocker.call(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], tmp_destination_path),
-            ]
+            ],
         )
         commands.ConnectionRenderer.assert_called_with("my_new_connection", mock_source, mock_destination)
         mock_renderer.write_yaml.assert_called_with(project_path=".")

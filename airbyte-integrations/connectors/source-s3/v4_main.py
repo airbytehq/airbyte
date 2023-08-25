@@ -8,9 +8,10 @@ import traceback
 from datetime import datetime
 from typing import List
 
+from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
+
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
-from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
 def get_source(args: List[str]):
@@ -29,7 +30,7 @@ def get_source(args: List[str]):
                         stack_trace=traceback.format_exc(),
                     ),
                 ),
-            ).json()
+            ).json(),
         )
         return None
 

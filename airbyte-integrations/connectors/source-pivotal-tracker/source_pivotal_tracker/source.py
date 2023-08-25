@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -35,7 +36,7 @@ class PivotalTrackerStream(HttpStream, ABC):
         return {"offset": current_offset + page_size}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params: MutableMapping[str, Any] = {}
         if next_page_token:
@@ -43,14 +44,12 @@ class PivotalTrackerStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        # print(response.json())
-        for record in response.json():  # everything is in a list
-            yield record
+        yield from response.json()
 
 
 class Projects(PivotalTrackerStream):
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "projects"
 
@@ -59,19 +58,18 @@ class ProjectBasedStream(PivotalTrackerStream):
     @property
     @abstractmethod
     def subpath(self) -> str:
-        """
-        Within the project. For example, "stories" producing:
-        https://www.pivotaltracker.com/services/v5/projects/{project_id}/stories
+        """Within the project. For example, "stories" producing:
+        https://www.pivotaltracker.com/services/v5/projects/{project_id}/stories.
         """
 
     def __init__(self, project_ids: List[str], **kwargs):
         super().__init__(**kwargs)
         self.project_ids = project_ids
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"projects/{stream_slice['project_id']}/{self.subpath}"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for project_id in self.project_ids:
             yield {"project_id": project_id}
 
@@ -125,13 +123,11 @@ class SourcePivotalTracker(AbstractSource):
 
     @staticmethod
     def _generate_project_ids(auth: HttpAuthenticator) -> List[str]:
-        """
-        Args:
+        """Args:
             config (dict): Dict representing connector's config
         Returns:
-            List[str]: List of project ids accessible by the api_token
+            List[str]: List of project ids accessible by the api_token.
         """
-
         projects = Projects(authenticator=auth)
         records = projects.read_records(SyncMode.full_refresh)
         project_ids: List[str] = []

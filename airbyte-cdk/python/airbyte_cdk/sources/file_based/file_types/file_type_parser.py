@@ -15,8 +15,7 @@ Record = Dict[str, Any]
 
 
 class FileTypeParser(ABC):
-    """
-    An abstract class containing methods that must be implemented for each
+    """An abstract class containing methods that must be implemented for each
     supported file type.
     """
 
@@ -28,9 +27,7 @@ class FileTypeParser(ABC):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        """
-        Infer the JSON Schema for this file.
-        """
+        """Infer the JSON Schema for this file."""
         ...
 
     @abstractmethod
@@ -42,15 +39,11 @@ class FileTypeParser(ABC):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Record]:
-        """
-        Parse and emit each record.
-        """
+        """Parse and emit each record."""
         ...
 
     @property
     @abstractmethod
     def file_read_mode(self) -> FileReadMode:
-        """
-        The mode in which the file should be opened for reading.
-        """
+        """The mode in which the file should be opened for reading."""
         ...

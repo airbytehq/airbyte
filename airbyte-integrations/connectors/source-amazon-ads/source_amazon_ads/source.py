@@ -7,6 +7,7 @@ import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -65,8 +66,7 @@ class SourceAmazonAds(AbstractSource):
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        :param config:  the user-input config object conforming to the connector's spec.json
+        """:param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
@@ -83,8 +83,7 @@ class SourceAmazonAds(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
+        """:param config: A Mapping of the user input configuration as defined in the connector spec.
         :return list of streams for current source
         """
         config = self._validate_and_transform(config)

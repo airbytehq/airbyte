@@ -9,15 +9,16 @@ import shutil
 import string
 from contextlib import nullcontext as does_not_raise
 from pathlib import Path
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 from unittest.mock import Mock
 
 import pendulum
 import pytest
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from smart_open import open as smart_open
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
+
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .abstract_test_parser import AbstractTestParser, memory_limit
 from .conftest import TMP_FOLDER
@@ -26,7 +27,6 @@ SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/")
 
 # All possible CSV data types
 CSV_TYPES = {
-    # logical_type: (json_type, csv_types, convert_function)
     # standard types
     "string": ("string", ["string"], None),
     "boolean": ("boolean", ["boolean"], None),
@@ -45,7 +45,7 @@ def _generate_value(typ: str) -> Any:
 
 
 def _generate_row(types: List[str]) -> List[Any]:
-    """Generates random values with request types"""
+    """Generates random values with request types."""
     row = []
     for needed_type in types:
         for json_type in CSV_TYPES:
@@ -59,7 +59,7 @@ def _generate_row(types: List[str]) -> List[Any]:
 
 
 def generate_csv_file(filename: str, columns: Mapping[str, str], num_rows: int, delimiter: str) -> str:
-    """Generates  a random CSV data and save it to a tmp file"""
+    """Generates  a random CSV data and save it to a tmp file."""
     header_line = delimiter.join(columns.keys())
     types = list(columns.values()) if num_rows else []
     with open(filename, "w") as f:
@@ -69,7 +69,7 @@ def generate_csv_file(filename: str, columns: Mapping[str, str], num_rows: int, 
     return filename
 
 
-def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: int, template_file: str = None) -> Tuple[dict, float]:
+def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: int, template_file: Optional[str] = None) -> Tuple[dict, float]:
     temp_files = [filepath + ".1", filepath + ".2"]
     if template_file:
         shutil.copyfile(template_file, filepath)
@@ -79,13 +79,12 @@ def generate_big_file(filepath: str, size_in_gigabytes: float, columns_number: i
         generate_csv_file(filepath, schema, 456, ",")
 
     skip_headers = False
-    with open(filepath, "r") as f:
-        with open(temp_files[0], "w") as tf:
-            for line in f:
-                if not skip_headers:
-                    skip_headers = True
-                    continue
-                tf.write(str(line))
+    with open(filepath) as f, open(temp_files[0], "w") as tf:
+        for line in f:
+            if not skip_headers:
+                skip_headers = True
+                continue
+            tf.write(str(line))
 
     with open(filepath, "ab") as f:
         while True:
@@ -171,7 +170,7 @@ class TestCsvParser(AbstractTestParser):
             "encoding_Big5": {
                 # tests encoding: Big5
                 "AbstractFileParser": CsvParser(
-                    format={"filetype": "csv", "encoding": "big5"}, master_schema={"id": "integer", "name": "string", "valid": "boolean"}
+                    format={"filetype": "csv", "encoding": "big5"}, master_schema={"id": "integer", "name": "string", "valid": "boolean"},
                 ),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_3_enc_Big5.csv"),
                 "num_records": 8,
@@ -179,9 +178,9 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {
                     3: {
                         "id": 3,
-                        "name": "變形金剛，偽裝的機器人",
+                        "name": "變形金剛,偽裝的機器人",
                         "valid": False,
-                    }
+                    },
                 },
                 "fails": [],
             },
@@ -199,7 +198,7 @@ class TestCsvParser(AbstractTestParser):
                         "id": 1,
                         "notes": "البايت الجوي هو الأفضل",
                         "valid": False,
-                    }
+                    },
                 },
                 "fails": [],
             },
@@ -237,7 +236,7 @@ class TestCsvParser(AbstractTestParser):
                         "degrees": -9.2,
                         "birthday": "2021-07-14",
                         "last_seen": "2021-07-14 15:30:09.225145",
-                    }
+                    },
                 },
                 "fails": [],
             },
@@ -275,7 +274,7 @@ class TestCsvParser(AbstractTestParser):
                         "degrees": -9.2,
                         "birthday": "2021-07-14",
                         "last_seen": "2021-07-14 15:30:09.225145",
-                    }
+                    },
                 },
                 "fails": [],
             },
@@ -369,7 +368,7 @@ class TestCsvParser(AbstractTestParser):
                     format={
                         "filetype": "csv",
                         "advanced_options": json.dumps(
-                            {"column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]}
+                            {"column_names": ["id", "name", "valid", "code", "degrees", "birthday", "last_seen"]},
                         ),
                     },
                     master_schema={},
@@ -393,7 +392,7 @@ class TestCsvParser(AbstractTestParser):
     @memory_limit(20)
     @pytest.mark.order(1)
     def test_big_file(self) -> None:
-        """tests a big csv file (>= 1.5G records)"""
+        """Tests a big csv file (>= 1.5G records)."""
         filepath = os.path.join(TMP_FOLDER, "big_csv_file." + self.filetype)
         schema, file_size = generate_big_file(filepath, 0.1, 123)
         expected_count = sum(1 for _ in open(filepath)) - 1
@@ -403,7 +402,7 @@ class TestCsvParser(AbstractTestParser):
                 format={"filetype": self.filetype, "block_size": 5 * 1024**2},
                 master_schema=schema,
             )
-            expected_file = open(filepath, "r")
+            expected_file = open(filepath)
             # skip the first header line
             next(expected_file)
             read_count = 0
@@ -417,12 +416,12 @@ class TestCsvParser(AbstractTestParser):
             expected_file.close()
 
     @pytest.mark.parametrize(
-        "encoding, expectation",
+        ("encoding", "expectation"),
         (
             ("UTF8", does_not_raise()),
             ("", does_not_raise()),
             ("R2D2", pytest.raises(AirbyteTracedException)),
-        )
+        ),
     )
     def test_encoding_validation(self, encoding, expectation) -> None:
         parser = CsvParser(format=Mock(), master_schema=Mock())

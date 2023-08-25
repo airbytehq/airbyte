@@ -91,9 +91,7 @@ CONNECTORS_NAMES = get_connectors_names()
 
 
 def _run_single_connector_task(args: Iterable) -> int:
-    """
-    Wrapper for unpack task arguments.
-    """
+    """Wrapper for unpack task arguments."""
     return _run_task(*args)
 
 
@@ -106,9 +104,7 @@ def _run_task(
     task_commands: Dict = TASK_COMMANDS,
     **kwargs: Any,
 ) -> int:
-    """
-    Run task in its own environment.
-    """
+    """Run task in its own environment."""
     cur_dir = os.getcwd()
     if multi_envs:
         if module_path:
@@ -148,8 +144,7 @@ def _run_task(
 
 
 def apply_task_for_connectors(ctx: Context, connectors_names: str, task_name: str, multi_envs: bool = False, **kwargs: Any) -> None:
-    """
-    Run task commands for every connector or for once for a set of connectors, depending on task needs (`multi_envs` param).
+    """Run task commands for every connector or for once for a set of connectors, depending on task needs (`multi_envs` param).
     If `multi_envs == True` task for every connector runs in its own subprocess.
     """
     # TODO: Separate outputs to avoid a mess.
@@ -187,8 +182,7 @@ _arg_help_connectors = (
 
 @task(help={"connectors": _arg_help_connectors})
 def all_checks(ctx, connectors=None):  # type: ignore[no-untyped-def]
-    """
-    Run following checks one by one with default parameters: black, flake, isort, mypy, test, coverage.
+    """Run following checks one by one with default parameters: black, flake, isort, mypy, test, coverage.
     Zero exit code indicates about successful passing of all checks.
     Terminate on the first non-zero exit code.
     """
@@ -209,8 +203,7 @@ def all_checks(ctx, connectors=None):  # type: ignore[no-untyped-def]
 
 @task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'black' without '--check' option)"})
 def black(ctx, connectors=None, write=False):  # type: ignore[no-untyped-def]
-    """
-    Run 'black' checks for one or more given connector(s) code.
+    """Run 'black' checks for one or more given connector(s) code.
     Zero exit code indicates about successful passing of all checks.
     """
     check_option: str = "" if write else " --check"
@@ -219,8 +212,7 @@ def black(ctx, connectors=None, write=False):  # type: ignore[no-untyped-def]
 
 @task(help={"connectors": _arg_help_connectors})
 def flake(ctx, connectors=None):  # type: ignore[no-untyped-def]
-    """
-    Run 'flake8' checks for one or more given connector(s) code.
+    """Run 'flake8' checks for one or more given connector(s) code.
     Zero exit code indicates about successful passing of all checks.
     """
     apply_task_for_connectors(ctx, connectors, "flake")
@@ -228,8 +220,7 @@ def flake(ctx, connectors=None):  # type: ignore[no-untyped-def]
 
 @task(help={"connectors": _arg_help_connectors, "write": "Write changes into the files (runs 'isort' without '--check' option)"})
 def isort(ctx, connectors=None, write=False):  # type: ignore[no-untyped-def]
-    """
-    Run 'isort' checks for one or more given connector(s) code.
+    """Run 'isort' checks for one or more given connector(s) code.
     Zero exit code indicates about successful passing of all checks.
     """
     check_option: str = "" if write else " --check"
@@ -238,8 +229,7 @@ def isort(ctx, connectors=None, write=False):  # type: ignore[no-untyped-def]
 
 @task(help={"connectors": _arg_help_connectors})
 def mypy(ctx, connectors=None):  # type: ignore[no-untyped-def]
-    """
-    Run MyPy checks for one or more given connector(s) code.
+    """Run MyPy checks for one or more given connector(s) code.
     A virtual environment is being created for every one.
     Zero exit code indicates about successful passing of all checks.
     """
@@ -248,8 +238,7 @@ def mypy(ctx, connectors=None):  # type: ignore[no-untyped-def]
 
 @task(help={"connectors": _arg_help_connectors})
 def test(ctx, connectors=None):  # type: ignore[no-untyped-def]
-    """
-    Run unittests for one or more given connector(s).
+    """Run unittests for one or more given connector(s).
     A virtual environment is being created for every one.
     Zero exit code indicates about successful passing of all tests.
     """
@@ -258,8 +247,7 @@ def test(ctx, connectors=None):  # type: ignore[no-untyped-def]
 
 @task(help={"connectors": _arg_help_connectors})
 def coverage(ctx, connectors=None):  # type: ignore[no-untyped-def]
-    """
-    Check test coverage of code for one or more given connector(s).
+    """Check test coverage of code for one or more given connector(s).
     A virtual environment is being created for every one.
     "test" command is being run before this one.
     Zero exit code indicates about enough coverage level.

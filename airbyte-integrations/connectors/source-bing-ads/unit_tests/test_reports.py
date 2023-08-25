@@ -76,7 +76,8 @@ def test_get_updated_state_state_new_account():
     stream_state = {"123": {"Time": pendulum.parse("2020-01-03").timestamp()}}
     latest_record = {"AccountId": 234, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(stream_state, latest_record)
-    assert "234" in new_state and "123" in new_state
+    assert "234" in new_state
+    assert "123" in new_state
     assert new_state["234"]["Time"] == pendulum.parse("2020-01-02").timestamp()
 
 

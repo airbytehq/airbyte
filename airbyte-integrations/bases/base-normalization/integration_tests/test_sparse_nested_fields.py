@@ -12,11 +12,10 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
-from integration_tests.dbt_integration_test import DbtIntegrationTest
-from integration_tests.utils import generate_dbt_models, run_destination_process
 from normalization.destination_type import DestinationType
 
-# from normalization.transform_catalog import TransformCatalog
+from integration_tests.dbt_integration_test import DbtIntegrationTest
+from integration_tests.utils import generate_dbt_models, run_destination_process
 
 temporary_folders = set()
 
@@ -54,7 +53,7 @@ def before_all_tests(request):
         shutil.rmtree(folder, ignore_errors=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def setup_test_path(request):
     dbt_test_utils.change_current_test_dir(request)
     print(f"Running from: {pathlib.Path().absolute()}")
@@ -127,8 +126,7 @@ def test_sparse_nested_fields(destination_type: DestinationType):
 
 
 def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -> str:
-    """
-    We prepare a clean folder to run the tests from.
+    """We prepare a clean folder to run the tests from.
 
     if the test_resource_name is part of git_versioned_tests, then dbt models and final sql outputs
     will be written to a folder included in airbyte git repository.
@@ -179,10 +177,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
 
 
 def setup_input_raw_data(
-    destination_type: DestinationType, test_resource_name: str, test_root_dir: str, destination_config: Dict[str, Any]
+    destination_type: DestinationType, test_resource_name: str, test_root_dir: str, destination_config: Dict[str, Any],
 ) -> bool:
-    """
-    We run docker images of destinations to upload test data stored in the messages.txt file for each test case.
+    """We run docker images of destinations to upload test data stored in the messages.txt file for each test case.
     This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI.
     """
     catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog.json")
@@ -204,9 +201,7 @@ def setup_input_raw_data(
 
 
 def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str, sync_number: int):
-    """
-    Prepare the data (copy) for the models for dbt test.
-    """
+    """Prepare the data (copy) for the models for dbt test."""
     replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     test_directory = os.path.join(test_root_dir, "models/dbt_data_tests")
     shutil.rmtree(test_directory, ignore_errors=True)
@@ -229,11 +224,10 @@ def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test
 
 
 def dbt_test(destination_type: DestinationType, test_root_dir: str):
-    """
-    dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
+    """Dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
     - Schema tests are added in .yml files from the schema_tests directory
         - see additional macros for testing here: https://github.com/fishtown-analytics/dbt-utils#schema-tests
-    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful
+    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful.
 
     We use this mechanism to verify the output of our integration tests.
     """
@@ -242,9 +236,8 @@ def dbt_test(destination_type: DestinationType, test_root_dir: str):
 
 
 def copy_test_files(src: str, dst: str, destination_type: DestinationType, replace_identifiers: str):
-    """
-    Copy file while hacking snowflake identifiers that needs to be uppercased...
-    (so we can share these dbt tests files accross destinations)
+    """Copy file while hacking snowflake identifiers that needs to be uppercased...
+    (so we can share these dbt tests files accross destinations).
     """
     if os.path.exists(src):
         temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
@@ -257,7 +250,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             shutil.copytree(src, temp_dir + "/lower", copy_function=copy_lower)
             src = temp_dir + "/lower"
         if os.path.exists(replace_identifiers):
-            with open(replace_identifiers, "r") as file:
+            with open(replace_identifiers) as file:
                 contents = file.read()
             identifiers_map = json.loads(contents)
             pattern = []
@@ -328,7 +321,8 @@ def to_upper_identifier(input: re.Match) -> str:
     elif len(input.groups()) == 3:
         return f"{input.group(1)}{input.group(2).upper()}{input.group(3)}"
     else:
-        raise Exception(f"Unexpected number of groups in {input}")
+        msg = f"Unexpected number of groups in {input}"
+        raise Exception(msg)
 
 
 def to_lower_identifier(input: re.Match) -> str:
@@ -337,4 +331,5 @@ def to_lower_identifier(input: re.Match) -> str:
     elif len(input.groups()) == 3:
         return f"{input.group(1)}{input.group(2).lower()}{input.group(3)}"
     else:
-        raise Exception(f"Unexpected number of groups in {input}")
+        msg = f"Unexpected number of groups in {input}"
+        raise Exception(msg)

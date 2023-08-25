@@ -14,10 +14,11 @@ from unittest.mock import Mock
 
 import pytest
 import yaml
-from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test.config import EmptyStreamConfiguration
 from connector_acceptance_test.utils import common
 from connector_acceptance_test.utils.compare import make_hashable
+
+from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 def not_sorted_data():
@@ -91,7 +92,7 @@ def sorted_data():
 
 
 @pytest.mark.parametrize(
-    "obj1,obj2,is_same",
+    ("obj1", "obj2", "is_same"),
     [
         (sorted_data(), not_sorted_data(), True),
         (
@@ -100,16 +101,16 @@ def sorted_data():
                     "features": [
                         "issue-percent-filters",
                         "performance-tag-page",
-                    ]
-                }
+                    ],
+                },
             },
             {
                 "organization": {
                     "features": [
                         "performance-tag-page",
                         "issue-percent-filters",
-                    ]
-                }
+                    ],
+                },
             },
             True,
         ),
@@ -119,16 +120,16 @@ def sorted_data():
                     "features": [
                         "issue-percent-filters",
                         "performance-tag-page",
-                    ]
-                }
+                    ],
+                },
             },
             {
                 "organization": {
                     "features": [
                         "performance-tag-pag",
                         "issue-percent-filters",
-                    ]
-                }
+                    ],
+                },
             },
             False,
         ),
@@ -138,15 +139,15 @@ def sorted_data():
                     "features": [
                         "issue-percent-filters",
                         "performance-tag-page",
-                    ]
-                }
+                    ],
+                },
             },
             {
                 "organization": {
                     "features": [
                         "performance-tag-page",
-                    ]
-                }
+                    ],
+                },
             },
             False,
         ),
@@ -165,7 +166,7 @@ def test_compare_two_records_nested_with_different_orders(obj1, obj2, is_same):
 
 
 def test_exclude_fields():
-    """Test that check ignoring fields"""
+    """Test that check ignoring fields."""
     data = [
         sorted_data(),
     ]
@@ -206,12 +207,13 @@ def binary_generator(lengths, last_line=None):
 
 
 def wait_status(container, expected_statuses):
-    """Waits expected_statuses for 5 sec"""
+    """Waits expected_statuses for 5 sec."""
     for _ in range(500):
         if container.status in expected_statuses:
             return
         time.sleep(0.01)
-    assert False, f"container of the image {container.image} has the status '{container.status}', "
+    msg = f"container of the image {container.image} has the status '{container.status}', "
+    raise AssertionError(msg)
     f"expected statuses: {expected_statuses}"
 
 
@@ -231,23 +233,22 @@ class TestLoadYamlOrJsonPath:
             f.write(json.dumps(self.VALID_SPEC))
             f.flush()
             actual = common.load_yaml_or_json_path(Path(f.name))
-            assert self.VALID_SPEC == actual
+            assert actual == self.VALID_SPEC
 
     def test_load_yaml(self):
         with tempfile.NamedTemporaryFile("w", suffix=".yaml") as f:
             f.write(yaml.dump(self.VALID_SPEC))
             f.flush()
             actual = common.load_yaml_or_json_path(Path(f.name))
-            assert self.VALID_SPEC == actual
+            assert actual == self.VALID_SPEC
 
     def test_load_other(self):
-        with tempfile.NamedTemporaryFile("w", suffix=".txt") as f:
-            with pytest.raises(RuntimeError):
-                common.load_yaml_or_json_path(Path(f.name))
+        with tempfile.NamedTemporaryFile("w", suffix=".txt") as f, pytest.raises(RuntimeError):
+            common.load_yaml_or_json_path(Path(f.name))
 
 
 @pytest.mark.parametrize(
-    "schema, searched_key, expected_values",
+    ("schema", "searched_key", "expected_values"),
     [
         (
             {
@@ -322,7 +323,7 @@ DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM = {
 
 
 @pytest.mark.parametrize(
-    "discovered_catalog, empty_streams",
+    ("discovered_catalog", "empty_streams"),
     [
         (DUMMY_DISCOVERED_CATALOG, set()),
         (DUMMY_DISCOVERED_CATALOG, {EmptyStreamConfiguration(name="stream_b", bypass_reason="foobar")}),
@@ -342,7 +343,7 @@ def test_build_configured_catalog_from_discovered_catalog_and_empty_streams(mock
 
 
 @pytest.mark.parametrize(
-    "custom_configured_catalog, expect_failure", [(DUMMY_CUSTOM_CATALOG, False), (DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM, True)]
+    ("custom_configured_catalog", "expect_failure"), [(DUMMY_CUSTOM_CATALOG, False), (DUMMY_CUSTOM_CATALOG_WITH_EXTRA_STREAM, True)],
 )
 def test_build_configured_catalog_from_custom_catalog(mocker, custom_configured_catalog, expect_failure):
     mocker.patch.object(common, "logging")
@@ -352,7 +353,7 @@ def test_build_configured_catalog_from_custom_catalog(mocker, custom_configured_
         streams=[
             ConfiguredAirbyteStream(stream=stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
             for stream in custom_configured_catalog.values()
-        ]
+        ],
     )
     mocker.patch.object(common.ConfiguredAirbyteCatalog, "parse_file", mocker.Mock(return_value=dummy_configured_catalog))
 

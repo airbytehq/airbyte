@@ -57,26 +57,8 @@ class GoogleAnalyticsApiQuotaBase:
         # we should be able to uncomment the one matches the criteria
         # and fill-in the `error_pattern` to track that quota as well.
         # IMPORTANT: PLEASE DO NOT REMOVE the scenario down bellow!
-        # 'tokensPerDay': {
-        #     'error_pattern': "___",
-        #     "backoff": None,
-        #     "should_retry": False,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": True,
         # },
-        # 'tokensPerHour': {
-        #     'error_pattern': "___",
-        #     "backoff": 1800,
-        #     "should_retry": True,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": False,
         # },
-        # 'serverErrorsPerProjectPerHour': {
-        #     'error_pattern': "___",
-        #     "backoff": 3600,
-        #     "should_retry": True,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": False,
         # },
     }
 
@@ -96,7 +78,7 @@ class GoogleAnalyticsApiQuotaBase:
 
     def _get_known_quota_from_response(self, property_quota: Mapping[str, Any]) -> Mapping[str, Any]:
         current_quota = {}
-        for quota in property_quota.keys():
+        for quota in property_quota:
             if quota in self._get_known_quota_list():
                 current_quota.update(**{quota: property_quota.get(quota)})
         return current_quota
@@ -129,7 +111,7 @@ class GoogleAnalyticsApiQuotaBase:
             if remaining_percent <= self.treshold:
                 self.logger.warning(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_retry_attrs_for_quota(quota_name)
-                return None
+                return
             elif self.error_message:
                 self.logger.warning(self.error_message)
 
@@ -142,11 +124,11 @@ class GoogleAnalyticsApiQuotaBase:
                 quota_name = self._get_quota_name_from_error_message(error.get("message"))
                 if quota_name:
                     self._set_retry_attrs_for_quota(quota_name)
-                    self.logger.warn(f"The `{quota_name}` quota is exceeded!")
-                    return None
+                    self.logger.warning(f"The `{quota_name}` quota is exceeded!")
+                    return
         except AttributeError as attr_e:
             self.logger.warning(
-                f"`GoogleAnalyticsApiQuota._check_for_errors`: Received non JSON response from the API. Full error: {attr_e}. Bypassing."
+                f"`GoogleAnalyticsApiQuota._check_for_errors`: Received non JSON response from the API. Full error: {attr_e}. Bypassing.",
             )
             pass
         except Exception as e:
@@ -160,8 +142,8 @@ class GoogleAnalyticsApiQuota(GoogleAnalyticsApiQuotaBase):
         try:
             parsed_response = response.json()
         except AttributeError as e:
-            self.logger.warn(
-                f"`GoogleAnalyticsApiQuota._check_quota`: Received non JSON response from the API. Full error: {e}. Bypassing."
+            self.logger.warning(
+                f"`GoogleAnalyticsApiQuota._check_quota`: Received non JSON response from the API. Full error: {e}. Bypassing.",
             )
             parsed_response = {}
         # get current quota
@@ -181,8 +163,7 @@ class GoogleAnalyticsApiQuota(GoogleAnalyticsApiQuotaBase):
             self._check_for_errors(response)
 
     def handle_quota(self) -> None:
-        """
-        The function decorator is used to integrate with the `should_retry` method,
+        """The function decorator is used to integrate with the `should_retry` method,
         or any other method that provides early access to the `response` object.
         """
 

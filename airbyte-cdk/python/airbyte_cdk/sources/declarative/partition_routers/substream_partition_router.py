@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.streams.core import Stream
 
 @dataclass
 class ParentStreamConfig:
-    """
-    Describes how to create a stream slice from a parent stream
+    """Describes how to create a stream slice from a parent stream.
 
     stream: The stream to read records from
     parent_key: The key of the parent stream's records that will be the stream slice key
@@ -39,9 +39,8 @@ class ParentStreamConfig:
 
 @dataclass
 class SubstreamPartitionRouter(StreamSlicer):
-    """
-    Partition router that iterates over the parent's stream records and emits slices
-    Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components
+    """Partition router that iterates over the parent's stream records and emits slices
+    Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components.
 
     Attributes:
         parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
@@ -53,7 +52,8 @@ class SubstreamPartitionRouter(StreamSlicer):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
-            raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
+            msg = "SubstreamPartitionRouter needs at least 1 parent stream"
+            raise ValueError(msg)
         self._parameters = parameters
 
     def get_request_params(
@@ -104,8 +104,7 @@ class SubstreamPartitionRouter(StreamSlicer):
         return params
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        """
-        Iterate over each parent stream's record and create a StreamSlice for each record.
+        """Iterate over each parent stream's record and create a StreamSlice for each record.
 
         For each stream, iterate over its stream_slices.
         For each stream slice, iterate over each record.
@@ -126,13 +125,13 @@ class SubstreamPartitionRouter(StreamSlicer):
                 parent_field = parent_stream_config.parent_key.eval(self.config)
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
                 for parent_stream_slice in parent_stream.stream_slices(
-                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
+                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None,
                 ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
 
                     for parent_record in parent_stream.read_records(
-                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
+                        sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None,
                     ):
                         # Skip non-records (eg AirbyteLogMessage)
                         if isinstance(parent_record, AirbyteMessage):

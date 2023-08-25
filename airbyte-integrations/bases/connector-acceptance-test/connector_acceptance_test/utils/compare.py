@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import contextlib
 import functools
 from typing import List, Mapping, Optional
 
@@ -81,17 +82,15 @@ class ListWithHashMixin(HashMixin, list):
 
 def delete_fields(obj: Mapping, path_list: List[str]) -> None:
     for path in path_list:
-        try:
+        with contextlib.suppress(dpath.exceptions.PathNotFound):
             dpath.util.delete(obj, path)
-        except dpath.exceptions.PathNotFound:
-            pass
 
 
-def make_hashable(obj, exclude_fields: List[str] = None) -> str:
-    """
-    Simplify comparison of nested dicts/lists
+
+def make_hashable(obj, exclude_fields: Optional[List[str]] = None) -> str:
+    """Simplify comparison of nested dicts/lists
     :param obj value for comparison
-    :param exclude_fields if value is Mapping, some fields can be excluded
+    :param exclude_fields if value is Mapping, some fields can be excluded.
     """
     if isinstance(obj, Mapping):
         # If value is Mapping, some fields can be excluded

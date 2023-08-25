@@ -6,6 +6,11 @@ from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
+from pytest import fixture, mark
+from source_firebolt.database import get_table_structure, parse_config
+from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
+from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -17,36 +22,30 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from pytest import fixture, mark
-from source_firebolt.database import get_table_structure, parse_config
-from source_firebolt.source import SUPPORTED_SYNC_MODES, SourceFirebolt, convert_type, establish_connection
-from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
 
 
 @fixture(params=["my_engine", "my_engine.api.firebolt.io"])
 def config(request):
-    args = {
+    return {
         "database": "my_database",
         "username": "my_username",
         "password": "my_password",
         "engine": request.param,
     }
-    return args
 
 
 @fixture()
 def config_no_engine():
-    args = {
+    return {
         "database": "my_database",
         "username": "my_username",
         "password": "my_password",
     }
-    return args
 
 
-@fixture
+@fixture()
 def stream1() -> AirbyteStream:
-    stream1 = AirbyteStream(
+    return AirbyteStream(
         name="table1",
         supported_sync_modes=SUPPORTED_SYNC_MODES,
         json_schema={
@@ -54,12 +53,11 @@ def stream1() -> AirbyteStream:
             "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},
         },
     )
-    return stream1
 
 
-@fixture
+@fixture()
 def stream2() -> AirbyteStream:
-    stream2 = AirbyteStream(
+    return AirbyteStream(
         name="table2",
         supported_sync_modes=SUPPORTED_SYNC_MODES,
         json_schema={
@@ -70,20 +68,19 @@ def stream2() -> AirbyteStream:
             },
         },
     )
-    return stream2
 
 
-@fixture
+@fixture()
 def table1_structure():
     return [("col1", "STRING", 0), ("col2", "INT", 0)]
 
 
-@fixture
+@fixture()
 def table2_structure():
     return [("col3", "ARRAY", 0), ("col4", "DECIMAL", 0)]
 
 
-@fixture
+@fixture()
 def logger():
     return MagicMock()
 
@@ -105,11 +102,11 @@ def test_connection(mock_connection, config, config_no_engine, logger):
     establish_connection(config, logger)
     logger.reset_mock()
     establish_connection(config_no_engine, logger)
-    assert any(["default engine" in msg.args[0] for msg in logger.info.mock_calls]), "No message on using default engine"
+    assert any("default engine" in msg.args[0] for msg in logger.info.mock_calls), "No message on using default engine"
 
 
 @mark.parametrize(
-    "type,nullable,result",
+    ("type", "nullable", "result"),
     [
         ("VARCHAR", False, {"type": "string"}),
         ("INT", False, {"type": "integer"}),
@@ -155,7 +152,7 @@ def test_convert_type(type, nullable, result):
 
 
 @mark.parametrize(
-    "data,expected",
+    ("data", "expected"),
     [
         (
             ["a", 1],
@@ -246,7 +243,7 @@ def test_read_no_state(mock_connection, config, stream1, logger):
         [
             ["s_value1", 1],
             ["s_value2", 2],
-        ]
+        ],
     )
     message1 = next(source.read(logger, config, catalog, {}))
     assert message1.record.stream == stream1.name
@@ -272,7 +269,7 @@ def test_read_special_types_no_state(mock_connection, config, stream2, logger):
                 [datetime.fromisoformat("2019-01-01 20:12:02"), datetime.fromisoformat("2019-02-01 20:12:02")],
                 Decimal("1231232.123459999990457054844258706536"),
             ],
-        ]
+        ],
     )
 
     message1 = next(source.read(logger, config, catalog, {}))
@@ -285,8 +282,8 @@ def test_read_special_types_no_state(mock_connection, config, stream2, logger):
 
 def test_get_table_structure(table1_structure, table2_structure):
     # Query results contain table names as well
-    table1_query_result = [("table1",) + (item) for item in table1_structure]
-    table2_query_result = [("table2",) + (item) for item in table2_structure]
+    table1_query_result = [("table1", *item) for item in table1_structure]
+    table2_query_result = [("table2", *item) for item in table2_structure]
     connection = MagicMock()
     connection.cursor().fetchall.return_value = table1_query_result + table2_query_result
     result = get_table_structure(connection)

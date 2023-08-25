@@ -3,9 +3,10 @@
 #
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_google_sheets.writer import GoogleSheetsWriter
 from integration_tests.test_spreadsheet import TEST_SPREADSHEET
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 # ----- PREPARE ENV -----
 
@@ -40,7 +41,7 @@ def test_delete_stream_entries():
 
 def test_check_headers():
     TEST_WRITER.check_headers(TEST_STREAM)
-    assert True if TEST_WRITER.stream_info[TEST_STREAM]["is_set"] else False
+    assert bool(TEST_WRITER.stream_info[TEST_STREAM]["is_set"])
 
 
 # define input records

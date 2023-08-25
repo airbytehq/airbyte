@@ -11,11 +11,8 @@ from cumulio.cumulio import Cumulio  # type: ignore
 
 # def _retry_with_backoff(
 #     fn: Callable,
-#     backoff_times_in_seconds: list[int]
 # ):
 #     while True:
-#         try:
-#             return fn()
 
 
 class CumulioClient:
@@ -70,16 +67,16 @@ class CumulioClient:
         data = self.client.get("authorization", {"where": {"type": "api"}})
         # if response contains a count 0, the API host, key and token combination is unknown to Cumul.io.
         if data["count"] == 0:
+            msg = "Unknown combination of API host, key and token. Can you verify whether you've specified the correct combination of Cumul.io API host, key, and token?"
             raise Exception(
-                "Unknown combination of API host, key and token. Can you verify whether you've specified the correct combination of "
-                "Cumul.io API host, key, and token?"
+                msg,
             )
         self.logger.info("API host, key and token combination is valid.")
 
     def test_data_push(self, stream_name: str, data: list[list[Any]], columns: list[str]):
         """[DEPRECATED] This method is no longer in use as it results in a lot of overhead.
-        Test pushing dummy data into a dataset, and delete the dataset afterwards."""
-
+        Test pushing dummy data into a dataset, and delete the dataset afterwards.
+        """
         self.logger.info("Starting data push of dummy data.")
         self.batch_write(stream_name, data, columns, True, True, True)
         self.logger.info("Finished data push of dummy data. Will delete dummy dataset.")
@@ -91,13 +88,14 @@ class CumulioClient:
         """Delete a dataset in Cumul.io.
         This should only be used for testing purposes. Currently used in:
           - Integration tests
-          - When pushing dummy data to an example dataset during "check" of Airbyte destination connector (see destination.py check method)
+          - When pushing dummy data to an example dataset during "check" of Airbyte destination connector (see destination.py check method).
         """
         dataset_id = self._get_dataset_id_from_stream_name(stream_name)
         if dataset_id is not None:
             return self.client.delete("securable", dataset_id)
 
         self.logger.info(f"No dataset for stream {stream_name} found to delete.")
+        return None
 
     def get_ordered_columns(self, stream_name: str):
         """Return a list of ordered columns (based on their order in Cumul.io).
@@ -135,9 +133,9 @@ class CumulioClient:
             },
         )
         if result["count"] > 1:
+            msg = f"More than one dataset has been returned, could you verify whether the tag for stream {stream_name} is set up correctly in Cumul.io (expected a tag '{self.TAG_PREFIX}{stream_name}')?"
             raise Exception(
-                f"More than one dataset has been returned, could you verify whether the tag for stream {stream_name} is set up "
-                f"correctly in Cumul.io (expected a tag '{self.TAG_PREFIX}{stream_name}')?"
+                msg,
             )
         # A count of zero means that the dataset has not been created on Cumul.io's side yet.
         # We'll return None to indicate this.
@@ -155,13 +153,14 @@ class CumulioClient:
             self.logger.info(
                 f"A tag will be added to the dataset with id {dataset_id} to replace the existing data upon next sync. "
                 f"As a result, the existing data will not be replaced until the next sync has ran. "
-                f"This avoids empty datasets which cause 'No data' to be displayed upon querying them."
+                f"This avoids empty datasets which cause 'No data' to be displayed upon querying them.",
             )
             return self._associate_tag_dataset_id(self.REPLACE_TAG, dataset_id)
         self.logger.debug(
             f"No dataset found to set Replace tag on (looking for stream name '{stream_name}'), "
-            f"this might be due to the dataset not existing yet on Cumul.io's side."
+            f"this might be due to the dataset not existing yet on Cumul.io's side.",
         )
+        return None
 
     def _push_batch_to_new_dataset(self, stream_name: str, write_buffer: list[list[Any]], column_headers: list[str]):
         properties = {
@@ -180,7 +179,7 @@ class CumulioClient:
             try:
                 self.logger.info(
                     f"Pushing {len(write_buffer)} rows to Cumul.io's data warehouse in a new Cumul.io dataset "
-                    f"with name {self.INITIAL_DATASET_NAME_PREFIX}{stream_name}."
+                    f"with name {self.INITIAL_DATASET_NAME_PREFIX}{stream_name}.",
                 )
 
                 result = self.client.create("data", properties)
@@ -188,18 +187,18 @@ class CumulioClient:
 
             except Exception as e:
                 if "Unauthorized" in str(e):
+                    msg = f"Not able to push a batch of data to a new dataset due to an 'Unauthorized' error. Please verify that your API key and token are still valid!Error: {e}"
                     raise Exception(
-                        f"Not able to push a batch of data to a new dataset due to an 'Unauthorized' error. "
-                        f"Please verify that your API key and token are still valid!"
-                        f"Error: {e}"
+                        msg,
                     )
                 elif try_count + 1 >= len(self.BACKOFF_TIMES_IN_SECONDS):
-                    raise Exception(f"Exception while creating new dataset after {len(self.BACKOFF_TIMES_IN_SECONDS)} retries: {e}")
+                    msg = f"Exception while creating new dataset after {len(self.BACKOFF_TIMES_IN_SECONDS)} retries: {e}"
+                    raise Exception(msg)
 
                 seconds_to_backoff = self.BACKOFF_TIMES_IN_SECONDS[try_count]
                 try_count += 1
                 self.logger.info(
-                    f"Error pushing data to a new dataset during try {try_count}, retrying in {seconds_to_backoff} seconds. Error: {e}"
+                    f"Error pushing data to a new dataset during try {try_count}, retrying in {seconds_to_backoff} seconds. Error: {e}",
                 )
                 time.sleep(seconds_to_backoff)
 
@@ -208,10 +207,9 @@ class CumulioClient:
             # Add a tag to the dataset to allow retrieving it upon further syncs / batch writes
             self._associate_tag_dataset_id(stream_name, dataset_id)
         except Exception as e:
+            msg = f"The data has been stored successfully, but an error occurred while associating a required tag to the dataset (id: {dataset_id}). This will likely cause issues upon further synchronizations. The following error occurred: "
             raise Exception(
-                f"The data has been stored successfully, but an error occurred while associating a required tag to the "
-                f"dataset (id: {dataset_id}). This will likely cause issues upon further synchronizations. The following "
-                f"error occurred: ",
+                msg,
                 e,
             )
 
@@ -242,7 +240,7 @@ class CumulioClient:
             try:
                 self.logger.info(
                     f"Pushing {len(write_buffer)} rows to Cumul.io dataset with id {dataset_id} in {cumulio_sync_type} mode, "
-                    f"{'while' if update_metadata else 'not'} updating the columns of that dataset."
+                    f"{'while' if update_metadata else 'not'} updating the columns of that dataset.",
                 )
                 self.client.create("data", properties)
 
@@ -254,14 +252,14 @@ class CumulioClient:
 
             except RuntimeError as e:
                 if "Unauthorized" in str(e):
+                    msg = f"Not able to push a batch of data to dataset {dataset_id} due to an 'Unauthorized' error. Please verify that your API key and token are still valid!Error: {e}"
                     raise Exception(
-                        f"Not able to push a batch of data to dataset {dataset_id} due to an 'Unauthorized' error. "
-                        f"Please verify that your API key and token are still valid!"
-                        f"Error: {e}"
+                        msg,
                     )
                 elif try_count + 1 >= len(self.BACKOFF_TIMES_IN_SECONDS):
+                    msg = f"Exception while pushing to existing dataset {dataset_id} after {len(self.BACKOFF_TIMES_IN_SECONDS)} retries: "
                     raise Exception(
-                        f"Exception while pushing to existing dataset {dataset_id} after {len(self.BACKOFF_TIMES_IN_SECONDS)} retries: ",
+                        msg,
                         e,
                     )
 
@@ -269,7 +267,7 @@ class CumulioClient:
                 try_count += 1
 
                 self.logger.info(
-                    f"Error pushing data to existing dataset {dataset_id} during try {try_count}, retrying in {seconds_to_backoff} seconds."
+                    f"Error pushing data to existing dataset {dataset_id} during try {try_count}, retrying in {seconds_to_backoff} seconds.",
                 )
 
                 time.sleep(seconds_to_backoff)
@@ -287,11 +285,11 @@ class CumulioClient:
                         "where": {"tag": self.TAG_PREFIX + self.REPLACE_TAG},
                         "attributes": ["id", "tag"],
                         "jointype": "inner",
-                    }
+                    },
                 ],
             },
         )
-        return False if result["count"] == 0 else True
+        return result["count"] != 0
 
     def _remove_replace_tag_dataset_id_association(self, dataset_id: str):
         """Remove the "replace" tag from a specific dataset."""
@@ -300,8 +298,9 @@ class CumulioClient:
             return self._dissociate_tag_with_dataset_id(tag_id, dataset_id)
         self.logger.debug(
             f"No replace tag found, so could not remove for Cumul.io dataset with id {dataset_id}."
-            f"This could be expected as the stream might be configured in overwrite mode."
+            f"This could be expected as the stream might be configured in overwrite mode.",
         )
+        return None
 
     def _get_dataset_id_from_stream_name(self, stream_name: str):
         """Return a dataset ID based on a Cumul.io tag that includes the stream_name."""
@@ -316,14 +315,14 @@ class CumulioClient:
                         "where": {"tag": self.TAG_PREFIX + stream_name},
                         "attributes": ["id", "tag"],
                         "jointype": "inner",
-                    }
+                    },
                 ],
             },
         )
         if result["count"] > 1:
+            msg = f"More than one dataset has been found, could you verify whether the tag for stream {stream_name} is set up correctly in Cumul.io (expected a tag '{self.TAG_PREFIX}{stream_name}' on a single dataset)?"
             raise Exception(
-                f"More than one dataset has been found, could you verify whether the tag for stream {stream_name} is set up "
-                f"correctly in Cumul.io (expected a tag '{self.TAG_PREFIX}{stream_name}' on a single dataset)?"
+                msg,
             )
         # A count of zero means that the dataset has not been created on Cumul.io's side yet.
         # We'll return None to indicate this.

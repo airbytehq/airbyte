@@ -4,6 +4,7 @@
 
 from collections.abc import Mapping
 from logging import getLogger
+from typing import Optional
 from uuid import uuid4
 
 from typesense import Client
@@ -14,7 +15,7 @@ logger = getLogger("airbyte")
 class TypesenseWriter:
     write_buffer = []
 
-    def __init__(self, client: Client, steam_name: str, batch_size: int = None):
+    def __init__(self, client: Client, steam_name: str, batch_size: Optional[int] = None):
         self.client = client
         self.steam_name = steam_name
         self.batch_size = batch_size or 10000

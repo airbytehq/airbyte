@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,8 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 # Basic full refresh stream
 class ZendeskSellStream(HttpStream, ABC):
-    """
-    This class represents a stream output by the connector.
+    """This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
     """
@@ -33,14 +33,14 @@ class ZendeskSellStream(HttpStream, ABC):
             data = response.json()
             if data:
                 meta_links = data.get("meta", {}).get("links")
-            if "next_page" in meta_links.keys():
+            if "next_page" in meta_links:
                 return {"page": int(re.findall(regex_page, meta_links["next_page"])[0])}
             return None
         except Exception as e:
             self.logger.error(f"{e.__class__} occurred, while trying to get next page information from the following dict {meta_links}")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             return {"page": next_page_token["page"]}
@@ -53,9 +53,7 @@ class ZendeskSellStream(HttpStream, ABC):
 
 
 class Pipelines(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/pipelines/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/pipelines/."""
 
     primary_key = "id"
 
@@ -64,9 +62,7 @@ class Pipelines(ZendeskSellStream):
 
 
 class Stages(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/stages/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/stages/."""
 
     primary_key = "id"
 
@@ -75,9 +71,7 @@ class Stages(ZendeskSellStream):
 
 
 class Contacts(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/contacts/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/contacts/."""
 
     primary_key = "id"
 
@@ -86,9 +80,7 @@ class Contacts(ZendeskSellStream):
 
 
 class Deals(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deals/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deals/."""
 
     primary_key = "id"
 
@@ -97,9 +89,7 @@ class Deals(ZendeskSellStream):
 
 
 class Leads(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/leads/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/leads/."""
 
     primary_key = "id"
 
@@ -108,9 +98,7 @@ class Leads(ZendeskSellStream):
 
 
 class CallOutcomes(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/call-outcomes/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/call-outcomes/."""
 
     primary_key = "id"
 
@@ -119,9 +107,7 @@ class CallOutcomes(ZendeskSellStream):
 
 
 class Calls(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/calls/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/calls/."""
 
     primary_key = "id"
 
@@ -130,9 +116,7 @@ class Calls(ZendeskSellStream):
 
 
 class Collaborations(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/collaborations/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/collaborations/."""
 
     primary_key = "id"
 
@@ -141,9 +125,7 @@ class Collaborations(ZendeskSellStream):
 
 
 class DealSources(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-sources/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-sources/."""
 
     primary_key = "id"
 
@@ -152,9 +134,7 @@ class DealSources(ZendeskSellStream):
 
 
 class DealUnqualifiedReasons(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-unqualified-reasons/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/deal-unqualified-reasons/."""
 
     primary_key = "id"
 
@@ -163,9 +143,7 @@ class DealUnqualifiedReasons(ZendeskSellStream):
 
 
 class LeadConversions(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-conversions/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-conversions/."""
 
     primary_key = "id"
 
@@ -174,9 +152,7 @@ class LeadConversions(ZendeskSellStream):
 
 
 class LeadSources(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-sources/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-sources/."""
 
     primary_key = "id"
 
@@ -185,9 +161,7 @@ class LeadSources(ZendeskSellStream):
 
 
 class LeadUnqualifiedReasons(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-unqualified-reasons/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/lead-unqualified-reasons/."""
 
     primary_key = "id"
 
@@ -196,9 +170,7 @@ class LeadUnqualifiedReasons(ZendeskSellStream):
 
 
 class LossReasons(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/loss-reasons/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/loss-reasons/."""
 
     primary_key = "id"
 
@@ -207,9 +179,7 @@ class LossReasons(ZendeskSellStream):
 
 
 class Notes(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/notes/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/notes/."""
 
     primary_key = "id"
 
@@ -218,9 +188,7 @@ class Notes(ZendeskSellStream):
 
 
 class Orders(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/orders/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/orders/."""
 
     primary_key = "id"
 
@@ -229,9 +197,7 @@ class Orders(ZendeskSellStream):
 
 
 class Products(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/products/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/products/."""
 
     primary_key = "id"
 
@@ -240,9 +206,7 @@ class Products(ZendeskSellStream):
 
 
 class Tags(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/tags/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/tags/."""
 
     primary_key = "id"
 
@@ -251,9 +215,7 @@ class Tags(ZendeskSellStream):
 
 
 class Tasks(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/tasks/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/tasks/."""
 
     primary_key = "id"
 
@@ -262,9 +224,7 @@ class Tasks(ZendeskSellStream):
 
 
 class TextMessages(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/text-messages/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/text-messages/."""
 
     primary_key = "id"
 
@@ -273,9 +233,7 @@ class TextMessages(ZendeskSellStream):
 
 
 class Users(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/users/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/users/."""
 
     primary_key = "id"
 
@@ -284,9 +242,7 @@ class Users(ZendeskSellStream):
 
 
 class VisitOutcomes(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/visit-outcomes/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/visit-outcomes/."""
 
     primary_key = "id"
 
@@ -295,9 +251,7 @@ class VisitOutcomes(ZendeskSellStream):
 
 
 class Visits(ZendeskSellStream):
-    """
-    Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/visits/
-    """
+    """Docs: https://developer.zendesk.com/api-reference/sales-crm/resources/visits/."""
 
     primary_key = "id"
 

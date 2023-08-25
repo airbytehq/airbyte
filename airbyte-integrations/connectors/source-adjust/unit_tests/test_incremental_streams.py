@@ -4,8 +4,9 @@
 
 import datetime
 
-from airbyte_cdk.models import SyncMode
 from source_adjust.source import AdjustReportStream
+
+from airbyte_cdk.models import SyncMode
 
 CONFIG = {
     "ingest_start": "2022-07-01",

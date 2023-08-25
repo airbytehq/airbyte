@@ -12,17 +12,14 @@ from airbyte_cdk.sources.streams.core import StreamData
 
 @dataclass
 class Retriever:
-    """
-    Responsible for fetching a stream's records from an HTTP API source.
-    """
+    """Responsible for fetching a stream's records from an HTTP API source."""
 
     @abstractmethod
     def read_records(
         self,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
-        """
-        Fetch a stream's records from an HTTP API source
+        """Fetch a stream's records from an HTTP API source.
 
         :param sync_mode: Unused but currently necessary for integrating with HttpStream
         :param cursor_field: Unused but currently necessary for integrating with HttpStream
@@ -33,7 +30,7 @@ class Retriever:
 
     @abstractmethod
     def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
-        """Returns the stream slices"""
+        """Returns the stream slices."""
 
     @property
     @abstractmethod

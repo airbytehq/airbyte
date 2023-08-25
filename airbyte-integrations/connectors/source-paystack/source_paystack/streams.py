@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -27,9 +28,10 @@ class PaystackStream(HttpStream, ABC):
 
         if page < pageCount:
             return {"page": page + 1}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
         params = {"perPage": 200}
@@ -53,15 +55,12 @@ class IncrementalPaystackStream(PaystackStream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_record_created = latest_record.get(self.cursor_field)
@@ -70,10 +69,10 @@ class IncrementalPaystackStream(PaystackStream, ABC):
                 latest_record_created,
                 current_stream_state.get(self.cursor_field, None),
                 key=lambda d: pendulum.parse(d).int_timestamp if d else 0,
-            )
+            ),
         }
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs):
+    def request_params(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["from"] = self._get_start_date(stream_state)
@@ -93,9 +92,7 @@ class IncrementalPaystackStream(PaystackStream, ABC):
 
 
 class Customers(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/customer#list
-    """
+    """API docs: https://paystack.com/docs/api/customer#list."""
 
     cursor_field = "createdAt"
 
@@ -104,9 +101,7 @@ class Customers(IncrementalPaystackStream):
 
 
 class Disputes(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/dispute#list
-    """
+    """API docs: https://paystack.com/docs/api/dispute#list."""
 
     cursor_field = "createdAt"
 
@@ -115,9 +110,7 @@ class Disputes(IncrementalPaystackStream):
 
 
 class Invoices(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/payment-request
-    """
+    """API docs: https://paystack.com/docs/api/payment-request."""
 
     cursor_field = "created_at"
 
@@ -126,9 +119,7 @@ class Invoices(IncrementalPaystackStream):
 
 
 class Refunds(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/refund
-    """
+    """API docs: https://paystack.com/docs/api/refund."""
 
     cursor_field = "createdAt"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -138,9 +129,7 @@ class Refunds(IncrementalPaystackStream):
 
 
 class Settlements(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/settlement
-    """
+    """API docs: https://paystack.com/docs/api/settlement."""
 
     cursor_field = "createdAt"
 
@@ -149,9 +138,7 @@ class Settlements(IncrementalPaystackStream):
 
 
 class Subscriptions(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/subscription
-    """
+    """API docs: https://paystack.com/docs/api/subscription."""
 
     cursor_field = "createdAt"
 
@@ -160,9 +147,7 @@ class Subscriptions(IncrementalPaystackStream):
 
 
 class Transactions(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/transaction
-    """
+    """API docs: https://paystack.com/docs/api/transaction."""
 
     cursor_field = "createdAt"
 
@@ -171,9 +156,7 @@ class Transactions(IncrementalPaystackStream):
 
 
 class Transfers(IncrementalPaystackStream):
-    """
-    API docs: https://paystack.com/docs/api/transfer
-    """
+    """API docs: https://paystack.com/docs/api/transfer."""
 
     cursor_field = "createdAt"
 

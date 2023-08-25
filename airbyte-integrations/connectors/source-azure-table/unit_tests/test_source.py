@@ -6,21 +6,22 @@ import logging
 from unittest import mock
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, SyncMode
 from source_azure_table.source import SourceAzureTable
 from source_azure_table.streams import AzureTableStream
+
+from airbyte_cdk.models import AirbyteCatalog, SyncMode
 
 source = SourceAzureTable()
 logger = logging.getLogger()
 
 
 # Fixtures
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {"storage_account_name": "dummy-value", "storage_access_key": "dummy-value", "storage_endpoint_suffix": "dummy-value"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def tables():
     table1 = mock.Mock()
     table1.name = "AzureTable1"

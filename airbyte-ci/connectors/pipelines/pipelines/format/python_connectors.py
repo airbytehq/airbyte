@@ -3,15 +3,14 @@
 #
 
 import asyncer
+
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
 from pipelines.utils import with_exit_code, with_stderr, with_stdout
 
 
 class FormatConnectorCode(Step):
-    """
-    A step to format a Python connector code.
-    """
+    """A step to format a Python connector code."""
 
     title = "Format connector code"
 

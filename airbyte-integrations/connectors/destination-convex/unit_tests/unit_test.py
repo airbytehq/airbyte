@@ -7,6 +7,10 @@ from typing import Any, Dict
 
 import pytest
 import responses
+from destination_convex.client import ConvexClient
+from destination_convex.config import ConvexConfig
+from destination_convex.destination import DestinationConvex
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -18,9 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_convex.client import ConvexClient
-from destination_convex.config import ConvexConfig
-from destination_convex.destination import DestinationConvex
 
 DEDUP_TABLE_NAME = "dedup_stream"
 DEDUP_INDEX_FIELD = "int_col"
@@ -129,16 +130,14 @@ def test_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalo
     first_dedup_chunk = [record(dedup_stream, str(i), i) for i in range(10)]
     first_record_chunk = first_append_chunk + first_overwrite_chunk + first_dedup_chunk
     destination = DestinationConvex()
-    output_state = list(
-        destination.write(
+    output_state = next(iter(destination.write(
             config,
             configured_catalog,
             [
                 *first_record_chunk,
                 first_state_message,
             ],
-        )
-    )[0]
+        )))
     assert first_state_message == output_state
 
     second_state_message = state({"state": "2"})
@@ -146,14 +145,12 @@ def test_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalo
     second_overwrite_chunk = [record(overwrite_stream, str(i), i) for i in range(5, 10)]
     second_dedup_chunk = [record(dedup_stream, str(i + 2), i) for i in range(5)]
     second_record_chunk = second_append_chunk + second_overwrite_chunk + second_dedup_chunk
-    output_state = list(
-        destination.write(
+    output_state = next(iter(destination.write(
             config,
             configured_catalog,
             [
                 *second_record_chunk,
                 second_state_message,
             ],
-        )
-    )[0]
+        )))
     assert second_state_message == output_state

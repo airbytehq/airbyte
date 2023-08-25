@@ -9,7 +9,7 @@ import pytest
 from source_rki_covid.source import RkiCovidStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(RkiCovidStream, "path", "v0/example_endpoint")

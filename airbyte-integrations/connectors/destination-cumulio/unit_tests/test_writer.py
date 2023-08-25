@@ -8,8 +8,9 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from destination_cumulio.writer import CumulioWriter
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 @pytest.fixture(name="logger")
@@ -62,7 +63,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     )
 
     return ConfiguredAirbyteCatalog(
-        streams=[orders_append_stream, products_overwrite_stream]
+        streams=[orders_append_stream, products_overwrite_stream],
     )
 
 
@@ -74,12 +75,10 @@ def writer_no_existing_cumulio_columns(
 ) -> CumulioWriter:
     """Returns a CumulioWriter using MagicMock, and mocking the return_value of all used CumulioClient methods."""
     with patch(
-        "destination_cumulio.writer.CumulioClient", MagicMock()
+        "destination_cumulio.writer.CumulioClient", MagicMock(),
     ) as cumulio_client_mock:
         # Mock get_ordered_columns to return no existing Cumul.io columns (dataset hasn't been created yet --> first sync)
         cumulio_client_mock.return_value.get_ordered_columns.return_value = []
-        # cumulio_client_mock.return_value.batch_write.return_value = None
-        # cumulio_client_mock.return_value.set_replace_tag_on_dataset.return_value = None
         return CumulioWriter(config, configured_catalog, logger)
 
 
@@ -90,7 +89,6 @@ def test_small_enough_data_point_limit(writer: CumulioWriter):
 
 def test_init(writer: CumulioWriter):
     """Tests whether CumulioWriter is correctly initialized for streams with no known Cumulio dataset (i.e. first sync for each stream)."""
-
     # Assert each stream is correctly initializing writers
     assert "orders" in writer.writers
     assert "products" in writer.writers
@@ -179,7 +177,7 @@ def test_queue_write_operation(writer: CumulioWriter):
     # Assert that write_buffer from the orders stream contains a single value
     assert len(writer.writers["orders"]["write_buffer"]) == 1
     case.assertCountEqual(
-        writer.writers["orders"]["write_buffer"][0], ["customer_1", 1, 100.0]
+        writer.writers["orders"]["write_buffer"][0], ["customer_1", 1, 100.0],
     )
 
 
@@ -268,7 +266,8 @@ def test_delete_stream_entries(writer: CumulioWriter):
 
 def _get_cumulio_and_merged_columns(writer: CumulioWriter) -> Mapping[str, Any]:
     if len(writer.writers) < 0:
-        raise Exception("No streams defined for writer")
+        msg = "No streams defined for writer"
+        raise Exception(msg)
 
     result = {}
 
@@ -282,7 +281,7 @@ def _get_cumulio_and_merged_columns(writer: CumulioWriter) -> Mapping[str, Any]:
     return result
 
 
-@pytest.fixture
+@pytest.fixture()
 def writer_existing_cumulio_columns(
     config: Mapping[str, Any],
     configured_catalog: ConfiguredAirbyteCatalog,
@@ -291,20 +290,17 @@ def writer_existing_cumulio_columns(
     """This will return a CumulioWriter that mocks airbyte stream catalogs that contains the same columns as those existing in Cumul.io."""
     existing_cumulio_columns = {}
     for configured_stream in configured_catalog.streams:
-        existing_cumulio_columns[configured_stream.stream.name] = [
-            column_name
-            for column_name in configured_stream.stream.json_schema["properties"]
-        ]
+        existing_cumulio_columns[configured_stream.stream.name] = list(configured_stream.stream.json_schema["properties"])
 
     def get_existing_cumulio_columns(stream_name):
         return existing_cumulio_columns[stream_name]
 
     with patch(
-        "destination_cumulio.writer.CumulioClient", MagicMock()
+        "destination_cumulio.writer.CumulioClient", MagicMock(),
     ) as cumulio_client_mock:
         # Mock get_ordered_columns to return existing_cumulio_columns
         cumulio_client_mock.return_value.get_ordered_columns = MagicMock(
-            side_effect=get_existing_cumulio_columns
+            side_effect=get_existing_cumulio_columns,
         )
         return CumulioWriter(config, configured_catalog, logger)
 
@@ -385,11 +381,11 @@ def configured_catalog_with_new_column_fixture() -> ConfiguredAirbyteCatalog:
     )
 
     return ConfiguredAirbyteCatalog(
-        streams=[orders_append_stream, orders_overwrite_stream]
+        streams=[orders_append_stream, orders_overwrite_stream],
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def writer_new_airbyte_column(
     config: Mapping[str, Any],
     configured_catalog_with_new_column: ConfiguredAirbyteCatalog,
@@ -398,10 +394,7 @@ def writer_new_airbyte_column(
     """This will return a CumulioWriter that mocks airbyte stream catalogs that contains one column that does not exist in Cumul.io."""
     existing_cumulio_columns = {}
     for configured_stream in configured_catalog_with_new_column.streams:
-        columns = [
-            column_name
-            for column_name in configured_stream.stream.json_schema["properties"]
-        ]
+        columns = list(configured_stream.stream.json_schema["properties"])
         # get rid of the second element to mimic a new column being defined in configured_stream
         del columns[1]
         existing_cumulio_columns[configured_stream.stream.name] = columns
@@ -410,11 +403,11 @@ def writer_new_airbyte_column(
         return existing_cumulio_columns[stream_name]
 
     with patch(
-        "destination_cumulio.writer.CumulioClient", MagicMock()
+        "destination_cumulio.writer.CumulioClient", MagicMock(),
     ) as cumulio_client_mock:
         # Mock get_ordered_columns to return existing_cumulio_columns (which does not include one column defined in configured stream)
         cumulio_client_mock.return_value.get_ordered_columns = MagicMock(
-            side_effect=get_existing_cumulio_columns
+            side_effect=get_existing_cumulio_columns,
         )
         cumulio_client_mock.return_value.batch_writer.return_value = None
         cumulio_client_mock.return_value.set_replace_tag_on_dataset.return_value = None
@@ -422,7 +415,7 @@ def writer_new_airbyte_column(
 
 
 def test_init_new_airbyte_column(writer_new_airbyte_column: CumulioWriter):
-    """Tests whether each stream is correctly initializing update_metadata (due to new Column in Airbyte for this writer, both are True)"""
+    """Tests whether each stream is correctly initializing update_metadata (due to new Column in Airbyte for this writer, both are True)."""
     assert writer_new_airbyte_column.writers["orders_append"]["update_metadata"] is True
     assert (
         writer_new_airbyte_column.writers["orders_overwrite"]["update_metadata"] is True
@@ -431,13 +424,14 @@ def test_init_new_airbyte_column(writer_new_airbyte_column: CumulioWriter):
 
 def test_new_column_update_metadata(writer_new_airbyte_column: CumulioWriter):
     """Tests whether Airbyte streams with at least one new column defined results in update_metadata,
-    to inform Cumul.io about new column data being pushed."""
+    to inform Cumul.io about new column data being pushed.
+    """
     for stream_name in writer_new_airbyte_column.writers:
         assert writer_new_airbyte_column.writers[stream_name]["update_metadata"] is True
 
 
 def test_new_column_appended(writer_new_airbyte_column: CumulioWriter):
-    """Tests whether the Airbyte streams with one new column appends it at the end of the column list"""
+    """Tests whether the Airbyte streams with one new column appends it at the end of the column list."""
     result = _get_cumulio_and_merged_columns(writer_new_airbyte_column)
     for stream_name in result:
         assert (
@@ -450,7 +444,7 @@ def test_new_column_appended(writer_new_airbyte_column: CumulioWriter):
         with pytest.raises(Exception):
             # Test whether last element of merged_columns is the column that is not defined on Cumul.io's end.
             result[stream_name]["cumulio_columns"].index(
-                result[stream_name]["merged_columns"][-1]["name"]
+                result[stream_name]["merged_columns"][-1]["name"],
             )
 
 
@@ -483,11 +477,11 @@ def configured_catalog_with_deleted_column_fixture() -> ConfiguredAirbyteCatalog
     )
 
     return ConfiguredAirbyteCatalog(
-        streams=[orders_append_stream, orders_overwrite_stream]
+        streams=[orders_append_stream, orders_overwrite_stream],
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def writer_deleted_airbyte_column(
     config: Mapping[str, Any],
     configured_catalog_with_deleted_column: ConfiguredAirbyteCatalog,
@@ -496,10 +490,7 @@ def writer_deleted_airbyte_column(
     """This will return a CumulioWriter that mocks airbyte stream catalogs that doesn't contain one column that does exist in Cumul.io."""
     existing_cumulio_columns = {}
     for configured_stream in configured_catalog_with_deleted_column.streams:
-        columns = [
-            column_name
-            for column_name in configured_stream.stream.json_schema["properties"]
-        ]
+        columns = list(configured_stream.stream.json_schema["properties"])
         # Add customer_name column as second element to mimic a deleted column being defined in configured_stream
         columns.insert(1, "customer_name")
         existing_cumulio_columns[configured_stream.stream.name] = columns
@@ -508,11 +499,11 @@ def writer_deleted_airbyte_column(
         return existing_cumulio_columns[stream_name]
 
     with patch(
-        "destination_cumulio.writer.CumulioClient", MagicMock()
+        "destination_cumulio.writer.CumulioClient", MagicMock(),
     ) as cumulio_client_mock:
         # Mock get_ordered_columns to return existing_cumulio_columns (which does not include one column defined in configured stream)
         cumulio_client_mock.return_value.get_ordered_columns = MagicMock(
-            side_effect=get_existing_cumulio_columns
+            side_effect=get_existing_cumulio_columns,
         )
         cumulio_client_mock.return_value.batch_writer.return_value = None
         cumulio_client_mock.return_value.set_replace_tag_on_dataset.return_value = None
@@ -523,7 +514,7 @@ def test_init_deleted_airbyte_column(writer_deleted_airbyte_column: CumulioWrite
     """Assert each stream is correctly initializing update_metadata.
     Due to deleted Column in Airbyte for this writer:
     - the update_metadata property for the orders dataset is set to False, as it's in append mode and thus should keep existing structure
-    - the update_metadata property for the orders dataset is set to True, as it's in overwrite mode
+    - the update_metadata property for the orders dataset is set to True, as it's in overwrite mode.
     """
     assert (
         writer_deleted_airbyte_column.writers["orders_append"]["update_metadata"]
@@ -537,7 +528,8 @@ def test_init_deleted_airbyte_column(writer_deleted_airbyte_column: CumulioWrite
 
 def test_deleted_column_update_metadata(writer_deleted_airbyte_column: CumulioWriter):
     """Tests whether Airbyte streams that do not contain a column defined on Cumul.io's side results in update_metadata for only
-    overwrite streams (to inform Cumul.io about new column data being pushed)"""
+    overwrite streams (to inform Cumul.io about new column data being pushed).
+    """
     assert (
         writer_deleted_airbyte_column.writers["orders_append"]["update_metadata"]
         is False
@@ -552,7 +544,8 @@ def test_merged_columns_order_for_deleted_column(
     writer_deleted_airbyte_column: CumulioWriter,
 ):
     """Tests whether Airbyte streams that do not contain a column defined on Cumul.io's side still correctly puts the other columns in
-    the right order"""
+    the right order.
+    """
     result = _get_cumulio_and_merged_columns(writer_deleted_airbyte_column)
     for stream_name in result:
         # Test whether merged_columns contains one less element

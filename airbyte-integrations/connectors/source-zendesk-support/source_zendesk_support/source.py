@@ -49,12 +49,12 @@ logger = logging.getLogger("airbyte")
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
-    """basic Authorization header"""
+    """basic Authorization header."""
 
     def __init__(self, email: str, password: str):
         # for API token auth we need to add the suffix '/token' in the end of email value
         email_login = email + "/token"
-        token = base64.b64encode(f"{email_login}:{password}".encode("utf-8"))
+        token = base64.b64encode(f"{email_login}:{password}".encode())
         super().__init__(token.decode("utf-8"), auth_method="Basic")
 
 
@@ -68,9 +68,8 @@ class SourceZendeskSupport(AbstractSource):
 
         # old authentication flow support
         auth_old = config.get("auth_method")
-        if auth_old:
-            if auth_old.get("auth_method") == "api_token":
-                return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
+        if auth_old and auth_old.get("auth_method") == "api_token":
+            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
         # new authentication flow
         auth = config.get("credentials")
         if auth:
@@ -79,10 +78,12 @@ class SourceZendeskSupport(AbstractSource):
             elif auth.get("credentials") == "api_token":
                 return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
             else:
-                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
+                msg = f"Not implemented authorization method: {config['credentials']}"
+                raise SourceZendeskException(msg)
+        return None
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """Connection check to validate that the user-provided config can be used to connect to the underlying API
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -98,7 +99,6 @@ class SourceZendeskSupport(AbstractSource):
             return False, e
 
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
-        # logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
             return False, "Organization access is not enabled. Please check admin permission of the current account"
         return True, None
@@ -106,7 +106,7 @@ class SourceZendeskSupport(AbstractSource):
     @classmethod
     def convert_config2stream_args(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Convert input configs to parameters of the future streams
-        This function is used by unit tests too
+        This function is used by unit tests too.
         """
         return {
             "subdomain": config["subdomain"],
@@ -160,5 +160,5 @@ class SourceZendeskSupport(AbstractSource):
                     streams.extend([ticket_forms_stream, account_attributes, attribute_definitions])
                     break
         except Exception as e:
-            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {e!s}. Skipping this stream.")
         return streams

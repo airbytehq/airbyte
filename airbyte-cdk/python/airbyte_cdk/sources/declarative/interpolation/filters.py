@@ -6,8 +6,7 @@ import hashlib
 
 
 def hash(value, hash_type="md5", salt=None):
-    """
-      Implementation of a custom Jinja2 hash filter
+    """Implementation of a custom Jinja2 hash filter
       Hash type defaults to 'md5' if one is not specified.
 
       If you are using this has function for GDPR compliance, then
@@ -46,7 +45,8 @@ def hash(value, hash_type="md5", salt=None):
             hash_obj.update(str(salt).encode("utf-8"))
         computed_hash = hash_obj.hexdigest()
     else:
-        raise AttributeError("No hashing function named {hname}".format(hname=hash_type))
+        msg = f"No hashing function named {hash_type}"
+        raise AttributeError(msg)
 
     return computed_hash
 

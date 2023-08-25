@@ -44,15 +44,13 @@ class CollectionConfig:
         self,
         page_size=64,
         deletions=DeletionsConfig.ignore(),
-    ):
+    ) -> None:
         self.page_size = page_size
         self.deletions = deletions
 
 
 class DiscoverConfig:
-    """
-    A limited version of FullConfig, storing only the values needed for discover()
-    """
+    """A limited version of FullConfig, storing only the values needed for discover()."""
 
     def __init__(self, collection: CollectionConfig):
         self.collection = collection
@@ -73,9 +71,7 @@ class FullConfig:
 
 
 def partial_overwrite(obj: dict, new: dict) -> dict:
-    """
-    Recursively replaces the values in obj with the values in new.
-    """
+    """Recursively replaces the values in obj with the values in new."""
     for k, v in new.items():
         if type(v) is dict:
             partial_overwrite(obj[k], v)

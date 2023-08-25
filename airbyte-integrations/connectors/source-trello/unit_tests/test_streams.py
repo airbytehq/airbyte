@@ -6,15 +6,16 @@
 from itertools import cycle
 from unittest.mock import MagicMock
 
-from airbyte_cdk.sources.streams.http.auth.core import NoAuth
 from pytest import fixture
 from source_trello.source import Boards, Cards, TrelloStream
 from source_trello.utils import read_full_refresh
 
+from airbyte_cdk.sources.streams.http.auth.core import NoAuth
+
 from .helpers import NO_SLEEP_HEADERS
 
 
-@fixture
+@fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(TrelloStream, "path", "v0/example_endpoint")

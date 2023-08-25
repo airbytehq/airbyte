@@ -11,7 +11,7 @@ from utils import read_full_refresh, read_incremental
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint",
+    ("stream", "endpoint"),
     [
         (Lists, "lists"),
         (Campaigns, "campaigns"),
@@ -24,8 +24,8 @@ def test_stream_read(requests_mock, auth, stream, endpoint):
         {
             "json": {
                 stream.data_field: [{"id": "test_id"}],
-            }
-        }
+            },
+        },
     ]
     stream_url = stream.url_base + endpoint
     requests_mock.register_uri("GET", stream_url, stream_responses)
@@ -48,7 +48,7 @@ def test_next_page_token(auth):
 
 
 @pytest.mark.parametrize(
-    "inputs, expected_params",
+    ("inputs", "expected_params"),
     [
         (
             {"stream_slice": None, "stream_state": None, "next_page_token": None},
@@ -67,7 +67,7 @@ def test_request_params(auth, inputs, expected_params):
 
 
 @pytest.mark.parametrize(
-    "current_state_stream, latest_record, expected_state",
+    ("current_state_stream", "latest_record", "expected_state"),
     [
         ({}, {"date_created": "2020-01-01"}, {"date_created": "2020-01-01"}),
         ({"date_created": "2020-01-01"}, {"date_created": "2021-01-01"}, {"date_created": "2021-01-01"}),

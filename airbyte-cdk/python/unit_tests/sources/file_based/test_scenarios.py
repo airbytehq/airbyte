@@ -10,11 +10,12 @@ from typing import Any, Dict, List, Mapping, Optional, Union
 import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
+from freezegun import freeze_time
+from pytest import LogCaptureFixture
+
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import SyncMode
-from freezegun import freeze_time
-from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
     avro_all_types_scenario,
     avro_file_with_double_as_number_scenario,
@@ -221,14 +222,7 @@ def test_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Te
             _verify_expected_logs(logs, discover_logs)
 
 
-read_scenarios = discover_scenarios + [
-    emit_record_scenario_multi_stream,
-    emit_record_scenario_single_stream,
-    skip_record_scenario_multi_stream,
-    skip_record_scenario_single_stream,
-    wait_for_rediscovery_scenario_multi_stream,
-    wait_for_rediscovery_scenario_single_stream,
-]
+read_scenarios = [*discover_scenarios, emit_record_scenario_multi_stream, emit_record_scenario_single_stream, skip_record_scenario_multi_stream, skip_record_scenario_single_stream, wait_for_rediscovery_scenario_multi_stream, wait_for_rediscovery_scenario_single_stream]
 
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
@@ -244,7 +238,7 @@ def test_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: 
 def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
-        with pytest.raises(expected_exc) as exc:  # noqa
+        with pytest.raises(expected_exc) as exc:
             read(capsys, caplog, tmp_path, scenario)
         if expected_msg:
             assert expected_msg in get_error_message_from_exc(exc)
@@ -393,7 +387,7 @@ def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: Posix
 
 
 def read_with_state(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario,
 ) -> Dict[str, List[Any]]:
     launch(
         scenario.source,

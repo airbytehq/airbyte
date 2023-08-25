@@ -5,8 +5,9 @@
 import uuid
 from typing import List, Optional, Tuple, Type, Union
 
-import airbyte_api_client
 import click
+
+import airbyte_api_client
 from octavia_cli.base_commands import OctaviaCommand
 
 from .resources import Connection, Destination, Source
@@ -51,7 +52,6 @@ def get_json_representation(
     resource_to_get: str,
 ) -> str:
     """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
-
 
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.

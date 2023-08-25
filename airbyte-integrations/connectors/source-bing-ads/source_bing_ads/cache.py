@@ -9,17 +9,16 @@ import vcr
 
 
 def _matcher(r1: vcr.request.Request, r2: vcr.request.Request) -> None:
+    """Defines algorithm to compare two bing ads requests.
+    Makes sure that uri, body and headers are equal in both requests.
     """
-    Defines algorithm to compare two bing ads requests.
-    Makes sure that uri, body and headers are equal in both requests
-    """
-    assert r1.uri == r2.uri and r1.body == r2.body and r1.headers == r2.headers
+    assert r1.uri == r2.uri
+    assert r1.body == r2.body
+    assert r1.headers == r2.headers
 
 
 class VcrCache:
-    """
-    VcrPy wrapper to cache bing ads requests, and to be able to reuse results in other streams
-    """
+    """VcrPy wrapper to cache bing ads requests, and to be able to reuse results in other streams."""
 
     def __init__(self) -> None:
         self._vcr = vcr.VCR()
@@ -35,8 +34,6 @@ class VcrCache:
 
     @contextlib.contextmanager
     def use_cassette(self) -> None:
-        """
-        Implements use_cassette method wrapper which uses in-memory temporary file for caching and yaml format for serialization
-        """
+        """Implements use_cassette method wrapper which uses in-memory temporary file for caching and yaml format for serialization."""
         with self._vcr.use_cassette(self._cache_file.name, record_mode="new_episodes", serializer="yaml"):
             yield

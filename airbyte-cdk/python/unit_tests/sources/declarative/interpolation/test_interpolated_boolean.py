@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 
 config = {
@@ -17,7 +18,7 @@ config = {
 
 
 @pytest.mark.parametrize(
-    "test_name, template, expected_result",
+    ("test_name", "template", "expected_result"),
     [
         ("test_interpolated_true_value", "{{ config['parent']['key_with_true'] }}", True),
         ("test_interpolated_true_comparison", "{{ config['string_key'] == \"compare_me\" }}", True),

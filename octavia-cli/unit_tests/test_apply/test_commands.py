@@ -7,12 +7,12 @@ from click.testing import CliRunner
 from octavia_cli.apply import commands
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_click(mocker):
     mocker.patch.object(commands, "click")
 
 
-@pytest.fixture
+@pytest.fixture()
 def context_object(mock_api_client, mock_telemetry_client):
     return {
         "PROJECT_IS_INITIALIZED": True,
@@ -101,10 +101,10 @@ def test_apply_single_resource(patch_click, mocker, resource_was_created):
 
 
 @pytest.mark.parametrize(
-    "force,user_validation,local_file_changed,expect_update,expected_reason",
+    ("force", "user_validation", "local_file_changed", "expect_update", "expected_reason"),
     [
         pytest.param(
-            True, True, True, True, "🚨 - Running update because the force mode is activated.", id="1 - Check if force has the top priority."
+            True, True, True, True, "🚨 - Running update because the force mode is activated.", id="1 - Check if force has the top priority.",
         ),
         pytest.param(
             True,
@@ -172,7 +172,7 @@ def test_should_update_resource(patch_click, mocker, force, user_validation, loc
 
 
 @pytest.mark.parametrize(
-    "diff,expected_number_calls_to_display_diff_line",
+    ("diff", "expected_number_calls_to_display_diff_line"),
     [("", 0), ("First diff line", 1), ("First diff line\nSecond diff line", 2), ("First diff line\nSecond diff line\nThird diff line", 3)],
 )
 def test_prompt_for_diff_validation(patch_click, mocker, diff, expected_number_calls_to_display_diff_line):
@@ -184,10 +184,10 @@ def test_prompt_for_diff_validation(patch_click, mocker, diff, expected_number_c
         commands.click.style.assert_has_calls(
             [
                 mocker.call(
-                    "👀 - Here's the computed diff (🚨 remind that diff on secret fields are not displayed):", fg="magenta", bold=True
+                    "👀 - Here's the computed diff (🚨 remind that diff on secret fields are not displayed):", fg="magenta", bold=True,
                 ),
                 mocker.call("❓ - Do you want to update my_resource?", bold=True),
-            ]
+            ],
         )
         commands.click.echo.assert_called_with(commands.click.style.return_value)
         assert output == commands.click.confirm.return_value
@@ -206,40 +206,40 @@ def test_create_resource(patch_click, mocker):
         [
             mocker.call(f"🎉 - Successfully created {mock_created_resource.name} on your Airbyte instance!", fg="green", bold=True),
             mocker.call(f"💾 - New state for {mock_created_resource.name} saved at {mock_state.path}", fg="yellow"),
-        ]
+        ],
     )
 
 
 @pytest.mark.parametrize(
-    "force,diff,local_file_changed,expect_prompt,user_validation,expect_update",
+    ("force", "diff", "local_file_changed", "expect_prompt", "user_validation", "expect_update"),
     [
         pytest.param(True, True, True, False, False, True, id="Force, diff, local file change -> no prompt, no validation, expect update."),
         pytest.param(
-            True, True, False, False, False, True, id="Force, diff, no local file change -> no prompt, no validation, expect update."
+            True, True, False, False, False, True, id="Force, diff, no local file change -> no prompt, no validation, expect update.",
         ),
         pytest.param(
-            True, False, False, False, False, True, id="Force, no diff, no local file change -> no prompt, no validation, expect update."
+            True, False, False, False, False, True, id="Force, no diff, no local file change -> no prompt, no validation, expect update.",
         ),
         pytest.param(
-            True, False, True, False, False, True, id="Force, no diff, local file change -> no prompt, no validation, expect update."
+            True, False, True, False, False, True, id="Force, no diff, local file change -> no prompt, no validation, expect update.",
         ),
         pytest.param(
-            False, True, True, True, True, True, id="No force, diff, local file change -> expect prompt, validation, expect update."
+            False, True, True, True, True, True, id="No force, diff, local file change -> expect prompt, validation, expect update.",
         ),
         pytest.param(
-            False, True, True, True, False, False, id="No force, diff, local file change -> expect prompt, no validation, no update."
+            False, True, True, True, False, False, id="No force, diff, local file change -> expect prompt, no validation, no update.",
         ),
         pytest.param(
-            False, True, False, True, True, True, id="No force, diff, no local file change -> expect prompt, validation, expect update."
+            False, True, False, True, True, True, id="No force, diff, no local file change -> expect prompt, validation, expect update.",
         ),
         pytest.param(
-            False, True, False, True, False, False, id="No force, diff, no local file change -> expect prompt, no validation, no update."
+            False, True, False, True, False, False, id="No force, diff, no local file change -> expect prompt, no validation, no update.",
         ),
         pytest.param(
-            False, False, True, False, False, True, id="No force, no diff, local file change -> no prompt, no validation, expect update."
+            False, False, True, False, False, True, id="No force, no diff, local file change -> no prompt, no validation, expect update.",
         ),
         pytest.param(
-            False, False, False, False, False, False, id="No force, no diff, no local file change -> no prompt, no validation, no update."
+            False, False, False, False, False, False, id="No force, no diff, no local file change -> no prompt, no validation, no update.",
         ),
     ],
 )
@@ -275,7 +275,7 @@ def test_update_resource(patch_click, mocker, force, diff, local_file_changed, e
             [
                 mocker.call(f"🎉 - Successfully updated {mock_updated_resource.name} on your Airbyte instance!", fg="green", bold=True),
                 mocker.call(f"💾 - New state for {mock_updated_resource.name} stored at {mock_state.path}.", fg="yellow"),
-            ]
+            ],
         )
     else:
         assert output_messages == []

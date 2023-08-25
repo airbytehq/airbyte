@@ -7,12 +7,13 @@ import logging
 from time import sleep
 
 import pinecone
-from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_langchain.destination import DestinationLangchain
 from destination_langchain.embedder import OPEN_AI_VECTOR_SIZE
 from integration_tests.base_integration_test import BaseIntegrationTest
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
+
+from airbyte_cdk.models import DestinationSyncMode, Status
 
 
 class PineconeIntegrationTest(BaseIntegrationTest):
@@ -29,7 +30,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             self._index.delete(ids=vector_ids)
 
     def setUp(self):
-        with open("secrets/config.json", "r") as f:
+        with open("secrets/config.json") as f:
             self.config = json.loads(f.read())
 
     def tearDown(self):
@@ -77,7 +78,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             # Documents might not be available right away because Pinecone is handling them async
             sleep(20)
         result = self._index.query(
-            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "2"}, include_metadata=True
+            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "2"}, include_metadata=True,
         )
         assert len(result.matches) == 1
         assert result.matches[0].metadata["text"] == "str_col: Cats are nice"

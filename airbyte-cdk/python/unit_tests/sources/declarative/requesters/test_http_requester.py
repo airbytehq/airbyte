@@ -8,8 +8,10 @@ from unittest import mock
 from unittest.mock import MagicMock
 from urllib.parse import parse_qs, urlparse
 
-import pytest as pytest
+import pytest
 import requests
+from requests import PreparedRequest
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -19,7 +21,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from requests import PreparedRequest
 
 
 def test_http_requester():
@@ -76,7 +77,7 @@ def test_http_requester():
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, expected_base_url",
+    ("test_name", "base_url", "expected_base_url"),
     [
         ("test_no_trailing_slash", "https://example.com", "https://example.com/"),
         ("test_with_trailing_slash", "https://example.com/", "https://example.com/"),
@@ -100,7 +101,7 @@ def test_base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
 
 
 @pytest.mark.parametrize(
-    "test_name, path, expected_path",
+    ("test_name", "path", "expected_path"),
     [
         ("test_no_leading_slash", "deals", "deals"),
         ("test_with_leading_slash", "/deals", "deals"),
@@ -157,7 +158,7 @@ def test_basic_send_request():
 
 
 @pytest.mark.parametrize(
-    "provider_data, provider_json, param_data, param_json, authenticator_data, authenticator_json, expected_exception, expected_body",
+    ("provider_data", "provider_json", "param_data", "param_json", "authenticator_data", "authenticator_json", "expected_exception", "expected_body"),
     [
         # merging data params from the three sources
         ({"field": "value"}, None, None, None, None, None, None, "field=value"),
@@ -196,11 +197,11 @@ def test_send_request_data_json(provider_data, provider_json, param_data, param_
         requester.send_request(request_body_data=param_data, request_body_json=param_json)
         sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
         if expected_body is not None:
-            assert sent_request.body == expected_body.decode('UTF-8') if not isinstance(expected_body, str) else expected_body
+            assert sent_request.body == expected_body.decode("UTF-8") if not isinstance(expected_body, str) else expected_body
 
 
 @pytest.mark.parametrize(
-    "provider_data, param_data, authenticator_data, expected_exception, expected_body",
+    ("provider_data", "param_data", "authenticator_data", "expected_exception", "expected_body"),
     [
         # assert body string from one source works
         ("field=value", None, None, None, "field=value"),
@@ -215,7 +216,7 @@ def test_send_request_data_json(provider_data, provider_json, param_data, param_
         ("field=value", {"abc": "def"}, None, ValueError, None),
         ({"abc": "def"}, "field=value", None, ValueError, None),
         ("field=value", None, {"abc": "def"}, ValueError, None),
-    ]
+    ],
 )
 def test_send_request_string_data(provider_data, param_data, authenticator_data, expected_exception, expected_body):
     options_provider = MagicMock()
@@ -235,7 +236,7 @@ def test_send_request_string_data(provider_data, param_data, authenticator_data,
 
 
 @pytest.mark.parametrize(
-    "provider_headers, param_headers, authenticator_headers, expected_exception, expected_headers",
+    ("provider_headers", "param_headers", "authenticator_headers", "expected_exception", "expected_headers"),
     [
         # merging headers from the three sources
         ({"header": "value"}, None, None, None, {"header": "value"}),
@@ -248,7 +249,7 @@ def test_send_request_string_data(provider_data, param_data, authenticator_data,
     ])
 def test_send_request_headers(provider_headers, param_headers, authenticator_headers, expected_exception, expected_headers):
     # headers set by the requests framework, do not validate
-    default_headers = {'User-Agent': mock.ANY, 'Accept-Encoding': mock.ANY, 'Accept': mock.ANY, 'Connection': mock.ANY}
+    default_headers = {"User-Agent": mock.ANY, "Accept-Encoding": mock.ANY, "Accept": mock.ANY, "Connection": mock.ANY}
     options_provider = MagicMock()
     options_provider.get_request_headers.return_value = provider_headers
     authenticator = MagicMock()
@@ -265,7 +266,7 @@ def test_send_request_headers(provider_headers, param_headers, authenticator_hea
 
 
 @pytest.mark.parametrize(
-    "provider_params, param_params, authenticator_params, expected_exception, expected_params",
+    ("provider_params", "param_params", "authenticator_params", "expected_exception", "expected_params"),
     [
         # merging params from the three sources
         ({"param": "value"}, None, None, None, {"param": "value"}),
@@ -295,7 +296,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
 
 
 @pytest.mark.parametrize(
-    "requester_path, param_path, expected_path",
+    ("requester_path", "param_path", "expected_path"),
     [
         ("deals", None, "/deals"),
         ("deals", "deals2", "/deals2"),
@@ -466,7 +467,7 @@ def test_raise_on_http_errors(mocker, error):
 
 
 @pytest.mark.parametrize(
-    "api_response, expected_message",
+    ("api_response", "expected_message"),
     [
         ({"error": "something broke"}, "something broke"),
         ({"error": {"message": "something broke"}}, "something broke"),
@@ -503,7 +504,7 @@ def test_default_parse_response_error_message_not_json(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, path, expected_full_url",[
+    ("test_name", "base_url", "path", "expected_full_url"),[
         ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url", "https://airbyte.io/", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url_and_leading_slash_on_path", "https://airbyte.io/", "/my_endpoint", "https://airbyte.io/my_endpoint"),
@@ -511,7 +512,7 @@ def test_default_parse_response_error_message_not_json(requests_mock):
         ("test_trailing_slash_on_path", "https://airbyte.io", "/my_endpoint/", "https://airbyte.io/my_endpoint/"),
         ("test_nested_path_no_leading_slash", "https://airbyte.io", "v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
         ("test_nested_path_with_leading_slash", "https://airbyte.io", "/v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
-    ]
+    ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
     requester = HttpRequester(
@@ -533,7 +534,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
 
 
 @pytest.mark.parametrize(
-    "path, params, expected_url", [
+    ("path", "params", "expected_url"), [
         pytest.param("v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
         pytest.param("v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
         pytest.param("v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
@@ -542,7 +543,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
         pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
         pytest.param("v1/endpoint?param1=1", {"param1": 1}, "https://test_base_url.com/v1/endpoint?param1=1", id="test_duplicate_params_same_value_not_string"),
         pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_duplicate_params_different_value"),
-    ]
+    ],
 )
 def test_duplicate_request_params_are_deduped(path, params, expected_url):
     requester = HttpRequester(
@@ -564,14 +565,14 @@ def test_duplicate_request_params_are_deduped(path, params, expected_url):
 
 
 @pytest.mark.parametrize(
-    "should_log, status_code, should_throw", [
+    ("should_log", "status_code", "should_throw"), [
         (True, 200, False),
         (True, 400, False),
         (True, 500, True),
         (False, 200, False),
         (False, 400, False),
         (False, 500, True),
-    ]
+    ],
 )
 def test_log_requests(should_log, status_code, should_throw):
     repository = MagicMock()
@@ -584,7 +585,7 @@ def test_log_requests(should_log, status_code, should_throw):
         config={},
         parameters={},
         message_repository=repository,
-        disable_retries=True
+        disable_retries=True,
     )
     requester._session.send = MagicMock()
     response = requests.Response()

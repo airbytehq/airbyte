@@ -65,9 +65,7 @@ def test_is_expired_true():
 
 
 def test_is_expired_true_with_delta_threshold():
-    """
-    Testing case when token still not expired actually, but refresh_token_safe_delta check is not passed
-    """
+    """Testing case when token still not expired actually, but refresh_token_safe_delta check is not passed."""
 
     def fake__init__(self, **kwargs):
         expires_in = 100 + source_bing_ads.client.Client.refresh_token_safe_delta / 2

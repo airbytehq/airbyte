@@ -6,6 +6,9 @@ import json
 from typing import Any, Dict, List, Mapping
 
 import pytest
+from destination_kvdb import DestinationKvdb
+from destination_kvdb.client import KvDbClient
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -19,13 +22,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_kvdb import DestinationKvdb
-from destination_kvdb.client import KvDbClient
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -76,12 +77,12 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0),
     )
 
 
 def retrieve_all_records(client: KvDbClient) -> List[AirbyteRecordMessage]:
-    """retrieves and formats all records in kvdb as Airbyte messages"""
+    """Retrieves and formats all records in kvdb as Airbyte messages."""
     all_records = client.list_keys(list_values=True)
     out = []
     for record in all_records:
@@ -93,11 +94,10 @@ def retrieve_all_records(client: KvDbClient) -> List[AirbyteRecordMessage]:
 
 
 def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: KvDbClient):
-    """
-    This test verifies that:
-        1. writing a stream in "overwrite" mode overwrites any existing data for that stream
-        2. writing a stream in "append" mode appends new records without deleting the old ones
-        3. The correct state message is output by the connector at the end of the sync
+    """This test verifies that:
+    1. writing a stream in "overwrite" mode overwrites any existing data for that stream
+    2. writing a stream in "append" mode appends new records without deleting the old ones
+    3. The correct state message is output by the connector at the end of the sync.
     """
     append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
     first_state_message = _state({"state": "1"})
@@ -113,8 +113,8 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     expected_states = [first_state_message, second_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
-        )
+            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message],
+        ),
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 

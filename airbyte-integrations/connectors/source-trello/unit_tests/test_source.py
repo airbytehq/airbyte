@@ -31,7 +31,7 @@ def test_check_connection(requests_mock):
         headers=NO_SLEEP_HEADERS,
         json=[
             {"id": "b11111111111111111111111", "name": "board_1"},
-            {"id": "b22222222222222222222222", "name": "board_2"}
+            {"id": "b22222222222222222222222", "name": "board_2"},
         ],
     )
 
@@ -48,4 +48,4 @@ def test_check_connection(requests_mock):
     config["board_ids"] = ["b11111111111111111111111", "b33333333333333333333333", "b44444444444444444444444"]
     status, error = source.check_connection(logger, config)
     assert status is False
-    assert error == 'Board ID(s): b33333333333333333333333, b44444444444444444444444 not found'
+    assert error == "Board ID(s): b33333333333333333333333, b44444444444444444444444 not found"

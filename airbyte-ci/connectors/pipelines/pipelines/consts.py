@@ -3,7 +3,6 @@
 #
 
 import platform
-from pathlib import Path
 
 from dagger import Platform
 

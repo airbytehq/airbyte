@@ -6,14 +6,13 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 
 class MicrosoftOauth2Authenticator(Oauth2Authenticator):
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-        """
-        Returns the request body to set on the refresh request
-        """
+        """Returns the request body to set on the refresh request."""
         payload: MutableMapping[str, Any] = {
             "grant_type": "client_credentials",
             "client_id": self.get_client_id(),

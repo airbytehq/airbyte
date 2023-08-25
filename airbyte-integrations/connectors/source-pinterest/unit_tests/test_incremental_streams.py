@@ -7,12 +7,13 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_pinterest.streams import AdAccountAnalytics, Campaigns, IncrementalPinterestSubStream
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalPinterestSubStream, "path", "v0/example_endpoint")

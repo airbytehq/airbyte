@@ -7,6 +7,9 @@ from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+from dateutil.relativedelta import relativedelta
+from requests import codes, exceptions  # type: ignore[import]
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.sources import AbstractSource
@@ -15,8 +18,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from dateutil.relativedelta import relativedelta
-from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .streams import BulkIncrementalSalesforceStream, BulkSalesforceStream, Describe, IncrementalRestSalesforceStream, RestSalesforceStream
@@ -32,7 +33,7 @@ class SourceSalesforce(AbstractSource):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.catalog = None
 
@@ -55,7 +56,7 @@ class SourceSalesforce(AbstractSource):
             else:
                 error_code = error_data.get("errorCode")
                 if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                    logger.warning(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
                     error_msg = "API Call limit is exceeded"
             return False, error_msg
         return True, None
@@ -72,7 +73,7 @@ class SourceSalesforce(AbstractSource):
             return "rest"
         if force_use_bulk_api and properties_not_supported_by_bulk:
             logger.warning(
-                f"Following properties will be excluded from stream: {stream_name} due to BULK API limitations: {list(properties_not_supported_by_bulk)}"
+                f"Following properties will be excluded from stream: {stream_name} due to BULK API limitations: {list(properties_not_supported_by_bulk)}",
             )
             return "bulk"
         if properties_not_supported_by_bulk:
@@ -86,7 +87,7 @@ class SourceSalesforce(AbstractSource):
         stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
     ) -> List[Stream]:
-        """ "Generates a list of stream by their names. It can be used for different tests too"""
+        """ "Generates a list of stream by their names. It can be used for different tests too."""
         authenticator = TokenAuthenticator(sf_object.access_token)
         stream_properties = sf_object.generate_schemas(stream_objects)
         streams = []
@@ -100,14 +101,15 @@ class SourceSalesforce(AbstractSource):
             elif api_type == "bulk":
                 full_refresh, incremental = BulkSalesforceStream, BulkIncrementalSalesforceStream
             else:
-                raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
+                msg = f"Stream {stream_name} cannot be processed by REST or BULK API."
+                raise Exception(msg)
 
             json_schema = stream_properties.get(stream_name, {})
             pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
-            streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
+            streams_kwargs.update({"sf_api": sf_object, "pk": pk, "stream_name": stream_name, "schema": json_schema, "authenticator": authenticator})
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
                 start_date = config.get(
-                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
+                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT),
                 )
                 stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
             else:
@@ -116,7 +118,7 @@ class SourceSalesforce(AbstractSource):
                 logger.warning(
                     f"Can not instantiate stream {stream_name}. "
                     f"It is not supported by the BULK API and can not be implemented via REST because the number of its properties "
-                    f"exceeds the limit and it lacks a primary key."
+                    f"exceeds the limit and it lacks a primary key.",
                 )
                 continue
             streams.append(stream)
@@ -134,7 +136,7 @@ class SourceSalesforce(AbstractSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         # save for use inside streams method
         self.catalog = catalog
@@ -159,5 +161,5 @@ class SourceSalesforce(AbstractSource):
             url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
                 logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
-                raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
+                raise AirbyteStopSync  # if got 403 rate limit response, finish the sync with success.
             raise error

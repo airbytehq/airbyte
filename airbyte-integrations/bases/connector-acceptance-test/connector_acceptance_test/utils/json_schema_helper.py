@@ -4,7 +4,7 @@
 
 
 from functools import reduce
-from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
+from typing import Any, Dict, List, Mapping, Optional, Set, Union
 
 import dpath.util
 import pendulum
@@ -22,7 +22,7 @@ class CatalogField:
         self.formats = self._detect_formats()
 
     def _detect_formats(self) -> Set[str]:
-        """Extract set of formats/types for this field"""
+        """Extract set of formats/types for this field."""
         format_ = []
         try:
             format_ = self.schema.get("format", self.schema["type"])
@@ -33,10 +33,11 @@ class CatalogField:
         return set(format_)
 
     def _parse_value(self, value: Any) -> Any:
-        """Do actual parsing of the serialized value"""
+        """Do actual parsing of the serialized value."""
         if self.formats.intersection({"datetime", "date-time", "date"}):
             if value is None and "null" not in self.formats:
-                raise ValueError(f"Invalid field format. Value: {value}. Format: {self.formats}")
+                msg = f"Invalid field format. Value: {value}. Format: {self.formats}"
+                raise ValueError(msg)
             # handle beautiful MySQL datetime, i.e. NULL datetime
             if value.startswith("0000-00-00"):
                 value = value.replace("0000-00-00", "0001-01-01")
@@ -44,7 +45,7 @@ class CatalogField:
         return value
 
     def parse(self, record: Mapping[str, Any], path: Optional[List[Union[int, str]]] = None) -> Any:
-        """Extract field value from the record and cast it to native type"""
+        """Extract field value from the record and cast it to native type."""
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
         return self._parse_value(value)
@@ -53,11 +54,11 @@ class CatalogField:
 class JsonSchemaHelper:
     """Helper class to simplify schema validation and read of records according to their schema."""
 
-    def __init__(self, schema):
+    def __init__(self, schema) -> None:
         self._schema = schema
 
     def get_ref(self, path: str) -> Any:
-        """Resolve reference
+        """Resolve reference.
 
         :param path: reference (#/definitions/SomeClass, etc)
         :return: part of schema that is definition of the reference
@@ -69,7 +70,7 @@ class JsonSchemaHelper:
         return node
 
     def get_property(self, path: List[str]) -> Mapping[str, Any]:
-        """Get any part of schema according to provided path, resolves $refs if necessary
+        """Get any part of schema according to provided path, resolves $refs if necessary.
 
         schema = {
                 "properties": {
@@ -110,11 +111,10 @@ class JsonSchemaHelper:
         return CatalogField(schema=self.get_property(path), path=path)
 
     def get_node(self, path: List[Union[str, int]]) -> Any:
-        """Return part of schema by specified path
+        """Return part of schema by specified path.
 
         :param path: list of fields in the order of navigation
         """
-
         node = self._schema
         for segment in path:
             if "$ref" in node:
@@ -123,17 +123,13 @@ class JsonSchemaHelper:
         return node
 
     def get_parent_path(self, path: str, separator="/") -> Any:
-        """
-        Returns the parent path of the supplied path
-        """
+        """Returns the parent path of the supplied path."""
         absolute_path = f"{separator}{path}" if not path.startswith(separator) else path
         parent_path, _ = absolute_path.rsplit(sep=separator, maxsplit=1)
         return parent_path
 
     def get_parent(self, path: str, separator="/") -> Any:
-        """
-        Returns the parent dict of a given path within the `obj` dict
-        """
+        """Returns the parent dict of a given path within the `obj` dict."""
         parent_path = self.get_parent_path(path, separator=separator)
         if parent_path == "":
             return self._schema
@@ -147,7 +143,7 @@ class JsonSchemaHelper:
         """
         variant_paths = []
 
-        def traverse_schema(_schema: Union[Dict[Text, Any], List], path=None):
+        def traverse_schema(_schema: Union[Dict[str, Any], List], path=None):
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
@@ -163,13 +159,12 @@ class JsonSchemaHelper:
 
 
 def get_object_structure(obj: dict) -> List[str]:
-    """
-    Traverse through object structure and compose a list of property keys including nested one.
+    """Traverse through object structure and compose a list of property keys including nested one.
     This list reflects object's structure with list of all obj property key
     paths. In case if object is nested inside array we assume that it has same
     structure as first element.
     :param obj: data object to get its structure
-    :returns list of object property keys paths
+    :returns list of object property keys paths.
     """
     paths = []
 
@@ -180,6 +175,7 @@ def get_object_structure(obj: dict) -> List[str]:
             return {k: _traverse_obj_and_get_path(v, path + "/" + k) for k, v in obj.items()}
         elif isinstance(obj, list) and len(obj) > 0:
             return [_traverse_obj_and_get_path(obj[0], path + "/[]")]
+        return None
 
     _traverse_obj_and_get_path(obj)
 
@@ -187,11 +183,10 @@ def get_object_structure(obj: dict) -> List[str]:
 
 
 def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -> List[str]:
-    """
-    Traverse through json schema and compose list of property keys that object expected to have.
+    """Traverse through json schema and compose list of property keys that object expected to have.
     :param annotate_one_of: Generate one_of index in path
     :param schema: jsonschema to get expected paths
-    :returns list of object property keys paths
+    :returns list of object property keys paths.
     """
     paths = []
     if "$ref" in schema:
@@ -228,15 +223,15 @@ def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -
             props = subschema.get("properties")
             if not props:
                 # Handle objects with arbitrary properties:
-                # {"type": "object", "additionalProperties": {"type": "string"}}
                 if path:
                     paths.append(path)
-                return
+                return None
             return {k: _scan_schema(v, path + "/" + k) for k, v in props.items()}
         elif "array" in schema_type:
             items = subschema.get("items", {})
             return [_scan_schema(items, path + "/[]")]
         paths.append(path)
+        return None
 
     _scan_schema(schema)
     return paths
@@ -257,9 +252,8 @@ def flatten_tuples(to_flatten):
 
 
 def get_paths_in_connector_config(schema: dict) -> List[str]:
-    """
-    Traverse through the provided schema's values and extract the path_in_connector_config paths
+    """Traverse through the provided schema's values and extract the path_in_connector_config paths
     :param properties: jsonschema containing values which may have path_in_connector_config attributes
-    :returns list of path_in_connector_config paths
+    :returns list of path_in_connector_config paths.
     """
     return ["/" + "/".join(value["path_in_connector_config"]) for value in schema.values()]

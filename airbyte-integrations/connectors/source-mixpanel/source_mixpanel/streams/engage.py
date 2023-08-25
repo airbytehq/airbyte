@@ -6,6 +6,7 @@ from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -13,8 +14,7 @@ from .base import IncrementalMixpanelStream, MixpanelStream
 
 
 class EngageSchema(MixpanelStream):
-    """
-    Engage helper stream for dynamic schema extraction.
+    """Engage helper stream for dynamic schema extraction.
     :: reqs_per_hour_limit: int - property is set to the value of 1 million,
        to get the sleep time close to the zero, while generating dynamic schema.
        When `reqs_per_hour_limit = 0` - it means we skip this limits.
@@ -28,8 +28,7 @@ class EngageSchema(MixpanelStream):
         return "engage/properties"
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        response.json() example:
+        """response.json() example:
         {
             "results": {
                 "$browser": {
@@ -46,7 +45,7 @@ class EngageSchema(MixpanelStream):
                     "type": "string"
                 }
             }
-        }
+        }.
         """
         records = response.json().get(self.data_field, {})
         for property_name in records:
@@ -59,7 +58,7 @@ class EngageSchema(MixpanelStream):
 class Engage(IncrementalMixpanelStream):
     """Return list of all users
     API Docs: https://developer.mixpanel.com/reference/engage
-    Endpoint: https://mixpanel.com/api/2.0/engage
+    Endpoint: https://mixpanel.com/api/2.0/engage.
     """
 
     http_method: str = "POST"
@@ -86,13 +85,13 @@ class Engage(IncrementalMixpanelStream):
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         return {"include_all_users": True}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params = {**params, "page_size": self.page_size}
@@ -117,8 +116,7 @@ class Engage(IncrementalMixpanelStream):
             return None
 
     def process_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """
-        {
+        """{
             "page": 0
             "page_size": 1000
             "session_id": "1234567890-EXAMPL"
@@ -145,7 +143,7 @@ class Engage(IncrementalMixpanelStream):
                 },{
                 ...
                 }
-            ]
+            ].
 
         }
         """
@@ -168,8 +166,7 @@ class Engage(IncrementalMixpanelStream):
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: A dict of the JSON schema representing this stream.
+        """:return: A dict of the JSON schema representing this stream.
 
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
@@ -208,13 +205,15 @@ class Engage(IncrementalMixpanelStream):
 
     def set_cursor(self, cursor_field: List[str]):
         if not cursor_field:
-            raise Exception("cursor_field is not defined")
+            msg = "cursor_field is not defined"
+            raise Exception(msg)
         if len(cursor_field) > 1:
-            raise Exception("multidimensional cursor_field is not supported")
+            msg = "multidimensional cursor_field is not supported"
+            raise Exception(msg)
         self.cursor_field = cursor_field[0]
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if sync_mode == SyncMode.incremental:
             self.set_cursor(cursor_field)

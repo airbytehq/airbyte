@@ -4,13 +4,11 @@
 
 import os
 
-from dagster import OpExecutionContext, op
-from dagster_slack import SlackResource
-from slack_sdk import WebhookClient
+from dagster import OpExecutionContext
 
 
 def chunk_messages(report):
-    """split report into messages with no more than 4000 chars each (slack limitation)"""
+    """Split report into messages with no more than 4000 chars each (slack limitation)."""
     msg = ""
     for line in report.splitlines():
         msg += line + "\n"
@@ -21,8 +19,7 @@ def chunk_messages(report):
 
 
 def send_slack_message(context: OpExecutionContext, channel: str, message: str, enable_code_block_wrapping: bool = False):
-    """
-    Send a slack message to the given channel.
+    """Send a slack message to the given channel.
 
     Args:
         context (OpExecutionContext): The execution context.

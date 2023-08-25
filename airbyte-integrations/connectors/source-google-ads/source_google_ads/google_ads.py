@@ -5,16 +5,17 @@
 
 import logging
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, MutableMapping
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional
 
 import backoff
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 
 REPORT_MAPPING = {
     "accounts": "customer",
@@ -72,7 +73,7 @@ class GoogleAds:
         backoff.expo,
         (ServerError, TooManyRequests),
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_tries=5,
     )
@@ -85,12 +86,10 @@ class GoogleAds:
         return [self.ga_service.search(search_request)]
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
-        """
-        Issue Google API request to get detailed information on data type for custom query columns.
+        """Issue Google API request to get detailed information on data type for custom query columns.
         :params fields list of columns for user defined query.
         :return dict of fields type info.
         """
-
         ga_field_service = self.client.get_service("GoogleAdsFieldService")
         request = self.client.get_type("SearchGoogleAdsFieldsRequest")
         request.page_size = len(fields)
@@ -113,7 +112,7 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
+        schema: Mapping[str, Any], report_name: str, from_date: Optional[str] = None, to_date: Optional[str] = None, cursor_field: Optional[str] = None,
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
@@ -195,10 +194,7 @@ class GoogleAds:
         # message and could be anything, convert it to a string or array of
         # string if it has "repeated" flag on metadata
         if schema_type.get("protobuf_message"):
-            if "array" in schema_type.get("type"):
-                field_value = [str(field) for field in field_value]
-            else:
-                field_value = str(field_value)
+            field_value = [str(field) for field in field_value] if "array" in schema_type.get("type") else str(field_value)
 
         return field_value
 
@@ -206,5 +202,4 @@ class GoogleAds:
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
-        single_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
-        return single_record
+        return {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}

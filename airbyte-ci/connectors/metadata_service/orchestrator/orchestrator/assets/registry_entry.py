@@ -57,7 +57,8 @@ def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataF
         entry_with_spec["spec"] = get_cached_spec(spec_path)
         return entry_with_spec
     except KeyError:
-        raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
+        msg = f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}"
+        raise MissingCachedSpecError(msg)
 
 
 def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
@@ -69,7 +70,6 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
     Returns:
         str: The migration documentation url.
     """
-
     base_url = f"{documentation_url}-migrations"
     default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
 
@@ -92,7 +92,7 @@ def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
     if breaking_changes is not None:
         for version, breaking_change in breaking_changes.items():
             breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
-                breaking_change, documentation_url, version
+                breaking_change, documentation_url, version,
             )
 
     return metadata_releases
@@ -214,13 +214,15 @@ def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegist
     elif registry_entry.get("destinationDefinitionId"):
         return ("destination", ConnectorRegistryDestinationDefinition)
     else:
-        raise Exception("Could not determine connector type from registry entry")
+        msg = "Could not determine connector type from registry entry"
+        raise Exception(msg)
 
 
 def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_name: str):
     metadata_path = metadata_entry.file_path
     if metadata_path is None:
-        raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
+        msg = f"Metadata entry {metadata_entry} does not have a file path"
+        raise Exception(msg)
 
     metadata_folder = os.path.dirname(metadata_path)
     return os.path.join(metadata_folder, registry_name)
@@ -233,7 +235,7 @@ def persist_registry_entry_to_json(
     metadata_entry: LatestMetadataEntry,
     registry_directory_manager: GCSFileManager,
 ) -> GCSFileHandle:
-    """Persist the registry_entry to a json file on GCS bucket
+    """Persist the registry_entry to a json file on GCS bucket.
 
     Args:
         registry_entry (ConnectorRegistryV0): The registry_entry.
@@ -320,8 +322,7 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
 
 @sentry_sdk.trace
 def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[MetadataDefinition]:
-    """
-    Safely parse the metadata definition from the given metadata entry.
+    """Safely parse the metadata definition from the given metadata entry.
     Handles the case where the metadata definition is invalid for in old versions of the metadata.
     """
     yaml_string = metadata_blob.download_as_string().decode("utf-8")
@@ -358,7 +359,8 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     # find the blob with the matching etag
     matching_blob = next((blob for blob in all_metadata_file_blobs if blob.etag == etag), None)
     if not matching_blob:
-        raise Exception(f"Could not find blob with etag {etag}")
+        msg = f"Could not find blob with etag {etag}"
+        raise Exception(msg)
 
     metadata_file_path = matching_blob.name
     PublishConnectorLifecycle.log(
@@ -422,9 +424,7 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
 )
 @sentry.instrument_asset_op
 def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
-    """
-    Generate the registry entry files from the given metadata file, and persist it to GCS.
-    """
+    """Generate the registry entry files from the given metadata file, and persist it to GCS."""
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)

@@ -7,7 +7,7 @@ from source_hubspot.streams import Stream
 
 
 @pytest.mark.parametrize(
-    "field_type,expected",
+    ("field_type", "expected"),
     [
         ("string", {"type": ["null", "string"]}),
         ("integer", {"type": ["null", "integer"]}),
@@ -29,7 +29,7 @@ def test_field_type_format_converting(field_type, expected):
 
 
 @pytest.mark.parametrize(
-    "field_type,expected",
+    ("field_type", "expected"),
     [
         ("_unsupported_field_type_", {"type": ["null", "string"]}),
         (None, {"type": ["null", "string"]}),
@@ -48,7 +48,7 @@ def test_bad_field_type_converting(field_type, expected, caplog, capsys):
 
 
 @pytest.mark.parametrize(
-    "declared_field_types,field_name,field_value,format,casted_value",
+    ("declared_field_types", "field_name", "field_value", "format", "casted_value"),
     [
         # test for None in field_values
         (["null", "string"], "some_field", None, None, None),
@@ -82,14 +82,14 @@ def test_bad_field_type_converting(field_type, expected, caplog, capsys):
 def test_cast_type_if_needed(declared_field_types, field_name, field_value, format, casted_value):
     assert (
         Stream._cast_value(
-            declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format
+            declared_field_types=declared_field_types, field_name=field_name, field_value=field_value, declared_format=format,
         )
         == casted_value
     )
 
 
 @pytest.mark.parametrize(
-    "field_value, declared_format, expected_casted_value",
+    ("field_value", "declared_format", "expected_casted_value"),
     [
         ("1653696000000", "date", "2022-05-28"),
         ("1645608465000", "date-time", "2022-02-23T09:27:45+00:00"),

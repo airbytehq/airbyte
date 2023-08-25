@@ -5,6 +5,7 @@
 from typing import Any, Callable, Dict, Iterable, Optional
 
 import dpath
+
 from airbyte_cdk.models import AirbyteStream
 
 

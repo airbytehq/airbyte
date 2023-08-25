@@ -5,6 +5,7 @@
 import json
 
 import pytest
+
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteErrorTraceMessage,
     AirbyteMessage,
@@ -17,10 +18,11 @@ from airbyte_cdk.models.airbyte_protocol import Type as MessageType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
-@pytest.fixture
+@pytest.fixture()
 def raised_exception():
     try:
-        raise RuntimeError("an error has occurred")
+        msg = "an error has occurred"
+        raise RuntimeError(msg)
     except RuntimeError as e:
         return e
 
@@ -58,7 +60,7 @@ def test_existing_exception_as_airbyte_message(raised_exception):
     assert airbyte_message.trace.error.internal_message == "an error has occurred"
     assert airbyte_message.trace.error.stack_trace.startswith("Traceback (most recent call last):")
     assert airbyte_message.trace.error.stack_trace.endswith(
-        'raise RuntimeError("an error has occurred")\n' "RuntimeError: an error has occurred\n"
+        'raise RuntimeError("an error has occurred")\n' "RuntimeError: an error has occurred\n",
     )
 
 
@@ -81,7 +83,7 @@ def test_other_error_as_connection_status_message():
 
 def test_emit_message(capsys):
     traced_exc = AirbyteTracedException(
-        internal_message="internal message", message="user-friendly message", exception=RuntimeError("oh no")
+        internal_message="internal message", message="user-friendly message", exception=RuntimeError("oh no"),
     )
 
     expected_message = AirbyteMessage(

@@ -8,7 +8,6 @@ from urllib.parse import quote_plus
 
 import pytest
 import requests
-from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
 from pytest_lazyfixture import lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
@@ -19,6 +18,8 @@ from source_google_search_console.streams import (
     Sites,
 )
 from utils import command_check
+
+from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
 
 logger = logging.getLogger("airbyte")
 
@@ -32,7 +33,7 @@ class MockResponse:
 
 
 @pytest.mark.parametrize(
-    "count, expected",
+    ("count", "expected"),
     [
         (ROW_LIMIT, ROW_LIMIT),
         (ROW_LIMIT - 1, 0),
@@ -49,7 +50,7 @@ def test_pagination(count, expected):
 @pytest.mark.parametrize(
     "site_urls",
     [
-        ["https://example1.com", "https://example2.com"], ["https://example.com"]
+        ["https://example1.com", "https://example2.com"], ["https://example.com"],
     ],
 )
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
@@ -78,7 +79,7 @@ def test_slice(site_urls, sync_mode, data_state):
 
 
 @pytest.mark.parametrize(
-    "current_stream_state, latest_record, expected",
+    ("current_stream_state", "latest_record", "expected"),
     [
         (
             {"https://example.com": {"web": {"date": "2023-01-01"}}},
@@ -122,7 +123,7 @@ def test_updated_state():
 
 def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
     stream = Sites(None, ["https://domain1.com"], "2023-01-01", "2023-01-01")
-    slice = list(stream.stream_slices(None))[0]
+    slice = next(iter(stream.stream_slices(None)))
     url = stream.url_base + stream.path(None, slice)
     requests_mock.get(url, status_code=403, json=forbidden_error_message_json)
     test_response = requests.get(url)
@@ -131,7 +132,7 @@ def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
 
 
 @pytest.mark.parametrize(
-    "stream_class, expected",
+    ("stream_class", "expected"),
     [
         (
             GoogleSearchConsole,
@@ -166,7 +167,7 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     # test site_urls
     assert command_check(source, config_gen(site_urls=["https://example.com"])) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert command_check(source, config_gen(site_urls=["https://missed.com"])) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="\"InvalidSiteURLValidationError('The following URLs are not permitted: https://missed.com/')\""
+        status=Status.FAILED, message="\"InvalidSiteURLValidationError('The following URLs are not permitted: https://missed.com/')\"",
     )
 
     # test start_date
@@ -197,19 +198,19 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
         message="\"Unable to check connectivity to Google Search Console API - Exception('custom_reports is not valid JSON')\"",
     )
     assert command_check(source, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
+        status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'",
     )
 
 
 @pytest.mark.parametrize(
-    "test_config, expected",
+    ("test_config", "expected"),
     [
         (
             lazy_fixture("config"),
             (False, "UnauthorizedOauthError('Unable to connect with privided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')")),
         (
             lazy_fixture("service_account_config"),
-            (False, "UnauthorizedServiceAccountError('Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid.')"))
+            (False, "UnauthorizedServiceAccountError('Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid.')")),
     ],
 )
 def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
@@ -231,7 +232,7 @@ def test_get_start_date():
     stream = SearchAnalyticsByDate(None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
     date = "2021-09-07"
     state_date = stream._get_start_date(
-        stream_state={"https://domain1.com": {"web": {"date": date}}}, site_url="https://domain1.com", search_type="web"
+        stream_state={"https://domain1.com": {"web": {"date": date}}}, site_url="https://domain1.com", search_type="web",
     )
 
     assert date == str(state_date)

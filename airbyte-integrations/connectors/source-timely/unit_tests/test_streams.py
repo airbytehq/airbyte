@@ -11,11 +11,10 @@ from source_timely.source import TimelyIntegrationStream
 
 @pytest.fixture()
 def config(request):
-    args = {"account_id": "123", "start_date": "2022-04-01", "bearer_token": "51UWRAsFuIbeygfIY3XfucQUGiX"}
-    return args
+    return {"account_id": "123", "start_date": "2022-04-01", "bearer_token": "51UWRAsFuIbeygfIY3XfucQUGiX"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(TimelyIntegrationStream, "path", "v0/example_endpoint")

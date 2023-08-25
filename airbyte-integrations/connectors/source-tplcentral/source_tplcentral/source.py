@@ -3,14 +3,15 @@
 #
 
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from requests.auth import HTTPBasicAuth
 from source_tplcentral.streams import Customers, Inventory, Items, Orders, StockDetails, StockSummaries
 
 
@@ -20,9 +21,9 @@ class TplcentralAuthenticator(Oauth2Authenticator):
         token_refresh_endpoint: str,
         client_id: str,
         client_secret: str,
-        user_login_id: int = None,
-        user_login: str = None,
-        scopes: List[str] = None,
+        user_login_id: Optional[int] = None,
+        user_login: Optional[str] = None,
+        scopes: Optional[List[str]] = None,
     ):
         super().__init__(
             token_refresh_endpoint=token_refresh_endpoint,
@@ -59,13 +60,14 @@ class TplcentralAuthenticator(Oauth2Authenticator):
     def refresh_access_token(self) -> Tuple[str, int]:
         try:
             response = requests.post(
-                self.token_refresh_endpoint, auth=HTTPBasicAuth(self.client_id, self.client_secret), json=self.get_refresh_request_body()
+                self.token_refresh_endpoint, auth=HTTPBasicAuth(self.client_id, self.client_secret), json=self.get_refresh_request_body(),
             )
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.expires_in_name]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
 
 class SourceTplcentral(AbstractSource):

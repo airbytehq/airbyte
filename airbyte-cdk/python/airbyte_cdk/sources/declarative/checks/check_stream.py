@@ -14,8 +14,7 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 
 @dataclass
 class CheckStream(ConnectionChecker):
-    """
-    Checks the connections by checking availability of one or many streams selected by the developer
+    """Checks the connections by checking availability of one or many streams selected by the developer.
 
     Attributes:
         stream_name (List[str]): names of streams to check
@@ -33,8 +32,9 @@ class CheckStream(ConnectionChecker):
         if len(streams) == 0:
             return False, f"No streams to connect to from source {source}"
         for stream_name in self.stream_names:
-            if stream_name not in stream_name_to_stream.keys():
-                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
+            if stream_name not in stream_name_to_stream:
+                msg = f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}."
+                raise ValueError(msg)
 
             stream = stream_name_to_stream[stream_name]
             availability_strategy = stream.availability_strategy or HttpAvailabilityStrategy()

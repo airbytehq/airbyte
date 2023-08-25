@@ -5,6 +5,8 @@
 from unittest.mock import Mock
 
 import pytest
+from pydantic.error_wrappers import ValidationError
+
 from airbyte_cdk.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
@@ -20,7 +22,6 @@ from airbyte_cdk.sources.message import (
     MessageRepository,
     NoopMessageRepository,
 )
-from pydantic.error_wrappers import ValidationError
 
 A_CONTROL = AirbyteControlMessage(
     type=OrchestratorType.CONNECTOR_CONFIG,
@@ -88,7 +89,7 @@ class TestInMemoryMessageRepository:
 
         repo.log_message(Level.INFO, lambda: "this is a log message")
 
-        assert list(repo.consume_queue())[0].log.message == filtered_message
+        assert next(iter(repo.consume_queue())).log.message == filtered_message
 
     def test_given_log_level_not_severe_enough_when_log_message_then_do_not_allow_message_to_be_consumed(self):
         repo = InMemoryMessageRepository(Level.ERROR)
@@ -101,9 +102,7 @@ class TestInMemoryMessageRepository:
         assert list(repo.consume_queue())
 
     def test_given_unknown_log_level_for_log_when_log_message_then_raise_error(self):
-        """
-        Pydantic will fail if the log level is unknown but on our side, we should try to log at least
-        """
+        """Pydantic will fail if the log level is unknown but on our side, we should try to log at least."""
         repo = InMemoryMessageRepository(Level.ERROR)
         with pytest.raises(ValidationError):
             repo.log_message(UNKNOWN_LEVEL, lambda: "this is a log message")
@@ -137,8 +136,8 @@ class TestLogAppenderMessageRepositoryDecorator:
         assert decorated.log_message.call_args_list[0].args[1]() == {
             "a": {
                 "dict_to_append": "appended value",
-                "original": "original value"
-            }
+                "original": "original value",
+            },
         }
 
     def test_given_value_clash_when_log_message_then_overwrite_value(self, decorated):

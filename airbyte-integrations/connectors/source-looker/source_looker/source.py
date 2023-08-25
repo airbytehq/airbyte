@@ -6,6 +6,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -40,14 +41,13 @@ class CustomTokenAuthenticator(TokenAuthenticator):
         if self._token_expiry_date < pendulum.now():
             err = self.update_access_token()
             if err:
-                raise LookerException(f"auth error: {err}")
+                msg = f"auth error: {err}"
+                raise LookerException(msg)
         return {"Authorization": f"token {self._access_token}"}
 
 
 class SourceLooker(AbstractSource):
-    """
-    Source Intercom fetch data from messaging platform.
-    """
+    """Source Intercom fetch data from messaging platform."""
 
     def get_authenticator(self, config: Mapping[str, Any]) -> CustomTokenAuthenticator:
         return CustomTokenAuthenticator(domain=config["domain"], client_id=config["client_id"], client_secret=config["client_secret"])

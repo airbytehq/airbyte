@@ -5,17 +5,17 @@
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {"start_date": "2020-01-01T00:00:00Z", "credentials": {"access_token": "7607999ef26581e81726777b7b79f20e70e75602"}, "form_ids": ["u6nXL7", "k9xNV4"]}
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_without_forms():
     return {"start_date": "2020-01-01T00:00:00Z", "credentials":{"access_token": "7607999ef26581e81726777b7b79f20e70e75602"}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def form_response():
     return setup_response(
         200,
@@ -57,7 +57,7 @@ def form_response():
                             "properties": {"brightness": 0, "description": "description", "focal_point": {"x": 0, "y": 0}},
                         },
                     },
-                }
+                },
             ],
             "thankyou_screens": [
                 {
@@ -96,7 +96,7 @@ def form_response():
                             "properties": {"brightness": 0, "description": "description", "focal_point": {"x": 0, "y": 0}},
                         },
                     },
-                }
+                },
             ],
             "logic": [
                 {
@@ -111,9 +111,9 @@ def form_response():
                                 "value": {"type": "type", "value": 0},
                             },
                             "condition": {"op": "op", "vars": [{"type": "type", "value": {}}]},
-                        }
+                        },
                     ],
-                }
+                },
             ],
             "theme": {"href": "https://api.typeform.com/themes/Fs24as"},
             "workspace": {"href": "https://api.typeform.com/workspaces/Aw33bz"},
@@ -141,12 +141,12 @@ def form_response():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def forms_response():
     return setup_response(200, {"total_items": 2, "page_count": 1, "items": [{"id": "u6nXL7"}, {"id": "k9xNV4"}]})
 
 
-@pytest.fixture
+@pytest.fixture()
 def response_response():
     return setup_response(
         200,
@@ -443,7 +443,7 @@ def response_response():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def webhooks_response():
     return setup_response(
         200,
@@ -458,20 +458,20 @@ def webhooks_response():
                     "updated_at": "2016-11-21T12:23:28Z",
                     "url": "https://test.com",
                     "verify_ssl": True,
-                }
-            ]
+                },
+            ],
         },
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def images_response():
     return setup_response(
-        200, [{"file_name": "file_name1", "id": "id1", "src": "src1"}, {"file_name": "file_name2", "id": "id2", "src": "src2"}]
+        200, [{"file_name": "file_name1", "id": "id1", "src": "src1"}, {"file_name": "file_name2", "id": "id2", "src": "src2"}],
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def workspaces_response():
     return setup_response(
         200,
@@ -498,7 +498,7 @@ def workspaces_response():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def themes_response():
     return setup_response(
         200,
@@ -533,12 +533,12 @@ def themes_response():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def empty_response_ok():
     return setup_response(200, {})
 
 
-@pytest.fixture
+@pytest.fixture()
 def empty_response_bad():
     return setup_response(400, {})
 

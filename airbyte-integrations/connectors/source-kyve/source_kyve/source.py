@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import Any, List, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -18,7 +19,7 @@ class SourceKyve(AbstractSource):
         pools = config.get("pool_ids").split(",")
         start_ids = config.get("start_ids").split(",")
 
-        if not len(pools) == len(start_ids):
+        if len(pools) != len(start_ids):
             return False, "Please add a start_id for every pool"
 
         for pool_id in pools:

@@ -70,9 +70,7 @@ class _CsvReader:
                 csv.unregister_dialect(dialect_name)
 
     def _get_headers(self, fp: IOBase, config_format: CsvFormat, dialect_name: str) -> List[str]:
-        """
-        Assumes the fp is pointing to the beginning of the files and will reset it as such
-        """
+        """Assumes the fp is pointing to the beginning of the files and will reset it as such."""
         # Note that this method assumes the dialect has already been registered if we're parsing the headers
         self._skip_rows(fp, config_format.skip_rows_before_header)
         if config_format.autogenerate_column_names:
@@ -86,9 +84,8 @@ class _CsvReader:
         return headers
 
     def _auto_generate_headers(self, fp: IOBase, dialect_name: str) -> List[str]:
-        """
-        Generates field names as [f0, f1, ...] in the same way as pyarrow's csv reader with autogenerate_column_names=True.
-        See https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
+        """Generates field names as [f0, f1, ...] in the same way as pyarrow's csv reader with autogenerate_column_names=True.
+        See https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html.
         """
         reader = csv.reader(fp, dialect=dialect_name)  # type: ignore
         number_of_columns = len(next(reader))  # type: ignore
@@ -96,9 +93,7 @@ class _CsvReader:
 
     @staticmethod
     def _skip_rows(fp: IOBase, rows_to_skip: int) -> None:
-        """
-        Skip rows before the header. This has to be done on the file object itself, not the reader
-        """
+        """Skip rows before the header. This has to be done on the file object itself, not the reader."""
         for _ in range(rows_to_skip):
             fp.readline()
 
@@ -126,7 +121,7 @@ class CsvParser(FileTypeParser):
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
             lambda: _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
             if config_format.inference_type != InferenceType.NONE
-            else _DisabledTypeInferrer()
+            else _DisabledTypeInferrer(),
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         read_bytes = 0
@@ -170,7 +165,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger, schemaless: bool
+        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger, schemaless: bool,
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if deduped_property_types and not schemaless:
@@ -181,13 +176,12 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _to_nullable(
-        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
+        row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool,
     ) -> Dict[str, Optional[str]]:
-        nullable = row | {
+        return row | {
             k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
             for k, v in row.items()
         }
-        return nullable
 
     @staticmethod
     def _value_is_none(value: Any, deduped_property_type: Optional[str], null_values: Set[str], strings_can_be_null: bool) -> bool:
@@ -195,14 +189,13 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
-        """
-        Transform the property types to be non-nullable and remove duplicate types if any.
+        """Transform the property types to be non-nullable and remove duplicate types if any.
         Sample input:
         {
         "col1": ["string", "null"],
         "col2": ["string", "string", "null"],
         "col3": "integer"
-        }
+        }.
 
         Sample output:
         {
@@ -217,7 +210,8 @@ class CsvParser(FileTypeParser):
                 prop_type_distinct = set(prop_type)
                 prop_type_distinct.remove("null")
                 if len(prop_type_distinct) != 1:
-                    raise ValueError(f"Could not get non nullable type from {prop_type}")
+                    msg = f"Could not get non nullable type from {prop_type}"
+                    raise ValueError(msg)
                 output[prop] = next(iter(prop_type_distinct))
             else:
                 output[prop] = prop_type
@@ -225,10 +219,9 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _cast_types(
-        row: Dict[str, str], deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger
+        row: Dict[str, str], deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger,
     ) -> Dict[str, Any]:
-        """
-        Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
+        """Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
 
         Array and object types are only handled if they can be deserialized as JSON.
 
@@ -279,7 +272,7 @@ class CsvParser(FileTypeParser):
 
         if warnings:
             logger.warning(
-                f"{FileBasedSourceError.ERROR_CASTING_VALUE.value}: {','.join([w for w in warnings])}",
+                f"{FileBasedSourceError.ERROR_CASTING_VALUE.value}: {','.join(list(warnings))}",
             )
         return result
 
@@ -379,14 +372,16 @@ def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) ->
         return True
     if value in false_values:
         return False
-    raise ValueError(f"Value {value} is not a valid boolean value")
+    msg = f"Value {value} is not a valid boolean value"
+    raise ValueError(msg)
 
 
 def _value_to_list(value: str) -> List[Any]:
     parsed_value = json.loads(value)
     if isinstance(parsed_value, list):
         return parsed_value
-    raise ValueError(f"Value {parsed_value} is not a valid list value")
+    msg = f"Value {parsed_value} is not a valid list value"
+    raise ValueError(msg)
 
 
 def _value_to_python_type(value: str, python_type: type) -> Any:
@@ -404,5 +399,6 @@ def _no_cast(row: Mapping[str, str]) -> Mapping[str, str]:
 def _extract_format(config: FileBasedStreamConfig) -> CsvFormat:
     config_format = config.format or CsvFormat()
     if not isinstance(config_format, CsvFormat):
-        raise ValueError(f"Invalid format config: {config_format}")
+        msg = f"Invalid format config: {config_format}"
+        raise ValueError(msg)
     return config_format

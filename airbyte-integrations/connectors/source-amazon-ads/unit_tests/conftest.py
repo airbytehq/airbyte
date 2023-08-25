@@ -8,7 +8,7 @@ from copy import deepcopy
 from pytest import fixture
 
 
-@fixture
+@fixture()
 def config():
     return {
         "client_id": "test_client_id",
@@ -16,11 +16,11 @@ def config():
         "refresh_token": "test_refresh",
         "region": "NA",
         "look_back_window": 3,
-        "report_record_types": []
+        "report_record_types": [],
     }
 
 
-@fixture
+@fixture()
 def config_gen(config):
     def inner(**kwargs):
         new_config = deepcopy(config)
@@ -31,49 +31,49 @@ def config_gen(config):
     return inner
 
 
-@fixture
+@fixture()
 def profiles_response():
     return """
 [{"profileId":3991703629696934,"countryCode":"CA","currencyCode":"CAD","dailyBudget":9.99999999E8,"timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"A2EUQ1WTGCTBG2","id":"A3LUQZ2NBMFGO4","type":"seller","name":"The Airbyte Store","validPaymentMethod":true}},{"profileId":2935840597082037,"countryCode":"CA","currencyCode":"CAD","timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"A2EUQ1WTGCTBG2","id":"ENTITY1T4PQ8E0Y1LVJ","type":"vendor","name":"test","validPaymentMethod":false}},{"profileId":3664951271230581,"countryCode":"MX","currencyCode":"MXN","dailyBudget":9.99999999E8,"timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"A1AM78C64UM0Y8","id":"A3LUQZ2NBMFGO4","type":"seller","name":"The Airbyte Store","validPaymentMethod":true}},{"profileId":3312910465837761,"countryCode":"US","currencyCode":"USD","dailyBudget":9.99999999E8,"timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"ATVPDKIKX0DER","id":"A3LUQZ2NBMFGO4","type":"seller","name":"The Airbyte Store","validPaymentMethod":true}}]
 """
 
 
-@fixture
+@fixture()
 def portfolios_response():
     return """
 [{"portfolioId":253945852845204,"name":"Test Portfolio 2","inBudget":true,"state":"enabled","creationDate":1687510907465,"lastUpdatedDate":1687510907465,"servingStatus":"PORTFOLIO_STATUS_ENABLED"},{"portfolioId":270076898441727,"name":"Test Portfolio","budget":{"amount":1.0,"currencyCode":"USD","policy":"dateRange","startDate":"20230623","endDate":"20230624"},"inBudget":true,"state":"enabled","creationDate":1687510616329,"lastUpdatedDate":1687514774484,"servingStatus":"PORTFOLIO_STATUS_ENABLED"}]
 """
 
 
-@fixture
+@fixture()
 def campaigns_response():
     return """
 [{"campaignId":37387403419888,"name":"sswdd","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"},{"campaignId":59249214322256,"name":"My test camp","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"},{"campaignId":16117299922278,"name":"ssw","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"},{"campaignId":202914386115504,"name":"ssdf","tactic":"T00020","startDate":"20220101","state":"enabled","costType":"cpc","budget":3.0,"budgetType":"daily","deliveryProfile":"as_soon_as_possible"}]
 """
 
 
-@fixture
+@fixture()
 def adgroups_response():
     return """
 [{"name":"string","campaignId":0,"defaultBid":0,"bidOptimization":"clicks","state":"enabled","adGroupId":0,"tactic":"T00020"}]
 """
 
 
-@fixture
+@fixture()
 def product_ads_response():
     return """
 [{"state":"enabled","adId":0,"adGroupId":0,"campaignId":0,"asin":"string","sku":"string"}]
 """
 
 
-@fixture
+@fixture()
 def targeting_response():
     return """
 [{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":[{"type":"asinSameAs","value":"B0123456789"}],"resolvedExpression":[{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}]}]
 """
 
 
-@fixture
+@fixture()
 def attribution_report_response():
     def _internal(report_type: str):
         responses = {
@@ -109,8 +109,8 @@ def attribution_report_response():
                         "publisher": "Display - Other",
                         "brandHaloDetailPageViewsClicks14d": "0",
                         "attributedSales14d": "0",
-                    }
-                ]
+                    },
+                ],
             },
             "PERFORMANCE_ADGROUP": {
                 "reports": [
@@ -132,8 +132,8 @@ def attribution_report_response():
                         "attributedTotalDetailPageViewsClicks14d": "30",
                         "attributedSales14d": "191.95999999999998",
                         "totalAttributedSales14d": "191.95999999999998",
-                    }
-                ]
+                    },
+                ],
             },
             "PERFORMANCE_CAMPAIGN": {
                 "reports": [
@@ -153,8 +153,8 @@ def attribution_report_response():
                         "attributedTotalDetailPageViewsClicks14d": "16",
                         "attributedSales14d": "0",
                         "totalAttributedSales14d": "0",
-                    }
-                ]
+                    },
+                ],
             },
             "PERFORMANCE_CREATIVE": {
                 "reports": [
@@ -176,8 +176,8 @@ def attribution_report_response():
                         "attributedTotalDetailPageViewsClicks14d": "0",
                         "attributedSales14d": "0",
                         "totalAttributedSales14d": "0",
-                    }
-                ]
+                    },
+                ],
             },
         }
 

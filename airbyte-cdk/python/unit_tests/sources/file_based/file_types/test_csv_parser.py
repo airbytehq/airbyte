@@ -13,6 +13,7 @@ from unittest import TestCase, mock
 from unittest.mock import Mock
 
 import pytest
+
 from airbyte_cdk.sources.file_based.config.csv_format import DEFAULT_FALSE_VALUES, DEFAULT_TRUE_VALUES, CsvFormat, InferenceType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
@@ -37,7 +38,7 @@ logger = logging.getLogger()
 
 
 @pytest.mark.parametrize(
-    "row, true_values, false_values, expected_output",
+    ("row", "true_values", "false_values", "expected_output"),
     [
         pytest.param(
             {
@@ -92,13 +93,13 @@ logger = logging.getLogger()
         pytest.param({"col4": "asdf"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col4": "asdf"}, id="cannot-cast-to-float"),
         pytest.param({"col6": "{'a': 'b'}"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col6": "{'a': 'b'}"}, id="cannot-cast-to-dict"),
         pytest.param(
-            {"col7": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col7": "['a', 'b']"}, id="cannot-cast-to-list-of-ints"
+            {"col7": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col7": "['a', 'b']"}, id="cannot-cast-to-list-of-ints",
         ),
         pytest.param(
-            {"col8": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col8": "['a', 'b']"}, id="cannot-cast-to-list-of-strings"
+            {"col8": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col8": "['a', 'b']"}, id="cannot-cast-to-list-of-strings",
         ),
         pytest.param(
-            {"col9": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col9": "['a', 'b']"}, id="cannot-cast-to-list-of-objects"
+            {"col9": "['a', 'b']"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {"col9": "['a', 'b']"}, id="cannot-cast-to-list-of-objects",
         ),
         pytest.param({"col11": "x"}, DEFAULT_TRUE_VALUES, DEFAULT_FALSE_VALUES, {}, id="item-not-in-props-doesn't-error"),
     ],
@@ -109,7 +110,7 @@ def test_cast_to_python_type(row: Dict[str, str], true_values: Set[str], false_v
 
 
 @pytest.mark.parametrize(
-    "row, strings_can_be_null, expected_output",
+    ("row", "strings_can_be_null", "expected_output"),
     [
         pytest.param(
             {"id": "1", "name": "bob", "age": 10, "is_cool": False},
@@ -210,7 +211,7 @@ class SchemaInferenceTestCase(TestCase):
 
     def test_given_big_file_when_infer_schema_then_stop_early(self) -> None:
         self._config_format.inference_type = InferenceType.PRIMITIVE_TYPES_ONLY
-        self._csv_reader.read_data.return_value = ({self._HEADER_NAME: row} for row in ["2." + "2" * 1_000_000] + ["this is a string"])
+        self._csv_reader.read_data.return_value = ({self._HEADER_NAME: row} for row in ["2." + "2" * 1000000, "this is a string"])
         inferred_schema = self._infer_schema()
         # since the type is number, we know the string at the end was not considered
         assert inferred_schema == {self._HEADER_NAME: {"type": "number"}}
@@ -268,7 +269,7 @@ class CsvReaderTest(unittest.TestCase):
                     "header",
                     "a value",
                     "another value",
-                ]
+                ],
             )
             .build()
         )
@@ -295,7 +296,7 @@ class CsvReaderTest(unittest.TestCase):
                     "skipped row: important that the is no comma in this string to test if columns do not match in skipped rows",
                     "a value 1,a value 2",
                     "another value 1,another value 2",
-                ]
+                ],
             )
             .build()
         )
@@ -315,7 +316,7 @@ class CsvReaderTest(unittest.TestCase):
                 [
                     "header1|header2",
                     "a value 1|a value 2",
-                ]
+                ],
             )
             .build()
         )
@@ -332,7 +333,7 @@ class CsvReaderTest(unittest.TestCase):
                 [
                     "header1,header2",
                     "|a,value,1|,|a,value,2|",
-                ]
+                ],
             )
             .build()
         )
@@ -349,7 +350,7 @@ class CsvReaderTest(unittest.TestCase):
                 [
                     "header1,header2",
                     '"a |"value|", 1",a value 2',
-                ]
+                ],
             )
             .build()
         )
@@ -366,7 +367,7 @@ class CsvReaderTest(unittest.TestCase):
                 [
                     "header1,header2",
                     '1,"Text with doublequote: ""This is a text."""',
-                ]
+                ],
             )
             .build()
         )
@@ -383,7 +384,7 @@ class CsvReaderTest(unittest.TestCase):
                 [
                     "header1,header2",
                     '1,"Text with doublequote: ""This is a text."""',
-                ]
+                ],
             )
             .build()
         )
@@ -400,7 +401,7 @@ class CsvReaderTest(unittest.TestCase):
                     "header",
                     "a value",
                     "another value",
-                ]
+                ],
             )
             .build()
         )
@@ -419,7 +420,7 @@ class CsvReaderTest(unittest.TestCase):
                     "header",
                     "a value",
                     "too many values,value,value,value",
-                ]
+                ],
             )
             .build()
         )
@@ -440,7 +441,7 @@ class CsvReaderTest(unittest.TestCase):
                     "header1,header2,header3",
                     "value1,value2,value3",
                     "a value",
-                ]
+                ],
             )
             .build()
         )
@@ -454,14 +455,13 @@ class CsvReaderTest(unittest.TestCase):
         assert f"{self._CONFIG_NAME}_config_dialect" not in csv.list_dialects()
 
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
-        data_generator = self._csv_reader.read_data(
+        return self._csv_reader.read_data(
             self._config,
             self._file,
             self._stream_reader,
             self._logger,
             FileReadMode.READ,
         )
-        return data_generator
 
 
 def test_encoding_is_passed_to_stream_reader() -> None:
@@ -479,7 +479,7 @@ def test_encoding_is_passed_to_stream_reader() -> None:
             mock.call(file, FileReadMode.READ, encoding, logger),
             mock.call().__enter__(),
             mock.call().__exit__(None, None, None),
-        ]
+        ],
     )
 
     mock_obj.__enter__ = Mock(return_value=io.StringIO("c1,c2\nv1,v2"))
@@ -494,5 +494,5 @@ def test_encoding_is_passed_to_stream_reader() -> None:
             mock.call(file, FileReadMode.READ, encoding, logger),
             mock.call().__enter__(),
             mock.call().__exit__(None, None, None),
-        ]
+        ],
     )

@@ -2,15 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, MutableMapping
+from typing import TYPE_CHECKING, Any, MutableMapping
 from unittest import mock
 
 import responses
+
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+
+if TYPE_CHECKING:
+    from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]):
@@ -25,9 +28,7 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
 
 
 class ProjectsResponsesAPI:
-    """
-    Fake Responses API for github projects, columns, cards
-    """
+    """Fake Responses API for github projects, columns, cards."""
 
     projects_url = "https://api.github.com/repos/organization/repository/projects"
     columns_url = "https://api.github.com/projects/{project_id}/columns"

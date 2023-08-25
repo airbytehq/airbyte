@@ -9,7 +9,7 @@ import pytest
 from source_outreach.source import OutreachStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(OutreachStream, "path", "v0/example_endpoint")
@@ -37,7 +37,7 @@ def test_parse_response(patch_base_class):
     stream = OutreachStream(authenticator=MagicMock())
     response = MagicMock()
     response.json.return_value = {
-        "data": [{"id": 123, "attributes": {"name": "John Doe"}, "relationships": {"account": {"data": {"type": "account", "id": 4}}}}]
+        "data": [{"id": 123, "attributes": {"name": "John Doe"}, "relationships": {"account": {"data": {"type": "account", "id": 4}}}}],
     }
     inputs = {"response": response}
     expected_parsed_object = {"id": 123, "name": "John Doe", "account": [4]}

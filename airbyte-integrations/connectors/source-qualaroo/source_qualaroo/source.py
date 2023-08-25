@@ -8,6 +8,7 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
@@ -16,9 +17,7 @@ from .streams import QualarooStream, Responses, Surveys
 
 
 class QualarooAuthenticator(HttpAuthenticator):
-    """
-    Generate auth header for start making requests from API token and API key.
-    """
+    """Generate auth header for start making requests from API token and API key."""
 
     def __init__(
         self,
@@ -39,9 +38,7 @@ class QualarooAuthenticator(HttpAuthenticator):
 
 
 class SourceQualaroo(AbstractSource):
-    """
-    Source Qualaroo fetch date from web-based, Kanban-style, list-making application.
-    """
+    """Source Qualaroo fetch date from web-based, Kanban-style, list-making application."""
 
     @staticmethod
     def _get_authenticator(config: dict) -> QualarooAuthenticator:
@@ -49,10 +46,7 @@ class SourceQualaroo(AbstractSource):
         return QualarooAuthenticator(token=token, key=key)
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the credentials.
-        """
-
+        """Testing connection availability for the connector by granting the credentials."""
         try:
             url = f"{QualarooStream.url_base}nudges"
 
@@ -70,9 +64,7 @@ class SourceQualaroo(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         args = {}
         # convert start_date to epoch time for qualaroo API
         args["start_date"] = pendulum.parse(config["start_date"]).strftime("%s")

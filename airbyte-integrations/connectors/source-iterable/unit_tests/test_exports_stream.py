@@ -8,12 +8,13 @@ from unittest import mock
 import pendulum
 import pytest
 import responses
-from airbyte_cdk.models import SyncMode
 from source_iterable.slice_generators import StreamSlice
 from source_iterable.streams import Users
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def session_mock():
     with mock.patch("airbyte_cdk.sources.streams.http.http.requests") as requests_mock:
         session_mock = mock.MagicMock()

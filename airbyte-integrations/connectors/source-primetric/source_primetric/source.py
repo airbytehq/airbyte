@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import requests
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -27,8 +28,8 @@ class PrimetricStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
@@ -37,7 +38,8 @@ class PrimetricStream(HttpStream, ABC):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
-        Rate Limits Docs: https://developer.primetric.com/#rate-limits"""
+        Rate Limits Docs: https://developer.primetric.com/#rate-limits.
+        """
         return 31
 
 
@@ -177,7 +179,8 @@ class SourcePrimetric(AbstractSource):
             response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers)
 
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
         return response
 
@@ -185,7 +188,8 @@ class SourcePrimetric(AbstractSource):
         try:
 
             if not config["client_secret"] or not config["client_id"]:
-                raise Exception("Empty config values! Check your configuration file!")
+                msg = "Empty config values! Check your configuration file!"
+                raise Exception(msg)
 
             self.get_connection_response(config).raise_for_status()
 

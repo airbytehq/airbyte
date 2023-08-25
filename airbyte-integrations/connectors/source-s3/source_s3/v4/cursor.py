@@ -45,18 +45,17 @@ class Cursor(DefaultFileBasedCursor):
                 **state,
                 **{
                     Cursor._V3_MIN_SYNC_DATE_FIELD: datetime.strftime(
-                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT
-                    )
+                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                    ),
                 },
             }
         else:
             return state
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
-        """
-        Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
+        """Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
         Else if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
-        Else sync according to the default logic
+        Else sync according to the default logic.
         """
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
             return False
@@ -73,7 +72,7 @@ class Cursor(DefaultFileBasedCursor):
             # Verify datetime format in history
             history = value.get("history", {}).keys()
             if history:
-                item = list(value.get("history", {}).keys())[0]
+                item = next(iter(value.get("history", {}).keys()))
                 datetime.strptime(item, Cursor._DATE_FORMAT)
 
             # verify the format of the last_modified cursor
@@ -87,8 +86,7 @@ class Cursor(DefaultFileBasedCursor):
 
     @staticmethod
     def _convert_legacy_state(legacy_state: StreamState) -> MutableMapping[str, Any]:
-        """
-        Transform the history from the old state message format to the new.
+        """Transform the history from the old state message format to the new.
 
         e.g.
         {

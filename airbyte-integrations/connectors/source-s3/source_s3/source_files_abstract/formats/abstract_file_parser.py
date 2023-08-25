@@ -3,9 +3,10 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
+from typing import Any, BinaryIO, Iterator, Mapping, Optional, TextIO, Union
 
 import pyarrow as pa
+
 from airbyte_cdk.logger import AirbyteLogger
 from source_s3.source_files_abstract.file_info import FileInfo
 
@@ -26,9 +27,8 @@ class AbstractFileParser(ABC):
         "null": ("large_string",),
     }
 
-    def __init__(self, format: dict, master_schema: dict = None):
-        """
-        :param format: file format specific mapping as described in spec.json
+    def __init__(self, format: dict, master_schema: Optional[dict] = None):
+        """:param format: file format specific mapping as described in spec.json
         :param master_schema: superset schema determined from all files, might be unused for some formats, defaults to None
         """
         self._format = format
@@ -40,15 +40,12 @@ class AbstractFileParser(ABC):
     @property
     @abstractmethod
     def is_binary(self) -> bool:
-        """
-        Override this per format so that file-like objects passed in are currently opened as binary or not
-        """
+        """Override this per format so that file-like objects passed in are currently opened as binary or not."""
 
     @abstractmethod
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
-        """
-        Override this with format-specifc logic to infer the schema of file
-        Note: needs to return inferred schema with JsonSchema datatypes
+        """Override this with format-specifc logic to infer the schema of file
+        Note: needs to return inferred schema with JsonSchema datatypes.
 
         :param file: file-like object (opened via StorageFile)
         :param file_info: file metadata
@@ -57,9 +54,8 @@ class AbstractFileParser(ABC):
 
     @abstractmethod
     def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
-        """
-        Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
-        Note: avoid loading the whole file into memory to avoid OOM breakages
+        """Override this with format-specifc logic to stream each data row from the file as a mapping of {columns:values}
+        Note: avoid loading the whole file into memory to avoid OOM breakages.
 
         :param file: file-like object (opened via StorageFile)
         :param file_info: file metadata
@@ -68,8 +64,7 @@ class AbstractFileParser(ABC):
 
     @classmethod
     def json_type_to_pyarrow_type(cls, typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
-        """
-        Converts Json Type to PyArrow types to (or the other way around if reverse=True)
+        """Converts Json Type to PyArrow types to (or the other way around if reverse=True).
 
         :param typ: Json type if reverse is False, else PyArrow type
         :param reverse: switch to True for PyArrow type -> Json type, defaults to False
@@ -99,9 +94,8 @@ class AbstractFileParser(ABC):
 
     @classmethod
     def json_schema_to_pyarrow_schema(cls, schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
-        """
-        Converts a schema with JsonSchema datatypes to one with PyArrow types (or the other way if reverse=True)
-        This utilises json_type_to_pyarrow_type() to convert each datatype
+        """Converts a schema with JsonSchema datatypes to one with PyArrow types (or the other way if reverse=True)
+        This utilises json_type_to_pyarrow_type() to convert each datatype.
 
         :param schema: json/pyarrow schema to convert
         :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False

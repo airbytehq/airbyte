@@ -7,15 +7,16 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
-import source_bing_ads.source
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from bingads.service_client import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
+
+import source_bing_ads.source
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 AVERAGE_FIELD_TYPES = {
     "AverageCpc": "number",
@@ -154,42 +155,30 @@ class ReportsMixin(ABC):
     @property
     @abstractmethod
     def report_name(self) -> str:
-        """
-        Specifies bing ads report naming
-        """
-        pass
+        """Specifies bing ads report naming."""
 
     @property
     @abstractmethod
     def report_columns(self) -> Iterable[str]:
-        """
-        Specifies bing ads report naming
-        """
-        pass
+        """Specifies bing ads report naming."""
 
     @property
     @abstractmethod
     def report_aggregation(self) -> Optional[str]:
+        """Specifies bing ads report aggregation type
+        Supported types: Hourly, Daily, Weekly, Monthly.
         """
-        Specifies bing ads report aggregation type
-        Supported types: Hourly, Daily, Weekly, Monthly
-        """
-        pass
 
     @property
     @abstractmethod
     def report_schema_name(self) -> str:
-        """
-        Specifies file name with schema
-        """
-        pass
+        """Specifies file name with schema."""
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.report_schema_name)
 
     def get_request_date(self, reporting_service: ServiceClient, date: datetime) -> sudsobject.Object:
-        """
-        Creates XML Date object based on datetime.
+        """Creates XML Date object based on datetime.
         https://docs.microsoft.com/en-us/advertising/reporting-service/date?view=bingads-13
         The [suds.client.Factory-class.html factory] namespace provides a factory that may be used
         to create instances of objects and types defined in the WSDL.
@@ -201,7 +190,7 @@ class ReportsMixin(ABC):
         return request_date
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
+        self, stream_state: Optional[Mapping[str, Any]] = None, account_id: Optional[str] = None, **kwargs: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         start_date = self.get_start_date(stream_state, account_id)
 
@@ -224,10 +213,9 @@ class ReportsMixin(ABC):
             "timeout_in_milliseconds": self.timeout,
         }
 
-    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
-        if stream_state and account_id:
-            if stream_state.get(account_id, {}).get(self.cursor_field):
-                return pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+    def get_start_date(self, stream_state: Optional[Mapping[str, Any]] = None, account_id: Optional[str] = None):
+        if stream_state and account_id and stream_state.get(account_id, {}).get(self.cursor_field):
+            return pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
 
         return self.client.reports_start_date
 
@@ -297,9 +285,7 @@ class ReportsMixin(ABC):
         yield from []
 
     def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
-        """
-        Reads field value from row and transforms string type field to numeric if possible
-        """
+        """Reads field value from row and transforms string type field to numeric if possible."""
         value = row.value(column)
         if value == "":
             return None
@@ -311,24 +297,16 @@ class ReportsMixin(ABC):
                 if value == "--":
                     value = 0.0
                 else:
-                    if "%" in value:
-                        value = float(value.replace("%", "").replace(",", "")) / 100
-                    else:
-                        value = float(value.replace(",", ""))
+                    value = float(value.replace("%", "").replace(",", "")) / 100 if "%" in value else float(value.replace(",", ""))
 
         return value
 
     def get_report_record_timestamp(self, datestring: str) -> int:
-        """
-        Parse report date field based on aggregation type
-        """
+        """Parse report date field based on aggregation type."""
         if not self.report_aggregation:
             date = pendulum.from_format(datestring, "M/D/YYYY")
         else:
-            if self.report_aggregation == "Hourly":
-                date = pendulum.from_format(datestring, "YYYY-MM-DD|H")
-            else:
-                date = pendulum.parse(datestring)
+            date = pendulum.from_format(datestring, "YYYY-MM-DD|H") if self.report_aggregation == "Hourly" else pendulum.parse(datestring)
 
         return date.int_timestamp
 
@@ -343,7 +321,7 @@ class ReportsMixin(ABC):
 
 
 class PerformanceReportsMixin(ReportsMixin):
-    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+    def get_start_date(self, stream_state: Optional[Mapping[str, Any]] = None, account_id: Optional[str] = None):
         start_date = super().get_start_date(stream_state, account_id)
 
         if self.config.get("lookback_window"):

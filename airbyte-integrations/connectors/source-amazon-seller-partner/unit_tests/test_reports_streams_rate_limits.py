@@ -4,12 +4,13 @@
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import MerchantListingsReports
 
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
-@pytest.fixture
+
+@pytest.fixture()
 def reports_stream():
     aws_signature = AWSSignature(
         service="execute-api",
@@ -18,7 +19,7 @@ def reports_stream():
         aws_session_token="SessionToken",
         region="US",
     )
-    stream = MerchantListingsReports(
+    return MerchantListingsReports(
         url_base="https://test.url",
         aws_signature=aws_signature,
         replication_start_date="2017-01-25T00:00:00Z",
@@ -30,7 +31,6 @@ def reports_stream():
         advanced_stream_options=None,
         max_wait_seconds=500,
     )
-    return stream
 
 
 def test_reports_stream_should_retry(mocker, reports_stream):

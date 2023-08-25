@@ -11,7 +11,7 @@ from source_sentry.streams import Events, Issues, ProjectDetail, Projects, Sentr
 INIT_ARGS = {"hostname": "sentry.io", "organization": "test-org", "project": "test-project"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(SentryStreamPagination, "path", "test_endpoint")
@@ -112,7 +112,7 @@ def test_project_detail_request_params():
 
 
 @pytest.mark.parametrize(
-    "state, expected",
+    ("state", "expected"),
     [
         ({}, "1900-01-01T00:00:00.0Z"),
         ({"dateCreated": ""}, "1900-01-01T00:00:00.0Z"),
@@ -133,7 +133,7 @@ def test_validate_state_value(state, expected):
 
 
 @pytest.mark.parametrize(
-    "state, expected",
+    ("state", "expected"),
     [
         ({}, "1900-01-01T00:00:00.0Z"),
         ({"dateCreated": ""}, "1900-01-01T00:00:00.0Z"),

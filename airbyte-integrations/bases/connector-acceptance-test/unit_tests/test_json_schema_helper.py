@@ -3,10 +3,14 @@
 #
 
 from enum import Enum
-from typing import Any, List, Text, Union
+from typing import Any, List, Union
 
 import pendulum
 import pytest
+from connector_acceptance_test.tests.test_incremental import records_with_state
+from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from pydantic import BaseModel
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -16,9 +20,6 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.tests.test_incremental import records_with_state
-from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
-from pydantic import BaseModel
 
 
 @pytest.fixture(name="simple_state")
@@ -28,7 +29,7 @@ def simple_state_fixture():
             "id": 11,
             "ts_created": "2014-01-01T22:03:11",
             "ts_updated": "2015-01-01T22:03:11",
-        }
+        },
     }
 
 
@@ -67,7 +68,7 @@ def stream_mapping_fixture(stream_schema):
             stream=AirbyteStream(name="my_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh]),
             sync_mode=SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.append,
-        )
+        ),
     }
 
 
@@ -81,7 +82,7 @@ def records_fixture():
                 data={"id": 1, "ts_created": "2015-11-01T22:03:11", "nested": {"ts_updated": "2015-05-01"}},
                 emitted_at=0,
             ),
-        )
+        ),
     ]
 
 
@@ -156,11 +157,10 @@ def test_json_schema_helper_pydantic_generated():
     assert len(variant_paths) == 2
     assert variant_paths == [["properties", "f", "anyOf"], ["definitions", "C", "properties", "e", "anyOf"]]
     # TODO: implement validation for pydantic generated objects as well
-    # js_helper.validate_variant_paths(variant_paths)
 
 
 @pytest.mark.parametrize(
-    "object, pathes",
+    ("object", "pathes"),
     [
         ({}, []),
         ({"a": 12}, ["/a"]),
@@ -179,7 +179,7 @@ def test_get_object_strucutre(object, pathes):
 
 
 @pytest.mark.parametrize(
-    "schema, pathes",
+    ("schema", "pathes"),
     [
         ({"type": "object", "properties": {"a": {"type": "string"}}}, ["/a"]),
         ({"properties": {"a": {"type": "string"}}}, ["/a"]),
@@ -211,7 +211,7 @@ def test_get_expected_schema_structure(schema, pathes):
 
 
 @pytest.mark.parametrize(
-    "keys, num_paths, last_value",
+    ("keys", "num_paths", "last_value"),
     [
         (["description"], 1, "Tests that keys can be found inside lists of dicts"),
         (["option1"], 2, {"a_key": "a_value"}),
@@ -220,7 +220,7 @@ def test_get_expected_schema_structure(schema, pathes):
         (["option1", "option2"], 3, ["value1", "value2"]),
     ],
 )
-def test_find_and_get_nodes(keys: List[Text], num_paths: int, last_value: Any):
+def test_find_and_get_nodes(keys: List[str], num_paths: int, last_value: Any):
     schema = {
         "title": "Key_inside_oneOf",
         "description": "Tests that keys can be found inside lists of dicts",
@@ -245,7 +245,7 @@ def test_find_and_get_nodes(keys: List[Text], num_paths: int, last_value: Any):
                         },
                     },
                 ],
-            }
+            },
         },
     }
     schema_helper = JsonSchemaHelper(schema)

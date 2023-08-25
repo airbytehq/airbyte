@@ -6,14 +6,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List
+from typing import TYPE_CHECKING, Callable
 
 import requests
-from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
+
+from connector_ops.utils import ConnectorLanguage
 
 if TYPE_CHECKING:
     from dagger import Client, Container, Directory
+
     from pipelines.contexts import ConnectorContext
 
 
@@ -35,6 +37,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     Args:
         context (ConnectorContext): The initialized connector context.
         connector_dir (Directory): The directory containing the build.gradle file to patch.
+
     Returns:
         Directory: The directory containing the patched gradle file.
     """
@@ -48,7 +51,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
         context.logger.info("Could not find build.gradle file in the connector directory. Skipping patching.")
         return connector_dir
 
-    context.logger.warn("Patching build.gradle file to remove normalization build.")
+    context.logger.warning("Patching build.gradle file to remove normalization build.")
 
     patched_gradle_file = []
 
@@ -64,6 +67,7 @@ async def patch_connector_dir(context: ConnectorContext, connector_dir: Director
     Args:
         context (ConnectorContext): The initialized connector context.
         connector_dir (Directory): The directory containing the connector to patch.
+
     Returns:
         Directory: The directory containing the patched connector.
     """
@@ -72,8 +76,7 @@ async def patch_connector_dir(context: ConnectorContext, connector_dir: Director
 
 
 async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "pip_cache") -> None:
-    """
-    Download the latest CDK version to update the pip cache.
+    """Download the latest CDK version to update the pip cache.
 
     Underlying issue:
         Most Python connectors, or normalization, are not pinning the CDK version they use.
@@ -89,7 +92,6 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
     Args:
         dagger_client (Client): Dagger client.
     """
-
     # We get the latest version of the CDK from PyPI using their API.
     # It allows us to explicitly install the latest version of the CDK in the container
     # while keeping buildkit layer caching when the version value does not change.
@@ -110,9 +112,8 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
     )
 
 
-def never_fail_exec(command: List[str]) -> Callable:
-    """
-    Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
+def never_fail_exec(command: list[str]) -> Callable:
+    """Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
 
     Underlying issue:
         When a classic dagger with_exec is returning a >0 exit code an ExecError is raised.

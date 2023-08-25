@@ -3,11 +3,12 @@
 #
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_tplcentral.streams import IncrementalTplcentralStream
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def config():
     return {
         "config": {
@@ -20,11 +21,11 @@ def config():
             "customer_id": 4,
             "facility_id": 5,
             "start_date": "2021-10-01",
-        }
+        },
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalTplcentralStream, "path", "v0/example_endpoint")
     mocker.patch.object(IncrementalTplcentralStream, "primary_key", "test_primary_key")
@@ -33,7 +34,7 @@ def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalTplcentralStream, "__abstractmethods__", set())
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream(patch_incremental_base_class, config):
     return IncrementalTplcentralStream(**config)
 

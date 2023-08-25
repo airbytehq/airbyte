@@ -12,7 +12,7 @@ import requests
 from source_outbrain_amplify.source import OutbrainAmplifyStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     mocker.patch.object(OutbrainAmplifyStream, "path", "v0/example_endpoint")
     mocker.patch.object(OutbrainAmplifyStream, "primary_key", "test_primary_key")
@@ -32,9 +32,9 @@ def test_next_page_token(patch_base_class):
     pagination_token = json.dumps(inputs)
     response = requests.Response()
     response.status_code = 200
-    response.headers['content-type'] = 'application/json'
-    response._content = pagination_token.encode('utf-8')
-    expected_token = {'offset': 51}
+    response.headers["content-type"] = "application/json"
+    response._content = pagination_token.encode("utf-8")
+    expected_token = {"offset": 51}
     assert stream.next_page_token(response) == expected_token
 
 
@@ -43,13 +43,13 @@ def test_parse_response(patch_base_class):
     mock_response = {
         "campaigns": [],
         "totalCount": 5,
-        "count": 0
+        "count": 0,
     }
     mock_response = json.dumps(mock_response)
     response = requests.Response()
     response.status_code = 200
-    response.headers['Content-Type'] = 'application/json'
-    response._content = mock_response.encode('utf-8')
+    response.headers["Content-Type"] = "application/json"
+    response._content = mock_response.encode("utf-8")
     result = stream.parse_response(response)
     expected_result = True
     assert inspect.isgenerator(result) == expected_result

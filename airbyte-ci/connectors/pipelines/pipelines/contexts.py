@@ -17,6 +17,7 @@ from anyio import Path
 from asyncer import asyncify
 from dagger import Client, Directory, Secret
 from github import PullRequest
+
 from pipelines import hacks
 from pipelines.actions import secrets
 from pipelines.bases import CIContext, ConnectorReport, ConnectorWithModifiedFiles, Report
@@ -41,18 +42,7 @@ class PipelineContext:
     PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
     DEFAULT_EXCLUDED_FILES = (
-        [".git", "airbyte-ci/connectors/pipelines/*"]
-        + glob("**/build", recursive=True)
-        + glob("**/.venv", recursive=True)
-        + glob("**/secrets", recursive=True)
-        + glob("**/__pycache__", recursive=True)
-        + glob("**/*.egg-info", recursive=True)
-        + glob("**/.vscode", recursive=True)
-        + glob("**/.pytest_cache", recursive=True)
-        + glob("**/.eggs", recursive=True)
-        + glob("**/.mypy_cache", recursive=True)
-        + glob("**/.DS_Store", recursive=True)
-        + glob("**/airbyte_ci_logs", recursive=True)
+        [".git", "airbyte-ci/connectors/pipelines/*", *glob("**/build", recursive=True), *glob("**/.venv", recursive=True), *glob("**/secrets", recursive=True), *glob("**/__pycache__", recursive=True), *glob("**/*.egg-info", recursive=True), *glob("**/.vscode", recursive=True), *glob("**/.pytest_cache", recursive=True), *glob("**/.eggs", recursive=True), *glob("**/.mypy_cache", recursive=True), *glob("**/.DS_Store", recursive=True), *glob("**/airbyte_ci_logs", recursive=True)]
     )
 
     def __init__(
@@ -209,7 +199,7 @@ class PipelineContext:
         return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
 
     def create_slack_message(self) -> str:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def __aenter__(self):
         """Perform setup operation for the PipelineContext.
@@ -222,7 +212,8 @@ class PipelineContext:
             PipelineContext: A running instance of the PipelineContext.
         """
         if self.dagger_client is None:
-            raise Exception("A Pipeline can't be entered with an undefined dagger_client")
+            msg = "A Pipeline can't be entered with an undefined dagger_client"
+            raise Exception(msg)
         self.state = ContextState.RUNNING
         self.started_at = datetime.utcnow()
         self.logger.info("Caching the latest CDK version...")
@@ -239,6 +230,7 @@ class PipelineContext:
         Args:
             report (Optional[Report]): The pipeline report if any.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+
         Returns:
             ContextState: The final state of the context.
         """
@@ -248,12 +240,13 @@ class PipelineContext:
             return ContextState.FAILURE
         if report is not None and report.success:
             return ContextState.SUCCESSFUL
+        msg = f"The final state of the context could not be determined for the report and exception value provided. Report: {report}, Exception: {exception_value}"
         raise Exception(
-            f"The final state of the context could not be determined for the report and exception value provided. Report: {report}, Exception: {exception_value}"
+            msg,
         )
 
     async def __aexit__(
-        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType],
     ) -> bool:
         """Perform teardown operation for the PipelineContext.
 
@@ -268,6 +261,7 @@ class PipelineContext:
             exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
@@ -341,7 +335,6 @@ class ConnectorContext(PipelineContext):
             fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
         """
-
         self.pipeline_name = pipeline_name
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
@@ -439,7 +432,7 @@ class ConnectorContext(PipelineContext):
         return await hacks.patch_connector_dir(self, vanilla_connector_dir)
 
     async def __aexit__(
-        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
+        self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType],
     ) -> bool:
         """Perform teardown operation for the ConnectorContext.
 
@@ -448,10 +441,12 @@ class ConnectorContext(PipelineContext):
             - Write a test report in JSON format locally and to S3 if running in a CI environment
             - Update the commit status check on GitHub if running in a CI environment.
         It should gracefully handle the execution error that happens and always upload a test report and update commit status check.
+
         Args:
             exception_type (Optional[type[BaseException]]): The exception type if an exception was raised in the context execution, None otherwise.
             exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
             traceback (Optional[TracebackType]): The traceback if an exception was raised in the context execution, None otherwise.
+
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
@@ -508,7 +503,7 @@ class PublishConnectorContext(ConnectorContext):
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-        ci_gcs_credentials: str = None,
+        ci_gcs_credentials: Optional[str] = None,
         pull_request: PullRequest = None,
     ):
         self.pre_release = pre_release

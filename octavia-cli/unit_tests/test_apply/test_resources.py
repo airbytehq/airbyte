@@ -6,6 +6,8 @@ from copy import deepcopy
 from unittest.mock import mock_open, patch
 
 import pytest
+from octavia_cli.apply import resources, yaml_loaders
+
 from airbyte_api_client import ApiException
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.connection_schedule_data_basic_schedule import ConnectionScheduleDataBasicSchedule
@@ -20,7 +22,6 @@ from airbyte_api_client.model.resource_requirements import ResourceRequirements
 from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.web_backend_operation_create_or_update import WebBackendOperationCreateOrUpdate
-from octavia_cli.apply import resources, yaml_loaders
 
 
 class TestResourceState:
@@ -36,7 +37,7 @@ class TestResourceState:
         resources.os.path.dirname.assert_called_with("config_path")
         resources.os.path.join.assert_called_with(resources.os.path.dirname.return_value, "state_workspace_id.yaml")
 
-    @pytest.fixture
+    @pytest.fixture()
     def state(self):
         return resources.ResourceState("config_path", "workspace_id", "resource_id", 123, "config_hash")
 
@@ -105,7 +106,7 @@ class TestResourceState:
         state = resources.ResourceState.from_configuration_path_and_workspace("config_path", "workspace_id")
         assert state == resources.ResourceState.from_file.return_value
         resources.ResourceState.from_file.assert_called_with(
-            resources.ResourceState._get_path_from_configuration_and_workspace_id.return_value
+            resources.ResourceState._get_path_from_configuration_and_workspace_id.return_value,
         )
         resources.ResourceState._get_path_from_configuration_and_workspace_id.assert_called_with("config_path", "workspace_id")
 
@@ -116,13 +117,13 @@ class TestResourceState:
         resources.ResourceState.from_file.assert_called_with("old_state_path")
         old_state = resources.ResourceState.from_file.return_value
         resources.ResourceState.create.assert_called_with(
-            old_state.configuration_path, old_state.configuration_hash, "workspace_id", old_state.resource_id
+            old_state.configuration_path, old_state.configuration_hash, "workspace_id", old_state.resource_id,
         )
         old_state.delete.assert_called_once()
         assert new_state == resources.ResourceState.create.return_value
 
 
-@pytest.fixture
+@pytest.fixture()
 def local_configuration():
     return {
         "exotic_attribute": "foo",
@@ -135,7 +136,7 @@ def local_configuration():
 
 
 class TestBaseResource:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(resources.BaseResource, "__abstractmethods__", set())
@@ -164,7 +165,7 @@ class TestBaseResource:
 
     def test_init_with_remote_resource_not_changed(self, mocker, patch_base_class, mock_api_client, local_configuration):
         mocker.patch.object(
-            resources.BaseResource, "_get_state_from_file", mocker.Mock(return_value=mocker.Mock(configuration_hash="my_hash"))
+            resources.BaseResource, "_get_state_from_file", mocker.Mock(return_value=mocker.Mock(configuration_hash="my_hash")),
         )
         mocker.patch.object(resources.BaseResource, "_get_remote_resource", mocker.Mock(return_value={"resource_id": "my_resource_id"}))
 
@@ -187,7 +188,7 @@ class TestBaseResource:
         assert resource.local_file_changed is True
         assert resource.resource_id == resource.state.resource_id
 
-    @pytest.fixture
+    @pytest.fixture()
     def resource(self, patch_base_class, mock_api_client, local_configuration):
         return resources.BaseResource(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
 
@@ -198,7 +199,7 @@ class TestBaseResource:
         resource._get_fn.assert_called_with(resource.api_instance, resource.get_payload)
 
     @pytest.mark.parametrize(
-        "state_path_is_file, legacy_state_path_is_file, confirm_migration",
+        ("state_path_is_file", "legacy_state_path_is_file", "confirm_migration"),
         [(True, False, False), (False, True, True), (False, True, False), (False, False, False)],
     )
     def test_get_state_from_file(self, mocker, resource, state_path_is_file, legacy_state_path_is_file, confirm_migration):
@@ -220,7 +221,7 @@ class TestBaseResource:
             [
                 mocker.call(resources.os.path.dirname.return_value, f"state_{resource.workspace_id}.yaml"),
                 mocker.call(resources.os.path.dirname.return_value, "state.yaml"),
-            ]
+            ],
         )
         resources.Path.assert_called_with(resources.os.path.join.return_value)
         mock_expected_state_path.is_file.assert_called_once()
@@ -262,11 +263,11 @@ class TestBaseResource:
         assert result == expected_results
         assert state == resources.ResourceState.create.return_value
         resources.ResourceState.create.assert_called_with(
-            resource.configuration_path, resource.configuration_hash, resource.workspace_id, "resource_id"
+            resource.configuration_path, resource.configuration_hash, resource.workspace_id, "resource_id",
         )
 
     @pytest.mark.parametrize(
-        "response_status,expected_error",
+        ("response_status", "expected_error"),
         [(404, ApiException), (422, resources.InvalidConfigurationError)],
     )
     def test_create_or_update_error(self, mocker, resource, response_status, expected_error):
@@ -289,13 +290,13 @@ class TestBaseResource:
         mocker.patch.object(resources, "ResourceState")
         remote_resource, new_state = resource.manage("resource_id")
         resources.ResourceState.create.assert_called_with(
-            resource.configuration_path, resource.configuration_hash, resource.workspace_id, "resource_id"
+            resource.configuration_path, resource.configuration_hash, resource.workspace_id, "resource_id",
         )
         assert new_state == resources.ResourceState.create.return_value
         assert remote_resource == resource.remote_resource
 
     @pytest.mark.parametrize(
-        "configuration, invalid_keys, expect_error",
+        ("configuration", "invalid_keys", "expect_error"),
         [
             ({"valid_key": "foo", "invalidKey": "bar"}, {"invalidKey"}, True),
             ({"valid_key": "foo", "invalidKey": "bar", "secondInvalidKey": "bar"}, {"invalidKey", "secondInvalidKey"}, True),
@@ -309,11 +310,11 @@ class TestBaseResource:
         else:
             with pytest.raises(resources.InvalidConfigurationError, match="Invalid configuration keys") as error_info:
                 resources.BaseResource._check_for_invalid_configuration_keys(configuration, invalid_keys, "Invalid configuration keys")
-            assert all([invalid_key in str(error_info) for invalid_key in invalid_keys])
+            assert all(invalid_key in str(error_info) for invalid_key in invalid_keys)
 
 
 class TestSourceAndDestination:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_source_and_destination(self, mocker):
         mocker.patch.object(resources.SourceAndDestination, "__abstractmethods__", set())
         mocker.patch.object(resources.SourceAndDestination, "api")
@@ -353,10 +354,10 @@ class TestSource:
         assert source.resource_type == "source"
         assert source.APPLY_PRIORITY == 0
         assert source.create_payload == resources.SourceCreate(
-            source.definition_id, source.configuration, source.workspace_id, source.resource_name
+            source.definition_id, source.configuration, source.workspace_id, source.resource_name,
         )
         assert source.update_payload == resources.SourceUpdate(
-            source_id=source.resource_id, connection_configuration=source.configuration, name=source.resource_name
+            source_id=source.resource_id, connection_configuration=source.configuration, name=source.resource_name,
         )
         if state is None:
             assert source.get_payload is None
@@ -423,10 +424,10 @@ class TestDestination:
         assert destination.resource_type == "destination"
         assert destination.APPLY_PRIORITY == 0
         assert destination.create_payload == resources.DestinationCreate(
-            destination.workspace_id, destination.resource_name, destination.definition_id, destination.configuration
+            destination.workspace_id, destination.resource_name, destination.definition_id, destination.configuration,
         )
         assert destination.update_payload == resources.DestinationUpdate(
-            destination_id=destination.resource_id, connection_configuration=destination.configuration, name=destination.resource_name
+            destination_id=destination.resource_id, connection_configuration=destination.configuration, name=destination.resource_name,
         )
         if state is None:
             assert destination.get_payload is None
@@ -440,7 +441,7 @@ class TestDestination:
         assert destination.definition == mock_api_instance.get_destination_definition.return_value
         resources.destination_definition_api.DestinationDefinitionApi.assert_called_with(mock_api_client)
         expected_payload = DestinationDefinitionIdRequestBody(
-            destination_definition_id=destination.definition_id
+            destination_definition_id=destination.definition_id,
         )
         mock_api_instance.get_destination_definition.assert_called_with(expected_payload)
 
@@ -451,13 +452,13 @@ class TestDestination:
         assert destination.definition_specification == mock_api_instance.get_destination_definition_specification.return_value
         resources.destination_definition_specification_api.DestinationDefinitionSpecificationApi.assert_called_with(mock_api_client)
         expected_payload = DestinationDefinitionIdWithWorkspaceId(
-            destination_definition_id=destination.definition_id, workspace_id=destination.workspace_id
+            destination_definition_id=destination.definition_id, workspace_id=destination.workspace_id,
         )
         mock_api_instance.get_destination_definition_specification.assert_called_with(expected_payload)
 
 
 class TestConnection:
-    @pytest.fixture
+    @pytest.fixture()
     def connection_configuration(self):
         return {
             "definition_type": "connection",
@@ -488,8 +489,8 @@ class TestConnection:
                                 "alias_name": "alias_name_example",
                                 "selected": True,
                             },
-                        }
-                    ]
+                        },
+                    ],
                 },
                 "schedule_type": "basic",
                 "schedule_data": {"units": 1, "time_unit": "days"},
@@ -498,22 +499,22 @@ class TestConnection:
             },
         }
 
-    @pytest.fixture
+    @pytest.fixture()
     def connection_configuration_with_manual_schedule(self, connection_configuration):
         connection_configuration_with_manual_schedule = deepcopy(connection_configuration)
         connection_configuration_with_manual_schedule["configuration"]["schedule_type"] = "manual"
         connection_configuration_with_manual_schedule["configuration"]["schedule_data"] = None
         return connection_configuration_with_manual_schedule
 
-    @pytest.fixture
+    @pytest.fixture()
     def connection_configuration_with_normalization(self, connection_configuration):
         connection_configuration_with_normalization = deepcopy(connection_configuration)
         connection_configuration_with_normalization["configuration"]["operations"] = [
-            {"name": "Normalization", "operator_configuration": {"normalization": {"option": "basic"}, "operator_type": "normalization"}}
+            {"name": "Normalization", "operator_configuration": {"normalization": {"option": "basic"}, "operator_type": "normalization"}},
         ]
         return connection_configuration_with_normalization
 
-    @pytest.fixture
+    @pytest.fixture()
     def legacy_connection_configurations(self):
         return [
             {
@@ -545,8 +546,8 @@ class TestConnection:
                                     "alias_name": "alias_name_example",
                                     "selected": True,
                                 },
-                            }
-                        ]
+                            },
+                        ],
                     },
                     "schedule": {"units": 1, "time_unit": "days"},
                     "status": "active",
@@ -582,8 +583,8 @@ class TestConnection:
                                     "aliasName": "alias_name_example",
                                     "selected": True,
                                 },
-                            }
-                        ]
+                            },
+                        ],
                     },
                     "schedule": {"units": 1, "time_unit": "days"},
                     "status": "active",
@@ -604,8 +605,8 @@ class TestConnection:
                             {
                                 "stream": {},
                                 "config": {},
-                            }
-                        ]
+                            },
+                        ],
                     },
                     "schedule": {"units": 1, "time_unit": "days"},
                     "status": "active",
@@ -631,13 +632,13 @@ class TestConnection:
         assert connection.APPLY_PRIORITY == 1
 
         assert connection.update_payload == resources.WebBackendConnectionUpdate(
-            connection_id=connection.resource_id, **connection.configuration
+            connection_id=connection.resource_id, **connection.configuration,
         )
         if state is None:
             assert connection.get_payload is None
         else:
             assert connection.get_payload == resources.WebBackendConnectionRequestBody(
-                connection_id=state.resource_id, with_refreshed_catalog=False
+                connection_id=state.resource_id, with_refreshed_catalog=False,
             )
 
     @pytest.mark.parametrize("file_not_found_error", [False, True])
@@ -646,7 +647,7 @@ class TestConnection:
         mocker.patch.object(resources.Connection, "resource_id", "foo")
         if file_not_found_error:
             mocker.patch.object(
-                resources.ResourceState, "from_configuration_path_and_workspace", mocker.Mock(side_effect=FileNotFoundError())
+                resources.ResourceState, "from_configuration_path_and_workspace", mocker.Mock(side_effect=FileNotFoundError()),
             )
         else:
             mocker.patch.object(
@@ -663,7 +664,7 @@ class TestConnection:
             source_id = connection.source_id
             assert source_id == "expected_source_id"
         resources.ResourceState.from_configuration_path_and_workspace.assert_called_with(
-            connection_configuration["source_configuration_path"], connection.workspace_id
+            connection_configuration["source_configuration_path"], connection.workspace_id,
         )
 
     @pytest.mark.parametrize("file_not_found_error", [False, True])
@@ -672,7 +673,7 @@ class TestConnection:
         mocker.patch.object(resources.Connection, "resource_id", "foo")
         if file_not_found_error:
             mocker.patch.object(
-                resources.ResourceState, "from_configuration_path_and_workspace", mocker.Mock(side_effect=FileNotFoundError())
+                resources.ResourceState, "from_configuration_path_and_workspace", mocker.Mock(side_effect=FileNotFoundError()),
             )
         else:
             mocker.patch.object(
@@ -689,7 +690,7 @@ class TestConnection:
             destination_id = connection.destination_id
             assert destination_id == "expected_destination_id"
         resources.ResourceState.from_configuration_path_and_workspace.assert_called_with(
-            connection_configuration["destination_configuration_path"], connection.workspace_id
+            connection_configuration["destination_configuration_path"], connection.workspace_id,
         )
 
     def test_create_payload_no_normalization(self, mocker, mock_api_client, connection_configuration):
@@ -795,9 +796,9 @@ class TestConnection:
         resource.remote_resource.to_dict.assert_called_once()
 
         assert isinstance(comparable, dict)
-        assert all([k not in comparable for k in resource.remote_root_level_keys_to_filter_out_for_comparison])
+        assert all(k not in comparable for k in resource.remote_root_level_keys_to_filter_out_for_comparison)
         if "operations" in remote_resource and "operations" in comparable:
-            assert all([k not in comparable["operations"][0] for k in resource.remote_operation_level_keys_to_filter_out])
+            assert all(k not in comparable["operations"][0] for k in resource.remote_operation_level_keys_to_filter_out)
             if remote_resource["operations"][0]["operator_configuration"].get("normalization") is not None:
                 assert "dbt" not in remote_resource["operations"][0]["operator_configuration"]
             if remote_resource["operations"][0]["operator_configuration"].get("dbt") is not None:
@@ -827,7 +828,7 @@ class TestConnection:
         configuration = resource._deserialize_raw_configuration()
         assert isinstance(configuration["sync_catalog"], AirbyteCatalog)
         assert configuration["namespace_definition"] == NamespaceDefinitionType(
-            connection_configuration["configuration"]["namespace_definition"]
+            connection_configuration["configuration"]["namespace_definition"],
         )
         assert configuration["schedule_type"] == ConnectionScheduleType(connection_configuration["configuration"]["schedule_type"])
         assert (
@@ -835,7 +836,7 @@ class TestConnection:
             == ConnectionScheduleDataBasicSchedule(**connection_configuration["configuration"]["schedule_data"]).to_dict()
         )
         assert configuration["resource_requirements"] == ResourceRequirements(
-            **connection_configuration["configuration"]["resource_requirements"]
+            **connection_configuration["configuration"]["resource_requirements"],
         )
         assert configuration["status"] == ConnectionStatus(connection_configuration["configuration"]["status"])
         assert list(configuration.keys()) == [
@@ -854,7 +855,7 @@ class TestConnection:
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_manual_schedule, "bar.yaml")
         configuration = resource._deserialize_raw_configuration()
         assert configuration["schedule_type"] == ConnectionScheduleType(
-            connection_configuration_with_manual_schedule["configuration"]["schedule_type"]
+            connection_configuration_with_manual_schedule["configuration"]["schedule_type"],
         )
         assert configuration["schedule_data"] is None
 
@@ -880,8 +881,9 @@ class TestConnection:
         ]
         deserialized_operations = resource._deserialize_operations(operations, OperationCreate)
         assert len(deserialized_operations) == 2
-        assert all([isinstance(o, OperationCreate) for o in deserialized_operations])
-        assert "normalization" in deserialized_operations[0]["operator_configuration"] and deserialized_operations[0][
+        assert all(isinstance(o, OperationCreate) for o in deserialized_operations)
+        assert "normalization" in deserialized_operations[0]["operator_configuration"]
+        assert deserialized_operations[0][
             "operator_configuration"
         ]["operator_type"] == OperatorType("normalization")
         assert "dbt" in deserialized_operations[1]["operator_configuration"]
@@ -923,7 +925,7 @@ class TestConnection:
         assert created_catalog.streams[0].config.selected == config["selected"]
 
     def test__check_for_legacy_connection_configuration_keys(
-        self, mock_api_client, connection_configuration, legacy_connection_configurations
+        self, mock_api_client, connection_configuration, legacy_connection_configurations,
     ):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         assert resource._check_for_legacy_connection_configuration_keys(connection_configuration["configuration"]) is None
@@ -933,7 +935,7 @@ class TestConnection:
 
 
 @pytest.mark.parametrize(
-    "local_configuration,resource_to_mock,expected_error",
+    ("local_configuration", "resource_to_mock", "expected_error"),
     [
         ({"definition_type": "source"}, "Source", None),
         ({"definition_type": "destination"}, "Destination", None),

@@ -42,10 +42,12 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
     def get_request_body_json(
         self,
         *,
-        stream_state: Optional[StreamState] = {},
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
+        if stream_state is None:
+            stream_state = {}
         json_payload = {"cursor": next_page_token["cursor"]} if next_page_token else {}
         if stream_slice:
             json_payload.update(stream_slice)
@@ -55,8 +57,8 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
                 "date_time_filter": {
                     "updated_at": {
                         "start_at": stream_slice.get(self.cursor_field.eval(self.config), initial_start_time),
-                    }
-                }
+                    },
+                },
             },
             "sort": {"sort_field": "UPDATED_AT", "sort_order": "ASC"},
         }
@@ -69,7 +71,7 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
         if not location_ids:
             self.logger.error(
                 "No locations found. Orders cannot be extracted without locations. "
-                "Check https://developer.squareup.com/explorer/square/locations-api/list-locations"
+                "Check https://developer.squareup.com/explorer/square/locations-api/list-locations",
             )
             yield from []
         separated_locations = [

@@ -5,6 +5,8 @@
 import json
 from unittest.mock import Mock
 
+from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
+
 from airbyte_cdk.models import AirbyteMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteRecordMessage,
@@ -15,7 +17,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from destination_rabbitmq.destination import DestinationRabbitmq, create_connection
 
 TEST_STREAM = "animals"
 TEST_NAMESPACE = "test_namespace"
@@ -54,7 +55,7 @@ def _state() -> AirbyteMessage:
 
 def _record() -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=TEST_STREAM, data=TEST_MESSAGE, emitted_at=0, namespace=TEST_NAMESPACE)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=TEST_STREAM, data=TEST_MESSAGE, emitted_at=0, namespace=TEST_NAMESPACE),
     )
 
 

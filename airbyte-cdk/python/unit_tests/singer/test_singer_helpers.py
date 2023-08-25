@@ -17,18 +17,18 @@ basic_singer_catalog = {
                     "id": {"type": "integer"},
                     "name": {"type": "string"},
                     "updated_at": {"type": "string", "format": "date-time"},
-                }
+                },
             },
             "key_properties": ["id"],
             "bookmark_properties": ["updated_at"],
-        }
-    ]
+        },
+    ],
 }
 
 
 def test_singer_catalog_to_airbyte_catalog():
     airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(
-        singer_catalog=basic_singer_catalog, sync_mode_overrides={}, primary_key_overrides={}
+        singer_catalog=basic_singer_catalog, sync_mode_overrides={}, primary_key_overrides={},
     )
 
     user_stream = airbyte_catalog.streams[0]
@@ -40,7 +40,7 @@ def test_singer_catalog_to_airbyte_catalog_composite_pk():
     singer_catalog["streams"][0]["key_properties"] = ["id", "name"]
 
     airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(
-        singer_catalog=singer_catalog, sync_mode_overrides={}, primary_key_overrides={}
+        singer_catalog=singer_catalog, sync_mode_overrides={}, primary_key_overrides={},
     )
 
     user_stream = airbyte_catalog.streams[0]
@@ -49,7 +49,7 @@ def test_singer_catalog_to_airbyte_catalog_composite_pk():
 
 def test_singer_catalog_to_airbyte_catalog_pk_override():
     airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(
-        singer_catalog=basic_singer_catalog, sync_mode_overrides={}, primary_key_overrides={"users": ["name"]}
+        singer_catalog=basic_singer_catalog, sync_mode_overrides={}, primary_key_overrides={"users": ["name"]},
     )
 
     user_stream = airbyte_catalog.streams[0]

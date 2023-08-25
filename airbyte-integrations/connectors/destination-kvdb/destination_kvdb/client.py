@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 import requests
 
@@ -11,7 +11,7 @@ class KvDbClient:
     base_url = "https://kvdb.io"
     PAGE_SIZE = 1000
 
-    def __init__(self, bucket_id: str, secret_key: str = None):
+    def __init__(self, bucket_id: str, secret_key: Optional[str] = None):
         self.secret_key = secret_key
         self.bucket_id = bucket_id
 
@@ -19,16 +19,12 @@ class KvDbClient:
         return self.batch_write([(key, value)])
 
     def batch_write(self, keys_and_values: List[Tuple[str, Mapping[str, Any]]]):
-        """
-        https://kvdb.io/docs/api/#execute-transaction
-        """
+        """https://kvdb.io/docs/api/#execute-transaction."""
         request_body = {"txn": [{"set": key, "value": value} for key, value in keys_and_values]}
         return self._request("POST", json=request_body)
 
-    def list_keys(self, list_values: bool = False, prefix: str = None) -> Iterable[Union[str, List]]:
-        """
-        https://kvdb.io/docs/api/#list-keys
-        """
+    def list_keys(self, list_values: bool = False, prefix: Optional[str] = None) -> Iterable[Union[str, List]]:
+        """https://kvdb.io/docs/api/#list-keys."""
         # TODO handle rate limiting
         pagination_complete = False
         offset = 0
@@ -53,9 +49,7 @@ class KvDbClient:
             offset += self.PAGE_SIZE
 
     def delete(self, key: Union[str, List[str]]):
-        """
-        https://kvdb.io/docs/api/#execute-transaction
-        """
+        """https://kvdb.io/docs/api/#execute-transaction."""
         key_list = key if isinstance(key, List) else [key]
         request_body = {"txn": [{"delete": k} for k in key_list]}
         return self._request("POST", json=request_body)
@@ -67,7 +61,7 @@ class KvDbClient:
         return {"Authorization": f"Bearer {self.secret_key}"} if self.secret_key else {}
 
     def _request(
-        self, http_method: str, endpoint: str = None, params: Mapping[str, Any] = None, json: Mapping[str, Any] = None
+        self, http_method: str, endpoint: Optional[str] = None, params: Optional[Mapping[str, Any]] = None, json: Optional[Mapping[str, Any]] = None,
     ) -> requests.Response:
         url = self._get_base_url() + (endpoint or "")
         headers = {"Accept": "application/json", **self._get_auth_headers()}

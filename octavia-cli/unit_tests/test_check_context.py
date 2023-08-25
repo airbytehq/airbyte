@@ -7,14 +7,15 @@ import shutil
 import tempfile
 from pathlib import Path
 
-import airbyte_api_client
 import pytest
-from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 from octavia_cli import check_context
 from urllib3.exceptions import MaxRetryError
 
+import airbyte_api_client
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
-@pytest.fixture
+
+@pytest.fixture()
 def mock_api_client(mocker):
     return mocker.Mock()
 
@@ -68,7 +69,7 @@ def test_check_workspace_exists_error(mock_api_client, mocker):
         check_context.check_workspace_exists(mock_api_client, "foo")
 
 
-@pytest.fixture
+@pytest.fixture()
 def project_directories():
     dirpath = tempfile.mkdtemp()
     yield str(Path(dirpath).parent.absolute()), [os.path.basename(dirpath)]

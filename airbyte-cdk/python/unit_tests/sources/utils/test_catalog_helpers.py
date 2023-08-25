@@ -16,7 +16,7 @@ def test_coerce_catalog_as_full_refresh():
         default_cursor_field=["cursor"],
     )
     full_refresh = AirbyteStream(
-        name="2", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh], source_defined_cursor=False
+        name="2", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh], source_defined_cursor=False,
     )
     input = AirbyteCatalog(streams=[incremental, full_refresh])
 
@@ -24,7 +24,7 @@ def test_coerce_catalog_as_full_refresh():
         streams=[
             AirbyteStream(name="1", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh], source_defined_cursor=False),
             full_refresh,
-        ]
+        ],
     )
 
     assert expected == CatalogHelper.coerce_catalog_as_full_refresh(input)

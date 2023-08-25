@@ -15,7 +15,7 @@ import sys
 import threading
 import time
 from copy import copy
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import yaml
 from normalization.destination_type import DestinationType
@@ -31,8 +31,8 @@ NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
 NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH = "NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH"
 
 
-class DbtIntegrationTest(object):
-    def __init__(self):
+class DbtIntegrationTest:
+    def __init__(self) -> None:
         self.target_schema = "test_normalization"
         self.container_prefix = f"test_normalization_db_{self.random_string(3)}"
         self.db_names = []
@@ -223,8 +223,7 @@ class DbtIntegrationTest(object):
             fh.write(json.dumps(config))
 
     def setup_clickhouse_db(self):
-        """
-        ClickHouse official JDBC driver uses HTTP port 8123.
+        """ClickHouse official JDBC driver uses HTTP port 8123.
 
         Ref: https://altinity.com/blog/2019/3/15/clickhouse-networking-part-1
         """
@@ -341,9 +340,7 @@ class DbtIntegrationTest(object):
 
     @staticmethod
     def find_free_port():
-        """
-        Find an unused port to create a database listening on localhost to run destination-postgres
-        """
+        """Find an unused port to create a database listening on localhost to run destination-postgres."""
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(("", 0))
         addr = s.getsockname()
@@ -369,11 +366,10 @@ class DbtIntegrationTest(object):
             os.chdir(request.fspath.dirname)
 
     def generate_profile_yaml_file(
-        self, destination_type: DestinationType, test_root_dir: str, random_schema: bool = False
+        self, destination_type: DestinationType, test_root_dir: str, random_schema: bool = False,
     ) -> Dict[str, Any]:
-        """
-        Each destination requires different settings to connect to. This step generates the adequate profiles.yml
-        as described here: https://docs.getdbt.com/reference/profiles.yml
+        """Each destination requires different settings to connect to. This step generates the adequate profiles.yml
+        as described here: https://docs.getdbt.com/reference/profiles.yml.
         """
         config_generator = TransformConfig()
         profiles_config = config_generator.read_json_config(f"../secrets/{destination_type.value.lower()}.json")
@@ -448,66 +444,33 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization:dev"
 
     def dbt_check(self, destination_type: DestinationType, test_root_dir: str):
-        """
-        Run the dbt CLI to perform transformations on the test raw data in the destination
-        """
+        """Run the dbt CLI to perform transformations on the test raw data in the destination."""
         normalization_image: str = self.get_normalization_image(destination_type)
         # Perform sanity check on dbt project settings
         assert self.run_check_dbt_command(normalization_image, "debug", test_root_dir)
         assert self.run_check_dbt_command(normalization_image, "deps", test_root_dir)
 
     def dbt_run(self, destination_type: DestinationType, test_root_dir: str, force_full_refresh: bool = False):
-        """
-        Run the dbt CLI to perform transformations on the test raw data in the destination
-        """
+        """Run the dbt CLI to perform transformations on the test raw data in the destination."""
         normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
         assert self.run_check_dbt_command(normalization_image, "run", test_root_dir, force_full_refresh)
 
-    def dbt_run_macro(self, destination_type: DestinationType, test_root_dir: str, macro: str, macro_args: str = None):
-        """
-        Run the dbt CLI to perform transformations on the test raw data in the destination, using independent macro.
-        """
+    def dbt_run_macro(self, destination_type: DestinationType, test_root_dir: str, macro: str, macro_args: Optional[str] = None):
+        """Run the dbt CLI to perform transformations on the test raw data in the destination, using independent macro."""
         normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
         assert self.run_dbt_run_operation(normalization_image, test_root_dir, macro, macro_args)
 
     def run_check_dbt_command(self, normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
-        """
-        Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
-        """
-        if any([normalization_image.startswith(x) for x in ["airbyte/normalization-oracle", "airbyte/normalization-clickhouse"]]):
+        """Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs."""
+        if any(normalization_image.startswith(x) for x in ["airbyte/normalization-oracle", "airbyte/normalization-clickhouse"]):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]
 
         commands = (
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--init",
-                "-v",
-                f"{cwd}:/workspace",
-                "-v",
-                f"{cwd}/build:/build",
-                "-v",
-                f"{cwd}/logs:/logs",
-                "-v",
-                f"{cwd}/build/dbt_packages:/dbt",
-                "--network",
-                "host",
-                "--entrypoint",
-                "/usr/local/bin/dbt",
-                "-i",
-                normalization_image,
-            ]
-            + dbtAdditionalArgs
-            + [
-                command,
-                "--profiles-dir=/workspace",
-                "--project-dir=/workspace",
-            ]
+            ["docker", "run", "--rm", "--init", "-v", f"{cwd}:/workspace", "-v", f"{cwd}/build:/build", "-v", f"{cwd}/logs:/logs", "-v", f"{cwd}/build/dbt_packages:/dbt", "--network", "host", "--entrypoint", "/usr/local/bin/dbt", "-i", normalization_image, *dbtAdditionalArgs, command, "--profiles-dir=/workspace", "--project-dir=/workspace"]
         )
         if force_full_refresh:
             commands.append("--full-refresh")
@@ -516,35 +479,11 @@ class DbtIntegrationTest(object):
         print(f"Equivalent to: dbt {command} --profiles-dir={cwd} --project-dir={cwd}")
         return self.run_check_dbt_subprocess(commands, cwd)
 
-    def run_dbt_run_operation(self, normalization_image: str, cwd: str, macro: str, macro_args: str = None) -> bool:
-        """
-        Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
-        """
+    def run_dbt_run_operation(self, normalization_image: str, cwd: str, macro: str, macro_args: Optional[str] = None) -> bool:
+        """Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs."""
         args = ["--args", macro_args] if macro_args else []
         commands = (
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--init",
-                "-v",
-                f"{cwd}:/workspace",
-                "-v",
-                f"{cwd}/build:/build",
-                "-v",
-                f"{cwd}/logs:/logs",
-                "-v",
-                f"{cwd}/build/dbt_packages:/dbt",
-                "--network",
-                "host",
-                "--entrypoint",
-                "/usr/local/bin/dbt",
-                "-i",
-                normalization_image,
-            ]
-            + ["run-operation", macro]
-            + args
-            + ["--profiles-dir=/workspace", "--project-dir=/workspace"]
+            ["docker", "run", "--rm", "--init", "-v", f"{cwd}:/workspace", "-v", f"{cwd}/build:/build", "-v", f"{cwd}/logs:/logs", "-v", f"{cwd}/build/dbt_packages:/dbt", "--network", "host", "--entrypoint", "/usr/local/bin/dbt", "-i", normalization_image, "run-operation", macro, *args, "--profiles-dir=/workspace", "--project-dir=/workspace"]
         )
 
         print("Executing: ", " ".join(commands))
@@ -593,8 +532,7 @@ class DbtIntegrationTest(object):
 
     @staticmethod
     def copy_replace(src, dst, pattern=None, replace_value=None):
-        """
-        Copies a file from src to dst replacing pattern by replace_value
+        """Copies a file from src to dst replacing pattern by replace_value
         Parameters
         ----------
         src : string
@@ -604,15 +542,16 @@ class DbtIntegrationTest(object):
         pattern
             list of Patterns to replace inside the src file
         replace_value
-            list of Values to replace by in the dst file
+            list of Values to replace by in the dst file.
         """
-        file1 = open(src, "r") if isinstance(src, str) else src
+        file1 = open(src) if isinstance(src, str) else src
         file2 = open(dst, "w") if isinstance(dst, str) else dst
         pattern = [pattern] if isinstance(pattern, str) else pattern
         replace_value = [replace_value] if isinstance(replace_value, str) else replace_value
         if replace_value and pattern:
             if len(replace_value) != len(pattern):
-                raise Exception("Invalid parameters: pattern and replace_value" " have different sizes.")
+                msg = "Invalid parameters: pattern and replace_value have different sizes."
+                raise Exception(msg)
             rules = [(re.compile(regex, re.IGNORECASE), value) for regex, value in zip(pattern, replace_value)]
         else:
             rules = []
@@ -628,8 +567,7 @@ class DbtIntegrationTest(object):
 
     @staticmethod
     def get_test_targets() -> List[str]:
-        """
-        Returns a list of destinations to run tests on.
+        """Returns a list of destinations to run tests on.
 
         if the environment variable NORMALIZATION_TEST_TARGET is set with a comma separated list of destination names,
         then the tests are run only on that subsets of destinations
@@ -652,11 +590,10 @@ class DbtIntegrationTest(object):
         self,
         destination_type: Union[DestinationType, List[DestinationType]],
         test_type: str,
-        tmp_folders: list = None,
-        git_versioned_tests: list = None,
+        tmp_folders: Optional[list] = None,
+        git_versioned_tests: Optional[list] = None,
     ):
-        """
-        Cleans-up all temporary schemas created during the test session.
+        """Cleans-up all temporary schemas created during the test session.
         It parses the provided tmp_folders: List[str] or uses `git_versioned_tests` to find sources.yml files generated for the tests.
         It gets target schemas created by the tests and removes them using custom scenario specified in
             `dbt-project-template/macros/clean_tmp_tables.sql` macro.
@@ -671,14 +608,13 @@ class DbtIntegrationTest(object):
         ::  tmp_folders: should be supplied if test_type = "ephemeral", to get schemas from /build/normalization_test_output folders
         ::  git_versioned_tests: should be supplied if test_type = "normalization", to get schemas from integration_tests/normalization_test_output folders
 
-        EXAMPLE:
+        Example:
             clean_up_args = {
                 "destination_type": [ DestinationType.REDSHIFT, DestinationType.POSTGRES, ... ]
                 "test_type": "normalization",
                 "git_versioned_tests": git_versioned_tests,
             }
         """
-
         path_to_sources: str = "/models/generated/sources.yml"
         test_folders: dict = {}
         source_files: dict = {}
@@ -693,27 +629,30 @@ class DbtIntegrationTest(object):
             # based on test_type select path to source files
             if test_type == "ephemeral" or test_type == "test_reset_scd_overwrite":
                 if not tmp_folders:
-                    raise TypeError("`tmp_folders` arg is not provided.")
+                    msg = "`tmp_folders` arg is not provided."
+                    raise TypeError(msg)
                 for folder in tmp_folders:
                     if destination.value in folder:
                         test_folders[destination.value].append(folder)
                         source_files[destination.value].append(f"{folder}{path_to_sources}")
             elif test_type == "normalization":
                 if not git_versioned_tests:
-                    raise TypeError("`git_versioned_tests` arg is not provided.")
+                    msg = "`git_versioned_tests` arg is not provided."
+                    raise TypeError(msg)
                 base_path = f"{pathlib.Path().absolute()}/integration_tests/normalization_test_output"
                 for test in git_versioned_tests:
                     test_root_dir: str = f"{base_path}/{destination.value}/{test}"
                     test_folders[destination.value].append(test_root_dir)
                     source_files[destination.value].append(f"{test_root_dir}{path_to_sources}")
             else:
-                raise TypeError(f"\n`test_type`: {test_type} is not a registered, use `ephemeral` or `normalization` instead.\n")
+                msg = f"\n`test_type`: {test_type} is not a registered, use `ephemeral` or `normalization` instead.\n"
+                raise TypeError(msg)
 
             # parse source.yml files from test folders to get schemas and table names created for the tests
             for file in source_files[destination.value]:
                 source_yml = {}
                 try:
-                    with open(file, "r") as source_file:
+                    with open(file) as source_file:
                         source_yml = yaml.safe_load(source_file)
                 except FileNotFoundError:
                     print(f"\n{destination.value}: {file} doesn't exist, consider to remove any temp_tables and schemas manually!\n")

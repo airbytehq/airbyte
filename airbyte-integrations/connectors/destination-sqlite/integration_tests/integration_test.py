@@ -12,6 +12,8 @@ from typing import Dict
 from unittest.mock import MagicMock
 
 import pytest
+from destination_sqlite import DestinationSqlite
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -23,7 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_sqlite import DestinationSqlite
 
 
 @pytest.fixture(autouse=True)
@@ -49,13 +50,12 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rand_string}"
 
 
-@pytest.fixture
+@pytest.fixture()
 def table_schema() -> str:
-    schema = {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
-    return schema
+    return {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.incremental]),
@@ -65,33 +65,33 @@ def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredA
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_config() -> Dict[str, str]:
     return {"destination_path": "/sqlite.db"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def airbyte_message1(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key1": "value1", "key2": 3}, emitted_at=int(datetime.now().timestamp()) * 1000
+            stream=test_table_name, data={"key1": "value1", "key2": 3}, emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def airbyte_message2(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key1": "value2", "key2": 2}, emitted_at=int(datetime.now().timestamp()) * 1000
+            stream=test_table_name, data={"key1": "value2", "key2": 2}, emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
 
 @pytest.mark.parametrize("config", ["invalid_config"])
-@pytest.mark.disable_autouse
+@pytest.mark.disable_autouse()
 def test_check_fails(config, request):
     config = request.getfixturevalue(config)
     destination = DestinationSqlite()
@@ -119,7 +119,7 @@ def test_write(
     config = request.getfixturevalue(config)
     destination = DestinationSqlite()
     generator = destination.write(
-        config=config, configured_catalog=configured_catalogue, input_messages=[airbyte_message1, airbyte_message2]
+        config=config, configured_catalog=configured_catalogue, input_messages=[airbyte_message1, airbyte_message2],
     )
 
     result = list(generator)
@@ -128,7 +128,7 @@ def test_write(
     con = sqlite3.connect(config.get("destination_path"))
     with con:
         cursor = con.execute(
-            f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
+            f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data",
         )
         result = cursor.fetchall()
 

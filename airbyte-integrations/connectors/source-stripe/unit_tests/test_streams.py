@@ -6,7 +6,6 @@ import logging
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_stripe.availability_strategy import STRIPE_ERROR_CODES
 from source_stripe.streams import (
     ApplicationFees,
@@ -44,6 +43,8 @@ from source_stripe.streams import (
     Transfers,
 )
 
+from airbyte_cdk.models import SyncMode
+
 
 def test_missed_id_child_stream(requests_mock):
 
@@ -61,25 +62,25 @@ def test_missed_id_child_stream(requests_mock):
         "data": [{"id": "li_1JpAUUIEn5WyEQxnfGJT5MbL"}],
         "has_more": False,
         "object": "list",
-        "url": "/v1/checkout/sessions/{}/line_items".format(session_id_exists),
+        "url": f"/v1/checkout/sessions/{session_id_exists}/line_items",
     }
 
     response_error = {
         "error": {
             "code": "resource_missing",
             "doc_url": "https://stripe.com/docs/error-codes/resource-missing",
-            "message": "No such checkout session: '{}'".format(session_id_missed),
+            "message": f"No such checkout session: '{session_id_missed}'",
             "param": "session",
             "type": "invalid_request_error",
-        }
+        },
     }
 
     requests_mock.get("https://api.stripe.com/v1/checkout/sessions", json=response_sessions)
     requests_mock.get(
-        "https://api.stripe.com/v1/checkout/sessions/{}/line_items".format(session_id_exists), json=response_sessions_line_items
+        f"https://api.stripe.com/v1/checkout/sessions/{session_id_exists}/line_items", json=response_sessions_line_items,
     )
     requests_mock.get(
-        "https://api.stripe.com/v1/checkout/sessions/{}/line_items".format(session_id_missed), json=response_error, status_code=404
+        f"https://api.stripe.com/v1/checkout/sessions/{session_id_missed}/line_items", json=response_error, status_code=404,
     )
 
     stream = CheckoutSessionsLineItems(start_date=100_100, account_id=None)
@@ -121,7 +122,7 @@ def test_sub_stream(requests_mock):
                         "total_count": 3,
                         "url": "/v1/invoices/in_1KD6OVIEn5WyEQxn9xuASHsD/lines",
                     },
-                }
+                },
             ],
         },
     )
@@ -156,7 +157,7 @@ def test_sub_stream(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "stream_cls, kwargs, expected",
+    ("stream_cls", "kwargs", "expected"),
     [
         (ApplicationFees, {}, "application_fees"),
         (ApplicationFeesRefunds, {"stream_slice": {"refund_id": "fr"}}, "application_fees/fr/refunds"),
@@ -204,7 +205,7 @@ def test_path_and_headers(
 
 
 @pytest.mark.parametrize(
-    "stream, kwargs, expected",
+    ("stream", "kwargs", "expected"),
     [
         (
             CustomerBalanceTransactions,
@@ -268,8 +269,8 @@ def test_request_params(
         PromotionCodes,
         ExternalAccount,
         SetupIntents,
-        ShippingRates
-    )
+        ShippingRates,
+    ),
 )
 def test_403_error_handling(stream_args, stream_cls, requests_mock):
     stream = stream_cls(**stream_args)

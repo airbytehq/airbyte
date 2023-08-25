@@ -35,8 +35,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class AbstractSource(Source, ABC):
-    """
-    Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
+    """Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source.
     """
 
@@ -44,8 +43,7 @@ class AbstractSource(Source, ABC):
 
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        :param logger: source logger
+        """:param logger: source logger
         :param config: The user-provided configuration as specified by the source's spec.
           This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
@@ -57,8 +55,7 @@ class AbstractSource(Source, ABC):
 
     @abstractmethod
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: The user-provided configuration as specified by the source's spec.
+        """:param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
@@ -68,7 +65,7 @@ class AbstractSource(Source, ABC):
 
     @property
     def name(self) -> str:
-        """Source name"""
+        """Source name."""
         return self.__class__.__name__
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
@@ -92,7 +89,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -106,9 +103,9 @@ class AbstractSource(Source, ABC):
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 if not stream_instance:
+                    msg = f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
                     raise KeyError(
-                        f"The requested stream {configured_stream.stream.name} was not found in the source."
-                        f" Available streams: {stream_instances.keys()}"
+                        msg,
                     )
 
                 try:
@@ -208,15 +205,13 @@ class AbstractSource(Source, ABC):
 
     @staticmethod
     def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
-        """
-        Check if record count reached limit set by internal config.
+        """Check if record count reached limit set by internal config.
         :param internal_config - internal CDK configuration separated from user defined config
         :records_counter - number of records already red
-        :return True if limit reached, False otherwise
+        :return True if limit reached, False otherwise.
         """
-        if internal_config.limit:
-            if records_counter >= internal_config.limit:
-                return True
+        if internal_config.limit and records_counter >= internal_config.limit:
+            return True
         return False
 
     def _read_incremental(
@@ -227,7 +222,7 @@ class AbstractSource(Source, ABC):
         state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        """Read stream using incremental algorithm
+        """Read stream using incremental algorithm.
 
         :param logger:
         :param stream_instance:
@@ -263,7 +258,7 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field or None,
             )
             record_counter = 0
-            for message_counter, record_data_or_message in enumerate(records, start=1):
+            for _message_counter, record_data_or_message in enumerate(records, start=1):
                 message = self._get_message(record_data_or_message, stream_instance)
                 yield from self._emit_queued_messages()
                 yield message
@@ -293,9 +288,7 @@ class AbstractSource(Source, ABC):
             yield checkpoint
 
     def should_log_slice_message(self, logger: logging.Logger):
-        """
-
-        :param logger:
+        """:param logger:
         :return:
         """
         return logger.isEnabledFor(logging.DEBUG)
@@ -303,7 +296,6 @@ class AbstractSource(Source, ABC):
     def _emit_queued_messages(self):
         if self.message_repository:
             yield from self.message_repository.consume_queue()
-        return
 
     def _read_full_refresh(
         self,
@@ -314,7 +306,7 @@ class AbstractSource(Source, ABC):
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
         logger.debug(
-            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
+            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices},
         )
         total_records_counter = 0
         for _slice in slices:
@@ -334,9 +326,8 @@ class AbstractSource(Source, ABC):
                         return
 
     def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
-        """
-        Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
-        the slice is a class implementing Mapping. Therefore, we want to cast this as a dict before passing this to json.dump
+        """Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
+        the slice is a class implementing Mapping. Therefore, we want to cast this as a dict before passing this to json.dump.
         """
         printable_slice = dict(_slice) if _slice else _slice
         return AirbyteMessage(
@@ -357,17 +348,14 @@ class AbstractSource(Source, ABC):
 
     @staticmethod
     def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream):
-        """
-        Necessary because we use different loggers at the source and stream levels. We must
+        """Necessary because we use different loggers at the source and stream levels. We must
         apply the source's log level to each stream's logger.
         """
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
 
     def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream):
-        """
-        Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
-        """
+        """Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage."""
         if isinstance(record_data_or_message, AirbyteMessage):
             return record_data_or_message
         else:

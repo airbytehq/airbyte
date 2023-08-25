@@ -54,7 +54,7 @@ def test_connection_lifecycle_with_normalization(source, destination, connection
     assert not connection_with_normalization.was_created
     connection_with_normalization.create()
     connection_with_normalization.state = connection_with_normalization._get_state_from_file(
-        connection_with_normalization.configuration_path, workspace_id
+        connection_with_normalization.configuration_path, workspace_id,
     )
     assert connection_with_normalization.was_created
     assert connection_with_normalization.remote_resource["operations"][0]["operation_id"] is not None

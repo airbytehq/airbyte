@@ -4,6 +4,7 @@
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.http_logger import format_http_message
 
 A_TITLE = "a title"
@@ -13,7 +14,7 @@ ANY_REQUEST = requests.Request(method="POST", url="http://a-url.com", headers={}
 
 
 class ResponseBuilder:
-    def __init__(self):
+    def __init__(self) -> None:
         self._body_content = ""
         self._headers = {}
         self._request = ANY_REQUEST
@@ -48,7 +49,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
 
 
 @pytest.mark.parametrize(
-    "test_name, http_method, url, headers, params, body_json, body_data, expected_airbyte_message",
+    ("test_name", "http_method", "url", "headers", "params", "body_json", "body_data", "expected_airbyte_message"),
     [
         (
             "test_basic_get_request",
@@ -88,7 +89,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {"b1": "v1", "b2": "v2"},
             {},
-            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"Content-Type": "application/json", "Content-Length": "24"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}}
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"Content-Type": "application/json", "Content-Length": "24"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}},
         ),
         (
             "test_get_request_with_headers_params_and_body",
@@ -118,7 +119,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {},
             {},
-            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "POST", "body": {"content": None}, "headers": {"Content-Length": "0"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}}
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "POST", "body": {"content": None}, "headers": {"Content-Length": "0"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}},
         ),
     ],
 )
@@ -136,35 +137,35 @@ def test_prepared_request_to_airbyte_message(test_name, http_method, url, header
 
 
 @pytest.mark.parametrize(
-    "test_name, response_body, response_headers, status_code, expected_airbyte_message",
+    ("test_name", "response_body", "response_headers", "status_code", "expected_airbyte_message"),
     [
         (
             "test_response_no_body_no_headers",
             b"",
             {},
             200,
-            {"body": {"content": ""}, "headers": {}, "status_code": 200}
+            {"body": {"content": ""}, "headers": {}, "status_code": 200},
         ),
         (
             "test_response_no_body_with_headers",
             b"",
             {"h1": "v1", "h2": "v2"},
             200,
-            {"body": {"content": ""}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}
+            {"body": {"content": ""}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200},
         ),
         (
             "test_response_with_body_no_headers",
             b'{"b1": "v1", "b2": "v2"}',
             {},
             200,
-            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {}, "status_code": 200}
+            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {}, "status_code": 200},
         ),
         (
             "test_response_with_body_and_headers",
             b'{"b1": "v1", "b2": "v2"}',
             {"h1": "v1", "h2": "v2"},
             200,
-            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}
+            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200},
         ),
     ],
 )

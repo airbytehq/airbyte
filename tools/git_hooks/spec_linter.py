@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-This script is responsible for connectors spec.json file validation.
+"""This script is responsible for connectors spec.json file validation.
 
 Input:
 List of spec files
@@ -31,9 +30,8 @@ logging.basicConfig(format="%(message)s")
 
 
 def read_spec_file(spec_path: str) -> bool:
-    """
-    Parses spec file and applies validation rules.
-    Returns True if spec is valid else False
+    """Parses spec file and applies validation rules.
+    Returns True if spec is valid else False.
     """
     errors: List[Tuple[str, Optional[str]]] = []
     with open(spec_path) as json_file:
@@ -49,13 +47,11 @@ def read_spec_file(spec_path: str) -> bool:
     for err_msg, err_field in errors:
         print_error(spec_path, err_msg, err_field)
 
-    return False if errors else True
+    return not errors
 
 
 def print_error(spec_path: str, error_message: str, failed_field: Optional[str] = None) -> None:
-    """
-    Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>
-    """
+    """Logs error in following format: <BOLD>SPEC PATH</BOLD> ERROR MSG <RED>FIELD NAME</RED>."""
     error = f"\033[1m{spec_path}\033[0m: {error_message}"
     if failed_field:
         error += f" \x1b[31;1m{failed_field}\033[0m"
@@ -68,9 +64,7 @@ def validate_schema(
     schema: Mapping[str, Any],
     parent_fields: Optional[List[str]] = None,
 ) -> List[Tuple[str, str]]:
-    """
-    Validates given spec dictionary object. Returns list of errors
-    """
+    """Validates given spec dictionary object. Returns list of errors."""
     errors: List[Tuple[str, str]] = []
     parent_fields = parent_fields if parent_fields else []
     for field_name, field_schema in schema.items():
@@ -84,17 +78,15 @@ def validate_schema(
                 validate_schema(
                     spec_path,
                     oneof_schema["properties"],
-                    parent_fields + [field_name, str(index)],
-                )
+                    [*parent_fields, field_name, str(index)],
+                ),
             )
 
     return errors
 
 
 def fetch_oneof_schemas(schema: Mapping[str, Any]) -> List[Mapping[str, Any]]:
-    """
-    Finds subschemas in oneOf field
-    """
+    """Finds subschemas in oneOf field."""
     return [spec for spec in schema.get("oneOf", []) if spec.get("properties")]
 
 
@@ -103,10 +95,8 @@ def validate_field(
     schema: Mapping[str, Any],
     parent_fields: Optional[List[str]] = None,
 ) -> List[Tuple[str, str]]:
-    """
-    Validates single field objects and return errors if they exist
-    """
-    if "const" in schema.keys():
+    """Validates single field objects and return errors if they exist."""
+    if "const" in schema:
         # Field with "const" value is metainfo and not expected to contain title
         # and description.
         return []
@@ -123,15 +113,14 @@ def validate_field(
 
 
 def get_full_field_name(field_name: str, parent_fields: Optional[List[str]] = None) -> str:
+    """Returns full path to a field.
+    e.g. root.middle.child, root.oneof.1.attr.
     """
-    Returns full path to a field.
-    e.g. root.middle.child, root.oneof.1.attr
-    """
-    return ".".join(parent_fields + [field_name]) if parent_fields else field_name
+    return ".".join([*parent_fields, field_name]) if parent_fields else field_name
 
 
 if __name__ == "__main__":
     spec_files = sys.argv[1:]
 
-    if not all([read_spec_file(file_path) for file_path in spec_files]):
-        exit(1)
+    if not all(read_spec_file(file_path) for file_path in spec_files):
+        sys.exit(1)

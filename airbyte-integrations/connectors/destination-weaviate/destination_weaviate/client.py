@@ -102,7 +102,7 @@ class Client:
 
         for buffered_object in self.objects_with_error.values():
             self.client.batch.add_data_object(
-                buffered_object.properties, buffered_object.class_name, buffered_object.id, buffered_object.vector
+                buffered_object.properties, buffered_object.class_name, buffered_object.id, buffered_object.vector,
             )
 
         if len(self.objects_with_error) > 0 and retries > 0:
@@ -131,9 +131,11 @@ class Client:
         url, username, password = config.get("url"), config.get("username"), config.get("password")
 
         if username and not password:
-            raise Exception("Password is required when username is set")
+            msg = "Password is required when username is set"
+            raise Exception(msg)
         if password and not username:
-            raise Exception("Username is required when password is set")
+            msg = "Username is required when password is set"
+            raise Exception(msg)
 
         if username and password:
             credentials = weaviate.auth.AuthClientPassword(username, password)

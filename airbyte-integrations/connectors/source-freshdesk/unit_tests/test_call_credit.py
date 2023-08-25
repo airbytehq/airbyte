@@ -9,10 +9,10 @@ from source_freshdesk.utils import CallCredit
 
 
 def test_consume_one():
-    """Multiple consumptions of 1 cred will reach limit"""
+    """Multiple consumptions of 1 cred will reach limit."""
     credit = CallCredit(balance=3, reload_period=1)
     ts_1 = time.time()
-    for i in range(4):
+    for _i in range(4):
         credit.consume(1)
     ts_2 = time.time()
 
@@ -20,7 +20,7 @@ def test_consume_one():
 
 
 def test_consume_many():
-    """Consumptions of N creds will reach limit and decrease balance"""
+    """Consumptions of N creds will reach limit and decrease balance."""
     credit = CallCredit(balance=3, reload_period=1)
     ts_1 = time.time()
     credit.consume(1)

@@ -7,6 +7,7 @@ from typing import Tuple
 
 import docker
 from dagger import Container, Platform
+
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.contexts import ConnectorContext

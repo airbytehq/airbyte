@@ -18,10 +18,7 @@ from airbyte_cdk.models import Type as MessageType
 
 
 def as_airbyte_message(stream: ConfiguredAirbyteStream, current_status: AirbyteStreamStatus) -> AirbyteMessage:
-    """
-    Builds an AirbyteStreamStatusTraceMessage for the provided stream
-    """
-
+    """Builds an AirbyteStreamStatusTraceMessage for the provided stream."""
     now_millis = datetime.now().timestamp() * 1000.0
 
     trace_message = AirbyteTraceMessage(

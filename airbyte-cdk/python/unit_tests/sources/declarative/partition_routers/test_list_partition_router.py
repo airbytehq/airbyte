@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest as pytest
+import pytest
+
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
@@ -12,7 +13,7 @@ parameters = {"cursor_field": "owner_resource"}
 
 
 @pytest.mark.parametrize(
-    "test_name, partition_values, cursor_field, expected_slices",
+    ("test_name", "partition_values", "cursor_field", "expected_slices"),
     [
         (
             "test_single_element",
@@ -36,12 +37,12 @@ parameters = {"cursor_field": "owner_resource"}
 )
 def test_list_partition_router(test_name, partition_values, cursor_field, expected_slices):
     slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
-    slices = [s for s in slicer.stream_slices()]
+    slices = list(slicer.stream_slices())
     assert slices == expected_slices
 
 
 @pytest.mark.parametrize(
-    "test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    ("test_name", "request_option", "expected_req_params", "expected_headers", "expected_body_json", "expected_body_data"),
     [
         (
             "test_inject_into_req_param",

@@ -8,28 +8,22 @@ from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
-ConvexConfig = TypedDict(
-    "ConvexConfig",
-    {
-        "deployment_url": str,
-        "access_key": str,
-    },
-)
 
-ConvexState = TypedDict(
-    "ConvexState",
-    {
-        "snapshot_cursor": Optional[str],
-        "snapshot_has_more": bool,
-        "delta_cursor": Optional[int],
-    },
-)
+class ConvexConfig(TypedDict):
+    deployment_url: str
+    access_key: str
+
+class ConvexState(TypedDict):
+    snapshot_cursor: Optional[str]
+    snapshot_has_more: bool
+    delta_cursor: Optional[int]
 
 CONVEX_CLIENT_VERSION = "0.2.0"
 
@@ -47,8 +41,7 @@ class SourceConvex(AbstractSource):
         return requests.get(url, headers=headers)
 
     def check_connection(self, logger: Any, config: ConvexConfig) -> Tuple[bool, Any]:
-        """
-        Connection check to validate that the user-provided config can be used to connect to the underlying API
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API.
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
@@ -61,9 +54,7 @@ class SourceConvex(AbstractSource):
             return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
     def streams(self, config: ConvexConfig) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         resp = self._json_schemas(config)
         if resp.status_code != 200:
             raise Exception(format_http_error("Failed request to json_schemas", resp))
@@ -189,17 +180,13 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[ConvexState] = None,
     ) -> Dict[str, str]:
-        """
-        Custom headers for each HTTP request, not including Authorization.
-        """
+        """Custom headers for each HTTP request, not including Authorization."""
         return {
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
 
     def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
-        """
-        This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`.
-        """
+        """This (deprecated) method is still used by AbstractSource to update state between calls to `read_records`."""
         return self.state
 
     def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:

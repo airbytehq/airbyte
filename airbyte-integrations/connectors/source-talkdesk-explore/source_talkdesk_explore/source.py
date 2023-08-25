@@ -19,7 +19,7 @@ class SourceTalkdeskExplore(AbstractSource):
         token_request = talkdesk_auth.request_bearer_token()
 
         # Check for valid token and scope
-        if "access_token" not in token_request.keys():
+        if "access_token" not in token_request:
             return False, "Unable to retrieve access token. Check your credentials."
         elif "data-reports:read" and "data-reports:write" not in token_request["scope"]:
             return (
@@ -39,7 +39,7 @@ class SourceTalkdeskExplore(AbstractSource):
         start_date = config.get("start_date", None)
         timezone = config.get("timezone", None)
 
-        streams_ = [
+        return [
             Calls(start_date=start_date, timezone=timezone, authenticator=authenticator),
             UserStatus(start_date=start_date, timezone=timezone, authenticator=authenticator),
             StudioFlowExecution(start_date=start_date, timezone=timezone, authenticator=authenticator),
@@ -47,4 +47,3 @@ class SourceTalkdeskExplore(AbstractSource):
             RingAttempts(start_date=start_date, timezone=timezone, authenticator=authenticator),
         ]
 
-        return streams_

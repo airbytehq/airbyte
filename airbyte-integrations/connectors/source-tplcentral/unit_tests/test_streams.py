@@ -10,7 +10,7 @@ import requests
 from source_tplcentral.streams import TplcentralStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {
         "config": {
@@ -23,11 +23,11 @@ def config():
             "customer_id": 4,
             "facility_id": 5,
             "start_date": "2021-10-01",
-        }
+        },
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     mocker.patch.object(TplcentralStream, "path", "v0/example_endpoint")
     mocker.patch.object(TplcentralStream, "primary_key", "test_primary_key")
@@ -36,22 +36,22 @@ def patch_base_class(mocker):
     mocker.patch.object(TplcentralStream, "__abstractmethods__", set())
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class_page_size(mocker):
     mocker.patch.object(TplcentralStream, "page_size", 10)
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class_upstream_primary_key(mocker):
     mocker.patch.object(TplcentralStream, "upstream_primary_key", "Nested.PrimaryKey")
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class_upstream_cursor_field(mocker):
     mocker.patch.object(TplcentralStream, "upstream_cursor_field", "Nested.Cursor")
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream(patch_base_class, config):
     return TplcentralStream(**config)
 
@@ -103,7 +103,7 @@ def test_parse_response(stream, requests_mock):
                         "Baz": "baz",
                     },
                     "_links": [],
-                }
+                },
             ],
         },
     )

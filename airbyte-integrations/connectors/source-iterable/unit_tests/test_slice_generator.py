@@ -36,7 +36,7 @@ def test_slice_gen_no_range_adjust():
 
 
 @pytest.mark.parametrize(
-    "start_day,end_day,days,range",
+    ("start_day", "end_day", "days", "range"),
     [
         (
             "2020-01-01",

@@ -6,9 +6,10 @@ from unittest.mock import Mock
 
 import pendulum
 import pytest
+from source_surveymonkey.streams import SurveyCollectors, SurveyIds, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_surveymonkey.streams import SurveyCollectors, SurveyIds, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 args_mock = {"authenticator": NoAuth(), "start_date": pendulum.parse("2000-01-01"), "survey_ids": []}
 
@@ -57,7 +58,7 @@ def test_user_defined_retry(requests_mock):
                         "docs": "https://developer.surveymonkey.com/api/v3/#error-codes",
                         "message": "Too many requests were made, try again later.",
                         "http_status_code": 429,
-                    }
+                    },
                 },
             },
             {"status_code": 200, "headers": {"X-Ratelimit-App-Global-Minute-Remaining": "100"}, "json": response_survey_ids},
@@ -152,7 +153,7 @@ response_survey_details = {
                                 "quiz_options": {"score": 0},
                                 "id": "4385174701",
                             },
-                        ]
+                        ],
                     },
                 },
                 {
@@ -184,7 +185,7 @@ response_survey_details = {
                                 "quiz_options": {"score": 0},
                                 "id": "4385174971",
                             },
-                        ]
+                        ],
                     },
                 },
             ],
@@ -221,7 +222,7 @@ def test_surveys(requests_mock):
             "summary_url": "https://www.surveymonkey.com/summary/BPAkhAawaMN8C17tmmNFxjZ0KOiJJ3FCQU4krShVQhg_3D",
             "theme_id": "4510354",
             "title": "b9jo5h23l7pa",
-        }
+        },
     ]
 
 
@@ -271,10 +272,10 @@ def test_survey_questions(requests_mock):
                         "id": "4385174701",
                         "position": 2,
                         "quiz_options": {"score": 0},
-                        "text": "ywg8bovna adsahna5kd1jg vdism1 w045ovutkx9 " "oubne2u vd0x7lh3 y3npa4kfb5",
+                        "text": "ywg8bovna adsahna5kd1jg vdism1 w045ovutkx9 oubne2u vd0x7lh3 y3npa4kfb5",
                         "visible": True,
                     },
-                ]
+                ],
             },
             "family": "single_choice",
             "forced_ranking": False,
@@ -297,17 +298,17 @@ def test_survey_questions(requests_mock):
                         "id": "4385174970",
                         "position": 1,
                         "quiz_options": {"score": 0},
-                        "text": "11bp1ll11nu0 ool67 tkbke01j3mtq " "22f4r54u073p h6kt4puolum4",
+                        "text": "11bp1ll11nu0 ool67 tkbke01j3mtq 22f4r54u073p h6kt4puolum4",
                         "visible": True,
                     },
                     {
                         "id": "4385174971",
                         "position": 2,
                         "quiz_options": {"score": 0},
-                        "text": "8q53omsxw8 08yyjvj3ns9j yu7yap87 " "d2tgjv55j5d5o3y dbd69m94qav1wma 8upqf7cliu " "hb26pytfkwyt rfo2ac4",
+                        "text": "8q53omsxw8 08yyjvj3ns9j yu7yap87 d2tgjv55j5d5o3y dbd69m94qav1wma 8upqf7cliu hb26pytfkwyt rfo2ac4",
                         "visible": True,
                     },
-                ]
+                ],
             },
             "family": "single_choice",
             "forced_ranking": False,
@@ -333,8 +334,8 @@ def test_survey_collectors(requests_mock):
         "page": 1,
         "total": 1,
         "links": {
-            "self": "https://api.surveymonkey.com/v3/surveys/307785415/collectors?page=1&per_page=50"
-        }
+            "self": "https://api.surveymonkey.com/v3/surveys/307785415/collectors?page=1&per_page=50",
+        },
     })
     args = {**args_mock, **{"survey_ids": ["307785415"]}}
     records = SurveyCollectors(**args).read_records(sync_mode=SyncMode.full_refresh, stream_slice={"survey_id": "307785415"})
@@ -343,8 +344,8 @@ def test_survey_collectors(requests_mock):
             "name": "Teams Poll",
             "id": "1",
             "href": "https://api.surveymonkey.com/v3/collectors/1",
-            "survey_id": "307785415"
-        }
+            "survey_id": "307785415",
+        },
     ]
 
 
@@ -357,7 +358,7 @@ def test_surveys_next_page_token():
             "self": "https://api.surveymonkey.com/v3/surveys?page=1&per_page=50",
             "next": "https://api.surveymonkey.com/v3/surveys?page=2&per_page=50",
             "last": "https://api.surveymonkey.com/v3/surveys?page=5&per_page=50",
-        }
+        },
     }
 
     params = stream.next_page_token(mockresponse)
@@ -365,7 +366,7 @@ def test_surveys_next_page_token():
 
 
 @pytest.mark.parametrize(
-    "current_stream_state,latest_record,state",
+    ("current_stream_state", "latest_record", "state"),
     [
         (
             {"307785415": {"date_modified": "2021-01-01T00:00:00+00:00"}},
@@ -392,7 +393,7 @@ def test_surveys_responses_get_updated_state(current_stream_state, latest_record
 
 
 @pytest.mark.parametrize(
-    "stream_state,params",
+    ("stream_state", "params"),
     [
         (
             {"307785415": {"date_modified": "2021-01-01T00:00:00+00:00"}},

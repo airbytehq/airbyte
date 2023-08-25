@@ -8,13 +8,14 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
-from requests.auth import AuthBase
 
 
 # Basic full refresh stream
@@ -35,14 +36,15 @@ class SalesloftStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
-            if "paging" in response.json()["metadata"].keys():
+            if "paging" in response.json()["metadata"]:
                 next_page = response.json()["metadata"]["paging"].get("next_page")
                 return None if not next_page else {"page": next_page}
         except Exception as e:
-            raise KeyError(f"error parsing next_page token: {e}")
+            msg = f"error parsing next_page token: {e}"
+            raise KeyError(msg)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"per_page": 100, "page": 1}
         if self.created_at_field:
@@ -55,8 +57,7 @@ class SalesloftStream(HttpStream, ABC):
         data = response.json().get("data")
         if not data:
             return []
-        for element in data:
-            yield element
+        yield from data
 
 
 # Basic incremental stream
@@ -75,7 +76,7 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
         return {self.cursor_field: cursor_value.strftime(self.datetime_format)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)

@@ -6,10 +6,11 @@
 from logging import Logger
 from typing import Any, Iterable, Mapping
 
+from meilisearch import Client
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_meilisearch.writer import MeiliWriter
-from meilisearch import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -22,7 +23,7 @@ class DestinationMeilisearch(Destination):
     primary_key = "_ab_pk"
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         client = get_client(config=config)
 
@@ -56,8 +57,8 @@ class DestinationMeilisearch(Destination):
                         "id": 287947,
                         "title": "Shazam",
                         "overview": "A boy is given the ability",
-                    }
-                ]
+                    },
+                ],
             )
             client.wait_for_task(add_documents_job.task_uid)
 
@@ -66,4 +67,4 @@ class DestinationMeilisearch(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(f"Check connection failed. Error: {e}")
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

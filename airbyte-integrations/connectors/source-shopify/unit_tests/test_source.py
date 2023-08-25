@@ -47,7 +47,7 @@ from source_shopify.source import (
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def config(basic_config):
     basic_config["start_date"] = "2020-11-01"
     basic_config["authenticator"] = ShopifyAuthenticator(basic_config)
@@ -55,7 +55,7 @@ def config(basic_config):
 
 
 @pytest.mark.parametrize(
-    "stream,stream_slice,expected_path",
+    ("stream", "stream_slice", "expected_path"),
     [
         (Articles, None, "articles.json"),
         (Blogs, None, "blogs.json"),
@@ -89,15 +89,12 @@ def config(basic_config):
 )
 def test_customers_path(stream, stream_slice, expected_path, config):
     stream = stream(config)
-    if stream_slice:
-        result = stream.path(stream_slice)
-    else:
-        result = stream.path()
+    result = stream.path(stream_slice) if stream_slice else stream.path()
     assert result == expected_path
 
 
 @pytest.mark.parametrize(
-    "stream,stream_slice,expected_path",
+    ("stream", "stream_slice", "expected_path"),
     [
         (OrderRefunds, {"order_id": 12345}, "orders/12345/refunds.json"),
         (OrderRisks, {"order_id": 12345}, "orders/12345/risks.json"),
@@ -129,7 +126,7 @@ def test_read_records(config, mocker):
 
 
 @pytest.mark.parametrize(
-    "stream, expected",
+    ("stream", "expected"),
     [
         (OrderRefunds, {"limit": 250}),
         (Orders, {"limit": 250, "status": "any", "order": "updated_at asc", "updated_at_min": "2020-11-01"}),
@@ -144,20 +141,20 @@ def test_request_params(config, stream, expected):
 
 
 @pytest.mark.parametrize(
-    "last_record, current_state, expected",
+    ("last_record", "current_state", "expected"),
     [
         # no init state
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
         # state is empty str
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""},  {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""},  {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
         # state is None
-        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}),
         # last rec cursor is None
-        ({"created_at": None}, {"created_at": None}, {'created_at': '', 'orders': None}),
+        ({"created_at": None}, {"created_at": None}, {"created_at": "", "orders": None}),
         # last rec cursor is empty str
-        ({"created_at": ""}, {"created_at": "null"}, {'created_at': 'null', 'orders': None}),
+        ({"created_at": ""}, {"created_at": "null"}, {"created_at": "null", "orders": None}),
         # no values at all
-        ({}, {}, {'created_at': '', 'orders': None})
+        ({}, {}, {"created_at": "", "orders": None}),
     ],
     ids=[
         "no init state",
@@ -166,7 +163,7 @@ def test_request_params(config, stream, expected):
         "last rec cursor is None",
         "last rec cursor is empty str",
         "no values at all",
-    ]
+    ],
 )
 def test_get_updated_state(config, last_record, current_state, expected):
     stream = OrderRefunds(config)
@@ -179,12 +176,12 @@ def test_parse_response_with_bad_json(config, response_with_bad_json):
 
 
 @pytest.mark.parametrize(
-    "shop, expected",
+    ("shop", "expected"),
     [
         ("test-store", "test-store"),
         ("test-store.myshopify.com", "test-store"),
     ],
-    ids=["old style", "oauth style"]
+    ids=["old style", "oauth style"],
 )
 def test_get_shop_name(config, shop, expected):
     source = SourceShopify()

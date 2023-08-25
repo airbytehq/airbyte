@@ -42,7 +42,7 @@ class OpenAIEmbeddingConfigModel(BaseModel):
     class Config:
         title = "OpenAI"
         schema_extra = {
-            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions.",
         }
 
 
@@ -52,7 +52,7 @@ class FakeEmbeddingConfigModel(BaseModel):
     class Config:
         title = "Fake"
         schema_extra = {
-            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs.",
         }
 
 
@@ -65,7 +65,7 @@ class PineconeIndexingModel(BaseModel):
     class Config:
         title = "Pinecone"
         schema_extra = {
-            "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain."
+            "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain.",
         }
 
 
@@ -86,7 +86,7 @@ class ChromaLocalIndexingModel(BaseModel):
     class Config:
         title = "Chroma (local persistance)"
         schema_extra = {
-            "description": "Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync."
+            "description": "Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync.",
         }
 
 
@@ -102,17 +102,17 @@ class DocArrayHnswSearchIndexingModel(BaseModel):
     class Config:
         title = "DocArrayHnswSearch"
         schema_extra = {
-            "description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite."
+            "description": "DocArrayHnswSearch is a lightweight Document Index implementation provided by Docarray that runs fully locally and is best suited for small- to medium-sized datasets. It stores vectors on disk in hnswlib, and stores all other data in SQLite.",
         }
 
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
     embedding: Union[OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
-        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
+        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object",
     )
     indexing: Union[PineconeIndexingModel, DocArrayHnswSearchIndexingModel, ChromaLocalIndexingModel] = Field(
-        ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object"
+        ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object",
     )
 
     class Config:
@@ -122,7 +122,7 @@ class ConfigModel(BaseModel):
                 {"id": "processing", "title": "Processing"},
                 {"id": "embedding", "title": "Embedding"},
                 {"id": "indexing", "title": "Indexing"},
-            ]
+            ],
         }
 
     @staticmethod
@@ -139,12 +139,12 @@ class ConfigModel(BaseModel):
 
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
-        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        """Pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references."""
         dpath.util.delete(schema, "properties/*/discriminator")
 
     @classmethod
     def schema(cls):
-        """we're overriding the schema classmethod to enable some post-processing"""
+        """We're overriding the schema classmethod to enable some post-processing."""
         schema = super().schema()
         schema = cls.resolve_refs(schema)
         cls.remove_discriminator(schema)

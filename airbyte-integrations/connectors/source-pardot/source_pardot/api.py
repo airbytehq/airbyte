@@ -2,21 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Optional
+
 import requests
+
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 
 
 class Pardot:
     def __init__(
         self,
-        refresh_token: str = None,
-        token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
-        is_sandbox: bool = None,
-        start_date: str = None,
-        api_type: str = None,
-        pardot_business_unit_id: str = None,
+        refresh_token: Optional[str] = None,
+        token: Optional[str] = None,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        is_sandbox: Optional[bool] = None,
+        start_date: Optional[str] = None,
+        api_type: Optional[str] = None,
+        pardot_business_unit_id: Optional[str] = None,
     ):
         self.api_type = api_type.upper() if api_type else None
         self.refresh_token = refresh_token
@@ -47,7 +50,7 @@ class Pardot:
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+        self, http_method: str, url: str, headers: Optional[dict] = None, body: Optional[dict] = None, stream: bool = False, params: Optional[dict] = None,
     ) -> requests.models.Response:
         if http_method == "GET":
             resp = self.session.get(url, headers=headers, stream=stream, params=params)

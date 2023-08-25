@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional, Set
 
 import dagger
+
 from pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from pipelines.bases import Report, Step, StepResult
 from pipelines.contexts import PipelineContext
@@ -23,11 +24,13 @@ METADATA_ORCHESTRATOR_MODULE_PATH = "orchestrator"
 
 def get_metadata_file_from_path(context: PipelineContext, metadata_path: Path) -> dagger.File:
     if metadata_path.is_file() and metadata_path.name != METADATA_FILE_NAME:
-        raise ValueError(f"The metadata file name is not {METADATA_FILE_NAME}, it is {metadata_path.name} .")
+        msg = f"The metadata file name is not {METADATA_FILE_NAME}, it is {metadata_path.name} ."
+        raise ValueError(msg)
     if metadata_path.is_dir():
         metadata_path = metadata_path / METADATA_FILE_NAME
     if not metadata_path.exists():
-        raise FileNotFoundError(f"{str(metadata_path)} does not exist.")
+        msg = f"{metadata_path!s} does not exist."
+        raise FileNotFoundError(msg)
     return context.get_repo_dir(str(metadata_path.parent), include=[METADATA_FILE_NAME]).file(METADATA_FILE_NAME)
 
 
@@ -56,7 +59,7 @@ class MetadataValidation(PoetryRun):
         title = f"Validate {metadata_path}"
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
         self.poetry_run_container = self.poetry_run_container.with_mounted_file(
-            METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path)
+            METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path),
         )
 
     async def _run(self) -> StepResult:
@@ -89,7 +92,7 @@ class MetadataUpload(PoetryRun):
         metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
         if metadata_icon_path.exists():
             base_container = base_container.with_file(
-                METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path)
+                METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path),
             )
 
         self.poetry_run_container = (
@@ -132,7 +135,7 @@ class DeployOrchestrator(Step):
         python_base = with_python_base(self.context, "3.9")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
-            self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"
+            self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN",
         )
 
         container_to_run = (
@@ -189,7 +192,7 @@ async def run_metadata_validation_pipeline(
 
             results = await execute_concurrently(validation_steps, concurrency=10)
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=results, name="METADATA VALIDATION RESULTS"
+                pipeline_context=metadata_pipeline_context, steps_results=results, name="METADATA VALIDATION RESULTS",
             )
 
         return metadata_pipeline_context.report.success
@@ -226,7 +229,7 @@ async def run_metadata_lib_test_pipeline(
             )
             result = await test_lib_step.run(["pytest"])
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA LIB TEST RESULTS"
+                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA LIB TEST RESULTS",
             )
 
     return metadata_pipeline_context.report.success
@@ -258,7 +261,7 @@ async def run_metadata_orchestrator_test_pipeline(
             test_orch_step = TestOrchestrator(context=metadata_pipeline_context)
             result = await test_orch_step.run()
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA ORCHESTRATOR TEST RESULTS"
+                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA ORCHESTRATOR TEST RESULTS",
             )
 
     return metadata_pipeline_context.report.success
@@ -301,7 +304,7 @@ async def run_metadata_upload_pipeline(
                         metadata_path=metadata_path,
                     ).run
                     for metadata_path in metadata_to_upload
-                ]
+                ],
             )
             pipeline_context.report = Report(pipeline_context, results, name="METADATA UPLOAD RESULTS")
 
@@ -335,6 +338,6 @@ async def run_metadata_orchestrator_deploy_pipeline(
             steps = [TestOrchestrator(context=metadata_pipeline_context), DeployOrchestrator(context=metadata_pipeline_context)]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS"
+                pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS",
             )
     return metadata_pipeline_context.report.success

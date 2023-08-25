@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import requests_mock as req_mock
-from airbyte_cdk.models import SyncMode
 from source_datadog.source import SourceDatadog
 from source_datadog.streams import (
     AuditLogs,
@@ -23,6 +22,8 @@ from source_datadog.streams import (
     SyntheticTests,
     Users,
 )
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.mark.parametrize(
@@ -57,11 +58,11 @@ def test_next_page_token(config):
 
 
 def test_site_config(config):
-    assert config['site'] == 'datadoghq.com'
+    assert config["site"] == "datadoghq.com"
 
 
 def test_site_config_eu(config_eu):
-    assert config_eu['site'] == 'datadoghq.eu'
+    assert config_eu["site"] == "datadoghq.eu"
 
 
 @pytest.mark.parametrize(
@@ -104,8 +105,8 @@ def test_next_page_token_paginated(stream, config):
             "pagination": {
                 "offset": 998,
                 "next_offset": 999,
-            }
-        }
+            },
+        },
     }
     response._content = json.dumps(body_content).encode("utf-8")
     result = instance.next_page_token(response=response)
@@ -157,10 +158,10 @@ def test_request_body_json(config):
         query_end_date="2023-02-01T00:00:00Z",
         name="test_stream",
         data_source="metrics",
-        query_string="test_query"
+        query_string="test_query",
     )
     stream_state = {
-        "stream_state_key": "value"
+        "stream_state_key": "value",
     }
     expected_payload = {
         "data": {
@@ -172,11 +173,11 @@ def test_request_body_json(config):
                     {
                         "data_source": "metrics",
                         "query": "test_query",
-                        "name": "test_stream"
-                    }
-                ]
-            }
-        }
+                        "name": "test_stream",
+                    },
+                ],
+            },
+        },
     }
     payload = stream.request_body_json(stream_state)
     assert payload == expected_payload
@@ -194,12 +195,12 @@ def test_get_json_schema(config):
         query_end_date=config["end_date"],
         name="test_stream",
         data_source="metrics",
-        query_string="test_query"
+        query_string="test_query",
     )
     expected_schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {},
-        "additionalProperties": True
+        "additionalProperties": True,
     }
     assert stream.get_json_schema() == expected_schema

@@ -9,7 +9,7 @@ from source_orbit.source import SourceOrbit, Workspace
 
 
 @pytest.mark.parametrize(
-    "read_records_side_effect, expected_return_value, expected_error_message",
+    ("read_records_side_effect", "expected_return_value", "expected_error_message"),
     [
         (iter(["foo", "bar"]), True, None),
         (

@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 
 import backoff
 import requests
+
 from airbyte_cdk.models import SyncMode
 from source_pinterest.streams import PinterestAnalyticsStream
 from source_pinterest.utils import get_analytics_columns
@@ -19,7 +20,8 @@ from .models import ReportInfo, ReportStatus, ReportStatusDetails
 
 class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     """Class defining the stream of Pinterest Analytics Report
-    Details - https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report"""
+    Details - https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report.
+    """
 
     http_method = "POST"
     report_wait_timeout = 180
@@ -39,7 +41,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Build the API path for the given account id."""
         return f"ad_accounts/{account_id}/reports"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         """Get the path (i.e. URL) for the stream."""
         return self._build_api_path(stream_slice["parent"]["id"])
 
@@ -53,12 +55,12 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
             "level": self.level,
         }
 
-    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+    def request_body_json(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Optional[Mapping]:
         """Return the body of the API request in JSON format."""
         return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, get_analytics_columns())
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         """Return the request parameters."""
         return {}
@@ -66,7 +68,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
-                self, *args, **kwargs
+                self, *args, **kwargs,
             )
 
         return wrapped
@@ -74,7 +76,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
-                self, *args, **kwargs
+                self, *args, **kwargs,
             )
 
         return wrapped
@@ -82,9 +84,9 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read the records from the stream."""
         report_infos = self._init_reports(super().read_records(sync_mode, cursor_field, stream_slice, stream_state))
@@ -137,7 +139,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
                     token=status.token,
                     report_status=ReportStatus.IN_PROGRESS,
                     metrics=[],
-                )
+                ),
             )
         self.logger.info("Initiated successfully.")
         return report_infos
@@ -152,7 +154,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header()
+            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self.authenticator.get_auth_header(),
         )
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))

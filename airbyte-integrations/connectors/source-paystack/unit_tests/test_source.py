@@ -10,8 +10,8 @@ from source_paystack.source import SourcePaystack
 
 
 @pytest.mark.parametrize(
-    ("items",),
-    [([{"createdAt": "2022-07-01T00:00:00Z", "id": 12345}],), ([],)],  # single customer  #  no customers
+    "items",
+    [([{"createdAt": "2022-07-01T00:00:00Z", "id": 12345}],), ([],)],  # single customer  #  no customers
 )
 def test_check_connection_success(mocker, requests_mock, items):
     source = SourcePaystack()

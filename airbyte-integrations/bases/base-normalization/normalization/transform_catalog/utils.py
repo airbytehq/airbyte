@@ -23,7 +23,7 @@ def is_string(property_type) -> bool:
 def is_datetime(definition: dict) -> bool:
     return (
         is_string(definition["type"])
-        and ("format" in definition.keys())
+        and ("format" in definition)
         and (definition["format"] == "date-time" or "date-time" in definition["format"])
     )
 
@@ -39,7 +39,7 @@ def is_datetime_with_timezone(definition: dict) -> bool:
 def is_date(definition: dict) -> bool:
     return (
         is_string(definition["type"])
-        and ("format" in definition.keys())
+        and ("format" in definition)
         and (definition["format"] == "date" or "date" in definition["format"])
     )
 
@@ -101,10 +101,7 @@ def is_airbyte_column(name: str) -> bool:
 
 
 def is_simple_property(definition: dict) -> bool:
-    if "type" not in definition:
-        property_type = "object"
-    else:
-        property_type = definition["type"]
+    property_type = definition.get("type", "object")
     return (
         is_string(property_type)
         or is_big_integer(definition)

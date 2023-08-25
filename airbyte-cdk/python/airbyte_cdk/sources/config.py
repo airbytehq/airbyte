@@ -4,8 +4,9 @@
 
 from typing import Any, Dict
 
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs, rename_key
 from pydantic import BaseModel
+
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs, rename_key
 
 
 class BaseConfig(BaseModel):
@@ -18,7 +19,7 @@ class BaseConfig(BaseModel):
 
     @classmethod
     def schema(cls, *args, **kwargs) -> Dict[str, Any]:
-        """We're overriding the schema classmethod to enable some post-processing"""
+        """We're overriding the schema classmethod to enable some post-processing."""
         schema = super().schema(*args, **kwargs)
         rename_key(schema, old_key="anyOf", new_key="oneOf")  # UI supports only oneOf
         expand_refs(schema)

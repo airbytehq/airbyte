@@ -9,7 +9,7 @@ import requests
 from source_linnworks.streams import LinnworksStream, StockItems, StockLocationDetails, StockLocations
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     mocker.patch.object(LinnworksStream, "path", "v0/example_endpoint")
     mocker.patch.object(LinnworksStream, "primary_key", "test_primary_key")

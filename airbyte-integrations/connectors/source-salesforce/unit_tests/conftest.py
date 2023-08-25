@@ -6,15 +6,15 @@ import json
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
+    return mocker.patch("time.sleep", lambda x: None)
 
 
 @pytest.fixture(scope="module")
@@ -33,13 +33,12 @@ def rest_catalog():
 
 @pytest.fixture(scope="module")
 def state():
-    state = {"Account": {"LastModifiedDate": "2021-10-01T21:18:20.000Z"}, "Asset": {"SystemModstamp": "2021-10-02T05:08:29.000Z"}}
-    return state
+    return {"Account": {"LastModifiedDate": "2021-10-01T21:18:20.000Z"}, "Asset": {"SystemModstamp": "2021-10-02T05:08:29.000Z"}}
 
 
 @pytest.fixture(scope="module")
 def stream_config():
-    """Generates streams settings for BULK logic"""
+    """Generates streams settings for BULK logic."""
     return {
         "client_id": "fake_client_id",
         "client_secret": "fake_client_secret",
@@ -52,7 +51,7 @@ def stream_config():
 
 @pytest.fixture(scope="module")
 def stream_config_date_format():
-    """Generates streams settings with `start_date` in format YYYY-MM-DD"""
+    """Generates streams settings with `start_date` in format YYYY-MM-DD."""
     return {
         "client_id": "fake_client_id",
         "client_secret": "fake_client_secret",
@@ -65,7 +64,7 @@ def stream_config_date_format():
 
 @pytest.fixture(scope="module")
 def stream_config_without_start_date():
-    """Generates streams settings for REST logic without start_date"""
+    """Generates streams settings for REST logic without start_date."""
     return {
         "client_id": "fake_client_id",
         "client_secret": "fake_client_secret",
@@ -108,7 +107,7 @@ def stream_api_pk(stream_config):
 @pytest.fixture(scope="module")
 def stream_api_v2_too_many_properties(stream_config):
     describe_response_data = {
-        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
+        "fields": [{"name": f"Property{i!s}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)],
     }
     describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}])
     return _stream_api(stream_config, describe_response_data=describe_response_data)
@@ -117,10 +116,10 @@ def stream_api_v2_too_many_properties(stream_config):
 @pytest.fixture(scope="module")
 def stream_api_v2_pk_too_many_properties(stream_config):
     describe_response_data = {
-        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
+        "fields": [{"name": f"Property{i!s}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)],
     }
     describe_response_data["fields"].extend([
-        {"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}
+        {"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"},
     ])
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 

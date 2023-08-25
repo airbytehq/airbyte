@@ -42,25 +42,20 @@ TRUNCATE_RESERVED_SIZE = 8
 
 
 class DestinationNameTransformer:
-    """
-    Handles naming conventions in destinations for all kind of sql identifiers:
+    """Handles naming conventions in destinations for all kind of sql identifiers:
     - schema
     - table
-    - column
+    - column.
     """
 
     def __init__(self, destination_type: DestinationType):
-        """
-        @param destination_type is the destination type of warehouse
-        """
+        """@param destination_type is the destination type of warehouse."""
         self.destination_type: DestinationType = destination_type
 
     # Public methods
 
     def needs_quotes(self, input_name: str) -> bool:
-        """
-        @param input_name to test if it needs to manipulated with quotes or not
-        """
+        """@param input_name to test if it needs to manipulated with quotes or not."""
         if is_reserved_keyword(input_name, self.destination_type):
             return True
         if self.destination_type.value == DestinationType.BIGQUERY.value:
@@ -72,54 +67,50 @@ class DestinationNameTransformer:
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
 
     def normalize_schema_name(self, schema_name: str, in_jinja: bool = False, truncate: bool = True) -> str:
-        """
-        @param schema_name is the schema to normalize
+        """@param schema_name is the schema to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
-        control how the name would be normalized
+        control how the name would be normalized.
         """
         if self.destination_type == DestinationType.ORACLE and schema_name.startswith("_"):
             schema_name = schema_name[1:]
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
     def normalize_table_name(
-        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
     ) -> str:
-        """
-        @param table_name is the table to normalize
+        """@param table_name is the table to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
         @param conflict if there is a conflict between stream name and fields
-        @param conflict_level is the json_path level conflict happened
+        @param conflict_level is the json_path level conflict happened.
         """
         if self.destination_type == DestinationType.ORACLE and table_name.startswith("_"):
             table_name = table_name[1:]
         return self.__normalize_non_column_identifier_name(
-            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
+            input_name=table_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level,
         )
 
     def normalize_column_name(
-        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
     ) -> str:
-        """
-        @param column_name is the column to normalize
+        """@param column_name is the column to normalize
         @param in_jinja is a boolean to specify if the returned normalized will be used inside a jinja macro or not
         @param truncate force ignoring truncate operation on resulting normalized name. For example, if we don't
         control how the name would be normalized
         @param conflict if there is a conflict between stream name and fields
-        @param conflict_level is the json_path level conflict happened
+        @param conflict_level is the json_path level conflict happened.
         """
         return self.__normalize_identifier_name(
-            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level
+            column_name=column_name, in_jinja=in_jinja, truncate=truncate, conflict=conflict, conflict_level=conflict_level,
         )
 
     def truncate_identifier_name(self, input_name: str, custom_limit: int = -1, conflict: bool = False, conflict_level: int = 0) -> str:
-        """
-        @param input_name is the identifier name to middle truncate
+        """@param input_name is the identifier name to middle truncate
         @param custom_limit uses a custom length as the max instead of the destination max length
         @param conflict if there is a conflict between stream name and fields
-        @param conflict_level is the json_path level conflict happened
+        @param conflict_level is the json_path level conflict happened.
         """
         limit = custom_limit - 1 if custom_limit > 0 else self.get_name_max_length()
 
@@ -142,12 +133,13 @@ class DestinationNameTransformer:
             destination_limit = DESTINATION_SIZE_LIMITS[self.destination_type.value]
             return destination_limit - TRUNCATE_DBT_RESERVED_SIZE - TRUNCATE_RESERVED_SIZE
         else:
-            raise KeyError(f"Unknown destination type {self.destination_type}")
+            msg = f"Unknown destination type {self.destination_type}"
+            raise KeyError(msg)
 
     # Private methods
 
     def __normalize_non_column_identifier_name(
-        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
     ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
@@ -163,7 +155,7 @@ class DestinationNameTransformer:
         return result
 
     def __normalize_identifier_name(
-        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0,
     ) -> str:
         result = self.__normalize_naming_conventions(column_name, is_column=True)
         if truncate:
@@ -237,10 +229,7 @@ class DestinationNameTransformer:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:
-            if not is_quoted and not self.needs_quotes(input_name):
-                result = input_name.lower()
-            else:
-                result = input_name.upper()
+            result = input_name.lower() if not is_quoted and not self.needs_quotes(input_name) else input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
         elif self.destination_type.value == DestinationType.TIDB.value:
@@ -250,12 +239,12 @@ class DestinationNameTransformer:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
         else:
-            raise KeyError(f"Unknown destination type {self.destination_type}")
+            msg = f"Unknown destination type {self.destination_type}"
+            raise KeyError(msg)
         return result
 
     def normalize_column_identifier_case_for_lookup(self, input_name: str, is_quoted: bool = False) -> str:
-        """
-        This function adds an additional normalization regarding the column name casing to determine if multiple columns
+        """This function adds an additional normalization regarding the column name casing to determine if multiple columns
         are in collisions. On certain destinations/settings, case sensitivity matters, in others it does not.
         We separate this from standard identifier normalization "__normalize_identifier_case",
         so the generated SQL queries are keeping the original casing from the catalog.
@@ -281,10 +270,7 @@ class DestinationNameTransformer:
             # Columns are considered identical regardless of casing (even quoted ones)
             result = input_name.lower()
         elif self.destination_type.value == DestinationType.ORACLE.value:
-            if not is_quoted and not self.needs_quotes(input_name):
-                result = input_name.lower()
-            else:
-                result = input_name.upper()
+            result = input_name.lower() if not is_quoted and not self.needs_quotes(input_name) else input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
         elif self.destination_type.value == DestinationType.TIDB.value:
@@ -292,7 +278,8 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.DUCKDB.value:
             result = input_name.lower()
         else:
-            raise KeyError(f"Unknown destination type {self.destination_type}")
+            msg = f"Unknown destination type {self.destination_type}"
+            raise KeyError(msg)
         return result
 
 
@@ -303,13 +290,11 @@ def transform_standard_naming(input_name: str) -> str:
     result = input_name.strip()
     result = strip_accents(result)
     result = sub(r"\s+", "_", result)
-    result = sub(r"[^a-zA-Z0-9_]", "_", result)
-    return result
+    return sub(r"[^a-zA-Z0-9_]", "_", result)
 
 
 def transform_json_naming(input_name: str) -> str:
-    result = sub(r"['\"`]", "_", input_name)
-    return result
+    return sub(r"['\"`]", "_", input_name)
 
 
 def strip_accents(input_name: str) -> str:

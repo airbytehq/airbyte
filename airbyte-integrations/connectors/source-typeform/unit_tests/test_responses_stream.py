@@ -6,9 +6,10 @@
 from typing import Any, Mapping, Optional
 
 import pendulum
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from pendulum.datetime import DateTime
 from source_typeform.source import Responses
+
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 start_date_str = "2020-06-27T15:32:38Z"
 start_date = pendulum.parse(start_date_str)

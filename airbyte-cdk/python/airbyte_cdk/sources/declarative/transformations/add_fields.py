@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
@@ -13,7 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, 
 
 @dataclass(frozen=True)
 class AddedFieldDefinition:
-    """Defines the field to add on a record"""
+    """Defines the field to add on a record."""
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
@@ -22,7 +23,7 @@ class AddedFieldDefinition:
 
 @dataclass(frozen=True)
 class ParsedAddFieldDefinition:
-    """Defines the field to add on a record"""
+    """Defines the field to add on a record."""
 
     path: FieldPointer
     value: InterpolatedString
@@ -31,8 +32,7 @@ class ParsedAddFieldDefinition:
 
 @dataclass
 class AddFields(RecordTransformation):
-    """
-    Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
+    """Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
     indices with null values). So if you add a field at index 5 to the array ["value"], it will become ["value", null, null, null, null,
     "new_value"].
@@ -96,8 +96,8 @@ class AddFields(RecordTransformation):
                 else:
                     self._parsed_fields.append(
                         ParsedAddFieldDefinition(
-                            add_field.path, InterpolatedString.create(add_field.value, parameters=parameters), parameters=parameters
-                        )
+                            add_field.path, InterpolatedString.create(add_field.value, parameters=parameters), parameters=parameters,
+                        ),
                     )
             else:
                 self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, parameters={}))

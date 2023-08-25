@@ -9,9 +9,8 @@ import pytest
 
 
 def build_docker_image(text: str, tag: str) -> docker.models.images.Image:
-    """
-    Really for this test we dont need to remove the image since we access it by a string name
-    and remove it also by a string name. But maybe we wanna use it somewhere
+    """Really for this test we dont need to remove the image since we access it by a string name
+    and remove it also by a string name. But maybe we wanna use it somewhere.
     """
     client = docker.from_env()
     fileobj = io.BytesIO(bytes(text, "utf-8"))
@@ -19,7 +18,7 @@ def build_docker_image(text: str, tag: str) -> docker.models.images.Image:
     return image
 
 
-@pytest.fixture
+@pytest.fixture()
 def correct_connector_image() -> str:
     dockerfile_text = """
         FROM scratch
@@ -33,7 +32,7 @@ def correct_connector_image() -> str:
     client.images.remove(image=tag, force=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def connector_image_without_env():
     dockerfile_text = """
         FROM scratch
@@ -46,7 +45,7 @@ def connector_image_without_env():
     client.images.remove(image=tag, force=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def connector_image_with_ne_properties():
     dockerfile_text = """
         FROM scratch

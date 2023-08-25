@@ -5,13 +5,14 @@
 from typing import Any, List, Mapping, Tuple
 
 import pytest
+
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import FieldPointer
 
 
 @pytest.mark.parametrize(
-    ["input_record", "field", "kwargs", "expected"],
+    ("input_record", "field", "kwargs", "expected"),
     [
         pytest.param({"k": "v"}, [(["path"], "static_value")], {}, {"k": "v", "path": "static_value"}, id="add new static value"),
         pytest.param(
@@ -104,7 +105,7 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
     ],
 )
 def test_add_fields(
-    input_record: Mapping[str, Any], field: List[Tuple[FieldPointer, str]], kwargs: Mapping[str, Any], expected: Mapping[str, Any]
+    input_record: Mapping[str, Any], field: List[Tuple[FieldPointer, str]], kwargs: Mapping[str, Any], expected: Mapping[str, Any],
 ):
     inputs = [AddedFieldDefinition(path=v[0], value=v[1], parameters={}) for v in field]
     assert AddFields(fields=inputs, parameters={"alas": "i live"}).transform(input_record, **kwargs) == expected

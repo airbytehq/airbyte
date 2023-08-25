@@ -12,7 +12,7 @@ from .base import DateSlicesMixin, IncrementalMixpanelStream
 class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
     """Get data Revenue.
     API Docs: no docs! build based on singer source
-    Endpoint: https://mixpanel.com/api/2.0/engage/revenue
+    Endpoint: https://mixpanel.com/api/2.0/engage/revenue.
     """
 
     data_field = "results"
@@ -23,8 +23,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
         return "engage/revenue"
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        response.json() example:
+        """response.json() example:
         {
             'computed_at': '2021-07-03T12:43:48.889421+00:00',
             'results': {
@@ -48,7 +47,7 @@ class Revenue(DateSlicesMixin, IncrementalMixpanelStream):
             'session_id': '162...',
             'status': 'ok'
         }
-        :return an iterable containing each record in the response
+        :return an iterable containing each record in the response.
         """
         records = response.json().get(self.data_field, {})
         for date_entry in records:

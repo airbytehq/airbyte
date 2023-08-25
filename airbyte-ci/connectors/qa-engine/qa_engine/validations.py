@@ -35,7 +35,7 @@ def is_appropriate_for_cloud_use(definition_id: str) -> bool:
 def is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series) -> bool:
     if connector_qa_data["is_on_cloud"]:
         return False
-    return all([connector_qa_data[col] for col in TRUTHY_COLUMNS_TO_BE_ELIGIBLE])
+    return all(connector_qa_data[col] for col in TRUTHY_COLUMNS_TO_BE_ELIGIBLE)
 
 
 def latest_build_is_successful(connector_qa_data: pd.Series) -> bool:
@@ -59,6 +59,7 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
         Get the number of users using this connector version from our datawarehouse.
       - sync_success_rate:
         Get the sync success rate of the connections with this connector version from our datawarehouse.
+
     Args:
         enriched_catalog (pd.DataFrame): The enriched catalog.
         oss_catalog_length (pd.DataFrame): The length of the OSS catalog, for sanity check.
@@ -81,8 +82,9 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
     # Validate the report structure with pydantic QAReport model.
     QAReport(connectors_qa_report=qa_report.to_dict(orient="records"))
     if len(qa_report) != oss_catalog_length:
+        msg = f"The QA report ({len(qa_report)}) does not contain all the connectors defined in the OSS catalog ({oss_catalog_length})."
         raise QAReportGenerationError(
-            f"The QA report ({len(qa_report)}) does not contain all the connectors defined in the OSS catalog ({oss_catalog_length})."
+            msg,
         )
     return qa_report
 

@@ -7,14 +7,15 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 
-from ..utils import read_full_refresh
+from source_mixpanel.utils import read_full_refresh
+
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 
 
 class FunnelsList(MixpanelStream):
     """List all funnels
     API Docs: https://developer.mixpanel.com/reference/funnels#funnels-list-saved
-    Endpoint: https://mixpanel.com/api/2.0/funnels/list
+    Endpoint: https://mixpanel.com/api/2.0/funnels/list.
     """
 
     primary_key: str = "funnel_id"
@@ -27,7 +28,7 @@ class FunnelsList(MixpanelStream):
 class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
     """List the funnels for a given date range.
     API Docs: https://developer.mixpanel.com/reference/funnels#funnels-query
-    Endpoint: https://mixpanel.com/api/2.0/funnels
+    Endpoint: https://mixpanel.com/api/2.0/funnels.
     """
 
     primary_key: List[str] = ["funnel_id", "date"]
@@ -47,7 +48,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return self.get_funnel_slices(sync_mode)
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Mapping[str, Any]]]]:
         """Return stream slices which is a combination of all funnel_ids and related date ranges, like:
         stream_slices = [
@@ -68,7 +69,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
                 'end_date': 'end_date_1'
             }
             ...
-        ]
+        ].
 
         # NOTE: funnel_id type:
         #    - int in funnel_slice
@@ -89,7 +90,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
                 yield {**funnel_slice, **date_slice}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         # NOTE: funnel_id type:
         #    - int in stream_slice
@@ -103,8 +104,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         return params
 
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        response.json() example:
+        """response.json() example:
         {
             "meta": {
                 "dates": [
@@ -128,7 +128,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         }
-        :return an iterable containing each record in the response
+        :return an iterable containing each record in the response.
         """
         # extract 'funnel_id' from internal request object
         query = urlparse(response.request.path_url).query
@@ -147,7 +147,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
             }
 
     def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any],
     ) -> Mapping[str, Mapping[str, str]]:
         """Update existing stream state for particular funnel_id
         stream_state = {
@@ -158,7 +158,7 @@ class Funnels(DateSlicesMixin, IncrementalMixpanelStream):
         }
         NOTE: funnel_id1 type:
             - int in latest_record
-            - str in current_stream_state
+            - str in current_stream_state.
         """
         funnel_id: str = str(latest_record["funnel_id"])
         updated_state = latest_record[self.cursor_field]

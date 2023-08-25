@@ -15,7 +15,7 @@ class SourceOpsgenieTest(unittest.TestCase):
         config_mock = MagicMock()
         streams = source.streams(config_mock)
         expected_streams_number = 9
-        self.assertEqual(len(streams), expected_streams_number)
+        assert len(streams) == expected_streams_number
 
     @responses.activate
     def test_check_connection(self):
@@ -31,5 +31,5 @@ class SourceOpsgenieTest(unittest.TestCase):
         responses.add("GET", "https://api.opsgenie.com/v2/account", json=sample_account)
 
         (success, err) = source.check_connection(log_mock, {"endpoint": "api.opsgenie.com", "api_token": "123"})
-        self.assertTrue(success)
-        self.assertIsNone(err)
+        assert success
+        assert err is None

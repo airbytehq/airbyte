@@ -6,15 +6,14 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 @dataclass
 class NoPagination(Paginator):
-    """
-    Pagination implementation that never returns a next page.
-    """
+    """Pagination implementation that never returns a next page."""
 
     parameters: InitVar[Mapping[str, Any]]
 

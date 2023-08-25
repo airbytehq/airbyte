@@ -6,6 +6,7 @@ import datetime
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -64,12 +65,10 @@ class SourceTwilio(AbstractSource):
             next(accounts_gen)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Twilio API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Twilio API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = HttpBasicAuthenticator(
             (
                 config["account_sid"],
@@ -92,7 +91,7 @@ class SourceTwilio(AbstractSource):
                 pendulum.now() - datetime.timedelta(days=RETENTION_WINDOW_LIMIT - 1)
             ).to_iso8601_string()
 
-        streams = [
+        return [
             Accounts(**full_refresh_stream_kwargs),
             Addresses(**full_refresh_stream_kwargs),
             Alerts(**incremental_stream_kwargs),
@@ -128,4 +127,3 @@ class SourceTwilio(AbstractSource):
             UserConversations(**full_refresh_stream_kwargs),
             VerifyServices(**full_refresh_stream_kwargs),
         ]
-        return streams

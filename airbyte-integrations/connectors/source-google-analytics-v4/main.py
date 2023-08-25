@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_google_analytics_v4 import SourceGoogleAnalyticsV4
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceGoogleAnalyticsV4()

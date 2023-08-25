@@ -22,15 +22,8 @@ vector_store = Pinecone(index, embeddings.embed_query, "text")
 
 # prompt_template = """You are a question-answering bot operating on Github issues. Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. In the end, state the issue number you based your answer on.
 
-# {context}
 
-# Question: {question}
 # Helpful Answer:"""
-# prompt = PromptTemplate(
-#     template=prompt_template, input_variables=["context", "question"]
-# )
-# document_prompt = PromptTemplate(input_variables=["page_content", "number"], template="{page_content}, issue number: {number}")
-# qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever(), chain_type_kwargs={"prompt": prompt, "document_prompt": document_prompt})
 
 qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
 

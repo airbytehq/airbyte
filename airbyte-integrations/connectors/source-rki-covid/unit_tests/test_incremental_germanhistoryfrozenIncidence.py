@@ -10,7 +10,7 @@ from pytest import fixture
 from source_rki_covid.source import GermanHistoryFrozenIncidence
 
 
-@fixture
+@fixture()
 def patch_incremental_german_history_frozenInc(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(GermanHistoryFrozenIncidence, "primary_key", None)

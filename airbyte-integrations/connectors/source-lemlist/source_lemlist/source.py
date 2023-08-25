@@ -29,7 +29,7 @@ class SourceLemlist(AbstractSource):
             next(team_gen)
             return True, None
         except Exception as error:
-            return False, f"The provided API key {config['api_key']} is invalid. - {repr(error)}"
+            return False, f"The provided API key {config['api_key']} is invalid. - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = HttpBasicAuthenticator(

@@ -6,9 +6,10 @@
 from pathlib import Path
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from source_file import SourceFile
 from source_file.client import Client, ConfigurationError
+
+from airbyte_cdk import AirbyteLogger
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/formats")
 
@@ -21,7 +22,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
 
 
 @pytest.mark.parametrize(
-    "file_format, extension, expected_columns, expected_rows, filename",
+    ("file_format", "extension", "expected_columns", "expected_rows", "filename"),
     [
         ("csv", "csv", 8, 5000, "demo"),
         ("json", "json", 2, 1, "demo"),
@@ -42,7 +43,7 @@ def test_local_file_read(file_format, extension, expected_columns, expected_rows
 
 
 @pytest.mark.parametrize(
-    "file_format, extension, wrong_format, filename",
+    ("file_format", "extension", "wrong_format", "filename"),
     [
         ("excel", "xls", "csv", "demo"),
         ("excel", "xlsx", "csv", "demo"),

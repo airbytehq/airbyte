@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import requests
+
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Record
@@ -14,12 +15,11 @@ from airbyte_cdk.sources.declarative.types import Record
 class PaginationStopCondition(ABC):
     @abstractmethod
     def is_met(self, record: Record) -> bool:
-        """
-        Given a condition is met, the pagination will stop
+        """Given a condition is met, the pagination will stop.
 
         :param record: a record used to evaluate the condition
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class CursorStopCondition(PaginationStopCondition):

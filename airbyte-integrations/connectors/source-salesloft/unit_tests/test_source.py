@@ -14,12 +14,12 @@ def test_streams(config):
 
 
 @pytest.mark.parametrize(
-    "status_code, check_successful",
+    ("status_code", "check_successful"),
     (
         (403, False),
         (500, False),
-        (200, True)
-    )
+        (200, True),
+    ),
 )
 def test_check_connection(requests_mock, config, status_code, check_successful):
     requests_mock.post("https://accounts.salesloft.com/oauth/token", json={"access_token": "token", "expires_in": 7200})

@@ -4,9 +4,9 @@
 
 from unittest.mock import MagicMock
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
-from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
+
+from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter, response_status
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
@@ -15,7 +15,7 @@ SOME_BACKOFF_TIME = 60
 
 
 @pytest.mark.parametrize(
-    "test_name, first_handler_behavior, second_handler_behavior, expected_behavior",
+    ("test_name", "first_handler_behavior", "second_handler_behavior", "expected_behavior"),
     [
         (
             "test_chain_retrier_ok_ok",
@@ -107,7 +107,7 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
 def test_composite_error_handler_no_handlers():
     try:
         CompositeErrorHandler(error_handlers=[], parameters={})
-        assert False
+        raise AssertionError
     except ValueError:
         pass
 
@@ -121,22 +121,22 @@ def test_error_handler_compatibility_simple():
     composite_error_handler = CompositeErrorHandler(error_handlers=[
         DefaultErrorHandler(
             response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={})],
-            parameters={}, config={})
+            parameters={}, config={}),
     ], parameters={})
     assert default_error_handler.interpret_response(response_mock).action == expected_action
     assert composite_error_handler.interpret_response(response_mock).action == expected_action
 
 
-@pytest.mark.parametrize("test_name, status_code, expected_action", [
+@pytest.mark.parametrize(("test_name", "status_code", "expected_action"), [
     ("test_first_filter", 403, ResponseAction.IGNORE),
-    ("test_second_filter", 404, ResponseAction.FAIL)
+    ("test_second_filter", 404, ResponseAction.FAIL),
 ])
 def test_error_handler_compatibility_multiple_filters(test_name, status_code, expected_action):
     response_mock = create_response(status_code)
     error_handler_with_multiple_filters = CompositeErrorHandler(error_handlers=[
         DefaultErrorHandler(
             response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={}),
-                              HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={})
+                              HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={}),
                               ], parameters={}, config={}),
     ], parameters={})
     composite_error_handler_with_single_filters = CompositeErrorHandler(error_handlers=[
@@ -145,7 +145,7 @@ def test_error_handler_compatibility_multiple_filters(test_name, status_code, ex
             parameters={}, config={}),
         DefaultErrorHandler(
             response_filters=[
-                HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={})
+                HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={}),
             ],
             parameters={}, config={}),
     ], parameters={})

@@ -4,11 +4,12 @@
 
 from datetime import datetime, timedelta
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from dateutil.parser import isoparse
 from pytest import raises
 from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 def test_minimum_allowed_start_date():
@@ -36,7 +37,7 @@ def test_transactions_transform_function():
 def test_get_field():
     record = {"a": {"b": {"c": "d"}}}
     # Test expected result - field_path is a list
-    assert "d" == PaypalTransactionStream.get_field(record, field_path=["a", "b", "c"])
+    assert PaypalTransactionStream.get_field(record, field_path=["a", "b", "c"]) == "d"
     # Test expected result - field_path is a string
     assert {"b": {"c": "d"}} == PaypalTransactionStream.get_field(record, field_path="a")
 
@@ -92,7 +93,7 @@ def test_transactions_stream_slices():
     )
     transactions.get_last_refreshed_datetime = lambda x: None
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     # start_date <= now - **start_date_max
     transactions = Transactions(
@@ -101,7 +102,7 @@ def test_transactions_stream_slices():
     )
     transactions.get_last_refreshed_datetime = lambda x: None
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     transactions = Transactions(
         authenticator=NoAuth(),
@@ -109,7 +110,7 @@ def test_transactions_stream_slices():
     )
     transactions.get_last_refreshed_datetime = lambda x: None
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     transactions = Transactions(
         authenticator=NoAuth(),
@@ -117,7 +118,7 @@ def test_transactions_stream_slices():
     )
     transactions.get_last_refreshed_datetime = lambda x: None
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     transactions = Transactions(
         authenticator=NoAuth(),
@@ -126,7 +127,7 @@ def test_transactions_stream_slices():
     transactions.get_last_refreshed_datetime = lambda x: None
     transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 2 == len(stream_slices)
+    assert len(stream_slices) == 2
 
     transactions = Transactions(
         authenticator=NoAuth(),
@@ -135,7 +136,7 @@ def test_transactions_stream_slices():
     transactions.get_last_refreshed_datetime = lambda x: None
     transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 2 == len(stream_slices)
+    assert len(stream_slices) == 2
 
     transactions = Transactions(
         authenticator=NoAuth(),
@@ -144,7 +145,7 @@ def test_transactions_stream_slices():
     transactions.get_last_refreshed_datetime = lambda x: None
     transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
-    assert 31 == len(stream_slices)
+    assert len(stream_slices) == 31
 
     # tests with specified end_date
     transactions = Transactions(
@@ -197,12 +198,12 @@ def test_balances_stream_slices():
     balance = Balances(authenticator=NoAuth(), start_date=now)
     balance.get_last_refreshed_datetime = lambda x: None
     stream_slices = balance.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     balance = Balances(authenticator=NoAuth(), start_date=now - timedelta(minutes=1))
     balance.get_last_refreshed_datetime = lambda x: None
     stream_slices = balance.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     balance = Balances(
         authenticator=NoAuth(),
@@ -210,7 +211,7 @@ def test_balances_stream_slices():
     )
     balance.get_last_refreshed_datetime = lambda x: None
     stream_slices = balance.stream_slices(sync_mode="any")
-    assert 1 == len(stream_slices)
+    assert len(stream_slices) == 1
 
     balance = Balances(
         authenticator=NoAuth(),
@@ -219,7 +220,7 @@ def test_balances_stream_slices():
     balance.get_last_refreshed_datetime = lambda x: None
     balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any")
-    assert 2 == len(stream_slices)
+    assert len(stream_slices) == 2
 
     balance = Balances(
         authenticator=NoAuth(),
@@ -228,7 +229,7 @@ def test_balances_stream_slices():
     balance.get_last_refreshed_datetime = lambda x: None
     balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any")
-    assert 2 == len(stream_slices)
+    assert len(stream_slices) == 2
 
     # test with custom end_date
     balance = Balances(
@@ -288,7 +289,7 @@ def test_max_records_in_response_reached(transactions, requests_mock):
     )
     error_message = {
         "name": "RESULTSET_TOO_LARGE",
-        "message": "Result set size is greater than the maximum limit. Change the filter " "criteria and try again.",
+        "message": "Result set size is greater than the maximum limit. Change the filter criteria and try again.",
     }
     url = "https://api-m.paypal.com/v1/reporting/transactions"
 
@@ -299,10 +300,10 @@ def test_max_records_in_response_reached(transactions, requests_mock):
         status_code=400,
     )
     requests_mock.register_uri(
-        "GET", url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-15T12%3A00%3A00%2B00%3A00", json=transactions
+        "GET", url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-15T12%3A00%3A00%2B00%3A00", json=transactions,
     )
     requests_mock.register_uri(
-        "GET", url + "?start_date=2021-07-15T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00", json=transactions
+        "GET", url + "?start_date=2021-07-15T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00", json=transactions,
     )
     month_date_slice = {"start_date": "2021-07-01T12:00:00+00:00", "end_date": "2021-07-29T12:00:00+00:00"}
     assert len(list(balance.read_records(sync_mode="any", stream_slice=month_date_slice))) == 2
@@ -321,11 +322,11 @@ def test_max_records_in_response_reached(transactions, requests_mock):
 def test_unnest_field():
     record = {"transaction_info": {"transaction_id": "123", "transaction_initiation_date": "2014-07-11T04:03:52+0000"}}
     # check the cursor is not on the root level
-    assert Transactions.cursor_field not in record.keys()
+    assert Transactions.cursor_field not in record
 
     PaypalTransactionStream.unnest_field(record, Transactions.nested_object, Transactions.cursor_field)
     # check the cursor now on the root level
-    assert Transactions.cursor_field in record.keys()
+    assert Transactions.cursor_field in record
 
 
 def test_get_last_refreshed_datetime(requests_mock, prod_config, api_endpoint):

@@ -9,6 +9,7 @@ from urllib import parse
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -42,9 +43,8 @@ class OktaStream(HttpStream, ABC):
             # Typically, the absence of the "next" link header indicates there are more pages to read
             # However, some streams contain the "next" link header even when there are no more pages to read
             # See https://developer.okta.com/docs/reference/api-overview/#link-header
-            if "self" in links:
-                if links["self"]["url"] == next_url:
-                    return None
+            if "self" in links and links["self"]["url"] == next_url:
+                return None
             return query_params
 
         return None
@@ -52,8 +52,8 @@ class OktaStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "limit": self.page_size,
@@ -79,6 +79,7 @@ class OktaStream(HttpStream, ABC):
             next_reset = pendulum.from_timestamp(next_reset_epoch)
             next_reset_duration = pendulum.utcnow().diff(next_reset)
             return next_reset_duration.seconds
+        return None
 
 
 class IncrementalOktaStream(OktaStream, ABC):
@@ -95,14 +96,14 @@ class IncrementalOktaStream(OktaStream, ABC):
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, min_cursor_value),
                 current_stream_state.get(self.cursor_field, min_cursor_value),
-            )
+            ),
         }
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field) if stream_state else datetime_to_string(self.start_date)
@@ -132,15 +133,15 @@ class GroupMembers(OktaStream):
             self.reset_token = True
             yield {"group_id": group["id"]}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         group_id = stream_slice["group_id"]
         return f"groups/{group_id}/users"
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.page_size}
         latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
@@ -166,7 +167,7 @@ class GroupRoleAssignments(OktaStream):
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"group_id": group["id"]}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         group_id = stream_slice["group_id"]
         return f"groups/{group_id}/roles"
 
@@ -180,7 +181,7 @@ class Logs(IncrementalOktaStream):
     cursor_field = "published"
     primary_key = "uuid"
 
-    def __init__(self, url_base, **kwargs):
+    def __init__(self, url_base, **kwargs) -> None:
         super().__init__(url_base=url_base, **kwargs)
         self._raise_on_http_errors: bool = True
 
@@ -189,13 +190,11 @@ class Logs(IncrementalOktaStream):
         return self._raise_on_http_errors
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        When the connector gets abnormal state API retrun errror with 400 status code
+        """When the connector gets abnormal state API retrun errror with 400 status code
         and internal error code E0000001. The connector ignores an error with 400 code
         to finish successfully sync and inform the user about an error in logs with an
         error message.
         """
-
         if response.status_code == 400 and response.json().get("errorCode") == "E0000001":
             self.logger.info(f"{response.json()['errorSummary']}")
             self._raise_on_http_errors = False
@@ -208,8 +207,8 @@ class Logs(IncrementalOktaStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         # The log stream use a different params to get data.
         # Docs: https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
@@ -246,8 +245,8 @@ class Users(IncrementalOktaStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         status_filters = " or ".join([f'status eq "{status}"' for status in self.statuses])
@@ -309,7 +308,7 @@ class UserRoleAssignments(OktaStream):
         for user in user_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"user_id": user["id"]}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         user_id = stream_slice["user_id"]
         return f"users/{user_id}/roles"
 
@@ -335,7 +334,7 @@ class Permissions(OktaStream):
         for role in custom_roles.read_records(sync_mode=SyncMode.full_refresh):
             yield {"role_id": role["id"]}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         role_id = stream_slice["role_id"]
         return f"iam/roles/{role_id}/permissions"
 

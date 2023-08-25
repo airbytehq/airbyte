@@ -13,8 +13,9 @@ from typing import Mapping
 import docker
 import paramiko
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
 from source_sftp_bulk import SourceFtp
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
 
 pytest_plugins = ("connector_acceptance_test.plugin",)
 
@@ -134,7 +135,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     overwrite_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="overwrite_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            name="overwrite_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         ),
         sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.overwrite,
@@ -150,7 +151,7 @@ def test_check_valid_config_pk(config_pk: Mapping):
 
 def test_check_valid_config_pk_bad_pk(config_pk: Mapping):
     outcome = SourceFtp().check(
-        logger, {**config_pk, "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----"}
+        logger, {**config_pk, "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----"},
     )
     assert outcome.status == Status.FAILED
 
@@ -218,7 +219,7 @@ def test_get_files_no_pattern_csv(config: Mapping, configured_catalog: Configure
 def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
     result_iter = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None
+        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"}, configured_catalog, None,
     )
     result = list(result_iter)
     assert len(result) == 2
@@ -231,7 +232,7 @@ def test_get_files_pattern_csv(config: Mapping, configured_catalog: ConfiguredAi
 def test_get_files_pattern_csv_new_separator(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
     result_iter = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None
+        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"}, configured_catalog, None,
     )
     result = list(result_iter)
     assert len(result) == 2
@@ -245,7 +246,7 @@ def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, config
     source = SourceFtp()
     result_iter = source.read(
         logger, {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
-        configured_catalog, None
+        configured_catalog, None,
     )
     result = list(result_iter)
     assert len(result) == 2
@@ -258,7 +259,7 @@ def test_get_files_pattern_csv_new_separator_with_config(config: Mapping, config
 def test_get_files_pattern_no_match_csv(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     source = SourceFtp()
     result = source.read(
-        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "badpattern.+"}, configured_catalog, None
+        logger, {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "badpattern.+"}, configured_catalog, None,
     )
     assert len(list(result)) == 0
 

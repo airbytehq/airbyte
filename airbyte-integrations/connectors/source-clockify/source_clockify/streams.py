@@ -7,9 +7,10 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from requests.auth import AuthBase
 
 
 class ClockifyStream(HttpStream, ABC):
@@ -33,8 +34,9 @@ class ClockifyStream(HttpStream, ABC):
             return {"page": self.page}
         else:
             self.page = 1
+            return None
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {
             "page-size": self.page_size,
         }
@@ -91,9 +93,8 @@ class TimeEntries(HttpSubStream, ClockifyStream):
         )
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        self.authenticator (which should be used as the
-        authenticator for Users) is object of NoAuth()
+        """self.authenticator (which should be used as the
+        authenticator for Users) is object of NoAuth().
 
         so self._session.auth is used instead
         """
@@ -101,7 +102,7 @@ class TimeEntries(HttpSubStream, ClockifyStream):
         for user in users_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"user_id": user["id"]}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         user_id = stream_slice["user_id"]
         return f"workspaces/{self.workspace_id}/user/{user_id}/time-entries"
 
@@ -116,9 +117,8 @@ class Tasks(HttpSubStream, ClockifyStream):
         )
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        self.authenticator (which should be used as the
-        authenticator for Projects) is object of NoAuth()
+        """self.authenticator (which should be used as the
+        authenticator for Projects) is object of NoAuth().
 
         so self._session.auth is used instead
         """
@@ -126,6 +126,6 @@ class Tasks(HttpSubStream, ClockifyStream):
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"project_id": project["id"]}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         project_id = stream_slice["project_id"]
         return f"workspaces/{self.workspace_id}/projects/{project_id}/tasks"

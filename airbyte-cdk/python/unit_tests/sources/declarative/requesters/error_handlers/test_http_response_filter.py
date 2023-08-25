@@ -6,13 +6,14 @@ import json
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 
 
 @pytest.mark.parametrize(
-    "action, http_codes, predicate, error_contains, back_off, error_message, response, expected_response_status",
+    ("action", "http_codes", "predicate", "error_contains", "back_off", "error_message", "response", "expected_response_status"),
     [
         pytest.param(
             ResponseAction.FAIL,

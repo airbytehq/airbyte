@@ -11,8 +11,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class InterpolatedString:
-    """
-    Wrapper around a raw string to be interpolated with the Jinja2 templating engine
+    """Wrapper around a raw string to be interpolated with the Jinja2 templating engine.
 
     Attributes:
         string (str): The string to evalute
@@ -30,8 +29,7 @@ class InterpolatedString:
         self._parameters = parameters
 
     def eval(self, config: Config, **kwargs):
-        """
-        Interpolates the input string using the config and other optional arguments passed as parameter.
+        """Interpolates the input string using the config and other optional arguments passed as parameter.
 
         :param config: The user-provided configuration as specified by the source's spec
         :param kwargs: Optional parameters used for interpolation
@@ -51,8 +49,7 @@ class InterpolatedString:
         *,
         parameters: Mapping[str, Any],
     ):
-        """
-        Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
+        """Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
 
         :param string_or_interpolated: either a raw string or an InterpolatedString.
         :param parameters: parameters propagated from parent component

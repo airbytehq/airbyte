@@ -6,6 +6,7 @@ import datetime
 
 import jwt
 import requests
+
 from source_google_analytics_data_api import utils
 
 
@@ -58,7 +59,8 @@ class GoogleServiceKeyAuthenticator(requests.auth.AuthBase):
             try:
                 response = requests.request(method="POST", url=self._google_oauth2_token_endpoint, params=self._get_signed_payload()).json()
             except requests.exceptions.RequestException as e:
-                raise Exception(f"Error refreshing access token: {e}") from e
+                msg = f"Error refreshing access token: {e}"
+                raise Exception(msg) from e
             self._token = dict(
                 **response,
                 expires_at=utils.datetime_to_secs(datetime.datetime.utcnow() + datetime.timedelta(seconds=response["expires_in"])),

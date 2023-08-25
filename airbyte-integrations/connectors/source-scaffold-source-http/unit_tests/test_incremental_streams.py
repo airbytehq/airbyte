@@ -3,12 +3,13 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_scaffold_source_http.source import IncrementalScaffoldSourceHttpStream
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalScaffoldSourceHttpStream, "path", "v0/example_endpoint")

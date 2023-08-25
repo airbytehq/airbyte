@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-""" This is the example of input record for the test_tranform_data. """
+"""This is the example of input record for the test_tranform_data."""
 input_test_data = [
     {
         "targetingCriteria": {
@@ -18,14 +18,14 @@ input_test_data = [
                                 "urn:li:title:10966",
                                 "urn:li:title:11349",
                                 "urn:li:title:1159",
-                            ]
-                        }
+                            ],
+                        },
                     },
                     {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
                     {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
                     {"or": {"empty_dict_with_empty_list": []}},  # dict is present, but list is empty
                     {"or": {}},  # empty dict
-                ]
+                ],
             },
             "exclude": {
                 "or": {
@@ -38,7 +38,7 @@ input_test_data = [
                         "facet_test4",
                     ],
                     "empty_list": [],
-                }
+                },
             },
         },
         "changeAuditStamps": {
@@ -59,11 +59,11 @@ input_test_data = [
                     "custom_obj_var": {"key": 1234},
                     "custom_arr_var": [1, 2, 3, 4],
                     "custom_null_var": None,
-                }
-            }
+                },
+            },
         },
         "pivot": "TEST_PIVOT_VALUE",
-    }
+    },
 ]
 
 """ This is the expected output from the `transform_data` method. """
@@ -96,7 +96,7 @@ output_test_data = [
                         "type": "empty_dict_with_empty_list",
                         "values": [],
                     },
-                ]
+                ],
             },
             "exclude": {
                 "or": [
@@ -112,7 +112,7 @@ output_test_data = [
                         "type": "empty_list",
                         "values": [],
                     },
-                ]
+                ],
             },
         },
         "variables": {
@@ -132,5 +132,5 @@ output_test_data = [
         "start_date": "2021-08-13",
         "end_date": "2021-08-13",
         "_pivot": "TEST_PIVOT_VALUE",
-    }
+    },
 ]

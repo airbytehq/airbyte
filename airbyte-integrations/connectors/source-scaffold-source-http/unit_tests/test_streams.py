@@ -9,7 +9,7 @@ import pytest
 from source_scaffold_source_http.source import ScaffoldSourceHttpStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(ScaffoldSourceHttpStream, "path", "v0/example_endpoint")

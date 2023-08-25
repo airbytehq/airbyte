@@ -12,7 +12,7 @@ from source_file.client import Client, ConfigurationError, URLFile
 from urllib3.exceptions import ProtocolError
 
 
-@pytest.fixture
+@pytest.fixture()
 def wrong_format_client():
     return Client(
         dataset_name="test_dataset",
@@ -22,7 +22,7 @@ def wrong_format_client():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def csv_format_client():
     return Client(
         dataset_name="test_dataset",
@@ -33,7 +33,7 @@ def csv_format_client():
 
 
 @pytest.mark.parametrize(
-    "storage, expected_scheme",
+    ("storage", "expected_scheme"),
     [
         ("GCS", "gs://"),
         ("S3", "s3://"),
@@ -86,7 +86,7 @@ def test_load_nested_json(client, absolute_path, test_files):
 
 
 @pytest.mark.parametrize(
-    "current_type, dtype, expected",
+    ("current_type", "dtype", "expected"),
     [
         ("string", "string", "string"),
         ("", object, "string"),
@@ -152,10 +152,11 @@ def test_read(test_read_config):
         except ConnectionResetError:
             print("Exception has been raised correctly!")
         mock_method.assert_called()
+        return None
 
 
 def test_read_network_issues(test_read_config):
-    test_read_config.update(format='excel')
+    test_read_config.update(format="excel")
     client = Client(**test_read_config)
     client.sleep_on_retry_sec = 0  # just for test
     with patch.object(client, "_cache_stream", side_effect=ProtocolError), pytest.raises(ConfigurationError):
@@ -170,14 +171,15 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
         nonlocal call_count
         call_count += 1
         if call_count < 7:
-            raise SSHException("Error reading SSH protocol banner[Errno 104] Connection reset by peer")
+            msg = "Error reading SSH protocol banner[Errno 104] Connection reset by peer"
+            raise SSHException(msg)
         return result
 
     sleep_mock = mocker.patch("time.sleep")
     monkeypatch.setattr(URLFile, "_open", patched_open)
 
-    provider = {'storage': 'SFTP', 'user': 'user', 'password': 'password', 'host': 'sftp.domain.com', 'port': 22}
-    reader = URLFile(url='/DISTDA.CSV', provider=provider, binary=False)
+    provider = {"storage": "SFTP", "user": "user", "password": "password", "host": "sftp.domain.com", "port": 22}
+    reader = URLFile(url="/DISTDA.CSV", provider=provider, binary=False)
     with pytest.raises(SSHException):
         reader.open()
     assert reader._file is None

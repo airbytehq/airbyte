@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 
 class ReportStatus(str, Enum):
-    """Enum Class to define the possible status of a report"""
+    """Enum Class to define the possible status of a report."""
 
     DOES_NOT_EXIST = "DOES_NOT_EXIST"
     EXPIRED = "EXPIRED"
@@ -20,7 +20,7 @@ class ReportStatus(str, Enum):
 
 
 class ReportStatusDetails(BaseModel):
-    """Model to capture details of the report status"""
+    """Model to capture details of the report status."""
 
     report_status: ReportStatus
     url: Optional[str]
@@ -28,7 +28,7 @@ class ReportStatusDetails(BaseModel):
 
 
 class ReportInfo(BaseModel):
-    """Model to capture details of the report info"""
+    """Model to capture details of the report info."""
 
     report_status: ReportStatus
     token: str

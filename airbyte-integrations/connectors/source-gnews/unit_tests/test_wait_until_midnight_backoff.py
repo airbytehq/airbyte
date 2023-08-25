@@ -12,7 +12,7 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 @pytest.mark.parametrize(
-    "test_name, now_utc, expected_backoff_time",
+    ("test_name", "now_utc", "expected_backoff_time"),
     [
         ("test_under_normal_conditions", "2021-06-10 15:00:30", 32370.0),
         ("test_last_day_of_year", "2021-12-31 23:50:30", 570.0),

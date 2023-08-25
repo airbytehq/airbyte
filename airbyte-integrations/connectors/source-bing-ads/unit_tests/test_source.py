@@ -7,15 +7,16 @@ from unittest.mock import patch
 
 import pytest
 import source_bing_ads
-from airbyte_cdk.models import SyncMode
 from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.fixture(name="config")
 def config_fixture():
-    """Generates streams settings from a config file"""
+    """Generates streams settings from a config file."""
     CONFIG_FILE = "secrets/config.json"
-    with open(CONFIG_FILE, "r") as f:
+    with open(CONFIG_FILE) as f:
         return json.loads(f.read())
 
 
@@ -94,7 +95,7 @@ def test_ads_request_params(mocked_client, config):
     assert request_params == {
         "AdGroupId": "ad_group_id",
         "AdTypes": {
-            "AdType": ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"]
+            "AdType": ["Text", "Image", "Product", "AppInstall", "ExpandedText", "DynamicSearch", "ResponsiveAd", "ResponsiveSearch"],
         },
         "ReturnAdditionalFields": "ImpressionTrackingUrls Videos LongHeadlines",
     }
@@ -109,15 +110,14 @@ def test_ads_stream_slices(mocked_client, config):
         AdGroups,
         "stream_slices",
         return_value=iter([{"account_id": 180519267, "customer_id": 100}, {"account_id": 180278106, "customer_id": 200}]),
-    ):
-        with patch.object(AdGroups, "read_records", side_effect=[iter([{"Id": 11}, {"Id": 22}]), iter([{"Id": 55}, {"Id": 66}])]):
-            slices = ads.stream_slices()
-            assert list(slices) == [
-                {"ad_group_id": 11, "account_id": 180519267, "customer_id": 100},
-                {"ad_group_id": 22, "account_id": 180519267, "customer_id": 100},
-                {"ad_group_id": 55, "account_id": 180278106, "customer_id": 200},
-                {"ad_group_id": 66, "account_id": 180278106, "customer_id": 200},
-            ]
+    ), patch.object(AdGroups, "read_records", side_effect=[iter([{"Id": 11}, {"Id": 22}]), iter([{"Id": 55}, {"Id": 66}])]):
+        slices = ads.stream_slices()
+        assert list(slices) == [
+            {"ad_group_id": 11, "account_id": 180519267, "customer_id": 100},
+            {"ad_group_id": 22, "account_id": 180519267, "customer_id": 100},
+            {"ad_group_id": 55, "account_id": 180278106, "customer_id": 200},
+            {"ad_group_id": 66, "account_id": 180278106, "customer_id": 200},
+        ]
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -128,7 +128,6 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
     del request_params["report_request"]
     assert request_params == {
         "overwrite_result_file": True,
-        # 'report_request': <MagicMock name='Client.get_service().factory.create()' id='140040029053232'>,
         "result_file_directory": "/tmp",
         "result_file_name": "AccountPerformanceReport",
         "timeout_in_milliseconds": 300000,

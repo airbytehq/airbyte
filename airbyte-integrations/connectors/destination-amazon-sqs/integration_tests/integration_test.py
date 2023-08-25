@@ -6,14 +6,15 @@ import json
 from typing import Any, Mapping
 
 import pytest
+from destination_amazon_sqs import DestinationAmazonSqs
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
-from destination_amazon_sqs import DestinationAmazonSqs
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 

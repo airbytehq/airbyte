@@ -5,6 +5,7 @@
 from typing import Any, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 
@@ -27,4 +28,5 @@ class OktaOauth2Authenticator(Oauth2Authenticator):
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e

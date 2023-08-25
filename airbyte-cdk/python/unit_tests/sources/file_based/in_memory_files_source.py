@@ -16,6 +16,9 @@ import avro.schema as avro_schema
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+from avro import datafile
+from pydantic import AnyUrl
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -26,8 +29,6 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
-from avro import datafile
-from pydantic import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -99,7 +100,8 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         elif self.file_type == "jsonl":
             return self._make_jsonl_file_contents(file.uri)
         else:
-            raise NotImplementedError(f"No implementation for file type: {self.file_type}")
+            msg = f"No implementation for file type: {self.file_type}"
+            raise NotImplementedError(msg)
 
     def _make_csv_file_contents(self, file_name: str) -> IOBase:
 
@@ -141,9 +143,7 @@ class InMemorySpec(AbstractFileBasedSpec):
 
 
 class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
-    """
-    A file reader that writes RemoteFiles to a temporary file and then reads them back.
-    """
+    """A file reader that writes RemoteFiles to a temporary file and then reads them back."""
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._create_file(file.uri))
@@ -162,9 +162,7 @@ class TemporaryParquetFilesStreamReader(InMemoryFilesStreamReader):
 
 
 class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
-    """
-    A file reader that writes RemoteFiles to a temporary file and then reads them back.
-    """
+    """A file reader that writes RemoteFiles to a temporary file and then reads them back."""
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         return io.BytesIO(self._make_file_contents(file.uri))

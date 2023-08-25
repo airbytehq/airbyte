@@ -3,11 +3,12 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 
 
 @pytest.mark.parametrize(
-    "test_name, input_path, expected_resource, expected_path",
+    ("test_name", "input_path", "expected_resource", "expected_path"),
     [
         ("path_prefixed_with_dot", "./source_example/schemas/lists.json", "source_example", "schemas/lists.json"),
         ("path_prefixed_with_slash", "/source_example/schemas/lists.json", "source_example", "schemas/lists.json"),

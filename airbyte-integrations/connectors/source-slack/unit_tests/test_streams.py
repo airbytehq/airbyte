@@ -6,17 +6,18 @@ from unittest.mock import Mock
 
 import pendulum
 import pytest
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_slack.source import Threads, Users
 
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-@pytest.fixture
+
+@pytest.fixture()
 def authenticator(legacy_token_config):
     return TokenAuthenticator(legacy_token_config["api_token"])
 
 
 @pytest.mark.parametrize(
-    "start_date, end_date, messages, stream_state, expected_result",
+    ("start_date", "end_date", "messages", "stream_state", "expected_result"),
     (
         (
             "2020-01-01T00:00:00Z",
@@ -52,10 +53,10 @@ def authenticator(legacy_token_config):
     ),
 )
 def test_threads_stream_slices(
-    requests_mock, authenticator, legacy_token_config, start_date, end_date, messages, stream_state, expected_result
+    requests_mock, authenticator, legacy_token_config, start_date, end_date, messages, stream_state, expected_result,
 ):
     requests_mock.register_uri(
-        "GET", "https://slack.com/api/conversations.history", [{"json": {"messages": messages}}, {"json": {"messages": messages}}]
+        "GET", "https://slack.com/api/conversations.history", [{"json": {"messages": messages}}, {"json": {"messages": messages}}],
     )
     start_date = pendulum.parse(start_date)
     end_date = end_date and pendulum.parse(end_date)
@@ -71,7 +72,7 @@ def test_threads_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "current_state, latest_record, expected_state",
+    ("current_state", "latest_record", "expected_state"),
     (
         ({}, {"float_ts": 1507866844}, {"float_ts": 1626984000.0}),
         ({}, {"float_ts": 1726984000}, {"float_ts": 1726984000.0}),
@@ -89,7 +90,7 @@ def test_get_updated_state(authenticator, legacy_token_config, current_state, la
     assert stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record) == expected_state
 
 
-@pytest.mark.parametrize("headers, expected_result", (({}, 5), ({"Retry-After": 15}, 15)))
+@pytest.mark.parametrize(("headers", "expected_result"), (({}, 5), ({"Retry-After": 15}, 15)))
 def test_backoff(authenticator, headers, expected_result):
     stream = Users(authenticator=authenticator)
     assert stream.backoff_time(Mock(headers=headers)) == expected_result

@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -18,8 +19,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class DefaultPaginator(Paginator):
-    """
-    Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    """Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token.
 
     Examples:
         1.
@@ -97,7 +97,8 @@ class DefaultPaginator(Paginator):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if self.page_size_option and not self.pagination_strategy.get_page_size():
-            raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
+            msg = "page_size_option cannot be set if the pagination strategy does not have a page_size"
+            raise ValueError(msg)
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
 
@@ -171,8 +172,7 @@ class DefaultPaginator(Paginator):
 
 
 class PaginatorTestReadDecorator(Paginator):
-    """
-    In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
+    """In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
     pages that are queried throughout a read command.
     """
 
@@ -180,7 +180,8 @@ class PaginatorTestReadDecorator(Paginator):
 
     def __init__(self, decorated, maximum_number_of_pages: int = 5):
         if maximum_number_of_pages and maximum_number_of_pages < 1:
-            raise ValueError(f"The maximum number of pages on a test read needs to be strictly positive. Got {maximum_number_of_pages}")
+            msg = f"The maximum number of pages on a test read needs to be strictly positive. Got {maximum_number_of_pages}"
+            raise ValueError(msg)
         self._maximum_number_of_pages = maximum_number_of_pages
         self._decorated = decorated
         self._page_count = self._PAGE_COUNT_BEFORE_FIRST_NEXT_CALL

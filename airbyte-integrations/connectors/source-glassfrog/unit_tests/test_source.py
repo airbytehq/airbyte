@@ -10,8 +10,7 @@ from source_glassfrog.source import SourceGlassfrog
 
 @fixture()
 def config(request):
-    args = {"api_key": "xxxxxxx"}
-    return args
+    return {"api_key": "xxxxxxx"}
 
 
 def test_check_connection(mocker, config):

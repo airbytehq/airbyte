@@ -18,8 +18,8 @@ def create_configured_catalog_dict(stream_name: str) -> Mapping[str, Any]:
                 },
                 "sync_mode": "full_refresh",
                 "destination_sync_mode": "overwrite",
-            }
-        ]
+            },
+        ],
     }
 
 

@@ -10,8 +10,7 @@ from source_zenefits.source import SourceZenefits
 
 @fixture()
 def config(request):
-    args = {"token": "YXNmnhkjf"}
-    return args
+    return {"token": "YXNmnhkjf"}
 
 
 def test_check_connection(mocker, config):

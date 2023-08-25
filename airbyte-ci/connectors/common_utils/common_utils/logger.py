@@ -11,12 +11,12 @@ from typing import Callable
 
 
 class MyFormatter(logging.Formatter):
-    """Custom formatter for logging"""
+    """Custom formatter for logging."""
 
     converter = dt.datetime.fromtimestamp
 
     def formatTime(self, record, datefmt=None):
-        """! @brief redefinition of format of log"""
+        """! @brief redefinition of format of log."""
         ct = self.converter(record.created)
         if datefmt:
             s = ct.strftime(datefmt)
@@ -29,10 +29,10 @@ class MyFormatter(logging.Formatter):
 class Logger:
     """Simple logger with a pretty log header
     the method error returns the value 1
-    the method critical terminates a script work
+    the method critical terminates a script work.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         formatter = MyFormatter(fmt="[%(asctime)s] - %(levelname)-6s - %(message)s", datefmt="%d/%m/%Y %H:%M:%S.%f")
 
         logger_name = __name__

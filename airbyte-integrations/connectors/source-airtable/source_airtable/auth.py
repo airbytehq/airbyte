@@ -5,6 +5,7 @@
 from typing import Any, Mapping, Union
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     SingleUseRefreshTokenOauth2Authenticator,
@@ -13,23 +14,17 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import (
 
 
 class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
-    """
-    https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens
-    """
+    """https://airtable.com/developers/web/api/oauth-reference#token-expiry-refresh-tokens."""
 
     def build_refresh_request_headers(self) -> Mapping[str, Any]:
-        """
-        https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers
-        """
+        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-headers."""
         return {
             "Authorization": BasicHttpAuthenticator(self.get_client_id(), self.get_client_secret()).token,
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-        """
-        https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-body
-        """
+        """https://airtable.com/developers/web/api/oauth-reference#token-refresh-request-body."""
         return {
             "grant_type": self.get_grant_type(),
             "refresh_token": self.get_refresh_token(),
@@ -57,3 +52,4 @@ class AirtableAuth:
             return AirtableOAuth(config, "https://airtable.com/oauth2/v1/token")
         elif credentials["auth_method"] == "api_key":
             return TokenAuthenticator(token=credentials["api_key"])
+        return None

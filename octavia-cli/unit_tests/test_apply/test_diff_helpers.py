@@ -12,7 +12,7 @@ def test_hash_config():
 
 
 @pytest.mark.parametrize(
-    "obj, expected_output",
+    ("obj", "expected_output"),
     [
         (diff_helpers.SECRET_MASK, True),
         ("not secret", False),
@@ -31,7 +31,7 @@ def test_compute_diff(mocker):
 
 
 @pytest.mark.parametrize(
-    "diff_line,expected_message,expected_color",
+    ("diff_line", "expected_message", "expected_color"),
     [
         ("resource changed from", "E - resource changed from", "yellow"),
         ("resource added", "+ - resource added", "green"),

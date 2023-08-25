@@ -12,6 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
+
 from airbyte_cdk import connector_builder
 from airbyte_cdk.connector_builder.connector_builder_handler import (
     DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
@@ -35,8 +36,8 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     Level,
     SyncMode,
+    Type,
 )
-from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
@@ -64,7 +65,7 @@ MANIFEST = {
             "partition_router": {
                 "type": "ListPartitionRouter",
                 "values": ["0", "1", "2", "3", "4", "5", "6", "7"],
-                "cursor_field": "item_id"
+                "cursor_field": "item_id",
             },
             ""
             "requester": {
@@ -89,10 +90,10 @@ MANIFEST = {
             "type": "object",
             "required": [],
             "properties": {},
-            "additionalProperties": True
+            "additionalProperties": True,
         },
-        "type": "Spec"
-    }
+        "type": "Spec",
+    },
 }
 
 OAUTH_MANIFEST = {
@@ -109,14 +110,14 @@ OAUTH_MANIFEST = {
             "partition_router": {
                 "type": "ListPartitionRouter",
                 "values": ["0", "1", "2", "3", "4", "5", "6", "7"],
-                "cursor_field": "item_id"
+                "cursor_field": "item_id",
             },
             ""
             "requester": {
                 "path": "/v3/marketing/lists",
                 "authenticator": {
                     "type": "OAuthAuthenticator",
-                    "api_token": "{{ config.apikey }}"
+                    "api_token": "{{ config.apikey }}",
                 },
                 "request_parameters": {"a_param": "10"},
             },
@@ -137,10 +138,10 @@ OAUTH_MANIFEST = {
             "type": "object",
             "required": [],
             "properties": {},
-            "additionalProperties": True
+            "additionalProperties": True,
         },
-        "type": "Spec"
-    }
+        "type": "Spec",
+    },
 }
 
 RESOLVE_MANIFEST_CONFIG = {
@@ -165,8 +166,8 @@ DUMMY_CATALOG = {
             },
             "sync_mode": "full_refresh",
             "destination_sync_mode": "overwrite",
-        }
-    ]
+        },
+    ],
 }
 
 CONFIGURED_CATALOG = {
@@ -180,8 +181,8 @@ CONFIGURED_CATALOG = {
             },
             "sync_mode": "full_refresh",
             "destination_sync_mode": "overwrite",
-        }
-    ]
+        },
+    ],
 }
 
 MOCK_RESPONSE = {
@@ -189,39 +190,39 @@ MOCK_RESPONSE = {
         {"id": 1, "name": "Nora Moon", "position": "director"},
         {"id": 2, "name": "Hae Sung Jung", "position": "cinematographer"},
         {"id": 3, "name": "Arthur Zenneranski", "position": "composer"},
-    ]
+    ],
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def valid_resolve_manifest_config_file(tmp_path):
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(RESOLVE_MANIFEST_CONFIG))
     return config_file
 
 
-@pytest.fixture
+@pytest.fixture()
 def valid_read_config_file(tmp_path):
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(TEST_READ_CONFIG))
     return config_file
 
 
-@pytest.fixture
+@pytest.fixture()
 def dummy_catalog(tmp_path):
     config_file = tmp_path / "catalog.json"
     config_file.write_text(json.dumps(DUMMY_CATALOG))
     return config_file
 
 
-@pytest.fixture
+@pytest.fixture()
 def configured_catalog(tmp_path):
     config_file = tmp_path / "catalog.json"
     config_file.write_text(json.dumps(CONFIGURED_CATALOG))
     return config_file
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_config_file(tmp_path):
     invalid_config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
     invalid_config["__command"] = "bad_command"
@@ -231,9 +232,7 @@ def invalid_config_file(tmp_path):
 
 
 def _mocked_send(self, request, **kwargs) -> requests.Response:
-    """
-    Mocks the outbound send operation to provide faster and more reliable responses compared to actual API requests
-    """
+    """Mocks the outbound send operation to provide faster and more reliable responses compared to actual API requests."""
     response = requests.Response()
     response.request = request
     response.status_code = 200
@@ -386,10 +385,10 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
                 "type": "object",
                 "required": [],
                 "properties": {},
-                "additionalProperties": True
+                "additionalProperties": True,
             },
-            "type": "Spec"
-        }
+            "type": "Spec",
+        },
     }
     assert resolved_manifest.record.data["manifest"] == expected_resolved_manifest
     assert resolved_manifest.record.stream == "resolve_manifest"
@@ -418,13 +417,13 @@ def test_read():
                 pages=[StreamReadPages(records=[real_record], request=None, response=None)],
                 slice_descriptor=None,
                 state=None,
-            )
+            ),
         ],
         auxiliary_requests=[],
         test_read_limit_reached=False,
         inferred_schema=None,
         inferred_datetime_formats=None,
-        latest_config_update={}
+        latest_config_update={},
     )
 
     expected_airbyte_message = AirbyteMessage(
@@ -434,13 +433,13 @@ def test_read():
             data={
                 "logs": [{"message": "here be a log message"}],
                 "slices": [
-                    {"pages": [{"records": [real_record], "request": None, "response": None}], "slice_descriptor": None, "state": None}
+                    {"pages": [{"records": [real_record], "request": None, "response": None}], "slice_descriptor": None, "state": None},
                 ],
                 "test_read_limit_reached": False,
                 "auxiliary_requests": [],
                 "inferred_schema": None,
                 "inferred_datetime_formats": None,
-                "latest_config_update": {}
+                "latest_config_update": {},
             },
             emitted_at=1,
         ),
@@ -448,7 +447,7 @@ def test_read():
     limits = TestReadLimits()
     with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read):
         output_record = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits,
         )
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
@@ -462,7 +461,7 @@ def test_config_update():
         "client_id": "{{ config['credentials']['client_id'] }}",
         "client_secret": "{{ config['credentials']['client_secret'] }}",
         "refresh_token": "{{ config['credentials']['refresh_token'] }}",
-        "refresh_token_updater": {}
+        "refresh_token_updater": {},
     }
     config = copy.deepcopy(TEST_READ_CONFIG)
     config["__injected_declarative_manifest"] = manifest
@@ -480,7 +479,7 @@ def test_config_update():
     }
     with patch("airbyte_cdk.sources.streams.http.requests_native_auth.SingleUseRefreshTokenOauth2Authenticator._get_refresh_access_token_response", return_value=refresh_request_response):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), TestReadLimits()
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), TestReadLimits(),
         )
         assert output.record.data["latest_config_update"]
 
@@ -489,7 +488,8 @@ def test_config_update():
 def test_read_returns_error_response(mock_from_exception):
     class MockManifestDeclarativeSource:
         def read(self, logger, config, catalog, state):
-            raise ValueError("error_message")
+            msg = "error_message"
+            raise ValueError(msg)
 
         def spec(self, logger: logging.Logger) -> ConnectorSpecification:
             connector_specification = mock.Mock()
@@ -560,7 +560,7 @@ def test_invalid_config_command(invalid_config_file, dummy_catalog):
         handle_request(["read", "--config", str(invalid_config_file), "--catalog", str(dummy_catalog)])
 
 
-@pytest.fixture
+@pytest.fixture()
 def manifest_declarative_source():
     return mock.Mock(spec=ManifestDeclarativeSource, autospec=True)
 
@@ -582,7 +582,7 @@ def create_mock_declarative_stream(http_stream):
 
 
 @pytest.mark.parametrize(
-    "test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice",
+    ("test_name", "config", "expected_max_records", "expected_max_slices", "expected_max_pages_per_slice"),
     [
         ("test_no_test_read_config", {}, DEFAULT_MAXIMUM_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
         ("test_no_values_set", {"__test_read_config": {}}, DEFAULT_MAXIMUM_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
@@ -622,8 +622,8 @@ def response_log_message(response: dict) -> AirbyteMessage:
 
 def _create_request():
     url = "https://example.com/api"
-    headers = {'Content-Type': 'application/json'}
-    return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
+    headers = {"Content-Type": "application/json"}
+    return requests.Request("POST", url, headers=headers, json={"key": "value"}).prepare()
 
 
 def _create_response(body, request):
@@ -642,8 +642,7 @@ def _create_page_response(response_body):
 
 @patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
 def test_read_source(mock_http_stream):
-    """
-    This test sort of acts as an integration test for the connector builder.
+    """This test sort of acts as an integration test for the connector builder.
 
     Each slice has two pages
     The first page has two records
@@ -657,7 +656,7 @@ def test_read_source(mock_http_stream):
     limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
 
     catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append),
     ])
 
     config = {"__injected_declarative_manifest": MANIFEST}
@@ -689,7 +688,7 @@ def test_read_source_single_page_single_slice(mock_http_stream):
     limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
 
     catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
+        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append),
     ])
 
     config = {"__injected_declarative_manifest": MANIFEST}
@@ -713,7 +712,7 @@ def test_read_source_single_page_single_slice(mock_http_stream):
 
 
 @pytest.mark.parametrize(
-    "deployment_mode, url_base, expected_error",
+    ("deployment_mode", "url_base", "expected_error"),
     [
         pytest.param("CLOUD", "https://airbyte.com/api/v1/characters", None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "https://10.0.27.27", "ValueError", id="test_cloud_read_with_private_endpoint"),
@@ -721,17 +720,15 @@ def test_read_source_single_page_single_slice(mock_http_stream):
         pytest.param("CLOUD", "http://unsecured.protocol/api/v1", "ValueError", id="test_cloud_read_with_unsecured_endpoint"),
         pytest.param("OSS", "https://airbyte.com/api/v1/", None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://10.0.27.27/api/v1/", None, id="test_oss_read_with_private_endpoint"),
-    ]
+    ],
 )
 @patch.object(requests.Session, "send", _mocked_send)
 def test_handle_read_external_requests(deployment_mode, url_base, expected_error):
-    """
-    This test acts like an integration test for the connector builder when it receives Test Read requests.
+    """This test acts like an integration test for the connector builder when it receives Test Read requests.
 
     The scenario being tested is whether requests should be denied if they are done on an unsecure channel or are made to internal
     endpoints when running on Cloud or OSS deployments
     """
-
     limits = TestReadLimits(max_records=100, max_pages_per_slice=1, max_slices=1)
 
     catalog = ConfiguredAirbyteCatalog(streams=[
@@ -742,7 +739,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
                 supported_sync_modes=[SyncMode.full_refresh]),
             sync_mode=SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.append,
-        )
+        ),
     ])
 
     test_manifest = MANIFEST
@@ -764,24 +761,22 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
 
 
 @pytest.mark.parametrize(
-    "deployment_mode, token_url, expected_error",
+    ("deployment_mode", "token_url", "expected_error"),
     [
         pytest.param("CLOUD", "https://airbyte.com/tokens/bearer", None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "ValueError", id="test_cloud_read_with_private_endpoint"),
         pytest.param("CLOUD", "http://unsecured.protocol/tokens/bearer", "ValueError", id="test_cloud_read_with_unsecured_endpoint"),
         pytest.param("OSS", "https://airbyte.com/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://10.0.27.27/tokens/bearer", None, id="test_oss_read_with_private_endpoint"),
-    ]
+    ],
 )
 @patch.object(requests.Session, "send", _mocked_send)
 def test_handle_read_external_oauth_request(deployment_mode, token_url, expected_error):
-    """
-    This test acts like an integration test for the connector builder when it receives Test Read requests.
+    """This test acts like an integration test for the connector builder when it receives Test Read requests.
 
     The scenario being tested is whether requests should be denied if they are done on an unsecure channel or are made to internal
     endpoints when running on Cloud or OSS deployments
     """
-
     limits = TestReadLimits(max_records=100, max_pages_per_slice=1, max_slices=1)
 
     catalog = ConfiguredAirbyteCatalog(streams=[
@@ -792,7 +787,7 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
                 supported_sync_modes=[SyncMode.full_refresh]),
             sync_mode=SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.append,
-        )
+        ),
     ])
 
     oauth_authenticator_config: dict[str, str] = {

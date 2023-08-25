@@ -10,7 +10,6 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
 from source_okta.source import (
     CustomRoles,
     GroupMembers,
@@ -25,12 +24,12 @@ from source_okta.source import (
     Users,
 )
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_base_class(mocker):
-    """
-    Base patcher for used streams
-    """
+    """Base patcher for used streams."""
     mocker.patch.object(OktaStream, "path", "v0/example_endpoint")
     mocker.patch.object(OktaStream, "primary_key", "test_primary_key")
     mocker.patch.object(OktaStream, "__abstractmethods__", set())
@@ -276,7 +275,7 @@ class TestStreamGroupMembers:
         }
 
     def test_group_members_slice_stream(
-        self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
+        self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date,
     ):
         stream = GroupMembers(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
@@ -293,7 +292,7 @@ class TestStreamGroupRoleAssignment:
         assert list(stream.read_records(**inputs)) == [group_role_assignments_instance]
 
     def test_group_role_assignments_parse_response(
-        self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url, start_date
+        self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url, start_date,
     ):
         stream = GroupRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[group_role_assignments_instance])
@@ -301,7 +300,7 @@ class TestStreamGroupRoleAssignment:
         assert list(stream.parse_response(**inputs)) == [group_role_assignments_instance]
 
     def test_group_role_assignments_slice_stream(
-        self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date
+        self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url, start_date,
     ):
         stream = GroupRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
@@ -346,7 +345,7 @@ class TestStreamUserRoleAssignment:
         assert list(stream.read_records(**inputs)) == [user_role_assignments_instance]
 
     def test_user_role_assignments_parse_response(
-        self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url, start_date
+        self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url, start_date,
     ):
         stream = UserRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}", json=[user_role_assignments_instance])
@@ -354,7 +353,7 @@ class TestStreamUserRoleAssignment:
         assert list(stream.parse_response(**inputs)) == [user_role_assignments_instance]
 
     def test_user_role_assignments_slice_stream(
-        self, requests_mock, patch_base_class, group_members_instance, users_instance, url_base, api_url, start_date
+        self, requests_mock, patch_base_class, group_members_instance, users_instance, url_base, api_url, start_date,
     ):
         stream = UserRoleAssignments(url_base=url_base, start_date=start_date)
         requests_mock.get(f"{api_url}/users?limit=200", json=[users_instance])
@@ -394,6 +393,6 @@ class TestStreamResourceSets:
     def test_resource_sets_request_params(self, requests_mock, patch_base_class, resource_set_instance, url_base, api_url, start_date):
         stream = ResourceSets(url_base=url_base, start_date=start_date)
         cursor = "iam5cursorFybecursor"
-        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": {'after': cursor}}
+        inputs = {"stream_slice": None, "stream_state": {"id": cursor}, "next_page_token": {"after": cursor}}
         expected_params = {"limit": 200, "after": "iam5cursorFybecursor"}
         assert stream.request_params(**inputs) == expected_params

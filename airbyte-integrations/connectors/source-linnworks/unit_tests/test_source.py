@@ -8,7 +8,7 @@ import pytest
 from source_linnworks.source import LinnworksAuthenticator, SourceLinnworks
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {"config": {"application_id": "xxx", "application_secret": "yyy", "token": "zzz", "start_date": "2021-11-01"}}
 

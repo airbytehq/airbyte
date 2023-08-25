@@ -10,11 +10,10 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type
 
 
 def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
-    """
-    Convert from Firebolt type to Airbyte. If type is not defined in
+    """Convert from Firebolt type to Airbyte. If type is not defined in
     Firebolt then it will be set to string, as per Airbyte reccommendation.
     More on Firebolt types can be found in docs:
-    https://docs.firebolt.io/general-reference/data-types.html
+    https://docs.firebolt.io/general-reference/data-types.html.
 
     :param fb_type: Firebolt type.
 
@@ -74,8 +73,7 @@ def convert_type(fb_type: str, nullable: bool) -> Dict[str, Union[str, Dict]]:
 
 
 def format_fetch_result(data: List[Any]) -> List[List[Any]]:
-    """
-    Format data from a firebolt query to be compatible with Airbyte,
+    """Format data from a firebolt query to be compatible with Airbyte,
     convert Firebolt timestamp string to Airbyte.
     Firebolt stores dates in YYYY-MM-DD HH:mm:SS format.
     Airbyte requires YYYY-MM-DDTHH:mm:SS.
@@ -86,7 +84,6 @@ def format_fetch_result(data: List[Any]) -> List[List[Any]]:
     :return: List of the same data as passed that's been converted to compatible types.
         https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types
     """
-
     for idx, item in enumerate(data):
         if type(item) == datetime:
             data[idx] = item.isoformat()
@@ -100,8 +97,7 @@ def format_fetch_result(data: List[Any]) -> List[List[Any]]:
 
 
 def airbyte_message_from_data(raw_data: List[Any], columns: List[str], table_name: str) -> Optional[AirbyteMessage]:
-    """
-    Wrap data into an AirbyteMessage.
+    """Wrap data into an AirbyteMessage.
 
     :param raw_data: Raw data row returned from a fetch query. Each item in the list
         represents a row of data.

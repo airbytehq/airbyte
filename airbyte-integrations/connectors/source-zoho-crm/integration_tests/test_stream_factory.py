@@ -16,11 +16,11 @@ HERE = Path(__file__).parent
 
 @pytest.fixture()
 def config():
-    with open(HERE.parent / "secrets/config.json", "r") as file:
+    with open(HERE.parent / "secrets/config.json") as file:
         return json.loads(file.read())
 
 
-@pytest.fixture
+@pytest.fixture()
 def request_sniffer(mocker):
     def request_decorator(stats):
         def decorator(func):

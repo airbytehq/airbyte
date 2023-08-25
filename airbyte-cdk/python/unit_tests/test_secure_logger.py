@@ -5,9 +5,10 @@
 import logging
 import sys
 from argparse import Namespace
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import pytest
+
 from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
@@ -32,7 +33,7 @@ class MockSource(Source):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: MutableMapping[str, Any] = None,
+        state: Optional[MutableMapping[str, Any]] = None,
     ) -> Iterable[AirbyteMessage]:
         logger.info(I_AM_A_SECRET_VALUE)
         logger.info(I_AM_A_SECRET_VALUE + " plus Some non secret Value in the same log record" + NOT_A_SECRET_VALUE)
@@ -99,16 +100,16 @@ spec_with_airbyte_secrets_not_string_config = {
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def simple_config():
-    yield {
+    return {
         SECRET_PROPERTY: I_AM_A_SECRET_VALUE,
         ANOTHER_SECRET_PROPERTY: ANOTHER_SECRET_VALUE,
     }
 
 
 @pytest.mark.parametrize(
-    "source_spec, config",
+    ("source_spec", "config"),
     [
         [spec_with_airbyte_secrets, spec_with_airbyte_secrets_config],
         [spec_with_multiple_airbyte_secrets, spec_with_multiple_airbyte_secrets_config],
@@ -141,8 +142,8 @@ def test_airbyte_secret_is_masked_on_logger_output(source_spec, mocker, config, 
     log_result = caplog.text
     expected_secret_values = [config[k] for k, v in source_spec["properties"].items() if v.get("airbyte_secret")]
     expected_plain_text_values = [config[k] for k, v in source_spec["properties"].items() if not v.get("airbyte_secret")]
-    assert all([str(v) not in log_result for v in expected_secret_values])
-    assert all([str(v) in log_result for v in expected_plain_text_values])
+    assert all(str(v) not in log_result for v in expected_secret_values)
+    assert all(str(v) in log_result for v in expected_plain_text_values)
 
 
 def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog, capsys):
@@ -155,7 +156,7 @@ def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog, capsy
             logger: logging.Logger,
             config: Mapping[str, Any],
             catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None,
+            state: Optional[MutableMapping[str, Any]] = None,
         ):
             raise Exception("Exception:" + I_AM_A_SECRET_VALUE)
 
@@ -202,7 +203,7 @@ def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, caplo
             logger: logging.Logger,
             config: Mapping[str, Any],
             catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None,
+            state: Optional[MutableMapping[str, Any]] = None,
         ):
             raise Exception("Exception:" + NOT_A_SECRET_VALUE)
 

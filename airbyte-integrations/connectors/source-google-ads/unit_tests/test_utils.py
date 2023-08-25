@@ -3,9 +3,10 @@
 #
 
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads import SourceGoogleAds
 from source_google_ads.utils import GAQL
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def test_parse_GAQL_ok():
@@ -78,31 +79,31 @@ def test_parse_GAQL_ok():
             "custom_queries": [
                 {
                     "query": "SELECT field1, field2 FROM x_Table2",
-                    "table_name": "test_table"
-                }]
+                    "table_name": "test_table",
+                }],
         },
         {
             "custom_queries": [
                 {
                     "query": "SELECT field1, field2 FROM x_Table WHERE ",
-                    "table_name": "test_table"
-                }]
+                    "table_name": "test_table",
+                }],
         },
         {
             "custom_queries": [
                 {
                     "query": "SELECT field1, , field2 FROM table",
-                    "table_name": "test_table"
-                }]
+                    "table_name": "test_table",
+                }],
         },
         {
             "custom_queries": [
                 {
                     "query": "SELECT fie ld1, field2 FROM table",
-                    "table_name": "test_table"
-                }]
+                    "table_name": "test_table",
+                }],
         },
-    ]
+    ],
 )
 def test_parse_GAQL_fail(config):
     with pytest.raises(AirbyteTracedException) as e:
@@ -112,7 +113,7 @@ def test_parse_GAQL_fail(config):
 
 
 @pytest.mark.parametrize(
-    "query, fields",
+    ("query", "fields"),
     [
         (
             """

@@ -171,7 +171,7 @@ datatype_inputs = pytest.mark.parametrize(
             "Field",
             [],
             None,
-            {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"}
+            {"items": {"airbyte_type": "big_integer", "type": "string"}, "title": "Field", "type": "array"},
         ),
         TestCase(
             "jsonarray",
@@ -236,8 +236,8 @@ datatype_inputs = pytest.mark.parametrize(
             "Field",
             [],
             {
-                'prefix': 'prefix',
-                'suffix': 'suffix',
+                "prefix": "prefix",
+                "suffix": "suffix",
             },
             {
                 "format": "string",

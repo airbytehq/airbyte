@@ -7,6 +7,7 @@ from datetime import datetime, time, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -25,7 +26,7 @@ class NasaStream(HttpStream, ABC):
         self.config = config
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return ""
 
@@ -33,7 +34,7 @@ class NasaStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {self.api_key: self.config[self.api_key]}
 
@@ -70,8 +71,7 @@ class NasaApod(NasaStream, IncrementalMixin):
         self._cursor_value = datetime.strptime(value[self.cursor_field], date_format)
 
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
-        """
-        Returns a list of each day between the start date and end date.
+        """Returns a list of each day between the start date and end date.
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
@@ -81,7 +81,7 @@ class NasaApod(NasaStream, IncrementalMixin):
         return dates
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if (
             stream_state
@@ -100,12 +100,12 @@ class NasaApod(NasaStream, IncrementalMixin):
         return self._chunk_date_range(start_date)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "planetary/apod"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         request_dict = {**self.config, **super().request_params(stream_state, stream_slice, next_page_token)}
         if self.sync_mode == SyncMode.full_refresh:
@@ -141,8 +141,7 @@ class SourceNasa(AbstractSource):
     invalid_parameter_value_range_template = "The value should be in the range [{},{})"
 
     def _parse_date(self, date_str: str) -> Union[datetime, str]:
-        """
-        Parses the date string into a datetime object.
+        """Parses the date string into a datetime object.
 
         :param date_str: string containing the date according to DATE_FORMAT
         :return Union[datetime, str]: str if not correctly formatted or if it does not satify the constraints [self.MIN_DATE, self.MAX_DATE), datetime otherwise.
@@ -151,7 +150,7 @@ class SourceNasa(AbstractSource):
             date = datetime.strptime(date_str, date_format)
             if date < self.min_date or date >= self.max_date:
                 return self.invalid_parameter_value_template.format(
-                    self.date_key, date_str, self.invalid_parameter_value_range_template.format(self.min_date, self.max_date)
+                    self.date_key, date_str, self.invalid_parameter_value_range_template.format(self.min_date, self.max_date),
                 )
             else:
                 return date
@@ -159,8 +158,7 @@ class SourceNasa(AbstractSource):
             return self.invalid_parameter_value_template.format(self.date_key, date_str, f"It should be formatted as '{date_format}'")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Verifies that the input configuration supplied by the user can be used to connect to the underlying data source.
+        """Verifies that the input configuration supplied by the user can be used to connect to the underlying data source.
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object

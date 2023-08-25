@@ -40,7 +40,7 @@ def test_file_not_found_fails():
 
 
 def mock_metadata_upload_info(
-    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, metadata_file_path: str
+    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, metadata_file_path: str,
 ) -> MetadataUploadInfo:
     return MetadataUploadInfo(
         uploaded=(latest_uploaded or version_uploaded),
@@ -56,7 +56,7 @@ def mock_metadata_upload_info(
 
 # TEST UPLOAD COMMAND
 @pytest.mark.parametrize(
-    "latest_uploaded, version_uploaded, icon_uploaded",
+    ("latest_uploaded", "version_uploaded", "icon_uploaded"),
     [
         (False, False, False),
         (True, False, False),
@@ -76,24 +76,24 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
     upload_info = mock_metadata_upload_info(latest_uploaded, version_uploaded, icon_uploaded, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, "my-bucket"]
+        commands.upload, [metadata_file_path, "my-bucket"],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     if latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
+            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to latest_blob_id.", color="green")],
         )
         assert result.exit_code == 0
 
     if version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to version_blob_id.", color="green")]
+            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to version_blob_id.", color="green")],
         )
         assert result.exit_code == 0
 
     if icon_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The icon file {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+            [mocker.call(f"The icon file {metadata_file_path} was uploaded to icon_blob_id.", color="green")],
         )
 
     if not (latest_uploaded or version_uploaded):
@@ -115,7 +115,7 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files):
     upload_info = mock_metadata_upload_info(False, True, False, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, bucket, "--prerelease", prerelease_tag]
+        commands.upload, [metadata_file_path, bucket, "--prerelease", prerelease_tag],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
@@ -123,7 +123,7 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files):
 
 
 @pytest.mark.parametrize(
-    "error, handled",
+    ("error", "handled"),
     [
         (ValidationError([error_wrappers.ErrorWrapper(Exception("Boom!"), "foo")], BaseModel), True),
         (FileNotFoundError("Boom!"), True),
@@ -136,8 +136,8 @@ def test_upload_with_errors(mocker, valid_metadata_yaml_files, error, handled):
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     commands.upload_metadata_to_gcs.side_effect = error
     result = runner.invoke(
-        commands.upload, [valid_metadata_yaml_files[0], "my-bucket"]
+        commands.upload, [valid_metadata_yaml_files[0], "my-bucket"],
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
     assert result.exit_code == 1
     if handled:
-        commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {str(error)}", color="red")
+        commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {error!s}", color="red")

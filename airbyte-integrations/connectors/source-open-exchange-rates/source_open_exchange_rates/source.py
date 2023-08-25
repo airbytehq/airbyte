@@ -8,11 +8,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+from pendulum import DateTime
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from pendulum import DateTime
 
 
 class OpenExchangeRates(HttpStream, ABC):
@@ -33,7 +34,7 @@ class OpenExchangeRates(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
         params = {}
@@ -59,8 +60,8 @@ class OpenExchangeRates(HttpStream, ABC):
         response: requests.Response,
         *,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         response_json = response.json()
 
@@ -74,7 +75,7 @@ class OpenExchangeRates(HttpStream, ABC):
 
         yield response_json
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = stream_state[self.cursor_field] if stream_state and self.cursor_field in stream_state else self.start_date
 
         if isinstance(start_date, int):
@@ -83,13 +84,12 @@ class OpenExchangeRates(HttpStream, ABC):
         return self._chunk_date_range(start_date)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return f"historical/{stream_slice['date']}.json"
 
     def _chunk_date_range(self, start_date: DateTime) -> List[Mapping[str, Any]]:
-        """
-        Returns a list of each day between the start date and now.
+        """Returns a list of each day between the start date and now.
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
@@ -103,8 +103,7 @@ class OpenExchangeRates(HttpStream, ABC):
 # Source
 class SourceOpenExchangeRates(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Checks the connection by sending a request to /usage and checks the remaining quota
+        """Checks the connection by sending a request to /usage and checks the remaining quota.
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
@@ -133,9 +132,7 @@ class SourceOpenExchangeRates(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = TokenAuthenticator(token=config["app_id"], auth_method="Token")
 
         return [OpenExchangeRates(base=config["base"], start_date=config["start_date"], app_id=config["app_id"], authenticator=auth)]

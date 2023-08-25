@@ -8,7 +8,7 @@ import pytest
 import requests
 
 
-@pytest.fixture
+@pytest.fixture()
 def response_mocker():
     def factory(status=200, content=""):
         response = requests.Response()
@@ -19,11 +19,10 @@ def response_mocker():
     return factory
 
 
-@pytest.fixture
+@pytest.fixture()
 def request_mocker(response_mocker):
     def factory(status=200, content=""):
         response = response_mocker(status, content)
-        request_mock = Mock(return_value=response)
-        return request_mock
+        return Mock(return_value=response)
 
     return factory

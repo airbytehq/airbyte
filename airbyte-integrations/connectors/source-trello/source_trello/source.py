@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -40,7 +41,7 @@ class TrelloStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit, "since": self.start_date}
         if next_page_token:
@@ -52,8 +53,7 @@ class TrelloStream(HttpStream, ABC):
     @balancer.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
-        for record in json_response:
-            yield record
+        yield from json_response
 
 
 class ChildStreamMixin:
@@ -71,9 +71,10 @@ class IncrementalTrelloStream(TrelloStream, ABC):
         response_json = response.json()
         if response_json:
             return {"before": response_json[-1]["id"]}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if stream_state:
@@ -96,10 +97,10 @@ class IncrementalTrelloStream(TrelloStream, ABC):
 class Boards(TrelloStream):
     """Return list of all boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-boards-get
-    Endpoint: https://api.trello.com/1/members/me/boards
+    Endpoint: https://api.trello.com/1/members/me/boards.
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "members/me/boards"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -112,7 +113,7 @@ class Boards(TrelloStream):
 class Cards(ChildStreamMixin, TrelloStream):
     """Return list of all cards of a boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-cards-get
-    Endpoint: https://api.trello.com/1/boards/<id>/cards/all
+    Endpoint: https://api.trello.com/1/boards/<id>/cards/all.
     """
 
     limit = 500
@@ -129,69 +130,68 @@ class Cards(ChildStreamMixin, TrelloStream):
         response_json = response.json()
         if response_json:
             return {"before": response_json[-1]["id"]}
+        return None
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/cards/all"
 
 
 class Checklists(ChildStreamMixin, TrelloStream):
     """Return list of all checklists of a boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-checklists-get
-    Endpoint: https://api.trello.com/1/boards/<id>/checklists
+    Endpoint: https://api.trello.com/1/boards/<id>/checklists.
     """
 
     extra_params = {"fields": "all", "checkItem_fields": "all"}
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/checklists"
 
 
 class Lists(ChildStreamMixin, TrelloStream):
     """Return list of all lists of a boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-lists-get
-    Endpoint: https://api.trello.com/1/boards/<id>/lists
+    Endpoint: https://api.trello.com/1/boards/<id>/lists.
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/lists"
 
 
 class Organizations(TrelloStream):
     """Return list of all member's organizations
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-members/#api-members-id-organizations-get
-    Endpoint: https://api.trello.com/1/members/me/organizations
+    Endpoint: https://api.trello.com/1/members/me/organizations.
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "members/me/organizations"
 
 
 class Users(ChildStreamMixin, TrelloStream):
     """Return list of all members of a boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-id-members-get
-    Endpoint: https://api.trello.com/1/boards/<id>/members
+    Endpoint: https://api.trello.com/1/boards/<id>/members.
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/members"
 
 
 class Actions(ChildStreamMixin, IncrementalTrelloStream):
     """Return list of all actions of a boards.
     API Docs: https://developer.atlassian.com/cloud/trello/rest/api-group-boards/#api-boards-boardid-actions-get
-    Endpoint: https://api.trello.com/1/boards/<id>/actions
+    Endpoint: https://api.trello.com/1/boards/<id>/actions.
     """
 
     limit = 1000
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"boards/{stream_slice['id']}/actions"
 
 
 class SourceTrello(AbstractSource):
-    """
-    Source Trello fetch date from web-based, Kanban-style, list-making application.
-    """
+    """Source Trello fetch date from web-based, Kanban-style, list-making application."""
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
         datetime.datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ")
@@ -202,10 +202,7 @@ class SourceTrello(AbstractSource):
         return TrelloAuthenticator(apiKey=config["key"], apiToken=config["token"])
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the credentials.
-        """
-
+        """Testing connection availability for the connector by granting the credentials."""
         config = self._validate_and_transform(config)
         config["authenticator"] = self._get_authenticator(config)
         available_boards = set(read_all_boards(Boards({**config, "board_ids": []}), Organizations(config)))

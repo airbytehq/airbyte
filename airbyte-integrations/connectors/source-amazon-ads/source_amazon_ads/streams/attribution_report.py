@@ -6,8 +6,9 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
+
+from airbyte_cdk.models import SyncMode
 from source_amazon_ads.schemas import AttributionReportModel
 from source_amazon_ads.streams.common import AmazonAdsStream
 
@@ -49,9 +50,8 @@ METRICS_MAP = {
 
 
 class AttributionReport(AmazonAdsStream):
-    """
-    This stream corresponds to Amazon Advertising API - Attribution Reports
-    https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/
+    """This stream corresponds to Amazon Advertising API - Attribution Reports
+    https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/.
     """
 
     model = AttributionReportModel
@@ -92,7 +92,7 @@ class AttributionReport(AmazonAdsStream):
         return schema
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for profile in self._profiles:
             start_date = pendulum.now(tz=profile.timezone).subtract(days=1).date()
@@ -109,9 +109,9 @@ class AttributionReport(AmazonAdsStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         try:
             yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
@@ -123,7 +123,7 @@ class AttributionReport(AmazonAdsStream):
             raise e
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         headers["Amazon-Advertising-API-Scope"] = str(stream_slice["profileId"])
@@ -134,12 +134,13 @@ class AttributionReport(AmazonAdsStream):
         next_page_token = stream_data.get(self._next_page_token_field)
         if next_page_token:
             return {self._next_page_token_field: next_page_token}
+        return None
 
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
 
         body = {

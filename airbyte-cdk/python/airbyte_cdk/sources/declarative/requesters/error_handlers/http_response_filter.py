@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Set, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 
 @dataclass
 class HttpResponseFilter:
-    """
-    Filter to select HttpResponses
+    """Filter to select HttpResponses.
 
     Attributes:
         action (Union[ResponseAction, str]): action to execute if a request matches
@@ -28,7 +28,7 @@ class HttpResponseFilter:
     """
 
     TOO_MANY_REQUESTS_ERRORS = {429}
-    DEFAULT_RETRIABLE_ERRORS = set([x for x in range(500, 600)]).union(TOO_MANY_REQUESTS_ERRORS)
+    DEFAULT_RETRIABLE_ERRORS = set(range(500, 600)).union(TOO_MANY_REQUESTS_ERRORS)
 
     action: Union[ResponseAction, str]
     config: Config
@@ -61,10 +61,9 @@ class HttpResponseFilter:
         return None
 
     def _matches_filter(self, response: requests.Response) -> Optional[ResponseAction]:
-        """
-        Apply the filter on the response and return the action to execute if it matches
+        """Apply the filter on the response and return the action to execute if it matches
         :param response: The HTTP response to evaluate
-        :return: The action to execute. None if the response does not match the filter
+        :return: The action to execute. None if the response does not match the filter.
         """
         if (
             response.status_code in self.http_codes
@@ -83,10 +82,9 @@ class HttpResponseFilter:
             return {}
 
     def _create_error_message(self, response: requests.Response) -> str:
-        """
-        Construct an error message based on the specified message template of the filter.
+        """Construct an error message based on the specified message template of the filter.
         :param response: The HTTP response which can be used during interpolation
-        :return: The evaluated error message string to be emitted
+        :return: The evaluated error message string to be emitted.
         """
         return self.error_message.eval(self.config, response=self._safe_response_json(response), headers=response.headers)
 

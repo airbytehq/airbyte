@@ -18,7 +18,7 @@ test_data = [
 ]
 
 
-@pytest.mark.parametrize("value,schema,expected_output_type", test_data)
+@pytest.mark.parametrize(("value", "schema", "expected_output_type"), test_data)
 def test_fromat_value(value, schema, expected_output_type):
     test = format_value(value, schema)
 
@@ -50,7 +50,7 @@ test_data = [
 ]
 
 
-@pytest.mark.parametrize("value,expected", test_data)
+@pytest.mark.parametrize(("value", "expected"), test_data)
 def test_clean_string(value, expected):
     test = clean_string(value)
 

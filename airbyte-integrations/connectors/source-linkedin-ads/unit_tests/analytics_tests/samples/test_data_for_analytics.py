@@ -59,8 +59,8 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021
-        }
+            "end.year": 2021,
+        },
     },
     {"camp_id": 123,
      "fields": "externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,postClickJobApplyClicks,postClickRegistrations,dateRange",
@@ -70,8 +70,8 @@ test_output_slices: List = [
          "start.year": 2021,
          "end.day": 31,
          "end.month": 8,
-         "end.year": 2021
-     }
+         "end.year": 2021,
+     },
      },
     {"camp_id": 123,
      "fields": "externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,postClickJobApplyClicks,postClickRegistrations,dateRange",
@@ -81,8 +81,8 @@ test_output_slices: List = [
          "start.year": 2021,
          "end.day": 30,
          "end.month": 9,
-         "end.year": 2021
-     }
+         "end.year": 2021,
+     },
      },
     {
         "camp_id": 123,
@@ -93,8 +93,8 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 31,
             "end.month": 8,
-            "end.year": 2021
-        }
+            "end.year": 2021,
+        },
     },
     {
         "camp_id": 123,
@@ -105,8 +105,8 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021
-        }
+            "end.year": 2021,
+        },
     },
     {
         "camp_id": 123,
@@ -117,8 +117,8 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 31,
             "end.month": 8,
-            "end.year": 2021
-        }
+            "end.year": 2021,
+        },
     },
     {
         "camp_id": 123,
@@ -129,8 +129,8 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021
-        }
+            "end.year": 2021,
+        },
     },
     {
         "camp_id": 123,
@@ -141,8 +141,8 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 31,
             "end.month": 8,
-            "end.year": 2021
-        }
+            "end.year": 2021,
+        },
     },
     {
         "camp_id": 123,
@@ -153,9 +153,9 @@ test_output_slices: List = [
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021
-        }
-    }
+            "end.year": 2021,
+        },
+    },
 ]
 
 """ This is the example of the input chunks for the `test_merge_chunks` """

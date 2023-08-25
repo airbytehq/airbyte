@@ -5,6 +5,7 @@
 import json
 
 import pytest
+
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 SIMPLE_SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
@@ -48,19 +49,19 @@ VERY_NESTED_SCHEMA = {
                                 "very_nested_value": {
                                     "type": ["null", "object"],
                                     "properties": {"very_nested_value": {"type": ["null", "number"]}},
-                                }
+                                },
                             },
-                        }
+                        },
                     },
-                }
+                },
             },
-        }
+        },
     },
 }
 
 
 @pytest.mark.parametrize(
-    "schema, actual, expected, expected_warns",
+    ("schema", "actual", "expected", "expected_warns"),
     [
         (SIMPLE_SCHEMA, {"value": 12}, {"value": "12"}, None),
         (SIMPLE_SCHEMA, {"value": 12}, {"value": "12"}, None),

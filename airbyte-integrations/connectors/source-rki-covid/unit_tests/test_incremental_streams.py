@@ -3,12 +3,13 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_rki_covid.source import IncrementalRkiCovidStream
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalRkiCovidStream, "path", "v0/example_endpoint")
     mocker.patch.object(IncrementalRkiCovidStream, "primary_key", "test_primary_key")

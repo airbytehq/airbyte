@@ -19,28 +19,13 @@ from .formats.parquet_spec import ParquetFormat
 
 # class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 #     class Config:
-#         title="S3 Source Spec"
 
 #     class S3Provider(BaseModel):
 #         class Config:
-#             title = "S3: Amazon Web Services"
 
-#         bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.")
 #         aws_access_key_id: Optional[str] = Field(
-#             default=None,
-#             description="...",
-#             airbyte_secret=True
-#         )
 #         aws_secret_access_key: Optional[str] = Field(
-#             default=None,
-#             description="...",
-#             airbyte_secret=True
-#         )
 #         path_prefix: str = Field(
-#             default="",
-#             description="..."
-#         )
-#     provider: S3Provider = Field(...)  # leave this as Field(...), just change type to relevant class
 
 
 class SourceFilesAbstractSpec(BaseModel):
@@ -62,7 +47,7 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
-        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
+        default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20,
     )
 
     user_schema: str = Field(
@@ -89,9 +74,8 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @staticmethod
     def remove_enum_allOf(schema: dict) -> dict:
-        """
-        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
-        Unpack them into the root
+        """AllOfs are not supported by the UI, but pydantic is automatically writing them for enums.
+        Unpack them into the root.
         """
         objects_to_check = schema["properties"]["format"]["oneOf"]
         for object in objects_to_check:
@@ -105,7 +89,8 @@ class SourceFilesAbstractSpec(BaseModel):
     @staticmethod
     def check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
-            raise RuntimeError("You must add the 'provider' property in your child spec class")
+            msg = "You must add the 'provider' property in your child spec class"
+            raise RuntimeError(msg)
 
     @staticmethod
     def resolve_refs(schema: dict) -> dict:
@@ -120,10 +105,9 @@ class SourceFilesAbstractSpec(BaseModel):
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """we're overriding the schema classmethod to enable some post-processing"""
+        """We're overriding the schema classmethod to enable some post-processing."""
         schema = super().schema(*args, **kwargs)
         cls.check_provider_added(schema)
         schema = cls.change_format_to_oneOf(schema)
         schema = cls.resolve_refs(schema)
-        schema = cls.remove_enum_allOf(schema)
-        return schema
+        return cls.remove_enum_allOf(schema)

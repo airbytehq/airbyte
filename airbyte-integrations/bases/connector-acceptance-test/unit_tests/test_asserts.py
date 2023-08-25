@@ -3,6 +3,8 @@
 #
 
 import pytest
+from connector_acceptance_test.utils.asserts import verify_records_schema
+
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
@@ -11,7 +13,6 @@ from airbyte_protocol.models import (
     DestinationSyncMode,
     SyncMode,
 )
-from connector_acceptance_test.utils.asserts import verify_records_schema
 
 
 @pytest.fixture(name="record_schema")
@@ -41,7 +42,7 @@ def catalog_fixture(request, record_schema) -> ConfiguredAirbyteCatalog:
 
 
 def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
-    """Test that correct records returned as records with errors, and verify specific error messages"""
+    """Test that correct records returned as records with errors, and verify specific error messages."""
     records = [
         {
             "text_or_null": 123,  # wrong format
@@ -88,7 +89,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 
 
 @pytest.mark.parametrize(
-    "record, configured_catalog, valid",
+    ("record", "configured_catalog", "valid"),
     [
         # Send null data
         ({"a": None}, {"type": "object", "properties": {"a": {"type": "string", "format": "time"}}}, False),

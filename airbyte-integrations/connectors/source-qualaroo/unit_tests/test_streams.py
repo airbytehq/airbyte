@@ -11,7 +11,7 @@ from source_qualaroo.source import QualarooStream, Responses, Surveys
 from .helpers import NO_SLEEP_HEADERS, read_all_records
 
 
-@fixture
+@fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(QualarooStream, "path", "v0/example_endpoint")

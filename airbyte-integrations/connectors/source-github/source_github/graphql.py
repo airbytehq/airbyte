@@ -141,8 +141,7 @@ class QueryReactions:
     AVERAGE_REACTIONS = 2
 
     def get_query_root_repository(self, owner: str, name: str, first: int, after: Optional[str] = None):
-        """
-        Get GraphQL query which allows fetching reactions starting from the repository:
+        """Get GraphQL query which allows fetching reactions starting from the repository:
         query {
           repository {
             pull_requests(first: page_size) {
@@ -154,7 +153,7 @@ class QueryReactions:
               }
             }
           }
-        }
+        }.
         """
         op = self._get_operation()
         repository = op.repository(owner=owner, name=name)
@@ -175,8 +174,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_pull_request(self, node_id: str, first: int, after: str):
-        """
-        Get GraphQL query which allows fetching reactions starting from the pull_request:
+        """Get GraphQL query which allows fetching reactions starting from the pull_request:
         query {
           pull_request {
             reviews(first: AVERAGE_REVIEWS) {
@@ -186,7 +184,7 @@ class QueryReactions:
               }
             }
           }
-        }
+        }.
         """
         op = self._get_operation()
         pull_request = op.node(id=node_id).__as__(_schema_root.PullRequest)
@@ -200,8 +198,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_review(self, node_id: str, first: int, after: str):
-        """
-        Get GraphQL query which allows fetching reactions starting from the review:
+        """Get GraphQL query which allows fetching reactions starting from the review:
         query {
           review {
             comments(first: AVERAGE_COMMENTS) {
@@ -209,7 +206,7 @@ class QueryReactions:
               }
             }
           }
-        }
+        }.
         """
         op = self._get_operation()
         review = op.node(id=node_id).__as__(_schema_root.PullRequestReview)
@@ -222,14 +219,13 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_comment(self, node_id: str, first: int, after: str):
-        """
-        Get GraphQL query which allows fetching reactions starting from the comment:
+        """Get GraphQL query which allows fetching reactions starting from the comment:
         query {
           comment {
             reactions(first: AVERAGE_REACTIONS) {
             }
           }
-        }
+        }.
         """
         op = self._get_operation()
         comment = op.node(id=node_id).__as__(_schema_root.PullRequestReviewComment)
@@ -278,7 +274,7 @@ class QueryReactions:
 
 
 class CursorStorage:
-    def __init__(self, typenames):
+    def __init__(self, typenames) -> None:
         self.typename_to_prio = {o: prio for prio, o in enumerate(reversed(typenames))}
         self.count = itertools.count()
         self.storage = []
@@ -291,3 +287,4 @@ class CursorStorage:
         if self.storage:
             _, _, c = heapq.heappop(self.storage)
             return {"typename": c[0], "cursor": c[1], "total_count": c[2], "parent_id": c[3]}
+        return None

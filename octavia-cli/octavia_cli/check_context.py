@@ -4,11 +4,12 @@
 
 import os
 
-import airbyte_api_client
 import click
+from urllib3.exceptions import MaxRetryError
+
+import airbyte_api_client
 from airbyte_api_client.api import health_api, workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
-from urllib3.exceptions import MaxRetryError
 
 from .init.commands import DIRECTORIES_TO_CREATE as REQUIRED_PROJECT_DIRECTORIES
 
@@ -43,12 +44,14 @@ def check_api_health(api_client: airbyte_api_client.ApiClient) -> None:
     try:
         api_response = api_instance.get_health_check()
         if not api_response.available:
+            msg = "Your Airbyte instance is not ready to receive requests: the health endpoint returned 'available: False.'"
             raise UnhealthyApiError(
-                "Your Airbyte instance is not ready to receive requests: the health endpoint returned 'available: False.'"
+                msg,
             )
     except (airbyte_api_client.ApiException, MaxRetryError) as e:
+        msg = f"Could not reach your Airbyte instance, make sure the instance is up and running and network reachable: {e}"
         raise UnreachableAirbyteInstanceError(
-            f"Could not reach your Airbyte instance, make sure the instance is up and running and network reachable: {e}"
+            msg,
         )
 
 
@@ -66,7 +69,8 @@ def check_workspace_exists(api_client: airbyte_api_client.ApiClient, workspace_i
     try:
         api_instance.get_workspace(WorkspaceIdRequestBody(workspace_id=workspace_id), _check_return_type=False)
     except airbyte_api_client.ApiException:
-        raise WorkspaceIdError("The workspace you are trying to use does not exist in your Airbyte instance")
+        msg = "The workspace you are trying to use does not exist in your Airbyte instance"
+        raise WorkspaceIdError(msg)
 
 
 def check_is_initialized(project_directory: str = ".") -> bool:
@@ -85,8 +89,9 @@ def check_is_initialized(project_directory: str = ".") -> bool:
 def requires_init(f):
     def wrapper(ctx, **kwargs):
         if not ctx.obj["PROJECT_IS_INITIALIZED"]:
+            msg = "Your octavia project is not initialized, please run 'octavia init' before running this command."
             raise ProjectNotInitializedError(
-                "Your octavia project is not initialized, please run 'octavia init' before running this command."
+                msg,
             )
         f(ctx, **kwargs)
 

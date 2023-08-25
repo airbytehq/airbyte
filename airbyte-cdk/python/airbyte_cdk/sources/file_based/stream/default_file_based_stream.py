@@ -30,10 +30,7 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
-
-    """
-    The default file-based stream.
-    """
+    """The default file-based stream."""
 
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     ab_last_mod_col = "_ab_source_file_last_modified"
@@ -62,12 +59,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         all_files = self.list_files()
         files_to_read = self._cursor.get_files_to_sync(all_files, self.logger)
         sorted_files_to_read = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
-        slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
-        return slices
+        return [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
-        """
-        Yield all records from all remote files in `list_files_for_this_sync`.
+        """Yield all records from all remote files in `list_files_for_this_sync`.
 
         If an error is encountered reading records from a file, log a message and do not attempt
         to sync the rest of the file.
@@ -140,8 +135,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        """
-        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        """Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
         return self.ab_last_mod_col
@@ -175,8 +169,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             if total_n_files > max_n_files_for_schema_inference:
                 # Use the most recent files for schema inference, so we pick up schema changes during discovery.
                 files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
-                self.logger.warn(
-                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
+                self.logger.warning(
+                    msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files.",
                 )
 
             inferred_schema = self.infer_schema(files)
@@ -194,8 +188,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @cache
     def list_files(self) -> List[RemoteFile]:
-        """
-        List all files that belong to the stream as defined by the stream's globs.
+        """List all files that belong to the stream as defined by the stream's globs.
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync.
         """
@@ -213,7 +206,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 if k == "type":
                     if isinstance(v, list):
                         if "null" not in v:
-                            schema[k] = ["null"] + v
+                            schema[k] = ["null", *v]
                     elif v != "null":
                         schema[k] = ["null", v]
                 else:
@@ -224,8 +217,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return schema
 
     async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
-        """
-        Infer the schema for a stream.
+        """Infer the schema for a stream.
 
         Each file type has a corresponding `infer_schema` handler.
         Dispatch on file type.

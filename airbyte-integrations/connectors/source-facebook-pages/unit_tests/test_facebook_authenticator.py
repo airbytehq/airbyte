@@ -8,7 +8,7 @@ import requests_mock
 from source_facebook_pages.components import AuthenticatorFacebookPageAccessToken
 
 
-@pytest.fixture
+@pytest.fixture()
 def req_mock():
     with requests_mock.Mocker() as mock:
         yield mock
@@ -17,7 +17,7 @@ def req_mock():
 def test_facebook_url_params(req_mock):
     config = {
         "access_token": "initial_token",
-        "page_id": "pageID"
+        "page_id": "pageID",
     }
     parameters = config
 

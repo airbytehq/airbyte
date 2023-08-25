@@ -13,19 +13,18 @@ from source_zendesk_support.streams import Users
 
 @pytest.fixture(scope="session", name="config")
 def test_config():
-    config = {
+    return {
         "subdomain": "sandbox",
         "start_date": "2021-06-01T00:00:00Z",
         "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
     }
-    return config
 
 
 def prepare_config(config: Dict):
     return SourceZendeskSupport().convert_config2stream_args(config)
 
 
-@pytest.mark.parametrize("retry_after, expected", [("5", 5), ("5, 4", 5)])
+@pytest.mark.parametrize(("retry_after", "expected"), [("5", 5), ("5, 4", 5)])
 def test_backoff(requests_mock, config, retry_after, expected):
     """ """
     test_response_header = {"Retry-After": retry_after, "X-Rate-Limit": "0"}

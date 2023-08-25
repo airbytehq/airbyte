@@ -9,7 +9,7 @@ import pytest
 from source_genesys.source import GenesysStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(GenesysStream, "path", "v0/example_endpoint")

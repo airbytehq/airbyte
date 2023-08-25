@@ -3,11 +3,12 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 
 
 @pytest.mark.parametrize(
-    "test_name, input_schema, expected_schema",
+    ("test_name", "input_schema", "expected_schema"),
     [
         ("schema", {"k": "string"}, {"k": "string"}),
         ("empty_schema", {}, {}),

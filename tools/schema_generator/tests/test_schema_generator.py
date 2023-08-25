@@ -8,7 +8,9 @@ import os
 import sys
 import tempfile
 
-import pytest
+from schema_generator.configure_catalog import configure_catalog
+from schema_generator.infer_schemas import infer_schemas
+
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteMessage,
@@ -20,8 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from schema_generator.configure_catalog import configure_catalog
-from schema_generator.infer_schemas import infer_schemas
 
 
 def test_configure_catalog():
@@ -31,7 +31,7 @@ def test_configure_catalog():
     sys.stdin = io.StringIO(catalog_message.json())
 
     expected_configured_catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStream(stream=stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)]
+        streams=[ConfiguredAirbyteStream(stream=stream, sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)],
     )
 
     expected_configured_catalog_json = json.loads(expected_configured_catalog.json())

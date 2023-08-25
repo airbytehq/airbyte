@@ -9,8 +9,9 @@ from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
+
+from airbyte_cdk.sources.streams.http import HttpStream
 from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,
@@ -106,7 +107,7 @@ class NetsuiteStream(HttpStream, ABC):
             # ensure there is a type, type is the json schema type and not a property
             # and null has not already been added
             if property_type and not isinstance(property_type, dict) and "null" not in property_type_list:
-                record["type"] = ["null"] + property_type_list
+                record["type"] = ["null", *property_type_list]
             # removing non-functional elements from schema
             [record.pop(element) for element in USLESS_SCHEMA_ELEMENTS if record.get(element)]
 
@@ -134,7 +135,7 @@ class NetsuiteStream(HttpStream, ABC):
         lmd_datetime = datetime.strptime(last_modified_date, NETSUITE_OUTPUT_DATETIME_FORMAT)
         return lmd_datetime.strftime(self.default_datetime_format)
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {}
         if next_page_token:
             params.update(**next_page_token)
@@ -155,8 +156,8 @@ class NetsuiteStream(HttpStream, ABC):
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping]:
 
@@ -168,22 +169,22 @@ class NetsuiteStream(HttpStream, ABC):
                 yield from self.fetch_record(record, request_kwargs)
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code in NETSUITE_ERRORS_MAPPING.keys():
+        if response.status_code in NETSUITE_ERRORS_MAPPING:
             message = response.json().get("o:errorDetails")
             if isinstance(message, list):
                 error_code = message[0].get("o:errorCode")
                 detail_message = message[0].get("detail")
                 known_error = NETSUITE_ERRORS_MAPPING.get(response.status_code)
 
-                if error_code in known_error.keys():
-                    setattr(self, "raise_on_http_errors", False)
+                if error_code in known_error:
+                    self.raise_on_http_errors = False
 
                     # handle data-format error
                     if "INVALID_PARAMETER" in error_code and "failed with date format" in detail_message:
-                        self.logger.warn(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
+                        self.logger.warning(f"Stream `{self.name}`: cannot read using date format `{self.default_datetime_format}")
                         self.index_datetime_format += 1
                         if self.index_datetime_format < len(NETSUITE_INPUT_DATE_FORMATS):
-                            self.logger.warn(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
+                            self.logger.warning(f"Stream `{self.name}`: retry using next date format `{self.default_datetime_format}")
                             raise DateFormatExeption
                         else:
                             self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
@@ -196,7 +197,7 @@ class NetsuiteStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def read_records(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
         try:
             yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
@@ -211,8 +212,8 @@ class IncrementalNetsuiteStream(NetsuiteStream):
 
     def filter_records_newer_than_state(
         self,
-        stream_state: Mapping[str, Any] = None,
-        records: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        records: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Parse the records with respect to `stream_state` for `incremental` sync."""
         if stream_state:
@@ -222,9 +223,8 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         else:
             yield from records
 
-    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> str:
-        """
-        Sometimes the object has no `cursor_field` value assigned, and the ` "" ` emmited as state value,
+    def get_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> str:
+        """Sometimes the object has no `cursor_field` value assigned, and the ` "" ` emmited as state value,
         this causes conflicts with datetime lib to parse the `time component`,
         to avoid the errors we falling back to default start_date from input config.
         """
@@ -238,8 +238,8 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping]:
         records = super().parse_response(response, stream_state, stream_slice, next_page_token)
@@ -255,16 +255,16 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {**(next_page_token or {})}
         if stream_slice:
             params.update(
-                **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'}
+                **{"q": f'{self.cursor_field} AFTER "{stream_slice["start"]}" AND {self.cursor_field} BEFORE "{stream_slice["end"]}"'},
             )
         return params
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # Netsuite cannot order records returned by the API, so we need stream slices
         # to maintain state properly https://docs.airbyte.com/connector-development/cdk-python/incremental-stream/#streamstream_slices
 

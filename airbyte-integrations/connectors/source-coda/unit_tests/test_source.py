@@ -8,7 +8,7 @@ from source_coda.source import SourceCoda
 
 
 class MockResponse:
-    def __init__(self, json_data, status_code):
+    def __init__(self, json_data, status_code) -> None:
         self.json_data = json_data
         self.status_code = status_code
 
@@ -17,7 +17,8 @@ class MockResponse:
 
     def raise_for_status(self):
         if self.status_code != 200:
-            raise Exception("Bad things happened")
+            msg = "Bad things happened"
+            raise Exception(msg)
 
 
 def mocked_requests_get(fail=False):
@@ -30,8 +31,8 @@ def mocked_requests_get(fail=False):
                 "id": "test-id",
                 "type": "workspace",
                 "browserLink": "https://coda.io/link",
-                "name": "title"
-            }}, 200
+                "name": "title",
+            }}, 200,
         )
 
     return wrapper

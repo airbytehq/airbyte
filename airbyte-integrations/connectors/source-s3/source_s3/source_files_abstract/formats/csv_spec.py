@@ -49,7 +49,7 @@ class CsvFormat(BaseModel):
         order=4,
     )
     double_quote: bool = Field(
-        default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.", order=5
+        default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.", order=5,
     )
     newlines_in_values: bool = Field(
         title="Allow newlines in values",
@@ -60,7 +60,7 @@ class CsvFormat(BaseModel):
     additional_reader_options: Optional[str] = Field(
         description='Optionally add a valid JSON string here to provide additional options to the csv reader. Mappings must correspond to options <a href="https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions" target="_blank">detailed here</a>. \'column_types\' is used internally to handle schema so overriding that would likely cause problems.',
         examples=[
-            '{"timestamp_parsers": ["%m/%d/%Y %H:%M", "%Y/%m/%d %H:%M"], "strings_can_be_null": true, "null_values": ["NA", "NULL"]}'
+            '{"timestamp_parsers": ["%m/%d/%Y %H:%M", "%Y/%m/%d %H:%M"], "strings_can_be_null": true, "null_values": ["NA", "NULL"]}',
         ],
         order=7,
     )

@@ -5,9 +5,10 @@
 from dataclasses import InitVar, dataclass, field
 from functools import wraps
 from time import sleep
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -20,7 +21,9 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nes
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.core import Stream
 
 RequestInput = Union[str, Mapping[str, str]]
 
@@ -98,25 +101,18 @@ class IncrementalSingleSliceCursor(Cursor):
         yield {}
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        Evaluating if a record should be synced allows for filtering and stop condition on pagination
-        """
+        """Evaluating if a record should be synced allows for filtering and stop condition on pagination."""
         record_cursor_value = record.get(self.cursor_field.eval(self.config))
         return bool(record_cursor_value)
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """
-        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice."""
         cursor_field = self.cursor_field.eval(self.config)
         first_cursor_value = first.get(cursor_field) if first else None
         second_cursor_value = second.get(cursor_field) if second else None
         if first_cursor_value and second_cursor_value:
             return first_cursor_value > second_cursor_value
-        elif first_cursor_value:
-            return True
-        else:
-            return False
+        return bool(first_cursor_value)
 
 
 @dataclass
@@ -128,7 +124,8 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         super().__post_init__(parameters)
 
         if not self.parent_stream_configs:
-            raise ValueError("IncrementalSubstreamSlicer needs at least 1 parent stream")
+            msg = "IncrementalSubstreamSlicer needs at least 1 parent stream"
+            raise ValueError(msg)
 
         # parent stream parts
         self.parent_config: ParentStreamConfig = self.parent_stream_configs[0]
@@ -155,21 +152,21 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
         slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
-        yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
+        yield from list(slices_generator) if self.parent_complete_fetch else slices_generator
 
     def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
+        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
 
         parent_stream_slices_gen = self.parent_stream.stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state,
         )
 
         for parent_slice in parent_stream_slices_gen:
 
             parent_records_gen = self.parent_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state,
             )
 
             for parent_record in parent_records_gen:
@@ -180,15 +177,14 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
                         self.substream_slice_field: substream_slice_value,
                         cursor_field: self._state.get(cursor_field),
                         self.parent_stream_name: {
-                            self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
+                            self.parent_cursor_field: self._state.get(self.parent_stream_name, {}).get(self.parent_cursor_field),
                         },
                     }
 
 
 @dataclass
 class IntercomRateLimiter:
-    """
-    Define timings for RateLimits. Adjust timings if needed.
+    """Define timings for RateLimits. Adjust timings if needed.
     :: on_unknown_load = 1.0 sec - Intercom recommended time to hold between each API call.
     :: on_low_load = 0.01 sec (10 miliseconds) - ideal ratio between hold time and api call, also the standard hold time between each API call.
     :: on_mid_load = 1.5 sec - great timing to retrieve another 15% of request capacity while having mid_load.
@@ -245,8 +241,7 @@ class IntercomRateLimiter:
         rate_limit_header: str = "X-RateLimit-Limit",
         rate_limit_remain_header: str = "X-RateLimit-Remaining",
     ):
-        """
-        To avoid reaching Intercom API Rate Limits, use the 'X-RateLimit-Limit','X-RateLimit-Remaining' header values,
+        """To avoid reaching Intercom API Rate Limits, use the 'X-RateLimit-Limit','X-RateLimit-Remaining' header values,
         to determine the current rate limits and load and handle backoff_time based on load %.
         Recomended backoff_time between each request is 1 sec, we would handle this dynamicaly.
         :: threshold - is the % cutoff for the rate_limits % load, if this cutoff is crossed,
@@ -261,9 +256,8 @@ class IntercomRateLimiter:
             X-RateLimit-Reset: 1487332510
         },
             where: 51 - requests remains and goes down, 100 - max requests capacity.
-        More information: https://developers.intercom.com/intercom-api-reference/reference/rate-limiting
+        More information: https://developers.intercom.com/intercom-api-reference/reference/rate-limiting.
         """
-
         # find the requests.Response inside args list
         for arg in args:
             if isinstance(arg, requests.models.Response):
@@ -278,8 +272,7 @@ class IntercomRateLimiter:
             threshold=threshold,
         )
 
-        backoff_time = IntercomRateLimiter._convert_load_to_backoff_time(cutoff=cutoff, load=load, threshold=threshold)
-        return backoff_time
+        return IntercomRateLimiter._convert_load_to_backoff_time(cutoff=cutoff, load=load, threshold=threshold)
 
     @staticmethod
     def balance_rate_limit(
@@ -287,8 +280,7 @@ class IntercomRateLimiter:
         rate_limit_header: str = "X-RateLimit-Limit",
         rate_limit_remain_header: str = "X-RateLimit-Remaining",
     ):
-        """
-        The decorator function.
+        """The decorator function.
         Adjust `threshold`,`rate_limit_header`,`rate_limit_remain_header` if needed.
         """
 
@@ -297,8 +289,8 @@ class IntercomRateLimiter:
             def wrapper_balance_rate_limit(*args, **kwargs):
                 IntercomRateLimiter.backoff_time(
                     IntercomRateLimiter.get_backoff_time(
-                        *args, threshold=threshold, rate_limit_header=rate_limit_header, rate_limit_remain_header=rate_limit_remain_header
-                    )
+                        *args, threshold=threshold, rate_limit_header=rate_limit_header, rate_limit_remain_header=rate_limit_remain_header,
+                    ),
                 )
                 return func(*args, **kwargs)
 
@@ -309,8 +301,7 @@ class IntercomRateLimiter:
 
 @dataclass(eq=False)
 class HttpRequesterWithRateLimiter(HttpRequester):
-    """
-    The difference between the built-in `HttpRequester` and this one is the custom decorator,
+    """The difference between the built-in `HttpRequester` and this one is the custom decorator,
     applied on top of `interpret_response_status` to preserve the api calls for a defined amount of time,
     calculated using the rate limit headers and not use the custom backoff strategy,
     since we deal with Response.status_code == 200,
@@ -329,13 +320,13 @@ class HttpRequesterWithRateLimiter(HttpRequester):
         self.request_body_json = self.request_body_json if self.request_body_json else {}
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters
+            config=self.config, request_inputs=self.request_parameters, parameters=parameters,
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters
+            config=self.config, request_inputs=self.request_headers, parameters=parameters,
         )
         self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters
+            config=self.config, request_inputs=self.request_body_json, parameters=parameters,
         )
 
     # The RateLimiter is applied to balance the api requests.

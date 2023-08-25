@@ -7,14 +7,15 @@ from datetime import date
 from unittest.mock import MagicMock
 
 import requests
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_kyriba.source import CashFlows
+
+from airbyte_cdk.models import SyncMode
 
 from .test_streams import config
 
 
-@fixture
+@fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(CashFlows, "primary_key", "test_primary_key")

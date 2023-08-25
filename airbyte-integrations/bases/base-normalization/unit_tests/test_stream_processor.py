@@ -7,13 +7,14 @@ import os
 from typing import List
 
 import pytest
-from airbyte_cdk.models import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.stream_processor import StreamProcessor
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 
+from airbyte_cdk.models import DestinationSyncMode, SyncMode
 
-@pytest.fixture(scope="function", autouse=True)
+
+@pytest.fixture(autouse=True)
 def before_tests(request):
     # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
     # or from the base-normalization folder (through pycharm)
@@ -27,7 +28,7 @@ def before_tests(request):
 
 
 @pytest.mark.parametrize(
-    "cursor_field, expecting_exception, expected_cursor_field",
+    ("cursor_field", "expecting_exception", "expected_cursor_field"),
     [
         (None, False, "_airbyte_emitted_at"),
         (["updated_at"], False, "updated_at"),
@@ -47,7 +48,7 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
         cursor_field=cursor_field,
         primary_key=[],
         json_column_name="json_column_name",
-        properties=dict(),
+        properties={},
         tables_registry=TableNameRegistry(DestinationType.POSTGRES),
         from_table="",
     )
@@ -62,7 +63,7 @@ def test_cursor_field(cursor_field: List[str], expecting_exception: bool, expect
 
 
 @pytest.mark.parametrize(
-    "primary_key, column_type, expecting_exception, expected_primary_keys, expected_final_primary_key_string",
+    ("primary_key", "column_type", "expecting_exception", "expected_primary_keys", "expected_final_primary_key_string"),
     [
         ([["id"]], "string", False, ["id"], "{{ adapter.quote('id') }}"),
         ([["id"]], "number", False, ["id"], "cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})"),

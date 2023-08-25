@@ -14,7 +14,7 @@ from normalization.transform_catalog.destination_name_transformer import (
 )
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 def before_tests(request):
     # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
     # or from the base-normalization folder (through pycharm)
@@ -28,7 +28,7 @@ def before_tests(request):
 
 
 @pytest.mark.parametrize(
-    "input_str, destination_type, expected",
+    ("input_str", "destination_type", "expected"),
     [
         # Contains Space character
         ("Hello World", "Postgres", True),
@@ -74,7 +74,7 @@ def test_needs_quote(input_str: str, destination_type: str, expected: bool):
 
 
 @pytest.mark.parametrize(
-    "input_str, expected",
+    ("input_str", "expected"),
     [
         ("Hello World!", "Hello World!"),
         ("àêî öÙ", "aei oU"),
@@ -85,7 +85,7 @@ def test_strip_accents(input_str: str, expected: str):
 
 
 @pytest.mark.parametrize(
-    "expected, input_str",
+    ("expected", "input_str"),
     [
         ("__identifier_name", "__identifier_name"),
         ("IDENTIFIER_NAME", "IDENTIFIER_NAME"),
@@ -107,7 +107,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
 
 
 @pytest.mark.parametrize(
-    "input_str, destination_type, expected, expected_in_jinja",
+    ("input_str", "destination_type", "expected", "expected_in_jinja"),
     [
         # Case sensitive names
         ("Identifier Name", "Postgres", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
@@ -136,7 +136,7 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
 
 
 @pytest.mark.parametrize(
-    "input_str, expected",
+    ("input_str", "expected"),
     [
         # below the limit
         ("Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh", "Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh"),
@@ -150,10 +150,9 @@ def test_normalize_column_name(input_str: str, destination_type: str, expected: 
     ],
 )
 def test_truncate_identifier(input_str: str, expected: str):
-    """
-    Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
+    """Rules about truncations, for example for both of these strings which are too long for the postgres 64 limit:
     - `Aaaa_Bbbb_Cccc_Dddd_Eeee_Ffff_Gggg_Hhhh_Iiii`
-    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`
+    - `Aaaa_Bbbb_Cccc_Dddd_Eeee_a_very_long_name_Ffff_Gggg_Hhhh_Iiii`.
 
     Deciding on how to truncate (in the middle) are being verified in these tests.
     In this instance, both strings ends up as:`Aaaa_Bbbb_Cccc_Dddd___e_Ffff_Gggg_Hhhh_Iiii`
@@ -167,7 +166,7 @@ def test_truncate_identifier(input_str: str, expected: str):
 
 
 @pytest.mark.parametrize(
-    "input_str, destination_type, expected, expected_column",
+    ("input_str", "destination_type", "expected", "expected_column"),
     [
         # Case sensitive names
         ("Identifier Name1", "Postgres", "identifier_name1", "{{ adapter.quote('Identifier Name1') }}"),

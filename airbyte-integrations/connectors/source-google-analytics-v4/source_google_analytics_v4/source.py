@@ -9,19 +9,22 @@ import pkgutil
 import time
 from abc import ABC
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import jwt
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .custom_reports_validator import CustomReportsValidator
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 DATA_IS_NOT_GOLDEN_MSG = "Google Analytics data is not golden. Future requests may return different data."
 
@@ -32,8 +35,7 @@ RESULT_IS_SAMPLED_MSG = (
 
 
 class GoogleAnalyticsV4TypesList(HttpStream):
-    """
-    Provides functionality to fetch the valid (dimensions, metrics) for the Analytics Reporting API and their data
+    """Provides functionality to fetch the valid (dimensions, metrics) for the Analytics Reporting API and their data
     types.
     """
 
@@ -48,19 +50,18 @@ class GoogleAnalyticsV4TypesList(HttpStream):
         return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """Abstractmethod HTTPStream CDK dependency"""
+        """Abstractmethod HTTPStream CDK dependency."""
         return None
 
     def parse_response(self, response: requests.Response, **kwargs: Any) -> Tuple[dict, dict]:
-        """
-        Returns a map of (dimensions, metrics) hashes, example:
-          ({"ga:userType": "STRING", "ga:sessionCount": "STRING"}, {"ga:pageviewsPerSession": "FLOAT", "ga:sessions": "INTEGER"})
+        """Returns a map of (dimensions, metrics) hashes, example:
+        ({"ga:userType": "STRING", "ga:sessionCount": "STRING"}, {"ga:pageviewsPerSession": "FLOAT", "ga:sessions": "INTEGER"}).
 
-          Each available dimension can be found in dimensions with its data type
-            as the value. e.g. dimensions['ga:userType'] == STRING
+        Each available dimension can be found in dimensions with its data type
+        as the value. e.g. dimensions['ga:userType'] == STRING
 
-          Each available metric can be found in metrics with its data type
-            as the value. e.g. metrics['ga:sessions'] == INTEGER
+        Each available metric can be found in metrics with its data type
+        as the value. e.g. metrics['ga:sessions'] == INTEGER
         """
         metrics = {}
         dimensions = {}
@@ -81,7 +82,8 @@ class GoogleAnalyticsV4TypesList(HttpStream):
             elif column_type == "DIMENSION":
                 dimensions[column_name] = column_data_type
             else:
-                raise Exception(f"Unsupported column type {column_type}.")
+                msg = f"Unsupported column type {column_type}."
+                raise Exception(msg)
 
         return dimensions, metrics
 
@@ -97,7 +99,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     url_base = "https://analyticsreporting.googleapis.com/v4/"
     report_field = "reports"
 
-    map_type = dict(INTEGER="integer", FLOAT="number", PERCENT="number", TIME="number")
+    map_type = {"INTEGER": "integer", "FLOAT": "number", "PERCENT": "number", "TIME": "number"}
 
     def __init__(self, config: MutableMapping):
         super().__init__(authenticator=config["authenticator"])
@@ -106,7 +108,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
         self.dimensions = config["dimensions"]
-        self.segments = config.get("segments", list())
+        self.segments = config.get("segments", [])
         self.filtersExpression = config.get("filter", "")
         self._config = config
         self.dimensions_ref, self.metrics_ref = GoogleAnalyticsV4TypesList().read_records(sync_mode=None)
@@ -123,10 +125,9 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
-        """
-        Custom method.
+        """Custom method.
         Returns the formated datetime string.
-        :: Output example: '2021-07-15 07' FORMAT : "%Y-%m-%d"
+        :: Output example: '2021-07-15 07' FORMAT : "%Y-%m-%d".
         """
         return date.strftime("%Y-%m-%d")
 
@@ -145,10 +146,10 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             next_page = report.get("nextPageToken")
             if next_page:
                 return {"pageToken": next_page}
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
         and API returns an error with 400 code, the connector ignores an error with 400 code
         to finish successfully sync and inform the user about an error in logs with an error message.
 
@@ -156,7 +157,6 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         'has exceeded the daily request limit' error massage to finish successfully sync and
         inform the user about an error in logs with an error message and link to google analytics docs.
         """
-
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
             self._raise_on_http_errors = False
@@ -176,7 +176,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return self._raise_on_http_errors
 
     def request_body_json(
-        self, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs: Any
+        self, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs: Any,
     ) -> Optional[Mapping]:
 
         metrics = [{"expression": metric} for metric in self.metrics]
@@ -194,8 +194,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     "dimensions": dimensions,
                     "segments": segments,
                     "filtersExpression": filtersExpression,
-                }
-            ]
+                },
+            ],
         }
 
         if next_page_token:
@@ -203,10 +203,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return request_body
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
-        """
-
+        """Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically."""
         schema: Dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
@@ -241,9 +238,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         schema["properties"]["isDataGolden"] = {"type": "boolean"}
         return schema
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
             "startDate": "2020-01-01",
             "endDate": "2021-01-02"
@@ -252,9 +248,8 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             "startDate": "2020-01-03",
             "endDate": "2021-01-04"
             },
-            ...]
+            ...].
         """
-
         end_date = pendulum.now().date()
         start_date = pendulum.parse(self.start_date).date()
         if stream_state:
@@ -281,9 +276,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return report_body.get("data", {}).get("rows", [])
 
     def lookup_data_type(self, field_type: str, attribute: str) -> str:
-        """
-        Get the data type of a metric or a dimension
-        """
+        """Get the data type of a metric or a dimension."""
         try:
             if field_type == "dimension":
                 if attribute.startswith(("ga:dimension", "ga:customVarName", "ga:customVarValue", "ga:segment")):
@@ -300,7 +293,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
                 # We always treat them as strings as we can not be sure of their data type
                 if attribute.startswith("ga:goal") and attribute.endswith(
-                    ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate")
+                    ("Starts", "Completions", "Value", "ConversionRate", "Abandons", "AbandonRate"),
                 ):
                     return "string"
                 elif attribute.startswith("ga:searchGoal") and attribute.endswith("ConversionRate"):
@@ -323,6 +316,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
     def lookup_data_format(attribute: str) -> Union[str, None]:
         if attribute == "ga:date":
             return "date"
+        return None
 
     def convert_to_type(self, header: str, value: Any, data_type: str) -> Any:
         if data_type == "integer":
@@ -334,8 +328,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         return value
 
     def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
-        """
-        Default response:
+        """Default response:
 
         {
             "reports": [
@@ -430,7 +423,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
                     record[header.replace("ga:", "ga_")] = value
 
-                for i, values in enumerate(metrics):
+                for _i, values in enumerate(metrics):
                     for metric_header, value in zip(metric_headers, values.get("values")):
                         metric_name = metric_header.get("name")
                         metric_type = self.lookup_data_type("metric", metric_name)
@@ -458,9 +451,9 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         if not stream_slice:
             return []
@@ -470,7 +463,7 @@ class GoogleAnalyticsV4IncrementalObjectsBase(GoogleAnalyticsV4Stream):
 class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
     """Request example for API token extraction:
     curl --location --request POST
-    https://oauth2.googleapis.com/token?grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=signed_JWT
+    https://oauth2.googleapis.com/token?grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=signed_JWT.
     """
 
     def __init__(self, config: Mapping):
@@ -486,9 +479,8 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
         )
 
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Calling the Google OAuth 2.0 token endpoint. Used for authorizing signed JWT.
-        Returns tuple with access token and token's time-to-live
+        """Calling the Google OAuth 2.0 token endpoint. Used for authorizing signed JWT.
+        Returns tuple with access token and token's time-to-live.
         """
         response_json = None
         try:
@@ -498,19 +490,17 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             if response_json and "error" in response_json:
+                msg = "Error refreshing access token {}. Error: {}; Error details: {}; Exception: {}".format(response_json, response_json["error"], response_json["error_description"], e)
                 raise Exception(
-                    "Error refreshing access token {}. Error: {}; Error details: {}; Exception: {}".format(
-                        response_json, response_json["error"], response_json["error_description"], e
-                    )
+                    msg,
                 ) from e
-            raise Exception(f"Error refreshing access token: {e}") from e
+            msg = f"Error refreshing access token: {e}"
+            raise Exception(msg) from e
         else:
             return response_json["access_token"], response_json["expires_in"]
 
     def get_refresh_request_params(self) -> Mapping[str, Any]:
-        """
-        Sign the JWT with RSA-256 using the private key found in service account JSON file.
-        """
+        """Sign the JWT with RSA-256 using the private key found in service account JSON file."""
         token_lifetime = 3600  # token lifetime is 1 hour
 
         issued_at = time.time()
@@ -530,21 +520,19 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
 
 
 class TestStreamConnection(GoogleAnalyticsV4Stream):
-    """
-    Test the connectivity and permissions to read the data from the stream.
+    """Test the connectivity and permissions to read the data from the stream.
     Because of the nature of the connector, the streams are created dynamicaly.
-    We declare the static stream like this to be able to test out the prmissions to read the particular view_id."""
+    We declare the static stream like this to be able to test out the prmissions to read the particular view_id.
+    """
 
     page_size = 1
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """For test reading pagination is not required"""
+        """For test reading pagination is not required."""
         return None
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override this method to fetch records from start_date up to now for testing case
-        """
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs: Any) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Override this method to fetch records from start_date up to now for testing case."""
         start_date = pendulum.parse(self.start_date).date()
         end_date = pendulum.now().date()
         return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
@@ -626,7 +614,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
         for stream in config["ga_streams"]:
             config["metrics"] = stream["metrics"]
             config["dimensions"] = stream["dimensions"]
-            config["segments"] = stream.get("segments", list())
+            config["segments"] = stream.get("segments", [])
             config["filter"] = stream.get("filter", "")
 
             # construct GAReadStreams sub-class for each stream

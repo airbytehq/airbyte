@@ -7,7 +7,7 @@ from orchestrator.assets.specs_secrets_mask import get_secrets_properties_from_r
 
 
 @pytest.mark.parametrize(
-    "registry_entry, expected_secrets",
+    ("registry_entry", "expected_secrets"),
     [
         pytest.param(
             {
@@ -25,9 +25,9 @@ from orchestrator.assets.specs_secrets_mask import get_secrets_properties_from_r
                                 "airbyte_secret": False,
                                 "type": "string",
                             },
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             },
             ["azure_blob_storage_account_key"],
             id="Not nested properties with one secret",
@@ -50,9 +50,9 @@ from orchestrator.assets.specs_secrets_mask import get_secrets_properties_from_r
                                     "not_secret_nested_prop": {"airbyte_secret": False, "type": "string"},
                                 },
                             },
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             },
             ["azure_blob_storage_account_key", "secret_nested_prop"],
             id="Not nested properties with one secret",

@@ -11,6 +11,10 @@ import time
 from datetime import datetime
 
 import docker
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, DeletionsConfig, FullConfig, config, mock_logger, ref
+
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteStream,
@@ -21,9 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from faunadb import query as q
-from source_fauna import SourceFauna
-from test_util import CollectionConfig, DeletionsConfig, FullConfig, config, mock_logger, ref
 
 
 def setup_database(source: SourceFauna):
@@ -32,8 +33,8 @@ def setup_database(source: SourceFauna):
         q.create_collection(
             {
                 "name": "foo",
-            }
-        )
+            },
+        ),
     )
     # All these documents will have the same `ts`, so we need to make sure
     # that we don't skip any of these.
@@ -72,8 +73,8 @@ def setup_database(source: SourceFauna):
                         },
                     },
                 ),
-            ]
-        )
+            ],
+        ),
     )
     # Do this seperately, so that the above documents get added to this index.
     source.client.query(
@@ -86,7 +87,7 @@ def setup_database(source: SourceFauna):
                     {"field": "ts"},
                     {"field": "ref"},
                 ],
-            }
+            },
         ),
     )
     # This index just *existing* used to crash the connector, because it has no
@@ -96,7 +97,7 @@ def setup_database(source: SourceFauna):
             {
                 "name": "breaks_things",
                 "source": q.collection("foo"),
-            }
+            },
         ),
     )
     print("Database is setup!")
@@ -120,7 +121,7 @@ def stop_container(container):
 
 
 def setup_container():
-    """Starts and stops a local fauna container"""
+    """Starts and stops a local fauna container."""
     client = docker.from_env()
     # Bind to port 9000, so that we can run these tests without stopping a local container
     container = client.containers.run(
@@ -142,7 +143,7 @@ def setup_container():
                 "--silent",
                 "--head",
                 "http://127.0.0.1:9000",
-            ]
+            ],
         )
         if res.returncode == 0:
             print("")
@@ -161,7 +162,7 @@ def setup_container():
                 port=9000,
                 domain="localhost",
                 scheme="http",
-            )
+            ),
         )
         db_data = setup_database(source)
         return container, db_data, source
@@ -181,8 +182,8 @@ def run_discover_test(source: SourceFauna, logger):
             "page_size": 64,
             "deletions": {
                 "deletion_mode": "ignore",
-            }
-        }
+            },
+        },
     })
     assert len(catalog.streams) == 1
     stream = catalog.streams[0]
@@ -200,7 +201,7 @@ def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteS
             q.do(
                 q.delete(ref(105, "foo")),
                 q.now(),
-            )
+            ),
         )
         .to_datetime()
         .timestamp()
@@ -246,7 +247,7 @@ def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyt
                 "ts": start - 1,
             },
             deletion_column="my_deletion_col",
-        )
+        ),
     )
     assert len(results) == 3
     # The order received should be the order deleted
@@ -269,8 +270,8 @@ def run_general_remove_test(source: SourceFauna, logger):
         q.create_collection(
             {
                 "name": "deletions_test",
-            }
-        )
+            },
+        ),
     )
     db_data = source.client.query(
         [
@@ -306,7 +307,7 @@ def run_general_remove_test(source: SourceFauna, logger):
                     },
                 },
             ),
-        ]
+        ],
     )
     # Do this seperately, so that the above documents get added to this index.
     source.client.query(
@@ -319,7 +320,7 @@ def run_general_remove_test(source: SourceFauna, logger):
                     {"field": "ts"},
                     {"field": "ref"},
                 ],
-            }
+            },
         ),
     )
     conf = config(
@@ -328,7 +329,7 @@ def run_general_remove_test(source: SourceFauna, logger):
             "collection": {
                 "deletions": {"deletion_mode": "deleted_field", "column": "deleted_at"},
             },
-        }
+        },
     )
     print("=== check: make sure we read the initial state")
     documents, state = read_records(source.read(logger, conf, catalog, {}), "deletions_test")
@@ -405,7 +406,8 @@ def handle_check(result: AirbyteConnectionStatus):
         print("======================")
         print("CHECK FAILED:", result.message)
         print("======================")
-        raise ValueError("check failed")
+        msg = "check failed"
+        raise ValueError(msg)
 
 
 def read_records(generator, collection_name):
@@ -417,10 +419,12 @@ def read_records(generator, collection_name):
             records.append(message.record.data)
         elif message.type == Type.STATE:
             if state is not None:
-                raise ValueError("two state messages")
+                msg = "two state messages"
+                raise ValueError(msg)
             state = message.state.data
     if state is None:
-        raise ValueError("no state message")
+        msg = "no state message"
+        raise ValueError(msg)
     return records, state
 
 
@@ -429,7 +433,7 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
         {
             "port": 9000,
             "collection": {},
-        }
+        },
     )
     handle_check(source.check(logger, conf))
     state = {}
@@ -472,7 +476,7 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
             {
                 "data": {"a": 10},
             },
-        )
+        ),
     )
     create_result = source.client.query(
         q.create(
@@ -480,7 +484,7 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
             {
                 "data": {"a": 10000},
             },
-        )
+        ),
     )
     documents, state = read_records(source.read(logger, conf, catalog, state=state), "foo")
     assert documents == [

@@ -3,12 +3,13 @@
 #
 
 import requests
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_onesignal.streams import Devices, IncrementalOnesignalStream, Notifications
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalOnesignalStream, "path", "v0/example_endpoint")
@@ -16,7 +17,7 @@ def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalOnesignalStream, "__abstractmethods__", set())
 
 
-@fixture
+@fixture()
 def args():
     return {"authenticator": None,
             "config": {"user_auth_key": "",
@@ -24,13 +25,13 @@ def args():
                        "outcome_names": "",
                        "applications": [
                            {"app_id": "fake_id",
-                            "app_api_key": "fake_api_key"}
-                       ]
-                       }
+                            "app_api_key": "fake_api_key"},
+                       ],
+                       },
             }
 
 
-@fixture
+@fixture()
 def stream(patch_incremental_base_class, args):
     return IncrementalOnesignalStream(**args)
 
@@ -41,7 +42,7 @@ def test_cursor_field(stream):
 
 
 def test_stream_slices(stream, requests_mock):
-    expected_stream_slice = [{'app_api_key': 'fake_api_key', 'app_id': 'fake_id'}]
+    expected_stream_slice = [{"app_api_key": "fake_api_key", "app_id": "fake_id"}]
     assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected_stream_slice
 
 
@@ -98,7 +99,7 @@ def test_filter_by_state(stream):
     inputs = {
         "stream_state": {"fake_id": {"updated_at": 100}},
         "record": {"updated_at": 200},
-        "stream_slice": {'app_id': "fake_id"}
+        "stream_slice": {"app_id": "fake_id"},
     }
     expected_filter_by_state = True
     assert stream.filter_by_state(**inputs) == expected_filter_by_state
@@ -106,7 +107,7 @@ def test_filter_by_state(stream):
     inputs = {
         "stream_state": {"fake_id": {"updated_at": 200}},
         "record": {"updated_at": 100},
-        "stream_slice": {'app_id': "fake_id"}
+        "stream_slice": {"app_id": "fake_id"},
     }
     expected_filter_by_state = False
     assert stream.filter_by_state(**inputs) == expected_filter_by_state

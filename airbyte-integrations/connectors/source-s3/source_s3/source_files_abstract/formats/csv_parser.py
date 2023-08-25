@@ -11,10 +11,11 @@ from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO,
 import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pyarrow import csv as pa_csv
 from pyarrow.lib import ArrowInvalid
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
@@ -56,16 +57,17 @@ class CsvParser(AbstractFileParser):
 
     @staticmethod
     def _validate_field(
-        format_: Mapping[str, Any], field_name: str, allow_empty: bool = False, disallow_values: Optional[Tuple[Any, ...]] = None
+        format_: Mapping[str, Any], field_name: str, allow_empty: bool = False, disallow_values: Optional[Tuple[Any, ...]] = None,
     ) -> Optional[str]:
         disallow_values = disallow_values or ()
         field_value = format_.get(field_name)
         if not field_value and allow_empty:
-            return
+            return None
         if field_value and len(field_value) != 1:
             return f"{field_name} should contain 1 character only"
         if field_value in disallow_values:
             return f"{field_name} can not be {field_value}"
+        return None
 
     @staticmethod
     def _validate_encoding(encoding: str) -> None:
@@ -85,7 +87,7 @@ class CsvParser(AbstractFileParser):
         except json.decoder.JSONDecodeError:
             return "Malformed advanced read options!"
         except TypeError as e:
-            return f"One or more read options are invalid: {str(e)}"
+            return f"One or more read options are invalid: {e!s}"
 
     @classmethod
     def _validate_read_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
@@ -110,9 +112,8 @@ class CsvParser(AbstractFileParser):
         self._validate_encoding(format_.get("encoding", ""))
 
     def _read_options(self) -> Mapping[str, str]:
-        """
-        https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
-        build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
+        """https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
+        build ReadOptions object like: pa.csv.ReadOptions(**self._read_options()).
         """
         advanced_options = get_value_or_json_if_empty_string(self.format.advanced_options)
         return {
@@ -121,11 +122,9 @@ class CsvParser(AbstractFileParser):
         }
 
     def _parse_options(self) -> Mapping[str, str]:
+        """https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
+        build ParseOptions object like: pa.csv.ParseOptions(**self._parse_options()).
         """
-        https://arrow.apache.org/docs/python/generated/pyarrow.csv.ParseOptions.html
-        build ParseOptions object like: pa.csv.ParseOptions(**self._parse_options())
-        """
-
         return {
             "delimiter": self.format.delimiter,
             "quote_char": self.format.quote_char,
@@ -134,11 +133,10 @@ class CsvParser(AbstractFileParser):
             "newlines_in_values": self.format.newlines_in_values,
         }
 
-    def _convert_options(self, json_schema: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """
-        https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html
+    def _convert_options(self, json_schema: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        """https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html
         build ConvertOptions object like: pa.csv.ConvertOptions(**self._convert_options())
-        :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
+        :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None.
         """
         check_utf8 = self.format.encoding.lower().replace("-", "") == "utf8"
         additional_reader_options = get_value_or_json_if_empty_string(self.format.additional_reader_options)
@@ -150,18 +148,16 @@ class CsvParser(AbstractFileParser):
 
     @wrap_exception((ValueError,))
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Mapping[str, Any]:
-        """
-        https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
+        """https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         This now uses multiprocessing in order to timeout the schema inference as it can hang.
         Since the hanging code is resistant to signal interrupts, threading/futures doesn't help so needed to multiprocess.
-        https://issues.apache.org/jira/browse/ARROW-11853?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel
+        https://issues.apache.org/jira/browse/ARROW-11853?page=com.atlassian.jira.plugin.system.issuetabpanels%3Aall-tabpanel.
         """
 
         def infer_schema_process(
-            file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict
+            file_sample: str, read_opts: dict, parse_opts: dict, convert_opts: dict,
         ) -> Tuple[dict, Optional[Exception]]:
-            """
-            we need to reimport here to be functional on Windows systems since it doesn't have fork()
+            """We need to reimport here to be functional on Windows systems since it doesn't have fork()
             https://docs.python.org/3.7/library/multiprocessing.html#contexts-and-start-methods
             This returns a tuple of (schema_dict, None OR Exception).
             If return[1] is not None and holds an exception we then raise this in the main process.
@@ -177,7 +173,7 @@ class CsvParser(AbstractFileParser):
                     fp.write(file_sample)  # type: ignore[arg-type]
                     fp.seek(0)
                     streaming_reader = pa.csv.open_csv(
-                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts)
+                        fp, pa.csv.ReadOptions(**read_opts), pa.csv.ParseOptions(**parse_opts), pa.csv.ConvertOptions(**convert_opts),
                     )
                     schema_dict = {field.name: field.type for field in streaming_reader.schema}
 
@@ -224,9 +220,8 @@ class CsvParser(AbstractFileParser):
 
     @wrap_exception((ValueError,))
     def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
-        """
-        https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
-        PyArrow returns lists of values for each column so we zip() these up into records which we then yield
+        """https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
+        PyArrow returns lists of values for each column so we zip() these up into records which we then yield.
         """
         # In case master_schema is a user defined schema, it may miss some columns.
         # We set their type to `string` as a default type in order to pass a schema with all the file columns to pyarrow

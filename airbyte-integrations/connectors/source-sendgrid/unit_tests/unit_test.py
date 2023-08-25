@@ -10,8 +10,6 @@ import pandas as pd
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from numpy import nan
 from requests import codes
 from source_sendgrid.source import SourceSendgrid
@@ -29,6 +27,9 @@ from source_sendgrid.streams import (
     SuppressionGroups,
     Templates,
 )
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 
 FAKE_NOW = pendulum.DateTime(2022, 1, 1, tzinfo=pendulum.timezone("utc"))
 FAKE_NOW_ISO_STRING = FAKE_NOW.to_iso8601_string()
@@ -89,7 +90,7 @@ def test_stream_state():
 
 
 @pytest.mark.parametrize(
-    "stream_class, url , expected",
+    ("stream_class", "url", "expected"),
     (
         [Templates, "https://api.sendgrid.com/v3/templates", []],
         [Lists, "https://api.sendgrid.com/v3/marketing/lists", []],
@@ -119,7 +120,7 @@ def test_read_records(
 
 
 @pytest.mark.parametrize(
-    "stream_class, expected",
+    ("stream_class", "expected"),
     (
         [Templates, "templates"],
         [Lists, "marketing/lists"],
@@ -138,7 +139,7 @@ def test_path(stream_class, expected):
 
 
 @pytest.mark.parametrize(
-    "stream_class, status, expected",
+    ("stream_class", "status", "expected"),
     (
         (Blocks, 400, False),
         (SuppressionGroupMembers, 401, False),
@@ -159,7 +160,7 @@ def test_compressed_contact_response(requests_mock):
         url = "https://api.sendgrid.com/v3/marketing/contacts/exports/random_id"
         resp_bodies = [
             {"json": {"status": "pending", "id": "random_id", "urls": []}, "status_code": 202},
-            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202}
+            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202},
         ]
         requests_mock.register_uri("GET", url, resp_bodies)
         requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip",

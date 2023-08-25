@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -63,7 +64,8 @@ class SourceHarvest(AbstractSource):
 
         api_token = credentials.get("api_token", config.get("api_token"))
         if not api_token:
-            raise Exception("Config validation error: 'api_token' is a required property")
+            msg = "Config validation error: 'api_token' is a required property"
+            raise Exception(msg)
         return HarvestTokenAuthenticator(token=api_token, account_id=config["account_id"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -71,17 +73,15 @@ class SourceHarvest(AbstractSource):
             auth = self.get_authenticator(config)
             replication_start_date = pendulum.parse(config["replication_start_date"])
             users_gen = Users(authenticator=auth, replication_start_date=replication_start_date).read_records(
-                sync_mode=SyncMode.full_refresh
+                sync_mode=SyncMode.full_refresh,
             )
             next(users_gen)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Harvest API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Harvest API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = self.get_authenticator(config)
         replication_start_date = pendulum.parse(config["replication_start_date"])
         from_date = replication_start_date.date()
@@ -90,7 +90,7 @@ class SourceHarvest(AbstractSource):
         to_date = replication_end_date and replication_end_date.date()
         date_range = {"from_date": from_date, "to_date": to_date}
 
-        streams = [
+        return [
             Clients(authenticator=auth, replication_start_date=replication_start_date),
             Contacts(authenticator=auth, replication_start_date=replication_start_date),
             Company(authenticator=auth),
@@ -125,4 +125,3 @@ class SourceHarvest(AbstractSource):
             ProjectBudget(authenticator=auth, **date_range),
         ]
 
-        return streams

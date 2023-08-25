@@ -6,7 +6,7 @@
 import json
 from abc import ABC, abstractmethod
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, Mapping, Sequence
+from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 
 import backoff
 from google.auth.transport.requests import Request
@@ -28,11 +28,10 @@ class API:
 
     @staticmethod
     def _load_account_info(credentials_json: str) -> Dict:
-        account_info = json.loads(credentials_json)
-        return account_info
+        return json.loads(credentials_json)
 
     def _obtain_service_account_creds(self) -> service_account.Credentials:
-        """Obtaining creds based on Service account scenario"""
+        """Obtaining creds based on Service account scenario."""
         credentials_json = self._raw_credentials.get("credentials_json")
         admin_email = self._raw_credentials.get("email")
         account_info = self._load_account_info(credentials_json)
@@ -40,7 +39,7 @@ class API:
         self._creds = creds.with_subject(admin_email)
 
     def _obtain_web_app_creds(self) -> Credentials:
-        """Obtaining creds based on Web server application scenario"""
+        """Obtaining creds based on Web server application scenario."""
         info = {
             "client_id": self._raw_credentials.get("client_id"),
             "client_secret": self._raw_credentials.get("client_secret"),
@@ -68,10 +67,9 @@ class API:
         return getattr(self._service, name)
 
     @backoff.on_exception(backoff.expo, GoogleApiHttpError, max_tries=7, giveup=rate_limit_handling)
-    def get(self, name: str, params: Dict = None) -> Dict:
+    def get(self, name: str, params: Optional[Dict] = None) -> Dict:
         resource = self._get_resource(name)
-        response = resource().list(**params).execute()
-        return response
+        return resource().list(**params).execute()
 
 
 class StreamAPI(ABC):
@@ -81,19 +79,19 @@ class StreamAPI(ABC):
         super().__init__(*args, **kwargs)
         self._api = api
 
-    def _api_get(self, resource: str, params: Dict = None):
+    def _api_get(self, resource: str, params: Optional[Dict] = None):
         return self._api.get(resource, params=params)
 
     @abstractmethod
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        """Iterate over entities"""
+    def list(self, fields: Optional[Sequence[str]] = None) -> Iterator[dict]:
+        """Iterate over entities."""
 
     @abstractmethod
     def process_response(self, response: Dict) -> Iterator[dict]:
-        """Process Google Directory API response"""
+        """Process Google Directory API response."""
 
-    def read(self, getter: Callable, params: Dict = None) -> Iterator:
-        """Read using getter"""
+    def read(self, getter: Callable, params: Optional[Dict] = None) -> Iterator:
+        """Read using getter."""
         params = params or {}
         params["maxResults"] = self.results_per_page
         while True:
@@ -110,7 +108,7 @@ class UsersAPI(StreamAPI):
     def process_response(self, response: Dict) -> Iterator[dict]:
         return response["users"]
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+    def list(self, fields: Optional[Sequence[str]] = None) -> Iterator[dict]:
         params = {"customer": "my_customer"}
         yield from self.read(partial(self._api_get, resource="users"), params=params)
 
@@ -119,7 +117,7 @@ class GroupsAPI(StreamAPI):
     def process_response(self, response: Dict) -> Iterator[dict]:
         return response["groups"]
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+    def list(self, fields: Optional[Sequence[str]] = None) -> Iterator[dict]:
         params = {"customer": "my_customer"}
         yield from self.read(partial(self._api_get, resource="groups"), params=params)
 
@@ -128,7 +126,7 @@ class GroupMembersAPI(StreamAPI):
     def process_response(self, response: Dict) -> Iterator[dict]:
         return response.get("members", [])
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+    def list(self, fields: Optional[Sequence[str]] = None) -> Iterator[dict]:
         groups = GroupsAPI(self._api)
         for group in groups.list():
             params = {"groupKey": group["id"]}

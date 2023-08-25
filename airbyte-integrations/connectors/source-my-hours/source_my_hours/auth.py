@@ -7,6 +7,7 @@ from typing import Any, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 from .constants import REQUEST_HEADERS, URL_BASE
@@ -52,4 +53,5 @@ class MyHoursAuthenticator(Oauth2Authenticator):
             self.refresh_token = response_json["refreshToken"]
             return response_json[self.access_token_name], response_json[self.expires_in_name]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e

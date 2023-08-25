@@ -9,7 +9,7 @@ from pytest import fixture
 from source_rd_station_marketing.source import SourceRDStationMarketing
 
 
-@fixture
+@fixture()
 def test_config():
     return {
         "authorization": {
@@ -46,10 +46,10 @@ def setup_responses():
                             "href": "https://api.rd.services/platform/segmentations/71625167165/contacts",
                             "media": "application/json",
                             "type": "GET",
-                        }
+                        },
                     ],
-                }
-            ]
+                },
+            ],
         },
     )
 

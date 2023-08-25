@@ -10,18 +10,18 @@ import pkgutil
 from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import jsonref
-from airbyte_cdk.models import ConnectorSpecification, FailureType
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
 from pydantic import BaseModel, Field
 
+from airbyte_cdk.models import ConnectorSpecification, FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
 
 class JsonFileLoader:
-    """
-    Custom json file loader to resolve references to resources located in "shared" directory.
+    """Custom json file loader to resolve references to resources located in "shared" directory.
     We need this for compatability with existing schemas cause all of them have references
-    pointing to shared_schema.json file instead of shared/shared_schema.json
+    pointing to shared_schema.json file instead of shared/shared_schema.json.
     """
 
     def __init__(self, uri_base: str, shared: str):
@@ -34,8 +34,7 @@ class JsonFileLoader:
 
 
 def resolve_ref_links(obj: Any) -> Union[Dict[str, Any], List[Any]]:
-    """
-    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+    """Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
 
     :param obj - jsonschema object with ref field resolved.
     :return JSON serializable object with references without external dependencies.
@@ -69,7 +68,7 @@ def _expand_refs(schema: Any, ref_resolver: Optional[RefResolver] = None) -> Non
             _expand_refs(definition, ref_resolver=ref_resolver)  # expand refs in definitions as well
             schema.update(definition)
         else:
-            for key, value in schema.items():
+            for value in schema.values():
                 _expand_refs(value, ref_resolver=ref_resolver)
     elif isinstance(schema, List):
         for value in schema:
@@ -86,7 +85,7 @@ def expand_refs(schema: Any) -> None:
 
 
 def rename_key(schema: Any, old_key: str, new_key: str) -> None:
-    """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive."
+    """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive.".
 
     :param schema: schema that will be patched
     :param old_key: name of the key to replace
@@ -95,22 +94,20 @@ def rename_key(schema: Any, old_key: str, new_key: str) -> None:
     if not isinstance(schema, MutableMapping):
         return
 
-    for key, value in schema.items():
+    for value in schema.values():
         rename_key(value, old_key, new_key)
         if old_key in schema:
             schema[new_key] = schema.pop(old_key)
 
 
 class ResourceSchemaLoader:
-    """JSONSchema loader from package resources"""
+    """JSONSchema loader from package resources."""
 
     def __init__(self, package_name: str):
         self.package_name = package_name
 
     def get_schema(self, name: str) -> dict:
-        """
-        This method retrieves a JSON schema from the schemas/ folder.
-
+        """This method retrieves a JSON schema from the schemas/ folder.
 
         The expected file structure is to have all top-level schemas (corresponding to streams) in the "schemas/" folder, with any shared $refs
         living inside the "schemas/shared/" folder. For example:
@@ -119,36 +116,33 @@ class ResourceSchemaLoader:
         schemas/<name>.json # contains a $ref to shared_definition
         schemas/<name2>.json # contains a $ref to shared_definition
         """
-
         schema_filename = f"schemas/{name}.json"
         raw_file = pkgutil.get_data(self.package_name, schema_filename)
         if not raw_file:
-            raise IOError(f"Cannot find file {schema_filename}")
+            msg = f"Cannot find file {schema_filename}"
+            raise OSError(msg)
         try:
             raw_schema = json.loads(raw_file)
         except ValueError as err:
-            raise RuntimeError(f"Invalid JSON file format for file {schema_filename}") from err
+            msg = f"Invalid JSON file format for file {schema_filename}"
+            raise RuntimeError(msg) from err
 
         return self._resolve_schema_references(raw_schema)
 
     def _resolve_schema_references(self, raw_schema: dict) -> dict:
-        """
-        Resolve links to external references and move it to local "definitions" map.
+        """Resolve links to external references and move it to local "definitions" map.
 
         :param raw_schema jsonschema to lookup for external links.
         :return JSON serializable object with references without external dependencies.
         """
-
         package = importlib.import_module(self.package_name)
         base = os.path.dirname(package.__file__) + "/"
         resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, "schemas/shared"), base_uri=base)
-        resolved = resolve_ref_links(resolved)
-        return resolved
+        return resolve_ref_links(resolved)
 
 
 def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification):
-    """
-    Check config object against spec. In case of spec is invalid, throws
+    """Check config object against spec. In case of spec is invalid, throws
     an exception with validation error description.
 
     :param config - config loaded from file specified over command line
@@ -177,8 +171,7 @@ class InternalConfig(BaseModel):
 
 
 def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
-    """
-    Break config map object into 2 instances: first is a dict with user defined
+    """Break config map object into 2 instances: first is a dict with user defined
     configuration and second is internal config that contains private keys for
     acceptance test configuration.
 

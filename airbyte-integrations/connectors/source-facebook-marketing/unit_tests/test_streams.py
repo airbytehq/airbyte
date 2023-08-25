@@ -42,15 +42,15 @@ def test_filter_all_statuses(api, mocker):
                     "scheduled",
                     "inactive",
                 ],
-            }
-        ]
+            },
+        ],
     }
     assert FBMarketingStream(api=api)._filter_all_statuses() == expected
 
 
 @pytest.mark.parametrize(
     "url", ["https://graph.facebook.com",
-            "https://graph.facebook.com?test=123%23%24%25%2A&test2=456", "https://graph.facebook.com?"]
+            "https://graph.facebook.com?test=123%23%24%25%2A&test2=456", "https://graph.facebook.com?"],
 )
 def test_fetch_thumbnail_data_url(url, requests_mock):
     requests_mock.get(url, status_code=200, headers={
@@ -61,14 +61,14 @@ def test_fetch_thumbnail_data_url(url, requests_mock):
 def test_parse_call_rate_header():
     headers = {
         "x-business-use-case-usage": '{"test":[{"type":"ads_management","call_count":1,"total_cputime":1,'
-        '"total_time":1,"estimated_time_to_regain_access":1}]}'
+        '"total_time":1,"estimated_time_to_regain_access":1}]}',
     }
     assert MyFacebookAdsApi._parse_call_rate_header(
         headers) == (1, duration(minutes=1))
 
 
 @pytest.mark.parametrize(
-    "class_name, breakdowns, action_breakdowns",
+    ("class_name", "breakdowns", "action_breakdowns"),
     [
         [AdsInsights, [], ["action_type", "action_target_id", "action_destination"]],
         [AdsInsightsActionType, [], ["action_type"]],

@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterator, MutableMapping
+from typing import TYPE_CHECKING, Any, Iterator, MutableMapping
 from unittest import mock
 from urllib.parse import urlparse, urlunparse
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+
+if TYPE_CHECKING:
+    from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]) -> Iterator[dict]:

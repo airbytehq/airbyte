@@ -13,10 +13,11 @@ from typing import Any, Callable, Dict, Iterator, Mapping, Optional, Sequence
 import backoff
 import pendulum
 import pytz
-from airbyte_cdk.entrypoint import logger
 from google.oauth2 import service_account
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError as GoogleApiHttpError
+
+from airbyte_cdk.entrypoint import logger
 
 from .utils import rate_limit_handling
 
@@ -32,8 +33,7 @@ class API:
         self.lookback = lookback
 
     def _load_account_info(self) -> Dict:
-        account_info = json.loads(self._credentials_json)
-        return account_info
+        return json.loads(self._credentials_json)
 
     def _obtain_creds(self) -> service_account.Credentials:
         account_info = self._load_account_info()
@@ -43,19 +43,17 @@ class API:
     def _construct_resource(self) -> Resource:
         if not self._creds:
             self._obtain_creds()
-        service = build("admin", "reports_v1", credentials=self._creds)
-        return service
+        return build("admin", "reports_v1", credentials=self._creds)
 
     def _get_resource(self, name: str):
         service = self._construct_resource()
         return getattr(service, name)
 
     @backoff.on_exception(backoff.expo, (GoogleApiHttpError, socket.timeout), max_tries=7, giveup=rate_limit_handling)
-    def get(self, name: str, params: Dict = None) -> Dict:
+    def get(self, name: str, params: Optional[Dict] = None) -> Dict:
         if not self._resource:
             self._resource = self._get_resource(name)
-        response = self._resource().list(**params).execute()
-        return response
+        return self._resource().list(**params).execute()
 
 
 class StreamAPI(ABC):
@@ -72,21 +70,21 @@ class StreamAPI(ABC):
     @property
     @abstractmethod
     def name(self):
-        """Name of the stream"""
+        """Name of the stream."""
 
-    def _api_get(self, resource: str, params: Dict = None):
+    def _api_get(self, resource: str, params: Optional[Dict] = None):
         return self._api.get(resource, params=params)
 
     @abstractmethod
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
-        """Iterate over entities"""
+    def list(self, fields: Optional[Sequence[str]] = None) -> Iterator[dict]:
+        """Iterate over entities."""
 
     @abstractmethod
     def process_response(self, response: Dict) -> Iterator[dict]:
-        """Process Google Workspace Admin SDK Reports API response"""
+        """Process Google Workspace Admin SDK Reports API response."""
 
-    def read(self, getter: Callable, params: Dict = None) -> Iterator:
-        """Read using getter"""
+    def read(self, getter: Callable, params: Optional[Dict] = None) -> Iterator:
+        """Read using getter."""
         params = params or {}
         params["maxResults"] = self.results_per_page
         while True:
@@ -100,13 +98,13 @@ class StreamAPI(ABC):
 
 
 class IncrementalStreamAPI(StreamAPI, ABC):
-    """Stream that supports state and incremental read"""
+    """Stream that supports state and incremental read."""
 
     state_pk = "time"
 
     @property
     def state(self) -> Optional[Mapping[str, Any]]:
-        """Current state, if wasn't set return None"""
+        """Current state, if wasn't set return None."""
         if self._state:
             return {self.state_pk: self._state.isoformat()}
         return None
@@ -116,12 +114,12 @@ class IncrementalStreamAPI(StreamAPI, ABC):
         self._state = pendulum.parse(value[self.state_pk])
         self._start_time = self._state.to_iso8601_string()
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._state = None
 
-    def read(self, getter: Callable, params: Mapping[str, Any] = None) -> Iterator:
-        """Update cursor(state)"""
+    def read(self, getter: Callable, params: Optional[Mapping[str, Any]] = None) -> Iterator:
+        """Update cursor(state)."""
         params = params or {}
         cursor = None
         for record in super().read(getter, params):
@@ -158,7 +156,7 @@ class ActivitiesAPI(IncrementalStreamAPI):
                 activity["time"] = activity_id["time"]
             yield activity
 
-    def list(self, fields: Sequence[str] = None) -> Iterator[dict]:
+    def list(self, fields: Optional[Sequence[str]] = None) -> Iterator[dict]:
         params = self.get_params()
         yield from self.read(partial(self._api_get, resource="activities"), params=params)
 

@@ -6,6 +6,7 @@
 import logging
 
 import pytest
+
 from airbyte_cdk.sources.streams.http.auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
@@ -18,9 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def test_token_authenticator():
-    """
-    Should match passed in token, no matter how many times token is retrieved.
-    """
+    """Should match passed in token, no matter how many times token is retrieved."""
     token = TokenAuthenticator("test-token")
     header = token.get_auth_header()
     assert {"Authorization": "Bearer test-token"} == header
@@ -39,9 +38,7 @@ def test_multiple_token_authenticator():
 
 
 def test_no_auth():
-    """
-    Should always return empty body, no matter how many times token is retrieved.
-    """
+    """Should always return empty body, no matter how many times token is retrieved."""
     no_auth = NoAuth()
     assert {} == no_auth.get_auth_header()
     no_auth = NoAuth()
@@ -55,9 +52,7 @@ def test_basic_authenticator():
 
 
 class TestOauth2Authenticator:
-    """
-    Test class for OAuth2Authenticator.
-    """
+    """Test class for OAuth2Authenticator."""
 
     refresh_endpoint = "https://some_url.com/v1"
     client_id = "client_id"
@@ -67,9 +62,7 @@ class TestOauth2Authenticator:
     refresh_access_token_authenticator = BasicHttpAuthenticator(client_id, client_secret)
 
     def test_get_auth_header_fresh(self, mocker):
-        """
-        Should not retrieve new token if current token is valid.
-        """
+        """Should not retrieve new token if current token is valid."""
         oauth = Oauth2Authenticator(
             TestOauth2Authenticator.refresh_endpoint,
             TestOauth2Authenticator.client_id,
@@ -82,9 +75,7 @@ class TestOauth2Authenticator:
         assert {"Authorization": "Bearer access_token"} == header
 
     def test_get_auth_header_expired(self, mocker):
-        """
-        Should retrieve new token if current token is expired.
-        """
+        """Should retrieve new token if current token is expired."""
         oauth = Oauth2Authenticator(
             TestOauth2Authenticator.refresh_endpoint,
             TestOauth2Authenticator.client_id,
@@ -102,9 +93,7 @@ class TestOauth2Authenticator:
         assert {"Authorization": "Bearer access_token_2"} == header
 
     def test_refresh_request_body(self):
-        """
-        Request body should match given configuration.
-        """
+        """Request body should match given configuration."""
         scopes = ["scope1", "scope2"]
         oauth = Oauth2Authenticator(
             TestOauth2Authenticator.refresh_endpoint,
@@ -125,7 +114,7 @@ class TestOauth2Authenticator:
 
     def test_refresh_access_token(self, requests_mock):
         mock_refresh_token_call = requests_mock.post(
-            TestOauth2Authenticator.refresh_endpoint, json={"access_token": "token", "expires_in": 10}
+            TestOauth2Authenticator.refresh_endpoint, json={"access_token": "token", "expires_in": 10},
         )
 
         oauth = Oauth2Authenticator(
@@ -139,7 +128,7 @@ class TestOauth2Authenticator:
         token, expires_in = oauth.refresh_access_token()
 
         assert isinstance(expires_in, int)
-        assert ("token", 10) == (token, expires_in)
+        assert (token, expires_in) == ("token", 10)
         for header in self.refresh_access_token_headers:
             assert header in mock_refresh_token_call.last_request.headers
             assert self.refresh_access_token_headers[header] == mock_refresh_token_call.last_request.headers[header]
@@ -151,13 +140,13 @@ class TestOauth2Authenticator:
             TestOauth2Authenticator.refresh_endpoint,
             TestOauth2Authenticator.client_id,
             TestOauth2Authenticator.client_secret,
-            TestOauth2Authenticator.refresh_token
+            TestOauth2Authenticator.refresh_token,
         )
         requests_mock.post(
             TestOauth2Authenticator.refresh_endpoint,
             [
-                {"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}}
-            ]
+                {"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}},
+            ],
         )
         token, expires_in = oauth.refresh_access_token()
         assert (token, expires_in) == ("token", 10)

@@ -9,9 +9,7 @@ from source_shopify.source import BalanceTransactions, DiscountCodes, Fulfillmen
 
 
 def test_get_next_page_token(requests_mock):
-    """
-    Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,
-    """
+    """Test shows that next_page parameters are parsed correctly from the response object and could be passed for next request API call,."""
     response_header_links = {
         "Date": "Thu, 32 Jun 2099 24:24:24 GMT",
         "Content-Type": "application/json; charset=utf-8",
@@ -54,7 +52,7 @@ def test_privileges_validation(requests_mock, basic_config):
 
 
 @pytest.mark.parametrize(
-    "stream, slice, status, json_response, expected_output",
+    ("stream", "slice", "status", "json_response", "expected_output"),
     [
         (BalanceTransactions, None, 404, {"errors": "Not Found"}, False),
         (PriceRules, None, 403, {"errors": "Forbidden"}, False),

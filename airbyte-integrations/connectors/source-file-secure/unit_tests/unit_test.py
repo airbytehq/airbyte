@@ -3,9 +3,10 @@
 #
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from source_file_secure import SourceFileSecure
 from source_file_secure.source import LOCAL_STORAGE_NAME
+
+from airbyte_cdk import AirbyteLogger
 
 local_storage_config = {
     "dataset_name": "test",
@@ -19,7 +20,7 @@ local_storage_config = {
 
 
 def test_local_storage_spec():
-    """Checks spec properties"""
+    """Checks spec properties."""
     source = SourceFileSecure()
     spec = source.spec(logger=AirbyteLogger())
     for provider in spec.connectionSpecification["properties"]["provider"]["oneOf"]:
@@ -27,7 +28,7 @@ def test_local_storage_spec():
 
 
 def test_local_storage_check():
-    """Checks working with a local options"""
+    """Checks working with a local options."""
     source = SourceFileSecure()
     with pytest.raises(RuntimeError) as exc:
         source.check(logger=AirbyteLogger(), config=local_storage_config)

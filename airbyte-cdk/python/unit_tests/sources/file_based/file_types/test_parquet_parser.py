@@ -10,20 +10,21 @@ from unittest.mock import Mock
 
 import pyarrow as pa
 import pytest
+from pyarrow import Scalar
+
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from pyarrow import Scalar
 
 _default_parquet_format = ParquetFormat()
 _decimal_as_float_parquet_format = ParquetFormat(decimal_as_float=True)
 
 
 @pytest.mark.parametrize(
-    "parquet_type, expected_type, parquet_format",
+    ("parquet_type", "expected_type", "parquet_format"),
     [
         pytest.param(pa.bool_(), {"type": "boolean"}, _default_parquet_format, id="test_parquet_bool"),
         pytest.param(pa.int8(), {"type": "integer"}, _default_parquet_format, id="test_parquet_int8"),
@@ -72,7 +73,7 @@ _decimal_as_float_parquet_format = ParquetFormat(decimal_as_float=True)
         pytest.param(pa.decimal256(2), {"type": "number"}, _decimal_as_float_parquet_format, id="test_decimal256_as_float"),
         pytest.param(pa.map_(pa.int32(), pa.int32()), {"type": "object"}, _default_parquet_format, id="test_map"),
         pytest.param(pa.null(), {"type": "null"}, _default_parquet_format, id="test_null"),
-    ]
+    ],
 )
 def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str], parquet_format: ParquetFormat) -> None:
     if expected_type is None:
@@ -83,7 +84,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
 
 
 @pytest.mark.parametrize(
-    "pyarrow_type, parquet_format, parquet_object, expected_value",
+    ("pyarrow_type", "parquet_format", "parquet_object", "expected_value"),
     [
         pytest.param(pa.bool_(), _default_parquet_format, True, True, id="test_bool"),
         pytest.param(pa.int8(), _default_parquet_format, -1, -1, id="test_int8"),
@@ -120,7 +121,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.binary(), _default_parquet_format, b"this is a binary string", "this is a binary string", id="test_binary"),
         pytest.param(pa.binary(2), _default_parquet_format, b"t1", "t1", id="test_fixed_size_binary"),
         pytest.param(pa.string(), _default_parquet_format, "this is a string", "this is a string", id="test_parquet_string"),
-        pytest.param(pa.utf8(), _default_parquet_format, "utf8".encode("utf8"), "utf8", id="test_utf8"),
+        pytest.param(pa.utf8(), _default_parquet_format, b"utf8", "utf8", id="test_utf8"),
         pytest.param(pa.large_binary(), _default_parquet_format, b"large binary string", "large binary string", id="test_large_binary"),
         pytest.param(pa.large_string(), _default_parquet_format, "large string", "large string", id="test_large_string"),
         pytest.param(pa.large_utf8(), _default_parquet_format, "large utf8", "large utf8", id="test_large_utf8"),
@@ -134,7 +135,7 @@ def test_type_mapping(parquet_type: pa.DataType, expected_type: Mapping[str, str
         pytest.param(pa.map_(pa.string(), pa.int32()), _default_parquet_format, {"hello": 1, "world": 2}, {"hello": 1, "world": 2},
                      id="test_map"),
         pytest.param(pa.null(), _default_parquet_format, None, None, id="test_null"),
-    ]
+    ],
 )
 def test_value_transformation(pyarrow_type: pa.DataType, parquet_format: ParquetFormat, parquet_object: Scalar,
                               expected_value: Any) -> None:
@@ -165,7 +166,7 @@ def test_value_dictionary() -> None:
             quote_char='"',
         ), id="test_csv_format"),
         pytest.param(JsonlFormat(), id="test_jsonl_format"),
-    ]
+    ],
 )
 def test_wrong_file_format(file_format: Union[CsvFormat, JsonlFormat]) -> None:
     parser = ParquetParser()
@@ -176,5 +177,5 @@ def test_wrong_file_format(file_format: Union[CsvFormat, JsonlFormat]) -> None:
     logger = Mock()
     with pytest.raises(ValueError):
         asyncio.get_event_loop().run_until_complete(
-            parser.infer_schema(config, file, stream_reader, logger)
+            parser.infer_schema(config, file, stream_reader, logger),
         )

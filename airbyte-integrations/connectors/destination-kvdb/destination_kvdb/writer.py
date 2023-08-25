@@ -2,16 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from collections import Mapping
+from collections.abc import Mapping
 
 from destination_kvdb.client import KvDbClient
 
 
 class KvDbWriter:
-    """
-    Data is written to KvDB in the following format:
+    """Data is written to KvDB in the following format:
         key: stream_name__ab__<record_extraction_timestamp>
-        value: a JSON object representing the record's data
+        value: a JSON object representing the record's data.
 
     This is because unless a data source explicitly designates a primary key, we don't know what to key the record on.
     Since KvDB allows reading records with certain prefixes, we treat it more like a message queue, expecting the reader to
@@ -25,7 +24,7 @@ class KvDbWriter:
         self.client = client
 
     def delete_stream_entries(self, stream_name: str):
-        """Deletes all the records belonging to the input stream"""
+        """Deletes all the records belonging to the input stream."""
         keys_to_delete = []
         for key in self.client.list_keys(prefix=f"{stream_name}__ab__"):
             keys_to_delete.append(key)

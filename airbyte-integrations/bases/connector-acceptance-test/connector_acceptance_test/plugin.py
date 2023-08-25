@@ -10,6 +10,7 @@ from typing import Callable, List, Tuple, Type
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
+
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import Config as AcceptanceTestConfig
 from connector_acceptance_test.config import GenericTestConfig
@@ -27,14 +28,14 @@ def pytest_configure(config):
 
 
 def pytest_load_initial_conftests(early_config: Config, parser: Parser, args: List[str]):
-    """Hook function to add acceptance tests to args"""
+    """Hook function to add acceptance tests to args."""
     args.append(str(HERE / "tests"))
 
 
 def pytest_addoption(parser):
-    """Hook function to add CLI option `acceptance-test-config`"""
+    """Hook function to add CLI option `acceptance-test-config`."""
     parser.addoption(
-        "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml"
+        "--acceptance-test-config", action="store", default=".", help="Folder with standard test config - acceptance_test_config.yml",
     )
 
 
@@ -48,13 +49,12 @@ def pytest_generate_tests(metafunc):
     """Hook function to customize test discovery and parametrization.
     It parametrizes, skips or fails a discovered test according the test configuration.
     """
-
     if "inputs" in metafunc.fixturenames:
         test_config_key = metafunc.cls.config_key()
         global_config = load_config(metafunc.config.getoption("--acceptance-test-config"))
         test_configuration: GenericTestConfig = getattr(global_config.acceptance_tests, test_config_key, None)
         test_action, reason = parametrize_skip_or_fail(
-            metafunc.cls, metafunc.function, global_config.test_strictness_level, test_configuration
+            metafunc.cls, metafunc.function, global_config.test_strictness_level, test_configuration,
         )
 
         if test_action == TestAction.PARAMETRIZE:
@@ -80,6 +80,7 @@ def parametrize_skip_or_fail(
         - Or a bypass_reason is declared in the test configuration.
     We fail a test if:
         - the configuration does not declare the test but the discovered test is declared as mandatory for the current test strictness level.
+
     Args:
         TestClass (Type[BaseTest]): The discovered test class
         test_function (Callable): The discovered test function
@@ -110,13 +111,11 @@ def parametrize_skip_or_fail(
 
 
 def pytest_collection_modifyitems(config, items):
-    """
-    Get prepared test items and wrap them with `pytest.mark.timeout(timeout_seconds)` decorator.
+    """Get prepared test items and wrap them with `pytest.mark.timeout(timeout_seconds)` decorator.
 
     `timeout_seconds` may be received either from acceptance test config or `pytest.mark.default_timeout(timeout_seconds)`,
     if `timeout_seconds` is not specified in the acceptance test config.
     """
-
     config = load_config(config.getoption("--acceptance-test-config"))
 
     i = 0
@@ -142,7 +141,7 @@ def pytest_collection_modifyitems(config, items):
 
 def pytest_assertrepr_compare(config, op, left, right):
     if op != "==":
-        return
+        return None
 
     use_markup = config.get_terminal_writer().hasmarkup
     return diff_dicts(left, right, use_markup=use_markup)

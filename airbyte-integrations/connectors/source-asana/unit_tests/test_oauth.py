@@ -7,7 +7,7 @@ import requests_mock
 from source_asana.oauth import AsanaOauth2Authenticator
 
 
-@pytest.fixture
+@pytest.fixture()
 def req_mock():
     with requests_mock.Mocker() as mock:
         yield mock

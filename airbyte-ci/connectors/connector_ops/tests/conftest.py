@@ -22,12 +22,12 @@ def adoption_metrics_per_connector_version():
                 "failed_syncs_count": 0,
                 "total_syncs_count": 0,
                 "sync_success_rate": 0.0,
-            }
-        ]
+            },
+        ],
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def dummy_qa_report() -> pd.DataFrame:
     return pd.DataFrame(
         [
@@ -50,6 +50,6 @@ def dummy_qa_report() -> pd.DataFrame:
                 "succeeded_syncs_count": 0,
                 "is_eligible_for_promotion_to_cloud": True,
                 "report_generation_datetime": datetime.utcnow(),
-            }
-        ]
+            },
+        ],
     )

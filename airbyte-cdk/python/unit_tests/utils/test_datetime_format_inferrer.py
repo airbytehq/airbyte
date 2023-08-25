@@ -5,6 +5,7 @@
 from typing import Dict, List
 
 import pytest
+
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
 
@@ -12,7 +13,7 @@ NOW = 1234567
 
 
 @pytest.mark.parametrize(
-    "test_name,input_records,expected_candidate_fields",
+    ("test_name", "input_records", "expected_candidate_fields"),
     [
         ("empty", [], {}),
         ("simple_match", [{"d": "2022-02-03"}], {"d": "%Y-%m-%d"}),

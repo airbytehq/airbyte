@@ -23,7 +23,7 @@ class TalkdeskAuth:
         self.auth_url = config.get("auth_url", None)
 
     def _encode_key(self, key: str) -> bytes:
-        """Encode 'str' API key to bytes"""
+        """Encode 'str' API key to bytes."""
         base64_bytes = base64.b64encode(key.encode("ascii"))
         return base64_bytes.decode("ascii")
 

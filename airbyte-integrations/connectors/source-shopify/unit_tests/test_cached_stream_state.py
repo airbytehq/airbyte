@@ -13,7 +13,7 @@ SHOPIFY_SUB_STREAM = OrderRefunds(config={"authenticator": None})
 
 
 @pytest.mark.parametrize(
-    "stream, cur_stream_state, state_object, expected_output",
+    ("stream", "cur_stream_state", "state_object", "expected_output"),
     [
         # When Full-Refresh: state_object: empty.
         (
@@ -32,9 +32,7 @@ SHOPIFY_SUB_STREAM = OrderRefunds(config={"authenticator": None})
     ids=["Sync Started. Parent.", "Sync Started. Child."],
 )
 def test_full_refresh(stream, cur_stream_state, state_object, expected_output):
-    """
-    When Sync = Full-Refresh: we don't have any state yet, so we need to keep the state_object at min value, thus empty.
-    """
+    """When Sync = Full-Refresh: we don't have any state yet, so we need to keep the state_object at min value, thus empty."""
     # create the fixure for *args based on input
     args = [stream]
     # use the external tmp_state_object for this test
@@ -43,7 +41,7 @@ def test_full_refresh(stream, cur_stream_state, state_object, expected_output):
 
 
 @pytest.mark.parametrize(
-    "stream, cur_stream_state, state_object, expected_output",
+    ("stream", "cur_stream_state", "state_object", "expected_output"),
     [
         # When start the incremental refresh, assuming we have the state of STREAM.
         (
@@ -75,8 +73,7 @@ def test_full_refresh(stream, cur_stream_state, state_object, expected_output):
     ids=["Sync Started. Parent", "Sync Started. Child", "Sync in progress. Parent", "Sync in progress. Child"],
 )
 def test_incremental_sync(stream, cur_stream_state, state_object, expected_output):
-    """
-    When Sync = Incremental Refresh: we already have the saved state from Full-Refresh sync,
+    """When Sync = Incremental Refresh: we already have the saved state from Full-Refresh sync,
     we have it passed as input to the Incremental Sync, so we need to back it up and reuse.
     """
     # create the fixure for *args based on input

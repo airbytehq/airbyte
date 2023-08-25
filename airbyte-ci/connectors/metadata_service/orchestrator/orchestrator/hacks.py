@@ -10,6 +10,7 @@ from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import get_metadata_remote_file_path
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+
 from orchestrator.models.metadata import LatestMetadataEntry
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
@@ -31,16 +32,15 @@ def _get_version_specific_registry_entry_file_path(registry_entry, registry_name
     docker_version = registry_entry.dockerImageTag
 
     assumed_metadata_file_path = get_metadata_remote_file_path(docker_reposiory, docker_version)
-    registry_entry_file_path = assumed_metadata_file_path.replace(METADATA_FILE_NAME, registry_name)
-    return registry_entry_file_path
+    return assumed_metadata_file_path.replace(METADATA_FILE_NAME, registry_name)
 
 
 def _check_for_invalid_write_path(write_path: str):
     """Check if the write path is valid."""
-
     if "latest" in write_path:
+        msg = "Cannot write to a path that contains 'latest'. That is reserved for the latest metadata file and its direct transformations"
         raise ValueError(
-            "Cannot write to a path that contains 'latest'. That is reserved for the latest metadata file and its direct transformations"
+            msg,
         )
 
 
@@ -50,8 +50,7 @@ def write_registry_to_overrode_file_paths(
     metadata_entry: LatestMetadataEntry,
     registry_directory_manager: GCSFileManager,
 ) -> GCSFileHandle:
-    """
-    Write the registry entry to the docker repository and version specific file paths
+    """Write the registry entry to the docker repository and version specific file paths
     in the event that the docker repository is overridden.
 
     Underlying issue:
@@ -85,7 +84,7 @@ def write_registry_to_overrode_file_paths(
     _check_for_invalid_write_path(overrode_registry_entry_version_write_path)
     logger.info(f"Writing registry entry to {overrode_registry_entry_version_write_path}")
     file_handle = registry_directory_manager.write_data(
-        registry_entry_json.encode("utf-8"), ext="json", key=overrode_registry_entry_version_write_path
+        registry_entry_json.encode("utf-8"), ext="json", key=overrode_registry_entry_version_write_path,
     )
     logger.info(f"Successfully wrote registry entry to {file_handle.public_url}")
     return file_handle

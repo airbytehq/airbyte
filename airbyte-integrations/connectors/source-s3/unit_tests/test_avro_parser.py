@@ -55,7 +55,7 @@ master_schema = {"address": {"type": ["number", "null"]},
                  "age": {"type": ["integer", "null"]},
                  "name": {"type": ["string", "null"]},
                  "street": {"type": ["number", "null"]},
-                 "valid": {"type": ["boolean", "null"]}
+                 "valid": {"type": ["boolean", "null"]},
                  }
 
 
@@ -68,7 +68,7 @@ class TestAvroParser(AbstractTestParser):
         :param schema_str: valid avro schema as a string
         :param out_file: name of file to be created
         :param num_rows: number of rows to be generated
-        :return: string with path to the file created
+        :return: string with path to the file created.
         """
         filename = os.path.join(TMP_FOLDER, out_file + "." + cls.filetype)
         parsed_schema = schema.parse(simple_schema_str)
@@ -91,7 +91,7 @@ class TestAvroParser(AbstractTestParser):
         :param schema_str: valid avro schema as a string
         :param out_file: name of file to be created
         :param num_rows: number of rows to be generated
-        :return: string with path to the file created
+        :return: string with path to the file created.
         """
         filename = os.path.join(TMP_FOLDER, out_file + "." + cls.filetype)
         parsed_schema = schema.parse(nested_records_schema_str)
@@ -102,7 +102,7 @@ class TestAvroParser(AbstractTestParser):
             data["lastname"] = "".join(random.choice(string.ascii_letters) for i in range(10))
             data["address"] = {
                 "streetaddress": "".join(random.choice(string.ascii_letters) for i in range(10)),
-                "city": "".join(random.choice(string.ascii_letters) for i in range(10))
+                "city": "".join(random.choice(string.ascii_letters) for i in range(10)),
             }
             file_writer.append(data)
         file_writer.close()
@@ -110,9 +110,7 @@ class TestAvroParser(AbstractTestParser):
 
     @classmethod
     def cases(cls) -> Mapping[str, Any]:
-        """
-        return test cases
-        """
+        """Return test cases."""
         cases = {}
         # test basic file with data type conversions
         cases["simple_test"] = {

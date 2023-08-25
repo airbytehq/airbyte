@@ -19,7 +19,7 @@ def conversations_list(requests_mock):
                 {"name": "advice-data-orchestration", "id": 2},
                 {"name": "airbyte-for-beginners", "id": 3},
                 {"name": "good-reads", "id": 4},
-            ]
+            ],
         },
     )
 
@@ -37,7 +37,7 @@ def base_config() -> MutableMapping:
             "lookback_window": 1,
             "join_channels": True,
             "channel_filter": ["airbyte-for-beginners", "good-reads"],
-        }
+        },
     )
 
 
@@ -47,7 +47,7 @@ def _token_config() -> MutableMapping:
     return config
 
 
-@pytest.fixture
+@pytest.fixture()
 def token_config() -> MutableMapping:
     return _token_config()
 
@@ -61,13 +61,13 @@ def _oauth_config() -> MutableMapping:
                 "client_id": "client.id",
                 "client_secret": "client-secret",
                 "access_token": "access-token",
-            }
-        }
+            },
+        },
     )
     return config
 
 
-@pytest.fixture
+@pytest.fixture()
 def oauth_config() -> MutableMapping:
     return _oauth_config()
 
@@ -78,7 +78,7 @@ def _legacy_token_config() -> MutableMapping:
     return config
 
 
-@pytest.fixture
+@pytest.fixture()
 def legacy_token_config() -> MutableMapping:
     return _legacy_token_config()
 
@@ -87,7 +87,7 @@ def _invalid_config() -> MutableMapping:
     return base_config()
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_config() -> MutableMapping:
     return _invalid_config()
 

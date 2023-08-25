@@ -15,21 +15,20 @@ from typing import Dict, List, Optional, Tuple, Union
 import backoff
 import msal
 import requests
+from msal.exceptions import MsalServiceError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream
-from msal.exceptions import MsalServiceError
 
 LOGGER = AirbyteLogger()
 
 
 def log_backoff_attempt(details):
-    LOGGER.info(f"Encountered exception when querying the Microsoft API: {str(sys.exc_info()[1])}. Backing off: {details.get('tries')} try")
+    LOGGER.info(f"Encountered exception when querying the Microsoft API: {sys.exc_info()[1]!s}. Backing off: {details.get('tries')} try")
 
 
 class Client:
-    """
-    Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0
-    """
+    """Microsoft Teams API Reference: https://docs.microsoft.com/en-us/graph/api/resources/teams-api-overview?view=graph-rest-1.0."""
 
     MICROSOFT_GRAPH_BASE_API_URL: str = "https://graph.microsoft.com/"
     MICROSOFT_GRAPH_API_VERSION: str = "v1.0"
@@ -65,13 +64,12 @@ class Client:
     def msal_app(self):
         return msal.ConfidentialClientApplication(
             self.credentials["client_id"],
-            authority=f"https://login.microsoftonline.com/" f"{self.credentials['tenant_id']}",
+            authority=f"https://login.microsoftonline.com/{self.credentials['tenant_id']}",
             client_credential=self.credentials["client_secret"],
         )
 
     def _get_api_url(self, endpoint: str) -> str:
-        api_url = f"{self.MICROSOFT_GRAPH_BASE_API_URL}{self.MICROSOFT_GRAPH_API_VERSION}/{endpoint}/"
-        return api_url
+        return f"{self.MICROSOFT_GRAPH_BASE_API_URL}{self.MICROSOFT_GRAPH_API_VERSION}/{endpoint}/"
 
     def _get_access_token(self) -> str:
         scope = ["https://graph.microsoft.com/.default"]
@@ -95,23 +93,17 @@ class Client:
         access_token = self._get_access_token()
         headers = {"Authorization": f"Bearer {access_token}"}
         response = requests.get(api_url, headers=headers, params=params)
-        if response.status_code == 429:
-            if "Retry-After" in response.headers:
-                pause_time = float(response.headers["Retry-After"])
-                time.sleep(pause_time)
-                response = requests.get(api_url, headers=headers, params=params)
+        if response.status_code == 429 and "Retry-After" in response.headers:
+            pause_time = float(response.headers["Retry-After"])
+            time.sleep(pause_time)
+            response = requests.get(api_url, headers=headers, params=params)
         if response.status_code != 200:
             raise requests.exceptions.RequestException(response.text)
-        if response.headers["Content-Type"] == "application/octet-stream":
-            raw_response = response.content
-        else:
-            raw_response = response.json()
-        return raw_response
+        return response.content if response.headers["Content-Type"] == "application/octet-stream" else response.json()
 
     @staticmethod
     def _get_response_value_unsafe(raw_response: Dict) -> List:
-        value = raw_response["value"]
-        return value
+        return raw_response["value"]
 
     def _get_request_params(self, params: Optional[Dict] = None, pagination: bool = True) -> Dict:
         if self.PAGINATION_COUNT and pagination:
@@ -141,14 +133,13 @@ class Client:
 
     def get_streams(self):
         streams = []
-        for schema, method in self.ENTITY_MAP.items():
+        for schema in self.ENTITY_MAP:
             raw_schema = json.loads(pkgutil.get_data(self.__class__.__module__.split(".")[0], f"schemas/{schema}.json"))
             streams.append(AirbyteStream(name=schema, json_schema=raw_schema, supported_sync_modes=["full_refresh"]))
         return streams
 
     def get_users(self):
-        for users in self._fetch_data("users"):
-            yield users
+        yield from self._fetch_data("users")
 
     def get_groups(self):
         for groups in self._fetch_data("groups"):
@@ -181,8 +172,7 @@ class Client:
         api_url = self._get_api_url(f"teams/{group_id}/channels")
         # TODO: pass params={"$select": "id"} to make_request once the related bug in the MSFT API
         # is fixed: microsoftgraph/microsoft-graph-docs#11494
-        channels_ids = self._get_response_value_unsafe(self._make_request(api_url))
-        return channels_ids
+        return self._get_response_value_unsafe(self._make_request(api_url))
 
     def get_channel_members(self):
         for group_id in self._get_group_ids():
@@ -206,8 +196,7 @@ class Client:
     def _get_conversation_ids(self, group_id: str):
         api_url = self._get_api_url(f"groups/{group_id}/conversations")
         params = {"$select": "id"}
-        conversation_ids = self._get_response_value_unsafe(self._make_request(api_url, params=params))
-        return conversation_ids
+        return self._get_response_value_unsafe(self._make_request(api_url, params=params))
 
     def get_conversation_threads(self):
         for group_id in self._get_group_ids():
@@ -219,8 +208,7 @@ class Client:
     def _get_thread_ids(self, group_id: str, conversation_id: str):
         api_url = self._get_api_url(f"groups/{group_id}/conversations/{conversation_id}/threads")
         params = {"$select": "id"}
-        thread_ids = self._get_response_value_unsafe(self._make_request(api_url, params=params))
-        return thread_ids
+        return self._get_response_value_unsafe(self._make_request(api_url, params=params))
 
     def get_conversation_posts(self):
         for group_id in self._get_group_ids():

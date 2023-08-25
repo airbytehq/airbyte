@@ -6,11 +6,12 @@ import json
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 
 
 @pytest.mark.parametrize(
-    "page_size, parameters, last_records, expected_next_page_token, expected_offset",
+    ("page_size", "parameters", "last_records", "expected_next_page_token", "expected_offset"),
     [
         pytest.param("2", {}, [{"id": 0}, {"id": 1}], 2, 2, id="test_same_page_size"),
         pytest.param(2, {}, [{"id": 0}, {"id": 1}], 2, 2, id="test_same_page_size"),
@@ -34,7 +35,7 @@ def test_offset_increment_paginator_strategy(page_size, parameters, last_records
     assert expected_offset == paginator_strategy._offset
 
     paginator_strategy.reset()
-    assert 0 == paginator_strategy._offset
+    assert paginator_strategy._offset == 0
 
 
 def test_offset_increment_paginator_strategy_rises():

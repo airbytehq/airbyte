@@ -18,25 +18,20 @@ class EventTimer:
        Event nesting follows a LIFO pattern, so finish will apply to the last started event.
     """
 
-    def __init__(self, name):
+    def __init__(self, name) -> None:
         self.name = name
         self.events = {}
         self.count = 0
         self.stack = []
 
     def start_event(self, name):
-        """
-        Start a new event and push it to the stack.
-        """
+        """Start a new event and push it to the stack."""
         self.events[name] = Event(name=name)
         self.count += 1
         self.stack.insert(0, self.events[name])
 
     def finish_event(self):
-        """
-        Finish the current event and pop it from the stack.
-        """
-
+        """Finish the current event and pop it from the stack."""
         if self.stack:
             event = self.stack.pop(0)
             event.finish()
@@ -44,9 +39,7 @@ class EventTimer:
             logger.warning(f"{self.name} finish_event called without start_event")
 
     def report(self, order_by="name"):
-        """
-        :param order_by: 'name' or 'duration'
-        """
+        """:param order_by: 'name' or 'duration'"""
         if order_by == "name":
             events = sorted(self.events.values(), key=lambda event: event.name)
         elif order_by == "duration":
@@ -64,12 +57,12 @@ class Event:
 
     @property
     def duration(self) -> float:
-        """Returns the elapsed time in seconds or positive infinity if event was never finished"""
+        """Returns the elapsed time in seconds or positive infinity if event was never finished."""
         if self.end:
             return (self.end - self.start) / 1e9
         return float("+inf")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} {datetime.timedelta(seconds=self.duration)}"
 
     def finish(self):
@@ -78,8 +71,6 @@ class Event:
 
 @contextmanager
 def create_timer(name):
-    """
-    Creates a new EventTimer as a context manager to improve code readability.
-    """
+    """Creates a new EventTimer as a context manager to improve code readability."""
     a_timer = EventTimer(name)
     yield a_timer

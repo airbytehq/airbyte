@@ -31,8 +31,7 @@ def _default_file_path() -> str:
 
 @dataclass
 class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
-    """
-    Loads the schema from a json file
+    """Loads the schema from a json file.
 
     Attributes:
         file_path (Union[InterpolatedString, str]): The path to the json file describing the schema
@@ -58,11 +57,13 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
         raw_json_file = pkgutil.get_data(resource, schema_path)
 
         if not raw_json_file:
-            raise IOError(f"Cannot find file {json_schema_path}")
+            msg = f"Cannot find file {json_schema_path}"
+            raise OSError(msg)
         try:
             raw_schema = json.loads(raw_json_file)
         except ValueError as err:
-            raise RuntimeError(f"Invalid JSON file format for file {json_schema_path}") from err
+            msg = f"Invalid JSON file format for file {json_schema_path}"
+            raise RuntimeError(msg) from err
         self.package_name = resource
         return self._resolve_schema_references(raw_schema)
 
@@ -71,12 +72,11 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
 
     @staticmethod
     def extract_resource_and_schema_path(json_schema_path: str) -> (str, str):
-        """
-        When the connector is running on a docker container, package_data is accessible from the resource (source_<name>), so we extract
+        """When the connector is running on a docker container, package_data is accessible from the resource (source_<name>), so we extract
         the resource from the first part of the schema path and the remaining path is used to find the schema file. This is a slight
         hack to identify the source name while we are in the airbyte_cdk module.
         :param json_schema_path: The path to the schema JSON file
-        :return: Tuple of the resource name and the path to the schema file
+        :return: Tuple of the resource name and the path to the schema file.
         """
         split_path = json_schema_path.split("/")
 

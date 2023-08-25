@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -18,13 +19,13 @@ logger = AirbyteLogger()
 class GenerateReportStream(HttpStream):
     """This stream is specifically for generating the report in Talkdesk.
     - HTTP method: POST
-    - Returns: ID of the generated report
+    - Returns: ID of the generated report.
 
     """
 
     primary_key = None
 
-    def __init__(self, base_path, start_date, timezone, **kwargs):
+    def __init__(self, base_path, start_date, timezone, **kwargs) -> None:
         super().__init__(**kwargs)
         self.base_path = base_path
         self.start_date = start_date
@@ -44,8 +45,8 @@ class GenerateReportStream(HttpStream):
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         logger.info(f"Generating {self.base_path} report from '{self.start_date}' to '{now}'")
@@ -72,7 +73,7 @@ class GenerateReportStream(HttpStream):
 class ReadReportStream(HttpStream):
     primary_key = None
 
-    def __init__(self, start_date, timezone, **kwargs):
+    def __init__(self, start_date, timezone, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = start_date
         self.timezone = timezone
@@ -98,7 +99,7 @@ class ReadReportStream(HttpStream):
                 logger.error("stream_state is in unhandled date-time format. Required format: %Y-%m-%dT%H:%M:%S")
 
         generate_report = GenerateReportStream(
-            base_path=self.base_path, start_date=latest_state, timezone=self.timezone, authenticator=self.authenticator
+            base_path=self.base_path, start_date=latest_state, timezone=self.timezone, authenticator=self.authenticator,
         )
         report_id = next(generate_report.read_records(SyncMode.full_refresh))
 
@@ -108,8 +109,7 @@ class ReadReportStream(HttpStream):
         return None
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        Retry conditions:
+        """Retry conditions:
         1. By default, back off on the following HTTP response statuses:
          - 429 (Too Many Requests) indicating rate limiting
          - 500s to handle transient server errors
@@ -139,7 +139,8 @@ class ReadReportStream(HttpStream):
                 # Report failures
                 if response.status_code in [400, 401, 403]:
                     logger.error(f"Report returned an invalid response: {json.dumps(response_obj)}")
-                    raise ValueError("Requested report is in invalid/failed state.")
+                    msg = "Requested report is in invalid/failed state."
+                    raise ValueError(msg)
                 # TODO: implement handling of other response types here.
                 return False
 
@@ -148,13 +149,12 @@ class ReadReportStream(HttpStream):
         try:
             yield from response_json["entries"]
         except KeyError:
-            logger.warn("No entries found in requested report. Setting it to null.")
+            logger.warning("No entries found in requested report. Setting it to null.")
             yield from []
 
 
 class IncrementalReadReportStream(ReadReportStream):
-    """
-    Incremental append for the ReadReportStream. This class introduces the 'cursor_field'
+    """Incremental append for the ReadReportStream. This class introduces the 'cursor_field'
     and 'get_updated_state' methods.
 
     """
@@ -162,15 +162,12 @@ class IncrementalReadReportStream(ReadReportStream):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
-        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_state = latest_record.get(self.cursor_field)

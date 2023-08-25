@@ -16,8 +16,7 @@ This file contains macros that can be evaluated by a `JinjaInterpolation` object
 
 
 def now_utc():
-    """
-    Current local date and time in UTC timezone
+    """Current local date and time in UTC timezone.
 
     Usage:
     `"{{ now_utc() }}"`
@@ -26,8 +25,7 @@ def now_utc():
 
 
 def today_utc():
-    """
-    Current date in UTC timezone
+    """Current date in UTC timezone.
 
     Usage:
     `"{{ today_utc() }}"`
@@ -36,8 +34,7 @@ def today_utc():
 
 
 def timestamp(dt: Union[numbers.Number, str]):
-    """
-    Converts a number or a string to a timestamp
+    """Converts a number or a string to a timestamp.
 
     If dt is a number, then convert to an int
     If dt is a string, then parse it using dateutil.parser
@@ -63,8 +60,7 @@ def _str_to_datetime(s: str) -> datetime.datetime:
 
 
 def max(*args):
-    """
-    Returns biggest object of an iterable, or two or more arguments.
+    """Returns biggest object of an iterable, or two or more arguments.
 
     max(iterable, *[, default=obj, key=func]) -> value
     max(arg1, arg2, *args, *[, key=func]) -> value
@@ -83,8 +79,7 @@ def max(*args):
 
 
 def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
-    """
-    Returns datetime of now() + num_days
+    """Returns datetime of now() + num_days.
 
     Usage:
     `"{{ day_delta(25) }}"`
@@ -96,8 +91,7 @@ def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
 
 
 def duration(datestring: str) -> datetime.timedelta:
-    """
-    Converts ISO8601 duration to datetime.timedelta
+    """Converts ISO8601 duration to datetime.timedelta.
 
     Usage:
     `"{{ now_utc() - duration('P1D') }}"`
@@ -106,8 +100,7 @@ def duration(datestring: str) -> datetime.timedelta:
 
 
 def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
-    """
-    Converts datetime to another format
+    """Converts datetime to another format.
 
     Usage:
     `"{{ format_datetime(config.start_date, '%Y-%m-%d') }}"`

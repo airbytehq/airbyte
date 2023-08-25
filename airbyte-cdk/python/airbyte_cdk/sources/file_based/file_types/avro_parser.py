@@ -7,6 +7,7 @@ import uuid
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import fastavro
+
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -51,19 +52,20 @@ class AvroParser(FileTypeParser):
     ) -> SchemaType:
         avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
-            raise ValueError(f"Expected ParquetFormat, got {avro_format}")
+            msg = f"Expected ParquetFormat, got {avro_format}"
+            raise ValueError(msg)
 
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)
             avro_schema = avro_reader.writer_schema
-        if not avro_schema["type"] == "record":
+        if avro_schema["type"] != "record":
             unsupported_type = avro_schema["type"]
-            raise ValueError(f"Only record based avro files are supported. Found {unsupported_type}")
-        json_schema = {
+            msg = f"Only record based avro files are supported. Found {unsupported_type}"
+            raise ValueError(msg)
+        return {
             field["name"]: AvroParser._convert_avro_type_to_json(avro_format, field["name"], field["type"])
             for field in avro_schema["fields"]
         }
-        return json_schema
 
     @classmethod
     def _convert_avro_type_to_json(cls, avro_format: AvroFormat, field_name: str, avro_field: str) -> Mapping[str, Any]:
@@ -83,35 +85,43 @@ class AvroParser(FileTypeParser):
                 }
             elif avro_field["type"] == "array":
                 if "items" not in avro_field:
-                    raise ValueError(f"{field_name} array type does not have a required field items")
+                    msg = f"{field_name} array type does not have a required field items"
+                    raise ValueError(msg)
                 return {"type": "array", "items": AvroParser._convert_avro_type_to_json(avro_format, "", avro_field["items"])}
             elif avro_field["type"] == "enum":
                 if "symbols" not in avro_field:
-                    raise ValueError(f"{field_name} enum type does not have a required field symbols")
+                    msg = f"{field_name} enum type does not have a required field symbols"
+                    raise ValueError(msg)
                 if "name" not in avro_field:
-                    raise ValueError(f"{field_name} enum type does not have a required field name")
+                    msg = f"{field_name} enum type does not have a required field name"
+                    raise ValueError(msg)
                 return {"type": "string", "enum": avro_field["symbols"]}
             elif avro_field["type"] == "map":
                 if "values" not in avro_field:
-                    raise ValueError(f"{field_name} map type does not have a required field values")
+                    msg = f"{field_name} map type does not have a required field values"
+                    raise ValueError(msg)
                 return {
                     "type": "object",
                     "additionalProperties": AvroParser._convert_avro_type_to_json(avro_format, "", avro_field["values"]),
                 }
             elif avro_field["type"] == "fixed" and avro_field.get("logicalType") != "duration":
                 if "size" not in avro_field:
-                    raise ValueError(f"{field_name} fixed type does not have a required field size")
+                    msg = f"{field_name} fixed type does not have a required field size"
+                    raise ValueError(msg)
                 if not isinstance(avro_field["size"], int):
-                    raise ValueError(f"{field_name} fixed type size value is not an integer")
+                    msg = f"{field_name} fixed type size value is not an integer"
+                    raise ValueError(msg)
                 return {
                     "type": "string",
                     "pattern": f"^[0-9A-Fa-f]{{{avro_field['size'] * 2}}}$",
                 }
             elif avro_field.get("logicalType") == "decimal":
                 if "precision" not in avro_field:
-                    raise ValueError(f"{field_name} decimal type does not have a required field precision")
+                    msg = f"{field_name} decimal type does not have a required field precision"
+                    raise ValueError(msg)
                 if "scale" not in avro_field:
-                    raise ValueError(f"{field_name} decimal type does not have a required field scale")
+                    msg = f"{field_name} decimal type does not have a required field scale"
+                    raise ValueError(msg)
                 max_whole_number_range = avro_field["precision"] - avro_field["scale"]
                 decimal_range = avro_field["scale"]
 
@@ -120,12 +130,15 @@ class AvroParser(FileTypeParser):
                 return {"type": "string", "pattern": f"^-?\\d{{{1,max_whole_number_range}}}(?:\\.\\d{1,decimal_range})?$"}
             elif "logicalType" in avro_field:
                 if avro_field["logicalType"] not in AVRO_LOGICAL_TYPE_TO_JSON:
-                    raise ValueError(f"{avro_field['logical_type']} is not a valid Avro logical type")
+                    msg = f"{avro_field['logical_type']} is not a valid Avro logical type"
+                    raise ValueError(msg)
                 return AVRO_LOGICAL_TYPE_TO_JSON[avro_field["logicalType"]]
             else:
-                raise ValueError(f"Unsupported avro type: {avro_field}")
+                msg = f"Unsupported avro type: {avro_field}"
+                raise ValueError(msg)
         else:
-            raise ValueError(f"Unsupported avro type: {avro_field}")
+            msg = f"Unsupported avro type: {avro_field}"
+            raise ValueError(msg)
 
     def parse_records(
         self,
@@ -137,7 +150,8 @@ class AvroParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
-            raise ValueError(f"Expected ParquetFormat, got {avro_format}")
+            msg = f"Expected ParquetFormat, got {avro_format}"
+            raise ValueError(msg)
 
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)

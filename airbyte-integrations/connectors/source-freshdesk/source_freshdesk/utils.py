@@ -8,7 +8,7 @@ from airbyte_cdk.entrypoint import logger
 
 
 class CallCredit:
-    """Class to manage call credit balance"""
+    """Class to manage call credit balance."""
 
     def __init__(self, balance: int, reload_period: int = 60):
         self._max_balance = balance

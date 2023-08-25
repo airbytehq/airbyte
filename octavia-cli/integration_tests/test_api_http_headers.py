@@ -26,7 +26,7 @@ def vcr_config():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def file_based_headers(tmp_path):
     yaml_document = """
     headers:
@@ -38,12 +38,12 @@ def file_based_headers(tmp_path):
     return custom_api_http_headers_yaml_file_path, expected_headers
 
 
-@pytest.fixture
+@pytest.fixture()
 def option_based_headers():
     return ["Another-Custom-Header", "Bar"], [api_http_headers.ApiHttpHeader("Another-Custom-Header", "Bar")]
 
 
-@pytest.mark.vcr
+@pytest.mark.vcr()
 def test_api_http_headers(vcr, file_based_headers, option_based_headers):
     raw_option_based_headers, expected_option_based_headers = option_based_headers
     custom_api_http_headers_yaml_file_path, expected_file_based_headers = file_based_headers
@@ -55,19 +55,7 @@ def test_api_http_headers(vcr, file_based_headers, option_based_headers):
     )
     runner = CliRunner()
     command_options = (
-        [
-            "--airbyte-url",
-            AIRBYTE_URL,
-            "--airbyte-username",
-            AIRBYTE_USERNAME,
-            "--airbyte-password",
-            AIRBYTE_PASSWORD,
-            "--api-http-headers-file-path",
-            custom_api_http_headers_yaml_file_path,
-            "--api-http-header",
-        ]
-        + raw_option_based_headers
-        + ["list", "connectors", "sources"]
+        ["--airbyte-url", AIRBYTE_URL, "--airbyte-username", AIRBYTE_USERNAME, "--airbyte-password", AIRBYTE_PASSWORD, "--api-http-headers-file-path", custom_api_http_headers_yaml_file_path, "--api-http-header", *raw_option_based_headers, "list", "connectors", "sources"]
     )
 
     result = runner.invoke(entrypoint.octavia, command_options, obj={})

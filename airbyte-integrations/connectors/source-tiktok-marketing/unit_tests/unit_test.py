@@ -11,10 +11,11 @@ import pendulum
 import pytest
 import requests_mock
 import timeout_decorator
-from airbyte_cdk.models import ConnectorSpecification
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
+
+from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
@@ -22,15 +23,15 @@ PROD_CONFIG_FILE = "secrets/prod_config.json"
 
 @pytest.fixture(scope="module")
 def prepared_sandbox_args():
-    """Generates streams settings from a file for sandbox"""
-    with open(SANDBOX_CONFIG_FILE, "r") as f:
+    """Generates streams settings from a file for sandbox."""
+    with open(SANDBOX_CONFIG_FILE) as f:
         return SourceTiktokMarketing._prepare_stream_args(json.loads(f.read()))
 
 
 @pytest.fixture(scope="module")
 def prepared_prod_args():
-    """Generates streams settings from a file for production"""
-    with open(PROD_CONFIG_FILE, "r") as f:
+    """Generates streams settings from a file for production."""
+    with open(PROD_CONFIG_FILE) as f:
         return SourceTiktokMarketing._prepare_stream_args(json.loads(f.read()))
 
 
@@ -38,7 +39,8 @@ def prepared_prod_args():
 @pytest.mark.parametrize("error_code", (40100, 50002))
 def test_backoff(prepared_sandbox_args, error_code):
     """TiktokMarketing sends the header 'Retry-After' about needed delay.
-    All streams have to handle it"""
+    All streams have to handle it.
+    """
     stream = Advertisers(**prepared_sandbox_args)
     with requests_mock.Mocker() as m:
         url = stream.url_base + stream.path()
@@ -74,14 +76,14 @@ def random_integer(max_value: int = 1634125471, min_value: int = 1) -> int:
 
 
 def unixtime2str(unix_time: int) -> str:
-    "Converts unix time to string"
+    "Converts unix time to string."
     return pendulum.from_timestamp(unix_time).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def test_random_items(prepared_prod_args):
     stream = Ads(**prepared_prod_args)
     advertiser_count = 100
-    test_advertiser_ids = set([str(random_integer()) for _ in range(advertiser_count)])
+    test_advertiser_ids = {str(random_integer()) for _ in range(advertiser_count)}
     advertiser_count = len(test_advertiser_ids)
     page_size = 100
     with requests_mock.Mocker() as m:
@@ -108,7 +110,7 @@ def test_random_items(prepared_prod_args):
                         "modify_time": unixtime2str(create_time + 60),
                         "advertiser_id": advertiser_id,
                         "ad_id": ad_id,
-                    }
+                    },
                 )
                 if not max_updated_value or max_updated_value < ad_items[-1][stream.cursor_field]:
                     max_updated_value = ad_items[-1][stream.cursor_field]
@@ -132,7 +134,7 @@ def test_random_items(prepared_prod_args):
 
 
 @pytest.mark.parametrize(
-    "config, stream_len",
+    ("config", "stream_len"),
     [
         (PROD_CONFIG_FILE, 30),
         (SANDBOX_CONFIG_FILE, 22),
@@ -152,13 +154,12 @@ def test_source_spec():
 
 @pytest.fixture(name="config")
 def config_fixture():
-    config = {
+    return {
         "account_id": 123,
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00",
         "end_date": "2020-10-10T00:00:00",
     }
-    return config
 
 
 @pytest.fixture(name="logger_mock")
@@ -167,9 +168,8 @@ def logger_mock_fixture():
 
 
 def test_source_check_connection_ok(config, logger_mock):
-    with patch.object(Advertisers, "stream_slices"):
-        with patch.object(Advertisers, "read_records", return_value=iter([1])):
-            assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
+    with patch.object(Advertisers, "stream_slices"), patch.object(Advertisers, "read_records", return_value=iter([1])):
+        assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
 
 
 def test_source_check_connection_failed(config, logger_mock):

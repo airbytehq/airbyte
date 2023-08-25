@@ -4,8 +4,9 @@
 
 import jsonschema
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_faker import SourceFaker
+
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 
 
 class MockLogger:
@@ -17,7 +18,6 @@ class MockLogger:
 
     def exception(a, b, **kwargs):
         print(b)
-        return None
 
     def isEnabledFor(a, b, **kwargs):
         return False
@@ -86,8 +86,8 @@ def test_read_small_random_data():
                 "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
-            }
-        ]
+            },
+        ],
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -117,8 +117,8 @@ def test_read_always_updated():
                 "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
-            }
-        ]
+            },
+        ],
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -150,8 +150,8 @@ def test_read_products():
                 "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
-            }
-        ]
+            },
+        ],
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -187,7 +187,7 @@ def test_read_big_random_data():
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
             },
-        ]
+        ],
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -224,7 +224,7 @@ def test_with_purchases():
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
             },
-        ]
+        ],
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -242,10 +242,7 @@ def test_with_purchases():
 
 
 def test_read_with_seed():
-    """
-    This test asserts that setting a seed always returns the same values
-    """
-
+    """This test asserts that setting a seed always returns the same values."""
     source = SourceFaker()
     config = {"count": 1, "seed": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
@@ -254,8 +251,8 @@ def test_read_with_seed():
                 "stream": {"name": "users", "json_schema": {}, "supported_sync_modes": ["incremental"]},
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
-            }
-        ]
+            },
+        ],
     )
     state = {}
     iterator = source.read(logger, config, catalog, state)
@@ -272,7 +269,7 @@ def test_ensure_no_purchases_without_users():
         catalog = ConfiguredAirbyteCatalog(
             streams=[
                 {"stream": {"name": "purchases", "json_schema": {}}, "sync_mode": "incremental", "destination_sync_mode": "overwrite"},
-            ]
+            ],
         )
         state = {}
         iterator = source.read(logger, config, catalog, state)

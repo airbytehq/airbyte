@@ -10,11 +10,12 @@ from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
-from requests.auth import AuthBase
 
 PAGE_SIZE = 500
 BASE_URL = "https://api.insightly.com/v3.1/"
@@ -27,7 +28,7 @@ class InsightlyStream(HttpStream, ABC):
 
     url_base = BASE_URL
 
-    def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
+    def __init__(self, authenticator: AuthBase, start_date: Optional[str] = None, **kwargs):
         self.start_date = start_date
         super().__init__(authenticator=authenticator)
 
@@ -38,7 +39,7 @@ class InsightlyStream(HttpStream, ABC):
         return new_skip if new_skip <= self.total_count else None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "count_total": True,
@@ -168,22 +169,19 @@ class Teams(InsightlyStream):
 
 
 class IncrementalInsightlyStream(InsightlyStream, ABC):
-    """Insighlty incremental stream using `updated_after_utc` filter"""
+    """Insighlty incremental stream using `updated_after_utc` filter."""
 
     cursor_field = "DATE_UPDATED_UTC"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
         start_datetime = pendulum.parse(self.start_date)
         cursor_datetime = stream_state.get(self.cursor_field)
         if cursor_datetime:
-            if isinstance(cursor_datetime, datetime):
-                start_datetime = cursor_datetime
-            else:
-                start_datetime = pendulum.parse(cursor_datetime)
+            start_datetime = cursor_datetime if isinstance(cursor_datetime, datetime) else pendulum.parse(cursor_datetime)
 
             # subtract 1 second to make the incremental request inclusive
             start_datetime = start_datetime.subtract(seconds=1)
@@ -364,10 +362,7 @@ class SourceInsightly(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = BasicHttpAuthenticator(username=config.get("token"), password="")
         return [
             ActivitySets(authenticator=auth, **config),

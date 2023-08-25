@@ -39,8 +39,8 @@ class TestBaseStream:
             [
                 {
                     "json": [{"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}}] * 3,
-                }
-            ]
+                },
+            ],
         )
 
         stream = SomeTestStream(api=api)
@@ -58,8 +58,8 @@ class TestBaseStream:
             [
                 {
                     "json": [{"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}}] * 5,
-                }
-            ]
+                },
+            ],
         )
 
         stream = SomeTestStream(api=api)
@@ -72,8 +72,7 @@ class TestBaseStream:
         assert len(result) == 5 * 2
 
     def test_execute_in_batch_with_retries(self, api, batch, mock_batch_responses):
-        """Should retry batch execution until succeed"""
-        # batch.execute.side_effect = [batch, batch, None]
+        """Should retry batch execution until succeed."""
         mock_batch_responses(
             [
                 {
@@ -94,7 +93,7 @@ class TestBaseStream:
                         {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
                     ],
                 },
-            ]
+            ],
         )
 
         stream = SomeTestStream(api=api)
@@ -107,7 +106,7 @@ class TestBaseStream:
         assert len(result) == 3
 
     def test_execute_in_batch_with_fails(self, api, batch, mock_batch_responses):
-        """Should fail with exception when any request returns error"""
+        """Should fail with exception when any request returns error."""
         mock_batch_responses(
             [
                 {
@@ -115,8 +114,8 @@ class TestBaseStream:
                         {"body": "{}", "code": 500, "headers": {}},
                         {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
                     ],
-                }
-            ]
+                },
+            ],
         )
 
         stream = SomeTestStream(api=api)
@@ -129,8 +128,7 @@ class TestBaseStream:
         assert batch.execute.call_count == 1
 
     def test_batch_reduce_amount(self, api, batch, mock_batch_responses, caplog):
-        """Reduce batch size to 1 and finally fail with message"""
-
+        """Reduce batch size to 1 and finally fail with message."""
         retryable_message = "Please reduce the amount of data you're asking for, then retry your request"
         mock_batch_responses(
             [
@@ -138,8 +136,8 @@ class TestBaseStream:
                     "json": [
                         {"body": {"error": {"message": retryable_message}}, "code": 500, "headers": {}},
                     ],
-                }
-            ]
+                },
+            ],
         )
 
         stream = SomeTestStream(api=api)
@@ -154,7 +152,7 @@ class TestBaseStream:
             assert expected_batch_size in caplog.messages[index]
 
     def test_execute_in_batch_retry_batch_error(self, api, batch, mock_batch_responses):
-        """Should retry without exception when any request returns 960 error code"""
+        """Should retry without exception when any request returns 960 error code."""
         mock_batch_responses(
             [
                 {
@@ -168,8 +166,8 @@ class TestBaseStream:
                                         "type": "FacebookApiException",
                                         "code": 960,
                                         "fbtrace_id": "AWuyQlmgct0a_n64b-D1AFQ",
-                                    }
-                                }
+                                    },
+                                },
                             ),
                             "code": 500,
                             "headers": {},
@@ -182,7 +180,7 @@ class TestBaseStream:
                         {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
                     ],
                 },
-            ]
+            ],
         )
 
         stream = SomeTestStream(api=api)

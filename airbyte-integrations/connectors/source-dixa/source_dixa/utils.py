@@ -7,22 +7,19 @@ from datetime import datetime, timedelta, timezone
 
 
 def validate_ms_timestamp(ms_timestamp: int) -> int:
-    if not type(ms_timestamp) == int or not len(str(ms_timestamp)) == 13:
-        raise ValueError(f"Not a millisecond-precision timestamp: {ms_timestamp}")
+    if type(ms_timestamp) != int or len(str(ms_timestamp)) != 13:
+        msg = f"Not a millisecond-precision timestamp: {ms_timestamp}"
+        raise ValueError(msg)
     return ms_timestamp
 
 
 def ms_timestamp_to_datetime(ms_timestamp: int) -> datetime:
-    """
-    Converts a millisecond-precision timestamp to a datetime object.
-    """
+    """Converts a millisecond-precision timestamp to a datetime object."""
     return datetime.fromtimestamp(validate_ms_timestamp(ms_timestamp) / 1000, tz=timezone.utc)
 
 
 def datetime_to_ms_timestamp(dt: datetime) -> int:
-    """
-    Converts a datetime object to a millisecond-precision timestamp.
-    """
+    """Converts a datetime object to a millisecond-precision timestamp."""
     return int(dt.timestamp() * 1000)
 
 

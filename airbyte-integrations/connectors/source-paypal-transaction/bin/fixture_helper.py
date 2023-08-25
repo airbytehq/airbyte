@@ -46,23 +46,8 @@ API_TOKEN = response_json["access_token"]
 
 # CREATE TRANSACTIONS
 # for i in range(1000):
-#     create_response = requests.post(
-#         "https://api-m.sandbox.paypal.com/v2/checkout/orders",
-#         headers={'content-type': 'application/json', 'authorization': f'Bearer {API_TOKEN}', "prefer": "return=representation"},
-#         json={
-#             "intent": "CAPTURE",
 #             "purchase_units": [
-#                 {
-#                     "amount": {
-#                         "currency_code": "USD",
-#                         "value": f"{float(i)}"
-#                     }
-#                 }
-#             ]
-#         }
-#     )
 #
-# print(create_response.json())
 
 # %% LIST TRANSACTIONS
 

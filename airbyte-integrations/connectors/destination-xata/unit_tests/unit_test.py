@@ -25,5 +25,5 @@ class DestinationConnectorXataTestCase(unittest.TestCase):
         assert stats["failed_batches"] == 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

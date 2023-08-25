@@ -12,6 +12,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -40,7 +41,7 @@ class CustomBackoffMixin:
                   },
                 ]
               }
-            }
+            }.
 
         :param response:
         :return:
@@ -55,8 +56,7 @@ class CustomBackoffMixin:
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        Override to set different conditions for backoff based on the response from the server.
+        """Override to set different conditions for backoff based on the response from the server.
 
         By default, back off on the following HTTP response statuses:
          - 500s to handle transient server errors
@@ -87,15 +87,12 @@ class CustomBackoffMixin:
 
     @property
     def retry_factor(self) -> float:
-        """
-        Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds
-        """
+        """Default FreeQuotaRequestsPerMinutePerProject is 60 reqs/min, so reasonable delay is 30 seconds."""
         return 30
 
 
 class JobsResource(CustomBackoffMixin, HttpStream):
-    """
-    https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs
+    """https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.
 
     All YouTube Analytics streams require a created reporting job.
     This class allows to `list` all existing reporting jobs or `create` new reporting job for a specific stream. One stream can have only one reporting job.
@@ -122,7 +119,7 @@ class JobsResource(CustomBackoffMixin, HttpStream):
         # if the connected Google account is not bounded with target Youtube account,
         # we receive `401: UNAUTHENTICATED`
         if response.status_code == 401:
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         else:
             return super().should_retry(response)
@@ -136,9 +133,10 @@ class JobsResource(CustomBackoffMixin, HttpStream):
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
         if self.name:
             return {"name": self.JOB_NAME, "reportTypeId": self.name}
+        return None
 
     def list(self):
-        "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list"
+        "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/list."
         self.name = None
         self.http_method = "GET"
         results = list(self.read_records(sync_mode=None))
@@ -146,7 +144,7 @@ class JobsResource(CustomBackoffMixin, HttpStream):
         return result.get("jobs", {})
 
     def create(self, name):
-        "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/create"
+        "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs/create."
         self.name = name
         self.http_method = "POST"
         results = list(self.read_records(sync_mode=None))
@@ -155,13 +153,13 @@ class JobsResource(CustomBackoffMixin, HttpStream):
 
 
 class ReportResources(CustomBackoffMixin, HttpStream):
-    "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.reports/list"
+    "https://developers.google.com/youtube/reporting/v1/reference/rest/v1/jobs.reports/list."
 
     name = None
     primary_key = "id"
     url_base = "https://youtubereporting.googleapis.com/v1/"
 
-    def __init__(self, name: str, jobs_resource: JobsResource, job_id: str, start_time: str = None, **kwargs):
+    def __init__(self, name: str, jobs_resource: JobsResource, job_id: str, start_time: Optional[str] = None, **kwargs):
         self.name = name
         self.jobs_resource = jobs_resource
         self.job_id = job_id
@@ -169,18 +167,18 @@ class ReportResources(CustomBackoffMixin, HttpStream):
         super().__init__(**kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if not self.job_id:
             self.job_id = self.jobs_resource.create(self.name)
             self.logger.info(f"YouTube reporting job is created: '{self.job_id}'")
-        return "jobs/{}/reports".format(self.job_id)
+        return f"jobs/{self.job_id}/reports"
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {"startTimeAtOrAfter": self.start_time} if self.start_time else {}
 
@@ -204,7 +202,7 @@ class ReportResources(CustomBackoffMixin, HttpStream):
 
 
 class ChannelReports(CustomBackoffMixin, HttpSubStream):
-    "https://developers.google.com/youtube/reporting/v1/reports/channel_reports"
+    "https://developers.google.com/youtube/reporting/v1/reports/channel_reports."
 
     name = None
     primary_key = None
@@ -223,8 +221,7 @@ class ChannelReports(CustomBackoffMixin, HttpSubStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         fp = io.StringIO(response.text)
         reader = csv.DictReader(fp)
-        for record in reader:
-            yield record
+        yield from reader
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         if not current_stream_state:
@@ -232,11 +229,11 @@ class ChannelReports(CustomBackoffMixin, HttpSubStream):
         return {self.cursor_field: max(current_stream_state[self.cursor_field], latest_record[self.cursor_field])}
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return stream_slice["parent"]["downloadUrl"]
 
-    def read_records(self, *, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, *, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         parent = stream_slice.get("parent")
         if parent:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
@@ -296,7 +293,7 @@ class SourceYoutubeAnalytics(AbstractSource):
             dimensions = channel_report["dimensions"]
             job_id = report_to_job_id.get(stream_name)
             parent = ReportResources(
-                name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator
+                name=stream_name, jobs_resource=jobs_resource, job_id=job_id, start_time=start_time, authenticator=authenticator,
             )
             streams.append(ChannelReports(name=stream_name, dimensions=dimensions, parent=parent, authenticator=authenticator))
         return streams

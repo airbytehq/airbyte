@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -22,7 +23,9 @@ class QualarooStream(HttpStream, ABC):
 
     extra_params = None
 
-    def __init__(self, start_date: pendulum.datetime, survey_ids: List[str] = [], **kwargs):
+    def __init__(self, start_date: pendulum.datetime, survey_ids: Optional[List[str]] = None, **kwargs):
+        if survey_ids is None:
+            survey_ids = []
         super().__init__(**kwargs)
         self._start_date = start_date
         self._survey_ids = survey_ids
@@ -34,9 +37,10 @@ class QualarooStream(HttpStream, ABC):
         if len(resp_json) == 500:
             self._offset += 500
             return {"offset": self._offset}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit, "start_date": self._start_date}
         if next_page_token:
@@ -47,8 +51,7 @@ class QualarooStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
-        for record in json_response:
-            yield record
+        yield from json_response
 
 
 class ChildStreamMixin:
@@ -62,10 +65,10 @@ class ChildStreamMixin:
 class Surveys(QualarooStream):
     """Return list of all Surveys.
     API Docs: https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API
-    Endpoint: https://api.qualaroo.com/api/v1/nudges/
+    Endpoint: https://api.qualaroo.com/api/v1/nudges/.
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "nudges"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -79,12 +82,12 @@ class Surveys(QualarooStream):
 class Responses(ChildStreamMixin, QualarooStream):
     """Return list of all responses of a survey.
     API Docs: hhttps://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API
-    Endpoint: https://api.qualaroo.com/api/v1/nudges/<id>/responses.json
+    Endpoint: https://api.qualaroo.com/api/v1/nudges/<id>/responses.json.
     """
 
     parent_stream_class = Surveys
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         survey_id = stream_slice["survey_id"]
         return f"nudges/{survey_id}/responses.json"
 

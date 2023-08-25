@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -42,5 +43,5 @@ class SourceOpenWeather(AbstractSource):
                 lon=valid_config["lon"],
                 lang=valid_config.get("lang"),
                 units=valid_config.get("units"),
-            )
+            ),
         ]

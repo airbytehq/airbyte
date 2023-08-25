@@ -24,8 +24,7 @@ TEST_BASE_ANALLYTICS_FIELDS = ["base_field_1", "base_field_2"]
 
 
 def test_chunk_analytics_fields():
-    """
-    We expect to truncate the fields list into the chunks of equal size,
+    """We expect to truncate the fields list into the chunks of equal size,
     with TEST_BASE_ANALLYTICS_FIELDS presence in each chunk,
     order is not matter.
     """

@@ -36,7 +36,7 @@ def exclude_secrets_from_diff(obj: Any, path: str) -> bool:
         bool: Whether to ignore the object from the diff.
     """
     if isinstance(obj, str):
-        return True if SECRET_MASK in obj else False
+        return SECRET_MASK in obj
     else:
         return False
 

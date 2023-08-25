@@ -5,13 +5,14 @@
 from enum import Enum
 from typing import Any, List, Mapping, Optional, Type, Union
 
+from pydantic import BaseModel, Field, validator
+
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from pydantic import BaseModel, Field, validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
@@ -47,7 +48,7 @@ class FileBasedStreamConfig(BaseModel):
         description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
     )
     primary_key: Optional[str] = Field(
-        title="Primary Key", description="The column or columns (for a composite key) that serves as the unique identifier of a record."
+        title="Primary Key", description="The column or columns (for a composite key) that serves as the unique identifier of a record.",
     )
     days_to_sync_if_history_is_full: int = Field(
         title="Days To Sync If History Is Full",
@@ -67,31 +68,34 @@ class FileBasedStreamConfig(BaseModel):
     @validator("file_type", pre=True)
     def validate_file_type(cls, v: str) -> str:
         if v not in VALID_FILE_TYPES:
-            raise ValueError(f"Format filetype {v} is not a supported file type")
+            msg = f"Format filetype {v} is not a supported file type"
+            raise ValueError(msg)
         return v
 
     @classmethod
     def _transform_legacy_config(cls, legacy_config: Mapping[str, Any], file_type: str) -> Mapping[str, Any]:
         if file_type.casefold() not in VALID_FILE_TYPES:
-            raise ValueError(f"Format filetype {file_type} is not a supported file type")
+            msg = f"Format filetype {file_type} is not a supported file type"
+            raise ValueError(msg)
         if file_type.casefold() == "parquet" or file_type.casefold() == "avro":
             legacy_config = cls._transform_legacy_parquet_or_avro_config(legacy_config)
-        return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj({key: val for key, val in legacy_config.items()})}
+        return {file_type: VALID_FILE_TYPES[file_type.casefold()].parse_obj(dict(legacy_config.items()))}
 
     @classmethod
     def _transform_legacy_parquet_or_avro_config(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        The legacy parquet parser converts decimal fields to numbers. This isn't desirable because it can lead to precision loss.
+        """The legacy parquet parser converts decimal fields to numbers. This isn't desirable because it can lead to precision loss.
         To avoid introducing a breaking change with the new default, we will set decimal_as_float to True in the legacy configs.
         """
         filetype = config.get("filetype")
         if filetype != "parquet" and filetype != "avro":
+            msg = f"Expected {filetype} format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support."
             raise ValueError(
-                f"Expected {filetype} format, got {config}. This is probably due to a CDK bug. Please reach out to the Airbyte team for support."
+                msg,
             )
         if config.get("decimal_as_float"):
+            msg = f"Received legacy {filetype} file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
             raise ValueError(
-                f"Received legacy {filetype} file form with 'decimal_as_float' set. This is unexpected. Please reach out to the Airbyte team for support."
+                msg,
             )
         return {**config, **{"decimal_as_float": True}}
 
@@ -105,13 +109,13 @@ class FileBasedStreamConfig(BaseModel):
         return None
 
     def get_input_schema(self) -> Optional[Mapping[str, Any]]:
-        """
-        User defined input_schema is defined as a string in the config. This method takes the string representation
+        """User defined input_schema is defined as a string in the config. This method takes the string representation
         and converts it into a Mapping[str, Any] which is used by file-based CDK components.
         """
         if self.input_schema:
             schema = type_mapping_to_jsonschema(self.input_schema)
             if not schema:
-                raise ValueError(f"Unable to create JSON schema from input schema {self.input_schema}")
+                msg = f"Unable to create JSON schema from input schema {self.input_schema}"
+                raise ValueError(msg)
             return schema
         return None

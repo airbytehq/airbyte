@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
@@ -14,7 +15,7 @@ config = {"backoff": 5}
 
 
 @pytest.mark.parametrize(
-    "test_name, attempt_count, factor, expected_backoff_time",
+    ("test_name", "attempt_count", "factor", "expected_backoff_time"),
     [
         ("test_exponential_backoff_first_attempt", 1, 5, 10),
         ("test_exponential_backoff_second_attempt", 2, 5, 20),

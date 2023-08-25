@@ -6,13 +6,14 @@ import logging
 from typing import List, Mapping, Optional, Tuple, Union
 
 import dpath.util
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode
-from destination_langchain.config import ProcessingConfigModel
 from dpath.exceptions import PathNotFound
 from langchain.document_loaders.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
+
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode
+from destination_langchain.config import ProcessingConfigModel
 
 METADATA_STREAM_FIELD = "_airbyte_stream"
 METADATA_RECORD_ID_FIELD = "_record_id"
@@ -26,7 +27,7 @@ class DocumentProcessor:
         self.max_metadata_size = max_metadata_size
 
         self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
+            chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap,
         )
         self.text_fields = config.text_fields
         self.logger = logging.getLogger("airbyte.document_processor")
@@ -38,10 +39,9 @@ class DocumentProcessor:
             return stream.stream if stream.namespace is None else f"{stream.namespace}_{stream.stream}"
 
     def process(self, record: AirbyteRecordMessage) -> Tuple[List[Document], Optional[str]]:
-        """
-        Generate documents from records.
+        """Generate documents from records.
         :param records: List of AirbyteRecordMessages
-        :return: Tuple of (List of document chunks, record id to delete if a stream is in dedup mode to avoid stale documents in the vector store)
+        :return: Tuple of (List of document chunks, record id to delete if a stream is in dedup mode to avoid stale documents in the vector store).
         """
         doc = self._generate_document(record)
         if doc is None:
@@ -97,9 +97,7 @@ class DocumentProcessor:
         return "_".join(primary_key)
 
     def _truncate_metadata(self, metadata: dict) -> dict:
-        """
-        Normalize metadata to ensure it is within the size limit and doesn't contain complex objects.
-        """
+        """Normalize metadata to ensure it is within the size limit and doesn't contain complex objects."""
         result = {}
         current_size = 0
 
@@ -116,5 +114,4 @@ class DocumentProcessor:
         return result
 
     def _split_document(self, doc: Document) -> List[Document]:
-        chunks = self.splitter.split_documents([doc])
-        return chunks
+        return self.splitter.split_documents([doc])

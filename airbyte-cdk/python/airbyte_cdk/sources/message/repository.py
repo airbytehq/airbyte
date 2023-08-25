@@ -33,7 +33,7 @@ def _is_severe_enough(threshold: Level, level: Level) -> bool:
 
     if level not in _SEVERITY_BY_LOG_LEVEL:
         _LOGGER.warning(
-            f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte."
+            f"Log level {level} is not supported. This is probably a source bug. Please contact the owner of the source or Airbyte.",
         )
         return True
 
@@ -43,19 +43,18 @@ def _is_severe_enough(threshold: Level, level: Level) -> bool:
 class MessageRepository(ABC):
     @abstractmethod
     def emit_message(self, message: AirbyteMessage) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
+        """Computing messages can be resource consuming. This method is specialized for logging because we want to allow for lazy evaluation if
+        the log level is less severe than what is configured.
         """
-        Computing messages can be resource consuming. This method is specialized for logging because we want to allow for lazy evaluation if
-        the log level is less severe than what is configured
-        """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def consume_queue(self) -> Iterable[AirbyteMessage]:
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class NoopMessageRepository(MessageRepository):
@@ -75,18 +74,18 @@ class InMemoryMessageRepository(MessageRepository):
         self._log_level = log_level
 
     def emit_message(self, message: AirbyteMessage) -> None:
-        """
-        :param message: As of today, only AirbyteControlMessages are supported given that supporting other types of message will need more
-          work and therefore this work has been postponed
+        """:param message: As of today, only AirbyteControlMessages are supported given that supporting other types of message will need more
+        work and therefore this work has been postponed
         """
         if message.type not in _SUPPORTED_MESSAGE_TYPES:
-            raise ValueError(f"As of today, only {_SUPPORTED_MESSAGE_TYPES} are supported as part of the InMemoryMessageRepository")
+            msg = f"As of today, only {_SUPPORTED_MESSAGE_TYPES} are supported as part of the InMemoryMessageRepository"
+            raise ValueError(msg)
         self._message_queue.append(message)
 
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
         if _is_severe_enough(self._log_level, level):
             self.emit_message(
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider()))))
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider())))),
             )
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:
@@ -119,10 +118,10 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
         for key in second:
             if key in first:
                 if isinstance(first[key], dict) and isinstance(second[key], dict):
-                    self._append_second_to_first(first[key], second[key], path + [str(key)])  # type: ignore # type is verified above
+                    self._append_second_to_first(first[key], second[key], [*path, str(key)])  # type: ignore # type is verified above
                 else:
                     if first[key] != second[key]:
-                        _LOGGER.warning("Conflict at %s" % ".".join(path + [str(key)]))
+                        _LOGGER.warning("Conflict at %s" % ".".join([*path, str(key)]))
                     first[key] = second[key]
             else:
                 first[key] = second[key]

@@ -17,27 +17,26 @@ from .client import Client
 class SourceMicrosoftTeams(BaseSource):
     client_class = Client
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     def _get_client(self, config: json):
-        """Construct client"""
-        client = self.client_class(config=config)
-        return client
+        """Construct client."""
+        return self.client_class(config=config)
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         client = self._get_client(config)
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 
         logger.info(f"Starting syncing {self.__class__.__name__}")
         for configured_stream in catalog.streams:
             stream = configured_stream.stream
-            if stream.name not in client.ENTITY_MAP.keys():
+            if stream.name not in client.ENTITY_MAP:
                 continue
             logger.info(f"Syncing {stream.name} stream")
             for record in self._read_record(client=client, stream=stream.name):

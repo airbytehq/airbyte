@@ -7,6 +7,7 @@
 import datetime
 
 import pytest
+
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
@@ -258,7 +259,7 @@ spec:
     assert isinstance(checker, CheckStream)
     streams_to_check = checker.stream_names
     assert len(streams_to_check) == 1
-    assert list(streams_to_check)[0] == "list_stream"
+    assert next(iter(streams_to_check)) == "list_stream"
 
     spec = factory.create_component(model_type=SpecModel, component_definition=manifest["spec"], config=input_config)
 
@@ -296,7 +297,7 @@ def test_interpolate_config():
     authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
 
     authenticator = factory.create_component(
-        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=input_config
+        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=input_config,
     )
 
     assert isinstance(authenticator, DeclarativeOauth2Authenticator)
@@ -331,7 +332,7 @@ def test_single_use_oauth_branch():
     authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
 
     authenticator: SingleUseRefreshTokenOauth2Authenticator = factory.create_component(
-        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=single_use_input_config
+        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=single_use_input_config,
     )
 
     assert isinstance(authenticator, SingleUseRefreshTokenOauth2Authenticator)
@@ -360,7 +361,7 @@ def test_list_based_stream_slicer_with_values_refd():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     partition_router = factory.create_component(
-        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
+        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config,
     )
 
     assert isinstance(partition_router, ListPartitionRouter)
@@ -383,7 +384,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     partition_router = factory.create_component(
-        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
+        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config,
     )
 
     assert isinstance(partition_router, ListPartitionRouter)
@@ -439,7 +440,7 @@ def test_create_substream_partition_router():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     partition_router = factory.create_component(
-        model_type=SubstreamPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
+        model_type=SubstreamPartitionRouterModel, component_definition=partition_router_manifest, config=input_config,
     )
 
     assert isinstance(partition_router, SubstreamPartitionRouter)
@@ -686,12 +687,12 @@ incremental_sync:
         factory.create_component(
             model_type=DatetimeBasedCursorModel,
             component_definition=datetime_based_cursor_definition,
-            config=input_config
+            config=input_config,
         )
 
 
 @pytest.mark.parametrize(
-    "test_name, record_selector, expected_runtime_selector",
+    ("test_name", "record_selector", "expected_runtime_selector"),
     [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ parameters['name'] }}", "lists")],
 )
 def test_create_record_selector(test_name, record_selector, expected_runtime_selector):
@@ -723,7 +724,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
 
 
 @pytest.mark.parametrize(
-    "test_name, error_handler, expected_backoff_strategy_type",
+    ("test_name", "error_handler", "expected_backoff_strategy_type"),
     [
         (
             "test_create_requester_constant_error_handler",
@@ -792,7 +793,7 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name,
     )
 
     assert isinstance(selector, HttpRequester)
@@ -841,7 +842,7 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name,
     )
 
     assert isinstance(selector, HttpRequester)
@@ -889,7 +890,7 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name,
     )
 
     assert isinstance(selector.authenticator, ApiKeyAuthenticator)
@@ -918,7 +919,7 @@ def test_create_composite_error_handler():
     error_handler_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["error_handler"], {})
 
     error_handler = factory.create_component(
-        model_type=CompositeErrorHandlerModel, component_definition=error_handler_manifest, config=input_config
+        model_type=CompositeErrorHandlerModel, component_definition=error_handler_manifest, config=input_config,
     )
 
     assert isinstance(error_handler, CompositeErrorHandler)
@@ -1029,7 +1030,7 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io",
     )
 
     assert isinstance(paginator, DefaultPaginator)
@@ -1047,7 +1048,7 @@ def test_create_default_paginator():
 
 
 @pytest.mark.parametrize(
-    "manifest, field_name, expected_value, expected_error",
+    ("manifest", "field_name", "expected_value", "expected_error"),
     [
         pytest.param(
             {
@@ -1134,7 +1135,7 @@ def test_create_default_paginator():
             "paginator",
             DefaultPaginator(
                 pagination_strategy=OffsetIncrement(
-                    page_size=10, config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}
+                    page_size=10, config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={},
                 ),
                 url_base="https://physical_100.com",
                 config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]},
@@ -1201,12 +1202,12 @@ def test_custom_components_do_not_contain_extra_fields():
                 "parent_key": "id",
                 "partition_field": "repository_id",
                 "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
-            }
+            },
         ],
     }
 
     custom_substream_partition_router = factory.create_component(
-        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config
+        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config,
     )
     assert isinstance(custom_substream_partition_router, TestingCustomSubstreamPartitionRouter)
 
@@ -1249,12 +1250,12 @@ def test_parse_custom_component_fields_if_subcomponent():
                 "parent_key": "id",
                 "partition_field": "repository_id",
                 "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
-            }
+            },
         ],
     }
 
     custom_substream_partition_router = factory.create_component(
-        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config
+        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config,
     )
     assert isinstance(custom_substream_partition_router, TestingCustomSubstreamPartitionRouter)
     assert custom_substream_partition_router.custom_field == "here"
@@ -1356,10 +1357,10 @@ class TestCreateTransformations:
                         path=["field1"],
                         value=InterpolatedString(string="static_value", default="static_value", parameters={}),
                         parameters={},
-                    )
+                    ),
                 ],
                 parameters={},
-            )
+            ),
         ]
         assert stream.retriever.record_selector.transformations == expected
 
@@ -1390,14 +1391,14 @@ class TestCreateTransformations:
         ws = ManifestComponentTransformer()
         propagated_source_config = ws.propagate_types_and_parameters("", resolved_manifest, {})
         stream = factory.create_component(
-            model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config
+            model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config,
         )
         schema_loader = stream.schema_loader
         assert schema_loader.default_loader._get_json_filepath().split("/")[-1] == f"{stream.name}.json"
 
 
 @pytest.mark.parametrize(
-    "incremental, partition_router, expected_type",
+    ("incremental", "partition_router", "expected_type"),
     [
         pytest.param(
             {

@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Iterable, List, Mapping
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
@@ -22,7 +22,9 @@ from destination_langchain.config import ConfigModel
 from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.embedder import Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_langchain.indexer import ChromaLocalIndexer, DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
-from langchain.document_loaders.base import Document
+
+if TYPE_CHECKING:
+    from langchain.document_loaders.base import Document
 
 BATCH_SIZE = 128
 
@@ -51,7 +53,7 @@ class DestinationLangchain(Destination):
         self.indexer.index(documents, ids_to_delete)
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)

@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
@@ -14,13 +15,12 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class OffsetIncrement(PaginationStrategy):
-    """
-    Pagination strategy that returns the number of records reads so far and returns it as the next page token
+    """Pagination strategy that returns the number of records reads so far and returns it as the next page token
     Examples:
         # page_size to be a constant integer value
         pagination_strategy:
           type: OffsetIncrement
-          page_size: 2
+          page_size: 2.
 
         # page_size to be a constant string value
         pagination_strategy:
@@ -66,7 +66,8 @@ class OffsetIncrement(PaginationStrategy):
         if self._page_size:
             page_size = self._page_size.eval(self.config)
             if not isinstance(page_size, int):
-                raise Exception(f"{page_size} is of type {type(page_size)}. Expected {int}")
+                msg = f"{page_size} is of type {type(page_size)}. Expected {int}"
+                raise Exception(msg)
             return page_size
         else:
             return self._page_size

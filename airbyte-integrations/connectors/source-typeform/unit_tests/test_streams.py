@@ -5,9 +5,10 @@
 from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
+from source_typeform.source import Forms, Images, Responses, Themes, TypeformStream, Webhooks, Workspaces
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_typeform.source import Forms, Images, Responses, Themes, TypeformStream, Webhooks, Workspaces
 
 logger = AirbyteLogger()
 

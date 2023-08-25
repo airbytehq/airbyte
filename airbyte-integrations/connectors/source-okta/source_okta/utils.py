@@ -8,6 +8,7 @@ from typing import Any, Mapping
 from urllib import parse
 
 import pendulum
+
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 from .authenticator import OktaOauth2Authenticator
@@ -25,11 +26,13 @@ def initialize_authenticator(config: Mapping[str, Any]):
 
     credentials = config.get("credentials")
     if not credentials:
-        raise Exception("Config validation error. `credentials` not specified.")
+        msg = "Config validation error. `credentials` not specified."
+        raise Exception(msg)
 
     auth_type = credentials.get("auth_type")
     if not auth_type:
-        raise Exception("Config validation error. `auth_type` not specified.")
+        msg = "Config validation error. `auth_type` not specified."
+        raise Exception(msg)
 
     if auth_type == "api_token":
         return TokenAuthenticator(credentials["api_token"], auth_method="SSWS")
@@ -41,6 +44,7 @@ def initialize_authenticator(config: Mapping[str, Any]):
             client_id=credentials["client_id"],
             refresh_token=credentials["refresh_token"],
         )
+    return None
 
 
 def get_url_base(config: Mapping[str, Any]) -> str:

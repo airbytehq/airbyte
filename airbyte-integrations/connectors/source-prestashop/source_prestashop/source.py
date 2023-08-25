@@ -3,15 +3,14 @@
 #
 
 
-"""
-This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+"""This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
 source connector.
 
 WARNING: Do not modify this file.
 """
 
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Union
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -30,13 +29,13 @@ class ConfigException(Exception):
 
 # Declarative Source
 class SourcePrestashop(YamlDeclarativeSource):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
-        if not config.get("_allow_http"):
-            if not config["url"].lower().startswith("https://"):
-                raise ConfigException(f"Invalid url: {config['url']}, only https scheme is allowed")
+        if not config.get("_allow_http") and not config["url"].lower().startswith("https://"):
+            msg = f"Invalid url: {config['url']}, only https scheme is allowed"
+            raise ConfigException(msg)
         return config
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
@@ -55,7 +54,7 @@ class SourcePrestashop(YamlDeclarativeSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         config = self._validate_and_transform(config)
         return super().read(logger, config, catalog, state)

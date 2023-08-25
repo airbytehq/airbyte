@@ -3,15 +3,6 @@
 #
 
 import pytest
-from airbyte_api_client.api import (
-    destination_definition_api,
-    destination_definition_specification_api,
-    source_definition_api,
-    source_definition_specification_api,
-)
-from airbyte_api_client.exceptions import ApiException
-from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
-from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from octavia_cli.generate.definitions import (
     BaseDefinition,
     DefinitionNotFoundError,
@@ -23,9 +14,19 @@ from octavia_cli.generate.definitions import (
     factory,
 )
 
+from airbyte_api_client.api import (
+    destination_definition_api,
+    destination_definition_specification_api,
+    source_definition_api,
+    source_definition_specification_api,
+)
+from airbyte_api_client.exceptions import ApiException
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
+
 
 class TestBaseDefinition:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(BaseDefinition, "__abstractmethods__", set())
@@ -89,7 +90,7 @@ class TestDestinationDefinition:
         assert destination_definition.type == "destination"
         assert destination_definition.get_function_name == "get_destination_definition"
         assert destination_definition._get_fn_kwargs == {
-            "destination_definition_id_request_body": DestinationDefinitionIdRequestBody("source_id")
+            "destination_definition_id_request_body": DestinationDefinitionIdRequestBody("source_id"),
         }
 
 

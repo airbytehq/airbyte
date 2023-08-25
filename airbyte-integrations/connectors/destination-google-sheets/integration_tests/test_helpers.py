@@ -6,20 +6,19 @@
 import json
 from typing import Any, Mapping
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_google_sheets.client import GoogleSheetsClient
 from destination_google_sheets.helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalog
 from destination_google_sheets.spreadsheet import GoogleSheets
 from pygsheets.client import Client as pygsheets_client
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+
 # ----- PREPARE ENV -----
 
 
 def get_config(config_path: str = "secrets/config_oauth.json") -> Mapping[str, Any]:
-    """
-    Get the config from /test_input
-    """
-    with open(config_path, "r") as f:
+    """Get the config from /test_input."""
+    with open(config_path) as f:
         return json.loads(f.read())
 
 

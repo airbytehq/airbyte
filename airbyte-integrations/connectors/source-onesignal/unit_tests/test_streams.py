@@ -10,7 +10,7 @@ import requests
 from source_onesignal.streams import OnesignalStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(OnesignalStream, "path", "v0/example_endpoint")
@@ -18,7 +18,7 @@ def patch_base_class(mocker):
     mocker.patch.object(OnesignalStream, "__abstractmethods__", set())
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream(patch_base_class):
     args = {"authenticator": None, "config": {"user_auth_key": "", "start_date": "2021-01-01T00:00:00Z", "outcome_names": ""}}
     return OnesignalStream(**args)

@@ -2,13 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-Country	marketplaceId	Country code
+"""Country	marketplaceId	Country code
 Canada	A2EUQ1WTGCTBG2	CA
 United States of America	ATVPDKIKX0DER	US
 Mexico	A1AM78C64UM0Y8	MX
 Brazil	A2Q3Y263D00KWC	BR
-Europe
+Europe.
 
 Country	marketplaceId	Country code
 Spain	A1RKKUPIHCS9HS	ES

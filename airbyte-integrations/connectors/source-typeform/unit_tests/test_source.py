@@ -4,9 +4,10 @@
 
 import re
 
-from airbyte_cdk import AirbyteLogger
 from source_typeform import SourceTypeform
 from source_typeform.source import TypeformStream
+
+from airbyte_cdk import AirbyteLogger
 
 logger = AirbyteLogger()
 
@@ -20,7 +21,8 @@ def test_check_connection_success(requests_mock, config, empty_response_ok):
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert ok and not error
+    assert ok
+    assert not error
 
 
 def test_check_connection_bad_request_me(requests_mock, config, empty_response_bad):
@@ -28,7 +30,9 @@ def test_check_connection_bad_request_me(requests_mock, config, empty_response_b
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert not ok and error and re.match("Cannot authenticate, please verify token.", error)
+    assert not ok
+    assert error
+    assert re.match("Cannot authenticate, please verify token.", error)
 
 
 def test_check_connection_bad_request_forms(requests_mock, config, empty_response_ok, empty_response_bad):
@@ -37,7 +41,9 @@ def test_check_connection_bad_request_forms(requests_mock, config, empty_respons
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert not ok and error and re.match("Cannot find forms with ID: u6nXL7", error)
+    assert not ok
+    assert error
+    assert re.match("Cannot find forms with ID: u6nXL7", error)
 
 
 def test_check_connection_empty():
@@ -45,7 +51,8 @@ def test_check_connection_empty():
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert not ok and error
+    assert not ok
+    assert error
 
 
 def test_check_connection_incomplete(config):
@@ -54,7 +61,8 @@ def test_check_connection_incomplete(config):
 
     ok, error = SourceTypeform().check_connection(logger, config)
 
-    assert not ok and error
+    assert not ok
+    assert error
 
 
 def test_streams(config):

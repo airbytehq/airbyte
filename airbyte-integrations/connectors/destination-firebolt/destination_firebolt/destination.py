@@ -8,12 +8,13 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, Mapping, Optional
 from uuid import uuid4
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from firebolt.client import DEFAULT_API_URL
 from firebolt.client.auth import UsernamePassword
 from firebolt.db import Connection, connect
+
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.destinations import Destination
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 
 from .writer import create_firebolt_wirter
 
@@ -21,11 +22,10 @@ logger = getLogger("airbyte")
 
 
 def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[str, Any]:
-    """
-    Convert dict of config values to firebolt.db.Connection arguments
+    """Convert dict of config values to firebolt.db.Connection arguments
     :param config: json-compatible dict of settings
     :param logger: AirbyteLogger instance to print logs.
-    :return: dictionary of firebolt.db.Connection-compatible kwargs
+    :return: dictionary of firebolt.db.Connection-compatible kwargs.
     """
     connection_args = {
         "database": config["database"],
@@ -46,8 +46,7 @@ def parse_config(config: json, logger: Optional[AirbyteLogger] = None) -> Dict[s
 
 
 def establish_connection(config: json, logger: Optional[AirbyteLogger] = None) -> Connection:
-    """
-    Creates a connection to Firebolt database using the parameters provided.
+    """Creates a connection to Firebolt database using the parameters provided.
     :param config: Json object containing db credentials.
     :param logger: AirbyteLogger instance to print logs.
     :return: PEP-249 compliant database Connection object.
@@ -60,11 +59,9 @@ def establish_connection(config: json, logger: Optional[AirbyteLogger] = None) -
 
 class DestinationFirebolt(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -104,8 +101,7 @@ class DestinationFirebolt(Destination):
             writer.flush()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -125,4 +121,4 @@ class DestinationFirebolt(Destination):
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

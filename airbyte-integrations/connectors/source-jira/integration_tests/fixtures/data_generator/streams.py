@@ -8,7 +8,6 @@ import string
 from typing import Any, Mapping, Optional
 
 import requests
-from airbyte_cdk.models import SyncMode
 from source_jira.streams import (
     Dashboards,
     Filters,
@@ -31,11 +30,12 @@ from source_jira.streams import (
     WorkflowSchemes,
 )
 
+from airbyte_cdk.models import SyncMode
+
 
 class GeneratorMixin:
     def get_generate_headers(self):
-        headers = {"Accept": "application/json", "Content-Type": "application/json", **self.authenticator.get_auth_header()}
-        return headers
+        return {"Accept": "application/json", "Content-Type": "application/json", **self.authenticator.get_auth_header()}
 
     def generate_record(
         self,
@@ -49,9 +49,7 @@ class GeneratorMixin:
 
 
 class DashboardsGenerator(Dashboards, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-post."""
 
     def generate(self):
         for index in range(1, 20):
@@ -60,42 +58,36 @@ class DashboardsGenerator(Dashboards, GeneratorMixin):
                     "name": f"Test dashboard {index}",
                     "description": "A dashboard to help auditors identify sample of issues to check.",
                     "sharePermissions": [{"type": "loggedin"}],
-                }
+                },
             )
             self.generate_record(payload)
 
 
 class FiltersGenerator(Filters, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-post."""
 
     def generate(self):
         for index in range(1, 20):
             payload = json.dumps(
-                {"jql": "type = Bug and resolution is empty", "name": f"Test filter {index}", "description": "Lists all open bugs"}
+                {"jql": "type = Bug and resolution is empty", "name": f"Test filter {index}", "description": "Lists all open bugs"},
             )
             self.generate_record(payload)
 
 
 class FilterSharingGenerator(FilterSharing, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-post."""
 
     def generate(self):
         filters_stream = Filters(authenticator=self.authenticator, domain=self._domain)
         for filters in filters_stream.read_records(sync_mode=SyncMode.full_refresh):
-            for index in range(random.randrange(4)):
+            for _index in range(random.randrange(4)):
                 group_name = random.choice(["Test group 0", "Test group 1", "Test group 2"])
                 payload = json.dumps({"type": "group", "groupname": group_name})
                 self.generate_record(payload, stream_slice={"filter_id": filters["id"]})
 
 
 class GroupsGenerator(Groups, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-post."""
 
     def path(self, **kwargs) -> str:
         return "group"
@@ -107,9 +99,7 @@ class GroupsGenerator(Groups, GeneratorMixin):
 
 
 class IssuesGenerator(Issues, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post."""
 
     def path(self, **kwargs) -> str:
         return "issue"
@@ -130,21 +120,19 @@ class IssuesGenerator(Issues, GeneratorMixin):
                             "version": 1,
                             "content": [{"type": "paragraph", "content": [{"type": "text", "text": f"Test description {index}"}]}],
                         },
-                    }
-                }
+                    },
+                },
             )
             self.generate_record(payload)
 
 
 class IssueCommentsGenerator(IssueComments, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-post."""
 
     def generate(self):
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
         for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
-            for index in range(20):
+            for _index in range(20):
                 payload = json.dumps(
                     {
                         "body": {
@@ -161,20 +149,18 @@ class IssueCommentsGenerator(IssueComments, GeneratorMixin):
                                             "semper quam "
                                             "laoreet nisi egestas at posuere augue semper.",
                                             "type": "text",
-                                        }
+                                        },
                                     ],
-                                }
+                                },
                             ],
-                        }
-                    }
+                        },
+                    },
                 )
                 self.generate_record(payload, stream_slice={"key": issue["key"]})
 
 
 class IssueFieldsGenerator(IssueFields, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-post."""
 
     def generate(self):
         for index in range(1, random.randrange(2, 11)):
@@ -184,15 +170,13 @@ class IssueFieldsGenerator(IssueFields, GeneratorMixin):
                     "name": f"New custom field {index}",
                     "description": "Custom field for picking groups",
                     "type": "com.atlassian.jira.plugin.system.customfieldtypes:grouppicker",
-                }
+                },
             )
             self.generate_record(payload)
 
 
 class IssueRemoteLinksGenerator(IssueRemoteLinks, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-post."""
 
     def generate(self):
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
@@ -216,15 +200,13 @@ class IssueRemoteLinksGenerator(IssueRemoteLinks, GeneratorMixin):
                             "resolved": True,
                         },
                     },
-                }
+                },
             )
             self.generate_record(payload, stream_slice={"key": issue["key"]})
 
 
 class IssueVotesGenerator(IssueVotes, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-post."""
 
     def generate(self):
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
@@ -234,9 +216,7 @@ class IssueVotesGenerator(IssueVotes, GeneratorMixin):
 
 
 class IssueWatchersGenerator(IssueWatchers, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-post."""
 
     def generate(self):
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
@@ -246,9 +226,7 @@ class IssueWatchersGenerator(IssueWatchers, GeneratorMixin):
 
 
 class IssueWorklogsGenerator(IssueWorklogs, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-id-get
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-id-get."""
 
     def generate(self):
         issues_stream = Issues(authenticator=self.authenticator, domain=self._domain)
@@ -263,15 +241,13 @@ class IssueWorklogsGenerator(IssueWorklogs, GeneratorMixin):
                             "content": [{"type": "paragraph", "content": [{"text": f"I did some work here. {index}", "type": "text"}]}],
                         },
                         "started": "2021-04-15T01:48:52.747+0000",
-                    }
+                    },
                 )
                 self.generate_record(payload, stream_slice={"key": issue["key"]})
 
 
 class ProjectsGenerator(Projects, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post."""
 
     def path(self, **kwargs) -> str:
         return "project"
@@ -287,15 +263,13 @@ class ProjectsGenerator(Projects, GeneratorMixin):
                     "description": f"Test project {index} description",
                     "leadAccountId": "5fc9e78d2730d800760becc4",
                     "assigneeType": "PROJECT_LEAD",
-                }
+                },
             )
             self.generate_record(payload)
 
 
 class ProjectCategoriesGenerator(ProjectCategories, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-categories/#api-rest-api-3-projectcategory-post."""
 
     def generate(self):
         for index in range(10):
@@ -304,9 +278,7 @@ class ProjectCategoriesGenerator(ProjectCategories, GeneratorMixin):
 
 
 class ProjectComponentsGenerator(ProjectComponents, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-component-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-component-post."""
 
     def path(self, **kwargs) -> str:
         return "component"
@@ -323,15 +295,13 @@ class ProjectComponentsGenerator(ProjectComponents, GeneratorMixin):
                         "project": project.get("key"),
                         "assigneeType": "PROJECT_LEAD",
                         "leadAccountId": "5fc9e78d2730d800760becc4",
-                    }
+                    },
                 )
                 self.generate_record(payload)
 
 
 class ProjectVersionsGenerator(ProjectVersions, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-version-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-version-post."""
 
     def path(self, **kwargs) -> str:
         return "version"
@@ -348,15 +318,13 @@ class ProjectVersionsGenerator(ProjectVersions, GeneratorMixin):
                         "description": "An excellent version",
                         "projectId": project.get("id"),
                         "released": True,
-                    }
+                    },
                 )
                 self.generate_record(payload)
 
 
 class ScreensGenerator(Screens, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-post."""
 
     def generate(self):
         for index in range(1, 20):
@@ -365,9 +333,7 @@ class ScreensGenerator(Screens, GeneratorMixin):
 
 
 class UsersGenerator(Users, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-post."""
 
     def path(self, **kwargs) -> str:
         return "user"
@@ -382,15 +348,13 @@ class UsersGenerator(Users, GeneratorMixin):
                     "emailAddress": f"test.mail{index}@test.com",
                     "displayName": f"Test user {index}",
                     "name": f"user_{index}",
-                }
+                },
             )
             self.generate_record(payload)
 
 
 class WorkflowsGenerator(Workflows, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-post."""
 
     def path(self, **kwargs) -> str:
         return "workflow"
@@ -403,15 +367,13 @@ class WorkflowsGenerator(Workflows, GeneratorMixin):
                     "description": "This is a workflow used for Stories and Tasks",
                     "statuses": [{"id": "1"}],
                     "transitions": [{"name": "Created", "from": [], "to": "1", "type": "initial"}],
-                }
+                },
             )
             self.generate_record(payload)
 
 
 class WorkflowSchemesGenerator(WorkflowSchemes, GeneratorMixin):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-post
-    """
+    """https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-post."""
 
     def generate(self):
         for index in range(30):
@@ -420,6 +382,6 @@ class WorkflowSchemesGenerator(WorkflowSchemes, GeneratorMixin):
                     "defaultWorkflow": "jira",
                     "name": f"Test workflow scheme {index}",
                     "description": "The description of the example workflow scheme.",
-                }
+                },
             )
             self.generate_record(payload)

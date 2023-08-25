@@ -7,8 +7,7 @@ from botocore.client import BaseClient, Config
 
 
 def make_s3_resource(provider: dict, session: boto3.session.Session, config: Config = None) -> object:
-    """
-    Construct boto3 resource with specified config and remote endpoint
+    """Construct boto3 resource with specified config and remote endpoint
     :param provider provider configuration from connector configuration.
     :param session User session to create client from.
     :param config Client config parameter in case of using creds from .aws/config file.
@@ -19,8 +18,7 @@ def make_s3_resource(provider: dict, session: boto3.session.Session, config: Con
 
 
 def make_s3_client(provider: dict, session: boto3.session.Session = None, config: Config = None) -> BaseClient:
-    """
-    Construct boto3 client with specified config and remote endpoint
+    """Construct boto3 client with specified config and remote endpoint
     :param provider provider configuration from connector configuration.
     :param session User session to create client from. Default boto3 sesion in case of session not specified.
     :param config Client config parameter in case of using creds from .aws/config file.
@@ -34,8 +32,7 @@ def make_s3_client(provider: dict, session: boto3.session.Session = None, config
 
 
 def _get_s3_client_args(provider: dict, config: Config) -> dict:
-    """
-    Returns map of args used for creating s3 boto3 client.
+    """Returns map of args used for creating s3 boto3 client.
     :param provider provider configuration from connector configuration.
     :param config Client config parameter in case of using creds from .aws/config file.
     :return map of s3 client arguments.

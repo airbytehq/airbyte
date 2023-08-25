@@ -24,11 +24,11 @@ logger = logging.getLogger("airbyte")
 
 
 class JobException(Exception):
-    """Scheduled job failed"""
+    """Scheduled job failed."""
 
 
 class AccountTypeException(Exception):
-    """Wrong account type"""
+    """Wrong account type."""
 
 
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
@@ -58,8 +58,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             details.get("args")[0].request_record_limit_is_reduced = True
 
     def revert_request_record_limit(details):
-        """
-        This method is triggered `on_success` after successfull retry,
+        """This method is triggered `on_success` after successfull retry,
         sets the internal class flags to provide the logic to restore the previously reduced
         `limit` param.
         """
@@ -86,7 +85,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
                     connection_reset_error,
                     temporary_oauth_error,
                     server_error,
-                )
+                ),
             )
         return True
 

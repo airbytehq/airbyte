@@ -23,9 +23,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-# from pprint import pprint
-
-
 PAYMENT_DATA = {
     "intent": "sale",
     "payer": {"payment_method": "paypal"},
@@ -80,7 +77,7 @@ PAYMENT_DATA = {
                     "state": "CA",
                 },
             },
-        }
+        },
     ],
     "note_to_payer": "Contact us for any questions on your order.",
     "redirect_urls": {"return_url": "https://example.com", "cancel_url": "https://example.com"},
@@ -88,7 +85,7 @@ PAYMENT_DATA = {
 
 
 def read_json(filepath):
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         return json.loads(f.read())
 
 
@@ -103,9 +100,7 @@ def get_api_token():
     auth = (client_id, secret)
     response = requests.request(method="POST", url=token_refresh_endpoint, data=data, headers=headers, auth=auth)
     response_json = response.json()
-    # print(response_json)
-    API_TOKEN = response_json["access_token"]
-    return API_TOKEN
+    return response_json["access_token"]
 
 
 def random_digits(digits):
@@ -120,10 +115,9 @@ def make_payment():
     PAYMENT_DATA["transactions"][0]["invoice_number"] = random_digits(11)
 
     response = requests.request(
-        method="POST", url="https://api-m.sandbox.paypal.com/v1/payments/payment", headers=headers, data=json.dumps(PAYMENT_DATA)
+        method="POST", url="https://api-m.sandbox.paypal.com/v1/payments/payment", headers=headers, data=json.dumps(PAYMENT_DATA),
     )
     response_json = response.json()
-    # pprint(response_json)
 
     execute_url = ""
     approval_url = ""
@@ -171,8 +165,6 @@ def approve_payment(driver, url):
     sleep(1)
     element.click()
 
-    # sleep(5)
-    # driver.find_element_by_id("payment-submit-btn").click()
 
     wait = WebDriverWait(driver, 5)
     wait.until(EC.title_is("Example Domain"))

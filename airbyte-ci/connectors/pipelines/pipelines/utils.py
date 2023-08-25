@@ -13,25 +13,28 @@ import re
 import sys
 import unicodedata
 from glob import glob
-from io import TextIOWrapper
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable
 
 import anyio
 import asyncer
 import click
 import git
-from connector_ops.utils import get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
 from more_itertools import chunked
+
+from connector_ops.utils import get_changed_connectors
 from pipelines import consts, main_logger, sentry_utils
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 if TYPE_CHECKING:
-    from connector_ops.utils import Connector
+    from io import TextIOWrapper
+
     from github import PullRequest
+
+    from connector_ops.utils import Connector
     from pipelines.contexts import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
@@ -100,7 +103,7 @@ def get_secret_host_variable(client: Client, name: str, default: str = "") -> Se
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
-async def get_file_contents(container: Container, path: str) -> Optional[str]:
+async def get_file_contents(container: Container, path: str) -> str | None:
     """Retrieve a container file contents.
 
     Args:
@@ -130,7 +133,7 @@ def catch_exec_error_group():
         raise
 
 
-async def get_container_output(container: Container) -> Tuple[str, str]:
+async def get_container_output(container: Container) -> tuple[str, str]:
     """Retrieve both stdout and stderr of a container, concurrently.
 
     Args:
@@ -146,7 +149,7 @@ async def get_container_output(container: Container) -> Tuple[str, str]:
     return soon_stdout.value, soon_stderr.value
 
 
-async def get_exec_result(container: Container) -> Tuple[int, str, str]:
+async def get_exec_result(container: Container) -> tuple[int, str, str]:
     """Retrieve the exit_code along with stdout and stderr of a container by handling the ExecError.
 
     Note: It is preferrable to not worry about the exit code value and just capture
@@ -217,8 +220,8 @@ def get_current_epoch_time() -> int:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
-) -> Set[str]:
+    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master",
+) -> set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     async with Connection(DAGGER_CONFIG) as dagger_client:
         modified_files = await (
@@ -238,7 +241,7 @@ async def get_modified_files_in_branch_remote(
                     current_git_branch,
                     "origin",
                     AIRBYTE_REPO_URL,
-                ]
+                ],
             )
             .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
             .with_exec(["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"])
@@ -247,11 +250,11 @@ async def get_modified_files_in_branch_remote(
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
+def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> set[str]:
     """Use git diff and git status to spot the modified files on the local branch."""
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff(
-        f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"
+        f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}",
     ).split("\n")
     status_output = airbyte_repo.git.status("--porcelain")
     for not_committed_change in status_output.split("\n"):
@@ -261,7 +264,7 @@ def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch:
     return set(modified_files)
 
 
-def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
         return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
@@ -269,7 +272,7 @@ def get_modified_files_in_branch(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_branch_remote, current_git_branch, current_git_revision, diffed_branch)
 
 
-async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
+async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> set[str]:
     async with Connection(DAGGER_CONFIG) as dagger_client:
         modified_files = await (
             dagger_client.container()
@@ -286,7 +289,7 @@ async def get_modified_files_in_commit_remote(current_git_branch: str, current_g
                     current_git_branch,
                     "origin",
                     AIRBYTE_REPO_URL,
-                ]
+                ],
             )
             .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
             .with_exec(["diff-tree", "--no-commit-id", "--name-only", current_git_revision, "-r"])
@@ -295,20 +298,20 @@ async def get_modified_files_in_commit_remote(current_git_branch: str, current_g
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
+def get_modified_files_in_commit_local(current_git_revision: str) -> set[str]:
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff_tree("--no-commit-id", "--name-only", current_git_revision, "-r").split("\n")
     return set(modified_files)
 
 
-def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> set[str]:
     if is_local:
         return get_modified_files_in_commit_local(current_git_revision)
     else:
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
+def get_modified_files_in_pull_request(pull_request: PullRequest) -> list[str]:
     """Retrieve the list of modified files in a pull request."""
     return [f.filename for f in pull_request.get_files()]
 
@@ -318,14 +321,14 @@ def get_last_commit_message() -> str:
     return git.Repo().head.commit.message
 
 
-def _is_ignored_file(file_path: Union[str, Path]) -> bool:
+def _is_ignored_file(file_path: str | Path) -> bool:
     """Check if the provided file has an ignored extension."""
     return Path(file_path).suffix in IGNORED_FILE_EXTENSIONS
 
 
 def _find_modified_connectors(
-    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
-) -> Set[Connector]:
+    file_path: str | Path, all_connectors: set[Connector], dependency_scanning: bool = True,
+) -> set[Connector]:
     """Find all connectors impacted by the file change."""
     modified_connectors = set()
 
@@ -343,7 +346,7 @@ def _find_modified_connectors(
     return modified_connectors
 
 
-def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Connector], dependency_scanning: bool) -> Set[Connector]:
+def get_modified_connectors(modified_files: set[Path], all_connectors: set[Connector], dependency_scanning: bool) -> set[Connector]:
     """Create a mapping of modified connectors (key) and modified files (value).
     If dependency scanning is enabled any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
     It currently works only for Java connectors .
@@ -359,7 +362,7 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     return modified_connectors
 
 
-def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
+def get_connector_modified_files(connector: Connector, all_modified_files: set[Path]) -> frozenset[Path]:
     connector_modified_files = set()
     for modified_file in all_modified_files:
         modified_file_path = Path(modified_file)
@@ -368,7 +371,7 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
     return frozenset(connector_modified_files)
 
 
-def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+def get_modified_metadata_files(modified_files: set[str | Path]) -> set[Path]:
     return {
         Path(str(f))
         for f in modified_files
@@ -376,12 +379,12 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
     }
 
 
-def get_expected_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+def get_expected_metadata_files(modified_files: set[str | Path]) -> set[Path]:
     changed_connectors = get_changed_connectors(modified_files=modified_files)
     return {changed_connector.metadata_file_path for changed_connector in changed_connectors}
 
 
-def get_all_metadata_files() -> Set[Path]:
+def get_all_metadata_files() -> set[Path]:
     return {
         Path(metadata_file)
         for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
@@ -390,8 +393,7 @@ def get_all_metadata_files() -> Set[Path]:
 
 
 def slugify(value: Any, allow_unicode: bool = False):
-    """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py.
+    """Taken from https://github.com/django/django/blob/master/django/utils/text.py.
 
     Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
     dashes to single dashes. Remove characters that aren't alphanumerics,
@@ -432,7 +434,8 @@ async def get_version_from_dockerfile(dockerfile: File) -> str:
     try:
         return dockerfile_labels["io.airbyte.version"]
     except KeyError:
-        raise Exception("Could not get the version from the Dockerfile labels.")
+        msg = "Could not get the version from the Dockerfile labels."
+        raise Exception(msg)
 
 
 def create_and_open_file(file_path: Path) -> TextIOWrapper:
@@ -453,17 +456,20 @@ class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context
     def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
+
         Args:
             ctx (click.Context): The invocation context.
+
         Raises:
             e: Raise whatever exception that was caught.
+
         Returns:
             Any: The invocation return value.
         """
         command_name = self.name
         main_logger.info(f"Running Dagger Command {command_name}...")
         main_logger.info(
-            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
+            "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute...",
         )
         ctx.obj["report_output_prefix"] = self.render_report_output_prefix(ctx)
         dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
@@ -481,7 +487,8 @@ class DaggerPipelineCommand(click.Command):
                 ctx.obj["dagger_logs_path"] = None
             pipeline_success = super().invoke(ctx)
             if not pipeline_success:
-                raise DaggerError(f"Dagger Command {command_name} failed.")
+                msg = f"Dagger Command {command_name} failed."
+                raise DaggerError(msg)
         except DaggerError as e:
             main_logger.error(f"Dagger Command {command_name} failed", exc_info=e)
             sys.exit(1)
@@ -491,7 +498,7 @@ class DaggerPipelineCommand(click.Command):
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
                     gcs_uri, public_url = upload_to_gcs(
-                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
+                        ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"],
                     )
                     main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
 
@@ -505,7 +512,6 @@ class DaggerPipelineCommand(click.Command):
         Note: We cannot hoist this higher in the command hierarchy because only one level of
         subcommands are available at the time the context is created.
         """
-
         git_branch = ctx.obj["git_branch"]
         git_revision = ctx.obj["git_revision"]
         pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
@@ -532,13 +538,14 @@ class DaggerPipelineCommand(click.Command):
 
         # check all values are defined
         if None in path_values:
-            raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
+            msg = f"Missing value required to render the report output prefix: {path_values}"
+            raise ValueError(msg)
 
         # join all values with a slash, and convert all values to string
         return "/".join(map(str, path_values))
 
 
-async def execute_concurrently(steps: List[Callable], concurrency=5):
+async def execute_concurrently(steps: list[Callable], concurrency=5):
     tasks = []
     # Asyncer does not have builtin semaphore, so control concurrency via chunks of steps
     # Anyio has semaphores but does not have the soonify method which allow access to results via the value task attribute.
@@ -549,8 +556,8 @@ async def execute_concurrently(steps: List[Callable], concurrency=5):
 
 
 async def export_container_to_tarball(
-    context: ConnectorContext, container: Container, tar_file_name: Optional[str] = None
-) -> Tuple[Optional[File], Optional[Path]]:
+    context: ConnectorContext, container: Container, tar_file_name: str | None = None,
+) -> tuple[File | None, Path | None]:
     """Save the container image to the host filesystem as a tar archive.
 
     Exporting a container image as a tar archive allows user to have a dagger built container image available on their host filesystem.
@@ -575,7 +582,7 @@ async def export_container_to_tarball(
         return None, None
 
 
-def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
+def sanitize_gcs_credentials(raw_value: str | None) -> str | None:
     """Try to parse the raw string input that should contain a json object with the GCS credentials.
     It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
 
@@ -593,13 +600,13 @@ def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
 def format_duration(time_delta: datetime.timedelta) -> str:
     total_seconds = time_delta.total_seconds()
     if total_seconds < 60:
-        return "{:.2f}s".format(total_seconds)
+        return f"{total_seconds:.2f}s"
     minutes = int(total_seconds // 60)
     seconds = int(total_seconds % 60)
-    return "{:02d}mn{:02d}s".format(minutes, seconds)
+    return f"{minutes:02d}mn{seconds:02d}s"
 
 
-def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> Tuple[str, str]:
+def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> tuple[str, str]:
     """Upload a file to a GCS bucket.
 
     Args:
@@ -623,7 +630,7 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     return gcs_uri, public_url
 
 
-def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
+def transform_strs_to_paths(str_paths: list[str]) -> list[Path]:
     """Transform a list of string paths to a list of Path objects.
 
     Args:

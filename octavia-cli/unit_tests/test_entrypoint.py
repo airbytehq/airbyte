@@ -7,10 +7,11 @@ from typing import List, Optional
 import click
 import pkg_resources
 import pytest
-from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 from click.testing import CliRunner
 from octavia_cli import entrypoint
 from octavia_cli.api_http_headers import ApiHttpHeader
+
+from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
 
 @click.command()
@@ -20,7 +21,7 @@ def dumb(ctx):
 
 
 @pytest.mark.parametrize(
-    "option_based_api_http_headers, api_http_headers_file_path",
+    ("option_based_api_http_headers", "api_http_headers_file_path"),
     [
         ([("foo", "bar")], "api_http_headers_file_path"),
         ([], None),
@@ -83,12 +84,12 @@ def test_set_context_object_error(mocker):
             "api_http_headers_file_path",
         )
         entrypoint.TelemetryClient.return_value.send_command_telemetry.assert_called_with(
-            mock_ctx, error=mock_ctx.ensure_object.side_effect
+            mock_ctx, error=mock_ctx.ensure_object.side_effect,
         )
 
 
 @pytest.mark.parametrize(
-    "options, expected_exit_code",
+    ("options", "expected_exit_code"),
     [
         (["--airbyte-url", "test-airbyte-url"], 0),
         (["--airbyte-url", "test-airbyte-url", "--enable-telemetry"], 0),
@@ -138,7 +139,7 @@ def test_octavia(tmp_path, mocker, options, expected_exit_code):
     )
     entrypoint.octavia.add_command(dumb)
     runner = CliRunner()
-    result = runner.invoke(entrypoint.octavia, options + ["dumb"], obj={})
+    result = runner.invoke(entrypoint.octavia, [*options, "dumb"], obj={})
     expected_message = "🐙 - Octavia is targetting your Airbyte instance running at test-airbyte-url on workspace api-defined-workspace-id."
     assert result.exit_code == expected_exit_code
     if expected_exit_code == 0:
@@ -233,11 +234,11 @@ def test_not_implemented_commands(command):
 
 
 def test_available_commands():
-    assert entrypoint.AVAILABLE_COMMANDS == [
+    assert [
         entrypoint.list_commands._list,
         entrypoint.get_commands.get,
         entrypoint.import_commands._import,
         entrypoint.init_commands.init,
         entrypoint.generate_commands.generate,
         entrypoint.apply_commands.apply,
-    ]
+    ] == entrypoint.AVAILABLE_COMMANDS

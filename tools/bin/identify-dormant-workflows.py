@@ -3,7 +3,6 @@
 #
 
 import argparse
-import json
 import os
 import re
 import subprocess
@@ -21,14 +20,14 @@ SLACK_CHANNEL_FOR_NOTIFICATIONS = "infra-alerts"
 
 This script is intended to be run in conjuction with cleanup-workflow-runs.py to keep GH actions clean.
 
-The basic workflow is 
+The basic workflow is
 
-identify-dormant-workflows.py notifies of dormant workflows (workflows that have no runs newer than DAYS_TO_KEEP_ORPHANED_JOBS days) daily -> 
+identify-dormant-workflows.py notifies of dormant workflows (workflows that have no runs newer than DAYS_TO_KEEP_ORPHANED_JOBS days) daily ->
 manually notifies infra team via slack ->
 infra team checks with stakeholders to ensure dormant jobs can be deleted and then cleans up workflow runs manually ->
 cleanup-workflows.py deletes old workflow runs (again older than DAYS_TO_KEEP_ORPHANED_JOBS) that have no associated workflow
 
-We need to clean up the runs because even if a workflow is deleted, the runs linger in the UI. 
+We need to clean up the runs because even if a workflow is deleted, the runs linger in the UI.
 We don't want to delete workflow runs newer than 90 days on GH actions, even if the workflow doesn't exist.
 it's possible that people might test things off the master branch and we don't want to delete their recent runs
 
@@ -51,24 +50,18 @@ def main():
     gh_token = None
     slack_token = None
 
-    if args.pat:
-        gh_token = args.pat
-    else:
-        gh_token = os.getenv("GITHUB_TOKEN")
+    gh_token = args.pat if args.pat else os.getenv("GITHUB_TOKEN")
     if not gh_token:
-        raise Exception("Github personal access token not provided via args and not available in GITHUB_TOKEN variable")
+        msg = "Github personal access token not provided via args and not available in GITHUB_TOKEN variable"
+        raise Exception(msg)
 
-    if args.sat:
-        slack_token = args.sat
-    else:
-        slack_token = os.getenv("SLACK_TOKEN")
+    slack_token = args.sat if args.sat else os.getenv("SLACK_TOKEN")
 
     g = Github(gh_token)
 
     git_url = subprocess.run(["git", "config", "--get", "remote.origin.url"], check=True, capture_output=True)
 
     # will match both forms (git and https url) of github e.g.
-    # git@github.com:airbytehq/airbyte.git
     # https://github.com/airbytehq/airbyte.git
 
     git_url_regex = re.compile(r"(?:git@|https://)github\.com[:/](.*?)(\.git|$)")
@@ -79,7 +72,6 @@ def main():
     repo = g.get_repo(repo_name)
     workflows = repo.get_workflows()
 
-    runs_to_delete = []
 
     for workflow in workflows:
         runs = workflow.get_runs()
@@ -102,10 +94,11 @@ def main():
                     client = WebClient(slack_token)
 
                     try:
-                        response = client.chat_postMessage(channel=SLACK_CHANNEL_FOR_NOTIFICATIONS, text=message)
+                        client.chat_postMessage(channel=SLACK_CHANNEL_FOR_NOTIFICATIONS, text=message)
                     except SlackApiError as e:
                         print(e, "\n\n")
-                        raise Exception("Error calling the Slack API")
+                        msg = "Error calling the Slack API"
+                        raise Exception(msg)
             break
 
 

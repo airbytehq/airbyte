@@ -8,10 +8,11 @@ import string
 from typing import Any, Dict, Iterable, Mapping
 
 import pandas as pd
+from botocore.exceptions import ClientError, InvalidRegionError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from botocore.exceptions import ClientError, InvalidRegionError
 
 from .aws import AwsHandler
 from .config_reader import ConnectorConfig
@@ -33,11 +34,9 @@ class DestinationAwsDatalake(Destination):
         return "".join(random.choice(string.ascii_letters) for i in range(length))
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -55,8 +54,9 @@ class DestinationAwsDatalake(Destination):
         try:
             aws_handler = AwsHandler(connector_config, self)
         except ClientError as e:
-            logger.error(f"Could not create session due to exception {repr(e)}")
-            raise Exception(f"Could not create session due to exception {repr(e)}")
+            logger.error(f"Could not create session due to exception {e!r}")
+            msg = f"Could not create session due to exception {e!r}"
+            raise Exception(msg)
 
         # creating stream writers
         streams = {
@@ -82,12 +82,11 @@ class DestinationAwsDatalake(Destination):
                             streams[stream].reset()
 
                 # Flush records when state is received
-                if message.state.stream:
-                    if message.state.stream.stream_state and hasattr(message.state.stream.stream_state, "stream_name"):
-                        stream_name = message.state.stream.stream_state.stream_name
-                        if stream_name in streams:
-                            logger.info(f"Got state message from source: flushing records for {stream_name}")
-                            streams[stream_name].flush(partial=True)
+                if message.state.stream and message.state.stream.stream_state and hasattr(message.state.stream.stream_state, "stream_name"):
+                    stream_name = message.state.stream.stream_state.stream_name
+                    if stream_name in streams:
+                        logger.info(f"Got state message from source: flushing records for {stream_name}")
+                        streams[stream_name].flush(partial=True)
 
                 yield message
 
@@ -109,8 +108,7 @@ class DestinationAwsDatalake(Destination):
         self._flush_streams(streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -120,14 +118,13 @@ class DestinationAwsDatalake(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-
         connector_config = ConnectorConfig(**config)
 
         try:
             aws_handler = AwsHandler(connector_config, self)
         except (ClientError, AttributeError) as e:
-            logger.error(f"""Could not create session on {connector_config.aws_account_id} Exception: {repr(e)}""")
-            message = f"""Could not authenticate using {connector_config.credentials_type} on Account {connector_config.aws_account_id} Exception: {repr(e)}"""
+            logger.error(f"""Could not create session on {connector_config.aws_account_id} Exception: {e!r}""")
+            message = f"""Could not authenticate using {connector_config.credentials_type} on Account {connector_config.aws_account_id} Exception: {e!r}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
         except InvalidRegionError:
             message = f"{connector_config.region} is not a valid AWS region"
@@ -137,7 +134,7 @@ class DestinationAwsDatalake(Destination):
         try:
             aws_handler.head_bucket()
         except ClientError as e:
-            message = f"""Could not find bucket {connector_config.bucket_name} in aws://{connector_config.aws_account_id}:{connector_config.region} Exception: {repr(e)}"""
+            message = f"""Could not find bucket {connector_config.bucket_name} in aws://{connector_config.aws_account_id}:{connector_config.region} Exception: {e!r}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
         tbl = f"airbyte_test_{self._get_random_string(5)}"
@@ -150,7 +147,7 @@ class DestinationAwsDatalake(Destination):
             aws_handler.reset_table(db, tbl)
 
         except Exception as e:
-            message = f"Could not create table {tbl} in database {db}: {repr(e)}"
+            message = f"Could not create table {tbl} in database {db}: {e!r}"
             logger.error(message)
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 

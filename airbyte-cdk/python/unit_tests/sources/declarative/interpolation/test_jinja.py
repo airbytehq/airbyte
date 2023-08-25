@@ -5,9 +5,10 @@
 import datetime
 
 import pytest
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from freezegun import freeze_time
 from jinja2.exceptions import TemplateSyntaxError
+
+from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 interpolation = JinjaInterpolation()
 
@@ -36,7 +37,7 @@ def test_get_value_from_a_list_of_mappings():
 
 
 @pytest.mark.parametrize(
-    "s, value",
+    ("s", "value"),
     [
         pytest.param("{{1}}", 1, id="test_number"),
         pytest.param("{{1}}", 1, id="test_number"),
@@ -51,7 +52,7 @@ def test_literals(s, value):
 
 
 @pytest.mark.parametrize(
-    "context, input_string, expected_value",
+    ("context", "input_string", "expected_value"),
     [
         pytest.param(
             {"stream_slice": {"stream_slice_key": "hello"}},
@@ -118,7 +119,7 @@ def test_negative_day_delta():
 
 
 @pytest.mark.parametrize(
-    "s, expected_value",
+    ("s", "expected_value"),
     [
         pytest.param("{{ timestamp(1621439283) }}", 1621439283, id="test_timestamp_from_timestamp"),
         pytest.param("{{ timestamp('2021-05-19') }}", 1621382400, id="test_timestamp_from_string"),
@@ -174,7 +175,7 @@ def test_restricted_builtin_functions_are_not_executed(template_string):
 
 
 @pytest.mark.parametrize(
-    "template_string, expected_value, expected_error",
+    ("template_string", "expected_value", "expected_error"),
     [
         pytest.param("{{ to_be }}", "that_is_the_question", None, id="valid_template_variable"),
         pytest.param("{{ missingno }}", None, ValueError, id="undeclared_template_variable"),
@@ -193,7 +194,7 @@ def test_undeclared_variables(template_string, expected_error, expected_value):
 
 
 @freeze_time("2021-09-01")
-@pytest.mark.parametrize("template_string, expected_value",[
+@pytest.mark.parametrize(("template_string", "expected_value"),[
     pytest.param("{{ now_utc() }}", "2021-09-01 00:00:00+00:00", id="test_now_utc"),
     pytest.param("{{ now_utc().strftime('%Y-%m-%d') }}", "2021-09-01", id="test_now_utc_strftime"),
     pytest.param("{{ today_utc() }}", "2021-09-01", id="test_today_utc"),

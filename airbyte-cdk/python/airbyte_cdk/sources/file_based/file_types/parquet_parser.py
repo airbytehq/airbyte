@@ -10,13 +10,14 @@ from urllib.parse import unquote
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+from pyarrow import Scalar
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ParquetFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
-from pyarrow import Scalar
 
 
 class ParquetParser(FileTypeParser):
@@ -32,7 +33,8 @@ class ParquetParser(FileTypeParser):
     ) -> SchemaType:
         parquet_format = config.format or ParquetFormat()
         if not isinstance(parquet_format, ParquetFormat):
-            raise ValueError(f"Expected ParquetFormat, got {parquet_format}")
+            msg = f"Expected ParquetFormat, got {parquet_format}"
+            raise ValueError(msg)
 
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             parquet_file = pq.ParquetFile(fp)
@@ -82,9 +84,7 @@ class ParquetParser(FileTypeParser):
 
     @staticmethod
     def _to_output_value(parquet_value: Scalar, parquet_format: ParquetFormat) -> Any:
-        """
-        Convert a pyarrow scalar to a value that can be output by the source.
-        """
+        """Convert a pyarrow scalar to a value that can be output by the source."""
         # Convert date and datetime objects to isoformat strings
         if pa.types.is_time(parquet_value.type) or pa.types.is_timestamp(parquet_value.type) or pa.types.is_date(parquet_value.type):
             return parquet_value.as_py().isoformat()
@@ -110,7 +110,7 @@ class ParquetParser(FileTypeParser):
                 "values": parquet_value.dictionary.tolist(),
             }
         if pa.types.is_map(parquet_value.type):
-            return {k: v for k, v in parquet_value.as_py()}
+            return dict(parquet_value.as_py())
 
         if pa.types.is_null(parquet_value.type):
             return None
@@ -128,17 +128,16 @@ class ParquetParser(FileTypeParser):
             elif parquet_value.type.unit == "ns":
                 return duration_seconds * 1_000_000_000 + duration.nanoseconds
             else:
-                raise ValueError(f"Unknown duration unit: {parquet_value.type.unit}")
+                msg = f"Unknown duration unit: {parquet_value.type.unit}"
+                raise ValueError(msg)
         else:
             return parquet_value.as_py()
 
     @staticmethod
     def parquet_type_to_schema_type(parquet_type: pa.DataType, parquet_format: ParquetFormat) -> Mapping[str, str]:
+        """Convert a pyarrow data type to an Airbyte schema type.
+        Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html.
         """
-        Convert a pyarrow data type to an Airbyte schema type.
-        Parquet data types are defined at https://arrow.apache.org/docs/python/api/datatypes.html
-        """
-
         if pa.types.is_timestamp(parquet_type):
             return {"type": "string", "format": "date-time"}
         elif pa.types.is_date(parquet_type):
@@ -158,12 +157,13 @@ class ParquetParser(FileTypeParser):
         elif pa.types.is_null(parquet_type):
             return {"type": "null"}
         else:
-            raise ValueError(f"Unsupported parquet type: {parquet_type}")
+            msg = f"Unsupported parquet type: {parquet_type}"
+            raise ValueError(msg)
 
     @staticmethod
     def _is_binary(parquet_type: pa.DataType) -> bool:
         return bool(
-            pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type) or pa.types.is_fixed_size_binary(parquet_type)
+            pa.types.is_binary(parquet_type) or pa.types.is_large_binary(parquet_type) or pa.types.is_fixed_size_binary(parquet_type),
         )
 
     @staticmethod
@@ -186,7 +186,7 @@ class ParquetParser(FileTypeParser):
                 pa.types.is_time(parquet_type)
                 or pa.types.is_string(parquet_type)
                 or pa.types.is_large_string(parquet_type)
-                or ParquetParser._is_binary(parquet_type)  # Best we can do is return as a string since we do not support binary
+                or ParquetParser._is_binary(parquet_type),  # Best we can do is return as a string since we do not support binary
             )
 
     @staticmethod

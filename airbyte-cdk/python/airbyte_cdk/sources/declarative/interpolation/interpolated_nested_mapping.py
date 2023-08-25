@@ -15,8 +15,7 @@ NestedMapping = Union[dict[str, NestedMappingEntry], str]
 
 @dataclass
 class InterpolatedNestedMapping:
-    """
-    Wrapper around a nested dict which can contain lists and primitive values where both the keys and values are interpolated recursively.
+    """Wrapper around a nested dict which can contain lists and primitive values where both the keys and values are interpolated recursively.
 
     Attributes:
         mapping (NestedMapping): to be evaluated

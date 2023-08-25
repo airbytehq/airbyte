@@ -10,14 +10,15 @@ from typing import Any, Dict, List, Mapping
 
 import dpath.util
 import pendulum
-from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
 
+from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
+
 # fmt: off
-timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date
+timestamp_regex = re.compile(r"^\d{4}-\d?\d-\d?\d"  # date
                               r"(\s|T)"  # separator
                               r"\d?\d:\d?\d:\d?\d(.\d+)?"  # time
-                              r".*$"))  # timezone
+                              r".*$")  # timezone
 # fmt: on
 
 # In Json schema, numbers with a zero fractional part are considered integers. E.G. 1.0 is considered a valid integer
@@ -41,7 +42,9 @@ class CustomFormatChecker(FormatChecker):
     def check(self, instance, format):
         if instance is not None and format == "date-time":
             if not self.check_datetime(instance):
-                raise FormatError(f"{instance} has invalid datetime format")
+                msg = f"{instance} has invalid datetime format"
+                raise FormatError(msg)
+            return None
         else:
             return super().check(instance, format)
 
@@ -58,7 +61,7 @@ def _enforce_no_additional_top_level_properties(json_schema: Dict[str, Any]):
 
 
 def verify_records_schema(
-    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool
+    records: List[AirbyteRecordMessage], catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: bool,
 ) -> Mapping[str, Mapping[str, ValidationError]]:
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
@@ -69,7 +72,7 @@ def verify_records_schema(
         if fail_on_extra_columns:
             schema_to_validate_against = _enforce_no_additional_top_level_properties(schema_to_validate_against)
         stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
-            schema_to_validate_against, format_checker=CustomFormatChecker()
+            schema_to_validate_against, format_checker=CustomFormatChecker(),
         )
     stream_errors = defaultdict(dict)
     for record in records:

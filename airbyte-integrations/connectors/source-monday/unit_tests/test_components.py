@@ -7,11 +7,12 @@ from typing import Any
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.streams import Stream
 from requests import Response
 from source_monday.components import IncrementalSingleSlice, IncrementalSubstreamSlicer
 from source_monday.extractor import MondayIncrementalItemsExtractor
+
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
+from airbyte_cdk.sources.streams import Stream
 
 
 def _create_response(content: Any) -> Response:
@@ -31,11 +32,11 @@ def test_slicer():
 
 
 @pytest.mark.parametrize(
-    "last_record, expected, records",
+    ("last_record", "expected", "records"),
     [
         (
                 {"first_stream_cursor": 1662459010},
-                {'parent_stream_name': {'parent_cursor_field': 1662459010}, 'first_stream_cursor': 1662459010},
+                {"parent_stream_name": {"parent_cursor_field": 1662459010}, "first_stream_cursor": 1662459010},
                 [{"first_stream_cursor": 1662459010}],
         ),
         (None, {}, []),
@@ -57,7 +58,7 @@ def test_sub_slicer(last_record, expected, records):
     )
 
     slicer = IncrementalSubstreamSlicer(
-        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config], nested_items_per_page=10
+        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config], nested_items_per_page=10,
     )
     stream_slice = next(slicer.stream_slices()) if records else {}
     slicer.close_slice(stream_slice, last_record)
@@ -80,7 +81,7 @@ def test_null_records(caplog):
                 {"board_kind": "private", "id": "1234565", "updated_at": "2023-08-15T10:30:43Z"},
                 {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z"},
                 None,
-                None
+                None,
             ]},
         "errors": [{"message": "Cannot return null for non-nullable field Board.creator"}],
         "account_id": 123456}
@@ -94,6 +95,6 @@ def test_null_records(caplog):
         {"board_kind": "private", "id": "1234563", "updated_at": "2023-08-15T10:30:51Z", "updated_at_int": 1692095451},
         {"board_kind": "private", "id": "1234564", "updated_at": "2023-08-15T10:30:52Z", "updated_at_int": 1692095452},
         {"board_kind": "private", "id": "1234565", "updated_at": "2023-08-15T10:30:43Z", "updated_at_int": 1692095443},
-        {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z", "updated_at_int": 1692095454}
+        {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z", "updated_at_int": 1692095454},
     ]
     assert records == expected_records

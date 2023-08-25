@@ -9,10 +9,11 @@ from typing import Dict, Optional
 import awswrangler as wr
 import boto3
 import pandas as pd
-from airbyte_cdk.destinations import Destination
 from awswrangler import _data_types
 from botocore.exceptions import ClientError
 from retrying import retry
+
+from airbyte_cdk.destinations import Destination
 
 from .config_reader import CompressionCodec, ConnectorConfig, CredentialsType, OutputFormat
 
@@ -47,7 +48,7 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
         except (TypeError, ValueError) as ex:
             if "object cannot be converted to an IntegerDtype" not in str(ex):
                 raise ex
-            logger.warn(
+            logger.warning(
                 "Object cannot be converted to an IntegerDtype. Integer columns in Python cannot contain "
                 "missing values. If your input data contains missing values, it will be encoded as floats"
                 "which may cause precision loss.",
@@ -126,7 +127,7 @@ class AwsHandler:
         table: str,
         mode: str,
         dtype: Optional[Dict[str, str]],
-        partition_cols: list = None,
+        partition_cols: Optional[list] = None,
     ):
         return wr.s3.to_parquet(
             df=df,
@@ -152,7 +153,7 @@ class AwsHandler:
         table: str,
         mode: str,
         dtype: Optional[Dict[str, str]],
-        partition_cols: list = None,
+        partition_cols: Optional[list] = None,
     ):
         return wr.s3.to_json(
             df=df,
@@ -172,7 +173,7 @@ class AwsHandler:
             compression=self._get_compression_type(self._config.compression_codec),
         )
 
-    def _write(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Dict[str, str], partition_cols: list = None):
+    def _write(self, df: pd.DataFrame, path: str, database: str, table: str, mode: str, dtype: Dict[str, str], partition_cols: Optional[list] = None):
         self._create_database_if_not_exists(database)
 
         if self._config.format_type == OutputFormat.JSONL:
@@ -182,7 +183,8 @@ class AwsHandler:
             return self._write_parquet(df, path, database, table, mode, dtype, partition_cols)
 
         else:
-            raise Exception(f"Unsupported output format: {self._config.format_type}")
+            msg = f"Unsupported output format: {self._config.format_type}"
+            raise Exception(msg)
 
     def _create_database_if_not_exists(self, database: str):
         tag_key = self._config.lakeformation_database_default_tag_key

@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_file_secure import SourceFileSecure
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     launch(SourceFileSecure(), sys.argv[1:])

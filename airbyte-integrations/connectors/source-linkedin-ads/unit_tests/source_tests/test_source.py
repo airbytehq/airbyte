@@ -5,8 +5,6 @@
 
 import pytest
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
-from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (
     Accounts,
     AccountUsers,
@@ -18,6 +16,9 @@ from source_linkedin_ads.source import (
     SourceLinkedinAds,
 )
 from source_linkedin_ads.streams import LINKEDIN_VERSION_API
+
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 
 TEST_OAUTH_CONFIG: dict = {
     "start_date": "2021-08-01",
@@ -47,20 +48,20 @@ TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
     "auth_method": "oAuth2.0",
     "client_id": "client_id",
     "client_secret": "client_secret",
-    "refresh_token": "refresh_token"
+    "refresh_token": "refresh_token",
   },
   "ad_analytics_reports": [
     {
       "name": "ShareAdByMonth",
       "pivot_by": "COMPANY",
-      "time_granularity": "MONTHLY"
+      "time_granularity": "MONTHLY",
     },
     {
       "name": "ShareAdByMonth",
       "pivot_by": "COMPANY",
-      "time_granularity": "MONTHLY"
-    }
-  ]
+      "time_granularity": "MONTHLY",
+    },
+  ],
 }
 
 
@@ -110,7 +111,7 @@ class TestAllStreams:
                 assert isinstance(stream, stream_cls)
 
     @pytest.mark.parametrize(
-        "stream_cls, stream_slice, expected",
+        ("stream_cls", "stream_slice", "expected"),
         [
             (Accounts, None, "adAccounts"),
             (AccountUsers, None, "adAccountUsers"),
@@ -185,14 +186,14 @@ class TestAccountUsers:
 
     def test_get_updated_state(self):
         state = self.stream.get_updated_state(
-            current_stream_state={"lastModified": "2021-01-01"}, latest_record={"lastModified": "2021-08-01"}
+            current_stream_state={"lastModified": "2021-01-01"}, latest_record={"lastModified": "2021-08-01"},
         )
         assert state == {"lastModified": "2021-08-01"}
 
 
 class TestLinkedInAdsStreamSlicing:
     @pytest.mark.parametrize(
-        "stream_cls, slice, expected",
+        ("stream_cls", "slice", "expected"),
         [
             (
                     AccountUsers,
@@ -213,7 +214,7 @@ class TestLinkedInAdsStreamSlicing:
                     Creatives,
                     {"campaign_id": 123},
                     "count=100&q=criteria",
-            )
+            ),
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
     )
@@ -223,7 +224,7 @@ class TestLinkedInAdsStreamSlicing:
         assert expected == result
 
     @pytest.mark.parametrize(
-        "stream_cls, state, records_slice, expected",
+        ("stream_cls", "state", "records_slice", "expected"),
         [
             (AccountUsers, {"lastModified": 1}, [{"lastModified": 2}], [{"lastModified": 2}]),
             (CampaignGroups, {"lastModified": 3}, [{"lastModified": 3}], [{"lastModified": 3}]),
@@ -245,7 +246,7 @@ class TestLinkedInAdsStreamSlicing:
 
 class TestLinkedInAdsAnalyticsStream:
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (AdCampaignAnalytics, {"pivot": "(value:CAMPAIGN)", "q": "analytics", "timeGranularity": "(value:DAILY)"}),
             (AdCreativeAnalytics, {"pivot": "(value:CREATIVE)", "q": "analytics", "timeGranularity": "(value:DAILY)"}),
@@ -261,7 +262,7 @@ class TestLinkedInAdsAnalyticsStream:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, slice, expected",
+        ("stream_cls", "slice", "expected"),
         [
             (
                     AdCampaignAnalytics,
@@ -286,7 +287,7 @@ class TestLinkedInAdsAnalyticsStream:
                             "field1",
                             "field2",
                         ],
-                        "creative_id": "urn:li:sponsoredCreative:1234"
+                        "creative_id": "urn:li:sponsoredCreative:1234",
                     },
                     "q=analytics&pivot=(value:CREATIVE)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&creatives=List(urn%3Ali%3AsponsoredCreative%3A1234)",
             ),
@@ -320,7 +321,7 @@ def test_retry_get_access_token(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "record, expected",
+    ("record", "expected"),
     [
         ({}, {}),
         ({"lastModified": "2021-05-27 11:59:53.710000"}, {"lastModified": "2021-05-27T11:59:53.710000+00:00"}),

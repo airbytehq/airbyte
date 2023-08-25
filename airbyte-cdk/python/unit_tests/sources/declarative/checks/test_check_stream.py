@@ -8,19 +8,20 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 logger = logging.getLogger("test")
-config = dict()
+config = {}
 
 stream_names = ["s1"]
 record = MagicMock()
 
 
 @pytest.mark.parametrize(
-    "test_name, record, streams_to_check, stream_slice, expectation",
+    ("test_name", "record", "streams_to_check", "stream_slice", "expectation"),
     [
         ("test_success_check", record, stream_names, {}, (True, None)),
         ("test_success_check_stream_slice", record, stream_names, {"slice": "slice_value"}, (True, None)),
@@ -88,7 +89,7 @@ def test_check_stream_with_no_stream_slices_aborts():
 
 
 @pytest.mark.parametrize(
-    "test_name, response_code, available_expectation, expected_messages",
+    ("test_name", "response_code", "available_expectation", "expected_messages"),
     [
         ("test_stream_unavailable_unhandled_error", 404, False, ["Unable to connect to stream mock_http_stream", "404 Client Error"]),
         (
@@ -108,7 +109,7 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
         url_base = "https://test_base_url.com"
         primary_key = ""
 
-        def __init__(self, **kwargs):
+        def __init__(self, **kwargs) -> None:
             super().__init__(**kwargs)
             self.resp_counter = 1
 

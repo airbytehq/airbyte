@@ -6,6 +6,7 @@ import datetime
 import unittest
 
 import pytest
+
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -36,7 +37,7 @@ def mock_datetime_now(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "test_name, stream_state, start, end, step, cursor_field, lookback_window, datetime_format, cursor_granularity, expected_slices",
+    ("test_name", "stream_state", "start", "end", "step", "cursor_field", "lookback_window", "datetime_format", "cursor_granularity", "expected_slices"),
     [
         (
             "test_1_day",
@@ -338,7 +339,7 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, stream_slice, latest_record_data, expected_state",
+    ("test_name", "previous_cursor", "stream_slice", "latest_record_data", "expected_state"),
     [
         (
             "test_close_slice_previous_cursor_is_highest",
@@ -425,7 +426,7 @@ def test_given_partition_end_is_specified_and_greater_than_record_when_close_sli
 
 
 @pytest.mark.parametrize(
-    "test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    ("test_name", "inject_into", "field_name", "expected_req_params", "expected_headers", "expected_body_json", "expected_body_data"),
     [
         ("test_start_time_inject_into_none", None, None, {}, {}, {}, {}),
         (
@@ -490,7 +491,7 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
 
 
 @pytest.mark.parametrize(
-    "test_name, input_date, date_format, date_format_granularity, expected_output_date",
+    ("test_name", "input_date", "date_format", "date_format_granularity", "expected_output_date"),
     [
         (
             "test_parse_date_iso",
@@ -526,7 +527,7 @@ def test_parse_date_legacy_merge_datetime_format_in_cursor_datetime_format(test_
 
 
 @pytest.mark.parametrize(
-    "test_name, input_date, date_formats, expected_output_date",
+    ("test_name", "input_date", "date_formats", "expected_output_date"),
     [
         (
             "test_match_first_format",
@@ -568,7 +569,7 @@ def test_given_unknown_format_when_parse_date_then_raise_error():
 
 
 @pytest.mark.parametrize(
-    "test_name, input_dt, datetimeformat, datetimeformat_granularity, expected_output",
+    ("test_name", "input_dt", "datetimeformat", "datetimeformat_granularity", "expected_output"),
     [
         ("test_format_timestamp", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%s", "PT1S", "1609459200"),
         ("test_format_string", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y-%m-%d", "P1D", "2021-01-01"),

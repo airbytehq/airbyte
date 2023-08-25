@@ -3,14 +3,15 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_kyve.source import KYVEStream as IncrementalKyveStream
+
+from airbyte_cdk.models import SyncMode
 
 from . import config, pool_data
 
 
-@fixture
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalKyveStream, "path", "v0/example_endpoint")

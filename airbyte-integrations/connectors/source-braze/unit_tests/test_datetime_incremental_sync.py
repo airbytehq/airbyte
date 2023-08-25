@@ -2,18 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from source_braze import DatetimeIncrementalSyncComponent
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from source_braze import DatetimeIncrementalSyncComponent
 
 
 def test_datetime_slicer():
-    """
-    - `step` to be added to stream slices.
+    """- `step` to be added to stream slices.
     - `step` value one more higher than actual difference in days between end/start dates
     - `step` value exactly equal to difference in days between end/start dates for first slice item
-    - take into account if difference in days between end/start dates less than `step` argument for last record
+    - take into account if difference in days between end/start dates less than `step` argument for last record.
     """
     slicer = DatetimeIncrementalSyncComponent(
         start_datetime="2022-12-01",

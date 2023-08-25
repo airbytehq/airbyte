@@ -5,14 +5,15 @@
 
 from datetime import datetime, timedelta
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_nasa.source import NasaApod
+
+from airbyte_cdk.models import SyncMode
 
 config = {"api_key": "foobar"}
 
 
-@fixture
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(NasaApod, "path", "v0/example_endpoint")

@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest as pytest
+import pytest
+
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -12,7 +13,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
 
 
 @pytest.mark.parametrize(
-    "test_name, stream_slicers, expected_slices",
+    ("test_name", "stream_slicers", "expected_slices"),
     [
         (
             "test_single_stream_slicer",
@@ -23,7 +24,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
             "test_two_stream_slicers",
             [
                 ListPartitionRouter(
-                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
+                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={},
                 ),
                 ListPartitionRouter(values=["A", "B"], cursor_field="letter", config={}, parameters={}),
             ],
@@ -40,7 +41,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
             "test_list_and_datetime",
             [
                 ListPartitionRouter(
-                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
+                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={},
                 ),
                 DatetimeBasedCursor(
                     start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
@@ -69,12 +70,12 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
 )
 def test_substream_slicer(test_name, stream_slicers, expected_slices):
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
-    slices = [s for s in slicer.stream_slices()]
+    slices = list(slicer.stream_slices())
     assert slices == expected_slices
 
 
 @pytest.mark.parametrize(
-    "test_name, stream_1_request_option, stream_2_request_option, expected_req_params, expected_headers,expected_body_json, expected_body_data",
+    ("test_name", "stream_1_request_option", "stream_2_request_option", "expected_req_params", "expected_headers", "expected_body_json", "expected_body_data"),
     [
         (
             "test_param_header",

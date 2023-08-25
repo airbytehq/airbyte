@@ -12,12 +12,12 @@ FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 
 class TestMyFacebookAdsApi:
-    @pytest.fixture
+    @pytest.fixture()
     def fb_api(self):
         return source_facebook_marketing.api.MyFacebookAdsApi.init(access_token="foo", crash_log=False)
 
     @pytest.mark.parametrize(
-        "max_rate,max_pause_interval,min_pause_interval,usage,pause_interval,expected_pause_interval",
+        ("max_rate", "max_pause_interval", "min_pause_interval", "usage", "pause_interval", "expected_pause_interval"),
         [
             (
                 95,
@@ -46,7 +46,7 @@ class TestMyFacebookAdsApi:
         ],
     )
     def test__compute_pause_interval(
-        self, mocker, fb_api, max_rate, max_pause_interval, min_pause_interval, usage, pause_interval, expected_pause_interval
+        self, mocker, fb_api, max_rate, max_pause_interval, min_pause_interval, usage, pause_interval, expected_pause_interval,
     ):
         mocker.patch.object(fb_api, "MAX_RATE", max_rate)
         mocker.patch.object(fb_api, "MAX_PAUSE_INTERVAL", max_pause_interval)
@@ -55,7 +55,7 @@ class TestMyFacebookAdsApi:
         assert computed_pause_interval == expected_pause_interval
 
     @pytest.mark.parametrize(
-        "min_pause_interval,usages_pause_intervals,expected_output",
+        ("min_pause_interval", "usages_pause_intervals", "expected_output"),
         [
             (
                 pendulum.duration(minutes=1),  # min_pause_interval
@@ -97,12 +97,12 @@ class TestMyFacebookAdsApi:
 
         output = fb_api._get_max_usage_pause_interval_from_batch(records)
         fb_api._parse_call_rate_header.assert_called_with(
-            {"usage": usages_pause_intervals[-1][0], "pause_interval": usages_pause_intervals[-1][1]}
+            {"usage": usages_pause_intervals[-1][0], "pause_interval": usages_pause_intervals[-1][1]},
         )
         assert output == expected_output
 
     @pytest.mark.parametrize(
-        "params,min_rate,usage,expect_sleep",
+        ("params", "min_rate", "usage", "expect_sleep"),
         [
             (["batch"], 0, 1, True),
             (["batch"], 0, 0, True),
@@ -131,7 +131,7 @@ class TestMyFacebookAdsApi:
             fb_api._compute_pause_interval.assert_called_with(usage=usage, pause_interval=pause_interval)
             source_facebook_marketing.api.sleep.assert_called_with(fb_api._compute_pause_interval.return_value.total_seconds())
             source_facebook_marketing.api.logger.warning.assert_called_with(
-                f"Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}"
+                f"Utilization is too high ({usage})%, pausing for {fb_api._compute_pause_interval.return_value}",
             )
 
     def test_find_account(self, api, account_id, requests_mock):

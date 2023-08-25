@@ -17,8 +17,7 @@ IOStream: TypeAlias = Union[TextIO, BinaryIO]
 
 
 class SimpleLocalFileManager(LocalFileManager):
-    """
-    HACK WARNING: This is a hack to get around the fact that the LocalFileManager in dagster does not
+    """HACK WARNING: This is a hack to get around the fact that the LocalFileManager in dagster does not
     expose the key parameter and does not handle nested directories.
 
     Much of this code is borrowed from the LocalFileManager in dagster and modified slightly.

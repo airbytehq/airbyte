@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -33,7 +34,7 @@ class SourceOpsgenie(AbstractSource):
             return response.status_code == requests.codes.ok, None
 
         except Exception as error:
-            return False, f"Unable to connect to Opsgenie API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Opsgenie API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_authenticator(config)

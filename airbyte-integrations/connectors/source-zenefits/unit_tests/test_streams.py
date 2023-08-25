@@ -3,8 +3,6 @@
 #
 
 from http import HTTPStatus
-
-# from unittest import result
 from unittest.mock import MagicMock
 
 import pytest
@@ -13,11 +11,10 @@ from source_zenefits.source import ZenefitsStream
 
 @pytest.fixture()
 def config(request):
-    args = {"token": "YXNmnhkjf"}
-    return args
+    return {"token": "YXNmnhkjf"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(ZenefitsStream, "path", "v0/example_endpoint")

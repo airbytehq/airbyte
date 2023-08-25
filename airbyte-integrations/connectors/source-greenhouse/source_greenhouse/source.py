@@ -13,5 +13,5 @@ WARNING: Do not modify this file.
 
 # Declarative Source
 class SourceGreenhouse(YamlDeclarativeSource):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(**{"path_to_yaml": "manifest.yaml"})

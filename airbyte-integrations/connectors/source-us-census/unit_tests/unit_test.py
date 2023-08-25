@@ -6,11 +6,12 @@
 import pytest
 import requests
 import responses
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_us_census.source import UsCensusStream
 
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 
-@pytest.fixture
+
+@pytest.fixture()
 def us_census_stream():
     return UsCensusStream(
         query_params={},
@@ -33,7 +34,7 @@ example_from_docs_test = (
 
 @responses.activate
 @pytest.mark.parametrize(
-    "response, expected_result",
+    ("response", "expected_result"),
     [
         (
             simple_test,
@@ -99,7 +100,7 @@ type_string = {"type": "string"}
 
 @responses.activate
 @pytest.mark.parametrize(
-    "response, expected_schema",
+    ("response", "expected_schema"),
     [
         (
             simple_test,

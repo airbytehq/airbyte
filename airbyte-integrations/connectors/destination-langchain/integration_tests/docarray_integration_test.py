@@ -4,12 +4,13 @@
 
 import logging
 
-from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_langchain.destination import DestinationLangchain
 from destination_langchain.embedder import OPEN_AI_VECTOR_SIZE
 from integration_tests.base_integration_test import LocalIntegrationTest
 from langchain.embeddings import FakeEmbeddings
 from langchain.vectorstores import DocArrayHnswSearch
+
+from airbyte_cdk.models import DestinationSyncMode, Status
 
 
 class DocArrayIntegrationTest(LocalIntegrationTest):

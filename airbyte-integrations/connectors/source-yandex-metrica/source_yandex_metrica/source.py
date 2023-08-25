@@ -6,6 +6,7 @@ import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
@@ -28,14 +29,16 @@ class SourceYandexMetrica(AbstractSource):
         return False, "Please check provided credentials"
 
     def get_end_date(self, config) -> str:
-        """Check if end date can be used, if not change to most recent date: yesterday"""
+        """Check if end date can be used, if not change to most recent date: yesterday."""
         start_date = pendulum.parse(config["start_date"]).date()
         end_date = pendulum.parse(config["end_date"]).date() if config.get("end_date") else None
         if end_date:
             if end_date < start_date:
-                raise Exception("Start date cannot be later than end_date")
+                msg = "Start date cannot be later than end_date"
+                raise Exception(msg)
             if end_date > pendulum.yesterday().date():
-                raise Exception("End date cannot be set later than yesterday")
+                msg = "End date cannot be set later than yesterday"
+                raise Exception(msg)
         else:
             logger.info("Setting end date to yesterday")
             end_date = pendulum.yesterday().date()

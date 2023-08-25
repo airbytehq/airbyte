@@ -6,11 +6,12 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 import requests
+from pydantic.error_wrappers import ValidationError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
-from pydantic.error_wrappers import ValidationError
 
 from .streams import (
     ApplicationRoles,
@@ -114,58 +115,6 @@ class SourceJira(AbstractSource):
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
-                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args),
             )
-        return [
-            ApplicationRoles(**args),
-            Avatars(**args),
-            Boards(**args),
-            BoardIssues(**incremental_args),
-            Dashboards(**args),
-            Filters(**args),
-            FilterSharing(**args),
-            Groups(**args),
-            issues_stream,
-            IssueComments(**incremental_args),
-            issue_fields_stream,
-            IssueFieldConfigurations(**args),
-            IssueCustomFieldContexts(**args),
-            IssueLinkTypes(**args),
-            IssueNavigatorSettings(**args),
-            IssueNotificationSchemes(**args),
-            IssuePriorities(**args),
-            IssueProperties(**incremental_args),
-            IssueRemoteLinks(**incremental_args),
-            IssueResolutions(**args),
-            IssueSecuritySchemes(**args),
-            IssueTypeSchemes(**args),
-            IssueTypeScreenSchemes(**args),
-            IssueVotes(**incremental_args),
-            IssueWatchers(**incremental_args),
-            IssueWorklogs(**incremental_args),
-            JiraSettings(**args),
-            Labels(**args),
-            Permissions(**args),
-            PermissionSchemes(**args),
-            Projects(**args),
-            ProjectAvatars(**args),
-            ProjectCategories(**args),
-            ProjectComponents(**args),
-            ProjectEmail(**args),
-            ProjectPermissionSchemes(**args),
-            ProjectTypes(**args),
-            ProjectVersions(**args),
-            Screens(**args),
-            ScreenTabs(**args),
-            ScreenTabFields(**args),
-            ScreenSchemes(**args),
-            Sprints(**args),
-            SprintIssues(**incremental_args),
-            TimeTracking(**args),
-            Users(**args),
-            UsersGroupsDetailed(**args),
-            Workflows(**args),
-            WorkflowSchemes(**args),
-            WorkflowStatuses(**args),
-            WorkflowStatusCategories(**args),
-        ] + experimental_streams
+        return [ApplicationRoles(**args), Avatars(**args), Boards(**args), BoardIssues(**incremental_args), Dashboards(**args), Filters(**args), FilterSharing(**args), Groups(**args), issues_stream, IssueComments(**incremental_args), issue_fields_stream, IssueFieldConfigurations(**args), IssueCustomFieldContexts(**args), IssueLinkTypes(**args), IssueNavigatorSettings(**args), IssueNotificationSchemes(**args), IssuePriorities(**args), IssueProperties(**incremental_args), IssueRemoteLinks(**incremental_args), IssueResolutions(**args), IssueSecuritySchemes(**args), IssueTypeSchemes(**args), IssueTypeScreenSchemes(**args), IssueVotes(**incremental_args), IssueWatchers(**incremental_args), IssueWorklogs(**incremental_args), JiraSettings(**args), Labels(**args), Permissions(**args), PermissionSchemes(**args), Projects(**args), ProjectAvatars(**args), ProjectCategories(**args), ProjectComponents(**args), ProjectEmail(**args), ProjectPermissionSchemes(**args), ProjectTypes(**args), ProjectVersions(**args), Screens(**args), ScreenTabs(**args), ScreenTabFields(**args), ScreenSchemes(**args), Sprints(**args), SprintIssues(**incremental_args), TimeTracking(**args), Users(**args), UsersGroupsDetailed(**args), Workflows(**args), WorkflowSchemes(**args), WorkflowStatuses(**args), WorkflowStatusCategories(**args), *experimental_streams]

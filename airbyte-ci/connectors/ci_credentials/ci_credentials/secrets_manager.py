@@ -50,15 +50,12 @@ DEFAULT_MASK_KEY_PATTERNS = [
 
 
 class SecretsManager:
-    """Loading, saving and updating all requested secrets into connector folders"""
+    """Loading, saving and updating all requested secrets into connector folders."""
 
     SPEC_MASK_URL = "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
 
     logger: ClassVar[Logger] = Logger()
-    if os.getenv("VERSION") in ["dev", "dagger_ci"]:
-        base_folder = Path(os.getcwd())
-    else:
-        base_folder = Path("/actions-runner/_work/airbyte/airbyte")
+    base_folder = Path(os.getcwd()) if os.getenv("VERSION") in ["dev", "dagger_ci"] else Path("/actions-runner/_work/airbyte/airbyte")
 
     def __init__(self, connector_name: str, gsm_credentials: Mapping[str, Any]):
         self.gsm_credentials = gsm_credentials
@@ -76,7 +73,7 @@ class SecretsManager:
         return self._get_spec_mask() + DEFAULT_MASK_KEY_PATTERNS
 
     def __load_gsm_secrets(self) -> List[RemoteSecret]:
-        """Loads needed GSM secrets"""
+        """Loads needed GSM secrets."""
         secrets = []
         # docs: https://cloud.google.com/secret-manager/docs/filtering#api
         filter = "name:SECRET_"
@@ -162,7 +159,7 @@ class SecretsManager:
                             line = str(line).strip()
                             # don't output } and such
                             if len(line) > 1:
-                                if not os.getenv("VERSION") in ["dev", "dagger_ci"]:
+                                if os.getenv("VERSION") not in ["dev", "dagger_ci"]:
                                     # has to be at the beginning of line for Github to notice it
                                     print(f"::add-mask::{line}")
                                 if os.getenv("VERSION") == "dagger_ci":
@@ -178,7 +175,7 @@ class SecretsManager:
                 pass
 
     def read_from_gsm(self) -> List[RemoteSecret]:
-        """Reads all necessary secrets from different sources"""
+        """Reads all necessary secrets from different sources."""
         secrets = self.__load_gsm_secrets()
         if not len(secrets):
             self.logger.warning(f"not found any secrets of the connector '{self.connector_name}'")
@@ -186,7 +183,7 @@ class SecretsManager:
         return secrets
 
     def write_to_storage(self, secrets: List[RemoteSecret]) -> List[Path]:
-        """Save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder
+        """Save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder.
 
         Args:
             secrets (List[RemoteSecret]): List of remote secret to write locally
@@ -221,7 +218,7 @@ class SecretsManager:
         return RemoteSecret.from_secret(new_secret, enabled_version=new_version_response["name"])
 
     def _disable_version(self, version_name: str) -> dict:
-        """Disable a GSM secret version
+        """Disable a GSM secret version.
 
         Args:
             version_name (str): Full name of the version (containing project id and secret name)
@@ -239,17 +236,17 @@ class SecretsManager:
             List[Secret]: List of Secret instances parsed from local updated configuration files
         """
         updated_configurations_glob = (
-            f"{str(self.base_folder)}/airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json"
+            f"{self.base_folder!s}/airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json"
         )
         updated_configuration_files_versions = {}
         for updated_configuration_path in glob(updated_configurations_glob):
             updated_configuration_path = Path(updated_configuration_path)
-            with open(updated_configuration_path, "r") as updated_configuration:
+            with open(updated_configuration_path) as updated_configuration:
                 updated_configuration_value = json.load(updated_configuration)
             configuration_original_file_name = f"{updated_configuration_path.stem.split('|')[0]}{updated_configuration_path.suffix}"
             updated_configuration_files_versions.setdefault(configuration_original_file_name, [])
             updated_configuration_files_versions[configuration_original_file_name].append(
-                (updated_configuration_value, os.path.getctime(str(updated_configuration_path)))
+                (updated_configuration_value, os.path.getctime(str(updated_configuration_path))),
             )
 
         for updated_configurations in updated_configuration_files_versions.values():
@@ -277,7 +274,7 @@ class SecretsManager:
         new_remote_secrets = []
         for existing_secret_name in existing_secrets:
             if existing_secret_name in updated_secrets and json.loads(updated_secrets[existing_secret_name].value) != json.loads(
-                existing_secrets[existing_secret_name].value
+                existing_secrets[existing_secret_name].value,
             ):
                 new_secret = updated_secrets[existing_secret_name]
                 old_secret = existing_secrets[existing_secret_name]

@@ -12,8 +12,7 @@ FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 @fixture(autouse=True)
 def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep")
-    yield time_mock
+    return mocker.patch("time.sleep")
 
 
 @fixture(scope="session", name="account_id")
@@ -39,7 +38,7 @@ def fb_account_response_fixture(account_id):
                 {
                     "account_id": account_id,
                     "id": f"act_{account_id}",
-                }
+                },
             ],
             "paging": {"cursors": {"before": "MjM4NDYzMDYyMTcyNTAwNzEZD", "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"}},
         },

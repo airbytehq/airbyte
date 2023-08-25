@@ -6,16 +6,17 @@
 import logging
 from datetime import timedelta
 from http import HTTPStatus
+from unittest import mock
 from unittest.mock import MagicMock
 
-import mock
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 
 from .utils import read_full_refresh, read_incremental
 
@@ -26,8 +27,7 @@ logger = logging.getLogger("test_client")
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
+    return mocker.patch("time.sleep", lambda x: None)
 
 
 def test_check_connection_ok(requests_mock, config):
@@ -127,7 +127,7 @@ def test_cast_datetime(common_params, caplog):
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
-    """Error once, check that we retry and not fail"""
+    """Error once, check that we retry and not fail."""
     responses = [
         {"json": {"error": "limit reached"}, "status_code": 429, "headers": {"Retry-After": "0"}},
         {"json": [], "status_code": 200},
@@ -142,7 +142,7 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
 
 
 def test_check_connection_backoff_on_server_error(requests_mock, config):
-    """Error once, check that we retry and not fail"""
+    """Error once, check that we retry and not fail."""
     responses = [
         {"json": {"error": "something bad"}, "status_code": 500},
         {"json": [], "status_code": 200},
@@ -174,9 +174,9 @@ def test_stream_forbidden(requests_mock, config, caplog):
                     },
                     "sync_mode": "full_refresh",
                     "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
@@ -199,7 +199,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
-        }
+        },
     ]
     requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
@@ -215,9 +215,9 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
                     },
                     "sync_mode": "full_refresh",
                     "destination_sync_mode": "overwrite",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
@@ -253,9 +253,7 @@ class TestSplittingPropertiesFunctionality:
         return api._parse_and_handle_errors(response)
 
     def test_stream_with_splitting_properties(self, requests_mock, api, fake_properties_list, common_params):
-        """
-        Check working stream `companies` with large list of properties using new functionality with splitting properties
-        """
+        """Check working stream `companies` with large list of properties using new functionality with splitting properties."""
         test_stream = Companies(**common_params)
 
         parsed_properties = list(APIv3Property(fake_properties_list).split())
@@ -280,7 +278,7 @@ class TestSplittingPropertiesFunctionality:
                             "paging": {"next": {"after": id_list[-1]}} if len(id_list) == 100 else {},
                         },
                         "status_code": 200,
-                    }
+                    },
                 ]
                 prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
                 requests_mock.register_uri(
@@ -299,10 +297,7 @@ class TestSplittingPropertiesFunctionality:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
 
     def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
-        """
-        Check working stream `products` with large list of properties using new functionality with splitting properties
-        """
-
+        """Check working stream `products` with large list of properties using new functionality with splitting properties."""
         parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/product/properties", fake_properties_list)
 
@@ -319,7 +314,7 @@ class TestSplittingPropertiesFunctionality:
                         "paging": {},
                     },
                     "status_code": 200,
-                }
+                },
             ]
             prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
             requests_mock.register_uri("GET", f"{test_stream.url}?{prop_key}={prop_val}", record_responses)
@@ -331,10 +326,7 @@ class TestSplittingPropertiesFunctionality:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
 
     def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
-        """
-        Check working stream `workflows` with large list of properties using new functionality with splitting properties
-        """
-
+        """Check working stream `workflows` with large list of properties using new functionality with splitting properties."""
         parsed_properties = list(APIv3Property(fake_properties_list).split())
         self.set_mock_properties(requests_mock, "/properties/v2/deal/properties", fake_properties_list)
 
@@ -352,7 +344,7 @@ class TestSplittingPropertiesFunctionality:
                         "paging": {},
                     },
                     "status_code": 200,
-                }
+                },
             ]
             test_stream._sync_mode = SyncMode.full_refresh
             prop_key, prop_val = next(iter(property_slice.as_url_param().items()))
@@ -380,18 +372,16 @@ def configured_catalog_fixture():
                 "sync_mode": "incremental",
                 "cursor_field": ["updatedAt"],
                 "destination_sync_mode": "append",
-            }
-        ]
+            },
+        ],
     }
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):
+    """If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
+    the CRMSearchStream instance should stop at the 10Kth record.
     """
-    If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
-    the CRMSearchStream instance should stop at the 10Kth record
-    """
-
     responses = [
         {
             "json": {
@@ -399,7 +389,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 "paging": {
                     "next": {
                         "after": f"{x * 100}",
-                    }
+                    },
                 },
             },
             "status_code": 200,
@@ -415,20 +405,20 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                     "paging": {
                         "next": {
                             "after": f"{x * 100}",
-                        }
+                        },
                     },
                 },
                 "status_code": 200,
             }
             for x in range(1, 10)
-        ]
+        ],
     )
     # Last page... it does not have paging->next->after
     responses.append(
         {
             "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)], "paging": {}},
             "status_code": 200,
-        }
+        },
     )
 
     properties_response = [
@@ -438,7 +428,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
-        }
+        },
     ]
 
     # Create test_stream instance with some state
@@ -461,11 +451,9 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
-    """
-    Tests the engagements stream handles pagination correctly, for both
+    """Tests the engagements stream handles pagination correctly, for both
     full_refresh and incremental sync modes.
     """
-
     # Mocking Request
     requests_mock.register_uri(
         "GET",
@@ -543,20 +531,18 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
 
 
 def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list):
-    """
-    Connector should use 'All Engagements' API for old dates (more than 30 days)
-    """
-    old_date = 1614038400000  # Tuesday, 23 February 2021 г., 0:00:00
+    """Connector should use 'All Engagements' API for old dates (more than 30 days)."""
+    old_date = 1614038400000  # Tuesday, 23 February 2021 r., 0:00:00
     responses = [
         {
             "json": {
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": old_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 100
+                "total": 100,
             },
             "status_code": 200,
-        }
+        },
     ]
 
     # Create test_stream instance with some state
@@ -571,9 +557,7 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
 
 
 def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list):
-    """
-    Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
-    """
+    """Connector should use 'Recent Engagements' API for recent dates (less than 30 days)."""
     recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
     recent_date = int(recent_date.timestamp() * 1000)
     responses = [
@@ -582,10 +566,10 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 100
+                "total": 100,
             },
             "status_code": 200,
-        }
+        },
     ]
 
     # Create test_stream instance with some state
@@ -600,8 +584,7 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
 
 
 def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list):
-    """
-    Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
+    """Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,
     so 'All Engagements' API should be used.
     """
@@ -613,10 +596,10 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 10001
+                "total": 10001,
             },
             "status_code": 200,
-        }
+        },
     ]
 
     # Create test_stream instance with some state
@@ -631,10 +614,7 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
 
 
 def test_pagination_marketing_emails_stream(requests_mock, common_params):
-    """
-    Test pagination for Marketing Emails stream
-    """
-
+    """Test pagination for Marketing Emails stream."""
     requests_mock.register_uri(
         "GET",
         "/marketing-emails/v1/emails/with-statistics?limit=250",

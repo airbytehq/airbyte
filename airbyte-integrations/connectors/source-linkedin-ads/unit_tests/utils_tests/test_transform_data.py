@@ -7,8 +7,7 @@ from source_linkedin_ads.utils import transform_data
 
 
 def test_transfrom_data():
-    """
-    As far as we transform the data within the generator object,
+    """As far as we transform the data within the generator object,
     we use list() to have the actual output for the test assertion.
     """
     assert list(transform_data(input_test_data)) == output_test_data

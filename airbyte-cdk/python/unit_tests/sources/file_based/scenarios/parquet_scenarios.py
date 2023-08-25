@@ -6,6 +6,7 @@ import datetime
 import decimal
 
 import pyarrow as pa
+
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
@@ -18,7 +19,7 @@ _single_parquet_file = {
             ("val21", "val22"),
         ],
         "last_modified": "2023-06-05T03:54:07.000Z",
-    }
+    },
 }
 
 _single_partitioned_parquet_file = {
@@ -29,7 +30,7 @@ _single_partitioned_parquet_file = {
             ("val21", "val22"),
         ],
         "last_modified": "2023-06-05T03:54:07.000Z",
-    }
+    },
 }
 
 _parquet_file_with_decimal = {
@@ -42,7 +43,7 @@ _parquet_file_with_decimal = {
             pa.field("col1", pa.decimal128(5, 2)),
         ]),
         "last_modified": "2023-06-05T03:54:07.000Z",
-    }
+    },
 }
 
 _multiple_parquet_file = {
@@ -157,10 +158,10 @@ _parquet_file_with_various_types = {
             pa.field("col_struct", pa.struct([pa.field("struct_key", pa.string())])),
             pa.field("col_list", pa.list_(pa.int32())),
             pa.field("col_duration", pa.duration("s")),
-            pa.field("col_binary", pa.binary())
+            pa.field("col_binary", pa.binary()),
         ]),
         "last_modified": "2023-06-05T03:54:07.000Z",
-    }
+    },
 }
 
 single_parquet_scenario = (
@@ -174,9 +175,9 @@ single_parquet_scenario = (
                     "file_type": "parquet",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
     .set_file_type("parquet")
@@ -186,7 +187,7 @@ single_parquet_scenario = (
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
             {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -197,25 +198,25 @@ single_parquet_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -230,9 +231,9 @@ single_partitioned_parquet_scenario = (
                     "file_type": "parquet",
                     "globs": ["path_prefix/**/*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_partitioned_parquet_file, file_type="parquet"))
     .set_file_type("parquet")
@@ -242,7 +243,7 @@ single_partitioned_parquet_scenario = (
                       "_ab_source_file_url": "path_prefix/partition1=1/partition2=2/a.parquet"}, "stream": "stream1"},
             {"data": {"col1": "val21", "col2": "val22", "partition1": "1", "partition2": "2", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "path_prefix/partition1=1/partition2=2/a.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -253,31 +254,31 @@ single_partitioned_parquet_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "partition1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "partition2": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -292,9 +293,9 @@ multi_parquet_scenario = (
                     "file_type": "parquet",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_file_type("parquet")
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
@@ -307,28 +308,28 @@ multi_parquet_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -340,7 +341,7 @@ multi_parquet_scenario = (
                       "_ab_source_file_url": "b.parquet"}, "stream": "stream1"},
             {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
 ).build()
 
@@ -355,9 +356,9 @@ parquet_various_types_scenario = (
                     "file_type": "parquet",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
     .set_file_type("parquet")
@@ -404,19 +405,19 @@ parquet_various_types_scenario = (
                             },
                             "col_date32": {
                                 "type": ["null", "string"],
-                                "format": "date"
+                                "format": "date",
                             },
                             "col_date64": {
                                 "type": ["null", "string"],
-                                "format": "date"
+                                "format": "date",
                             },
                             "col_timestamp_without_tz": {
                                 "type": ["null", "string"],
-                                "format": "date-time"
+                                "format": "date-time",
                             },
                             "col_timestamp_with_tz": {
                                 "type": ["null", "string"],
-                                "format": "date-time"
+                                "format": "date-time",
                             },
                             "col_time32s": {
                                 "type": ["null", "string"],
@@ -450,9 +451,9 @@ parquet_various_types_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -479,9 +480,9 @@ parquet_various_types_scenario = (
                       "col_duration": 12345,
                       "col_binary": "binary string. Hello world!",
                       "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"
+                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1",
              },
-        ]
+        ],
     )
 ).build()
 
@@ -496,9 +497,9 @@ parquet_file_with_decimal_no_config_scenario = (
                     "file_type": "parquet",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
     .set_file_type("parquet")
@@ -506,7 +507,7 @@ parquet_file_with_decimal_no_config_scenario = (
         [
             {"data": {"col1": "13.00", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -517,22 +518,22 @@ parquet_file_with_decimal_no_config_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -549,11 +550,11 @@ parquet_file_with_decimal_as_string_scenario = (
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "parquet",
-                        "decimal_as_float": False
-                    }
-                }
-            ]
-        }
+                        "decimal_as_float": False,
+                    },
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
     .set_file_type("parquet")
@@ -561,7 +562,7 @@ parquet_file_with_decimal_as_string_scenario = (
         [
             {"data": {"col1": "13.00", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -572,22 +573,22 @@ parquet_file_with_decimal_as_string_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -604,11 +605,11 @@ parquet_file_with_decimal_as_float_scenario = (
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "parquet",
-                        "decimal_as_float": True
-                    }
-                }
-            ]
-        }
+                        "decimal_as_float": True,
+                    },
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
     .set_file_type("parquet")
@@ -616,7 +617,7 @@ parquet_file_with_decimal_as_float_scenario = (
         [
             {"data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -627,22 +628,22 @@ parquet_file_with_decimal_as_float_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "number"]
+                                "type": ["null", "number"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -660,9 +661,9 @@ parquet_file_with_decimal_legacy_config_scenario = (
                     },
                     "globs": ["*"],
                     "validation_policy": "emit_record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
     .set_file_type("parquet")
@@ -670,7 +671,7 @@ parquet_file_with_decimal_legacy_config_scenario = (
         [
             {"data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -681,22 +682,22 @@ parquet_file_with_decimal_legacy_config_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "number"]
+                                "type": ["null", "number"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -712,23 +713,23 @@ parquet_with_invalid_config_scenario = (
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
-                        "filetype": "csv"
-                    }
-                }
-            ]
-        }
+                        "filetype": "csv",
+                    },
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
     .set_file_type("parquet")
     .set_expected_records(
         [
-        ]
+        ],
     )
     .set_expected_logs({"read": [
         {
             "level": "ERROR",
-            "message": "Error parsing record"
-        }
+            "message": "Error parsing record",
+        },
     ]})
     .set_expected_discover_error(SchemaInferenceError, "Error inferring schema from files")
     .set_expected_catalog(
@@ -740,24 +741,24 @@ parquet_with_invalid_config_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "col2": {
-                                "type": ["null", "string"]
+                                "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
-                                "type": "string"
+                                "type": "string",
                             },
                             "_ab_source_file_url": {
-                                "type": "string"
+                                "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()

@@ -8,6 +8,7 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -60,7 +61,7 @@ class SourcePinterest(AbstractSource):
     def get_authenticator(config):
         config = config.get("credentials") or config
         credentials_base64_encoded = standard_b64encode(
-            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
+            (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii"),
         ).decode("ascii")
         auth = f"Basic {credentials_base64_encoded}"
 

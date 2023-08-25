@@ -3,11 +3,12 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
 
 @pytest.mark.parametrize(
-    "test_name, option_type, field_name",
+    ("test_name", "option_type", "field_name"),
     [
         ("test_limit_param_with_field_name", RequestOptionType.request_parameter, "field"),
         ("test_limit_header_with_field_name", RequestOptionType.header, "field"),

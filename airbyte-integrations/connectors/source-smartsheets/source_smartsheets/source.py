@@ -3,13 +3,15 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import TYPE_CHECKING, Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
 
 from .sheet import SmartSheetAPIWrapper
 from .streams import SmartsheetStream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams import Stream
 
 
 class SourceSmartsheets(AbstractSource):

@@ -7,32 +7,32 @@ import sys
 from pathlib import Path
 from typing import Iterable, Optional, Set, Tuple
 
-from connector_ops.utils import Connector
 from pydash.objects import get
+
+from connector_ops.utils import Connector
 
 
 def check_migration_guide(connector: Connector) -> bool:
     """Check if a migration guide is available for the connector if a breaking change was introduced."""
-
-    breaking_changes = get(connector.metadata, f"releases.breakingChanges")
+    breaking_changes = get(connector.metadata, "releases.breakingChanges")
     if not breaking_changes:
         return True
 
     migration_guide_file_path = connector.migration_guide_file_path
     if not migration_guide_file_path.exists():
         print(
-            f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder."
+            f"Migration guide file is missing for {connector.name}. Please create a {connector.migration_guide_file_name} file in the docs folder.",
         )
         return False
 
     # Check that the migration guide begins with # {connector name} Migration Guide
     expected_title = f"# {connector.name_from_metadata} Migration Guide"
-    expected_version_header_start = f"## Upgrading to "
+    expected_version_header_start = "## Upgrading to "
     with open(migration_guide_file_path) as f:
         first_line = f.readline().strip()
-        if not first_line == expected_title:
+        if first_line != expected_title:
             print(
-                f"Migration guide file for {connector.technical_name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'"
+                f"Migration guide file for {connector.technical_name} does not start with the correct header. Expected '{expected_title}', got '{first_line}'",
             )
             return False
 
@@ -55,7 +55,7 @@ def check_migration_guide(connector: Connector) -> bool:
 
         if ordered_breaking_changes != ordered_heading_versions:
             print(f"Migration guide file for {connector.name} has incorrect version headings.")
-            print(f"Check for missing, extra, or misordered headings, or headers with typos.")
+            print("Check for missing, extra, or misordered headings, or headers with typos.")
             print(f"Expected headings: {ordered_expected_headings}")
             return False
 
@@ -64,7 +64,7 @@ def check_migration_guide(connector: Connector) -> bool:
 
 def check_documentation_file_exists(connector: Connector) -> bool:
     """Check if a markdown file with connector documentation is available
-    in docs/integrations/<connector-type>s/<connector-name>.md
+    in docs/integrations/<connector-type>s/<connector-name>.md.
 
     Args:
         connector (Connector): a Connector dataclass instance.
@@ -72,12 +72,11 @@ def check_documentation_file_exists(connector: Connector) -> bool:
     Returns:
         bool: Wether a documentation file was found.
     """
-
     return connector.documentation_file_path.exists()
 
 
 def check_documentation_follows_guidelines(connector: Connector) -> bool:
-    """Documentation guidelines are defined here https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw"""
+    """Documentation guidelines are defined here https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw."""
     follows_guidelines = True
     with open(connector.documentation_file_path) as f:
         doc_lines = [line.lower() for line in f.read().splitlines()]
@@ -104,7 +103,7 @@ def check_documentation_follows_guidelines(connector: Connector) -> bool:
 
 def check_changelog_entry_is_updated(connector: Connector) -> bool:
     """Check that the changelog entry is updated for the latest connector version
-    in docs/integrations/<connector-type>/<connector-name>.md
+    in docs/integrations/<connector-type>/<connector-name>.md.
 
     Args:
         connector (Connector): a Connector dataclass instance.
@@ -126,7 +125,7 @@ def check_changelog_entry_is_updated(connector: Connector) -> bool:
 
 def check_connector_icon_is_available(connector: Connector) -> bool:
     """Check an SVG icon exists for a connector in
-    in airbyte-config-oss/init-oss/src/main/resources/icons/<connector-name>.svg
+    in airbyte-config-oss/init-oss/src/main/resources/icons/<connector-name>.svg.
 
     Args:
         connector (Connector): a Connector dataclass instance.
@@ -138,18 +137,18 @@ def check_connector_icon_is_available(connector: Connector) -> bool:
 
 
 def read_all_files_in_directory(
-    directory: Path, ignored_directories: Optional[Set[str]] = None, ignored_filename_patterns: Optional[Set[str]] = None
+    directory: Path, ignored_directories: Optional[Set[str]] = None, ignored_filename_patterns: Optional[Set[str]] = None,
 ) -> Iterable[Tuple[str, str]]:
     ignored_directories = ignored_directories if ignored_directories is not None else {}
     ignored_filename_patterns = ignored_filename_patterns if ignored_filename_patterns is not None else {}
 
     for path in directory.rglob("*"):
-        ignore_directory = any([ignored_directory in path.parts for ignored_directory in ignored_directories])
-        ignore_filename = any([path.match(ignored_filename_pattern) for ignored_filename_pattern in ignored_filename_patterns])
+        ignore_directory = any(ignored_directory in path.parts for ignored_directory in ignored_directories)
+        ignore_filename = any(path.match(ignored_filename_pattern) for ignored_filename_pattern in ignored_filename_patterns)
         ignore = ignore_directory or ignore_filename
         if path.is_file() and not ignore:
             try:
-                for line in open(path, "r"):
+                for line in open(path):
                     yield path, line
             except UnicodeDecodeError:
                 print(f"{path} could not be decoded as it is not UTF8.")
@@ -203,7 +202,7 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     """
     files_with_http_url = set()
     for filename, line in read_all_files_in_directory(
-        connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
+        connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS,
     ):
         line = line.lower()
         if is_comment(line, filename):

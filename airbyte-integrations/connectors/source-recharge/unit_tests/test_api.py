@@ -37,7 +37,7 @@ class TestCommon:
     main = RechargeStream
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (Addresses, "id"),
             (Charges, "id"),
@@ -119,7 +119,7 @@ class TestCommon:
         assert expected == result
 
     @pytest.mark.parametrize(
-        "stream_cls, stream_type, expected",
+        ("stream_cls", "stream_type", "expected"),
         [
             (Addresses, "incremental", "addresses"),
             (Charges, "incremental", "charges"),
@@ -142,7 +142,7 @@ class TestCommon:
         assert expected == result
 
     @pytest.mark.parametrize(
-        "stream_cls, stream_type, expected",
+        ("stream_cls", "stream_type", "expected"),
         [
             (Addresses, "incremental", "addresses"),
             (Charges, "incremental", "charges"),
@@ -191,7 +191,7 @@ class TestFullRefreshStreams:
         return {stream_name: result}
 
     @pytest.mark.parametrize(
-        "stream_cls, cursor_response, expected",
+        ("stream_cls", "cursor_response", "expected"),
         [
             (Collections, "some next cursor", {"cursor": "some next cursor"}),
             (Metafields, "some next cursor", {"cursor": "some next cursor"}),
@@ -209,12 +209,12 @@ class TestFullRefreshStreams:
         assert stream.next_page_token(response) == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, next_page_token, stream_state, stream_slice, expected",
+        ("stream_cls", "next_page_token", "stream_state", "stream_slice", "expected"),
         [
             (Collections, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
             (Metafields, {"cursor": "12353"}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "owner_resource": None, "cursor": "12353"}),
             (Products, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
-            (Shop, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z",}),
+            (Shop, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
         ],
     )
     def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):
@@ -223,7 +223,7 @@ class TestFullRefreshStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, data, expected",
+        ("stream_cls", "data", "expected"),
         [
             (Collections, [{"test": 123}], [{"test": 123}]),
             (Metafields, [{"test2": 234}], [{"test2": 234}]),
@@ -240,7 +240,7 @@ class TestFullRefreshStreams:
         assert list(stream.parse_response(response)) == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, data, expected",
+        ("stream_cls", "data", "expected"),
         [
             (Collections, [{"test": 123}], [{"test": 123}]),
             (Metafields, [{"test2": 234}], [{"test2": 234}]),
@@ -256,7 +256,7 @@ class TestFullRefreshStreams:
         response = requests.get(url)
         assert list(stream.parse_response(response)) == expected
 
-    @pytest.mark.parametrize("owner_resource, expected", [({"customer": {"id": 123}}, {"customer": {"id": 123}})])
+    @pytest.mark.parametrize(("owner_resource", "expected"), [({"customer": {"id": 123}}, {"customer": {"id": 123}})])
     def test_metafields_read_records(self, config, owner_resource, expected):
         with patch.object(Metafields, "read_records", return_value=owner_resource):
             result = Metafields(config).read_records(stream_slice={"owner_resource": owner_resource})
@@ -271,7 +271,7 @@ class TestIncrementalStreams:
         return {stream_name: result}
 
     @pytest.mark.parametrize(
-        "stream_cls, expected",
+        ("stream_cls", "expected"),
         [
             (Addresses, "updated_at"),
             (Charges, "updated_at"),
@@ -288,7 +288,7 @@ class TestIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, cursor_response, expected",
+        ("stream_cls", "cursor_response", "expected"),
         [
             (Addresses, "some next cursor", {"cursor": "some next cursor"}),
             (Charges, "some next cursor", {"cursor": "some next cursor"}),
@@ -309,7 +309,7 @@ class TestIncrementalStreams:
         assert stream.next_page_token(response) == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, next_page_token, stream_state, stream_slice, expected",
+        ("stream_cls", "next_page_token", "stream_state", "stream_slice", "expected"),
         [
             (Addresses, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15T00:00:00Z"}),
             (Charges, {"cursor": "123"}, {"updated_at": "2030-01-01"}, {},
@@ -329,7 +329,7 @@ class TestIncrementalStreams:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, current_state, latest_record, expected",
+        ("stream_cls", "current_state", "latest_record", "expected"),
         [
             (Addresses, {}, {"updated_at": 2}, {"updated_at": 2}),
             (Charges, {"updated_at": 2}, {"updated_at": 3}, {"updated_at": 3}),

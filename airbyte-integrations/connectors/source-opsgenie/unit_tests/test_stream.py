@@ -29,7 +29,7 @@ class TeamsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(3, len(records))
+        assert len(records) == 3
 
 
 class UsersStreamTestCase(unittest.TestCase):
@@ -82,7 +82,7 @@ class UsersStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(2, len(records))
+        assert len(records) == 2
 
 
 class ServicesStreamTestCase(unittest.TestCase):
@@ -117,7 +117,7 @@ class ServicesStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(2, len(records))
+        assert len(records) == 2
 
 
 class IntegrationsStreamTestCase(unittest.TestCase):
@@ -151,7 +151,7 @@ class IntegrationsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(7, len(records))
+        assert len(records) == 7
 
 
 class UserTeamsStreamTestCase(unittest.TestCase):
@@ -228,7 +228,7 @@ class UserTeamsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(3, len(records))
+        assert len(records) == 3
 
 
 class AlertsStreamTestCase(unittest.TestCase):
@@ -300,7 +300,7 @@ class AlertsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(2, len(records))
+        assert len(records) == 2
 
 
 class IncidentsStreamTestCase(unittest.TestCase):
@@ -347,7 +347,7 @@ class IncidentsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(2, len(records))
+        assert len(records) == 2
 
 
 class AlertRecipientsStreamTestCase(unittest.TestCase):
@@ -394,7 +394,7 @@ class AlertRecipientsStreamTestCase(unittest.TestCase):
                             "acknowledgedBy": "agent_smith@opsgenie.com",
                             "closedBy": "neo@opsgenie.com",
                         },
-                    }
+                    },
                 ],
                 "took": 0.605,
                 "requestId": "9ae63dd7-ed00-4c81-86f0-c4ffd33142c9",
@@ -426,7 +426,7 @@ class AlertRecipientsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(2, len(records))
+        assert len(records) == 2
 
 
 class AlertLogsStreamTestCase(unittest.TestCase):
@@ -473,7 +473,7 @@ class AlertLogsStreamTestCase(unittest.TestCase):
                             "acknowledgedBy": "agent_smith@opsgenie.com",
                             "closedBy": "neo@opsgenie.com",
                         },
-                    }
+                    },
                 ],
                 "took": 0.605,
                 "requestId": "9ae63dd7-ed00-4c81-86f0-c4ffd33142c9",
@@ -505,4 +505,4 @@ class AlertLogsStreamTestCase(unittest.TestCase):
         )
 
         records = list(read_full_refresh(stream))
-        self.assertEqual(2, len(records))
+        assert len(records) == 2

@@ -3,14 +3,15 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_kyriba.source import IncrementalKyribaStream
+
+from airbyte_cdk.models import SyncMode
 
 from .test_streams import config
 
 
-@fixture
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalKyribaStream, "path", "v0/example_endpoint")

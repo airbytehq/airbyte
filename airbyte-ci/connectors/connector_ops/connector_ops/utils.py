@@ -79,10 +79,7 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     """
     airbyte_repo = git.Repo(search_parent_directories=True)
 
-    if diff_regex is None:
-        diff_command_args = ("--name-only", DIFFED_BRANCH)
-    else:
-        diff_command_args = ("--name-only", f"-G{diff_regex}", DIFFED_BRANCH)
+    diff_command_args = ("--name-only", DIFFED_BRANCH) if diff_regex is None else ("--name-only", f"-G{diff_regex}", DIFFED_BRANCH)
 
     changed_acceptance_test_config_paths = {
         file_path
@@ -114,8 +111,7 @@ def get_gradle_dependencies_block(build_file: Path) -> str:
                 break
             else:
                 dependency_block.append(line)
-    dependencies_block = "\n".join(dependency_block)
-    return dependencies_block
+    return "\n".join(dependency_block)
 
 
 def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]:
@@ -127,7 +123,6 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
     Returns:
         Tuple[List[Tuple[str, Path]], List[Tuple[str, Path]]]: _description_
     """
-
     dependencies_block = get_gradle_dependencies_block(build_file)
 
     project_dependencies: List[Path] = []
@@ -155,7 +150,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
 
 def get_all_gradle_dependencies(
-    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
+    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None,
 ) -> List[Path]:
     """Recursively retrieve all transitive dependencies of a Gradle project.
 
@@ -196,7 +191,8 @@ class Connector:
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
         if "-" not in self.technical_name:
-            raise ConnectorInvalidNameError(f"Connector type and name could not be inferred from {self.technical_name}")
+            msg = f"Connector type and name could not be inferred from {self.technical_name}"
+            raise ConnectorInvalidNameError(msg)
         _type = self.technical_name.split("-")[0]
         name = self.technical_name[len(_type) + 1 :]
         return _type, name
@@ -228,8 +224,7 @@ class Connector:
 
     @property
     def icon_path(self) -> Path:
-        file_path = self.code_directory / ICON_FILE_NAME
-        return file_path
+        return self.code_directory / ICON_FILE_NAME
 
     @property
     def code_directory(self) -> Path:
@@ -259,7 +254,6 @@ class Connector:
         except FileNotFoundError:
             pass
         return None
-        # raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
 
     @property
     def version(self) -> str:
@@ -273,11 +267,9 @@ class Connector:
             for line in f:
                 if "io.airbyte.version" in line:
                     return line.split("=")[1].strip()
+        msg = "\n            Could not find the connector version from its Dockerfile.\n            The io.airbyte.version tag is missing.\n            "
         raise ConnectorVersionNotFound(
-            """
-            Could not find the connector version from its Dockerfile.
-            The io.airbyte.version tag is missing.
-            """
+            msg,
         )
 
     @property
@@ -302,7 +294,7 @@ class Connector:
 
         if sl_value is None:
             logging.warning(
-                f"Connector {self.technical_name} does not have a `ab_internal.sl` defined in metadata.yaml. Defaulting to {default_value}"
+                f"Connector {self.technical_name} does not have a `ab_internal.sl` defined in metadata.yaml. Defaulting to {default_value}",
             )
             return default_value
 
@@ -322,7 +314,7 @@ class Connector:
 
         if ql_value is None:
             logging.warning(
-                f"Connector {self.technical_name} does not have a `ab_internal.ql` defined in metadata.yaml. Defaulting to {default_value}"
+                f"Connector {self.technical_name} does not have a `ab_internal.ql` defined in metadata.yaml. Defaulting to {default_value}",
             )
             return default_value
 
@@ -390,11 +382,13 @@ class Connector:
     def normalization_repository(self) -> Optional[str]:
         if self.supports_normalization:
             return f"{self.metadata['normalizationConfig']['normalizationRepository']}"
+        return None
 
     @property
     def normalization_tag(self) -> Optional[str]:
         if self.supports_normalization:
             return f"{self.metadata['normalizationConfig']['normalizationTag']}"
+        return None
 
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
@@ -407,13 +401,13 @@ class Connector:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_all_gradle_dependencies(
-                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies,
             )
-        return sorted(list(set(dependencies_paths)))
+        return sorted(set(dependencies_paths))
 
 
 def get_changed_connectors(
-    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
+    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True,
 ) -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
     if modified_files is None:

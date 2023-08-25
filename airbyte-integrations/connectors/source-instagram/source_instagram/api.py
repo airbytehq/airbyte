@@ -8,20 +8,21 @@ from typing import Any, List, Mapping
 
 import backoff
 import pendulum
-from airbyte_cdk.entrypoint import logger
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.iguser import IGUser
 from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
+
+from airbyte_cdk.entrypoint import logger
 from source_instagram.common import InstagramAPIException, retry_pattern
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
-    """Custom Facebook API class to intercept all API calls and handle call rate limits"""
+    """Custom Facebook API class to intercept all API calls and handle call rate limits."""
 
     call_rate_threshold = 90  # maximum percentage of call limit utilization
     pause_interval = pendulum.duration(minutes=1)  # default pause interval if reached or close to call rate limit
@@ -57,7 +58,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         url_override=None,
         api_version=None,
     ):
-        """Makes an API call, delegate actual work to parent class and handles call rates"""
+        """Makes an API call, delegate actual work to parent class and handles call rates."""
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self.handle_call_rate_limit(response, params)
         return response
@@ -85,26 +86,23 @@ class InstagramAPI:
                         {
                             "page_id": account.get_id(),
                             "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
-                        }
+                        },
                     )
         except FacebookRequestError as exc:
             # 200 - 299, 3 and 10 are permission related error codes
             if 200 <= exc.api_error_code() <= 299 or exc.api_error_code() in [3, 10]:
+                msg = f"Error: {exc.api_error_code()}, {exc.api_error_message()}.Also make sure that your Access Token has the following permissions: instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, and Instagram Public Content AccessSee error handling https://developers.facebook.com/docs/graph-api/guides/error-handling/ and permissions https://developers.facebook.com/docs/permissions/reference for more information."
                 raise InstagramAPIException(
-                    f"Error: {exc.api_error_code()}, {exc.api_error_message()}."
-                    f"Also make sure that your Access Token has the following permissions: "
-                    f"instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, and Instagram Public Content Access"
-                    f"See error handling https://developers.facebook.com/docs/graph-api/guides/error-handling/ "
-                    f"and permissions https://developers.facebook.com/docs/permissions/reference for more information."
+                    msg,
                 ) from exc
 
-            raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            msg = f"Error: {exc.api_error_code()}, {exc.api_error_message()}"
+            raise InstagramAPIException(msg) from exc
 
         if not instagram_business_accounts:
+            msg = "Couldn't find an Instagram business account for current Access Token. Please ensure you had create a facebook developer application. See more here https://developers.facebook.com/docs/development/create-an-app/"
             raise InstagramAPIException(
-                "Couldn't find an Instagram business account for current Access Token. "
-                "Please ensure you had create a facebook developer application."
-                " See more here https://developers.facebook.com/docs/development/create-an-app/"
+                msg,
             )
 
         return instagram_business_accounts

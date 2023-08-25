@@ -15,12 +15,13 @@ def test_check_connection_ok(requests_mock, config):
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", json=json_resp)
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert ok and not error_msg
+    assert ok
+    assert not error_msg
 
 
 def test_check_connection_invalid_api_key(requests_mock, config):
     responses = [
-        {"json": {"code": "invalid_credentials", "message": "You have to be logged in to perform this action."}, "status_code": 401}
+        {"json": {"code": "invalid_credentials", "message": "You have to be logged in to perform this action."}, "status_code": 401},
     ]
 
     requests_mock.register_uri("GET", "/api/v2/settings/helpdesk", responses)
@@ -35,7 +36,8 @@ def test_check_connection_empty_config(config):
 
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok and error_msg
+    assert not ok
+    assert error_msg
 
 
 def test_check_connection_invalid_config(config):
@@ -43,13 +45,15 @@ def test_check_connection_invalid_config(config):
 
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok and error_msg
+    assert not ok
+    assert error_msg
 
 
 def test_check_connection_exception(requests_mock, config):
     ok, error_msg = SourceFreshdesk().check_connection(logger, config=config)
 
-    assert not ok and error_msg
+    assert not ok
+    assert error_msg
 
 
 def test_streams(config):

@@ -7,7 +7,7 @@ from source_klaviyo.source import SourceKlaviyo
 
 
 @pytest.mark.parametrize(
-    "status_code, response, is_connection_successful, error_msg",
+    ("status_code", "response", "is_connection_successful", "error_msg"),
     (
         (200, "", True, None),
         (

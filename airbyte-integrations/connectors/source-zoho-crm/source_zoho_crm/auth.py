@@ -5,6 +5,7 @@
 from typing import Any, Dict, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 
@@ -22,9 +23,8 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
         return {"Authorization": f"Zoho-oauthtoken {token}"}
 
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        This method is overridden because token parameters should be passed via URL params, not via the request payload.
-        Returns a tuple of (access_token, token_lifespan_in_seconds)
+        """This method is overridden because token parameters should be passed via URL params, not via the request payload.
+        Returns a tuple of (access_token, token_lifespan_in_seconds).
         """
         try:
             response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), params=self._prepare_refresh_token_params())
@@ -32,4 +32,5 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
             response_json = response.json()
             return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e

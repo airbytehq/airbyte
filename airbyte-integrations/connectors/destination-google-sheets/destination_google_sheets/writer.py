@@ -3,11 +3,16 @@
 #
 
 
+
+from typing import TYPE_CHECKING
+
 from airbyte_cdk.models import AirbyteStream
-from pygsheets import Worksheet
 
 from .buffer import WriteBufferMixin
 from .spreadsheet import GoogleSheets
+
+if TYPE_CHECKING:
+    from pygsheets import Worksheet
 
 
 class GoogleSheetsWriter(WriteBufferMixin):
@@ -16,23 +21,18 @@ class GoogleSheetsWriter(WriteBufferMixin):
         super().__init__()
 
     def delete_stream_entries(self, stream_name: str):
-        """
-        Deletes all the records belonging to the input stream.
-        """
+        """Deletes all the records belonging to the input stream."""
         self.spreadsheet.clean_worksheet(stream_name)
 
     def check_headers(self, stream_name: str):
-        """
-        Checks whether data headers belonging to the input stream are set.
-        """
+        """Checks whether data headers belonging to the input stream are set."""
         stream = self.stream_info[stream_name]
         if not stream["is_set"]:
             self.spreadsheet.set_headers(stream_name, stream["headers"])
             self.stream_info[stream_name]["is_set"] = True
 
     def queue_write_operation(self, stream_name: str):
-        """
-        Mimics `batch_write` operation using records_buffer.
+        """Mimics `batch_write` operation using records_buffer.
 
         1) gets data from the records_buffer, with respect to the size of the records_buffer (records count or size in Kb)
         2) writes it to the target worksheet
@@ -46,14 +46,12 @@ class GoogleSheetsWriter(WriteBufferMixin):
             self.clear_buffer(stream_name)
 
     def write_from_queue(self, stream_name: str):
-        """
-        Writes data from records_buffer for belonging to the input stream.
+        """Writes data from records_buffer for belonging to the input stream.
 
         1) checks the headers are set
         2) gets the values from the records_buffer
         3) if there are records to write - writes them to the target worksheet
         """
-
         self.check_headers(stream_name)
         values: list = self.records_buffer[stream_name] or []
         if values:
@@ -65,8 +63,7 @@ class GoogleSheetsWriter(WriteBufferMixin):
             self.logger.info(f"Skipping empty stream: {stream_name}")
 
     def write_whats_left(self):
-        """
-        Stands for writing records that are still left to be written,
+        """Stands for writing records that are still left to be written,
         but don't match the condition for `queue_write_operation`.
         """
         for stream_name in self.records_buffer:
@@ -74,8 +71,7 @@ class GoogleSheetsWriter(WriteBufferMixin):
             self.clear_buffer(stream_name)
 
     def deduplicate_records(self, configured_stream: AirbyteStream):
-        """
-        Finds and removes duplicated records for target stream, using `primary_key`.
+        """Finds and removes duplicated records for target stream, using `primary_key`.
         Processing the worksheet happens offline and sync it afterwards to reduce API calls rate
         If rate limits are hit while deduplicating, it will be handeled automatically, the operation continues after backoff.
         """

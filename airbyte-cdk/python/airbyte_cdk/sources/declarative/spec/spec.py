@@ -11,8 +11,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 
 @dataclass
 class Spec:
-    """
-    Returns a connection specification made up of information about the connector and how it can be configured
+    """Returns a connection specification made up of information about the connector and how it can be configured.
 
     Attributes:
         connection_specification (Mapping[str, Any]): information related to how a connector can be configured
@@ -25,10 +24,7 @@ class Spec:
     advanced_auth: Optional[AuthFlow] = None
 
     def generate_spec(self) -> ConnectorSpecification:
-        """
-        Returns the connector specification according the spec block defined in the low code connector manifest.
-        """
-
+        """Returns the connector specification according the spec block defined in the low code connector manifest."""
         obj = {"connectionSpecification": self.connection_specification}
 
         if self.documentation_url:

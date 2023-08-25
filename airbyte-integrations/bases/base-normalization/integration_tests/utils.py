@@ -8,14 +8,13 @@ import shutil
 import tempfile
 from distutils.dir_util import copy_tree
 
-from integration_tests.dbt_integration_test import DbtIntegrationTest
 from normalization import DestinationType, TransformCatalog
+
+from integration_tests.dbt_integration_test import DbtIntegrationTest
 
 
 def setup_test_dir(integration_type: str, temporary_folders: set) -> str:
-    """
-    We prepare a clean folder to run the tests from.
-    """
+    """We prepare a clean folder to run the tests from."""
     test_root_dir = f"{pathlib.Path().joinpath('..', 'build', 'normalization_test_output', integration_type.lower()).resolve()}"
     os.makedirs(test_root_dir, exist_ok=True)
     test_root_dir = tempfile.mkdtemp(dir=test_root_dir)
@@ -61,7 +60,7 @@ def run_destination_process(
         "/data/destination_config.json",
         "--catalog",
     ]
-    return dbt_test_utils.run_destination_process(message_file, test_root_dir, commands + [f"/data/{catalog_file}"])
+    return dbt_test_utils.run_destination_process(message_file, test_root_dir, [*commands, f"/data/{catalog_file}"])
 
 
 def generate_dbt_models(
@@ -72,9 +71,7 @@ def generate_dbt_models(
     catalog_file: str,
     dbt_test_utils: DbtIntegrationTest,
 ):
-    """
-    This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
-    """
+    """This is the normalization step generating dbt models files from the destination_catalog.json taken as input."""
     transform_catalog = TransformCatalog()
     transform_catalog.config = {
         "integration_type": destination_type.value,

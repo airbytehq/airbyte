@@ -12,16 +12,13 @@ from destination_databend.client import DatabendClient
 
 
 class DatabendWriter:
-    """
-    Base class for shared writer logic.
-    """
+    """Base class for shared writer logic."""
 
     flush_interval = 1000
 
     def __init__(self, client: DatabendClient) -> None:
-        """
-        :param client: Databend SDK connection class with established connection
-            to the databse.
+        """:param client: Databend SDK connection class with established connection
+        to the databse.
         """
         try:
             # open a cursor and do some work with it
@@ -31,14 +28,13 @@ class DatabendWriter:
             self._values = 0
         except Exception as e:
             # handle the exception
-            raise AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            raise AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")
         finally:
             # close the cursor
             self.cursor.close()
 
     def delete_table(self, name: str) -> None:
-        """
-        Delete the resulting table.
+        """Delete the resulting table.
         Primarily used in Overwrite strategy to clean up previous data.
 
         :param name: table name to delete.
@@ -46,8 +42,7 @@ class DatabendWriter:
         self.cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{name}")
 
     def create_raw_table(self, name: str):
-        """
-        Create the resulting _airbyte_raw table.
+        """Create the resulting _airbyte_raw table.
 
         :param name: table name to create.
         """
@@ -62,8 +57,7 @@ class DatabendWriter:
         cursor.execute(query)
 
     def queue_write_data(self, stream_name: str, id: str, time: datetime, record: str) -> None:
-        """
-        Queue up data in a buffer in memory before writing to the database.
+        """Queue up data in a buffer in memory before writing to the database.
         When flush_interval is reached data is persisted.
 
         :param stream_name: name of the stream for which the data corresponds.
@@ -77,39 +71,33 @@ class DatabendWriter:
             self._flush()
 
     def _flush(self):
-        """
-        Stub for the intermediate data flush that's triggered during the
+        """Stub for the intermediate data flush that's triggered during the
         buffering operation.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def flush(self):
-        """
-        Stub for the data flush at the end of writing operation.
-        """
-        raise NotImplementedError()
+        """Stub for the data flush at the end of writing operation."""
+        raise NotImplementedError
 
 
 class DatabendSQLWriter(DatabendWriter):
-    """
-    Data writer using the SQL writing strategy. Data is buffered in memory
+    """Data writer using the SQL writing strategy. Data is buffered in memory
     and flushed using INSERT INTO SQL statement.
     """
 
     flush_interval = 1000
 
     def __init__(self, client: DatabendClient) -> None:
-        """
-        :param client: Databend SDK connection class with established connection
-            to the databse.
+        """:param client: Databend SDK connection class with established connection
+        to the databse.
         """
         super().__init__(client)
 
     def _flush(self) -> None:
-        """
-        Intermediate data flush that's triggered during the
+        """Intermediate data flush that's triggered during the
         buffering operation. Writes data stored in memory via SQL commands.
-        databend connector insert into table using stage
+        databend connector insert into table using stage.
         """
         cursor = self.cursor
         # id, written_at, data
@@ -122,13 +110,10 @@ class DatabendSQLWriter(DatabendWriter):
         self._values = 0
 
     def flush(self) -> None:
-        """
-        Final data flush after all data has been written to memory.
-        """
+        """Final data flush after all data has been written to memory."""
         self._flush()
 
 
 def create_databend_wirter(client: DatabendClient, logger: AirbyteLogger) -> DatabendWriter:
     logger.info("Using the SQL writing strategy")
-    writer = DatabendSQLWriter(client)
-    return writer
+    return DatabendSQLWriter(client)

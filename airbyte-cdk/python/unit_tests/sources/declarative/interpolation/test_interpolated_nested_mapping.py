@@ -4,11 +4,12 @@
 
 import dpath.util
 import pytest
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import InterpolatedNestedMapping
 
 
 @pytest.mark.parametrize(
-    "test_name, path, expected_value",
+    ("test_name", "path", "expected_value"),
     [
         ("test_field_value", "nested/field", "value"),
         ("test_number", "nested/number", 100),
@@ -33,7 +34,7 @@ def test(test_name, path, expected_value):
                 "config_value": "{{ config['c'] }}",
                 "parameters_value": "{{ parameters['b'] }}",
                 "kwargs_value": "{{ kwargs['a'] }}",
-            }
+            },
         }
 
     config = {"c": "VALUE_FROM_CONFIG", "num_value": 3}

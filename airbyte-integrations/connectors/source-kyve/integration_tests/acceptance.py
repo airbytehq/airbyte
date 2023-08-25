@@ -20,5 +20,5 @@ def pytest_collection_modifyitems(config, items):
 def connector_setup():
     """This fixture is a placeholder for external resources that acceptance test might require."""
     # TODO: setup test dependencies if needed. otherwise remove the TODO comments
-    yield
+    return
     # TODO: clean up test dependencies

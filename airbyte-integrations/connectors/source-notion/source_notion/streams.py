@@ -3,16 +3,19 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 import pydantic
 import requests
+
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 from .utils import transform_properties
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -42,6 +45,8 @@ class NotionStream(HttpStream, ABC):
             message = response.json().get("message", "")
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
+            return None
+        return None
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         retry_after = response.headers.get("retry-after")
@@ -49,6 +54,7 @@ class NotionStream(HttpStream, ABC):
             return float(retry_after)
         if self.check_invalid_start_cursor(response):
             return 10
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
         return response.status_code == 400 or super().should_retry(response)
@@ -63,18 +69,18 @@ class NotionStream(HttpStream, ABC):
         self,
         response: requests.Response,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        An example of response:
+        """An example of response:
         {
             "next_cursor": "fe2cc560-036c-44cd-90e8-294d5a74cebc",
             "has_more": true,
             "results": [ ... ]
         }
-        Doc: https://developers.notion.com/reference/pagination
+        Doc: https://developers.notion.com/reference/pagination.
         """
         next_cursor = response.json()["next_cursor"]
         if next_cursor:
             return {"next_cursor": next_cursor}
+        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # sometimes notion api returns response without results object
@@ -91,8 +97,8 @@ class StateValueWrapper(pydantic.BaseModel):
     state_value: str
     max_cursor_time = ""
 
-    def __repr__(self):
-        """Overrides print view"""
+    def __repr__(self) -> str:
+        """Overrides print view."""
         return self.value
 
     @property
@@ -123,9 +129,9 @@ class IncrementalNotionStream(NotionStream, ABC):
     def path(self, **kwargs) -> str:
         return "search"
 
-    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+    def request_body_json(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> Optional[Mapping]:
         if not self.obj_type:
-            return
+            return None
 
         # search request body
         # Docs: https://developers.notion.com/reference/post-search
@@ -139,7 +145,7 @@ class IncrementalNotionStream(NotionStream, ABC):
 
         return body
 
-    def read_records(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, sync_mode: SyncMode, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if sync_mode == SyncMode.full_refresh:
             stream_state = None
         try:
@@ -177,14 +183,12 @@ class IncrementalNotionStream(NotionStream, ABC):
 
 
 class Users(NotionStream):
-    """
-    Docs: https://developers.notion.com/reference/get-users
-    """
+    """Docs: https://developers.notion.com/reference/get-users."""
 
     def path(self, **kwargs) -> str:
         return "users"
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if next_page_token:
             params["start_cursor"] = next_page_token["next_cursor"]
@@ -192,31 +196,25 @@ class Users(NotionStream):
 
 
 class Databases(IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/post-search
-    """
+    """Docs: https://developers.notion.com/reference/post-search."""
 
     state_checkpoint_interval = 100
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(obj_type="database", **kwargs)
 
 
 class Pages(IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/post-search
-    """
+    """Docs: https://developers.notion.com/reference/post-search."""
 
     state_checkpoint_interval = 100
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(obj_type="page", **kwargs)
 
 
 class Blocks(HttpSubStream, IncrementalNotionStream):
-    """
-    Docs: https://developers.notion.com/reference/get-block-children
-    """
+    """Docs: https://developers.notion.com/reference/get-block-children."""
 
     http_method = "GET"
 
@@ -226,7 +224,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     def path(self, **kwargs) -> str:
         return f"blocks/{self.block_id_stack[-1]}/children"
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if next_page_token:
             params["start_cursor"] = next_page_token["next_cursor"]
@@ -235,8 +233,8 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     def stream_slices(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # gather parent stream records in full
         slices = list(super().stream_slices(SyncMode.full_refresh, cursor_field, stream_state))
@@ -278,11 +276,11 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 404:
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             self.logger.error(
                 f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
                 " exist, or if the integration doesn't have access to the block."
-                "See more in docs: https://developers.notion.com/reference/get-block-children"
+                "See more in docs: https://developers.notion.com/reference/get-block-children",
             )
             return False
 
@@ -290,9 +288,9 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             error_code = response.json().get("code")
             error_msg = response.json().get("message")
             if "validation_error" in error_code and "ai_block is not supported" in error_msg:
-                setattr(self, "raise_on_http_errors", False)
+                self.raise_on_http_errors = False
                 self.logger.error(
-                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
+                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type.",
                 )
                 return False
             else:

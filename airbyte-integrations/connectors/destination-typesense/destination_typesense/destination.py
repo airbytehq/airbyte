@@ -3,13 +3,15 @@
 #
 
 
+import contextlib
 from logging import Logger
 from typing import Any, Iterable, Mapping
+
+from typesense import Client
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
-from typesense import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
@@ -18,24 +20,22 @@ def get_client(config: Mapping[str, Any]) -> Client:
     port = config.get("port") or "8108"
     protocol = config.get("protocol") or "https"
 
-    client = Client({"api_key": api_key, "nodes": [{"host": host, "port": port, "protocol": protocol}], "connection_timeout_seconds": 3600})
+    return Client({"api_key": api_key, "nodes": [{"host": host, "port": port, "protocol": protocol}], "connection_timeout_seconds": 3600})
 
-    return client
 
 
 class DestinationTypesense(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         client = get_client(config=config)
 
         for configured_stream in configured_catalog.streams:
             steam_name = configured_stream.stream.name
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                try:
+                with contextlib.suppress(Exception):
                     client.collections[steam_name].delete()
-                except Exception:
-                    pass
+
                 client.collections.create({"name": steam_name, "fields": [{"name": ".*", "type": "auto"}]})
 
             writer = TypesenseWriter(client, steam_name, config.get("batch_size"))
@@ -58,4 +58,4 @@ class DestinationTypesense(Destination):
             client.collections["_airbyte"].delete()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

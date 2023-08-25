@@ -3,9 +3,10 @@
 #
 
 import pendulum
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 from source_stripe.streams import InvoiceLineItems, Invoices
+
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
 def test_traverse_over_substreams(mocker):
@@ -14,7 +15,7 @@ def test_traverse_over_substreams(mocker):
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        check_availability_mock,
     )
 
     # Prepare tree of nested objects
@@ -37,7 +38,8 @@ def test_traverse_over_substreams(mocker):
     # Start traverse
     is_available, reason = child_1_1_1.availability_strategy.check_availability(child_1_1_1, mocker.Mock(), mocker.Mock())
 
-    assert is_available and reason is None
+    assert is_available
+    assert reason is None
 
     # Check availability strategy was called once for every nested object
     assert check_availability_mock.call_count == 4
@@ -55,7 +57,7 @@ def test_traverse_over_substreams_failure(mocker):
     check_availability_mock.side_effect = [(True, None), (False, "child_1")]
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        check_availability_mock,
     )
 
     # Prepare tree of nested objects
@@ -78,7 +80,8 @@ def test_traverse_over_substreams_failure(mocker):
     # Start traverse
     is_available, reason = child_1_1_1.availability_strategy.check_availability(child_1_1_1, mocker.Mock(), mocker.Mock())
 
-    assert not is_available and reason == "child_1"
+    assert not is_available
+    assert reason == "child_1"
 
     # Check availability strategy was called once for every nested object
     assert check_availability_mock.call_count == 2
@@ -93,12 +96,13 @@ def test_substream_availability(mocker):
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        check_availability_mock,
     )
 
     stream = InvoiceLineItems(start_date=pendulum.today().subtract(days=3).int_timestamp, account_id="None")
     is_available, reason = stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
-    assert is_available and reason is None
+    assert is_available
+    assert reason is None
 
     assert check_availability_mock.call_count == 2
     assert isinstance(check_availability_mock.call_args_list[0].args[0], Invoices)
@@ -110,7 +114,7 @@ def test_substream_availability_no_parent(mocker):
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        check_availability_mock,
     )
 
     stream = InvoiceLineItems(start_date=pendulum.today().subtract(days=3).int_timestamp, account_id="None")

@@ -8,7 +8,7 @@ from source_facebook_marketing.streams.common import deep_merge
 
 
 def test_return_new_object():
-    """Should return new object, arguments should not be modified"""
+    """Should return new object, arguments should not be modified."""
     left = {
         "key_1": {
             "one": {"a", "b"},

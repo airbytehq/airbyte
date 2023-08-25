@@ -11,6 +11,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pytest
 import requests
+from pydantic import ValidationError
+
 from airbyte_cdk.models import (
     AirbyteGlobalState,
     AirbyteStateBlob,
@@ -27,12 +29,11 @@ from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pydantic import ValidationError
 
 
 class MockSource(Source):
     def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[MutableMapping[str, Any]] = None,
     ):
         pass
 
@@ -56,12 +57,12 @@ class MockAbstractSource(AbstractSource):
         return []
 
 
-@pytest.fixture
+@pytest.fixture()
 def source():
     return MockSource()
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog():
     configured_catalog = {
         "streams": [
@@ -75,12 +76,12 @@ def catalog():
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
             },
-        ]
+        ],
     }
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-@pytest.fixture
+@pytest.fixture()
 def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
@@ -93,7 +94,7 @@ def abstract_source(mocker):
         def supports_incremental(self):
             return True
 
-        def __init__(self, *args, **kvargs):
+        def __init__(self, *args, **kvargs) -> None:
             mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
             self.read_records = mocker.MagicMock()
@@ -106,7 +107,7 @@ def abstract_source(mocker):
         page_size = None
         get_json_schema = mocker.MagicMock()
 
-        def __init__(self, **kwargs):
+        def __init__(self, **kwargs) -> None:
             mocker.MagicMock.__init__(self)
             self.read_records = mocker.MagicMock()
 
@@ -124,7 +125,7 @@ def abstract_source(mocker):
 
 
 @pytest.mark.parametrize(
-    "incoming_state, expected_state, expected_error",
+    ("incoming_state", "expected_state", "expected_error"),
     [
         pytest.param(
             [
@@ -134,7 +135,7 @@ def abstract_source(mocker):
                         "stream_state": {"created_at": "2009-07-19"},
                         "stream_descriptor": {"name": "movies", "namespace": "public"},
                     },
-                }
+                },
             ],
             [
                 AirbyteStateMessage(
@@ -143,7 +144,7 @@ def abstract_source(mocker):
                         stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
                         stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
                     ),
-                )
+                ),
             ],
             does_not_raise(),
             id="test_incoming_stream_state",
@@ -205,10 +206,10 @@ def abstract_source(mocker):
                     "global": {
                         "shared_state": {"shared_key": "shared_val"},
                         "stream_states": [
-                            {"stream_state": {"created_at": "2009-07-19"}, "stream_descriptor": {"name": "movies", "namespace": "public"}}
+                            {"stream_state": {"created_at": "2009-07-19"}, "stream_descriptor": {"name": "movies", "namespace": "public"}},
                         ],
                     },
-                }
+                },
             ],
             [
                 AirbyteStateMessage.parse_obj(
@@ -220,10 +221,10 @@ def abstract_source(mocker):
                                 AirbyteStreamState(
                                     stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
                                     stream_state=AirbyteStateBlob.parse_obj({"created_at": "2009-07-19"}),
-                                )
+                                ),
                             ],
                         ),
-                    }
+                    },
                 ),
             ],
             does_not_raise(),
@@ -246,7 +247,7 @@ def abstract_source(mocker):
                         "stream_state": {"created_at": "2009-07-19"},
                         "stream_descriptor": {"name": "movies", "namespace": "public"},
                     },
-                }
+                },
             ],
             None,
             pytest.raises(ValidationError),
@@ -275,7 +276,7 @@ def abstract_source(mocker):
                             "stream_descriptor": {"name": "movies", "namespace": "public"},
                         },
                     },
-                }
+                },
             ],
             None,
             pytest.raises(ValidationError),
@@ -309,8 +310,8 @@ def test_read_invalid_state(source):
 def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
     expected_state = [
         AirbyteStateMessage(
-            type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
-        )
+            type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
+        ),
     ]
     source = MockAbstractSource()
     with tempfile.NamedTemporaryFile("w") as state_file:
@@ -321,7 +322,7 @@ def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
 
 
 @pytest.mark.parametrize(
-    "source, expected_state",
+    ("source", "expected_state"),
     [
         pytest.param(MockSource(), {}, id="test_source_implementing_read_returns_legacy_format"),
         pytest.param(MockAbstractSource(), [], id="test_source_not_implementing_read_returns_per_stream_format"),
@@ -342,8 +343,8 @@ def test_read_catalog(source):
                 },
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
-            }
-        ]
+            },
+        ],
     }
     expected = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
     with tempfile.NamedTemporaryFile("w") as catalog_file:
@@ -364,7 +365,7 @@ def test_internal_config(abstract_source, catalog):
 
     # Test with empty config
     logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
-    records = [r for r in abstract_source.read(logger=logger, config={}, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger, config={}, catalog=catalog, state={}))
     # 3 for http stream, 3 for non http stream and 3 for stream status messages for each stream (2x)
     assert len(records) == 3 + 3 + 3 + 3
     assert http_stream.read_records.called
@@ -374,19 +375,19 @@ def test_internal_config(abstract_source, catalog):
     assert not non_http_stream.page_size
     # Test with records limit set to 1
     internal_config = {"some_config": 100, "_limit": 1}
-    records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={}))
     # 1 from http stream + 1 from non http stream and 3 for stream status messages for each stream (2x)
     assert len(records) == 1 + 1 + 3 + 3
     assert "_limit" not in abstract_source.streams_config
     assert "some_config" in abstract_source.streams_config
     # Test with records limit set to number that exceeds expceted records
     internal_config = {"some_config": 100, "_limit": 20}
-    records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={}))
     assert len(records) == 3 + 3 + 3 + 3
 
     # Check if page_size paramter is set to http instance only
     internal_config = {"some_config": 100, "_page_size": 2}
-    records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={}))
     assert "_page_size" not in abstract_source.streams_config
     assert "some_config" in abstract_source.streams_config
     assert len(records) == 3 + 3 + 3 + 3
@@ -409,7 +410,7 @@ def test_internal_config_limit(mocker, abstract_source, catalog):
     internal_config = {"some_config": 100, "_limit": STREAM_LIMIT}
 
     catalog.streams[0].sync_mode = SyncMode.full_refresh
-    records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={}))
     assert len(records) == STREAM_LIMIT + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     # Check if log line matches number of limit
@@ -418,14 +419,14 @@ def test_internal_config_limit(mocker, abstract_source, catalog):
 
     # No limit, check if state record produced for incremental stream
     catalog.streams[0].sync_mode = SyncMode.incremental
-    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={}))
     assert len(records) == FULL_RECORDS_NUMBER + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + 1
     assert records[-2].type == Type.STATE
     assert records[-1].type == Type.TRACE
 
     # Set limit and check if state is produced when limit is set for incremental stream
     logger_mock.reset_mock()
-    records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={}))
     assert len(records) == STREAM_LIMIT + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + 1
     assert records[-2].type == Type.STATE
     assert records[-1].type == Type.TRACE
@@ -446,7 +447,7 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     http_stream, non_http_stream = streams
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [[{"value": 23}] * 5] * 2
-    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={}))
     assert len(records) == 2 * (5 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT)
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": 23}] * 2 * 5
     assert http_stream.get_json_schema.call_count == 5
@@ -464,7 +465,7 @@ def test_source_config_transform(mocker, abstract_source, catalog):
     non_http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
-    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={}))
     assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}] * 2
 
@@ -479,7 +480,7 @@ def test_source_config_transform_and_no_transform(mocker, abstract_source, catal
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
-    records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
+    records = list(abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={}))
     assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}, {"value": 23}]
 
@@ -496,7 +497,7 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
         def supports_incremental(self):
             return True
 
-        def __init__(self, *args, **kvargs):
+        def __init__(self, *args, **kvargs) -> None:
             mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
             self.read_records = mocker.MagicMock()
@@ -505,7 +506,7 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
         page_size = None
         get_json_schema = mocker.MagicMock()
 
-        def __init__(self, *args, **kvargs):
+        def __init__(self, *args, **kvargs) -> None:
             mocker.MagicMock.__init__(self)
             self.read_records = mocker.MagicMock()
 
@@ -525,7 +526,7 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
 
     source = MockAbstractSource(streams=streams)
     logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
-    records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
+    records = list(source.read(logger=logger, config={}, catalog=catalog, state={}))
     # 3 for http stream, 3 for non http stream and 3 for stream status messages for each stream (2x)
     assert len(records) == 3 + 3 + 3 + 3
     assert http_stream.read_records.called
@@ -539,7 +540,7 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
         url_base = "https://test_base_url.com"
         primary_key = ""
 
-        def __init__(self, **kwargs):
+        def __init__(self, **kwargs) -> None:
             super().__init__(**kwargs)
             self.resp_counter = 1
 
@@ -558,7 +559,7 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
         page_size = None
         get_json_schema = mocker.MagicMock()
 
-        def __init__(self, *args, **kvargs):
+        def __init__(self, *args, **kvargs) -> None:
             mocker.MagicMock.__init__(self)
             self.read_records = mocker.MagicMock()
 
@@ -582,7 +583,7 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     source = MockAbstractSource(streams=streams)
     logger = logging.getLogger("test_read_default_http_availability_strategy_stream_unavailable")
     with caplog.at_level(logging.WARNING):
-        records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
+        records = list(source.read(logger=logger, config={}, catalog=catalog, state={}))
 
     # 0 for http stream, 3 for non http stream and 3 status trace messages
     assert len(records) == 0 + 3 + 3
@@ -591,21 +592,21 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
         f"Unable to read {http_stream.name} stream.",
         "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
+        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
     ]
     for message in expected_logs:
         assert message in caplog.text
 
 
 def test_read_default_http_availability_strategy_parent_stream_unavailable(catalog, mocker, caplog):
-    """Test default availability strategy if error happens during slice extraction (reading of parent stream)"""
+    """Test default availability strategy if error happens during slice extraction (reading of parent stream)."""
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
     class MockHttpParentStream(HttpStream):
         url_base = "https://test_base_url.com"
         primary_key = ""
 
-        def __init__(self, **kwargs):
+        def __init__(self, **kwargs) -> None:
             super().__init__(**kwargs)
             self.resp_counter = 1
 
@@ -624,7 +625,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
         url_base = "https://test_base_url.com"
         primary_key = ""
 
-        def __init__(self, **kwargs):
+        def __init__(self, **kwargs) -> None:
             super().__init__(**kwargs)
             self.resp_counter = 1
 
@@ -661,12 +662,12 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
                 },
                 "destination_sync_mode": "overwrite",
                 "sync_mode": "full_refresh",
-            }
-        ]
+            },
+        ],
     }
     catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
     with caplog.at_level(logging.WARNING):
-        records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
+        records = list(source.read(logger=logger, config={}, catalog=catalog, state={}))
 
     # 0 for http stream, 3 for non http stream and 3 status trace messages
     assert len(records) == 0
@@ -674,7 +675,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
         f"Unable to get slices for {http_stream.name} stream, because of error in parent stream",
         "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
+        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
     ]
     for message in expected_logs:
         assert message in caplog.text

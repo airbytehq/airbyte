@@ -7,6 +7,7 @@ from unittest.mock import Mock, call
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -16,7 +17,7 @@ from airbyte_cdk.sources.declarative.types import Record
 
 
 @pytest.mark.parametrize(
-    "test_name, field_path, filter_template, body, expected_data",
+    ("test_name", "field_path", "filter_template", "body", "expected_data"),
     [
         (
             "test_with_extractor_and_filter",
@@ -75,20 +76,17 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     response = create_response(body)
     decoder = JsonDecoder(parameters={})
     extractor = DpathExtractor(field_path=field_path, decoder=decoder, config=config, parameters=parameters)
-    if filter_template is None:
-        record_filter = None
-    else:
-        record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
+    record_filter = None if filter_template is None else RecordFilter(config=config, condition=filter_template, parameters=parameters)
     record_selector = RecordSelector(
         extractor=extractor,
         record_filter=record_filter,
         transformations=transformations,
         config=config,
-        parameters=parameters
+        parameters=parameters,
     )
 
     actual_records = record_selector.select_records(
-        response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
     )
     assert actual_records == [Record(data, stream_slice) for data in expected_data]
     calls = []

@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -39,9 +40,7 @@ class FreshsalesStream(HttpStream, ABC):
         return self.authenticator.get_auth_header()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        There is no next page token in the respond so incrementing the page param until there is no new result
-        """
+        """There is no next page token in the respond so incrementing the page param until there is no new result."""
         list_result = response.json().get(self.object_name, [])
         if list_result:
             self.page += 1
@@ -61,9 +60,7 @@ class FreshsalesStream(HttpStream, ABC):
         yield from records
 
     def _get_filters(self) -> List:
-        """
-        Some streams require a filter_id to be passed in. This function gets all available filters.
-        """
+        """Some streams require a filter_id to be passed in. This function gets all available filters."""
         url = f"{self.url_base}{self.object_name}/filters"
         try:
             response = self._session.get(url=url, headers=self.auth_headers)
@@ -74,9 +71,7 @@ class FreshsalesStream(HttpStream, ABC):
             raise
 
     def get_view_id(self) -> int:
-        """
-        This function finds a relevant filter_id among all available filters by its name.
-        """
+        """This function finds a relevant filter_id among all available filters by its name."""
         filters = self._get_filters()
         return next(_filter["id"] for _filter in filters if _filter["name"] == self.filter_name)
 
@@ -88,9 +83,7 @@ class FreshsalesStream(HttpStream, ABC):
 
 
 class Contacts(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#contacts
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#contacts."""
 
     object_name = "contacts"
     filter_name = "All Contacts"
@@ -98,9 +91,7 @@ class Contacts(FreshsalesStream):
 
 
 class Accounts(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#accounts
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#accounts."""
 
     object_name = "sales_accounts"
     filter_name = "All Accounts"
@@ -119,60 +110,46 @@ class Deals(FreshsalesStream):
 
 
 class OpenDeals(Deals):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#deals
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#deals."""
 
     filter_name = "Open Deals"
 
 
 class WonDeals(Deals):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#deals
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#deals."""
 
     filter_name = "Won Deals"
 
 
 class LostDeals(Deals):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#deals
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#deals."""
 
     filter_name = "Lost Deals"
 
 
 class OpenTasks(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#tasks
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#tasks."""
 
     object_name = "tasks"
     filter_value = "open"
 
 
 class CompletedTasks(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#tasks
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#tasks."""
 
     object_name = "tasks"
     filter_value = "completed"
 
 
 class PastAppointments(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#appointments
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#appointments."""
 
     object_name = "appointments"
     filter_value = "past"
 
 
 class UpcomingAppointments(FreshsalesStream):
-    """
-    API docs: https://developers.freshworks.com/crm/api/#appointments
-    """
+    """API docs: https://developers.freshworks.com/crm/api/#appointments."""
 
     object_name = "appointments"
     filter_value = "upcoming"

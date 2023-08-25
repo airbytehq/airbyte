@@ -14,9 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginat
 
 @dataclass
 class TestingSomeComponent(DefaultErrorHandler):
-    """
-    A basic test class with various field permutations used to test manifests with custom components
-    """
+    """A basic test class with various field permutations used to test manifests with custom components."""
 
     subcomponent_field_with_hint: DpathExtractor = DpathExtractor(field_path=[], config={}, parameters={})
     basic_field: str = ""
@@ -28,9 +26,7 @@ class TestingSomeComponent(DefaultErrorHandler):
 
 @dataclass
 class TestingCustomSubstreamPartitionRouter(SubstreamPartitionRouter):
-    """
-    A test class based on a SubstreamPartitionRouter used for testing manifests that use custom components.
-    """
+    """A test class based on a SubstreamPartitionRouter used for testing manifests that use custom components."""
 
     custom_field: str
     custom_pagination_strategy: PaginationStrategy

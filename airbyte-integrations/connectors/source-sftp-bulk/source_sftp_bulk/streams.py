@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
@@ -32,7 +32,7 @@ class FTPStream(Stream, IncrementalMixin):
 
     @property
     def name(self) -> str:
-        """Source name"""
+        """Source name."""
         return self._name
 
     @property
@@ -52,9 +52,9 @@ class FTPStream(Stream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         if stream_state and sync_mode == SyncMode.incremental:
             self._cursor_value = datetime.fromisoformat(stream_state[self.cursor_field])
@@ -70,10 +70,9 @@ class FTPStream(Stream, IncrementalMixin):
         )
 
         for cursor, records in self.connection.fetch_files(
-            files=files, file_type=self.config["file_type"], separator=self.config.get("separator")
+            files=files, file_type=self.config["file_type"], separator=self.config.get("separator"),
         ):
-            if cursor and sync_mode == SyncMode.incremental:
-                if self._cursor_value and cursor > self._cursor_value:
-                    self._cursor_value = cursor
+            if cursor and sync_mode == SyncMode.incremental and self._cursor_value and cursor > self._cursor_value:
+                self._cursor_value = cursor
 
             yield from records

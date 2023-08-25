@@ -6,12 +6,13 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pendulum
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from pytest import fixture, mark
 from source_wrike.source import Comments, Tasks, WrikeStream, to_utc_z
 
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-@fixture
+
+@fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(WrikeStream, "__abstractmethods__", set())
@@ -19,8 +20,7 @@ def patch_base_class(mocker):
 
 @fixture()
 def args(request):
-    args = {"wrike_instance": "app-us2.wrike.com", "authenticator": TokenAuthenticator(token="tokkk")}
-    return args
+    return {"wrike_instance": "app-us2.wrike.com", "authenticator": TokenAuthenticator(token="tokkk")}
 
 
 def test_request_params(args):

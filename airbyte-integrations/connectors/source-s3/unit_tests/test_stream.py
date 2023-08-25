@@ -7,12 +7,13 @@ from typing import Any, Dict, List, Mapping
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.storagefile import StorageFile
 from source_s3.source_files_abstract.stream import IncrementalFileStream
 from source_s3.stream import IncrementalFileStreamS3
+
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 
 from .abstract_test_parser import create_by_local_file, memory_limit
 
@@ -28,7 +29,7 @@ def mock_big_size_object():
 
 class TestIncrementalFileStream:
     @pytest.mark.parametrize(  # set return_schema to None for an expected fail
-        "schema_string, return_schema",
+        ("schema_string", "return_schema"),
         [
             (
                 '{"id": "integer", "name": "string", "valid": "boolean", "code": "integer", "degrees": "number", "birthday": '
@@ -63,7 +64,7 @@ class TestIncrementalFileStream:
                 LOGGER.debug(str(e_info))
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
-        "extra_map, record, expected_return_record",
+        ("extra_map", "record", "expected_return_record"),
         [
             (  # one extra field
                 {"friend": "Frodo"},
@@ -84,11 +85,11 @@ class TestIncrementalFileStream:
         ids=["one_extra_field", "multiple_extra_fields", "empty_extra_map"],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
+        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set(),
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     @memory_limit(512)
     def test_add_extra_fields_from_map(
-        self, extra_map: Mapping[str, Any], record: Dict[str, Any], expected_return_record: Mapping[str, Any]
+        self, extra_map: Mapping[str, Any], record: Dict[str, Any], expected_return_record: Mapping[str, Any],
     ) -> None:
         fs = IncrementalFileStream(dataset="dummy", provider={}, format={}, path_pattern="")
         if expected_return_record is not None:
@@ -99,7 +100,7 @@ class TestIncrementalFileStream:
                 LOGGER.debug(str(e_info))
 
     @pytest.mark.parametrize(
-        "patterns, filepaths, expected_filepaths",
+        ("patterns", "filepaths", "expected_filepaths"),
         [
             (  # 'everything' case
                 "**",
@@ -270,16 +271,16 @@ class TestIncrementalFileStream:
         ],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
+        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set(),
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     @memory_limit(512)
     def test_pattern_matched_filepath_iterator(self, patterns: str, filepaths: List[str], expected_filepaths: List[str]) -> None:
         fs = IncrementalFileStream(dataset="dummy", provider={}, format={}, path_pattern=patterns)
         file_infos = [create_by_local_file(filepath) for filepath in filepaths]
-        assert set([p.key for p in fs.pattern_matched_filepath_iterator(file_infos)]) == set(expected_filepaths)
+        assert {p.key for p in fs.pattern_matched_filepath_iterator(file_infos)} == set(expected_filepaths)
 
     @pytest.mark.parametrize(
-        "latest_record, current_stream_state, expected",
+        ("latest_record", "current_stream_state", "expected"),
         [
             (  # overwrite history file
                 {"id": 1, "_ab_source_file_last_modified": "2022-05-11T11:54:11Z", "_ab_source_file_url": "new_test_file.csv"},
@@ -305,7 +306,7 @@ class TestIncrementalFileStream:
         ids=["overwrite_history_file", "add_file_to_same_day ", "add_new_day_to_history", "history_size_limit_reached"],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
+        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set(),
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_get_updated_history(self, latest_record, current_stream_state, expected, request) -> None:
         fs = IncrementalFileStream(dataset="dummy", provider={}, format={"filetype": "csv"}, path_pattern="**/prefix*.csv")
@@ -316,7 +317,7 @@ class TestIncrementalFileStream:
             assert fs.sync_all_files_always
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
-        "stream_state, expected_error",
+        ("stream_state", "expected_error"),
         [
             (None, False),
             ({"_ab_source_file_last_modified": "2021-07-25T15:33:04Z"}, False),
@@ -325,13 +326,13 @@ class TestIncrementalFileStream:
         ],
     )
     @patch(
-        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
+        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set(),
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_get_datetime_from_stream_state(self, stream_state, expected_error):
         if not expected_error:
             assert isinstance(
                 IncrementalFileStream(
-                    dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
+                    dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv",
                 )._get_datetime_from_stream_state(stream_state=stream_state),
                 datetime,
             )
@@ -339,14 +340,14 @@ class TestIncrementalFileStream:
             with pytest.raises(Exception):
                 assert isinstance(
                     IncrementalFileStream(
-                        dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
+                        dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv",
                     )._get_datetime_from_stream_state(stream_state=stream_state),
                     datetime,
                 )
 
     def test_read(self):
         stream_instance = IncrementalFileStreamS3(
-            dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
+            dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv",
         )
         stream_instance.filepath_iterator = MagicMock()
 
@@ -359,14 +360,14 @@ class TestIncrementalFileStream:
                         stream_slice=slice,
                         sync_mode=SyncMode.full_refresh,
                         stream_state={"_ab_source_file_last_modified": "1999-01-01T00:00:00Z"},
-                    )
-                )
+                    ),
+                ),
             )
 
         assert not records
 
     @patch(
-        "source_s3.source_files_abstract.stream.StorageFile.__abstractmethods__", set()
+        "source_s3.source_files_abstract.stream.StorageFile.__abstractmethods__", set(),
     )  # patching abstractmethods to empty set so we can instantiate ABC to test
     def test_storage_file(self):
         size = 1
@@ -382,7 +383,7 @@ class TestIncrementalFileStream:
 
     def test_incremental_read(self):
         stream_instance = IncrementalFileStreamS3(
-            dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
+            dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv",
         )
         stream_instance.filepath_iterator = MagicMock()
 
@@ -396,7 +397,7 @@ class TestIncrementalFileStream:
 
     def test_fileformatparser_map(self):
         stream_instance = IncrementalFileStreamS3(
-            dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
+            dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv",
         )
         assert stream_instance.file_formatparser_map
 
@@ -506,7 +507,7 @@ class TestIncrementalFileStream:
                 dataset="dummy",
                 provider={"bucket": bucket, "path_prefix": path_prefix, "start_date":start_date, **provider},
                 format={},
-                path_pattern="**/prefix*.png"
+                path_pattern="**/prefix*.png",
             )
             assert len(list(stream_instance.filepath_iterator())) == expected_files_count
 
@@ -515,8 +516,8 @@ class TestIncrementalFileStream:
             dataset="dummy",
             provider={},
             format={"filetype": "csv"},
-            schema="{\"column_A\": \"string\", \"column_B\": \"integer\", \"column_C\": \"boolean\"}",
-            path_pattern="**/prefix*.csv"
+            schema='{"column_A": "string", "column_B": "integer", "column_C": "boolean"}',
+            path_pattern="**/prefix*.csv",
         )
         assert stream_instance._schema == {
             "_ab_source_file_last_modified": {"type": "string"},
@@ -540,7 +541,7 @@ class TestIncrementalFileStream:
     )
     def test_fileformatparser_class(self, file_type, error_expected):
         stream_instance = IncrementalFileStreamS3(
-            dataset="dummy", provider={}, format={"filetype": file_type}, schema={}, path_pattern="**/prefix*.csv"
+            dataset="dummy", provider={}, format={"filetype": file_type}, schema={}, path_pattern="**/prefix*.csv",
         )
         if error_expected:
             with pytest.raises(RuntimeError):
@@ -553,8 +554,8 @@ class TestIncrementalFileStream:
             dataset="dummy",
             provider={},
             format={"filetype": "csv"},
-            schema="{\"column_A\": \"string\", \"column_B\": \"integer\", \"column_C\": \"boolean\"}",
-            path_pattern="**/prefix*.csv"
+            schema='{"column_A": "string", "column_B": "integer", "column_C": "boolean"}',
+            path_pattern="**/prefix*.csv",
         )
         assert stream_instance.get_json_schema() == {
             "properties": {
@@ -572,13 +573,13 @@ class TestIncrementalFileStream:
             dataset="dummy",
             provider={"bucket": "empty"},
             format={"filetype": "csv"},
-            path_pattern="**/prefix*.csv"
+            path_pattern="**/prefix*.csv",
         )
         mocker.patch.object(stream_instance, "filepath_iterator", MagicMock(return_value=[]))
         assert stream_instance.get_json_schema() == {
             "properties": {
                 "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
-                "_ab_source_file_url": {"type": "string"}
+                "_ab_source_file_url": {"type": "string"},
             },
             "type": "object",
         }
@@ -590,12 +591,12 @@ class TestIncrementalFileStream:
             dataset="dummy",
             provider={"bucket": "empty"},
             format={"filetype": "csv"},
-            path_pattern="**/prefix*.csv"
+            path_pattern="**/prefix*.csv",
         )
         assert stream_instance.get_updated_state(current_state, latest_record)["_ab_source_file_last_modified"] == "2022-11-09T11:12:00Z"
 
     @pytest.mark.parametrize(
-        "input_state, expected_output",
+        ("input_state", "expected_output"),
         [
             pytest.param({}, {}, id="empty-input"),
             pytest.param(
@@ -671,7 +672,7 @@ class TestIncrementalFileStream:
         assert IncrementalFileStreamS3(dataset="dummy", provider={}, format={}, path_pattern="")._get_converted_stream_state(input_state) == expected_output
 
     @pytest.mark.parametrize(
-        "stream_state, expected_output",
+        ("stream_state", "expected_output"),
         [
             pytest.param({}, False, id="empty-stream-state"),
             pytest.param(

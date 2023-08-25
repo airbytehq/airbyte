@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
 config = {"field": "value"}
@@ -11,7 +12,7 @@ kwargs = {"c": "airbyte"}
 
 
 @pytest.mark.parametrize(
-    "test_name, input_string, expected_value",
+    ("test_name", "input_string", "expected_value"),
     [
         ("test_static_value", "HELLO WORLD", "HELLO WORLD"),
         ("test_eval_from_parameters", "{{ parameters['hello'] }}", "world"),

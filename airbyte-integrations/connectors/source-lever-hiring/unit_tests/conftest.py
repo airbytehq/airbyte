@@ -5,17 +5,17 @@
 from pytest import fixture
 
 
-@fixture
+@fixture()
 def test_full_refresh_config():
     return {"base_url": "test_base_url"}
 
 
-@fixture
+@fixture()
 def test_incremental_config():
     return {"base_url": "test_base_url", "start_date": "2020-01-01T00:00:00Z"}
 
 
-@fixture
+@fixture()
 def test_opportunity_record():
     return {
         "id": "test_id",

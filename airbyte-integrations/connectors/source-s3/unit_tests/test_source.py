@@ -6,11 +6,12 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
+from source_s3 import SourceS3
+from source_s3.source_files_abstract.spec import SourceFilesAbstractSpec
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from source_s3 import SourceS3
-from source_s3.source_files_abstract.spec import SourceFilesAbstractSpec
 
 logger = AirbyteLogger()
 
@@ -40,7 +41,7 @@ def test_check_connection_exception(config):
 
 
 @pytest.mark.parametrize(
-    "delimiter, quote_char, escape_char, encoding, read_options, convert_options",
+    ("delimiter", "quote_char", "escape_char", "encoding", "read_options", "convert_options"),
     [
         ("string", "'", None, "utf8", "{}", "{}"),
         ("\n", "'", None, "utf8", "{}", "{}"),
@@ -57,7 +58,7 @@ def test_check_connection_exception(config):
         "long_escape_char",
         "unknown_encoding",
         "invalid read options",
-        "invalid convert options"
+        "invalid convert options",
     ],
 )
 def test_check_connection_csv_validation_exception(delimiter, quote_char, escape_char, encoding, read_options, convert_options):
@@ -68,7 +69,7 @@ def test_check_connection_csv_validation_exception(delimiter, quote_char, escape
             "bucket": "test-source-s3",
             "aws_access_key_id": "key_id",
             "aws_secret_access_key": "access_key",
-            "path_prefix": ""
+            "path_prefix": "",
         },
         "path_pattern": "simple_test*.csv",
         "schema": "{}",
@@ -79,8 +80,8 @@ def test_check_connection_csv_validation_exception(delimiter, quote_char, escape
             "escape_char": escape_char,
             "encoding": encoding,
             "advanced_options": read_options,
-            "additional_reader_options": convert_options
-        }
+            "additional_reader_options": convert_options,
+        },
     }
     ok, error_msg = SourceS3().check_connection(logger, config=config)
 

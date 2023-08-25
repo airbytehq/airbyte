@@ -8,6 +8,8 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional, Union
 
 import requests
+from isodate import Duration, parse_duration
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
@@ -15,14 +17,12 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
-from isodate import Duration, parse_duration
 
 
 @dataclass
 class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
-    """
-    [Low-Code Custom Component] ShortLivedTokenAuthenticator
-    https://github.com/airbytehq/airbyte/issues/22872
+    """[Low-Code Custom Component] ShortLivedTokenAuthenticator
+    https://github.com/airbytehq/airbyte/issues/22872.
 
     https://docs.railz.ai/reference/authentication
     """
@@ -53,9 +53,7 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
 
     @classmethod
     def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
-        """
-        :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
-        """
+        """:return Parses an ISO 8601 durations into datetime.timedelta or Duration objects."""
         if not time_str:
             return datetime.timedelta(0)
         return parse_duration(time_str)
@@ -70,7 +68,8 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
             response.raise_for_status()
             response_json = response.json()
             if token_key not in response_json:
-                raise Exception(f"token_key: '{token_key}' not found in response {url}")
+                msg = f"token_key: '{token_key}' not found in response {url}"
+                raise Exception(msg)
             self._token = response_json[token_key]
             self._timestamp = now
 
@@ -86,9 +85,8 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
 
 @dataclass
 class NestedStateCartesianProductStreamSlicer(CartesianProductStreamSlicer):
-    """
-    [Low-Code Custom Component] NestedStateCartesianProductStreamSlicer
-    https://github.com/airbytehq/airbyte/issues/22873
+    """[Low-Code Custom Component] NestedStateCartesianProductStreamSlicer
+    https://github.com/airbytehq/airbyte/issues/22873.
 
     Some streams require support of nested state:
     {

@@ -10,9 +10,7 @@ from pipelines.utils import get_exec_result
 
 
 class FormatConnectorCode(GradleTask):
-    """
-    A step to format a Java connector code.
-    """
+    """A step to format a Java connector code."""
 
     title = "Format connector code"
 

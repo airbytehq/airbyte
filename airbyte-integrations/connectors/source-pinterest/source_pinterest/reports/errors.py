@@ -4,24 +4,20 @@
 
 
 class RetryableException(Exception):
-    """Custom Exception Class for Retryable Exception"""
+    """Custom Exception Class for Retryable Exception."""
 
-    pass
 
 
 class ReportGenerationFailure(RetryableException):
-    """Custom Exception Class for Report Generation Failure"""
+    """Custom Exception Class for Report Generation Failure."""
 
-    pass
 
 
 class ReportGenerationInProgress(RetryableException):
-    """Custom Exception Class for Report Generation In Progress"""
+    """Custom Exception Class for Report Generation In Progress."""
 
-    pass
 
 
 class ReportStatusError(RetryableException):
-    """Custom Exception Class for Report Status Error"""
+    """Custom Exception Class for Report Status Error."""
 
-    pass

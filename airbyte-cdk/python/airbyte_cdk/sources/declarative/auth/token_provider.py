@@ -10,6 +10,9 @@ from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
 import pendulum
+from isodate import Duration
+from pendulum import DateTime
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -18,8 +21,6 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
-from isodate import Duration
-from pendulum import DateTime
 
 
 class TokenProvider:
@@ -43,7 +44,8 @@ class SessionTokenProvider(TokenProvider):
     def get_token(self) -> str:
         self._refresh_if_necessary()
         if self._token is None:
-            raise ReadException("Failed to get session token, token is None")
+            msg = "Failed to get session token, token is None"
+            raise ReadException(msg)
         return self._token
 
     def _refresh_if_necessary(self) -> None:
@@ -61,7 +63,8 @@ class SessionTokenProvider(TokenProvider):
             ),
         )
         if response is None:
-            raise ReadException("Failed to get session token, response got ignored by requester")
+            msg = "Failed to get session token, response got ignored by requester"
+            raise ReadException(msg)
         session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
         if self.expiration_duration is not None:
             self._next_expiration_time = pendulum.now() + self.expiration_duration

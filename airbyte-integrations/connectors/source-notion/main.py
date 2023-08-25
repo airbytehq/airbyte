@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_notion import SourceNotion
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceNotion()

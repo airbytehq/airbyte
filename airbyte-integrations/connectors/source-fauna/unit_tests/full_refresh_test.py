@@ -54,7 +54,7 @@ def test_read_all():
                     "ref": "3",
                     "ts": 12345,
                     "data": {"foo": "bar"},
-                }
+                },
             ],
             after=FIRST_AFTER_TOKEN,
         ),
@@ -64,7 +64,7 @@ def test_read_all():
                     "ref": "5",
                     "ts": 9999999,
                     "data": {"more": "data here"},
-                }
+                },
             ],
             after=None,
         ),
@@ -194,7 +194,7 @@ def test_read_all_extra_columns():
             stream,
             conf=CollectionConfig(page_size=PAGE_SIZE),
             state={"full_sync_cursor": {"ts": TS}},
-        )
+        ),
     )
     assert result == [
         {
@@ -262,7 +262,7 @@ def test_read_all_resume():
                     "ref": "3",
                     "ts": 12345,
                     "data": {"foo": "bar"},
-                }
+                },
             ],
             after=FIRST_AFTER_TOKEN,
         ),
@@ -272,7 +272,7 @@ def test_read_all_resume():
                     "ref": "5",
                     "ts": 9999999,
                     "data": {"more": "data here"},
-                }
+                },
             ],
             after=SECOND_AFTER_TOKEN,
         ),
@@ -282,7 +282,7 @@ def test_read_all_resume():
                     "ref": "100",
                     "ts": 92321341234,
                     "data": {"last data": "some data"},
-                }
+                },
             ],
             after=None,
         ),
@@ -297,7 +297,8 @@ def test_read_all_resume():
         result = QUERY_RESULTS[current_query]
         if current_query == 2 and not failed_yet:
             failed_yet = True
-            raise ValueError("something has gone terribly wrong")
+            msg = "something has gone terribly wrong"
+            raise ValueError(msg)
         current_query += 1
         return result
 
@@ -343,7 +344,7 @@ def test_read_all_resume():
         "full_sync_cursor": {
             "ts": TS,
             "after": _json.to_json(SECOND_AFTER_TOKEN),
-        }
+        },
     }
 
     # Pass that state back in to resume.
@@ -354,7 +355,7 @@ def test_read_all_resume():
             "ref": "100",
             "ts": 92321341234,
             "data": {"last data": "some data"},
-        }
+        },
     ]
 
     assert not source._setup_client.called

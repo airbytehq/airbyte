@@ -23,9 +23,8 @@ class PublicGCSFileHandle(GCSFileHandle):
 
 
 class ContentTypeAwareGCSFileManager(GCSFileManager):
-    """
-    Slighlty modified dagster_gcp.gcs.file_manager.GCSFileManager
-    to allow setting the content type of the file
+    """Slighlty modified dagster_gcp.gcs.file_manager.GCSFileManager
+    to allow setting the content type of the file.
     """
 
     def get_content_type(self, ext):
@@ -50,8 +49,7 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
         return full_key
 
     def write(self, file_obj, mode="wb", ext=None, key: Optional[str] = None) -> PublicGCSFileHandle:
-        """
-        Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write
+        """Reworked from dagster_gcp.gcs.file_manager.GCSFileManager.write.
 
         As the original method does not allow to set the content type of the file
         """
@@ -87,7 +85,6 @@ class ContentTypeAwareGCSFileManager(GCSFileManager):
 @resource(config_schema={"gcp_gcs_cred_string": StringSource})
 def gcp_gcs_client(resource_context: InitResourceContext) -> storage.Client:
     """Create a connection to gcs."""
-
     resource_context.log.info("retrieving gcp_gcs_client")
     gcp_gcs_cred_string = resource_context.resource_config["gcp_gcs_cred_string"]
     gcp_gsm_cred_json = json.loads(gcp_gcs_cred_string)
@@ -107,7 +104,6 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
 
     Implements the :py:class:`~dagster._core.storage.file_manager.FileManager` API.
     """
-
     storage_client = resource_context.resources.gcp_gcs_client
 
     return ContentTypeAwareGCSFileManager(
@@ -126,8 +122,7 @@ def gcs_file_manager(resource_context) -> GCSFileManager:
     },
 )
 def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
-    """
-    Create a connection to a gcs file blob.
+    """Create a connection to a gcs file blob.
 
     This is implemented so we are able to retrieve the metadata of a file
     before committing to downloading the file.
@@ -145,7 +140,8 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
 
     gcs_file_blob = bucket.get_blob(gcs_file_path)
     if not gcs_file_blob or not gcs_file_blob.exists():
-        raise Exception(f"File does not exist at path: {gcs_file_path}")
+        msg = f"File does not exist at path: {gcs_file_path}"
+        raise Exception(msg)
 
     return gcs_file_blob
 
@@ -159,9 +155,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     },
 )
 def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
-    """
-    List all blobs in a bucket that match the prefix.
-    """
+    """List all blobs in a bucket that match the prefix."""
     gcs_bucket = resource_context.resource_config["gcs_bucket"]
     prefix = resource_context.resource_config["prefix"]
     match_regex = resource_context.resource_config["match_regex"]

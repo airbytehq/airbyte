@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import backoff
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -37,7 +38,7 @@ class KyribaStream(HttpStream):
         gateway_url: str,
         client: KyribaClient,
         start_date: str,
-        end_date: str = None,
+        end_date: Optional[str] = None,
     ):
         self.gateway_url = gateway_url
         self.start_date = date.fromisoformat(start_date) or date.today()
@@ -58,7 +59,7 @@ class KyribaStream(HttpStream):
         return {"page.offset": next_offset} if next_page else None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
@@ -76,18 +77,16 @@ class KyribaStream(HttpStream):
         return response.status_code == 429 or 500 <= response.status_code < 600
 
     def unnest(self, key: str, data: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Kyriba loves to nest fields, but nested fields cannot be used in an
+        """Kyriba loves to nest fields, but nested fields cannot be used in an
         incremental cursor. This method grabs the hash where the increment field
-        is nested and puts it at the top level
+        is nested and puts it at the top level.
         """
         nested = data.pop(key)
         return {**data, **nested}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         results = response.json().get("results")
-        for result in results:
-            yield result
+        yield from results
 
 
 # Basic incremental stream
@@ -106,7 +105,7 @@ class IncrementalKyribaStream(KyribaStream, ABC):
         return {self.cursor_field: max(current_cursor, latest_cursor)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"sort": self.cursor_field}
         latest_cursor = stream_state.get(self.cursor_field) or self.start_date.isoformat() + "T00:00:00Z"
@@ -127,7 +126,7 @@ class Accounts(KyribaStream):
 
 
 class AccountSubStream(HttpSubStream, KyribaStream):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(parent=Accounts, **kwargs)
         self.parent = Accounts(**kwargs)
 
@@ -143,7 +142,7 @@ class AccountSubStream(HttpSubStream, KyribaStream):
 
 class CashBalancesStream(AccountSubStream):
     def stream_slices(
-        self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -168,7 +167,7 @@ class CashBalancesStream(AccountSubStream):
         return f"cash-balances/accounts/{account_uuid}/balances"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "endDate": stream_slice["endDate"],
@@ -191,7 +190,7 @@ class CashBalancesIntraday(CashBalancesStream):
 
 class BankBalancesStream(AccountSubStream):
     def stream_slices(
-        self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         account_uuids = self.get_account_uuids()
@@ -208,7 +207,7 @@ class BankBalancesStream(AccountSubStream):
         return f"bank-balances/accounts/{account_uuid}/balances"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "date": stream_slice["date"],
@@ -231,7 +230,7 @@ class CashFlows(IncrementalKyribaStream):
         return "cash-flows"
 
     def stream_slices(
-        self, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+        self, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         end_date = self.end_date or date.today()
         if stream_state and stream_state.get(self.cursor_field):
@@ -253,8 +252,7 @@ class CashFlows(IncrementalKyribaStream):
         params = super().request_params(**kwargs) or {}
         params["dateType"] = "UPDATE"
         params["page.limit"] = 1000
-        params = {**params, **stream_slice}
-        return params
+        return {**params, **stream_slice}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # the updatedDateTime is unnecessarily nested under date

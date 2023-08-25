@@ -4,8 +4,9 @@
 
 from typing import List, Union
 
-from airbyte_cdk.sources.config import BaseConfig
 from pydantic import BaseModel, Field
+
+from airbyte_cdk.sources.config import BaseConfig
 
 
 class InnerClass(BaseModel):
@@ -43,7 +44,7 @@ class TestBaseConfig:
                         "properties": {
                             "count": {"title": "Count", "type": "integer"},
                             "name": {"title": "Name", "type": "string"},
-                            "selected_strategy": {"const": "option1", "title": "Selected " "Strategy", "type": "string", "default": "option1"},
+                            "selected_strategy": {"const": "option1", "title": "Selected Strategy", "type": "string", "default": "option1"},
                         },
                         "required": ["name", "count"],
                         "title": "Choice1",
@@ -51,7 +52,7 @@ class TestBaseConfig:
                     },
                     {
                         "properties": {
-                            "selected_strategy": {"const": "option2", "title": "Selected " "Strategy", "type": "string", "default": "option2"},
+                            "selected_strategy": {"const": "option2", "title": "Selected Strategy", "type": "string", "default": "option2"},
                             "sequence": {"items": {"type": "string"}, "title": "Sequence", "type": "array"},
                         },
                         "required": ["sequence"],

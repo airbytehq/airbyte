@@ -5,11 +5,12 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_clockify.streams import ClockifyStream
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(ClockifyStream, "path", "v0/example_endpoint")

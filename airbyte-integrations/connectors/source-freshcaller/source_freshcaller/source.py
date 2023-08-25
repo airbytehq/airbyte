@@ -6,6 +6,7 @@ import logging
 from typing import Any, List, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -24,7 +25,7 @@ class SourceFreshcaller(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         api_url = f"https://{config['domain']}.freshcaller.com/api/v1"
         auth = FreshcallerTokenAuthenticator(token=config["api_key"]).get_auth_header()
-        url = "{api_url}/users".format(api_url=api_url)
+        url = f"{api_url}/users"
         auth.update({"Accept": "application/json"})
         auth.update({"Content-Type": "application/json"})
 

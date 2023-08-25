@@ -8,6 +8,7 @@ from typing import List
 
 import anyio
 import asyncer
+
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.bases import ConnectorReport, StepResult
 from pipelines.contexts import ConnectorContext
@@ -24,13 +25,13 @@ LANGUAGE_MAPPING = {
     "run_code_format_checks": {
         ConnectorLanguage.PYTHON: python_connectors.run_code_format_checks,
         ConnectorLanguage.LOW_CODE: python_connectors.run_code_format_checks,
-        # ConnectorLanguage.JAVA: java_connectors.run_code_format_checks
     },
 }
 
 
 async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]:
     """Run the metadata validation on a connector.
+
     Args:
         context (ConnectorContext): The current connector context.
 

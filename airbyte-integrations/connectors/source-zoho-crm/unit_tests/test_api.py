@@ -8,7 +8,7 @@ import pytest
 from source_zoho_crm.api import ZohoAPI
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {
         "client_id": "client_id",

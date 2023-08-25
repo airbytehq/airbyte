@@ -17,11 +17,10 @@ logger = logging.getLogger("airbyte")
 
 
 class TransformConfig(Flag):
-    """
-    TypeTransformer class config. Configs can be combined using bitwise or operator e.g.
-        ```
-        TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
-        ```
+    """TypeTransformer class config. Configs can be combined using bitwise or operator e.g.
+    ```
+    TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
+    ```.
     """
 
     # No action taken, default behaviour. Cannot be combined with any other options.
@@ -36,19 +35,17 @@ class TransformConfig(Flag):
 
 
 class TypeTransformer:
-    """
-    Class for transforming object before output.
-    """
+    """Class for transforming object before output."""
 
     _custom_normalizer: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
 
     def __init__(self, config: TransformConfig):
-        """
-        Initialize TypeTransformer instance.
-        :param config Transform config that would be applied to object
+        """Initialize TypeTransformer instance.
+        :param config Transform config that would be applied to object.
         """
         if TransformConfig.NoTransform in config and config != TransformConfig.NoTransform:
-            raise Exception("NoTransform option cannot be combined with other flags.")
+            msg = "NoTransform option cannot be combined with other flags."
+            raise Exception(msg)
         self._config = config
         all_validators = {
             key: self.__get_normalizer(key, orig_validator)
@@ -59,8 +56,7 @@ class TypeTransformer:
         self._normalizer = validators.create(meta_schema=Draft7Validator.META_SCHEMA, validators=all_validators)
 
     def registerCustomTransform(self, normalization_callback: Callable[[Any, Dict[str, Any]], Any]) -> Callable:
-        """
-        Register custom normalization callback.
+        """Register custom normalization callback.
         :param normalization_callback function to be used for value
         normalization. Takes original value and part type schema. Should return
         normalized value. See docs/connector-development/cdk-python/schemas.md
@@ -68,13 +64,13 @@ class TypeTransformer:
         :return Same callbeck, this is usefull for using registerCustomTransform function as decorator.
         """
         if TransformConfig.CustomSchemaNormalization not in self._config:
-            raise Exception("Please set TransformConfig.CustomSchemaNormalization config before registering custom normalizer")
+            msg = "Please set TransformConfig.CustomSchemaNormalization config before registering custom normalizer"
+            raise Exception(msg)
         self._custom_normalizer = normalization_callback
         return normalization_callback
 
     def __normalize(self, original_item: Any, subschema: Dict[str, Any]) -> Any:
-        """
-        Applies different transform function to object's field according to config.
+        """Applies different transform function to object's field according to config.
         :param original_item original value of field.
         :param subschema part of the jsonschema containing field type/format data.
         :return Final field value.
@@ -88,8 +84,7 @@ class TypeTransformer:
 
     @staticmethod
     def default_convert(original_item: Any, subschema: Dict[str, Any]) -> Any:
-        """
-        Default transform function that is used when TransformConfig.DefaultSchemaNormalization flag set.
+        """Default transform function that is used when TransformConfig.DefaultSchemaNormalization flag set.
         :param original_item original value of field.
         :param subschema part of the jsonschema containing field type/format data.
         :return transformed field value.
@@ -127,15 +122,13 @@ class TypeTransformer:
         return original_item
 
     def __get_normalizer(self, schema_key: str, original_validator: Callable):
-        """
-        Traverse through object fields using native jsonschema validator and apply normalization function.
+        """Traverse through object fields using native jsonschema validator and apply normalization function.
         :param schema_key related json schema key that currently being validated/normalized.
         :original_validator: native jsonschema validator callback.
         """
 
         def normalizator(validator_instance: Callable, property_value: Any, instance: Any, schema: Dict[str, Any]):
-            """
-            Jsonschema validator callable it uses for validating instance. We
+            """Jsonschema validator callable it uses for validating instance. We
             override default Draft7Validator to perform value transformation
             before validation take place. We do not take any action except
             logging warn if object does not conform to json schema, just using
@@ -173,8 +166,7 @@ class TypeTransformer:
         return normalizator
 
     def transform(self, record: Dict[str, Any], schema: Mapping[str, Any]):
-        """
-        Normalize and validate according to config.
+        """Normalize and validate according to config.
         :param record: record instance for normalization/transformation. All modification are done by modifying existent object.
         :param schema: object's jsonschema for normalization.
         """
@@ -192,5 +184,5 @@ class TypeTransformer:
         instance_json_type = python_to_json[type(e.instance)]
         key_path = "." + ".".join(map(str, e.path))
         return (
-            f"Failed to transform value {repr(e.instance)} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
+            f"Failed to transform value {e.instance!r} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
         )

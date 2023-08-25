@@ -6,8 +6,9 @@ import pytest
 
 def list_all_paths_in_fixture_directory(folder_name: str) -> List[str]:
     file_path = os.path.join(os.path.dirname(__file__), folder_name)
-    for root, dirs, files in os.walk(file_path):
+    for root, _dirs, files in os.walk(file_path):
         return [os.path.join(root, file_name) for file_name in files]
+    return None
 
 
 @pytest.fixture(scope="session")

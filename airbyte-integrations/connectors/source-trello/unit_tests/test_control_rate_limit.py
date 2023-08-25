@@ -18,8 +18,7 @@ TEST_HEADERS_NAME = [
 
 
 def control_request_rate_limit_decorator(threshold: float = 0.05, limit_headers=None):
-    """
-    This decorator was replicated completely, as separeted function in order to be tested.
+    """This decorator was replicated completely, as separeted function in order to be tested.
     The only difference is:
     :: the real one inside utils.py sleeps the actual defined time and returns the function back,
     :: and this fake one simply sleeps and returns the wait_time as actual sleep time in order to be tested.
@@ -70,8 +69,7 @@ def fake_parse_response(response: requests.Response, **kwargs):
 
 
 def test_with_load(requests_mock):
-    """
-    Test simulates high load of rate limit.
+    """Test simulates high load of rate limit.
     In this case we should wait at least 9 sec before next API call.
     """
     test_response_header = {
@@ -86,4 +84,4 @@ def test_with_load(requests_mock):
 
     actual_sleep_time = fake_parse_response(test_response)
 
-    assert SLEEP_ON_HIGH_LOAD == actual_sleep_time
+    assert actual_sleep_time == SLEEP_ON_HIGH_LOAD

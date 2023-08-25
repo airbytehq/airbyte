@@ -6,10 +6,11 @@ from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 from destination_langchain.config import ProcessingConfigModel
 from destination_langchain.document_processor import DocumentProcessor
+
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 
 
 def initialize_processor():
@@ -27,7 +28,7 @@ def initialize_processor():
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             ),
-        ]
+        ],
     )
     return DocumentProcessor(config=config, catalog=catalog)
 
@@ -64,7 +65,7 @@ def test_process_single_chunk_without_namespace():
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             ),
-        ]
+        ],
     )
     processor = DocumentProcessor(config=config, catalog=catalog)
 
@@ -93,7 +94,7 @@ def test_complex_text_fields():
                 "texts": [
                     {"text": "This is the text"},
                     {"text": "And another"},
-                ]
+                ],
             },
             "non_text": "a",
             "non_text_2": 1,
@@ -101,9 +102,9 @@ def test_complex_text_fields():
             "other_nested": {
                 "non_text": {
                     "a": "xyz",
-                    "b": "abc"
-                }
-            }
+                    "b": "abc",
+                },
+            },
         },
         emitted_at=1234,
     )
@@ -122,7 +123,7 @@ b: abc"""
         "id": 1,
         "non_text": "a",
         "non_text_2": 1,
-        "_airbyte_stream": "namespace1_stream1"
+        "_airbyte_stream": "namespace1_stream1",
     }
 
 
@@ -208,14 +209,14 @@ def test_process_multiple_chunks_with_relevant_fields():
 
 
 @pytest.mark.parametrize(
-    "primary_key_value, stringified_primary_key, primary_key",
+    ("primary_key_value", "stringified_primary_key", "primary_key"),
     [
         ({"id": 99}, "99", [["id"]]),
         ({"id": 99, "name": "John Doe"}, "99_John Doe", [["id"], ["name"]]),
         ({"id": 99, "name": "John Doe", "age": 25}, "99_John Doe_25", [["id"], ["name"], ["age"]]),
         ({"nested": {"id": "abc"}, "name": "John Doe"}, "abc_John Doe", [["nested", "id"], ["name"]]),
         ({"nested": {"id": "abc"}}, "abc___not_found__", [["nested", "id"], ["name"]]),
-    ]
+    ],
 )
 def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str, Any], stringified_primary_key: str, primary_key: List[List[str]]):
     processor = initialize_processor()
@@ -226,7 +227,7 @@ def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str
         data={
             "text": "This is the text and it is long enough to be split into multiple chunks. This is the text and it is long enough to be split into multiple chunks. This is the text and it is long enough to be split into multiple chunks",
             "age": 25,
-            **primary_key_value
+            **primary_key_value,
         },
         emitted_at=1234,
     )

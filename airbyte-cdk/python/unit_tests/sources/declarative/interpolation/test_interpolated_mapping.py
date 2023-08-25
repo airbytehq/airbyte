@@ -3,11 +3,12 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 
 
 @pytest.mark.parametrize(
-    "test_name, key, expected_value",
+    ("test_name", "key", "expected_value"),
     [
         ("test_field_value", "field", "value"),
         ("test_number", "number", 100),

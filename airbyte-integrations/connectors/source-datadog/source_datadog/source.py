@@ -7,11 +7,12 @@ from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+from pydantic.datetime_parse import timedelta
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from pydantic.datetime_parse import timedelta
 from source_datadog.streams import (
     AuditLogs,
     Dashboards,

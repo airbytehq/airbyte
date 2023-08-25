@@ -8,6 +8,8 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 import facebook_business
 import pendulum
 import requests
+from pydantic.error_wrappers import ValidationError
+
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -19,7 +21,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
 from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
@@ -73,7 +74,7 @@ class SourceFacebookMarketing(AbstractSource):
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """Connection check to validate that the user-provided config can be used to connect to the underlying API
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API.
 
         :param logger: source logger
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -111,7 +112,7 @@ class SourceFacebookMarketing(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
-        """Discovery method, returns available streams
+        """Discovery method, returns available streams.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         :return: list of the stream instances
@@ -122,9 +123,9 @@ class SourceFacebookMarketing(AbstractSource):
 
         api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
-        insights_args = dict(
-            api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
-        )
+        insights_args = {
+            "api": api, "start_date": config.start_date, "end_date": config.end_date, "insights_lookback_window": config.insights_lookback_window,
+        }
         streams = [
             AdAccount(api=api),
             AdSets(
@@ -237,7 +238,7 @@ class SourceFacebookMarketing(AbstractSource):
                             "access_token": {
                                 "type": "string",
                                 "path_in_connector_config": ["access_token"],
-                            }
+                            },
                         },
                     },
                     complete_oauth_server_input_specification={
@@ -257,7 +258,7 @@ class SourceFacebookMarketing(AbstractSource):
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
-        """return custom insights streams"""
+        """Return custom insights streams."""
         streams = []
         for insight in config.custom_insights or []:
             insight_fields = set(insight.fields)

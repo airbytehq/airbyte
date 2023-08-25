@@ -7,13 +7,14 @@ from unittest.mock import mock_open, patch
 
 import pytest
 import yaml
+from octavia_cli.generate import renderers, yaml_dumpers
+
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from airbyte_api_client.model.airbyte_stream import AirbyteStream
 from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
 from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
 from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
 from airbyte_api_client.model.sync_mode import SyncMode
-from octavia_cli.generate import renderers, yaml_dumpers
 
 
 class TestFieldToRender:
@@ -41,7 +42,7 @@ class TestFieldToRender:
                 field_to_render._get_type_comment,
                 field_to_render._get_description_comment,
                 field_to_render._get_example_comment,
-            ]
+            ],
         )
 
     def test_get_attr(self):
@@ -89,7 +90,7 @@ class TestFieldToRender:
         assert field_to_render._get_required_comment() == "OPTIONAL"
 
     @pytest.mark.parametrize(
-        "_type,expected_comment",
+        ("_type", "expected_comment"),
         [("string", "string"), (["string", "null"], "string, null"), (None, None)],
     )
     def test__get_type_comment(self, _type, expected_comment):
@@ -112,7 +113,7 @@ class TestFieldToRender:
         assert field_to_render._get_description_comment() is None
 
     @pytest.mark.parametrize(
-        "examples_value,expected_output",
+        ("examples_value", "expected_output"),
         [
             (["foo", "bar"], "Examples: foo, bar"),
             (["foo"], "Example: foo"),
@@ -127,7 +128,7 @@ class TestFieldToRender:
         assert field_to_render._get_example_comment() == expected_output
 
     @pytest.mark.parametrize(
-        "field_metadata,expected_default",
+        ("field_metadata", "expected_default"),
         [
             ({"const": "foo", "default": "bar"}, "foo"),
             ({"default": "bar"}, "bar"),
@@ -166,7 +167,7 @@ def test_get_object_fields(mocker):
 
 
 class TestBaseRenderer:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(renderers.BaseRenderer, "__abstractmethods__", set())
@@ -191,11 +192,11 @@ class TestBaseRenderer:
             [
                 mocker.call(".", "my_definition_types", renderers.slugify.return_value),
                 mocker.call("./my_definition_types/my_resource_name", "configuration.yaml"),
-            ]
+            ],
         )
         assert output_path == Path("./my_definition_types/my_resource_name/configuration.yaml")
 
-    @pytest.mark.parametrize("file_exists, confirmed_overwrite", [(True, True), (False, None), (True, False)])
+    @pytest.mark.parametrize(("file_exists", "confirmed_overwrite"), [(True, True), (False, None), (True, False)])
     def test__confirm_overwrite(self, mocker, file_exists, confirmed_overwrite):
         mock_output_path = mocker.Mock(is_file=mocker.Mock(return_value=file_exists))
         mocker.patch.object(renderers.click, "confirm", mocker.Mock(return_value=confirmed_overwrite))
@@ -238,7 +239,7 @@ class TestBaseRenderer:
 
 class TestConnectorSpecificationRenderer:
     def test_init(self, mocker):
-        assert renderers.ConnectorSpecificationRenderer.TEMPLATE == renderers.JINJA_ENV.get_template("source_or_destination.yaml.j2")
+        assert renderers.JINJA_ENV.get_template("source_or_destination.yaml.j2") == renderers.ConnectorSpecificationRenderer.TEMPLATE
         definition = mocker.Mock()
         spec_renderer = renderers.ConnectorSpecificationRenderer("my_resource_name", definition)
         assert spec_renderer.resource_name == "my_resource_name"
@@ -271,7 +272,7 @@ class TestConnectorSpecificationRenderer:
         mocker.patch.object(renderers.ConnectorSpecificationRenderer, "get_output_path")
         mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_parse_connection_specification")
         mocker.patch.object(
-            renderers.ConnectorSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string"))
+            renderers.ConnectorSpecificationRenderer, "TEMPLATE", mocker.Mock(render=mocker.Mock(return_value="rendered_string")),
         )
         mocker.patch.object(renderers.ConnectorSpecificationRenderer, "_confirm_overwrite", mocker.Mock(return_value=overwrite))
 
@@ -284,7 +285,7 @@ class TestConnectorSpecificationRenderer:
                     "resource_name": "my_resource_name",
                     "definition": spec_renderer.definition,
                     "configuration_fields": spec_renderer._parse_connection_specification.return_value,
-                }
+                },
             )
             mock_file.assert_called_with(output_path, "w")
         else:
@@ -302,22 +303,22 @@ class TestConnectorSpecificationRenderer:
                 "resource_name": spec_renderer.resource_name,
                 "definition": spec_renderer.definition,
                 "configuration_fields": spec_renderer._parse_connection_specification.return_value,
-            }
+            },
         )
         assert rendered == spec_renderer.TEMPLATE.render.return_value
 
 
 class TestConnectionRenderer:
-    @pytest.fixture
+    @pytest.fixture()
     def mock_source(self, mocker):
         return mocker.Mock()
 
-    @pytest.fixture
+    @pytest.fixture()
     def mock_destination(self, mocker):
         return mocker.Mock()
 
     def test_init(self, mock_source, mock_destination):
-        assert renderers.ConnectionRenderer.TEMPLATE == renderers.JINJA_ENV.get_template("connection.yaml.j2")
+        assert renderers.JINJA_ENV.get_template("connection.yaml.j2") == renderers.ConnectionRenderer.TEMPLATE
         connection_renderer = renderers.ConnectionRenderer("my_resource_name", mock_source, mock_destination)
         assert connection_renderer.resource_name == "my_resource_name"
         assert connection_renderer.source == mock_source
@@ -325,10 +326,10 @@ class TestConnectionRenderer:
 
     def test_catalog_to_yaml(self, mocker):
         stream = AirbyteStream(
-            default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")]
+            default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")],
         )
         config = AirbyteStreamConfiguration(
-            alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
+            alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh"),
         )
         catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
         yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
@@ -357,7 +358,7 @@ class TestConnectionRenderer:
                     "catalog": connection_renderer.catalog_to_yaml.return_value,
                     "supports_normalization": connection_renderer.destination.definition.normalization_config.supported,
                     "supports_dbt": connection_renderer.destination.definition.supports_dbt,
-                }
+                },
             )
         else:
             output_path = connection_renderer.write_yaml(".")
@@ -377,11 +378,11 @@ class TestConnectionRenderer:
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
                 "supports_normalization": connection_renderer.destination.definition.normalization_config.supported,
                 "supports_dbt": connection_renderer.destination.definition.supports_dbt,
-            }
+            },
         )
         assert rendered == connection_renderer.TEMPLATE.render.return_value
 
-    @pytest.mark.parametrize("confirmed_overwrite, operations", [(True, []), (False, []), (True, [{}]), (False, [{}])])
+    @pytest.mark.parametrize(("confirmed_overwrite", "operations"), [(True, []), (False, []), (True, [{}]), (False, [{}])])
     def test_import_configuration(self, mocker, confirmed_overwrite, operations):
         configuration = {"foo": "bar", "bar": "foo", "operations": operations}
         mocker.patch.object(renderers.ConnectionRenderer, "KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION", ["bar"])

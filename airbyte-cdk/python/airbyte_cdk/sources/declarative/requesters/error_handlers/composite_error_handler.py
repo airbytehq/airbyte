@@ -5,8 +5,9 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Union
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
+
+from airbyte_cdk.sources.declarative.requesters.error_handlers import response_status
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
@@ -14,8 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 
 @dataclass
 class CompositeErrorHandler(ErrorHandler):
-    """
-    Error handler that sequentially iterates over a list of `ErrorHandler`s
+    """Error handler that sequentially iterates over a list of `ErrorHandler`s.
 
     Sample config chaining 2 different retriers:
         error_handler:
@@ -42,7 +42,8 @@ class CompositeErrorHandler(ErrorHandler):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.error_handlers:
-            raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
+            msg = "CompositeErrorHandler expects at least 1 underlying error handler"
+            raise ValueError(msg)
 
     @property
     def max_retries(self) -> Union[int, None]:

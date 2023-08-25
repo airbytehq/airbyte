@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from dagger import Client, File, Secret
+
 from pipelines.utils import get_exec_result, secret_host_variable, with_exit_code
 
 GOOGLE_CLOUD_SDK_TAG = "425.0.0-slim"
@@ -35,7 +36,7 @@ async def upload_to_s3(dagger_client: Client, file_to_upload_path: Path, key: st
         .with_(secret_host_variable(dagger_client, "AWS_ACCESS_KEY_ID"))
         .with_(secret_host_variable(dagger_client, "AWS_SECRET_ACCESS_KEY"))
         .with_(secret_host_variable(dagger_client, "AWS_DEFAULT_REGION"))
-        .with_exec(["s3", "cp", str(file_to_upload_path), s3_uri])
+        .with_exec(["s3", "cp", str(file_to_upload_path), s3_uri]),
     )
 
 
@@ -49,6 +50,7 @@ async def upload_to_gcs(
     cache_upload: bool = False,
 ) -> Tuple[int, str, str]:
     """Upload a local file to GCS using the AWS CLI docker image and running aws s3 cp command.
+
     Args:
         dagger_client (Client): The dagger client.
         file_to_upload (File): The dagger File to upload.
@@ -57,13 +59,14 @@ async def upload_to_gcs(
         gcs_credentials (Secret): The dagger secret holding the credentials to get and upload the targeted GCS bucket.
         flags (List[str]): Flags to be passed to the 'gcloud storage cp' command.
         cache_upload (bool): If false, the gcloud commands will be executed on each call.
+
     Returns:
-        Tuple[int, str, str]: Exit code, stdout, stderr
+        Tuple[int, str, str]: Exit code, stdout, stderr.
     """
     flags = [] if flags is None else flags
     gcs_uri = f"gs://{bucket}/{key}"
     dagger_client = dagger_client.pipeline(f"Upload file to {gcs_uri}")
-    cp_command = ["gcloud", "storage", "cp"] + flags + ["to_upload", gcs_uri]
+    cp_command = ["gcloud", "storage", "cp", *flags, "to_upload", gcs_uri]
 
     gcloud_container = (
         dagger_client.container()

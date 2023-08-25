@@ -6,9 +6,6 @@ from dataclasses import dataclass
 from typing import List, Union
 
 import requests
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from braintree.attribute_getter import AttributeGetter
 from braintree.customer import Customer as BCustomer
 from braintree.discount import Discount as BDiscount
@@ -18,6 +15,10 @@ from braintree.plan import Plan as BPlan
 from braintree.subscription import Subscription as BSubscription
 from braintree.transaction import Transaction as BTransaction
 from braintree.util.xml_util import XmlUtil
+
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from source_braintree.schemas import Customer, Discount, Dispute, MerchantAccount, Plan, Subscription, Transaction
 
 """
@@ -30,9 +31,7 @@ WARNING: Do not modify this file.
 
 @dataclass
 class BraintreeExtractor(RecordExtractor):
-    """
-    Extractor Template for all BrainTree streams.
-    """
+    """Extractor Template for all BrainTree streams."""
 
     @staticmethod
     def _extract_as_array(results, attribute):
@@ -48,7 +47,7 @@ class BraintreeExtractor(RecordExtractor):
         if isinstance(resource_obj, list):
             return [obj if not isinstance(obj, AttributeGetter) else self._get_json_from_resource(obj) for obj in resource_obj]
         obj_dict = resource_obj.__dict__
-        result = dict()
+        result = {}
         for attr in obj_dict:
             if not attr.startswith("_"):
                 if callable(obj_dict[attr]):
@@ -61,8 +60,7 @@ class BraintreeExtractor(RecordExtractor):
 
 @dataclass
 class MerchantAccountExtractor(BraintreeExtractor):
-    """
-    Extractor for Merchant Accounts stream.
+    """Extractor for Merchant Accounts stream.
     It parses output XML and finds all `Merchant Account` occurrences in it.
     """
 
@@ -80,8 +78,7 @@ class MerchantAccountExtractor(BraintreeExtractor):
 
 @dataclass
 class CustomerExtractor(BraintreeExtractor):
-    """
-    Extractor for Customers stream.
+    """Extractor for Customers stream.
     It parses output XML and finds all `Customer` occurrences in it.
     """
 
@@ -96,8 +93,7 @@ class CustomerExtractor(BraintreeExtractor):
 
 @dataclass
 class DiscountExtractor(BraintreeExtractor):
-    """
-    Extractor for Discounts stream.
+    """Extractor for Discounts stream.
     It parses output XML and finds all `Discount` occurrences in it.
     """
 
@@ -112,8 +108,7 @@ class DiscountExtractor(BraintreeExtractor):
 
 @dataclass
 class TransactionExtractor(BraintreeExtractor):
-    """
-    Extractor for Transactions stream.
+    """Extractor for Transactions stream.
     It parses output XML and finds all `Transaction` occurrences in it.
     """
 
@@ -131,8 +126,7 @@ class TransactionExtractor(BraintreeExtractor):
 
 @dataclass
 class SubscriptionExtractor(BraintreeExtractor):
-    """
-    Extractor for Subscriptions stream.
+    """Extractor for Subscriptions stream.
     It parses output XML and finds all `Subscription` occurrences in it.
     """
 
@@ -150,8 +144,7 @@ class SubscriptionExtractor(BraintreeExtractor):
 
 @dataclass
 class PlanExtractor(BraintreeExtractor):
-    """
-    Extractor for Plans stream.
+    """Extractor for Plans stream.
     It parses output XML and finds all `Plan` occurrences in it.
     """
 
@@ -166,8 +159,7 @@ class PlanExtractor(BraintreeExtractor):
 
 @dataclass
 class DisputeExtractor(BraintreeExtractor):
-    """
-    Extractor for Disputes stream.
+    """Extractor for Disputes stream.
     It parses output XML and finds all `Dispute` occurrences in it.
     """
 
@@ -182,5 +174,5 @@ class DisputeExtractor(BraintreeExtractor):
 
 # Declarative Source
 class SourceBraintree(YamlDeclarativeSource):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(**{"path_to_yaml": "manifest.yaml"})

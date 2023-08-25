@@ -74,7 +74,7 @@ def read(config, catalog):
 
 
 def read_json(filepath):
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         return json.loads(f.read())
 
 
@@ -125,10 +125,10 @@ def discover():
                 "name": "stock_prices",
                 "supported_sync_modes": ["full_refresh"],
                 "json_schema": {
-                    "properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}}
+                    "properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}},
                 },
-            }
-        ]
+            },
+        ],
     }
     airbyte_message = {"type": "CATALOG", "catalog": catalog}
     print(json.dumps(airbyte_message))

@@ -4,10 +4,7 @@
 
 # The spec and report schema are generated from this module.
 #
-# import source_adjust.model, yaml, json
 # yaml.dump(yaml.safe_load(source_adjust.model.Spec.schema_json()),
-#     stream=open('source_adjust/spec.yaml', 'w'),
-# )
 
 import datetime
 import decimal
@@ -112,9 +109,7 @@ DIMENSIONS = typing.Literal[
 
 
 class Spec(pydantic.BaseModel):
-    """
-    Adjust reporting API connector.
-    """
+    """Adjust reporting API connector."""
 
     api_token: str = pydantic.Field(
         ...,
@@ -548,7 +543,7 @@ class Report(pydantic.BaseModel):
 
     campaign: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Tracker sub-level 1. String value usually " "contains campaign name and id."),
+        description=("Tracker sub-level 1. String value usually contains campaign name and id."),
     )
 
     campaign_network: typing.Optional[str] = pydantic.Field(
@@ -563,7 +558,7 @@ class Report(pydantic.BaseModel):
 
     adgroup: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Tracker sub-level 2. String value usually " "contains adgroup name and id."),
+        description=("Tracker sub-level 2. String value usually contains adgroup name and id."),
     )
 
     adgroup_network: typing.Optional[str] = pydantic.Field(
@@ -578,7 +573,7 @@ class Report(pydantic.BaseModel):
 
     source_network: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Optional value dependent on the network. " "Usually the same as adgroup_network."),
+        description=("Optional value dependent on the network. Usually the same as adgroup_network."),
     )
 
     source_id_network: typing.Optional[str] = pydantic.Field(
@@ -588,7 +583,7 @@ class Report(pydantic.BaseModel):
 
     creative: typing.Optional[str] = pydantic.Field(
         None,
-        description=("Tracker sub-level 3. String value usually " "contains creative name and id."),
+        description=("Tracker sub-level 3. String value usually contains creative name and id."),
     )
 
     creative_network: typing.Optional[str] = pydantic.Field(
@@ -623,7 +618,7 @@ class Report(pydantic.BaseModel):
 
     partner_id: typing.Optional[str] = pydantic.Field(
         None,
-        description="Partner’s id in the Adjust system.",
+        description="Partner`s id in the Adjust system.",
     )
 
     class Config:

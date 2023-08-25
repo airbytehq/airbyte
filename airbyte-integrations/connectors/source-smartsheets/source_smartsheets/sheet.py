@@ -8,6 +8,7 @@ from functools import cached_property
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import smartsheet
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 
@@ -30,7 +31,7 @@ class SmartSheetAPIWrapper:
         credentials = config.get("credentials")
         if config.get("credentials", {}).get("auth_type") == "oauth2.0":
             authenticator = SingleUseRefreshTokenOauth2Authenticator(
-                config, token_refresh_endpoint="https://api.smartsheet.com/2.0/token", refresh_request_body=self.get_token_hash(config)
+                config, token_refresh_endpoint="https://api.smartsheet.com/2.0/token", refresh_request_body=self.get_token_hash(config),
             )
             return authenticator.get_access_token()
 
@@ -103,6 +104,7 @@ class SmartSheetAPIWrapper:
         for column in self.data.columns:
             if column.primary:
                 return column.title
+        return None
 
     @cached_property
     def json_schema(self) -> Dict[str, Any]:
@@ -113,12 +115,11 @@ class SmartSheetAPIWrapper:
             metadata_schema = {i: self._column_to_property(i) for i in self._metadata}
             column_info.update(metadata_schema)
 
-        json_schema = {
+        return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": column_info,
         }
-        return json_schema
 
     def read_records(self, from_dt: str) -> Iterable[Dict[str, str]]:
         self._fetch_sheet(from_dt)

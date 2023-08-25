@@ -22,7 +22,7 @@ class MockGoogleAdsService:
 
 
 class MockGoogleAdsClient:
-    def __init__(self, credentials, **kwargs):
+    def __init__(self, credentials, **kwargs) -> None:
         self.config = credentials
         self.customer_ids = ["1"]
 
@@ -55,7 +55,7 @@ def make_google_ads_exception(failure_code: int = 1, failure_msg: str = "it fail
 
 
 class MockErroringGoogleAdsClient:
-    def __init__(self, credentials, **kwargs):
+    def __init__(self, credentials, **kwargs) -> None:
         self.config = credentials
         self.customer_ids = ["1"]
 

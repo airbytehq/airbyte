@@ -4,8 +4,9 @@
 
 from unittest.mock import PropertyMock, patch
 
-from airbyte_cdk.logger import AirbyteLogger
 from source_asana.source import SourceAsana
+
+from airbyte_cdk.logger import AirbyteLogger
 
 logger = AirbyteLogger()
 

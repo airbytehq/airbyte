@@ -28,8 +28,7 @@ def oauth_config_fixture():
 @pytest.fixture(name="common_params")
 def common_params_fixture(config):
     source = SourceHubspot()
-    common_params = source.get_common_params(config=config)
-    return common_params
+    return source.get_common_params(config=config)
 
 
 @pytest.fixture(name="config_invalid_client_id")

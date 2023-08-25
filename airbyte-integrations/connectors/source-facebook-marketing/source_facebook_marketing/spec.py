@@ -7,9 +7,10 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 
-from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
+
+from airbyte_cdk.sources.config import BaseConfig
 
 logger = logging.getLogger("airbyte")
 
@@ -22,7 +23,7 @@ EMPTY_PATTERN = "^$"
 
 
 class InsightConfig(BaseModel):
-    """Config for custom insights"""
+    """Config for custom insights."""
 
     class Config:
         use_enum_values = True
@@ -100,7 +101,7 @@ class InsightConfig(BaseModel):
 
 
 class ConnectorConfig(BaseConfig):
-    """Connector config"""
+    """Connector config."""
 
     class Config:
         title = "Source Facebook Marketing"
@@ -147,7 +148,7 @@ class ConnectorConfig(BaseConfig):
         order=3,
         description=(
             "The value of the generated access token. "
-            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+            'From your App`s Dashboard, click on "Marketing API" then "Tools". '
             'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
             'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),

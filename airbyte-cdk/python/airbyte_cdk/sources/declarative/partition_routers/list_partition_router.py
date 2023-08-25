@@ -13,9 +13,8 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class ListPartitionRouter(StreamSlicer):
-    """
-    Partition router that iterates over the values of a list
-    If values is a string, then evaluate it as literal and assert the resulting literal is a list
+    """Partition router that iterates over the values of a list
+    If values is a string, then evaluate it as literal and assert the resulting literal is a list.
 
     Attributes:
         values (Union[str, List[str]]): The values to iterate over

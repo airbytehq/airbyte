@@ -21,7 +21,7 @@ def _convert_airbyte_configured_stream_into_headers_dict(
     for column_header in configured_stream.stream.json_schema["properties"]:
         if "airbyte-type" in configured_stream.stream.json_schema["properties"][column_header]:
             column_headers[column_header] = {
-                "airbyte-type": configured_stream.stream.json_schema["properties"][column_header]["airbyte-type"]
+                "airbyte-type": configured_stream.stream.json_schema["properties"][column_header]["airbyte-type"],
             }
         else:
             column_headers[column_header] = {"airbyte-type": configured_stream.stream.json_schema["properties"][column_header]["type"]}
@@ -80,12 +80,13 @@ class CumulioWriter:
         """Transform Airbyte data (one row) into Cumul.io's expected data format (a list in the appropriate order).
         If data for a specific column is not included in the Airbyte data, the value will be None.
         If data for a specific column in the Airbyte data is not recognized, it will be ignored as extraneous.
-        (see here: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#output-4)
+        (see here: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#output-4).
         """
         try:
             self.writers[stream_name]
         except KeyError:
-            raise Exception(f"The stream {stream_name} is not defined in the configured_catalog and won't thus be streamed.")
+            msg = f"The stream {stream_name} is not defined in the configured_catalog and won't thus be streamed."
+            raise Exception(msg)
 
         data: list[Any] = [None for i in range(len(self.writers[stream_name]["column_headers"]))]
         for column in airbyte_data:
@@ -97,9 +98,7 @@ class CumulioWriter:
                     # Cumul.io doesn't support storing or querying nested (list, dict) or boolean data.
                     # we'll stringify this data via json.dumps
                     if (
-                        isinstance(airbyte_data[column], list)
-                        or isinstance(airbyte_data[column], dict)
-                        or isinstance(airbyte_data[column], bool)
+                        isinstance(airbyte_data[column], (bool, dict, list))
                     ):
                         data[index] = json.dumps(airbyte_data[column])
                     else:
@@ -108,7 +107,7 @@ class CumulioWriter:
             if unknown_data:
                 self.logger.debug(
                     f"The value with name {column} has not been defined in the ConfiguredAirbyteStream and will thus be "
-                    f"ignored as extraneous."
+                    f"ignored as extraneous.",
                 )
         return data
 
@@ -118,7 +117,8 @@ class CumulioWriter:
 
     def _create_writers(self, configured_catalog: ConfiguredAirbyteCatalog):
         """Return a set of writers, one for each stream in the configured_catalog.
-        This method will also merge the Cumul.io columns for the stream's dataset, if existing."""
+        This method will also merge the Cumul.io columns for the stream's dataset, if existing.
+        """
         writers = {}
         for configured_stream in configured_catalog.streams:
             result = self._merge_cumulio_and_airbyte_column_headers(configured_stream)
@@ -175,12 +175,12 @@ class CumulioWriter:
             if len(cumulio_column_headers) > 0:
                 self.logger.info(
                     f"One or more columns defined in stream {configured_stream.stream.name} are not yet present in Cumul.io, "
-                    f"and will added upon next successful synchronization."
+                    f"and will added upon next successful synchronization.",
                 )
             else:
                 self.logger.info(
                     f"The dataset for stream {configured_stream.stream.name} doesn't seem to exist in Cumul.io. "
-                    f"The next sync for this stream will create it."
+                    f"The next sync for this stream will create it.",
                 )
         elif not update_metadata:
             # Validate whether all columns in Cumul.io are still part of the configured airbyte catalog definition.
@@ -195,7 +195,7 @@ class CumulioWriter:
                             f"The source column {cumulio_column_header} in Cumul.io is no longer present in the configured "
                             f"stream {configured_stream.stream.name} (i.e. in the source). As the stream synchronization is "
                             f"in overwrite mode, the existing column in Cumul.io will be deleted upon next sync. Check "
-                            f"carefully whether this column is used in any existing Cumul.io dashboards!"
+                            f"carefully whether this column is used in any existing Cumul.io dashboards!",
                         )
                         update_metadata = True
 

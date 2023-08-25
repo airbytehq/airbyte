@@ -24,7 +24,7 @@ def test_streams(conversations_list, join_channels, config, is_valid):
 
 
 @pytest.mark.parametrize(
-    "status_code, response, is_connection_successful, error_msg",
+    ("status_code", "response", "is_connection_successful", "error_msg"),
     (
         (200, {"members": [{"id": 1, "name": "Abraham"}]}, True, None),
         (

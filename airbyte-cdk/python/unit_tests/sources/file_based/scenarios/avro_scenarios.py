@@ -24,7 +24,7 @@ _single_avro_file = {
             ("val21", 22),
         ],
         "last_modified": "2023-06-05T03:54:07.000Z",
-    }
+    },
 }
 
 _multiple_avro_combine_schema_file = {
@@ -124,7 +124,7 @@ _avro_all_types_file = {
                 {"lead_singer": "Matty Healy", "lead_guitar": "Adam Hann", "bass_guitar": "Ross MacDonald", "drummer": "George Daniel"},
                 b"\x12\x34\x56\x78",
                 decimal.Decimal("1234.56789"),
-                uuid.UUID('123e4567-e89b-12d3-a456-426655440000').bytes,
+                uuid.UUID("123e4567-e89b-12d3-a456-426655440000").bytes,
                 datetime.date(2022, 5, 29),
                 datetime.time(6, 0, 0, 456000),
                 datetime.time(12, 0, 0, 456789),
@@ -133,7 +133,7 @@ _avro_all_types_file = {
             ),
         ],
         "last_modified": "2023-06-05T03:54:07.000Z",
-    }
+    },
 }
 
 _multiple_avro_stream_file = {
@@ -206,9 +206,9 @@ single_avro_scenario = (
                     "file_type": "avro",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
     .set_file_type("avro")
@@ -233,7 +233,7 @@ single_avro_scenario = (
                 },
                 "stream": "stream1",
             },
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -252,9 +252,9 @@ single_avro_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -269,9 +269,9 @@ multiple_avro_combine_schema_scenario = (
                     "file_type": "avro",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
     .set_file_type("avro")
@@ -317,7 +317,7 @@ multiple_avro_combine_schema_scenario = (
                 },
                 "stream": "stream1",
             },
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -348,9 +348,9 @@ multiple_avro_combine_schema_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -365,9 +365,9 @@ avro_all_types_scenario = (
                     "file_type": "avro",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
     .set_file_type("avro")
@@ -410,7 +410,7 @@ avro_all_types_scenario = (
                 },
                 "stream": "stream1",
             },
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -449,9 +449,9 @@ avro_all_types_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -473,8 +473,8 @@ multiple_streams_avro_scenario = (
                     "globs": ["*_festivals.avro"],
                     "validation_policy": "Emit Record",
                 },
-            ]
-        }
+            ],
+        },
     )
     .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
     .set_file_type("avro")
@@ -575,7 +575,7 @@ multiple_streams_avro_scenario = (
                 },
                 "stream": "festivals_stream",
             },
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -616,8 +616,8 @@ multiple_streams_avro_scenario = (
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 },
-            ]
-        }
+            ],
+        },
     )
 ).build()
 
@@ -634,11 +634,11 @@ avro_file_with_double_as_number_scenario = (
                     "validation_policy": "Emit Record",
                     "format": {
                         "filetype": "avro",
-                        "double_as_string": False
-                    }
-                }
-            ]
-        }
+                        "double_as_string": False,
+                    },
+                },
+            ],
+        },
     )
     .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
     .set_file_type("avro")
@@ -684,7 +684,7 @@ avro_file_with_double_as_number_scenario = (
                 },
                 "stream": "stream1",
             },
-        ]
+        ],
     )
     .set_expected_catalog(
         {
@@ -715,8 +715,8 @@ avro_file_with_double_as_number_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()

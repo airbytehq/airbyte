@@ -13,13 +13,14 @@ from urllib.parse import urljoin
 
 import requests
 import requests_cache
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from requests.auth import AuthBase
+from airbyte_cdk.sources.utils.types import JsonType
 
-from ...utils.types import JsonType
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
@@ -29,9 +30,7 @@ BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
 class HttpStream(Stream, ABC):
-    """
-    Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
-    """
+    """Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API."""
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
@@ -51,16 +50,12 @@ class HttpStream(Stream, ABC):
 
     @property
     def cache_filename(self) -> str:
-        """
-        Override if needed. Return the name of cache file
-        """
+        """Override if needed. Return the name of cache file."""
         return f"{self.name}.sqlite"
 
     @property
     def use_cache(self) -> bool:
-        """
-        Override if needed. If True, all records will be cached.
-        """
+        """Override if needed. If True, all records will be cached."""
         return False
 
     def request_cache(self) -> requests.Session:
@@ -68,9 +63,7 @@ class HttpStream(Stream, ABC):
         return requests_cache.CachedSession(self.cache_filename)
 
     def clear_cache(self) -> None:
-        """
-        remove cache file only once
-        """
+        """Remove cache file only once."""
         STREAM_CACHE_FILES = globals().setdefault("STREAM_CACHE_FILES", set())
         if self.cache_filename not in STREAM_CACHE_FILES:
             with suppress(FileNotFoundError):
@@ -80,36 +73,27 @@ class HttpStream(Stream, ABC):
     @property
     @abstractmethod
     def url_base(self) -> str:
-        """
-        :return: URL base for the  API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "https://myapi.com/v1/"
+        """:return: URL base for the  API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "https://myapi.com/v1/"
         """
 
     @property
     def http_method(self) -> str:
-        """
-        Override if needed. See get_request_data/get_request_json if using POST/PUT/PATCH.
-        """
+        """Override if needed. See get_request_data/get_request_json if using POST/PUT/PATCH."""
         return "GET"
 
     @property
     def raise_on_http_errors(self) -> bool:
-        """
-        Override if needed. If set to False, allows opting-out of raising HTTP code exception.
-        """
+        """Override if needed. If set to False, allows opting-out of raising HTTP code exception."""
         return True
 
     @property
     def max_retries(self) -> Union[int, None]:
-        """
-        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
+        """Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit."""
         return 5
 
     @property
     def retry_factor(self) -> float:
-        """
-        Override if needed. Specifies factor for backoff policy.
-        """
+        """Override if needed. Specifies factor for backoff policy."""
         return 5
 
     @property
@@ -122,8 +106,7 @@ class HttpStream(Stream, ABC):
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Override this method to define a pagination strategy.
+        """Override this method to define a pagination strategy.
 
         The value returned from this method is passed to most other methods in this class. Use it to form a request e.g: set headers or query params.
 
@@ -138,9 +121,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        """
-        Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
-        """
+        """Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"."""
 
     def request_params(
         self,
@@ -148,8 +129,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
+        """Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
@@ -161,9 +141,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
-        """
+        """Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method."""
         return {}
 
     def request_body_data(
@@ -172,8 +150,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping[str, Any], str]]:
-        """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
+        """Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
 
         If returns a ready text that it will be sent as is.
         If returns a dict that it will be converted to a urlencoded form.
@@ -189,8 +166,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
+        """Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
@@ -202,8 +178,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Override to return a mapping of keyword arguments to be used when creating the HTTP request.
+        """Override to return a mapping of keyword arguments to be used when creating the HTTP request.
         Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
@@ -218,20 +193,18 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        Parses the raw response object into a list of records.
+        """Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
         :param response:
         :param stream_state:
         :param stream_slice:
         :param next_page_token:
-        :return: An iterable containing the parsed response
+        :return: An iterable containing the parsed response.
         """
 
     # TODO move all the retry logic to a functor/decorator which is input as an init parameter
     def should_retry(self, response: requests.Response) -> bool:
-        """
-        Override to set different conditions for backoff based on the response from the server.
+        """Override to set different conditions for backoff based on the response from the server.
 
         By default, back off on the following HTTP response statuses:
          - 429 (Too Many Requests) indicating rate limiting
@@ -242,8 +215,7 @@ class HttpStream(Stream, ABC):
         return response.status_code == 429 or 500 <= response.status_code < 600
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
+        """Override this method to dynamically determine backoff time e.g: by reading the X-Retry-After header.
 
         This method is called only if should_backoff() returns True for the input request.
 
@@ -254,8 +226,7 @@ class HttpStream(Stream, ABC):
         return None
 
     def error_message(self, response: requests.Response) -> str:
-        """
-        Override this method to specify a custom error message which can incorporate the HTTP response received
+        """Override this method to specify a custom error message which can incorporate the HTTP response received.
 
         :param response: The incoming HTTP response from the partner API
         :return:
@@ -266,8 +237,7 @@ class HttpStream(Stream, ABC):
         return False
 
     def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-        """
-        Remove query parameters from params mapping if they are already encoded in the URL.
+        """Remove query parameters from params mapping if they are already encoded in the URL.
         :param url: URL with
         :param params:
         :return:
@@ -277,7 +247,7 @@ class HttpStream(Stream, ABC):
         query_string = urllib.parse.urlparse(url).query
         query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
 
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
+        duplicate_keys_with_same_value = {k for k in query_dict if str(params.get(k)) == str(query_dict[k])}
         return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
 
     def _create_prepared_request(
@@ -289,15 +259,13 @@ class HttpStream(Stream, ABC):
         data: Optional[Union[str, Mapping[str, Any]]] = None,
     ) -> requests.PreparedRequest:
         url = self._join_url(self.url_base, path)
-        if self.must_deduplicate_query_params():
-            query_params = self.deduplicate_query_params(url, params)
-        else:
-            query_params = params or {}
+        query_params = self.deduplicate_query_params(url, params) if self.must_deduplicate_query_params() else params or {}
         args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
+                msg = "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
                 raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                    msg,
                 )
             elif json:
                 args["json"] = json
@@ -310,9 +278,8 @@ class HttpStream(Stream, ABC):
         return urljoin(url_base, path)
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        """
-        Wraps sending the request in rate limit and error handlers.
-        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False
+        """Wraps sending the request in rate limit and error handlers.
+        Please note that error handling for HTTP status codes will be ignored if raise_on_http_errors is set to False.
 
         This method handles two types of exceptions:
             1. Expected transient exceptions e.g: 429 status code.
@@ -329,7 +296,7 @@ class HttpStream(Stream, ABC):
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
         self.logger.debug(
-            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body},
         )
         response: requests.Response = self._session.send(request, **request_kwargs)
 
@@ -337,14 +304,14 @@ class HttpStream(Stream, ABC):
         # Do it only in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             self.logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text},
             )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
             error_message = self.error_message(response)
             if custom_backoff_time:
                 raise UserDefinedBackoffException(
-                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message,
                 )
             else:
                 raise DefaultBackoffException(request=request, response=response, error_message=error_message)
@@ -358,10 +325,7 @@ class HttpStream(Stream, ABC):
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        """
-        Creates backoff wrappers which are responsible for retry logic
-        """
-
+        """Creates backoff wrappers which are responsible for retry logic."""
         """
         Backoff package has max_tries parameter that means total number of
         tries before giving up, so if this number is 0 no calls expected to be done.
@@ -391,8 +355,7 @@ class HttpStream(Stream, ABC):
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
-        """
-        Parses the raw response object from a failed request into a user-friendly error message.
+        """Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
 
         :param response:
@@ -426,8 +389,7 @@ class HttpStream(Stream, ABC):
             return None
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
+        """Retrieves the user-friendly display message that corresponds to an exception.
         This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
 
         The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
@@ -448,13 +410,13 @@ class HttpStream(Stream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state,
         )
 
     def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData],
         ],
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
@@ -495,23 +457,21 @@ class HttpStream(Stream, ABC):
 
 class HttpSubStream(HttpStream, ABC):
     def __init__(self, parent: HttpStream, **kwargs: Any):
-        """
-        :param parent: should be the instance of HttpStream class
-        """
+        """:param parent: should be the instance of HttpStream class"""
         super().__init__(**kwargs)
         self.parent = parent
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state,
         )
 
         # iterate over all parent stream_slices
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state,
             )
 
             # iterate over all parent records with current stream_slice

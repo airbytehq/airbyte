@@ -17,7 +17,7 @@ SECONDS_IN_DAY = 24 * 60 * 60
 
 
 @pytest.mark.parametrize(
-    "lookback_window_days, current_state, expected, message",
+    ("lookback_window_days", "current_state", "expected", "message"),
     [
         (None, now_dt.timestamp(), now_dt.timestamp(),
          "if lookback_window_days is not set should not affect cursor value"),

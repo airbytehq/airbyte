@@ -8,9 +8,10 @@ import pathlib
 import shutil
 
 import pytest
+from normalization import DestinationType
+
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from integration_tests.utils import generate_dbt_models, run_destination_process, setup_test_dir
-from normalization import DestinationType
 
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
@@ -37,7 +38,7 @@ def before_all_tests(request):
         shutil.rmtree(folder, ignore_errors=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def setup_test_path(request):
     dbt_test_utils.change_current_test_dir(request)
     print(f"Running from: {pathlib.Path().absolute()}")

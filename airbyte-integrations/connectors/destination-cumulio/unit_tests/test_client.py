@@ -82,7 +82,7 @@ def test_batch_write_append_empty_write_buffer(cumulio_client: CumulioClient):
 
 
 def test_batch_write_append_no_existing_dataset(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client.client.get = MagicMock(return_value={"count": 0, "Rows": []})
     cumulio_client._push_batch_to_new_dataset = MagicMock()  # type: ignore
@@ -108,7 +108,7 @@ def test_batch_write_append_no_existing_dataset(
                 "where": {"tag": cumulio_client.TAG_PREFIX + stream_name},
                 "attributes": ["id", "tag"],
                 "jointype": "inner",
-            }
+            },
         ],
     }
 
@@ -117,12 +117,12 @@ def test_batch_write_append_no_existing_dataset(
     cumulio_client._push_batch_to_existing_dataset.assert_not_called()
 
     cumulio_client._push_batch_to_new_dataset.assert_called_once_with(
-        stream_name, dummy_data["data"], dummy_data["columns"]
+        stream_name, dummy_data["data"], dummy_data["columns"],
     )
 
 
 def test_batch_write_existing_dataset_no_first_batch_replace(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client._get_dataset_id_from_stream_name = MagicMock(return_value="dataset_id")  # type: ignore
     cumulio_client._push_batch_to_new_dataset = MagicMock()  # type: ignore
@@ -142,12 +142,12 @@ def test_batch_write_existing_dataset_no_first_batch_replace(
     cumulio_client._push_batch_to_new_dataset.assert_not_called()
     cumulio_client._dataset_contains_replace_tag.assert_called_once_with("dataset_id")
     cumulio_client._push_batch_to_existing_dataset.assert_called_once_with(
-        "dataset_id", dummy_data["data"], dummy_data["columns"], False, True
+        "dataset_id", dummy_data["data"], dummy_data["columns"], False, True,
     )
 
 
 def test_batch_write_existing_dataset_first_batch_replace_overwrite_mode(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client._get_dataset_id_from_stream_name = MagicMock(return_value="dataset_id")  # type: ignore
     cumulio_client._push_batch_to_new_dataset = MagicMock()  # type: ignore
@@ -167,12 +167,12 @@ def test_batch_write_existing_dataset_first_batch_replace_overwrite_mode(
     cumulio_client._push_batch_to_new_dataset.assert_not_called()
     cumulio_client._dataset_contains_replace_tag.assert_called_once_with("dataset_id")
     cumulio_client._push_batch_to_existing_dataset.assert_called_once_with(
-        "dataset_id", dummy_data["data"], dummy_data["columns"], True, True
+        "dataset_id", dummy_data["data"], dummy_data["columns"], True, True,
     )
 
 
 def test_batch_write_existing_dataset_first_batch_replace_tag(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client._get_dataset_id_from_stream_name = MagicMock(return_value="dataset_id")  # type: ignore
     cumulio_client._push_batch_to_new_dataset = MagicMock()  # type: ignore
@@ -192,12 +192,12 @@ def test_batch_write_existing_dataset_first_batch_replace_tag(
     cumulio_client._push_batch_to_new_dataset.assert_not_called()
     cumulio_client._dataset_contains_replace_tag.assert_called_once_with("dataset_id")
     cumulio_client._push_batch_to_existing_dataset.assert_called_once_with(
-        "dataset_id", dummy_data["data"], dummy_data["columns"], True, True
+        "dataset_id", dummy_data["data"], dummy_data["columns"], True, True,
     )
 
 
 def test_batch_write_existing_dataset_non_first_batch(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client._get_dataset_id_from_stream_name = MagicMock(return_value="dataset_id")  # type: ignore
     cumulio_client._push_batch_to_new_dataset = MagicMock()  # type: ignore
@@ -217,7 +217,7 @@ def test_batch_write_existing_dataset_non_first_batch(
     cumulio_client._push_batch_to_new_dataset.assert_not_called()
     cumulio_client._dataset_contains_replace_tag.assert_called_once_with("dataset_id")
     cumulio_client._push_batch_to_existing_dataset.assert_called_once_with(
-        "dataset_id", dummy_data["data"], dummy_data["columns"], False, True
+        "dataset_id", dummy_data["data"], dummy_data["columns"], False, True,
     )
 
 
@@ -225,32 +225,32 @@ def test_batch_write_existing_dataset_non_first_batch(
 
 
 def test_api_token_unknown_combination(cumulio_client: CumulioClient):
-    """ "Test that the test_api_token method correctly throws an error upon an invalid combination"""
+    """ "Test that the test_api_token method correctly throws an error upon an invalid combination."""
     cumulio_client.client.get = MagicMock(return_value={"count": 0})
     with pytest.raises(Exception):
         cumulio_client.test_api_token()
 
 
 def test_api_token_api_call(cumulio_client: CumulioClient):
-    """ "Test that the test_api_token method makes an API request to the authorization endpoint"""
+    """ "Test that the test_api_token method makes an API request to the authorization endpoint."""
     cumulio_client.client.get = MagicMock(return_value={"count": 1})
     cumulio_client.test_api_token()
     cumulio_client.client.get.assert_called_with(
-        "authorization", {"where": {"type": "api"}}
+        "authorization", {"where": {"type": "api"}},
     )
 
 
 def test_test_data_push_method(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
-    """ "Test that the test_data_push method deletes the dataset afterwards"""
+    """ "Test that the test_data_push method deletes the dataset afterwards."""
     cumulio_client.batch_write = MagicMock()  # type: ignore
     cumulio_client.delete_dataset = MagicMock()  # type: ignore
 
     stream_name = "test-stream"
 
     cumulio_client.test_data_push(
-        stream_name, dummy_data["data"], dummy_data["columns"]
+        stream_name, dummy_data["data"], dummy_data["columns"],
     )
 
     cumulio_client.delete_dataset.assert_called_once_with("test-stream")
@@ -267,7 +267,7 @@ def test_delete_dataset_no_dataset_found(cumulio_client: CumulioClient):
 
     # assert that the _get_dataset_id_from_stream_name method was called once with the correct arguments
     cumulio_client._get_dataset_id_from_stream_name.assert_called_once_with(
-        "stream_name"
+        "stream_name",
     )
 
     # assert that the client.delete method is not called as no dataset was found
@@ -277,14 +277,14 @@ def test_delete_dataset_no_dataset_found(cumulio_client: CumulioClient):
 def test_delete_dataset_dataset_found(cumulio_client: CumulioClient):
     cumulio_client.client.delete = MagicMock()
     cumulio_client._get_dataset_id_from_stream_name = MagicMock(  # type: ignore
-        return_value="dataset_id"
+        return_value="dataset_id",
     )  # type: ignore
 
     cumulio_client.delete_dataset("stream_name")
 
     # assert that the _get_dataset_id_from_stream_name method was called once with the correct arguments
     cumulio_client._get_dataset_id_from_stream_name.assert_called_once_with(
-        "stream_name"
+        "stream_name",
     )
 
     # assert that the client.delete method was called once with the correct arguments
@@ -296,7 +296,7 @@ def test_delete_dataset_dataset_found(cumulio_client: CumulioClient):
 
 def test_get_ordered_columns_dataset_not_created(cumulio_client: CumulioClient):
     cumulio_client.get_dataset_and_columns_from_stream_name = MagicMock(  # type: ignore
-        return_value=None
+        return_value=None,
     )
     result = cumulio_client.get_ordered_columns("stream_name")
     assert result == []
@@ -311,7 +311,7 @@ def test_get_ordered_columns_same_order(cumulio_client: CumulioClient):
         ],
     }
     cumulio_client.get_dataset_and_columns_from_stream_name = MagicMock(  # type: ignore
-        return_value=cumulio_dataset_and_columns
+        return_value=cumulio_dataset_and_columns,
     )
     result = cumulio_client.get_ordered_columns("stream_name")
     assert result == ["column2", "column1"]
@@ -321,10 +321,10 @@ def test_get_ordered_columns_same_order(cumulio_client: CumulioClient):
 
 
 def test_push_batch_to_new_dataset(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client.client.create = MagicMock(
-        return_value={"rows": [{"id": "new_dataset_id"}]}
+        return_value={"rows": [{"id": "new_dataset_id"}]},
     )
     cumulio_client._associate_tag_dataset_id = MagicMock()  # type: ignore
 
@@ -340,33 +340,32 @@ def test_push_batch_to_new_dataset(
         },
     }
     cumulio_client._push_batch_to_new_dataset(
-        stream_name, dummy_data["data"], dummy_data["columns"]
+        stream_name, dummy_data["data"], dummy_data["columns"],
     )
     cumulio_client.client.create.assert_called_once_with(
-        "data", expected_request_properties
+        "data", expected_request_properties,
     )
     cumulio_client._associate_tag_dataset_id.assert_called_once_with(
-        stream_name, "new_dataset_id"
+        stream_name, "new_dataset_id",
     )
 
 
 def test_push_batch_to_new_dataset_all_retries_error(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client.client.create = MagicMock(
-        side_effect=RuntimeError("Internal Server Error")
+        side_effect=RuntimeError("Internal Server Error"),
     )
     stream_name = "test_stream"
 
-    with patch("destination_cumulio.client.time", MagicMock()):
-        with pytest.raises(Exception):
-            cumulio_client._push_batch_to_new_dataset(
-                stream_name, dummy_data["data"], dummy_data["columns"]
-            )
+    with patch("destination_cumulio.client.time", MagicMock()), pytest.raises(Exception):
+        cumulio_client._push_batch_to_new_dataset(
+            stream_name, dummy_data["data"], dummy_data["columns"],
+        )
 
 
 def test_push_batch_to_new_dataset_first_try_fails(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     effects = iter([RuntimeError("Internal Server Error")])
 
@@ -393,16 +392,16 @@ def test_push_batch_to_new_dataset_first_try_fails(
 
     with patch("destination_cumulio.client.time", MagicMock()):
         cumulio_client._push_batch_to_new_dataset(
-            stream_name, dummy_data["data"], dummy_data["columns"]
+            stream_name, dummy_data["data"], dummy_data["columns"],
         )
         cumulio_client.client.create.assert_called_with(
-            "data", expected_request_properties
+            "data", expected_request_properties,
         )
 
         assert cumulio_client.client.create.call_count == 2
 
         cumulio_client._associate_tag_dataset_id.assert_called_once_with(
-            stream_name, "new_dataset_id"
+            stream_name, "new_dataset_id",
         )
 
 
@@ -410,24 +409,23 @@ def test_push_batch_to_new_dataset_first_try_fails(
 
 
 def test_push_batch_to_existing_dataset_all_retries_error(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client.client.create = MagicMock(
-        side_effect=RuntimeError("Internal Server Error")
+        side_effect=RuntimeError("Internal Server Error"),
     )
     cumulio_client._remove_replace_tag_dataset_id_association = MagicMock()  # type: ignore
 
     dataset_id = "dataset_id"
 
-    with patch("destination_cumulio.client.time", MagicMock()):
-        with pytest.raises(Exception):
-            cumulio_client._push_batch_to_existing_dataset(
-                dataset_id, dummy_data["data"], dummy_data["columns"], False, True
-            )
+    with patch("destination_cumulio.client.time", MagicMock()), pytest.raises(Exception):
+        cumulio_client._push_batch_to_existing_dataset(
+            dataset_id, dummy_data["data"], dummy_data["columns"], False, True,
+        )
 
 
 def test_push_batch_to_existing_dataset_first_try_fails(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     effects = iter([RuntimeError("Internal Server Error")])
 
@@ -435,7 +433,7 @@ def test_push_batch_to_existing_dataset_first_try_fails(
         try:
             raise next(effects)
         except StopIteration:
-            return None
+            return
 
     cumulio_client.client.create = MagicMock(side_effect=side_effect)
     cumulio_client._remove_replace_tag_dataset_id_association = MagicMock()  # type: ignore
@@ -454,10 +452,10 @@ def test_push_batch_to_existing_dataset_first_try_fails(
 
     with patch("destination_cumulio.client.time", MagicMock()):
         cumulio_client._push_batch_to_existing_dataset(
-            dataset_id, dummy_data["data"], dummy_data["columns"], False, True
+            dataset_id, dummy_data["data"], dummy_data["columns"], False, True,
         )
         cumulio_client.client.create.assert_called_with(
-            "data", expected_request_properties
+            "data", expected_request_properties,
         )
 
         assert cumulio_client.client.create.call_count == 2
@@ -466,7 +464,7 @@ def test_push_batch_to_existing_dataset_first_try_fails(
 
 
 def test_push_batch_to_existing_dataset_no_first_batch_replace(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client.client.create = MagicMock()
     cumulio_client._remove_replace_tag_dataset_id_association = MagicMock()  # type: ignore
@@ -484,16 +482,16 @@ def test_push_batch_to_existing_dataset_no_first_batch_replace(
     }
 
     cumulio_client._push_batch_to_existing_dataset(
-        dataset_id, dummy_data["data"], dummy_data["columns"], False, True
+        dataset_id, dummy_data["data"], dummy_data["columns"], False, True,
     )
     cumulio_client.client.create.assert_called_once_with(
-        "data", expected_request_properties
+        "data", expected_request_properties,
     )
     cumulio_client._remove_replace_tag_dataset_id_association.assert_not_called()
 
 
 def test_push_batch_to_existing_dataset_first_batch_replace(
-    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any]
+    cumulio_client: CumulioClient, dummy_data: Mapping[str, Any],
 ):
     cumulio_client.client.create = MagicMock()
     cumulio_client._remove_replace_tag_dataset_id_association = MagicMock()  # type: ignore
@@ -511,13 +509,13 @@ def test_push_batch_to_existing_dataset_first_batch_replace(
     }
 
     cumulio_client._push_batch_to_existing_dataset(
-        dataset_id, dummy_data["data"], dummy_data["columns"], True, True
+        dataset_id, dummy_data["data"], dummy_data["columns"], True, True,
     )
     cumulio_client.client.create.assert_called_once_with(
-        "data", expected_request_properties
+        "data", expected_request_properties,
     )
     cumulio_client._remove_replace_tag_dataset_id_association.assert_called_once_with(
-        dataset_id
+        dataset_id,
     )
 
 
@@ -531,7 +529,7 @@ def test_get_dataset_and_columns_from_stream_name_no_dataset(
 
     # Test when no dataset is found
     cumulio_client.client.get = MagicMock(
-        return_value=cumulio_dataset_and_columns_result
+        return_value=cumulio_dataset_and_columns_result,
     )
     result = cumulio_client.get_dataset_and_columns_from_stream_name("test_stream")
     assert result is None
@@ -549,12 +547,12 @@ def test_get_dataset_and_columns_from_stream_name_single_existing_dataset(
                     {"source_name": "column1", "order": 2},
                     {"source_name": "column2", "order": 1},
                 ],
-            }
+            },
         ],
     }
     # Test when dataset is found
     cumulio_client.client.get = MagicMock(
-        return_value=cumulio_dataset_and_columns_result
+        return_value=cumulio_dataset_and_columns_result,
     )
     result = cumulio_client.get_dataset_and_columns_from_stream_name("test_stream")
     assert result["id"] == cumulio_dataset_and_columns_result["rows"][0]["id"]
@@ -564,7 +562,7 @@ def test_get_dataset_and_columns_from_stream_name_single_existing_dataset(
 def test_get_dataset_and_columns_from_stream_name_multiple_existing_datasets(
     cumulio_client: CumulioClient,
 ):
-    """Tests whether an exception is thrown when multiple datasets are returned for a stream name"""
+    """Tests whether an exception is thrown when multiple datasets are returned for a stream name."""
     cumulio_dataset_and_columns_result = {
         "count": 2,
         "rows": [
@@ -586,7 +584,7 @@ def test_get_dataset_and_columns_from_stream_name_multiple_existing_datasets(
     }
     # Test when multiple datasets are found
     cumulio_client.client.get = MagicMock(
-        return_value=cumulio_dataset_and_columns_result
+        return_value=cumulio_dataset_and_columns_result,
     )
     with pytest.raises(Exception):
         cumulio_client.get_dataset_and_columns_from_stream_name("test_stream")
@@ -602,24 +600,24 @@ def test_set_replace_tag_on_dataset_no_dataset_found(cumulio_client: CumulioClie
     cumulio_client.set_replace_tag_on_dataset("stream_name")
 
     cumulio_client._get_dataset_id_from_stream_name.assert_called_once_with(
-        "stream_name"
+        "stream_name",
     )
     cumulio_client._associate_tag_dataset_id.assert_not_called()
 
 
 def test_set_replace_tag_on_dataset_existing_dataset(cumulio_client: CumulioClient):
     cumulio_client._get_dataset_id_from_stream_name = MagicMock(  # type: ignore
-        return_value="dataset_id"
+        return_value="dataset_id",
     )
     cumulio_client._associate_tag_dataset_id = MagicMock()  # type: ignore
 
     cumulio_client.set_replace_tag_on_dataset("stream_name")
 
     cumulio_client._get_dataset_id_from_stream_name.assert_called_once_with(
-        "stream_name"
+        "stream_name",
     )
     cumulio_client._associate_tag_dataset_id.assert_called_once_with(
-        cumulio_client.REPLACE_TAG, "dataset_id"
+        cumulio_client.REPLACE_TAG, "dataset_id",
     )
 
 
@@ -659,7 +657,7 @@ def test_get_dataset_id_from_stream_name_single_dataset(cumulio_client: CumulioC
 def test_get_dataset_id_from_stream_name_multiple_datasets(
     cumulio_client: CumulioClient,
 ):
-    """Tests whether an exception is thrown when multiple datasets are returned for a stream name"""
+    """Tests whether an exception is thrown when multiple datasets are returned for a stream name."""
     cumulio_client.client.get.return_value = {
         "count": 2,
         "rows": [
@@ -682,7 +680,7 @@ def test_associate_tag_dataset_id_no_tag_found(cumulio_client: CumulioClient):
     cumulio_client._associate_tag_dataset_id("test_stream", "test_dataset_id")
 
     cumulio_client._create_and_associate_stream_name_tag_with_dataset_id.assert_called_once_with(
-        "test_stream", "test_dataset_id"
+        "test_stream", "test_dataset_id",
     )
     cumulio_client._associate_tag_with_dataset_id.assert_not_called()
 
@@ -695,7 +693,7 @@ def test_associate_tag_dataset_id_tag_found(cumulio_client: CumulioClient):
     cumulio_client._associate_tag_dataset_id("test_stream", "test_dataset_id")
 
     cumulio_client._associate_tag_with_dataset_id.assert_called_once_with(
-        "tag_id", "test_dataset_id"
+        "tag_id", "test_dataset_id",
     )
     cumulio_client._create_and_associate_stream_name_tag_with_dataset_id.assert_not_called()
 

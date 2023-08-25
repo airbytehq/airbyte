@@ -12,6 +12,7 @@ import subprocess
 from typing import Any, Dict
 
 import yaml
+
 from normalization.destination_type import DestinationType
 
 
@@ -30,7 +31,7 @@ class TransformConfig:
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument("--config", type=str, required=True, help="path to original config")
         parser.add_argument(
-            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration"
+            "--integration-type", type=DestinationType, choices=list(DestinationType), required=True, help="type of integration",
         )
         parser.add_argument("--out", type=str, required=True, help="path to output transformed config to")
 
@@ -46,7 +47,8 @@ class TransformConfig:
     def transform(self, integration_type: DestinationType, config: Dict[str, Any]):
         data = pkgutil.get_data(self.__class__.__module__.split(".")[0], "transform_config/profile_base.yml")
         if not data:
-            raise FileExistsError("Failed to load profile_base.yml")
+            msg = "Failed to load profile_base.yml"
+            raise FileExistsError(msg)
         base_profile = yaml.load(data, Loader=yaml.FullLoader)
 
         transformed_integration_config = {
@@ -77,14 +79,7 @@ class TransformConfig:
     @staticmethod
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
         tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
-        if (
-            "tunnel_method" in config.keys()
-            and "tunnel_method" in config["tunnel_method"]
-            and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
-        ):
-            return True
-        else:
-            return False
+        return bool("tunnel_method" in config and "tunnel_method" in config["tunnel_method"] and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods)
 
     @staticmethod
     def is_port_free(port: int) -> bool:
@@ -100,25 +95,23 @@ class TransformConfig:
 
     @staticmethod
     def pick_a_port() -> int:
-        """
-        This function finds a free port, starting with 50001 and adding 1 until we find an open port.
-        """
+        """This function finds a free port, starting with 50001 and adding 1 until we find an open port."""
         port_to_check = 50001  # just past start of dynamic port range (49152:65535)
         while not TransformConfig.is_port_free(port_to_check):
             port_to_check += 1
             # error if we somehow hit end of port range
             if port_to_check > 65535:
-                raise RuntimeError("Couldn't find a free port to use.")
+                msg = "Couldn't find a free port to use."
+                raise RuntimeError(msg)
         return port_to_check
 
     @staticmethod
     def get_ssh_altered_config(config: Dict[str, Any], port_key: str = "port", host_key: str = "host") -> Dict[str, Any]:
-        """
-        This should be called only if ssh tunneling is on.
-        It will return config with appropriately altered port and host values
+        """This should be called only if ssh tunneling is on.
+        It will return config with appropriately altered port and host values.
         """
         # make a copy of config rather than mutate in place
-        ssh_ready_config = {k: v for k, v in config.items()}
+        ssh_ready_config = dict(config.items())
         ssh_ready_config[port_key] = TransformConfig.pick_a_port()
         ssh_ready_config[host_key] = "localhost"
         return ssh_ready_config
@@ -134,11 +127,13 @@ class TransformConfig:
         if ":" in config["dataset_id"]:
             splits = config["dataset_id"].split(":")
             if len(splits) > 2:
-                raise ValueError("Invalid format for dataset ID (expected at most one colon)")
+                msg = "Invalid format for dataset ID (expected at most one colon)"
+                raise ValueError(msg)
             project_id, dataset_id = splits
             if project_id != config["project_id"]:
+                msg = f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}"
                 raise ValueError(
-                    f"Project ID in dataset ID did not match explicitly-provided project ID: {project_id} and {config['project_id']}"
+                    msg,
                 )
 
         dbt_config = {
@@ -197,7 +192,7 @@ class TransformConfig:
     def transform_redshift(config: Dict[str, Any]):
         print("transform_redshift")
         # https://docs.getdbt.com/reference/warehouse-profiles/redshift-profile
-        dbt_config = {
+        return {
             "type": "redshift",
             "host": config["host"],
             "user": config["username"],
@@ -207,7 +202,6 @@ class TransformConfig:
             "schema": config["schema"],
             "threads": 4,
         }
-        return dbt_config
 
     @staticmethod
     def transform_snowflake(config: Dict[str, Any]):
@@ -259,7 +253,7 @@ class TransformConfig:
             config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
 
         # https://github.com/dbeatty10/dbt-mysql#configuring-your-profile
-        dbt_config = {
+        return {
             # MySQL 8.x - type: mysql
             # MySQL 5.x - type: mysql5
             "type": config.get("type", "mysql"),
@@ -271,13 +265,12 @@ class TransformConfig:
             "username": config["username"],
             "password": config.get("password", ""),
         }
-        return dbt_config
 
     @staticmethod
     def transform_oracle(config: Dict[str, Any]):
         print("transform_oracle")
         # https://github.com/techindicium/dbt-oracle#configure-your-profile
-        dbt_config = {
+        return {
             "type": "oracle",
             "host": config["host"],
             "user": config["username"],
@@ -287,7 +280,6 @@ class TransformConfig:
             "schema": config["schema"],
             "threads": 4,
         }
-        return dbt_config
 
     @staticmethod
     def transform_mssql(config: Dict[str, Any]):
@@ -298,7 +290,7 @@ class TransformConfig:
             config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
             config["host"] = "127.0.0.1"  # localhost is not supported by dbt-sqlserver.
 
-        dbt_config = {
+        return {
             "type": "sqlserver",
             "driver": "ODBC Driver 17 for SQL Server",
             "server": config["host"],
@@ -308,10 +300,7 @@ class TransformConfig:
             "user": config["username"],
             "password": config["password"],
             "threads": 8,
-            # "authentication": "sql",
-            # "trusted_connection": True,
         }
-        return dbt_config
 
     @staticmethod
     def transform_clickhouse(config: Dict[str, Any]):
@@ -339,7 +328,7 @@ class TransformConfig:
     def transform_tidb(config: Dict[str, Any]):
         print("transform_tidb")
         # https://github.com/pingcap/dbt-tidb#profile-configuration
-        dbt_config = {
+        return {
             "type": "tidb",
             "server": config["host"],
             "port": config["port"],
@@ -348,21 +337,19 @@ class TransformConfig:
             "username": config["username"],
             "password": config.get("password", ""),
         }
-        return dbt_config
 
     @staticmethod
     def transform_duckdb(config: Dict[str, Any]):
         print("transform_duckdb")
-        dbt_config = {
+        return {
             "type": "duckdb",
             "path": config["destination_path"],
             "schema": config["schema"] if "schema" in config else "main",
         }
-        return dbt_config
 
     @staticmethod
     def read_json_config(input_path: str):
-        with open(input_path, "r") as file:
+        with open(input_path) as file:
             contents = file.read()
         return json.loads(contents)
 
@@ -375,8 +362,7 @@ class TransformConfig:
 
     @staticmethod
     def write_ssh_config(output_path: str, original_config: Dict[str, Any], transformed_config: Dict[str, Any]):
-        """
-        This function writes a json file with config specific to ssh.
+        """This function writes a json file with config specific to ssh.
         We do this because we need these details to open the ssh tunnel for dbt.
         """
         ssh_dict = {

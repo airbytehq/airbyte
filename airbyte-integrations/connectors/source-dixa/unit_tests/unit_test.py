@@ -11,7 +11,7 @@ from source_dixa.source import ConversationExport
 config = {"authenticator": "", "start_date": "2021-07-01", "api_token": "TOKEN", "batch_size": 1}
 
 
-@pytest.fixture
+@pytest.fixture()
 def conversation_export():
     return ConversationExport(config)
 
@@ -32,14 +32,14 @@ def test_validate_ms_timestamp_with_invalid_input_length():
 
 def test_ms_timestamp_to_datetime():
     assert utils.ms_timestamp_to_datetime(1625312980123) == datetime(
-        year=2021, month=7, day=3, hour=11, minute=49, second=40, microsecond=123000, tzinfo=timezone.utc
+        year=2021, month=7, day=3, hour=11, minute=49, second=40, microsecond=123000, tzinfo=timezone.utc,
     )
 
 
 def test_datetime_to_ms_timestamp():
     assert (
         utils.datetime_to_ms_timestamp(
-            datetime(year=2021, month=7, day=3, hour=11, minute=49, second=40, microsecond=123000, tzinfo=timezone.utc)
+            datetime(year=2021, month=7, day=3, hour=11, minute=49, second=40, microsecond=123000, tzinfo=timezone.utc),
         )
         == 1625312980123
     )
@@ -53,8 +53,8 @@ def test_stream_slices_without_state(conversation_export):
     conversation_export.end_timestamp = 1625259600000  # 2021-07-03 00:00:00 + 1 ms
 
     expected_slices = [
-        {'updated_after': 1625097600000, 'updated_before': 1625184000000},
-        {'updated_after': 1625184000000, 'updated_before': 1625259600000},
+        {"updated_after": 1625097600000, "updated_before": 1625184000000},
+        {"updated_after": 1625184000000, "updated_before": 1625259600000},
     ]
 
     actual_slices = conversation_export.stream_slices()
@@ -104,7 +104,7 @@ def test_get_updated_state_without_state(conversation_export):
 def test_get_updated_state_with_bigger_state(conversation_export):
     expected = {"updated_at": 1625263200000}
     actual = conversation_export.get_updated_state(
-        current_stream_state={"updated_at": 1625263200000}, latest_record={"updated_at": 1625220000000}
+        current_stream_state={"updated_at": 1625263200000}, latest_record={"updated_at": 1625220000000},
     )
     assert actual == expected
 
@@ -112,6 +112,6 @@ def test_get_updated_state_with_bigger_state(conversation_export):
 def test_get_updated_state_with_smaller_state(conversation_export):
     expected = {"updated_at": 1625263200000}
     actual = conversation_export.get_updated_state(
-        current_stream_state={"updated_at": 1625220000000}, latest_record={"updated_at": 1625263200000}
+        current_stream_state={"updated_at": 1625220000000}, latest_record={"updated_at": 1625263200000},
     )
     assert actual == expected

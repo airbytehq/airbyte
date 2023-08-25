@@ -2,11 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import contextlib
 import json
 from logging import getLogger
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_typesense.destination import DestinationTypesense, get_client
+from typesense import Client
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,13 +23,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_typesense.destination import DestinationTypesense, get_client
-from typesense import Client
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -46,10 +48,9 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 def teardown(config: Mapping):
     yield
     client = get_client(config=config)
-    try:
+    with contextlib.suppress(Exception):
         client.collections["_airbyte"].delete()
-    except Exception:
-        pass
+
 
 
 @pytest.fixture(name="client")
@@ -75,7 +76,7 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0),
     )
 
 

@@ -10,4 +10,4 @@ def test():
 
     stream_slices = iterator.stream_slices()
     next_slice = next(stream_slices)
-    assert next_slice == dict()
+    assert next_slice == {}

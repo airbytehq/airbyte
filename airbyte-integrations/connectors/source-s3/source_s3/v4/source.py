@@ -11,8 +11,7 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 
 class SourceS3(FileBasedSource):
     def read_config(self, config_path: str) -> Mapping[str, Any]:
-        """
-        Used to override the default read_config so that when the new file-based S3 connector processes a config
+        """Used to override the default read_config so that when the new file-based S3 connector processes a config
         in the legacy format, it can be transformed into the new config. This happens in entrypoint before we
         validate the config against the new spec.
         """

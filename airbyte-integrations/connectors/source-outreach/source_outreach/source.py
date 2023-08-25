@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 from urllib import parse
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -27,15 +28,14 @@ class OutreachStream(HttpStream, ABC):
     def __init__(
         self,
         authenticator: HttpAuthenticator,
-        start_date: str = None,
+        start_date: Optional[str] = None,
         **kwargs,
     ):
         self.start_date = start_date
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Returns the token for the next page as per https://api.outreach.io/api/v2/docs#pagination.
+        """Returns the token for the next page as per https://api.outreach.io/api/v2/docs#pagination.
         It uses cursor-based pagination, by sending the 'page[size]' and 'page[after]' parameters.
         """
         try:
@@ -45,10 +45,11 @@ class OutreachStream(HttpStream, ABC):
                 return {}
             return {"after": params["page[after]"][0]}
         except Exception as e:
-            raise KeyError(f"error parsing next_page token: {e}")
+            msg = f"error parsing next_page token: {e}"
+            raise KeyError(msg)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page[size]": self.page_size, "count": "false", "sort": "updatedAt"}
         if next_page_token and "after" in next_page_token:
@@ -60,7 +61,7 @@ class OutreachStream(HttpStream, ABC):
         if not data:
             return
         for element in data:
-            relationships: Dict[str, List[int]] = dict()
+            relationships: Dict[str, List[int]] = {}
             for r_type, relations in element.get("relationships").items():
                 relationships[f"{r_type}"] = []
                 if relations.get("data"):  # Manage None and pass empty data. Some relationships only have links we do not handle these.
@@ -90,7 +91,7 @@ class IncrementalOutreachStream(OutreachStream, ABC):
         return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if self.cursor_field in stream_state:
@@ -99,9 +100,8 @@ class IncrementalOutreachStream(OutreachStream, ABC):
 
 
 class Prospects(IncrementalOutreachStream):
-    """
-    Prospect stream. Yields data from the GET /prospects endpoint.
-    See https://api.outreach.io/api/v2/docs#prospect
+    """Prospect stream. Yields data from the GET /prospects endpoint.
+    See https://api.outreach.io/api/v2/docs#prospect.
     """
 
     def path(self, **kwargs) -> str:
@@ -109,9 +109,8 @@ class Prospects(IncrementalOutreachStream):
 
 
 class Sequences(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /sequences endpoint.
-    See https://api.outreach.io/api/v2/docs#sequence
+    """Sequence stream. Yields data from the GET /sequences endpoint.
+    See https://api.outreach.io/api/v2/docs#sequence.
     """
 
     def path(self, **kwargs) -> str:
@@ -119,9 +118,8 @@ class Sequences(IncrementalOutreachStream):
 
 
 class SequenceStates(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /sequenceStates endpoint.
-    See https://api.outreach.io/api/v2/docs#sequenceState
+    """Sequence stream. Yields data from the GET /sequenceStates endpoint.
+    See https://api.outreach.io/api/v2/docs#sequenceState.
     """
 
     def path(self, **kwargs) -> str:
@@ -129,9 +127,8 @@ class SequenceStates(IncrementalOutreachStream):
 
 
 class SequenceSteps(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /sequenceSteps endpoint.
-    See https://api.outreach.io/api/v2/docs#sequenceStep
+    """Sequence stream. Yields data from the GET /sequenceSteps endpoint.
+    See https://api.outreach.io/api/v2/docs#sequenceStep.
     """
 
     def path(self, **kwargs) -> str:
@@ -139,9 +136,8 @@ class SequenceSteps(IncrementalOutreachStream):
 
 
 class Accounts(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /accounts endpoint.
-    See https://api.outreach.io/api/v2/docs#account
+    """Sequence stream. Yields data from the GET /accounts endpoint.
+    See https://api.outreach.io/api/v2/docs#account.
     """
 
     def path(self, **kwargs) -> str:
@@ -149,9 +145,8 @@ class Accounts(IncrementalOutreachStream):
 
 
 class Opportunities(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /opportunities endpoint.
-    See https://api.outreach.io/api/v2/docs#opportunity
+    """Sequence stream. Yields data from the GET /opportunities endpoint.
+    See https://api.outreach.io/api/v2/docs#opportunity.
     """
 
     def path(self, **kwargs) -> str:
@@ -159,9 +154,8 @@ class Opportunities(IncrementalOutreachStream):
 
 
 class Personas(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /personas endpoint.
-    See https://api.outreach.io/api/v2/docs#persona
+    """Sequence stream. Yields data from the GET /personas endpoint.
+    See https://api.outreach.io/api/v2/docs#persona.
     """
 
     def path(self, **kwargs) -> str:
@@ -169,9 +163,8 @@ class Personas(IncrementalOutreachStream):
 
 
 class Mailings(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /mailings endpoint.
-    See https://api.outreach.io/api/v2/docs#mailing
+    """Sequence stream. Yields data from the GET /mailings endpoint.
+    See https://api.outreach.io/api/v2/docs#mailing.
     """
 
     def path(self, **kwargs) -> str:
@@ -179,9 +172,8 @@ class Mailings(IncrementalOutreachStream):
 
 
 class Mailboxes(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /mailboxes endpoint.
-    See https://api.outreach.io/api/v2/docs#mailbox
+    """Sequence stream. Yields data from the GET /mailboxes endpoint.
+    See https://api.outreach.io/api/v2/docs#mailbox.
     """
 
     def path(self, **kwargs) -> str:
@@ -189,9 +181,8 @@ class Mailboxes(IncrementalOutreachStream):
 
 
 class Stages(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /stages endpoint.
-    See https://api.outreach.io/api/v2/docs#stage
+    """Sequence stream. Yields data from the GET /stages endpoint.
+    See https://api.outreach.io/api/v2/docs#stage.
     """
 
     def path(self, **kwargs) -> str:
@@ -199,9 +190,8 @@ class Stages(IncrementalOutreachStream):
 
 
 class Calls(IncrementalOutreachStream):
-    """
-    Sequence stream. Yields data from the GET /calls endpoint.
-    See https://api.outreach.io/api/v2/docs#call
+    """Sequence stream. Yields data from the GET /calls endpoint.
+    See https://api.outreach.io/api/v2/docs#call.
     """
 
     def path(self, **kwargs) -> str:
@@ -209,9 +199,8 @@ class Calls(IncrementalOutreachStream):
 
 
 class Users(IncrementalOutreachStream):
-    """
-    Users stream. Yields data from the GET /users endpoint.
-    See https://api.outreach.io/api/v2/docs#user
+    """Users stream. Yields data from the GET /users endpoint.
+    See https://api.outreach.io/api/v2/docs#user.
     """
 
     def path(self, **kwargs) -> str:
@@ -219,9 +208,8 @@ class Users(IncrementalOutreachStream):
 
 
 class Tasks(IncrementalOutreachStream):
-    """
-    Tasks stream. Yields data from the GET /tasts endpoint.
-    See https://api.outreach.io/api/v2/docs#task
+    """Tasks stream. Yields data from the GET /tasts endpoint.
+    See https://api.outreach.io/api/v2/docs#task.
     """
 
     def path(self, **kwargs) -> str:
@@ -229,9 +217,8 @@ class Tasks(IncrementalOutreachStream):
 
 
 class Templates(IncrementalOutreachStream):
-    """
-    Templates stream. Yields data from the GET /templates endpoint.
-    See https://api.outreach.io/api/v2/docs#template
+    """Templates stream. Yields data from the GET /templates endpoint.
+    See https://api.outreach.io/api/v2/docs#template.
     """
 
     def path(self, **kwargs) -> str:
@@ -239,9 +226,8 @@ class Templates(IncrementalOutreachStream):
 
 
 class Snippets(IncrementalOutreachStream):
-    """
-    Snippets stream. Yields data from the GET /snippets endpoint.
-    See https://api.outreach.io/api/v2/docs#snippet
+    """Snippets stream. Yields data from the GET /snippets endpoint.
+    See https://api.outreach.io/api/v2/docs#snippet.
     """
 
     def path(self, **kwargs) -> str:
@@ -251,7 +237,7 @@ class Snippets(IncrementalOutreachStream):
 class OutreachAuthenticator(Oauth2Authenticator):
     def __init__(self, redirect_uri: str, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str):
         super().__init__(
-            token_refresh_endpoint=token_refresh_endpoint, client_id=client_id, client_secret=client_secret, refresh_token=refresh_token
+            token_refresh_endpoint=token_refresh_endpoint, client_id=client_id, client_secret=client_secret, refresh_token=refresh_token,
         )
         self.redirect_uri = redirect_uri
 

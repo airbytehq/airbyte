@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import pytest
 from common_utils import Logger
 
-LOG_RE = re.compile(r"^\[(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\] -" r"\s+(\w+)\s+- \[.*tests/test_logger.py:(\d+)\] # (.+)")
+LOG_RE = re.compile(r"^\[(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\] -\s+(\w+)\s+- \[.*tests/test_logger.py:(\d+)\] # (.+)")
 LOGGER = Logger()
 TEST_MESSAGE = "sbhY=)9'v-}LT=)jjF66(XrZh=]>7Xp\"?/zCz,=eu8K47u8"
 
@@ -28,7 +28,7 @@ def check_output(msg: str, expected_line_number: int, expected_log_level: str):
 
 
 @pytest.mark.parametrize(
-    "log_func,expected_log_level,expected_code",
+    ("log_func", "expected_log_level", "expected_code"),
     ((LOGGER.debug, "DEBUG", 0), (LOGGER.warning, "WARNING", 0), (LOGGER.info, "INFO", 0), (LOGGER.error, "ERROR", 1)),
 )
 def test_log_message(capfd, log_func, expected_log_level, expected_code):

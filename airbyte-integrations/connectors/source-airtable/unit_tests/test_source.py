@@ -7,8 +7,9 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
 from source_airtable.source import SourceAirtable
+
+from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
 
 
 def test_spec(config):
@@ -19,12 +20,12 @@ def test_spec(config):
 
 
 @pytest.mark.parametrize(
-    "status, check_passed",
+    ("status", "check_passed"),
     [
         (200, (True, None)),
-        (401, (False, '401 Client Error: None for url: https://api.airtable.com/v0/meta/bases')),
+        (401, (False, "401 Client Error: None for url: https://api.airtable.com/v0/meta/bases")),
     ],
-    ids=["success", "fail"]
+    ids=["success", "fail"],
 )
 def test_check_connection(config, status, check_passed, fake_bases_response, fake_tables_response, requests_mock):
     source = SourceAirtable()

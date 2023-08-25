@@ -7,11 +7,12 @@ from enum import Enum
 from typing import Any, Dict
 
 import jsonschema
-from airbyte_protocol.models import ConnectorSpecification
-from connector_acceptance_test.utils import SecretDict
 from deepdiff import DeepDiff
 from hypothesis import HealthCheck, Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
+
+from airbyte_protocol.models import ConnectorSpecification
+from connector_acceptance_test.utils import SecretDict
 
 
 class BackwardIncompatibilityContext(Enum):
@@ -25,7 +26,7 @@ class NonBackwardCompatibleError(Exception):
         self.context = context
         super().__init__(error_message)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.context} - {self.error_message}"
 
 
@@ -36,7 +37,8 @@ class BaseDiffChecker(ABC):
         self.compute_diffs()
 
     def _raise_error(self, message: str, diff: DeepDiff):
-        raise NonBackwardCompatibleError(f"{message}. Diff: {diff.pretty()}", self.context)
+        msg = f"{message}. Diff: {diff.pretty()}"
+        raise NonBackwardCompatibleError(msg, self.context)
 
     @property
     @abstractmethod
@@ -52,7 +54,7 @@ class BaseDiffChecker(ABC):
         pass
 
     def check_if_value_of_type_field_changed(self, diff: DeepDiff):
-        """Check if a type was changed on a property"""
+        """Check if a type was changed on a property."""
         # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
         changes_on_property_type = [
             change for change in diff.get("values_changed", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
@@ -61,7 +63,7 @@ class BaseDiffChecker(ABC):
             self._raise_error("The'type' field value was changed.", diff)
 
     def check_if_new_type_was_added(self, diff: DeepDiff):  # pragma: no cover
-        """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])"""
+        """Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"])."""
         new_values_in_type_list = [
             change
             for change in diff.get("iterable_item_added", [])
@@ -72,8 +74,7 @@ class BaseDiffChecker(ABC):
             self._raise_error("A new value was added to a 'type' field")
 
     def check_if_type_of_type_field_changed(self, diff: DeepDiff, allow_type_widening: bool = False):
-        """
-        Detect the change of type of a type field on a property
+        """Detect the change of type of a type field on a property
         e.g:
         - "str" -> ["str"] VALID
         - "str" -> ["str", "null"] VALID
@@ -81,7 +82,7 @@ class BaseDiffChecker(ABC):
         - "str" -> 1 INVALID
         - ["str"] -> "str" VALID
         - ["str"] -> "int" INVALID
-        - ["str"] -> 1 INVALID
+        - ["str"] -> 1 INVALID.
         """
         type_changes = [
             change for change in diff.get("type_changes", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
@@ -114,7 +115,7 @@ class BaseDiffChecker(ABC):
 
 
 class SpecDiffChecker(BaseDiffChecker):
-    """A class to perform backward compatibility checks on a connector specification diff"""
+    """A class to perform backward compatibility checks on a connector specification diff."""
 
     context = BackwardIncompatibilityContext.SPEC
 
@@ -145,7 +146,7 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("A new 'required' field was declared.", diff)
 
     def check_if_added_a_new_required_property(self, diff: DeepDiff):
-        """Check if the new spec added a property to the 'required' list"""
+        """Check if the new spec added a property to the 'required' list."""
         added_required_properties = [
             addition for addition in diff.get("iterable_item_added", []) if addition.up.path(output_format="list")[-1] == "required"
         ]
@@ -153,7 +154,7 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("A new property was added to 'required'", diff)
 
     def check_if_field_was_made_not_nullable(self, diff: DeepDiff):
-        """Detect when field was made not nullable but is still a list: e.g ["string", "null"] -> ["string"]"""
+        """Detect when field was made not nullable but is still a list: e.g ["string", "null"] -> ["string"]."""
         removed_nullable = [
             change for change in diff.get("iterable_item_removed", []) if {"properties", "type"}.issubset(change.path(output_format="list"))
         ]
@@ -182,8 +183,7 @@ class SpecDiffChecker(BaseDiffChecker):
 
 
 def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    This function traverses a JSON schema and removes the 'format' field for properties
+    """This function traverses a JSON schema and removes the 'format' field for properties
     that are of 'date-time' format and have a 'pattern' field.
 
     The 'pattern' is often more restrictive than the 'date-time' format, and Hypothesis can't natively generate
@@ -203,7 +203,7 @@ def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
                         for properties that have a 'pattern'.
     """
     if isinstance(schema, dict):
-        for key, value in schema.items():
+        for value in schema.values():
             if isinstance(value, dict):
                 if value.get("format") == "date-time" and "pattern" in value:
                     del value["format"]
@@ -212,11 +212,12 @@ def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def validate_previous_configs(
-    previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100
+    previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100,
 ):
     """Use hypothesis and hypothesis-jsonschema to run property based testing:
     1. Generate fake previous config with the previous connector specification json schema.
-    2. Validate a fake previous config against the actual connector specification json schema."""
+    2. Validate a fake previous config against the actual connector specification json schema.
+    """
     prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
 
     @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))
@@ -238,7 +239,7 @@ def validate_previous_configs(
 
 
 class CatalogDiffChecker(BaseDiffChecker):
-    """A class to perform backward compatibility checks on a discoverd catalog diff"""
+    """A class to perform backward compatibility checks on a discoverd catalog diff."""
 
     context = BackwardIncompatibilityContext.DISCOVER
 
@@ -285,5 +286,5 @@ class CatalogDiffChecker(BaseDiffChecker):
     def check_if_cursor_field_was_changed(self, diff: DeepDiff):
         """Check if a default cursor field value was changed."""
         invalid_changes = {"values_changed", "iterable_item_added", "iterable_item_removed"}
-        if any([change in invalid_changes for change in diff.keys()]):
+        if any(change in invalid_changes for change in diff):
             self._raise_error("The value of 'default_cursor_field' was changed", diff)

@@ -22,10 +22,7 @@ def new_gcs_blobs_sensor(
     interval,
     resources_def,
 ) -> SensorDefinition:
-    """
-    This sensor is responsible for polling a list of gcs blobs and triggering a job when the list changes.
-    """
-
+    """This sensor is responsible for polling a list of gcs blobs and triggering a job when the list changes."""
     sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
 
     @sensor(
@@ -66,9 +63,7 @@ def new_gcs_blobs_partition_sensor(
     resources_def,
     partitions_def,
 ) -> SensorDefinition:
-    """
-    This sensor is responsible for polling a list of gcs blobs and triggering a partitioned job when the list changes.
-    """
+    """This sensor is responsible for polling a list of gcs blobs and triggering a partitioned job when the list changes."""
     MAX_RUN_REQUEST = 30
     sensor_name = f"{job.name}_on_new_{gcs_blobs_resource_key}"
 

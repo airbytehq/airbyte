@@ -4,15 +4,18 @@
 
 
 import tracemalloc
+from typing import TYPE_CHECKING
 
 import pytest
 import requests_mock
 from conftest import generate_stream
-from source_salesforce.streams import BulkIncrementalSalesforceStream
+
+if TYPE_CHECKING:
+    from source_salesforce.streams import BulkIncrementalSalesforceStream
 
 
 @pytest.mark.parametrize(
-    "n_records, first_size, first_peak",
+    ("n_records", "first_size", "first_peak"),
     (
         (1000, 0.4, 1),
         (10000, 1, 2),
@@ -37,7 +40,7 @@ def test_memory_download_data(stream_config, stream_api, n_records, first_size, 
         m.register_uri("GET", job_full_url_results, content=content)
         tracemalloc.start()
         tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
-        for x in stream.read_with_chunks(tmp_file, response_encoding):
+        for _x in stream.read_with_chunks(tmp_file, response_encoding):
             pass
         fs, fp = tracemalloc.get_traced_memory()
         first_size_in_mb, first_peak_in_mb = fs / 1024**2, fp / 1024**2

@@ -4,30 +4,31 @@
 
 import pendulum
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
-from airbyte_cdk.sources.streams.http import HttpStream
 from source_zendesk_talk import SourceZendeskTalk
 
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.sources.streams.http import HttpStream
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_base_class_oauth20(mocker):
     return {
         "config": {
             "credentials": {"auth_type": "oauth2.0", "access_token": "accesstoken"},
             "subdomain": "airbyte-subdomain",
             "start_date": "2021-04-01T00:00:00Z",
-        }
+        },
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class_api_token(mocker):
     return {
         "config": {
             "credentials": {"auth_type": "api_token", "api_token": "accesstoken", "email": "email@example.com"},
             "subdomain": "airbyte-subdomain",
             "start_date": "2021-04-01T00:00:00Z",
-        }
+        },
     }
 
 

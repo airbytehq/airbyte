@@ -21,8 +21,7 @@ def sandbox_api_endpoint():
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
+    return mocker.patch("time.sleep", lambda x: None)
 
 
 @pytest.fixture(autouse=True)
@@ -35,9 +34,7 @@ def transactions(request):
 
 @pytest.fixture()
 def prod_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
+    """Credentials for oauth2.0 authorization."""
     return {
         "client_id": "some_client_id",
         "client_secret": "some_secret",
@@ -49,9 +46,7 @@ def prod_config():
 
 @pytest.fixture()
 def sandbox_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
+    """Credentials for oauth2.0 authorization."""
     return {
         "client_id": "some_client_id",
         "client_secret": "some_secret",
@@ -63,9 +58,7 @@ def sandbox_config():
 
 @pytest.fixture()
 def new_prod_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
+    """Credentials for oauth2.0 authorization."""
     return {
         "credentials": {
             "auth_type": "oauth2.0",
@@ -81,9 +74,7 @@ def new_prod_config():
 
 @pytest.fixture()
 def error_while_refreshing_access_token():
-    """
-    Error raised when using incorrect access token
-    """
+    """Error raised when using incorrect access token."""
     return "Error while refreshing access token: 'access_token'"
 
 

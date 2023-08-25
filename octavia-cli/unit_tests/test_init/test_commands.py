@@ -11,16 +11,16 @@ from octavia_cli.init.commands import create_api_headers_configuration_file
 
 
 def test_directories_to_create():
-    assert commands.DIRECTORIES_TO_CREATE == {"connections", "destinations", "sources"}
+    assert {"connections", "destinations", "sources"} == commands.DIRECTORIES_TO_CREATE
 
 
-@pytest.fixture
+@pytest.fixture()
 def context_object(mock_telemetry_client):
     return {"TELEMETRY_CLIENT": mock_telemetry_client}
 
 
 @pytest.mark.parametrize(
-    "directories_to_create,mkdir_side_effects,expected_created_directories,expected_not_created_directories",
+    ("directories_to_create", "mkdir_side_effects", "expected_created_directories", "expected_not_created_directories"),
     [
         (["dir_a", "dir_b"], None, ["dir_a", "dir_b"], []),
         (["dir_a", "dir_b"], FileExistsError(), [], ["dir_a", "dir_b"]),
@@ -28,7 +28,7 @@ def context_object(mock_telemetry_client):
     ],
 )
 def test_create_directories(
-    mocker, directories_to_create, mkdir_side_effects, expected_created_directories, expected_not_created_directories
+    mocker, directories_to_create, mkdir_side_effects, expected_created_directories, expected_not_created_directories,
 ):
     mocker.patch.object(commands, "os", mocker.Mock(mkdir=mocker.Mock(side_effect=mkdir_side_effects)))
     created_directories, not_created_directories = commands.create_directories(directories_to_create)

@@ -7,6 +7,7 @@ from functools import wraps
 from time import sleep
 
 import requests
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -15,8 +16,7 @@ from airbyte_cdk.sources.streams import Stream
 class TrelloRequestRateLimits:
     @staticmethod
     def balance_rate_limit(threshold: float = 0.5, rate_limits_headers=None):
-        """
-        To avoid reaching Trello API Rate Limits, use the rate limits header value,
+        """To avoid reaching Trello API Rate Limits, use the rate limits header value,
         to determine the current rate limits and load and handle sleep time based on load %.
         Recommended sleep time between each request is 9 sec.
         Header example:
@@ -28,9 +28,8 @@ class TrelloRequestRateLimits:
             x-rate-limit-api-key-max: 300
             x-rate-limit-api-key-remaining: 100
         }
-        More information: https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/
+        More information: https://developer.atlassian.com/cloud/trello/guides/rest-api/rate-limits/.
         """
-
         # Define standard timings in seconds
         if rate_limits_headers is None:
             rate_limits_headers = [

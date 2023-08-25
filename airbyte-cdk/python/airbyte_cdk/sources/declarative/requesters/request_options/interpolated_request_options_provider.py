@@ -18,8 +18,7 @@ RequestInput = Union[str, Mapping[str, str]]
 
 @dataclass
 class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
-    """
-    Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
+    """Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s.
 
     Attributes:
         config (Config): The user-provided configuration as specified by the source's spec
@@ -47,19 +46,20 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
             self.request_body_json = {}
 
         if self.request_body_json and self.request_body_data:
-            raise ValueError("RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both")
+            msg = "RequestOptionsProvider should only contain either 'request_body_data' or 'request_body_json' not both"
+            raise ValueError(msg)
 
         self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters
+            config=self.config, request_inputs=self.request_parameters, parameters=parameters,
         )
         self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters
+            config=self.config, request_inputs=self.request_headers, parameters=parameters,
         )
         self._body_data_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_data, parameters=parameters
+            config=self.config, request_inputs=self.request_body_data, parameters=parameters,
         )
         self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters
+            config=self.config, request_inputs=self.request_body_json, parameters=parameters,
         )
 
     def get_request_params(

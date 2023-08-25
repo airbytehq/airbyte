@@ -10,10 +10,11 @@ import shutil
 from typing import Any, Dict
 
 import pytest
-from integration_tests.dbt_integration_test import DbtIntegrationTest
-from integration_tests.utils import setup_test_dir
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import TransformCatalog
+
+from integration_tests.dbt_integration_test import DbtIntegrationTest
+from integration_tests.utils import setup_test_dir
 
 temporary_folders = set()
 dbt_test_utils = DbtIntegrationTest()
@@ -41,7 +42,7 @@ def before_all_tests(request):
         shutil.rmtree(folder, ignore_errors=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def setup_test_path(request):
     dbt_test_utils.change_current_test_dir(request)
     print(f"Running from: {pathlib.Path().absolute()}")
@@ -66,7 +67,7 @@ def test_destination_supported_limits(destination_type: DestinationType, column_
 
 
 @pytest.mark.parametrize(
-    "integration_type, column_count, expected_exception_message",
+    ("integration_type", "column_count", "expected_exception_message"),
     [
         ("Postgres", 1665, "target lists can have at most 1664 entries"),
         ("BigQuery", 3000, "The view is too large."),
@@ -127,7 +128,7 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
 
 
 def search_logs_for_pattern(log_file: str, pattern: str):
-    with open(log_file, "r") as file:
+    with open(log_file) as file:
         for line in file:
             if re.search(pattern, line):
                 return True
@@ -135,9 +136,7 @@ def search_logs_for_pattern(log_file: str, pattern: str):
 
 
 def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_config: Dict[str, Any]) -> bool:
-    """
-    This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI.
-    """
+    """This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI."""
     config_file = os.path.join(test_root_dir, "destination_config.json")
     with open(config_file, "w") as f:
         f.write(json.dumps(destination_config))
@@ -163,9 +162,7 @@ def setup_input_raw_data(integration_type: str, test_root_dir: str, destination_
 
 
 def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, column_count: int):
-    """
-    This is the normalization step generating dbt models files from the destination_catalog.json taken as input.
-    """
+    """This is the normalization step generating dbt models files from the destination_catalog.json taken as input."""
     output_directory = os.path.join(test_root_dir, "models", "generated")
     shutil.rmtree(output_directory, ignore_errors=True)
     catalog_config = {
@@ -184,8 +181,8 @@ def generate_dbt_models(destination_type: DestinationType, test_root_dir: str, c
                 "sync_mode": "incremental",
                 "cursor_field": [],
                 "destination_sync_mode": "overwrite",
-            }
-        ]
+            },
+        ],
     }
     if column_count == 1:
         catalog_config["streams"][0]["stream"]["json_schema"]["properties"]["_airbyte_id"] = {"type": "integer"}

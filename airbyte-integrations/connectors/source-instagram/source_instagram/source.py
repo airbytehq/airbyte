@@ -5,10 +5,11 @@
 from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
+from pydantic import BaseModel, Field
+
 from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from pydantic import BaseModel, Field
 from source_instagram.api import InstagramAPI
 from source_instagram.streams import Media, MediaInsights, Stories, StoryInsights, UserInsights, UserLifetimeInsights, Users
 
@@ -49,7 +50,7 @@ class ConnectorConfig(BaseModel):
 
 class SourceInstagram(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """Connection check to validate that the user-provided config can be used to connect to the underlying API
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -69,7 +70,7 @@ class SourceInstagram(AbstractSource):
         return ok, error_msg
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """Discovery method, returns available streams
+        """Discovery method, returns available streams.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
@@ -87,8 +88,7 @@ class SourceInstagram(AbstractSource):
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        """Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
         """
         return ConnectorSpecification(

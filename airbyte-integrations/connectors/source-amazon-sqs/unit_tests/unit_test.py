@@ -6,13 +6,12 @@ import json
 from typing import Any, Dict, Mapping
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
-
-# from airbyte_cdk.sources.source import Source
 from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
 from source_amazon_sqs import SourceAmazonSqs
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
 
 
 @mock_iam
@@ -47,7 +46,7 @@ def create_config(queue_url, access_key, secret_key, queue_region, delete_messag
 
 
 def get_catalog() -> Mapping[str, Any]:
-    with open("sample_files/configured_catalog.json", "r") as f:
+    with open("sample_files/configured_catalog.json") as f:
         return json.load(f)
 
 
@@ -61,7 +60,7 @@ def test_check():
     queue_name = "amazon-sqs-mock-queue"
     queue_region = "eu-west-1"
     client = boto3.client(
-        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region,
     )
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
@@ -103,7 +102,7 @@ def test_read():
     queue_name = "amazon-sqs-mock-queue"
     queue_region = "eu-west-1"
     client = boto3.client(
-        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region,
     )
 
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]

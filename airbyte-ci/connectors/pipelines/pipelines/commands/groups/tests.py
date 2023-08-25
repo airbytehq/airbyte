@@ -2,9 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-Module exposing the tests command to test airbyte-ci projects.
-"""
+"""Module exposing the tests command to test airbyte-ci projects."""
 
 import logging
 import os
@@ -38,6 +36,7 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
 
     Args:
         airbyte_ci_package_path (str): Path to the airbyte-ci package to test, relative to airbyte-ci directory.
+
     Returns:
         bool: True if the tests passed, False otherwise.
     """
@@ -45,7 +44,7 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
     logger.info(f"Running tests for {poetry_package_path}")
     # The following directories are always mounted because a lot of tests rely on them
     directories_to_always_mount = [".git", "airbyte-integrations", "airbyte-ci"]
-    directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
+    directories_to_mount = list({poetry_package_path, *directories_to_always_mount})
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
             docker_host_socket = dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
@@ -76,7 +75,7 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
             if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
                 logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
                 pytest_container = pytest_container.with_env_variable(
-                    "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock"
+                    "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock",
                 ).with_unix_socket("/var/run/buildkit/buildkitd.sock", docker_host_socket)
 
             await pytest_container

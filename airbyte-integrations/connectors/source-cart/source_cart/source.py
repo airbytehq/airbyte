@@ -13,12 +13,13 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+from pendulum.parsing.exceptions import ParserError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from pendulum.parsing.exceptions import ParserError
 
 from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, OrderStatuses, Products
 
@@ -29,7 +30,7 @@ class AuthMethod(Enum):
 
 
 class CustomHeaderAuthenticator(HttpAuthenticator):
-    def __init__(self, access_token, store_name):
+    def __init__(self, access_token, store_name) -> None:
         self.auth_method = AuthMethod.SINGLE_STORE_ACCESS_TOKEN
         self._store_name = store_name
         self._access_token = access_token
@@ -45,15 +46,14 @@ class CustomHeaderAuthenticator(HttpAuthenticator):
 
 
 class CentralAPIHeaderAuthenticator(HttpAuthenticator):
-    def __init__(self, user_name, user_secret, site_id):
+    def __init__(self, user_name, user_secret, site_id) -> None:
         self.auth_method = AuthMethod.CENTRAL_API_ROUTER
         self.user_name = user_name
         self.user_secret = user_secret
         self.site_id = site_id
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        """
-        This method is not implemented here because for the Central API Router
+        """This method is not implemented here because for the Central API Router
         needs to build the header for each request based
         on path + parameters (next token, pagination, page size)
         To solve this the logic was moved to `request_headers` in CartStream class.
@@ -67,13 +67,12 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
         return self.generate_auth_signature(stream, params)
 
     def generate_auth_signature(self, stream, params) -> Mapping[str, Any]:
-        """
-        How to build signature:
+        """How to build signature:
         1. build a string concatenated with:
             request method (uppercase) & request path and query & provisioning user name
                 example: GET&/api/v1/customers&myUser
         2. Generate HMACSHA256 hash using this string as the input, and the provisioning user secret as the key
-        3. Base64 this hash to be used as the final value in the header
+        3. Base64 this hash to be used as the final value in the header.
         """
         path_with_params = f"/api/v1/{stream.path()}?{urllib.parse.urlencode(params)}"
         msg = codecs.encode(f"GET&{path_with_params}&{self.user_name}")
@@ -85,7 +84,7 @@ class CentralAPIHeaderAuthenticator(HttpAuthenticator):
 
 class SourceCart(AbstractSource):
     def validate_config_values(func):
-        """Check input config values for check_connection and stream functions. It will raise an exception if there is an parsing error"""
+        """Check input config values for check_connection and stream functions. It will raise an exception if there is an parsing error."""
 
         @wraps(func)
         def decorator(self_, *args, **kwargs):
@@ -99,7 +98,8 @@ class SourceCart(AbstractSource):
                         if end_date:
                             pendulum.parse(end_date)
                     except ParserError as e:
-                        raise Exception(f"{str(e)}. Example: 2021-01-01T00:00:00Z")
+                        msg = f"{e!s}. Example: 2021-01-01T00:00:00Z"
+                        raise Exception(msg)
                     break
 
             return func(self_, *args, **kwargs)
@@ -112,12 +112,13 @@ class SourceCart(AbstractSource):
 
         if auth_method == AuthMethod.CENTRAL_API_ROUTER.name:
             authenticator = CentralAPIHeaderAuthenticator(
-                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"]
+                user_name=credentials["user_name"], user_secret=credentials["user_secret"], site_id=credentials["site_id"],
             )
         elif auth_method == AuthMethod.SINGLE_STORE_ACCESS_TOKEN.name:
             authenticator = CustomHeaderAuthenticator(access_token=credentials["access_token"], store_name=credentials["store_name"])
         else:
-            raise NotImplementedError(f"Authentication method: {auth_method} not implemented.")
+            msg = f"Authentication method: {auth_method} not implemented."
+            raise NotImplementedError(msg)
 
         return authenticator
 
@@ -131,9 +132,9 @@ class SourceCart(AbstractSource):
             return True, None
         except Exception as e:
             if isinstance(e, requests.exceptions.HTTPError) and e.response.status_code == 401:
-                return False, f"Please check your access token. Error: {repr(e)}"
+                return False, f"Please check your access token. Error: {e!r}"
             if isinstance(e, requests.exceptions.ConnectionError):
-                err_message = f"Please check your `store_name` or internet connection. Error: {repr(e)}"
+                err_message = f"Please check your `store_name` or internet connection. Error: {e!r}"
                 return False, err_message
             return False, repr(e)
 

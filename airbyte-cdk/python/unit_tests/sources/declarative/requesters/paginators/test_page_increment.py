@@ -6,11 +6,12 @@ import json
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
 
 @pytest.mark.parametrize(
-    "page_size, start_from, last_records, expected_next_page_token, expected_offset",
+    ("page_size", "start_from", "last_records", "expected_next_page_token", "expected_offset"),
     [
         pytest.param(2, 1, [{"id": 0}, {"id": 1}], 2, 2, id="test_same_page_size_start_from_0"),
         pytest.param(3, 1, [{"id": 0}, {"id": 1}], None, 1, id="test_larger_page_size_start_from_0"),

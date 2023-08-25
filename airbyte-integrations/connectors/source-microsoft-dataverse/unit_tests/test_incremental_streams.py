@@ -8,7 +8,7 @@ from pytest import fixture
 from source_microsoft_dataverse.source import IncrementalMicrosoftDataverseStream
 
 
-@fixture
+@fixture()
 def incremental_config():
     return {
         "url": "http://test-url",
@@ -20,25 +20,25 @@ def incremental_config():
         },
         "odata_maxpagesize": 100,
         "config_cursor_field": ["test_cursor_field"],
-        "authenticator": MagicMock()
+        "authenticator": MagicMock(),
     }
 
 
-@fixture
+@fixture()
 def incremental_response(incremental_config):
     return {
         "@odata.deltaLink": f"{incremental_config['url']}?$deltatoken=12644418993%2110%2F06%2F2022%2020%3A06%3A12",
         "value": [
             {
                 "test_primary_key": "pk",
-                "test_cursor_field": "test-date"
+                "test_cursor_field": "test-date",
             },
             {
                 "id": "pk2",
                 "@odata.context": "context",
-                "reason": "deleted"
-            }
-        ]
+                "reason": "deleted",
+            },
+        ],
     }
 
 

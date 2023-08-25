@@ -8,6 +8,7 @@ import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -73,15 +74,15 @@ class KYVEStream(HttpStream, IncrementalMixin):
         return schema
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return f"/kyve/query/v1beta1/finalized_bundles/{self.pool_id}"
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         # Set the pagesize in the request parameters
         params = {"pagination.limit": self.page_size}
@@ -101,8 +102,8 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         try:
             # set the state to store the latest bundle_id
@@ -131,9 +132,6 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 continue
 
             # todo future: fail on incorrect hash, enabled after regenesis
-            # bundle_hash = bundle.get("bundle_hash")
-            # local_hash = hmac.new(b"", msg=decompressed, digestmod=hashlib.sha256).digest().hex()
-            # assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
             decompressed_as_json = json.loads(decompressed)
 
             # extract the value from the key -> value mapping
@@ -142,13 +140,14 @@ class KYVEStream(HttpStream, IncrementalMixin):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # in case we set a max_pages parameter we need to abort
         if self.max_pages and self._offset >= self.max_pages * self.page_size:
-            return
+            return None
 
         json_response = response.json()
         next_key = json_response.get("pagination", {}).get("next_key")
         if next_key:
             self._offset += self.page_size
             return {"pagination.offset": self._offset}
+        return None
 
     @property
     def state(self) -> Mapping[str, Any]:

@@ -4,6 +4,9 @@
 
 from unittest.mock import MagicMock, patch
 
+from destination_langchain.config import ConfigModel
+from destination_langchain.destination import BATCH_SIZE, DestinationLangchain, embedder_map, indexer_map
+
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -13,8 +16,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     Level,
     Type,
 )
-from destination_langchain.config import ConfigModel
-from destination_langchain.destination import BATCH_SIZE, DestinationLangchain, embedder_map, indexer_map
 
 
 def _generate_record_message(index: int):
@@ -24,9 +25,7 @@ def _generate_record_message(index: int):
 @patch.dict(embedder_map, {"openai": MagicMock()})
 @patch.dict(indexer_map, {"pinecone": MagicMock()})
 def test_write():
-    """
-    Basic test for the write method, batcher and document processor.
-    """
+    """Basic test for the write method, batcher and document processor."""
     config = {
         "processing": {"text_fields": ["column_name"], "chunk_size": 1000},
         "embedding": {"mode": "openai", "openai_key": "mykey"},
@@ -53,9 +52,9 @@ def test_write():
                     "primary_key": [["id"]],
                     "sync_mode": "incremental",
                     "destination_sync_mode": "append_dedup",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     # messages are flushed after 32 records or after a state message, so this will trigger two batches to be processed
     input_messages = [_generate_record_message(i) for i in range(BATCH_SIZE + 5)]
@@ -93,7 +92,8 @@ def test_write():
 
     try:
         next(output_messages)
-        assert False, "Expected end of message stream"
+        msg = "Expected end of message stream"
+        raise AssertionError(msg)
     except StopIteration:
         pass
 

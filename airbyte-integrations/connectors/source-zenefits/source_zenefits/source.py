@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -23,7 +24,7 @@ class ZenefitsStream(HttpStream, ABC):
         self.token = token
 
     def request_params(
-        self, stream_state: Mapping[str, any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
         params = {"limit": self.LIMIT}
@@ -39,8 +40,7 @@ class ZenefitsStream(HttpStream, ABC):
         next_page_url = response_json.get("next_url")
         if next_page_url:
             next_url = urlparse(next_page_url)
-            next_params = parse_qs(next_url.query)
-            return next_params
+            return parse_qs(next_url.query)
 
         return None
 
@@ -48,8 +48,8 @@ class ZenefitsStream(HttpStream, ABC):
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
 
         return response.json().get("data", {}).get("data")

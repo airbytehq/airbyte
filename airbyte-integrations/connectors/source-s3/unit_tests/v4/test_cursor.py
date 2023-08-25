@@ -7,10 +7,11 @@ from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
+from source_s3.v4.cursor import Cursor
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from source_s3.v4.cursor import Cursor
 
 
 def _create_datetime(dt: str) -> datetime:
@@ -18,7 +19,7 @@ def _create_datetime(dt: str) -> datetime:
 
 
 @pytest.mark.parametrize(
-    "input_state, expected_state",
+    ("input_state", "expected_state"),
     [
         pytest.param({}, {"history": {}, "_ab_source_file_last_modified": None}, id="empty-history"),
         pytest.param(
@@ -153,7 +154,7 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
 
 
 @pytest.mark.parametrize(
-    "input_state, all_files, expected_files_to_sync, max_history_size",
+    ("input_state", "all_files", "expected_files_to_sync", "max_history_size"),
     [
         pytest.param(
             {
@@ -398,7 +399,7 @@ def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync,
 
 
 @pytest.mark.parametrize(
-    "input_state, expected",
+    ("input_state", "expected"),
     [
         pytest.param({}, False, id="empty_state_is_not_legacy_state"),
         pytest.param(
@@ -417,7 +418,7 @@ def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync,
             id="legacy_state_with_invalid_last_modified_datetime_format_is_not_legacy",
         ),
         pytest.param(
-            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state"
+            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state",
         ),
         pytest.param({"history": {"2023-08-01": ["file1.txt"]}}, False, id="legacy_state_without_last_modified_cursor_is_not_legacy_state"),
         pytest.param(
@@ -440,7 +441,7 @@ def test_is_legacy_state(input_state, expected):
 
 
 @pytest.mark.parametrize(
-    "cursor_datetime, file_datetime, expected_adjusted_datetime",
+    ("cursor_datetime", "file_datetime", "expected_adjusted_datetime"),
     [
         pytest.param(
             datetime(2021, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc),

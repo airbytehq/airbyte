@@ -6,6 +6,10 @@ import json
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_firestore import DestinationFirestore
+from destination_firestore.writer import FirestoreWriter
+from google.cloud import firestore
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -19,14 +23,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_firestore import DestinationFirestore
-from destination_firestore.writer import FirestoreWriter
-from google.cloud import firestore
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -58,8 +59,7 @@ def teardown(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
 
 @pytest.fixture(name="writer")
 def client_fixture(config) -> FirestoreWriter:
-    writer = FirestoreWriter(**config)
-    return writer
+    return FirestoreWriter(**config)
 
 
 def test_check_valid_config(config: Mapping):
@@ -78,7 +78,7 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0),
     )
 
 
@@ -91,8 +91,7 @@ def retrieve_all_records(client):
 
 
 def test_write_append(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, writer: FirestoreWriter):
-    """
-    This test verifies that writing a stream in "append" mode appends new records without deleting the old ones
+    """This test verifies that writing a stream in "append" mode appends new records without deleting the old ones.
 
     It checks also if the correct state message is output by the connector at the end of the sync
     """
@@ -112,9 +111,7 @@ def test_write_append(config: Mapping, configured_catalog: ConfiguredAirbyteCata
 
 
 def test_write_overwrite(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, writer: FirestoreWriter):
-    """
-    This test verifies that writing a stream in "overwrite" overwrite all exiting ones
-    """
+    """This test verifies that writing a stream in "overwrite" overwrite all exiting ones."""
     stream = configured_catalog.streams[1].stream.name
     destination = DestinationFirestore()
 

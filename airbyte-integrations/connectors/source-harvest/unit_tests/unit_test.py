@@ -3,10 +3,11 @@
 #
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_harvest.source import SourceHarvest
 from source_harvest.streams import ExpensesClients, HarvestStream, InvoicePayments
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 logger = AirbyteLogger()
 

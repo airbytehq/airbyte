@@ -11,7 +11,7 @@ import pytest
 from source_rss.source import RssStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(RssStream, "path", "v0/example_endpoint")
@@ -63,10 +63,10 @@ def test_parse_response(patch_base_class):
     assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
 
     # test that the local timezone doesn't impact how this is computed
-    os.environ['TZ'] = 'Africa/Accra'
+    os.environ["TZ"] = "Africa/Accra"
     time.tzset()
     assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
-    os.environ['TZ'] = 'Asia/Tokyo'
+    os.environ["TZ"] = "Asia/Tokyo"
     time.tzset()
     assert next(stream.parse_response(response=SampleResponse(), stream_state={})) == expected_parsed_object
 

@@ -24,15 +24,15 @@ class Client(BaseClient):
         super().__init__()
 
     def stream_has_state(self, name: str) -> bool:
-        """Tell if stream supports incremental sync"""
+        """Tell if stream supports incremental sync."""
         return isinstance(self._apis[name], IncrementalStreamAPI)
 
     def get_stream_state(self, name: str) -> Any:
-        """Get state of stream with corresponding name"""
+        """Get state of stream with corresponding name."""
         return self._apis[name].state
 
     def set_stream_state(self, name: str, state: Any):
-        """Set state of stream with corresponding name"""
+        """Set state of stream with corresponding name."""
         self._apis[name].state = state
 
     def _enumerate_methods(self) -> Mapping[str, callable]:

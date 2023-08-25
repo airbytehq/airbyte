@@ -8,7 +8,7 @@ from source_okta.utils import get_start_date
 
 
 @pytest.mark.parametrize(
-    "config, expected_date, expected_messages",
+    ("config", "expected_date", "expected_messages"),
     [
         (
             {"start_date": "2022-07-22T00:00:00Z"},

@@ -6,13 +6,14 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from source_insightly.source import InsightlyStream
+
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
 authenticator = BasicHttpAuthenticator(username="test", password="")
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(InsightlyStream, "path", "v0/example_endpoint")

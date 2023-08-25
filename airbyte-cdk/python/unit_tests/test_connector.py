@@ -13,6 +13,7 @@ from typing import Any, Mapping
 
 import pytest
 import yaml
+
 from airbyte_cdk import AirbyteSpec, Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
 
@@ -57,7 +58,7 @@ def mock_config():
     return {"bogus": "file"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def nonempty_file(mock_config):
     with tempfile.NamedTemporaryFile("w") as file:
         file.write(json.dumps(mock_config))
@@ -65,7 +66,7 @@ def nonempty_file(mock_config):
         yield file
 
 
-@pytest.fixture
+@pytest.fixture()
 def nonjson_file(mock_config):
     with tempfile.NamedTemporaryFile("w") as file:
         file.write("the content of this file is not JSON")
@@ -73,7 +74,7 @@ def nonjson_file(mock_config):
         yield file
 
 
-@pytest.fixture
+@pytest.fixture()
 def integration():
     return MockConnector()
 
@@ -91,7 +92,7 @@ def test_read_non_json_config(nonjson_file, integration: Connector):
 def test_write_config(integration, mock_config):
     config_path = Path(tempfile.gettempdir()) / "config.json"
     integration.write_config(mock_config, str(config_path))
-    with open(config_path, "r") as actual:
+    with open(config_path) as actual:
         assert mock_config == json.loads(actual.read())
 
 
@@ -103,7 +104,7 @@ class TestConnectorSpec:
         "properties": {"api_token": {"type": "string"}},
     }
 
-    @pytest.fixture
+    @pytest.fixture()
     def use_json_spec(self):
         spec = {
             "documentationUrl": "https://airbyte.com/#json",
@@ -116,7 +117,7 @@ class TestConnectorSpec:
         yield
         os.remove(json_path)
 
-    @pytest.fixture
+    @pytest.fixture()
     def use_invalid_json_spec(self):
         json_path = os.path.join(SPEC_ROOT, "spec.json")
         with open(json_path, "w") as f:
@@ -124,7 +125,7 @@ class TestConnectorSpec:
         yield
         os.remove(json_path)
 
-    @pytest.fixture
+    @pytest.fixture()
     def use_yaml_spec(self):
         spec = {"documentationUrl": "https://airbyte.com/#yaml", "connectionSpecification": self.CONNECTION_SPECIFICATION}
 

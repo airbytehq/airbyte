@@ -10,6 +10,7 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -67,13 +68,13 @@ class SourceMixpanel(AbstractSource):
         if isinstance(auth, TokenAuthenticatorBase64) and "project_id" in config:
             config.pop("project_id")
         elif isinstance(auth, BasicHttpAuthenticator) and "project_id" not in config:
-            raise ValueError("missing required parameter 'project_id'")
+            msg = "missing required parameter 'project_id'"
+            raise ValueError(msg)
 
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
+        """See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -109,9 +110,7 @@ class SourceMixpanel(AbstractSource):
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         config = self._validate_and_transform(config)
         logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")

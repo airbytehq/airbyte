@@ -29,9 +29,8 @@ parser.add_argument(
 
 
 def load_config(config_path: Path) -> Config:
-    with open(config_path, "r") as file:
-        config = yaml.load(file)
-    return config
+    with open(config_path) as file:
+        return yaml.load(file)
 
 
 def migrate_to_new_config_format(config: Config):
@@ -44,7 +43,8 @@ def migrate_to_new_config_format(config: Config):
 
 def set_high_test_strictness_level(config):
     if Config.is_legacy(config):
-        raise Exception("You can't set a strictness level on a legacy config. Please use the `--migrate_from_legacy` flag.")
+        msg = "You can't set a strictness level on a legacy config. Please use the `--migrate_from_legacy` flag."
+        raise Exception(msg)
     config["test_strictness_level"] = "high"
     for basic_read_test in config["acceptance_tests"].get("basic_read", {"tests": []})["tests"]:
         basic_read_test.pop("configured_catalog_path", None)

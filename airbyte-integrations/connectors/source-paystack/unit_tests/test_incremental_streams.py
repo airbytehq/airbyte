@@ -12,7 +12,7 @@ from source_paystack.streams import IncrementalPaystackStream
 START_DATE = "2020-08-01T00:00:00Z"
 
 
-@fixture
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalPaystackStream, "path", "v0/example_endpoint")
@@ -63,7 +63,7 @@ def test_request_params_includes_incremental_start_point(patch_incremental_base_
 
 
 @pytest.mark.parametrize(
-    "lookback_window_days, current_state, expected, message",
+    ("lookback_window_days", "current_state", "expected", "message"),
     [
         (None, "2021-08-30", "2021-08-30T00:00:00Z", "if lookback_window_days is not set should not affect cursor value"),
         (0, "2021-08-30", "2021-08-30T00:00:00Z", "if lookback_window_days is not set should not affect cursor value"),
@@ -72,7 +72,7 @@ def test_request_params_includes_incremental_start_point(patch_incremental_base_
     ],
 )
 def test_request_params_incremental_start_point_applies_lookback_window(
-    patch_incremental_base_class, lookback_window_days, current_state, expected, message
+    patch_incremental_base_class, lookback_window_days, current_state, expected, message,
 ):
     stream = IncrementalPaystackStream(start_date=START_DATE, lookback_window_days=lookback_window_days)
     inputs = {

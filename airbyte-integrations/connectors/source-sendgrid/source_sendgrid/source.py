@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -50,7 +51,7 @@ class SourceSendgrid(AbstractSource):
         authenticator = TokenAuthenticator(config["apikey"])
         start_time = config.get("start_time")
 
-        streams = [
+        return [
             Lists(authenticator=authenticator),
             Campaigns(authenticator=authenticator),
             Contacts(authenticator=authenticator),
@@ -68,4 +69,3 @@ class SourceSendgrid(AbstractSource):
             UnsubscribeGroups(authenticator=authenticator),
         ]
 
-        return streams

@@ -13,5 +13,5 @@ QONTO_ENDPOINT_MAP: Dict = {
 
 
 def get_url_base(endpoint: str) -> str:
-    """Define the URL Base from user's input with respect to the QONTO_ENDPOINT_MAP"""
+    """Define the URL Base from user's input with respect to the QONTO_ENDPOINT_MAP."""
     return QONTO_ENDPOINT_MAP.get(endpoint)

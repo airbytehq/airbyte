@@ -43,8 +43,8 @@ def setup_responses():
     responses.add(
         responses.GET,
         "https://curious-giraffe-964.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
-        json={'code': "Error code", "message": "Error message"},
-        status=400
+        json={"code": "Error code", "message": "Error message"},
+        status=400,
     )
 
 
@@ -84,7 +84,7 @@ def test_streams(mocker):
         {
             "deployment_url": "https://murky-swan-635.convex.cloud",
             "access_key": "test_api_key",
-        }
+        },
     )
     assert len(streams) == 2
     streams.sort(key=lambda stream: stream.table_name)
@@ -107,9 +107,5 @@ def test_streams(mocker):
     ]
     assert [props["_ts"] == {"type": "number"} for props in properties]
     assert [props["_creationTime"] == {"type": "number"} for props in properties]
-    assert set(properties[0].keys()) == set(
-        ["_id", "_ts", "_deleted", "_creationTime", "author", "body", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"]
-    )
-    assert set(properties[1].keys()) == set(
-        ["_id", "_ts", "_deleted", "_creationTime", "name", "tokenIdentifier", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"]
-    )
+    assert set(properties[0].keys()) == {"_id", "_ts", "_deleted", "_creationTime", "author", "body", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"}
+    assert set(properties[1].keys()) == {"_id", "_ts", "_deleted", "_creationTime", "name", "tokenIdentifier", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at"}

@@ -9,7 +9,7 @@ from firebase_admin import credentials, db
 
 
 class Client:
-    def __init__(self, path="", buffer_size=10000):
+    def __init__(self, path="", buffer_size=10000) -> None:
         self._path = path
         self._buffer_size = buffer_size
 
@@ -47,7 +47,7 @@ class Client:
 
 
 class Records:
-    def __init__(self, client):
+    def __init__(self, client) -> None:
         self._client = client
 
     def __iter__(self):

@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import pytest
+
 from pipelines import bases, gradle
 
 pytestmark = [
@@ -19,13 +20,13 @@ class TestGradleTask:
         async def _run(self) -> bases.StepResult:
             return bases.StepResult(self, bases.StepStatus.SUCCESS)
 
-    @pytest.fixture
+    @pytest.fixture()
     def test_context(self, mocker, dagger_client):
         return mocker.Mock(
             secrets_to_mask=[],
             dagger_client=dagger_client,
             connector=bases.ConnectorWithModifiedFiles(
-                "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")})
+                "source-postgres", frozenset({Path("airbyte-integrations/connectors/source-postgres/metadata.yaml")}),
             ),
         )
 

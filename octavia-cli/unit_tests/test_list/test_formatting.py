@@ -9,7 +9,7 @@ PADDING = 2
 
 
 @pytest.mark.parametrize(
-    "test_data,expected_columns_width",
+    ("test_data", "expected_columns_width"),
     [
         ([["a", "___10chars"], ["e", "f"]], [1 + PADDING, 10 + PADDING]),
         ([["a", "___10chars"], ["e", "____11chars"]], [1 + PADDING, 11 + PADDING]),
@@ -21,13 +21,13 @@ def test_compute_columns_width(test_data, expected_columns_width):
     assert columns_width == expected_columns_width
 
 
-@pytest.mark.parametrize("input_camelcased,expected_output", [("camelCased", "CAMEL CASED"), ("notcamelcased", "NOTCAMELCASED")])
+@pytest.mark.parametrize(("input_camelcased", "expected_output"), [("camelCased", "CAMEL CASED"), ("notcamelcased", "NOTCAMELCASED")])
 def test_camelcased_to_uppercased_spaced(input_camelcased, expected_output):
     assert formatting.camelcased_to_uppercased_spaced(input_camelcased) == expected_output
 
 
 @pytest.mark.parametrize(
-    "test_data,columns_width,expected_output",
+    ("test_data", "columns_width", "expected_output"),
     [
         ([["a", "___10chars"], ["e", "____11chars"]], [1 + PADDING, 11 + PADDING], "a  ___10chars   \ne  ____11chars  "),
     ],

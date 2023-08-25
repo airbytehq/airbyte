@@ -5,9 +5,10 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from source_intercom.components import IncrementalSingleSliceCursor, IncrementalSubstreamSlicerCursor
+
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
-from source_intercom.components import IncrementalSingleSliceCursor, IncrementalSubstreamSlicerCursor
 
 
 def test_slicer():
@@ -21,13 +22,13 @@ def test_slicer():
 
 
 @pytest.mark.parametrize(
-    "last_record, expected, records",
+    ("last_record", "expected", "records"),
     [
         (
             {"first_stream_cursor": 1662459010},
-            {'first_stream_cursor': 1662459010, 'prior_state': {'first_stream_cursor': 1662459010, 'parent_stream_name': {'parent_cursor_field': 1662459010}}, 'parent_stream_name': {'parent_cursor_field': 1662459010}},
+            {"first_stream_cursor": 1662459010, "prior_state": {"first_stream_cursor": 1662459010, "parent_stream_name": {"parent_cursor_field": 1662459010}}, "parent_stream_name": {"parent_cursor_field": 1662459010}},
             [{"first_stream_cursor": 1662459010}],
-        )
+        ),
     ],
 )
 def test_sub_slicer(last_record, expected, records):
@@ -47,7 +48,7 @@ def test_sub_slicer(last_record, expected, records):
     )
 
     slicer = IncrementalSubstreamSlicerCursor(
-        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config], parent_complete_fetch=True
+        config={}, parameters={}, cursor_field="first_stream_cursor", parent_stream_configs=[parent_config], parent_complete_fetch=True,
     )
     slicer.set_initial_state(expected)
     stream_slice = next(slicer.stream_slices()) if records else {}

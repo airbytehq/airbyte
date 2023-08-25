@@ -7,5 +7,5 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 
 
 class SourceMetabase(YamlDeclarativeSource):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(**{"path_to_yaml": "manifest.yaml"})

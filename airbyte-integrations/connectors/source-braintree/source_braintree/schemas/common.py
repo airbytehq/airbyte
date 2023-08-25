@@ -6,14 +6,14 @@ from decimal import Decimal
 from typing import Any, Dict, Optional, Type
 
 import pydantic
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel
 from pydantic.typing import resolve_annotations
 
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
+
 
 class AllOptional(pydantic.main.ModelMetaclass):
-    """
-    Metaclass for marking all Pydantic model fields as Optional
+    """Metaclass for marking all Pydantic model fields as Optional
     Here is exmaple of declaring model using this metaclasslike:
     '''
             class MyModel(BaseModel, metaclass=AllOptional):
@@ -30,9 +30,7 @@ class AllOptional(pydantic.main.ModelMetaclass):
     """
 
     def __new__(self, name, bases, namespaces, **kwargs):
-        """
-        Iterate through fields and wrap then with typing.Optional type.
-        """
+        """Iterate through fields and wrap then with typing.Optional type."""
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
             annotations = {**annotations, **getattr(base, "__annotations__", {})}

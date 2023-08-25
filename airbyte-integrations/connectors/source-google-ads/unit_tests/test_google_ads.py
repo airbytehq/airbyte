@@ -5,10 +5,11 @@
 from datetime import date
 
 import pytest
-from airbyte_cdk.utils import AirbyteTracedException
 from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import chunk_date_range
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .common import MockGoogleAdsClient, MockGoogleAdsService
 
@@ -16,8 +17,8 @@ SAMPLE_SCHEMA = {
     "properties": {
         "segment.date": {
             "type": ["null", "string"],
-        }
-    }
+        },
+    },
 }
 
 
@@ -37,7 +38,7 @@ SAMPLE_CONFIG = {
         "client_id": "client_id",
         "client_secret": "client_secret",
         "refresh_token": "refresh_token",
-    }
+    },
 }
 
 
@@ -100,7 +101,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
 
 
 @pytest.mark.parametrize(
-    "stream_schema, report_name, slice_start, slice_end, cursor, expected_sql",
+    ("stream_schema", "report_name", "slice_start", "slice_end", "cursor", "expected_sql"),
     (
         (
             generic_schema,
@@ -108,7 +109,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             "2020-01-01",
             "2020-01-10",
             "segments.date",
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC",
         ),
         (
             generic_schema,
@@ -116,7 +117,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             "2020-01-01",
             "2020-01-02",
             "segments.date",
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC",
         ),
         (
             generic_schema,
@@ -124,7 +125,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             None,
             None,
             None,
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad",
         ),
         (
             generic_schema,
@@ -132,7 +133,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             "2020-01-01",
             "2020-01-10",
             "segments.date",
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC",
         ),
         (
             generic_schema,
@@ -140,7 +141,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             "2020-01-01",
             "2020-01-02",
             "segments.date",
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC",
         ),
         (
             generic_schema,
@@ -148,7 +149,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             None,
             None,
             None,
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view",
         ),
     ),
 )

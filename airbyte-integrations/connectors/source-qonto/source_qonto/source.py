@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -17,8 +18,7 @@ from source_qonto.endpoint import get_url_base
 
 # Basic full refresh stream
 class QontoStream(HttpStream, ABC):
-    """
-    This class represents a stream output by the connector.
+    """This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level.
 
     Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
@@ -39,23 +39,21 @@ class QontoStream(HttpStream, ABC):
 
     def path(
         self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return self.stream_name
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Define how a response is parsed.
-        :return an iterable containing each record in the response
+        """Define how a response is parsed.
+        :return an iterable containing each record in the response.
         """
         response_json = response.json()
         yield from response_json[self.stream_name]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Define a pagination strategy.
+        """Define a pagination strategy.
 
         :param response: the most recent response from the API
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
@@ -76,14 +74,14 @@ class QontoStream(HttpStream, ABC):
 class Memberships(QontoStream):
     name = "memberships"
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(config, self.name)
 
 
 class Labels(QontoStream):
     name = "labels"
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(config, self.name)
 
 
@@ -91,7 +89,7 @@ class Transactions(QontoStream):
     name = "transactions"
     cursor_date_format = "%Y-%m-%d"
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(config, self.name)
         self.start_date = config["start_date"]
         self.iban = config["iban"]
@@ -99,12 +97,10 @@ class Transactions(QontoStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Define any query parameters to be set.
-        """
+        """Define any query parameters to be set."""
         start_date = datetime.strptime(stream_state.get(self.cursor_field) if stream_state else self.start_date, self.cursor_date_format)
         params = {"iban": self.iban, "settled_at_from": start_date.strftime(self.cursor_date_format)}
         if next_page_token:
@@ -115,8 +111,7 @@ class Transactions(QontoStream):
 # Source
 class SourceQonto(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Validate that the user-provided config can be used to connect to the underlying API
+        """Validate that the user-provided config can be used to connect to the underlying API.
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
@@ -144,8 +139,7 @@ class SourceQonto(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Return a the list of streams that will be enabled in the connector
+        """Return a the list of streams that will be enabled in the connector.
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """

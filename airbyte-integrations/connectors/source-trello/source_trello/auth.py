@@ -7,9 +7,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import
 
 
 class TrelloAuthenticator(AbstractHeaderAuthenticator):
-    """
-    https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#passing-token-and-key-in-api-requests
-    """
+    """https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#passing-token-and-key-in-api-requests."""
 
     def __init__(self, apiKey: str, apiToken: str):
         self.apiKey = apiKey

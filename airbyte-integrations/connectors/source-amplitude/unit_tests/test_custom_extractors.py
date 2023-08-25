@@ -11,7 +11,7 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
 
 
 @pytest.mark.parametrize(
-    "custom_extractor, data, expected",
+    ("custom_extractor", "data", "expected"),
     [
         (
                 ActiveUsersRecordExtractor,
@@ -63,13 +63,13 @@ from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessi
 def test_parse_response(custom_extractor, data, expected):
     extractor = custom_extractor()
     response = requests.Response()
-    response.json = MagicMock(return_value={'data': data})
+    response.json = MagicMock(return_value={"data": data})
     result = extractor.extract_records(response)
     assert result == expected
 
 
 class TestEventsExtractor:
-    extractor = EventsExtractor(config={}, parameters={'name': 'events'})
+    extractor = EventsExtractor(config={}, parameters={"name": "events"})
 
     def test_get_date_time_items_from_schema(self):
         expected = [
@@ -85,7 +85,7 @@ class TestEventsExtractor:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "record, expected",
+        ("record", "expected"),
         [
             ({}, {}),
             ({"event_time": "2021-05-27 11:59:53.710000"}, {"event_time": "2021-05-27T11:59:53.710000+00:00"}),
@@ -99,15 +99,15 @@ class TestEventsExtractor:
         assert result == expected
 
     @pytest.mark.parametrize(
-        "file_name, expected_records",
+        ("file_name", "expected_records"),
         [
-            ('records.json.zip', [{"id": 123}]),
-            ('zipped.json.gz', []),
+            ("records.json.zip", [{"id": 123}]),
+            ("zipped.json.gz", []),
         ],
         ids=["normal_file", "wrong_file"],
     )
     def test_parse_zip(self, requests_mock, file_name, expected_records):
-        with open(f"{os.path.dirname(__file__)}/{file_name}", 'rb') as zipped:
+        with open(f"{os.path.dirname(__file__)}/{file_name}", "rb") as zipped:
             url = "https://amplitude.com/"
             requests_mock.get(url, content=zipped.read())
             response = requests.get(url)

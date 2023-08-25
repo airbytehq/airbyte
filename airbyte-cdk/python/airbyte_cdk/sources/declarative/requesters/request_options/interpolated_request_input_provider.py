@@ -12,9 +12,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class InterpolatedRequestInputProvider:
-    """
-    Helper class that generically performs string interpolation on the provided dictionary or string input
-    """
+    """Helper class that generically performs string interpolation on the provided dictionary or string input."""
 
     parameters: InitVar[Mapping[str, Any]]
     request_inputs: Optional[Union[str, Mapping[str, str]]] = field(default=None)
@@ -31,10 +29,9 @@ class InterpolatedRequestInputProvider:
             self._interpolator = InterpolatedMapping(self._request_inputs, parameters=parameters)
 
     def eval_request_inputs(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Returns the request inputs to set on an outgoing HTTP request
+        """Returns the request inputs to set on an outgoing HTTP request.
 
         :param stream_state: The stream state
         :param stream_slice: The stream slice
@@ -45,6 +42,5 @@ class InterpolatedRequestInputProvider:
         interpolated_value = self._interpolator.eval(self.config, **kwargs)
 
         if isinstance(interpolated_value, dict):
-            non_null_tokens = {k: v for k, v in interpolated_value.items() if v is not None}
-            return non_null_tokens
+            return {k: v for k, v in interpolated_value.items() if v is not None}
         return interpolated_value

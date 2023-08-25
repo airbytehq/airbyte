@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -53,7 +54,7 @@ class SourceXero(AbstractSource):
             "tenant_id": config["tenant_id"],
         }
         incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}
-        streams = [
+        return [
             BankTransactions(**incremental_kwargs),
             Contacts(**incremental_kwargs),
             CreditNotes(**incremental_kwargs),
@@ -76,7 +77,6 @@ class SourceXero(AbstractSource):
             TaxRates(**stream_kwargs),
             TrackingCategories(**stream_kwargs),
         ]
-        return streams
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]) -> Mapping[str, Any]:

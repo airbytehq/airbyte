@@ -3,15 +3,14 @@
 #
 
 from dagger import Client, Directory, Secret
+
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
 from pipelines.github import AIRBYTE_GITHUB_REPO
 
 
 class GitPushChanges(Step):
-    """
-    A step to push changes to the remote repository.
-    """
+    """A step to push changes to the remote repository."""
 
     title = "Push changes to the remote repository"
 
@@ -47,7 +46,7 @@ class GitPushChanges(Step):
         return f"{commit_message} [skip ci]" if skip_ci else commit_message
 
     async def _run(
-        self, changed_directory: Directory, changed_directory_path: str, commit_message: str, skip_ci: bool = True
+        self, changed_directory: Directory, changed_directory_path: str, commit_message: str, skip_ci: bool = True,
     ) -> StepResult:
         diff = (
             environments.with_git(self.dagger_client, self.context.ci_github_access_token_secret, self.ci_git_user)
@@ -73,13 +72,11 @@ class GitPushChanges(Step):
 
 
 class GitPushEmptyCommit(GitPushChanges):
-    """
-    A step to push an empty commit to the remote repository.
-    """
+    """A step to push an empty commit to the remote repository."""
 
     title = "Push empty commit to the remote repository"
 
-    def __init__(self, dagger_client, ci_git_user, ci_github_access_token, git_branch):
+    def __init__(self, dagger_client, ci_git_user, ci_github_access_token, git_branch) -> None:
         self._dagger_client = dagger_client
         self._ci_github_access_token = ci_github_access_token
         self._ci_git_user = ci_git_user

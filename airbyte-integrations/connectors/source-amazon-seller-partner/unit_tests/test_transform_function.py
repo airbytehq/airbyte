@@ -15,7 +15,7 @@ def reports_stream(marketplace_id):
         aws_session_token="SessionToken",
         region="Mars",
     )
-    stream = SellerFeedbackReports(
+    return SellerFeedbackReports(
         url_base="https://test.url",
         aws_signature=aws_signature,
         replication_start_date="2010-01-25T00:00:00Z",
@@ -27,7 +27,6 @@ def reports_stream(marketplace_id):
         advanced_stream_options=None,
         max_wait_seconds=0,
     )
-    return stream
 
 
 INPUT_DATES = {
@@ -50,13 +49,13 @@ def parametrize_seller_feedback():
                     marketplace_id,
                     {"date": input_date, "rating": 1, "comments": "c", "response": "r", "order_id": "1", "rater_email": "e"},
                     {"date": expected_date, "rating": 1, "comments": "c", "response": "r", "order_id": "1", "rater_email": "e"},
-                )
+                ),
             )
 
     return result
 
 
-@pytest.mark.parametrize("marketplace_id,input_data,expected_data", parametrize_seller_feedback())
+@pytest.mark.parametrize(("marketplace_id", "input_data", "expected_data"), parametrize_seller_feedback())
 def test_transform_seller_feedback(marketplace_id, input_data, expected_data):
     stream = reports_stream(marketplace_id)
     transformer = stream.transformer

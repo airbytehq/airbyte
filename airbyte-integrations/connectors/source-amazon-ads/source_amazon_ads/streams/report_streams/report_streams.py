@@ -11,20 +11,23 @@ from dataclasses import dataclass
 from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Tuple
 from urllib.parse import urljoin
 
 import backoff
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class RecordType(str, Enum):
@@ -83,15 +86,11 @@ class ReportInitFailure(RetryableException):
 
 
 class TooManyRequests(Exception):
-    """
-    Custom exception occured when response with 429 status code received
-    """
+    """Custom exception occured when response with 429 status code received."""
 
 
 class ReportStream(BasicAmazonAdsStream, ABC):
-    """
-    Common base class for report streams
-    """
+    """Common base class for report streams."""
 
     API_VERSION = "v2"
     primary_key = ["profileId", "recordType", "reportDate", "recordId"]
@@ -141,19 +140,17 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        This is base method of CDK Stream class for getting metrics report. It
+        """This is base method of CDK Stream class for getting metrics report. It
         collects metrics for all profiles and record types. Amazon Ads metric
         generation works in async way: First we need to initiate creating report
         for specific profile/record type/date and then constantly check for report
         generation status - when it will have "SUCCESS" or "COMPLETED" status then download the
         report and parse result.
         """
-
         if not stream_slice:
             # In case of stream_slices method returned [None] object and
             # stream_slice is None.
@@ -182,7 +179,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
-                self, *args, **kwargs
+                self, *args, **kwargs,
             )
 
         return wrapped
@@ -190,7 +187,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def backoff_max_tries(func):
         def wrapped(self, *args, **kwargs):
             return backoff.on_exception(backoff.expo, ReportGenerationFailure, max_tries=self.report_generation_maximum_retries)(func)(
-                self, *args, **kwargs
+                self, *args, **kwargs,
             )
 
         return wrapped
@@ -221,15 +218,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
         pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_info(report_info_list)]
         if len(pending_report_status) > 0:
-            message = f"Report generation in progress: {repr(pending_report_status)}"
+            message = f"Report generation in progress: {pending_report_status!r}"
             raise ReportGenerationInProgress(message)
 
     def _incomplete_report_info(self, report_info_list):
         return [r for r in report_info_list if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
 
     def _generate_model(self):
-        """
-        Generate pydantic model based on combined list of all the metrics
+        """Generate pydantic model based on combined list of all the metrics
         attributes for particular stream. This model later will be used for
         discover schema generation.
         """
@@ -251,8 +247,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @abstractmethod
     def report_init_endpoint(self, record_type: str) -> str:
-        """
-        :param record_type - type of report to generate. Depending on stream
+        """:param record_type - type of report to generate. Depending on stream
         type it colud be campaigns, targets, asins and so on (see RecordType enum).
         :return: endpoint to initial report generating process.
         """
@@ -260,21 +255,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @property
     @abstractmethod
     def metrics_map(self) -> Dict[str, List]:
-        """
-        :return: Map record type to list of available metrics
-        """
+        """:return: Map record type to list of available metrics"""
 
     @property
     @abstractmethod
     def metrics_type_to_id_map(self) -> Dict[str, List]:
-        """
-        :return: Map record type to to its unique identifier in metrics
-        """
+        """:return: Map record type to to its unique identifier in metrics"""
 
     def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
-        """
-        Check report status and return download link if report generated successfuly
-        """
+        """Check report status and return download link if report generated successfuly."""
         check_endpoint = f"/{self.API_VERSION}/reports/{report_info.report_id}"
         resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
 
@@ -294,14 +283,11 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         ),
         max_tries=10,
     )
-    def _send_http_request(self, url: str, profile_id: int, json: dict = None):
+    def _send_http_request(self, url: str, profile_id: int, json: Optional[dict] = None):
         headers = self._get_auth_headers(profile_id)
-        if json:
-            response = self._session.post(url, headers=headers, json=json)
-        else:
-            response = self._session.get(url, headers=headers)
+        response = self._session.post(url, headers=headers, json=json) if json else self._session.get(url, headers=headers)
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            raise TooManyRequests()
+            raise TooManyRequests
         return response
 
     def get_date_range(self, start_date: Date, timezone: str) -> Iterable[str]:
@@ -328,7 +314,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             yield {"profile": profile, self.cursor_field: report_date}
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         stream_state = stream_state or {}
@@ -366,9 +352,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @abstractmethod
     def _get_init_report_body(self, report_date: str, record_type: str, profile) -> Dict[str, Any]:
-        """
-        Override to return dict representing body of POST request for initiating report creation.
-        """
+        """Override to return dict representing body of POST request for initiating report creation."""
 
     @backoff.on_exception(
         backoff.expo,
@@ -376,13 +360,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         max_tries=5,
     )
     def _init_reports(self, profile: Profile, report_date: str) -> List[ReportInfo]:
-        """
-        Send report generation requests for all profiles and for all record types for specific day.
+        """Send report generation requests for all profiles and for all record types for specific day.
         :report_date - date for generating metric report.
         :return List of ReportInfo objects each of them has reportId field to check report status.
         """
         report_info_list = []
-        for record_type, metrics in self.metrics_map.items():
+        for record_type in self.metrics_map:
             if len(self._report_record_types) > 0 and record_type not in self._report_record_types:
                 continue
 
@@ -396,7 +379,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 # different metric list for each record.
                 request_record_type = record_type.split("_")[0]
                 self.logger.info(
-                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date"
+                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date",
                 )
                 response = self._send_http_request(
                     urljoin(self._url, self.report_init_endpoint(request_record_type)),
@@ -418,7 +401,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                         profile_id=profile.profileId,
                         status=Status.IN_PROGRESS,
                         metric_objects=[],
-                    )
+                    ),
                 )
                 self.logger.info("Initiated successfully")
 
@@ -430,9 +413,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         max_tries=5,
     )
     def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
-        """
-        Download and parse report result
-        """
+        """Download and parse report result."""
         response = self._send_http_request(url, report_info.profile_id) if report_info else self._send_http_request(url, None)
         response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
@@ -447,13 +428,11 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         try:
             response_json = response.json()
         except ValueError:
-            return
+            return None
         return response_json.get("details")
 
     def _skip_known_errors(self, response) -> bool:
-        """
-        return True if we get known error which we need to skip
-        """
+        """Return True if we get known error which we need to skip."""
         response_details = self._get_response_error_details(response)
         if response_details:
             for status_code, details in self.ERRORS:

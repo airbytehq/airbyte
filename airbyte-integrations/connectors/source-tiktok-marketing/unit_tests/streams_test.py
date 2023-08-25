@@ -61,7 +61,7 @@ def advertiser_ids_fixture():
 
 
 @pytest.mark.parametrize(
-    "granularity,intervals_len",
+    ("granularity", "intervals_len"),
     [
         (ReportGranularity.LIFETIME, 1),
         (ReportGranularity.DAY, 3),
@@ -88,7 +88,7 @@ def test_stream_slices_advertisers():
 
 
 @pytest.mark.parametrize(
-    "config_name, slices_expected",
+    ("config_name", "slices_expected"),
     [
         (CONFIG, ADV_IDS),
         (CONFIG_SANDBOX, [{"advertiser_id": 2000}]),
@@ -100,7 +100,7 @@ def test_stream_slices_basic_sandbox(advertiser_ids, config_name, slices_expecte
 
 
 @pytest.mark.parametrize(
-    "granularity, slices_expected",
+    ("granularity", "slices_expected"),
     [
         (
             Lifetime,
@@ -135,7 +135,7 @@ def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pend
 
 
 @pytest.mark.parametrize(
-    "stream, metrics_number",
+    ("stream", "metrics_number"),
     [
         (AdsReports, 65),
         (AdGroupsReports, 51),
@@ -151,7 +151,7 @@ def test_basic_reports_get_metrics_day(stream, metrics_number):
 
 
 @pytest.mark.parametrize(
-    "stream, metrics_number",
+    ("stream", "metrics_number"),
     [
         (AdsReports, 65),
         (AdGroupsReports, 51),
@@ -166,7 +166,7 @@ def test_basic_reports_get_metrics_lifetime(stream, metrics_number):
 
 
 @pytest.mark.parametrize(
-    "stream, dimensions_expected",
+    ("stream", "dimensions_expected"),
     [
         (AdsReports, ["ad_id"]),
         (AdGroupsReports, ["adgroup_id"]),
@@ -182,7 +182,7 @@ def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expe
 
 
 @pytest.mark.parametrize(
-    "stream, dimensions_expected",
+    ("stream", "dimensions_expected"),
     [
         (AdsReports, ["ad_id", "stat_time_day"]),
         (AdGroupsReports, ["adgroup_id", "stat_time_day"]),
@@ -199,7 +199,7 @@ def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected)
 
 
 @pytest.mark.parametrize(
-    "granularity, cursor_field_expected",
+    ("granularity", "cursor_field_expected"),
     [
         (Daily, "stat_time_day"),
         (Hourly, "stat_time_hour"),

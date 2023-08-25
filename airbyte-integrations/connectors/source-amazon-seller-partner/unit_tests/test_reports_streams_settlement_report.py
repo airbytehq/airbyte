@@ -4,9 +4,10 @@
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
 from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import FlatFileSettlementV2Reports
+
+from airbyte_cdk.models import SyncMode
 
 START_DATE_1 = "2022-05-25T00:00:00Z"
 END_DATE_1 = "2022-05-26T00:00:00Z"
@@ -71,11 +72,11 @@ generated_reports_from_amazon = {
             "reportId": "85948019111",
             "reportType": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE",
         },
-    ]
+    ],
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def settlement_reports_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
         aws_signature = AWSSignature(
@@ -85,7 +86,7 @@ def settlement_reports_stream():
             aws_session_token="SessionToken",
             region="US",
         )
-        stream = FlatFileSettlementV2Reports(
+        return FlatFileSettlementV2Reports(
             url_base="https://test.url",
             aws_signature=aws_signature,
             replication_start_date=start_date,
@@ -97,7 +98,6 @@ def settlement_reports_stream():
             advanced_stream_options=None,
             max_wait_seconds=500,
         )
-        return stream
 
     return _internal
 
@@ -106,7 +106,7 @@ def test_stream_slices_method(mocker, settlement_reports_stream):
     response = requests.Response()
     mocker.patch.object(response, "json", return_value=generated_reports_from_amazon)
 
-    data = response.json().get("payload", list())
+    data = response.json().get("payload", [])
 
     slices = [{"report_id": e.get("reportId")} for e in data]
 

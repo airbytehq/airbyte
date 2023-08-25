@@ -10,20 +10,27 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 from urllib.parse import parse_qsl, urlparse
 
 import requests
+from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
 
 from .auth import ShopifyAuthenticator
 from .graphql import get_query_products
 from .transform import DataTypeEnforcer
-from .utils import SCOPES_MAPPING, ApiTypeEnum
+from .utils import (
+    SCOPES_MAPPING,
+    ApiTypeEnum,
+    ShopifyAccessScopesError,
+    ShopifyBadJsonError,
+    ShopifyConnectionError,
+    ShopifyNonRetryableErrors,
+    ShopifyWrongShopNameError,
+)
 from .utils import EagerlyCachedStreamState as stream_state_cache
-from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyNonRetryableErrors
 from .utils import ShopifyRateLimiter as limiter
-from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -66,7 +73,7 @@ class ShopifyStream(HttpStream, ABC):
         else:
             return None
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         if next_page_token:
             params.update(**next_page_token)
@@ -86,7 +93,7 @@ class ShopifyStream(HttpStream, ABC):
                 self.logger.warning(f"Unexpected error in `parse_ersponse`: {e}, the actual response data: {response.text}")
                 yield {}
 
-    def produce_records(self, records: Union[Iterable[Mapping[str, Any]], Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+    def produce_records(self, records: Optional[Union[Iterable[Mapping[str, Any]], Mapping[str, Any]]] = None) -> Iterable[Mapping[str, Any]]:
         # transform method was implemented according to issue 4841
         # Shopify API returns price fields as a string and it should be converted to number
         # this solution designed to convert string into number, but in future can be modified for general purpose
@@ -105,8 +112,8 @@ class ShopifyStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         known_errors = ShopifyNonRetryableErrors(self.name)
         status = response.status_code
-        if status in known_errors.keys():
-            setattr(self, "raise_on_http_errors", False)
+        if status in known_errors:
+            self.raise_on_http_errors = False
             self.logger.warning(known_errors.get(status))
             return False
         else:
@@ -115,7 +122,7 @@ class ShopifyStream(HttpStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """The name of the field in the response which contains the data"""
+        """The name of the field in the response which contains the data."""
 
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
@@ -140,7 +147,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return {self.cursor_field: max(last_record_value, current_state_value)}
 
     @stream_state_cache.cache_stream_state
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
+    def request_params(self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
@@ -152,7 +159,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
+    def filter_records_newer_than_state(self, stream_state: Optional[Mapping[str, Any]] = None, records_slice: Optional[Iterable[Mapping]] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
             state_value = stream_state.get(self.cursor_field)
@@ -165,13 +172,13 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     else:
                         # old entities could have cursor field in place, but set to null
                         self.logger.warning(
-                            f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison"
+                            f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` cursor value is: {record_value}, record is emitted without state comparison",
                         )
                         yield record
                 else:
                     # old entities could miss the cursor field
                     self.logger.warning(
-                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison"
+                        f"Stream `{self.name}`, Record ID: `{record.get(self.primary_key)}` missing cursor field: {self.cursor_field}, record is emitted without state comparison",
                     )
                     yield record
         else:
@@ -179,8 +186,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
 
 
 class ShopifySubstream(IncrementalShopifyStream):
-    """
-    ShopifySubstream - provides slicing functionality for streams using parts of data from parent stream.
+    """ShopifySubstream - provides slicing functionality for streams using parts of data from parent stream.
     For example:
        - `Refunds Orders` is the entity of `Orders`,
        - `OrdersRisks` is the entity of `Orders`,
@@ -203,9 +209,7 @@ class ShopifySubstream(IncrementalShopifyStream):
 
     @cached_property
     def parent_stream(self) -> object:
-        """
-        Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
-        """
+        """Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency."""
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -222,23 +226,22 @@ class ShopifySubstream(IncrementalShopifyStream):
                     }
                 },
                 {...},
-            }
+            }.
         """
         updated_state = super().get_updated_state(current_stream_state, latest_record)
         # add parent_stream_state to `updated_state`
         updated_state[self.parent_stream.name] = stream_state_cache.cached_state.get(self.parent_stream.name)
         return updated_state
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         if next_page_token:
             params.update(**next_page_token)
         return params
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Reading the parent stream for slices with structure:
-        EXAMPLE: for given nested_record as `id` of Orders,
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Reading the parent stream for slices with structure:
+        EXAMPLE: for given nested_record as `id` of Orders,.
 
         Outputs:
             [
@@ -268,11 +271,11 @@ class ShopifySubstream(IncrementalShopifyStream):
                             {
                                 self.slice_key: sub_record[self.nested_substream_list_field_id],
                                 self.cursor_field: record[self.nested_substream][0].get(
-                                    self.cursor_field, self.default_state_comparison_value
+                                    self.cursor_field, self.default_state_comparison_value,
                                 ),
                             }
                             for sub_record in record[self.nested_record]
-                        ]
+                        ],
                     )
             elif self.nested_substream:
                 if record.get(self.nested_substream):
@@ -280,27 +283,25 @@ class ShopifySubstream(IncrementalShopifyStream):
                         {
                             self.slice_key: record[self.nested_record],
                             self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
-                        }
+                        },
                     )
             else:
                 yield {self.slice_key: record[self.nested_record]}
 
         # output slice from sorted list to avoid filtering older records
-        if self.nested_substream:
-            if len(sorted_substream_slices) > 0:
-                # sort by cursor_field
-                sorted_substream_slices.sort(key=lambda x: x.get(self.cursor_field))
-                for sorted_slice in sorted_substream_slices:
-                    yield {self.slice_key: sorted_slice[self.slice_key]}
+        if self.nested_substream and len(sorted_substream_slices) > 0:
+            # sort by cursor_field
+            sorted_substream_slices.sort(key=lambda x: x.get(self.cursor_field))
+            for sorted_slice in sorted_substream_slices:
+                yield {self.slice_key: sorted_slice[self.slice_key]}
 
     def read_records(
         self,
-        stream_state: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        """Reading child streams records for each `id`"""
-
+        """Reading child streams records for each `id`."""
         slice_data = stream_slice.get(self.slice_key)
         # sometimes the stream_slice.get(self.slice_key) has the list of records,
         # to avoid data exposition inside the logs, we should get the data we need correctly out of stream_slice.
@@ -318,7 +319,7 @@ class MetafieldShopifySubstream(ShopifySubstream):
 
     parent_stream_class: object = None
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         object_id = stream_slice[self.slice_key]
         return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
 
@@ -369,7 +370,7 @@ class Orders(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         if not next_page_token:
@@ -434,12 +435,9 @@ class ProductsGraphQl(IncrementalShopifyStream):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         state_value = stream_state.get(self.filter_field)
-        if state_value:
-            filter_value = state_value
-        else:
-            filter_value = self.default_filter_field_value
+        filter_value = state_value if state_value else self.default_filter_field_value
         query = get_query_products(
-            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token
+            first=self.limit, filter_field=self.filter_field, filter_value=filter_value, next_page_token=next_page_token,
         )
         return {"query": query}
 
@@ -475,7 +473,7 @@ class ProductImages(ShopifySubstream):
     nested_substream = "images"
     filter_field = "since_id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         product_id = stream_slice[self.slice_key]
         return f"products/{product_id}/{self.data_field}.json"
 
@@ -487,7 +485,7 @@ class MetafieldProductImages(MetafieldShopifySubstream):
     nested_substream = "images"
     nested_substream_list_field_id = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         image_id = stream_slice[self.slice_key]
         return f"product_images/{image_id}/{self.data_field}.json"
 
@@ -500,7 +498,7 @@ class ProductVariants(ShopifySubstream):
     nested_substream = "variants"
     filter_field = "since_id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         product_id = stream_slice[self.slice_key]
         return f"products/{product_id}/{self.data_field}.json"
 
@@ -512,7 +510,7 @@ class MetafieldProductVariants(MetafieldShopifySubstream):
     nested_substream = "variants"
     nested_substream_list_field_id = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         variant_id = stream_slice[self.slice_key]
         return f"variants/{variant_id}/{self.data_field}.json"
 
@@ -524,7 +522,7 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
@@ -552,9 +550,8 @@ class MetafieldSmartCollections(MetafieldShopifySubstream):
 
 
 class Collects(IncrementalShopifyStream):
-    """
-    Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
-    https://shopify.dev/docs/admin-api/rest/reference/products/collect
+    """Collects stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    https://shopify.dev/docs/admin-api/rest/reference/products/collect.
 
     The Collect stream is the link between Products and Collections, if the Collection is created for Products,
     the `collect` record is created, it's reasonable to Full Refresh all collects. As for Incremental refresh -
@@ -576,7 +573,7 @@ class Collections(ShopifySubstream):
     slice_key = "collection_id"
     data_field = "collection"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         collection_id = stream_slice[self.slice_key]
         return f"collections/{collection_id}.json"
 
@@ -586,16 +583,14 @@ class MetafieldCollections(MetafieldShopifySubstream):
     slice_key = "collection_id"
     nested_record = "collection_id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         object_id = stream_slice[self.slice_key]
         return f"collections/{object_id}/{self.data_field}.json"
 
 
 class BalanceTransactions(IncrementalShopifyStream):
-
-    """
-    PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
-    https://shopify.dev/api/admin-rest/2021-07/resources/transactions
+    """PaymentsTransactions stream does not support Incremental Refresh based on datetime fields, only `since_id` is supported:
+    https://shopify.dev/api/admin-rest/2021-07/resources/transactions.
     """
 
     data_field = "transactions"
@@ -615,7 +610,7 @@ class OrderRefunds(ShopifySubstream):
     # we pull out the records that we already know has the refunds data from Orders object
     nested_substream = "refunds"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
@@ -626,7 +621,7 @@ class OrderRisks(ShopifySubstream):
     data_field = "risks"
     cursor_field = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
@@ -637,7 +632,7 @@ class Transactions(ShopifySubstream):
     data_field = "transactions"
     cursor_field = "created_at"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice["order_id"]
         return f"orders/{order_id}/{self.data_field}.json"
 
@@ -674,15 +669,14 @@ class DiscountCodes(ShopifySubstream):
     slice_key = "price_rule_id"
     data_field = "discount_codes"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         price_rule_id = stream_slice["price_rule_id"]
         return f"price_rules/{price_rule_id}/{self.data_field}.json"
 
 
 class Locations(ShopifyStream):
-    """
-    The location API does not support any form of filtering.
-    https://shopify.dev/api/admin-rest/2021-07/resources/location
+    """The location API does not support any form of filtering.
+    https://shopify.dev/api/admin-rest/2021-07/resources/location.
 
     Therefore, only FULL_REFRESH mode is supported.
     """
@@ -702,7 +696,7 @@ class InventoryLevels(ShopifySubstream):
     slice_key = "location_id"
     data_field = "inventory_levels"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         location_id = stream_slice["location_id"]
         return f"locations/{location_id}/{self.data_field}.json"
 
@@ -724,7 +718,7 @@ class InventoryItems(ShopifySubstream):
     nested_record_field_name = "inventory_item_id"
     data_field = "inventory_items"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         ids = ",".join(str(x[self.nested_record_field_name]) for x in stream_slice[self.slice_key])
         return f"inventory_items.json?ids={ids}"
 
@@ -735,7 +729,7 @@ class FulfillmentOrders(ShopifySubstream):
     data_field = "fulfillment_orders"
     cursor_field = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice[self.slice_key]
         return f"orders/{order_id}/{self.data_field}.json"
 
@@ -745,7 +739,7 @@ class Fulfillments(ShopifySubstream):
     slice_key = "order_id"
     data_field = "fulfillments"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         order_id = stream_slice[self.slice_key]
         return f"orders/{order_id}/{self.data_field}.json"
 
@@ -781,7 +775,7 @@ class CustomerAddress(ShopifySubstream):
     data_field = "addresses"
     cursor_field = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         customer_id = stream_slice[self.slice_key]
         return f"customers/{customer_id}/{self.data_field}.json"
 
@@ -803,7 +797,7 @@ class ConnectionCheckTest:
         # but it should stop immediately
         self.test_stream.max_retries = 0
 
-    def describe_error(self, pattern: str, shop_name: str = None, details: Any = None, **kwargs) -> str:
+    def describe_error(self, pattern: str, shop_name: Optional[str] = None, details: Any = None, **kwargs) -> str:
         connection_check_errors_map: Mapping[str, Any] = {
             "connection_error": f"Connection could not be established using `Shopify Store`: {shop_name}. Make sure it's valid and try again.",
             "request_exception": f"Request was not successfull, check your `input configuation` and try again. Details: {details}",
@@ -835,16 +829,13 @@ class ConnectionCheckTest:
 
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector.
-        """
+        """Testing connection availability for the connector."""
         config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Mapping a input config of the user input configuration as defined in the connector spec.
+        """Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
         config["shop"] = self.get_shop_name(config)

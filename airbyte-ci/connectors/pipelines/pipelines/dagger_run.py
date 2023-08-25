@@ -28,7 +28,7 @@ ARGS_DISABLING_TUI = ["--no-tui", "publish"]
 def get_dagger_path() -> Optional[str]:
     try:
         return (
-            subprocess.run(["which", "dagger"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode("utf-8").strip()
+            subprocess.run(["which", "dagger"], check=True, capture_output=True).stdout.decode("utf-8").strip()
         )
     except subprocess.CalledProcessError:
         if Path(BIN_DIR / "dagger").exists():
@@ -36,8 +36,7 @@ def get_dagger_path() -> Optional[str]:
 
 
 def get_current_dagger_sdk_version() -> str:
-    version = pkg_resources.get_distribution("dagger-io").version
-    return version
+    return pkg_resources.get_distribution("dagger-io").version
 
 
 def install_dagger_cli(dagger_version: str) -> None:
@@ -56,15 +55,14 @@ def get_dagger_cli_version(dagger_path: Optional[str]) -> Optional[str]:
     if not dagger_path:
         return None
     version_output = (
-        subprocess.run([dagger_path, "version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.decode("utf-8").strip()
+        subprocess.run([dagger_path, "version"], check=True, capture_output=True).stdout.decode("utf-8").strip()
     )
     version_pattern = r"v(\d+\.\d+\.\d+)"
 
     match = re.search(version_pattern, version_output)
 
     if match:
-        version = match.group(1)
-        return version
+        return match.group(1)
     else:
         raise Exception("Could not find dagger version in output: " + version_output)
 
@@ -80,7 +78,7 @@ def check_dagger_cli_install() -> str:
     cli_version = get_dagger_cli_version(dagger_path)
     if cli_version != expected_dagger_cli_version:
         LOGGER.warning(
-            f"The Dagger CLI version '{cli_version}' does not match the expected version '{expected_dagger_cli_version}'. Installing Dagger CLI '{expected_dagger_cli_version}'..."
+            f"The Dagger CLI version '{cli_version}' does not match the expected version '{expected_dagger_cli_version}'. Installing Dagger CLI '{expected_dagger_cli_version}'...",
         )
         install_dagger_cli(expected_dagger_cli_version)
         return check_dagger_cli_install()
@@ -90,7 +88,7 @@ def check_dagger_cli_install() -> str:
 def main():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     exit_code = 0
-    if len(sys.argv) > 1 and any([arg in ARGS_DISABLING_TUI for arg in sys.argv]):
+    if len(sys.argv) > 1 and any(arg in ARGS_DISABLING_TUI for arg in sys.argv):
         command = ["airbyte-ci-internal"] + [arg for arg in sys.argv[1:] if arg != "--no-tui"]
     else:
         dagger_path = check_dagger_cli_install()

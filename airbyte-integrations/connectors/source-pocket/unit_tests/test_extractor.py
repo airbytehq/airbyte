@@ -6,15 +6,16 @@ import json
 
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from source_pocket.extractor import PocketExtractor
+
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 
 parameters = {"options_field": "record_array"}
 decoder = JsonDecoder(parameters={})
 
 
 @pytest.mark.parametrize(
-    "test_name, body, expected_records",
+    ("test_name", "body", "expected_records"),
     [
         ("test_extract_successfully", {"list": {"record_one": {"id": 1}, "record_two": {"id": 2}}}, [{"id": 1}, {"id": 2}]),
         ("test_extract_empty_list", {"list": []}, []),

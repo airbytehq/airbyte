@@ -8,8 +8,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefre
 
 
 class TrustpilotApikeyAuthenticator(TokenAuthenticator):
-    """
-    Requesting data from the Public API requires only the API key.
+    """Requesting data from the Public API requires only the API key.
 
     See also https://documentation-apidocumentation.trustpilot.com/#Auth
     """
@@ -19,8 +18,7 @@ class TrustpilotApikeyAuthenticator(TokenAuthenticator):
 
     @property
     def token(self) -> str:
-        """
-        Unfortunately, the TokenAuthenticator class does not support an empty
+        """Unfortunately, the TokenAuthenticator class does not support an empty
         'auth_method' so we have to hack this that only the API key is
         provided in the HTTP header.
         """
@@ -28,8 +26,7 @@ class TrustpilotApikeyAuthenticator(TokenAuthenticator):
 
 
 class TrustpilotOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
-    """
-    Requesting data from APIs which require OAuth2 with refresh.
+    """Requesting data from APIs which require OAuth2 with refresh.
 
     See also https://documentation-apidocumentation.trustpilot.com/#Auth
     """
@@ -40,13 +37,12 @@ class TrustpilotOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
             {
                 "apikey": self.get_client_id(),  # The API key is required for OAuth2 requests as well ...
                 "Content-Type": "application/x-www-form-urlencoded",
-            }
+            },
         )
         return headers
 
     def refresh_access_token(self) -> Tuple[str, int, str]:
-        """
-        Required because Trustpilot passes the 'expires_in' parameter as string and not as integer.
+        """Required because Trustpilot passes the 'expires_in' parameter as string and not as integer.
 
         Would not be necessary when https://github.com/airbytehq/airbyte/pull/23921 gets merged.
         """

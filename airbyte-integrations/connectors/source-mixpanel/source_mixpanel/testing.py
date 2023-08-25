@@ -10,9 +10,7 @@ from .streams import Funnels
 
 
 def funnel_slices_patched(self: Funnels, sync_mode):
-    """
-    Return only first result from funnels
-    """
+    """Return only first result from funnels."""
     funnel_slices_values = self.get_funnel_slices(sync_mode)
     single_slice = next(funnel_slices_values, None)
     return [single_slice] if single_slice else []
@@ -30,8 +28,7 @@ def adapt_streams_if_testing(func):
 
 
 def adapt_validate_if_testing(func):
-    """
-    Due to API limitations (60 requests per hour) it is impossible to run acceptance tests in normal mode,
+    """Due to API limitations (60 requests per hour) it is impossible to run acceptance tests in normal mode,
     so we're reducing amount of requests by aligning start date if `AVAILABLE_TESTING_RANGE_DAYS` flag is set in env variables.
     """
 

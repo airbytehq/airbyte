@@ -8,10 +8,11 @@ from itertools import chain
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests import HTTPError
 from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
@@ -53,7 +54,7 @@ class SourceHubspot(AbstractSource):
     logger = AirbyteLogger()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """Check connection"""
+        """Check connection."""
         common_params = self.get_common_params(config=config)
         alive = True
         error_msg = None
@@ -78,8 +79,7 @@ class SourceHubspot(AbstractSource):
             response = requests.get(url=url)
             response.raise_for_status()
             response_json = response.json()
-            granted_scopes = response_json["scopes"]
-            return granted_scopes
+            return response_json["scopes"]
         except Exception as e:
             return False, repr(e)
 
@@ -92,7 +92,7 @@ class SourceHubspot(AbstractSource):
         start_date = config["start_date"]
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        return dict(api=api, start_date=start_date, credentials=credentials)
+        return {"api": api, "start_date": start_date, "credentials": credentials}
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
@@ -143,7 +143,7 @@ class SourceHubspot(AbstractSource):
             required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))
             self.logger.info(
                 f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
-                f"add the following scopes to download all available data: {required_scoped}"
+                f"add the following scopes to download all available data: {required_scoped}",
             )
         else:
             self.logger.info("No scopes to grant when authenticating with API key.")

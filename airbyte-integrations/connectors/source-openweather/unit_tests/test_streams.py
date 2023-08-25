@@ -9,7 +9,7 @@ import pytest
 from source_openweather.streams import OneCall
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(OneCall, "__abstractmethods__", set())

@@ -7,7 +7,7 @@ import pytest
 from destination_sftp_json.client import SftpClient
 
 
-@pytest.fixture
+@pytest.fixture()
 def client() -> SftpClient:
     return SftpClient("sample-host", "sample-username", "sample-password", "/sample/path")
 

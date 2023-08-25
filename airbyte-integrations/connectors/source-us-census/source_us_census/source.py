@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs
 
 import requests
+
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -17,13 +18,11 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 def prepare_request_params(query_params: str, api_key: str) -> dict:
     query_params = parse_qs(query_params)
-    params = {**query_params, "key": api_key}
-    return params
+    return {**query_params, "key": api_key}
 
 
 class UsCensusStream(HttpStream, ABC):
-    """
-    Generic stream to ingest US Census data.
+    """Generic stream to ingest US Census data.
 
     You should get an API key at https://api.census.gov/data/key_signup.html.
     """
@@ -34,10 +33,12 @@ class UsCensusStream(HttpStream, ABC):
     def __init__(self, query_params: Optional[str], query_path: str, api_key: str, **kwargs: dict):
         super().__init__(**kwargs)
         if not query_path:
-            raise ValueError("query_path is required!")
+            msg = "query_path is required!"
+            raise ValueError(msg)
 
         if not api_key:
-            raise ValueError("api_key is required!")
+            msg = "api_key is required!"
+            raise ValueError(msg)
 
         self.query_params = query_params or ""
         self.query_path = query_path
@@ -49,17 +50,14 @@ class UsCensusStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Adds request parameters and api key from the config.
-        """
+        """Adds request parameters and api key from the config."""
         return prepare_request_params(self.query_params, self.api_key)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        Parses the response from the us census website.
+        """Parses the response from the us census website.
 
         The US Census provides data in an atypical format,
         which motivated the creation of this source rather
@@ -124,16 +122,13 @@ class UsCensusStream(HttpStream, ABC):
                     # it's a comma.
                     split_values = buffer.split(",")[1:]
                     # Add back commas originally embedded in values
-                    split_values = map(
-                        lambda x: x.replace(comma_placeholder, ","),
-                        split_values,
-                    )
+                    split_values = (x.replace(comma_placeholder, ",") for x in split_values)
                     # Zip the values we found with the "header"
                     yield dict(
                         zip(
                             header,
                             split_values,
-                        )
+                        ),
                     )
                 buffer = ""
             else:
@@ -141,8 +136,7 @@ class UsCensusStream(HttpStream, ABC):
             is_prev_escape = False
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html
+        """The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html.
 
         These APIs return data in a non standard format.
         We create the JSON schemas dynamically by reading the first "row" of data we get.
@@ -159,25 +153,23 @@ class UsCensusStream(HttpStream, ABC):
                 "type": "object",
                 "properties": json_schema,
             }
-        raise ValueError("For schema discovery: the request must return at least one result")
+        msg = "For schema discovery: the request must return at least one result"
+        raise ValueError(msg)
 
     def path(
         self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        """
-        Gets path from the config.
-        """
+        """Gets path from the config."""
         return self.query_path
 
 
 # Source
 class SourceUsCensus(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Tests the connection and the API key for the US census website.
+        """Tests the connection and the API key for the US census website.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -201,8 +193,7 @@ class SourceUsCensus(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html
+        """The US Census website hosts many APIs: https://www.census.gov/data/developers/data-sets.html.
 
         We provide one generic stream of all the US Census APIs rather than one stream per API.
 
@@ -214,5 +205,5 @@ class SourceUsCensus(AbstractSource):
                 query_path=config.get("query_path"),
                 api_key=config.get("api_key"),
                 authenticator=NoAuth(),
-            )
+            ),
         ]

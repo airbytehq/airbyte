@@ -12,9 +12,10 @@ from distutils.dir_util import copy_tree
 from typing import Any, Dict
 
 import pytest
+from normalization.destination_type import DestinationType
+
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from integration_tests.utils import generate_dbt_models, run_destination_process
-from normalization.destination_type import DestinationType
 
 temporary_folders = set()
 
@@ -52,7 +53,7 @@ def before_all_tests(request):
         shutil.rmtree(folder, ignore_errors=True)
 
 
-@pytest.fixture
+@pytest.fixture()
 def setup_test_path(request):
     dbt_test_utils.change_current_test_dir(request)
     print(f"Running from: {pathlib.Path().absolute()}")
@@ -67,7 +68,7 @@ def setup_test_path(request):
         git_versioned_tests
         + [
             # Non-versioned tests outputs below will be written to /tmp folders instead
-        ]
+        ],
     ),
 )
 @pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
@@ -152,7 +153,7 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
 
     setup_schema_change_data(destination_type, test_resource_name, test_root_dir)
     generate_dbt_models(
-        destination_type, test_resource_name, test_root_dir, "modified_models", "catalog_schema_change.json", dbt_test_utils
+        destination_type, test_resource_name, test_root_dir, "modified_models", "catalog_schema_change.json", dbt_test_utils,
     )
     setup_dbt_schema_change_test(destination_type, test_resource_name, test_root_dir)
     dbt_test_utils.dbt_run(destination_type, test_root_dir)
@@ -173,8 +174,7 @@ def normalize_dbt_output(test_root_dir: str, input_dir: str, output_dir: str):
 
 
 def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -> str:
-    """
-    We prepare a clean folder to run the tests from.
+    """We prepare a clean folder to run the tests from.
 
     if the test_resource_name is part of git_versioned_tests, then dbt models and final sql outputs
     will be written to a folder included in airbyte git repository.
@@ -225,10 +225,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
 
 
 def setup_input_raw_data(
-    destination_type: DestinationType, test_resource_name: str, test_root_dir: str, destination_config: Dict[str, Any]
+    destination_type: DestinationType, test_resource_name: str, test_root_dir: str, destination_config: Dict[str, Any],
 ) -> bool:
-    """
-    We run docker images of destinations to upload test data stored in the messages.txt file for each test case.
+    """We run docker images of destinations to upload test data stored in the messages.txt file for each test case.
     This should populate the associated "raw" tables from which normalization is reading from when running dbt CLI.
     """
     catalog_file = os.path.join("resources", test_resource_name, "data_input", "catalog.json")
@@ -284,9 +283,7 @@ def setup_schema_change_data(destination_type: DestinationType, test_resource_na
 
 
 def setup_dbt_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
-    """
-    Prepare the data (copy) for the models for dbt test.
-    """
+    """Prepare the data (copy) for the models for dbt test."""
     replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     copy_test_files(
         os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_schema_tests"),
@@ -309,9 +306,7 @@ def setup_dbt_test(destination_type: DestinationType, test_resource_name: str, t
 
 
 def setup_dbt_incremental_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
-    """
-    Prepare the data (copy) for the models for dbt test.
-    """
+    """Prepare the data (copy) for the models for dbt test."""
     replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     copy_test_files(
         os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_schema_tests_incremental"),
@@ -340,9 +335,7 @@ def setup_dbt_incremental_test(destination_type: DestinationType, test_resource_
 
 
 def setup_dbt_schema_change_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
-    """
-    Prepare the data (copy) for the models for dbt test.
-    """
+    """Prepare the data (copy) for the models for dbt test."""
     replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     copy_test_files(
         os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_schema_tests_schema_change"),
@@ -371,11 +364,10 @@ def setup_dbt_schema_change_test(destination_type: DestinationType, test_resourc
 
 
 def dbt_test(destination_type: DestinationType, test_root_dir: str):
-    """
-    dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
+    """Dbt provides a way to run dbt tests as described here: https://docs.getdbt.com/docs/building-a-dbt-project/tests
     - Schema tests are added in .yml files from the schema_tests directory
         - see additional macros for testing here: https://github.com/fishtown-analytics/dbt-utils#schema-tests
-    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful
+    - Data tests are added in .sql files from the data_tests directory and should return 0 records to be successful.
 
     We use this mechanism to verify the output of our integration tests.
     """
@@ -384,9 +376,8 @@ def dbt_test(destination_type: DestinationType, test_root_dir: str):
 
 
 def copy_test_files(src: str, dst: str, destination_type: DestinationType, replace_identifiers: str):
-    """
-    Copy file while hacking snowflake identifiers that needs to be uppercased...
-    (so we can share these dbt tests files accross destinations)
+    """Copy file while hacking snowflake identifiers that needs to be uppercased...
+    (so we can share these dbt tests files accross destinations).
     """
     if os.path.exists(src):
         temp_dir = tempfile.mkdtemp(dir="/tmp/", prefix="normalization_test_")
@@ -399,7 +390,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
             shutil.copytree(src, temp_dir + "/lower", copy_function=copy_lower)
             src = temp_dir + "/lower"
         if os.path.exists(replace_identifiers):
-            with open(replace_identifiers, "r") as file:
+            with open(replace_identifiers) as file:
                 contents = file.read()
             identifiers_map = json.loads(contents)
             pattern = []
@@ -470,7 +461,8 @@ def to_upper_identifier(input: re.Match) -> str:
     elif len(input.groups()) == 3:
         return f"{input.group(1)}{input.group(2).upper()}{input.group(3)}"
     else:
-        raise Exception(f"Unexpected number of groups in {input}")
+        msg = f"Unexpected number of groups in {input}"
+        raise Exception(msg)
 
 
 def to_lower_identifier(input: re.Match) -> str:
@@ -479,4 +471,5 @@ def to_lower_identifier(input: re.Match) -> str:
     elif len(input.groups()) == 3:
         return f"{input.group(1)}{input.group(2).lower()}{input.group(3)}"
     else:
-        raise Exception(f"Unexpected number of groups in {input}")
+        msg = f"Unexpected number of groups in {input}"
+        raise Exception(msg)

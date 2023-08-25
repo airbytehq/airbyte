@@ -13,6 +13,8 @@ from unittest.mock import MagicMock
 
 import duckdb
 import pytest
+from destination_duckdb import DestinationDuckdb
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -25,7 +27,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_duckdb import DestinationDuckdb
 
 
 @pytest.fixture(autouse=True)
@@ -42,8 +43,7 @@ def local_file_config() -> Dict[str, str]:
     tmp_dir = tempfile.TemporaryDirectory()
     test = os.path.join(str(tmp_dir), "test.duckdb")
 
-    # f1.write_text("text to myfile")
-    yield {"destination_path": test}
+    return {"destination_path": test}
 
 
 @pytest.fixture(scope="module")
@@ -53,17 +53,16 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rand_string}"
 
 
-@pytest.fixture
+@pytest.fixture()
 def table_schema() -> str:
-    schema = {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
-    return schema
+    return {"type": "object", "properties": {"column1": {"type": ["null", "string"]}}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
@@ -71,38 +70,38 @@ def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredA
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_config() -> Dict[str, str]:
     return {"destination_path": "/destination.duckdb"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def airbyte_message1(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key1": "value1", "key2": 3}, emitted_at=int(datetime.now().timestamp()) * 1000
+            stream=test_table_name, data={"key1": "value1", "key2": 3}, emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def airbyte_message2(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
         record=AirbyteRecordMessage(
-            stream=test_table_name, data={"key1": "value2", "key2": 2}, emitted_at=int(datetime.now().timestamp()) * 1000
+            stream=test_table_name, data={"key1": "value2", "key2": 2}, emitted_at=int(datetime.now().timestamp()) * 1000,
         ),
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def airbyte_message3():
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"}))
 
 
 @pytest.mark.parametrize("config", ["invalid_config"])
-@pytest.mark.disable_autouse
+@pytest.mark.disable_autouse()
 def test_check_fails(config, request):
     config = request.getfixturevalue(config)
     destination = DestinationDuckdb()
@@ -142,7 +141,7 @@ def test_write(
     con = duckdb.connect(database=config.get("destination_path"), read_only=False)
     with con:
         cursor = con.execute(
-            f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
+            f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data",
         )
         result = cursor.fetchall()
 

@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
 import pendulum
+
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUs
 
 @dataclass
 class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator):
-    """
-    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
+    """Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
     a declarative connector configuration file. Credentials can be defined explicitly or via interpolation
     at runtime. The generated access token is attached to each request via the Authorization header.
 
@@ -71,7 +71,8 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         self._access_token = None
 
         if self.get_grant_type() == "refresh_token" and self.refresh_token is None:
-            raise ValueError("OAuthAuthenticator needs a refresh_token parameter if grant_type is set to `refresh_token`")
+            msg = "OAuthAuthenticator needs a refresh_token parameter if grant_type is set to `refresh_token`"
+            raise ValueError(msg)
 
     def get_token_refresh_endpoint(self) -> str:
         return self.token_refresh_endpoint.eval(self.config)
@@ -101,8 +102,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         return self._refresh_request_body.eval(self.config)
 
     def refresh_access_token(self) -> Tuple[str, Any]:
-        """
-        This overrides the parent class method because the parent class assumes the "expires_in" field is always an int representing
+        """This overrides the parent class method because the parent class assumes the "expires_in" field is always an int representing
          seconds till token expiry.
 
         However, this class provides the ability to determine the expiry date of an access token either by using (pseudocode):
@@ -128,7 +128,8 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
             try:
                 self._token_expiry_date = pendulum.now().add(seconds=int(float(value)))
             except ValueError:
-                raise ValueError(f"Invalid token expiry value {value}; a number is required.")
+                msg = f"Invalid token expiry value {value}; a number is required."
+                raise ValueError(msg)
 
     @property
     def access_token(self) -> str:
@@ -140,17 +141,13 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     @property
     def _message_repository(self) -> MessageRepository:
-        """
-        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
-        """
+        """Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs."""
         return self.message_repository
 
 
 @dataclass
 class DeclarativeSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator):
-    """
-    Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
-    """
+    """Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

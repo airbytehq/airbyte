@@ -8,8 +8,9 @@ import tempfile
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from source_facebook_marketing.source import SourceFacebookMarketing
+
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 
 
 @pytest.fixture(scope="session", name="state")
@@ -39,7 +40,7 @@ def configured_catalog_fixture(config) -> ConfiguredAirbyteCatalog:
 
 class TestFacebookMarketingSource:
     @pytest.mark.parametrize(
-        "stream_name, deleted_id", [("ads", "23846756820320398"), ("campaigns", "23846541919710398"), ("ad_sets", "23846541706990398")]
+        ("stream_name", "deleted_id"), [("ads", "23846756820320398"), ("campaigns", "23846541919710398"), ("ad_sets", "23846541706990398")],
     )
     def test_streams_with_include_deleted(self, stream_name, deleted_id, config_with_include_deleted, configured_catalog):
         catalog = self._slice_catalog(configured_catalog, {stream_name})
@@ -55,7 +56,7 @@ class TestFacebookMarketingSource:
         assert is_specific_deleted_pulled, f"{stream_name} stream should have a deleted record with id={deleted_id}"
 
     @pytest.mark.parametrize(
-        "stream_name, deleted_num, include_deleted_in_state",
+        ("stream_name", "deleted_num", "include_deleted_in_state"),
         [
             ("ads", 2, False),
             ("campaigns", 3, False),
@@ -66,9 +67,9 @@ class TestFacebookMarketingSource:
         ],
     )
     def test_streams_with_include_deleted_and_state(
-        self, stream_name, deleted_num, include_deleted_in_state, config_with_include_deleted, configured_catalog, state
+        self, stream_name, deleted_num, include_deleted_in_state, config_with_include_deleted, configured_catalog, state,
     ):
-        """Should ignore state because of include_deleted enabled"""
+        """Should ignore state because of include_deleted enabled."""
         if include_deleted_in_state:
             state = copy.deepcopy(state)
             for value in state.values():

@@ -6,9 +6,8 @@ from datetime import datetime
 
 
 def to_datetime_str(date: datetime) -> datetime:
-    """
-    Returns the formated datetime string.
-    :: Output example: '2021-07-15T0:0:0+00:00' FORMAT : "%Y-%m-%dT%H:%M:%S%z"
+    """Returns the formated datetime string.
+    :: Output example: '2021-07-15T0:0:0+00:00' FORMAT : "%Y-%m-%dT%H:%M:%S%z".
     """
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S%z")
 
@@ -28,3 +27,4 @@ def middle_date_slices(stream_slice):
                 "end_date": end_date.isoformat(),
             },
         ]
+    return None

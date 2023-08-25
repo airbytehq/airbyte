@@ -7,6 +7,8 @@ import traceback
 from abc import ABC
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
+from pydantic.error_wrappers import ValidationError
+
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
@@ -22,7 +24,6 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, Defau
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
-from pydantic.error_wrappers import ValidationError
 
 
 class FileBasedSource(AbstractSource, ABC):
@@ -49,8 +50,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        Check that the source can be accessed using the user-provided configuration.
+        """Check that the source can be accessed using the user-provided configuration.
 
         For each stream, verify that we can list and read files.
 
@@ -70,7 +70,8 @@ class FileBasedSource(AbstractSource, ABC):
         errors = []
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
-                raise ValueError(f"Stream {stream} is not a file-based stream.")
+                msg = f"Stream {stream} is not a file-based stream."
+                raise ValueError(msg)
             try:
                 (
                     stream_is_available,
@@ -85,9 +86,7 @@ class FileBasedSource(AbstractSource, ABC):
         return not bool(errors), (errors or None)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Return a list of this source's streams.
-        """
+        """Return a list of this source's streams."""
         try:
             parsed_config = self.spec_class(**config)
             self.stream_reader.config = parsed_config
@@ -104,7 +103,7 @@ class FileBasedSource(AbstractSource, ABC):
                         parsers=self.parsers,
                         validation_policy=self._validate_and_get_validation_policy(stream_config),
                         cursor=self.cursor_cls(stream_config),
-                    )
+                    ),
                 )
             return streams
 
@@ -112,10 +111,7 @@ class FileBasedSource(AbstractSource, ABC):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
-        """
-        Returns the specification describing what fields can be configured by a user when setting up a file-based source.
-        """
-
+        """Returns the specification describing what fields can be configured by a user when setting up a file-based source."""
         return ConnectorSpecification(
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
@@ -124,11 +120,13 @@ class FileBasedSource(AbstractSource, ABC):
     def _validate_and_get_validation_policy(self, stream_config: FileBasedStreamConfig) -> AbstractSchemaValidationPolicy:
         if stream_config.validation_policy not in self.validation_policies:
             # This should never happen because we validate the config against the schema's validation_policy enum
+            msg = f"`validation_policy` must be one of {list(self.validation_policies.keys())}"
             raise ValidationError(
-                f"`validation_policy` must be one of {list(self.validation_policies.keys())}", model=FileBasedStreamConfig
+                msg, model=FileBasedStreamConfig,
             )
         return self.validation_policies[stream_config.validation_policy]
 
     def _validate_input_schema(self, stream_config: FileBasedStreamConfig) -> None:
         if stream_config.schemaless and stream_config.input_schema:
-            raise ValidationError("`input_schema` and `schemaless` options cannot both be set", model=FileBasedStreamConfig)
+            msg = "`input_schema` and `schemaless` options cannot both be set"
+            raise ValidationError(msg, model=FileBasedStreamConfig)

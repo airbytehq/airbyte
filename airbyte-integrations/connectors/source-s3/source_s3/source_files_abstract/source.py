@@ -6,12 +6,13 @@ from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
+from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 # ideas on extending this to handle multiple streams:
 # - "dataset" is currently the name of the single table/stream. We could allow comma-split table names in this string for many streams.
@@ -25,27 +26,21 @@ class SourceFilesAbstract(AbstractSource, ABC):
     @property
     @abstractmethod
     def stream_class(self) -> type:
-        """
-        :return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3
-        """
+        """:return: reference to the relevant FileStream class e.g. IncrementalFileStreamS3"""
 
     @property
     @abstractmethod
     def spec_class(self) -> type:
-        """
-        :return: reference to the relevant pydantic spec class e.g. SourceS3Spec
-        """
+        """:return: reference to the relevant pydantic spec class e.g. SourceS3Spec"""
 
     @property
     @abstractmethod
     def documentation_url(self) -> str:
-        """
-        :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
+        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        This method checks two things:
+        """This method checks two things:
             - That the credentials provided in config are valid for access.
             - That the path pattern(s) provided in config are valid to be matched against.
 
@@ -76,8 +71,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        We just have a single stream per source so construct that here
+        """We just have a single stream per source so construct that here.
 
         :param config: The user-provided configuration as specified by the source's spec.
         :return: A list of the streams in this source connector.
@@ -85,8 +79,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         return [self.stream_class(**config)]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
-        """
-        Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+        """Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
         """
         # make dummy instance of stream_class in order to get 'supports_incremental' property

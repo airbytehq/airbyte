@@ -2,12 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-# from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 import source_snapchat_marketing
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_snapchat_marketing.source import (
     Adaccounts,
     AdaccountsStatsDaily,
@@ -19,6 +16,9 @@ from source_snapchat_marketing.source import (
     SourceSnapchatMarketing,
 )
 
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.auth import NoAuth
+
 config_mock = {
     "authenticator": NoAuth(),
     "start_date": "2000-01-01",
@@ -28,7 +28,7 @@ stats_stream = AdaccountsStatsDaily(**config_mock)
 
 
 @pytest.mark.parametrize(
-    "slice_period,expected_date_slices",
+    ("slice_period", "expected_date_slices"),
     [
         # for Hourly streams
         (
@@ -79,9 +79,9 @@ response_organizations = {
                 "id": "organization_id_1",
                 "updated_at": "2020-12-15T22:35:17.819Z",
                 "created_at": "2020-12-15T11:13:03.910Z",
-            }
-        }
-    ]
+            },
+        },
+    ],
 }
 
 
@@ -95,7 +95,7 @@ def test_organizations(requests_mock):
             "id": "organization_id_1",
             "updated_at": "2020-12-15T22:35:17.819Z",
             "created_at": "2020-12-15T11:13:03.910Z",
-        }
+        },
     ]
 
 
@@ -106,16 +106,16 @@ response_adaccounts = {
                 "id": "adaccount_id_1",
                 "updated_at": "2020-12-15T22:35:17.819Z",
                 "created_at": "2020-12-15T11:13:03.910Z",
-            }
+            },
         },
         {
             "adaccount": {
                 "id": "adaccount_id_2",
                 "updated_at": "2020-12-15T22:35:17.819Z",
                 "created_at": "2020-12-15T11:13:03.910Z",
-            }
+            },
         },
-    ]
+    ],
 }
 
 
@@ -153,16 +153,16 @@ response_ads = {
                 "id": "ad_id_1",
                 "updated_at": "2020-12-15T22:35:17.819Z",
                 "created_at": "2020-12-15T11:13:03.910Z",
-            }
+            },
         },
         {
             "ad": {
                 "id": "ad_id_2",
                 "updated_at": "2020-12-15T22:35:17.819Z",
                 "created_at": "2020-12-15T11:13:03.910Z",
-            }
+            },
         },
-    ]
+    ],
 }
 
 
@@ -208,7 +208,7 @@ response_ads_stats_lifetime_1 = {
                 "finalized_data_end_time": "2022-07-01T07:00:00.000-07:00",
                 "conversion_data_processed_end_time": "2022-07-01T00:00:00.000Z",
             },
-        }
+        },
     ],
 }
 
@@ -232,7 +232,7 @@ response_ads_stats_lifetime_2 = {
                 "finalized_data_end_time": "2022-07-01T07:00:00.000-07:00",
                 "conversion_data_processed_end_time": "2022-07-01T00:00:00.000Z",
             },
-        }
+        },
     ],
 }
 
@@ -313,7 +313,7 @@ response_ads_stats_daily_1 = {
                     },
                 ],
             },
-        }
+        },
     ],
 }
 
@@ -333,7 +333,7 @@ def test_ads_stats_daily(requests_mock):
 
 
 def test_get_parent_ids(requests_mock):
-    """Test cache usage in get_parent_ids"""
+    """Test cache usage in get_parent_ids."""
     # nonlocal auxiliary_id_map
 
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)

@@ -3,7 +3,7 @@
 #
 
 import datetime
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, AirbyteTraceMessage
 from airbyte_cdk.models import Type as MessageType
@@ -15,7 +15,7 @@ def stream_data_to_airbyte_message(
     stream_name: str,
     data_or_message: StreamData,
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
-    schema: Mapping[str, Any] = None,
+    schema: Optional[Mapping[str, Any]] = None,
 ) -> AirbyteMessage:
     if schema is None:
         schema = {}
@@ -35,4 +35,5 @@ def stream_data_to_airbyte_message(
     elif isinstance(data_or_message, AirbyteLogMessage):
         return AirbyteMessage(type=MessageType.LOG, log=data_or_message)
     else:
-        raise ValueError(f"Unexpected type for data_or_message: {type(data_or_message)}: {data_or_message}")
+        msg = f"Unexpected type for data_or_message: {type(data_or_message)}: {data_or_message}"
+        raise ValueError(msg)

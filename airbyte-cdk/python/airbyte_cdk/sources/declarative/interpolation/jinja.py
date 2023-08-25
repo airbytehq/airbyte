@@ -5,18 +5,18 @@
 import ast
 from typing import Optional
 
-from airbyte_cdk.sources.declarative.interpolation.filters import filters
-from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
-from airbyte_cdk.sources.declarative.interpolation.macros import macros
-from airbyte_cdk.sources.declarative.types import Config
 from jinja2 import meta
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import Environment
 
+from airbyte_cdk.sources.declarative.interpolation.filters import filters
+from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
+from airbyte_cdk.sources.declarative.interpolation.macros import macros
+from airbyte_cdk.sources.declarative.types import Config
+
 
 class JinjaInterpolation(Interpolation):
-    """
-    Interpolation strategy using the Jinja2 template engine.
+    """Interpolation strategy using the Jinja2 template engine.
 
     If the input string is a raw string, the interpolated string will be the same.
     `eval("hello world") -> "hello world"`
@@ -48,7 +48,7 @@ class JinjaInterpolation(Interpolation):
     # Please add a unit test to test_jinja.py when adding a restriction.
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._environment = Environment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
@@ -64,8 +64,9 @@ class JinjaInterpolation(Interpolation):
         for alias, equivalent in self.ALIASES.items():
             if alias in context:
                 # This is unexpected. We could ignore or log a warning, but failing loudly should result in fewer surprises
+                msg = f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK."
                 raise ValueError(
-                    f"Found reserved keyword {alias} in interpolation context. This is unexpected and indicative of a bug in the CDK."
+                    msg,
                 )
             elif equivalent in context:
                 context[alias] = context[equivalent]
@@ -77,7 +78,8 @@ class JinjaInterpolation(Interpolation):
                     return self._literal_eval(result)
             else:
                 # If input is not a string, return it as is
-                raise Exception(f"Expected a string. got {input_str}")
+                msg = f"Expected a string. got {input_str}"
+                raise Exception(msg)
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
@@ -95,7 +97,8 @@ class JinjaInterpolation(Interpolation):
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
-                raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
+                msg = f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}"
+                raise ValueError(msg)
             return self._environment.from_string(s).render(context)
         except TypeError:
             # The string is a static value, not a jinja template

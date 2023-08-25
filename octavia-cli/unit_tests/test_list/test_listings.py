@@ -3,7 +3,6 @@
 #
 
 import pytest
-from airbyte_api_client.api import connection_api, destination_api, destination_definition_api, source_api, source_definition_api
 from octavia_cli.list import listings
 from octavia_cli.list.listings import (
     BaseListing,
@@ -15,9 +14,11 @@ from octavia_cli.list.listings import (
     WorkspaceListing,
 )
 
+from airbyte_api_client.api import connection_api, destination_api, destination_definition_api, source_api, source_definition_api
+
 
 class TestBaseListing:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(BaseListing, "__abstractmethods__", set())
@@ -30,7 +31,7 @@ class TestBaseListing:
         assert base_listing.list_function_kwargs == {}
         assert base_listing.api_instance == base_listing.api.return_value
         base_listing.api.assert_called_with(mock_api_client)
-        assert base_listing.COMMON_LIST_FUNCTION_KWARGS == {"_check_return_type": False}
+        assert {"_check_return_type": False} == base_listing.COMMON_LIST_FUNCTION_KWARGS
 
     def test_abstract_methods(self, mock_api_client):
         assert BaseListing.__abstractmethods__ == {"api", "fields_to_display", "list_field_in_response", "list_function_name"}
@@ -57,7 +58,7 @@ class TestBaseListing:
         base_listing = BaseListing(mock_api_client)
         listing = base_listing.get_listing()
         base_listing._list_fn.assert_called_with(
-            base_listing.api_instance, **base_listing.list_function_kwargs, **base_listing.COMMON_LIST_FUNCTION_KWARGS
+            base_listing.api_instance, **base_listing.list_function_kwargs, **base_listing.COMMON_LIST_FUNCTION_KWARGS,
         )
         base_listing._parse_response.assert_called_with(base_listing._list_fn.return_value)
         assert listing == base_listing._parse_response.return_value
@@ -71,7 +72,7 @@ class TestBaseListing:
         base_listing = BaseListing(mock_api_client)
         representation = base_listing.__repr__()
         listings.formatting.display_as_table.assert_called_with(
-            [listings.formatting.format_column_names.return_value] + api_response_listing
+            [listings.formatting.format_column_names.return_value, *api_response_listing],
         )
         assert representation == listings.formatting.display_as_table.return_value
 
@@ -102,7 +103,7 @@ class TestDestinationConnectorsDefinitions:
 
 
 class TestWorkspaceListing:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(WorkspaceListing, "__abstractmethods__", set())

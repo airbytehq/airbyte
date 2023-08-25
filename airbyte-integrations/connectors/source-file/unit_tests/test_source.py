@@ -9,6 +9,9 @@ from unittest.mock import PropertyMock
 
 import jsonschema
 import pytest
+from source_file.client import ConfigurationError
+from source_file.source import SourceFile
+
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -21,21 +24,19 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from source_file.client import ConfigurationError
-from source_file.source import SourceFile
 
 logger = logging.getLogger("airbyte")
 
 
-@pytest.fixture
+@pytest.fixture()
 def source():
     return SourceFile()
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     config_path: str = "integration_tests/config.json"
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         return json.loads(f.read())
 
 
@@ -75,13 +76,13 @@ def get_catalog(properties):
                 ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-        ]
+            ),
+        ],
     )
 
 
 def test_nan_to_null(absolute_path, test_files):
-    """make sure numpy.nan converted to None"""
+    """Make sure numpy.nan converted to None."""
     config = {
         "dataset_name": "test",
         "format": "csv",
@@ -91,7 +92,7 @@ def test_nan_to_null(absolute_path, test_files):
     }
 
     catalog = get_catalog(
-        {"col1": {"type": ["string", "null"]}, "col2": {"type": ["number", "null"]}, "col3": {"type": ["number", "null"]}}
+        {"col1": {"type": ["string", "null"]}, "col2": {"type": ["number", "null"]}, "col3": {"type": ["number", "null"]}},
     )
 
     source = SourceFile()
@@ -158,7 +159,7 @@ def test_discover(source, config, client):
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
     assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="Field 'reader_options' is not valid JSON object. https://www.json.org/"
+        status=Status.FAILED, message="Field 'reader_options' is not valid JSON object. https://www.json.org/",
     )
 
 

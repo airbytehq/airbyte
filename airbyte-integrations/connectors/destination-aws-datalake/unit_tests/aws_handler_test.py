@@ -13,13 +13,13 @@ from destination_aws_datalake.config_reader import CompressionCodec, ConnectorCo
 
 @pytest.fixture(name="config")
 def config() -> Mapping[str, Any]:
-    with open("unit_tests/fixtures/config.json", "r") as f:
+    with open("unit_tests/fixtures/config.json") as f:
         return json.loads(f.read())
 
 
 @pytest.fixture(name="config_prefix")
 def config_prefix() -> Mapping[str, Any]:
-    with open("unit_tests/fixtures/config_prefix.json", "r") as f:
+    with open("unit_tests/fixtures/config_prefix.json") as f:
         return json.loads(f.read())
 
 

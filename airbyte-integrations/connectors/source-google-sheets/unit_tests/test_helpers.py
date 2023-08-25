@@ -6,6 +6,10 @@
 import unittest
 from unittest.mock import Mock, patch
 
+from source_google_sheets.client import GoogleSheetsClient
+from source_google_sheets.helpers import Helpers
+from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteRecordMessage,
@@ -15,9 +19,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from source_google_sheets.client import GoogleSheetsClient
-from source_google_sheets.helpers import Helpers
-from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
 logger = AirbyteLogger()
 
@@ -63,7 +64,7 @@ class TestHelpers(unittest.TestCase):
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
-        self.assertEqual(expected_stream, actual_stream)
+        assert expected_stream == actual_stream
 
     def test_duplicate_headers_retrived(self):
         header_values = ["h1", "h1", "h3"]
@@ -73,8 +74,8 @@ class TestHelpers(unittest.TestCase):
 
         actual_header_values, actual_duplicate_header_values = Helpers.get_valid_headers_and_duplicates(header_values)
 
-        self.assertEqual(expected_duplicate_header_values, actual_duplicate_header_values)
-        self.assertEqual(expected_valid_header_values, actual_header_values)
+        assert expected_duplicate_header_values == actual_duplicate_header_values
+        assert expected_valid_header_values == actual_header_values
 
     def test_duplicate_headers_to_ab_stream_ignores_duplicates(self):
         sheet_name = "sheet1"
@@ -94,7 +95,7 @@ class TestHelpers(unittest.TestCase):
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
-        self.assertEqual(expected_stream, actual_stream)
+        assert expected_stream == actual_stream
 
     def test_headers_to_airbyte_stream_blank_values_terminate_row(self):
         sheet_name = "sheet1"
@@ -112,27 +113,27 @@ class TestHelpers(unittest.TestCase):
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
-        self.assertEqual(expected_stream, actual_stream)
+        assert expected_stream == actual_stream
 
     def test_is_row_empty_with_empty_row(self):
         values = [" ", "", "     "]
 
-        self.assertTrue(Helpers.is_row_empty(values))
+        assert Helpers.is_row_empty(values)
 
     def test_is_row_empty_with_full_row(self):
         values = [" ", "", "     ", "somevaluehere"]
 
-        self.assertFalse(Helpers.is_row_empty(values))
+        assert not Helpers.is_row_empty(values)
 
     def test_row_contains_relevant_data(self):
         values = ["c1", "c2", "c3"]
         relevant_indices = [2]
-        self.assertTrue(Helpers.row_contains_relevant_data(values, relevant_indices))
+        assert Helpers.row_contains_relevant_data(values, relevant_indices)
 
     def test_row_contains_relevant_data_is_false(self):
         values = ["", "", "c3"]
         relevant_indices = [0, 1]
-        self.assertFalse(Helpers.row_contains_relevant_data(values, relevant_indices))
+        assert not Helpers.row_contains_relevant_data(values, relevant_indices)
 
     def test_parse_sheet_and_column_names_from_catalog(self):
         sheet1 = "soccer_team"
@@ -155,13 +156,13 @@ class TestHelpers(unittest.TestCase):
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 ),
-            ]
+            ],
         )
 
         actual = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
 
         expected = {sheet1: sheet1_columns, sheet2: sheet2_columns}
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
     def test_row_data_to_record_message(self):
         sheet = "my_sheet"
@@ -171,8 +172,8 @@ class TestHelpers(unittest.TestCase):
         actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name)
 
         expected = AirbyteRecordMessage(stream=sheet, data={"c1": "v1", "c4": "v4"}, emitted_at=1)
-        self.assertEqual(expected.stream, actual.stream)
-        self.assertEqual(expected.data, actual.data)
+        assert expected.stream == actual.stream
+        assert expected.data == actual.data
 
     def test_get_formatted_row_values(self):
         expected = [str(i) for i in range(10)]
@@ -180,7 +181,7 @@ class TestHelpers(unittest.TestCase):
 
         actual = Helpers.get_formatted_row_values(row_data)
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
     def test_get_first_row(self):
         spreadsheet_id = "123"
@@ -190,7 +191,7 @@ class TestHelpers(unittest.TestCase):
         client = Mock()
         sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
         actual = Helpers.get_first_row(sheet_client, spreadsheet_id, sheet)
-        self.assertEqual(expected_first_row, actual)
+        assert expected_first_row == actual
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
 
     def test_get_first_row_empty_sheet(self):
@@ -199,7 +200,7 @@ class TestHelpers(unittest.TestCase):
         row_data = []
         client = Mock()
         sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
-        self.assertEqual(Helpers.get_first_row(sheet_client, spreadsheet_id, sheet), [])
+        assert Helpers.get_first_row(sheet_client, spreadsheet_id, sheet) == []
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
 
     def test_check_sheet_is_valid(self):
@@ -210,8 +211,8 @@ class TestHelpers(unittest.TestCase):
         client = Mock()
         sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
         is_valid, reason = Helpers.check_sheet_is_valid(sheet_client, spreadsheet_id, sheet)
-        self.assertTrue(is_valid)
-        self.assertEqual(reason, "")
+        assert is_valid
+        assert reason == ""
 
     def test_check_sheet_is_valid_empty(self):
         spreadsheet_id = "123"
@@ -219,22 +220,22 @@ class TestHelpers(unittest.TestCase):
         client = Mock()
         sheet_client = google_sheet_invalid_client(spreadsheet_id, client)
         is_valid, reason = Helpers.check_sheet_is_valid(sheet_client, spreadsheet_id, sheet)
-        self.assertFalse(is_valid)
-        self.assertEqual(reason, "Expected data for exactly one range for sheet s1")
+        assert not is_valid
+        assert reason == "Expected data for exactly one range for sheet s1"
 
     def test_get_sheets_in_spreadsheet(self):
         spreadsheet_id = "id1"
         expected_sheets = ["s1", "s2"]
         client = Mock()
         client.get.return_value.execute.return_value = Spreadsheet(
-            spreadsheetId=spreadsheet_id, sheets=[Sheet(properties=SheetProperties(title=t)) for t in expected_sheets]
+            spreadsheetId=spreadsheet_id, sheets=[Sheet(properties=SheetProperties(title=t)) for t in expected_sheets],
         )
         with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
             sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
             sheet_client.client = client
         actual_sheets = Helpers.get_sheets_in_spreadsheet(sheet_client, spreadsheet_id)
 
-        self.assertEqual(expected_sheets, actual_sheets)
+        assert expected_sheets == actual_sheets
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=False)
 
     def test_get_available_sheets_to_column_index_to_name(self):
@@ -267,32 +268,32 @@ class TestHelpers(unittest.TestCase):
             sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
             sheet_client.client = client
         actual = Helpers.get_available_sheets_to_column_index_to_name(
-            sheet_client, spreadsheet_id, {sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])}
+            sheet_client, spreadsheet_id, {sheet1: frozenset(sheet1_first_row), "doesnotexist": frozenset(["1", "2"])},
         )
         expected = {sheet1: {0: "1", 1: "2", 2: "3", 3: "4"}}
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
     def test_get_spreadsheet_id(self):
         test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q/edit#gid=1820065035"
         result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q", result)
+        assert result == "18vWlVH8BfjGegwY_GdV1B_cPP9re66xI8uJK25dtY9Q"
 
         test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q/edit"
         result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q", result)
+        assert result == "18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q"
 
         test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
         result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
+        assert result == "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
 
         test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
         result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
+        assert result == "18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
 
         test_url = "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
         result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q", result)
+        assert result == "18vWlVH8BfjGegwY_GdV1BjcPP9re66xI8uJK25dtY9Q"
 
 
 if __name__ == "__main__":

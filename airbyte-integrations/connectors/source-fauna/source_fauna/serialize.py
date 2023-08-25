@@ -12,8 +12,7 @@ from faunadb.objects import FaunaTime, Query, Ref, SetRef
 
 
 def fauna_doc_to_airbyte(doc: dict) -> dict:
-    """
-    Converts a full fauna document into the airbyte representation.
+    """Converts a full fauna document into the airbyte representation.
 
     This will mutate and return the input `doc`. If you don't want this behavior, deep copy
     the dict before passing it in.
@@ -24,8 +23,7 @@ def fauna_doc_to_airbyte(doc: dict) -> dict:
 
 
 def _fauna_value_to_airbyte(value: any) -> any:
-    """
-    Converts a fauna document to an airbyte-serializable document. This will simply replace
+    """Converts a fauna document to an airbyte-serializable document. This will simply replace
     all FaunaTime, Ref, dates, and byte arrays with native json objects.
 
     This will mutate `value` (if possible), and return the new `value`.
@@ -67,7 +65,6 @@ def ref_to_airbyte(ref) -> dict:
         return {"id": ref.id(), "type": "unknown"}
     elif ref.collection().collection() is None:
         # We have a singly nested ref.
-        # Example: Ref("my_collection", Ref("collections"))
         #      or: Ref("my_index", Ref("indexes"))
         collection_names = {
             "collections": "collection",
@@ -92,7 +89,6 @@ def ref_to_airbyte(ref) -> dict:
     elif (ref.collection().collection().collection() is None) and (ref.collection().collection().id() == "collections"):
         # This is a document.
         #
-        # Example: Ref("1234", Ref("collection_name", Ref("collections")))
         return {
             "id": ref.id(),
             "collection": ref.collection().id(),

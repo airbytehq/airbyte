@@ -11,6 +11,7 @@ import sys
 from typing import Dict
 
 import jsonschema
+
 from airbyte_cdk.sources.streams.http import auth
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 
@@ -117,16 +118,16 @@ def check_invalid_property_error(exc: jsonschema.ValidationError) -> str:
     for property in mapper:
         if property in exc.schema_path:
             return mapper[property]
+    return None
 
 
 def get_source_defined_primary_key(stream):
-    """
-    https://github.com/airbytehq/airbyte/pull/26283
+    """https://github.com/airbytehq/airbyte/pull/26283
     It's not a very elegant way to get source_defined_primary_key inside the stream.
     It's used only for a smooth transition to the new primary key.
     As soon as the transition will complete we can remove this function.
     """
-    if len(sys.argv) > 1 and "read" == sys.argv[1]:
+    if len(sys.argv) > 1 and sys.argv[1] == "read":
         parser = argparse.ArgumentParser()
         subparsers = parser.add_subparsers()
         read_subparser = subparsers.add_parser("read")
@@ -135,3 +136,4 @@ def get_source_defined_primary_key(stream):
         catalog = json.loads(open(args.catalog).read())
         res = {s["stream"]["name"]: s["stream"].get("source_defined_primary_key") for s in catalog["streams"]}
         return res.get(stream)
+    return None

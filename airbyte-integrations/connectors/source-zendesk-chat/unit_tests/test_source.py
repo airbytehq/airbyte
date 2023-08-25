@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
 from source_zendesk_chat.source import SourceZendeskChat, ZendeskAuthentication
 from source_zendesk_chat.streams import (
     Accounts,
@@ -24,6 +23,8 @@ from source_zendesk_chat.streams import (
     Triggers,
 )
 
+from airbyte_cdk import AirbyteLogger
+
 TEST_CONFIG: dict = {
     "start_date": "2020-10-01T00:00:00Z",
     "access_token": "access_token",
@@ -38,7 +39,7 @@ def test_get_auth():
 
 
 @pytest.mark.parametrize(
-    "response, check_passed",
+    ("response", "check_passed"),
     [
         (iter({"id": 123}), True),
         (requests.HTTPError(), False),

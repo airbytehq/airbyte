@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Generator, Mapping, Tuple
+from typing import Any, Generator, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.deprecated.client import BaseClient
@@ -12,7 +12,7 @@ from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
 
 
 class Client(BaseClient):
-    def __init__(self, credentials: Mapping[str, Any] = None, credentials_json: str = None, email: str = None):
+    def __init__(self, credentials: Optional[Mapping[str, Any]] = None, credentials_json: Optional[str] = None, email: Optional[str] = None):
         # supporting old config format
         if not credentials:
             credentials = {"credentials_json": credentials_json, "email": email}

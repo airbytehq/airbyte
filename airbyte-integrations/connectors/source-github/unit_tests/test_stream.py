@@ -10,7 +10,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
-from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from requests import HTTPError
 from responses import matchers
 from source_github import constants
@@ -47,6 +46,8 @@ from source_github.streams import (
     WorkflowRuns,
 )
 from source_github.utils import read_full_refresh
+
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 
 from .utils import ProjectsResponsesAPI, read_incremental
 
@@ -207,7 +208,7 @@ def test_stream_teams_502(sleep_mock):
     assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 6
     # Check whether url is the same for all response.calls
-    assert set(call.request.url for call in responses.calls).symmetric_difference({f"{url}?per_page=100"}) == set()
+    assert {call.request.url for call in responses.calls}.symmetric_difference({f"{url}?per_page=100"}) == set()
 
 
 @responses.activate
@@ -289,7 +290,7 @@ def test_stream_repositories_read():
     stream = Repositories(**organization_args)
     updated_at = "2020-01-01T00:00:00Z"
     responses.add(
-        "GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
+        "GET", "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}],
     )
     responses.add("GET", "https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
     records = list(read_full_refresh(stream))
@@ -531,7 +532,7 @@ def test_stream_project_columns():
     ]
 
     assert stream_state == {
-        "organization/repository": {"2": {"updated_at": "2022-03-01T10:00:00Z"}, "3": {"updated_at": "2022-05-01T10:00:00Z"}}
+        "organization/repository": {"2": {"updated_at": "2022-03-01T10:00:00Z"}, "3": {"updated_at": "2022-05-01T10:00:00Z"}},
     }
 
     data = [
@@ -573,7 +574,7 @@ def test_stream_project_columns():
             "2": {"updated_at": "2022-04-01T10:00:00Z"},
             "3": {"updated_at": "2022-05-01T10:00:00Z"},
             "4": {"updated_at": "2022-06-01T10:00:00Z"},
-        }
+        },
     }
 
 
@@ -707,7 +708,7 @@ def test_stream_comments():
         api_url,
         json=data[1:3],
         headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"',
         },
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "per_page": "2"})],
     )
@@ -717,7 +718,7 @@ def test_stream_comments():
         api_url,
         json=data[3:5],
         headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"',
         },
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "page": "2", "per_page": "2"})],
     )
@@ -752,7 +753,7 @@ def test_stream_comments():
         api_url,
         json=data[1:3],
         headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
+            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"',
         },
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:11:04Z", "per_page": "2"})],
     )
@@ -762,7 +763,7 @@ def test_stream_comments():
         api_url,
         json=data[3:5],
         headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
+            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"',
         },
         match=[matchers.query_param_matcher({"since": "2022-02-02T10:11:04Z", "page": "2", "per_page": "2"})],
     )
@@ -973,7 +974,7 @@ def test_stream_commit_comment_reactions_incremental_read():
         "airbytehq/integration-test": {
             "55538825": {"created_at": "2022-01-01T16:00:00Z"},
             "55538826": {"created_at": "2022-01-01T17:00:00Z"},
-        }
+        },
     }
 
     assert records == [
@@ -1201,7 +1202,7 @@ def test_stream_workflow_jobs_read():
             "created_at": "2022-09-02T09:14:00Z",
             "updated_at": "2022-09-02T09:15:00Z",
             "repository": {"full_name": "org/repo"},
-        }
+        },
     )
     workflow_jobs_3 = [
         {"id": 6, "completed_at": "2022-09-02T09:15:00Z", "run_id": 3},

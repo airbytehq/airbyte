@@ -14,7 +14,7 @@ from normalization.transform_catalog.destination_name_transformer import Destina
 from normalization.transform_catalog.table_name_registry import TableNameRegistry, get_nested_hashed_table_name
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 def before_tests(request):
     # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
     # or from the base-normalization folder (through pycharm)
@@ -37,9 +37,8 @@ def before_tests(request):
 )
 @pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_resolve_names(destination_type: DestinationType, catalog_file: str):
-    """
-    For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.
-    (especially since some destination like postgres have a very low limit to identifiers length of 64 characters)
+    """For a given catalog.json and destination, multiple cases can occur where naming becomes tricky.
+    (especially since some destination like postgres have a very low limit to identifiers length of 64 characters).
 
     In case of nested objects/arrays in a stream, names can drag on to very long names.
     Tests are built here using resources files as follow:
@@ -76,12 +75,13 @@ def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     for stream_processor in stream_processors:
         # Check properties
         if not stream_processor.properties:
-            raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
+            msg = "Invalid Catalog: Unexpected empty properties in catalog"
+            raise EOFError(msg)
         stream_processor.collect_table_names()
     for conflict in tables_registry.resolve_names():
         print(
             f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
-            f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
+            f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}",
         )
     apply_function = identity
     if DestinationType.SNOWFLAKE.value == destination_type.value:
@@ -101,7 +101,7 @@ def identity(x):
 
 
 def read_json(input_path: str, apply_function=(lambda x: x)):
-    with open(input_path, "r") as file:
+    with open(input_path) as file:
         contents = file.read()
     if apply_function:
         contents = apply_function(contents)
@@ -115,7 +115,7 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
 # automatically test naming against all destinations whenever it is
 # added to the enum.
 @pytest.mark.parametrize(
-    "json_path, expected_postgres, expected_bigquery",
+    ("json_path", "expected_postgres", "expected_bigquery"),
     [
         (
             ["parent", "child"],
@@ -135,9 +135,7 @@ def read_json(input_path: str, apply_function=(lambda x: x)):
     ],
 )
 def test_get_simple_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str):
-    """
-    Checks how to generate a simple and easy to understand name from a json path
-    """
+    """Checks how to generate a simple and easy to understand name from a json path."""
     postgres_registry = TableNameRegistry(DestinationType.POSTGRES)
     actual_postgres_name = postgres_registry.get_simple_table_name(json_path)
     assert actual_postgres_name == expected_postgres
@@ -149,7 +147,7 @@ def test_get_simple_table_name(json_path: List[str], expected_postgres: str, exp
 
 
 @pytest.mark.parametrize(
-    "json_path, expected_postgres, expected_bigquery",
+    ("json_path", "expected_postgres", "expected_bigquery"),
     [
         (
             ["parent", "child"],
@@ -169,8 +167,7 @@ def test_get_simple_table_name(json_path: List[str], expected_postgres: str, exp
     ],
 )
 def test_get_nested_hashed_table_name(json_path: List[str], expected_postgres: str, expected_bigquery: str):
-    """
-    Checks how to generate a unique name with strategies of combining all fields into a single table name for the user to (somehow)
+    """Checks how to generate a unique name with strategies of combining all fields into a single table name for the user to (somehow)
     identify and recognize what data is available in there.
     A set of complicated rules are done in order to choose what parts to truncate or what to leave and handle
     name collisions.

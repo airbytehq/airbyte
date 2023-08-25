@@ -8,7 +8,7 @@ from source_google_ads.models import Customer
 
 @pytest.fixture(name="config")
 def test_config():
-    config = {
+    return {
         "credentials": {
             "developer_token": "test_token",
             "client_id": "test_client_id",
@@ -39,17 +39,16 @@ def test_config():
             },
         ],
     }
-    return config
 
 
 @pytest.fixture(autouse=True)
 def mock_oauth_call(requests_mock):
-    yield requests_mock.post(
+    return requests_mock.post(
         "https://accounts.google.com/o/oauth2/token",
         json={"access_token": "access_token", "refresh_token": "refresh_token", "expires_in": 0},
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def customers(config):
     return [Customer(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]

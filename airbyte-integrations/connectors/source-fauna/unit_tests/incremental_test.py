@@ -6,6 +6,11 @@ from datetime import datetime, timezone
 from typing import Dict, Generator
 from unittest.mock import MagicMock, Mock
 
+from faunadb import _json
+from faunadb import query as q
+from source_fauna import SourceFauna
+from test_util import CollectionConfig, config, expand_columns_query, mock_logger, ref
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -17,10 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from faunadb import _json
-from faunadb import query as q
-from source_fauna import SourceFauna
-from test_util import CollectionConfig, config, expand_columns_query, mock_logger, ref
 
 NOW = 1234512987
 
@@ -60,7 +61,7 @@ def test_read_no_updates_or_creates_but_removes_present():
         return "ts"
 
     def read_updates_hardcoded(
-        logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: Dict[str, any], index: str, page_size: int
+        logger, stream: ConfiguredAirbyteStream, conf: CollectionConfig, state: Dict[str, any], index: str, page_size: int,
     ) -> Generator[any, None, None]:
         return []
 
@@ -104,8 +105,8 @@ def test_read_no_updates_or_creates_but_removes_present():
                             "deletion_mode": "deleted_field",
                             "column": "my_deleted_column",
                         },
-                    }
-                }
+                    },
+                },
             ),
             ConfiguredAirbyteCatalog(
                 streams=[
@@ -115,13 +116,13 @@ def test_read_no_updates_or_creates_but_removes_present():
                         stream=AirbyteStream(
                             name="my_stream_name",
                             json_schema={},
-                            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                         ),
-                    )
-                ]
+                    ),
+                ],
             ),
             state={},
-        )
+        ),
     )
     # read_removes should update the state, so we should see a state message in the output.
     assert result == [
@@ -146,8 +147,8 @@ def test_read_no_updates_or_creates_but_removes_present():
                 "my_stream_name": {
                     "remove_cursor": {},
                     "updates_cursor": {},
-                }
-            }
+                },
+            },
         ),
     ]
 
@@ -164,7 +165,7 @@ def test_read_updates_ignore_deletes():
         return "my_stream_name_ts"
 
     def read_updates_hardcoded(
-        logger, stream: ConfiguredAirbyteStream, conf, state: dict[str, any], index: str, page_size: int
+        logger, stream: ConfiguredAirbyteStream, conf, state: dict[str, any], index: str, page_size: int,
     ) -> Generator[any, None, None]:
         yield {
             "some_document": "data_here",
@@ -216,8 +217,8 @@ def test_read_updates_ignore_deletes():
                         "deletions": {
                             "deletion_mode": "ignore",
                         },
-                    }
-                }
+                    },
+                },
             ),
             ConfiguredAirbyteCatalog(
                 streams=[
@@ -227,13 +228,13 @@ def test_read_updates_ignore_deletes():
                         stream=AirbyteStream(
                             name="my_stream_name",
                             json_schema={},
-                            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                            supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                         ),
-                    )
-                ]
+                    ),
+                ],
             ),
             state={},
-        )
+        ),
     )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == [
@@ -255,8 +256,8 @@ def test_read_updates_ignore_deletes():
             {
                 "my_stream_name": {
                     "updates_cursor": {},
-                }
-            }
+                },
+            },
         ),
     ]
 
@@ -299,7 +300,7 @@ def test_read_removes_resume_from_partial_failure():
             after={
                 "ts": 0,
                 "action": "remove",
-            }
+            },
         ),
         make_query(after=FIRST_AFTER_TOKEN),
         make_query(after=SECOND_AFTER_TOKEN),
@@ -312,7 +313,7 @@ def test_read_removes_resume_from_partial_failure():
                 {
                     "ref": ref(100),
                     "ts": 99,
-                }
+                },
             ],
             after=FIRST_AFTER_TOKEN,
         ),
@@ -321,7 +322,7 @@ def test_read_removes_resume_from_partial_failure():
                 {
                     "ref": ref(5),
                     "ts": 999,
-                }
+                },
             ],
             after=SECOND_AFTER_TOKEN,
         ),
@@ -331,7 +332,7 @@ def test_read_removes_resume_from_partial_failure():
                 {
                     "ref": ref(3),
                     "ts": 12345,
-                }
+                },
             ],
             after=None,
         ),
@@ -341,7 +342,7 @@ def test_read_removes_resume_from_partial_failure():
                 {
                     "ref": ref(3),
                     "ts": 12345,
-                }
+                },
             ],
             after=None,
         ),
@@ -359,7 +360,8 @@ def test_read_removes_resume_from_partial_failure():
         result = QUERY_RESULTS[current_query]
         if current_query == 2 and not failed_yet:
             failed_yet = True
-            raise ValueError("something has gone terribly wrong")
+            msg = "something has gone terribly wrong"
+            raise ValueError(msg)
         current_query += 1
         return result
 
@@ -410,7 +412,7 @@ def test_read_removes_resume_from_partial_failure():
             "ref": "3",
             "ts": 12345,
             "deletes_here": datetime.utcfromtimestamp(12345 / 1_000_000).isoformat(),
-        }
+        },
     ]
     assert state == {
         "ts": 12345,
@@ -464,7 +466,7 @@ def test_read_remove_deletions():
             after={
                 "ts": 0,
                 "action": "remove",
-            }
+            },
         ),
         make_query(after={"ts": TS, "action": "remove", "resource": q.ref(q.collection("foo"), "100")}),
         make_query(after={"ts": TS, "action": "remove", "resource": q.ref(q.collection("foo"), "100")}),
@@ -475,7 +477,7 @@ def test_read_remove_deletions():
                 {
                     "ref": ref(100),
                     "ts": TS,
-                }
+                },
             ],
             after=None,
         ),
@@ -484,7 +486,7 @@ def test_read_remove_deletions():
                 {
                     "ref": ref(100),
                     "ts": TS,
-                }
+                },
             ],
             after=None,
         ),
@@ -573,17 +575,16 @@ def test_read_remove_deletions():
 
 
 def test_read_updates_query():
-    """
-    Validates that read_updates() queries the database correctly.
-    """
-
+    """Validates that read_updates() queries the database correctly."""
     PAGE_SIZE = 12344315
     INDEX = "my_index_name"
     FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
     SECOND_AFTER_TOKEN = ["even more magical", 3, "data"]
     state = {}
 
-    def make_query(after, start=[0]):
+    def make_query(after, start=None):
+        if start is None:
+            start = [0]
         return q.map_(
             q.lambda_("x", expand_columns_query(q.select(1, q.var("x")))),
             q.paginate(
@@ -611,7 +612,7 @@ def test_read_updates_query():
                 {
                     "ref": "3",
                     "ts": 99,
-                }
+                },
             ],
             after=FIRST_AFTER_TOKEN,
         ),
@@ -620,7 +621,7 @@ def test_read_updates_query():
                 {
                     "ref": "5",
                     "ts": 123,
-                }
+                },
             ],
             after=SECOND_AFTER_TOKEN,
         ),
@@ -630,7 +631,7 @@ def test_read_updates_query():
                 {
                     "ref": "10",
                     "ts": 999,
-                }
+                },
             ],
             after=None,
         ),
@@ -640,7 +641,7 @@ def test_read_updates_query():
                 {
                     "ref": "10",
                     "ts": 999,
-                }
+                },
             ],
             after=None,
         ),
@@ -685,14 +686,14 @@ def test_read_updates_query():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
-                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
-        )
+        ),
     )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == [
@@ -722,14 +723,14 @@ def test_read_updates_query():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
-                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
-        )
+        ),
     )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == []
@@ -745,14 +746,14 @@ def test_read_updates_query():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
-                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
-        )
+        ),
     )
     # Here we also validate that the cursor will stay on the latest 'ts' value.
     assert result == [{"ref": "11", "ts": 1000}]
@@ -765,11 +766,9 @@ def test_read_updates_query():
 
 
 def test_read_updates_resume():
-    """
-    Validates that read_updates() queries the database correctly, and resumes
+    """Validates that read_updates() queries the database correctly, and resumes
     a failed query correctly.
     """
-
     PAGE_SIZE = 12344315
     INDEX = "my_index_name"
     FIRST_AFTER_TOKEN = ["some magical", 3, "data"]
@@ -801,7 +800,7 @@ def test_read_updates_resume():
                 {
                     "ref": "3",
                     "ts": 99,
-                }
+                },
             ],
             after=FIRST_AFTER_TOKEN,
         ),
@@ -810,7 +809,7 @@ def test_read_updates_resume():
                 {
                     "ref": "5",
                     "ts": 123,
-                }
+                },
             ],
             after=SECOND_AFTER_TOKEN,
         ),
@@ -820,7 +819,7 @@ def test_read_updates_resume():
                 {
                     "ref": "10",
                     "ts": 999,
-                }
+                },
             ],
             after=None,
         ),
@@ -834,7 +833,8 @@ def test_read_updates_resume():
         result = QUERY_RESULTS[current_query]
         if current_query == 1 and not failed_yet:
             failed_yet = True
-            raise ValueError("oh no something went wrong")
+            msg = "oh no something went wrong"
+            raise ValueError(msg)
         current_query += 1
         return result
 
@@ -859,7 +859,7 @@ def test_read_updates_resume():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
-                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
@@ -891,14 +891,14 @@ def test_read_updates_resume():
                 stream=AirbyteStream(
                     name="my_stream_name",
                     json_schema={},
-                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+                    supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
                 ),
             ),
             CollectionConfig(page_size=PAGE_SIZE),
             state=state,
             index=INDEX,
             page_size=PAGE_SIZE,
-        )
+        ),
     ) == [
         {
             "ref": "5",

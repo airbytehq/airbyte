@@ -9,6 +9,10 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import pinecone
+from langchain.document_loaders.base import Document
+from langchain.vectorstores import Chroma
+from langchain.vectorstores.docarray import DocArrayHnswSearch
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, DestinationSyncMode, Level, Type
 from destination_langchain.config import ChromaLocalIndexingModel, DocArrayHnswSearchIndexingModel, PineconeIndexingModel
@@ -16,9 +20,6 @@ from destination_langchain.document_processor import METADATA_RECORD_ID_FIELD, M
 from destination_langchain.embedder import Embedder
 from destination_langchain.measure_time import measure_time
 from destination_langchain.utils import format_exception
-from langchain.document_loaders.base import Document
-from langchain.vectorstores import Chroma
-from langchain.vectorstores.docarray import DocArrayHnswSearch
 
 
 class Indexer(ABC):
@@ -134,14 +135,15 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def _init_vectorstore(self):
         self.vectorstore = DocArrayHnswSearch.from_params(
-            embedding=self.embedder.langchain_embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
+            embedding=self.embedder.langchain_embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions,
         )
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         for stream in catalog.streams:
             if stream.destination_sync_mode != DestinationSyncMode.overwrite:
+                msg = f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}"
                 raise Exception(
-                    f"DocArrayHnswSearchIndexer only supports overwrite mode, got {stream.destination_sync_mode} for stream {stream.stream.name}"
+                    msg,
                 )
         for file in os.listdir(self.config.destination_path):
             os.remove(os.path.join(self.config.destination_path, file))

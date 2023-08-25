@@ -7,15 +7,16 @@ from datetime import datetime
 from typing import Any, Dict, Mapping
 
 import pandas as pd
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import ConnectorConfig
 from destination_aws_datalake.stream_writer import StreamWriter
 
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+
 
 def get_config() -> Mapping[str, Any]:
-    with open("unit_tests/fixtures/config.json", "r") as f:
+    with open("unit_tests/fixtures/config.json") as f:
         return json.loads(f.read())
 
 
@@ -238,10 +239,10 @@ def test_add_partition_column():
         df = pd.DataFrame(
             {
                 "datetime_col": [datetime.now()],
-            }
+            },
         )
         assert writer._add_partition_column("datetime_col", df) == expected_columns
-        assert all([col in df.columns for col in expected_columns])
+        assert all(col in df.columns for col in expected_columns)
 
 
 def test_get_glue_dtypes_from_json_schema():
@@ -300,8 +301,8 @@ def test_has_objects_with_no_properties_good():
                 "properties": {
                     "city": {"type": "object", "properties": {"name": {"type": "string"}}},
                 },
-            }
-        }
+            },
+        },
     )
 
 
@@ -311,8 +312,8 @@ def test_has_objects_with_no_properties_bad():
         {
             "nestedJson": {
                 "type": ["null", "object"],
-            }
-        }
+            },
+        },
     )
 
 
@@ -325,6 +326,6 @@ def test_has_objects_with_no_properties_nested_bad():
                 "properties": {
                     "city": {"type": "object", "properties": {}},
                 },
-            }
-        }
+            },
+        },
     )

@@ -23,14 +23,13 @@ class Secret:
 
     @staticmethod
     def generate_secret_name(connector_name: str, configuration_file_name: str) -> str:
-        """
-        Generates an unique GSM secret name.
+        """Generates an unique GSM secret name.
         Format of secret name: SECRET_<CAPITAL_CONNECTOR_NAME>_<OPTIONAL_UNIQUE_FILENAME_PART>__CREDS
         Examples:
             1. connector_name: source-linnworks, filename: dsdssds_a-b---_---_config.json
                 => SECRET_SOURCE-LINNWORKS_DSDSSDS_A-B__CREDS
             2. connector_name: source-s3, filename: config.json
-                => SECRET_SOURCE-LINNWORKS__CREDS
+                => SECRET_SOURCE-LINNWORKS__CREDS.
         """
         name_parts = ["secret", connector_name]
         filename_wo_ext = configuration_file_name.replace(".json", "")

@@ -3,16 +3,19 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, Optional, Union
 
 import dpath.util
+
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.incremental import Cursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.core import Stream
 
 RequestInput = Union[str, Mapping[str, str]]
 
@@ -85,30 +88,23 @@ class IncrementalSingleSlice(Cursor):
         yield {}
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
-        implementation is irrelevant for greenhouse
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for greenhouse.
         """
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        """
-        Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice
-        """
+        """Evaluating which record is greater in terms of cursor. This is used to avoid having to capture all the records to close a slice."""
         first_cursor_value = first.get(self.cursor_field.eval(self.config)) if first else None
         second_cursor_value = second.get(self.cursor_field.eval(self.config)) if second else None
         if first_cursor_value and second_cursor_value:
             return first_cursor_value > second_cursor_value
-        elif first_cursor_value:
-            return True
-        else:
-            return False
+        return bool(first_cursor_value)
 
 
 @dataclass
 class IncrementalSubstreamSlicer(IncrementalSingleSlice):
-    """
-    Like SubstreamSlicer, but works incrementaly with both parent and substream.
+    """Like SubstreamSlicer, but works incrementaly with both parent and substream.
 
     Input Arguments:
 
@@ -129,7 +125,8 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters)
         if not self.parent_stream_configs:
-            raise ValueError("IncrementalSubstreamSlicer needs at least 1 parent stream")
+            msg = "IncrementalSubstreamSlicer needs at least 1 parent stream"
+            raise ValueError(msg)
         self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
         # parent stream parts
         self.parent_config: ParentStreamConfig = self.parent_stream_configs[0]
@@ -146,7 +143,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             self._state[self.cursor_field.eval(self.config)] = cursor_value
         if self.parent_stream_name in stream_state and stream_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field):
             self._state[self.parent_stream_name] = {
-                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field]
+                self.parent_cursor_field: stream_state[self.parent_stream_name][self.parent_cursor_field],
             }
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
@@ -163,7 +160,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             self._state[self.parent_stream_name] = parent_state
 
     def read_parent_stream(
-        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
+        self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         self.parent_stream.state = stream_state
 
@@ -174,17 +171,16 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
             return
 
         all_ids = set()
-        slice_ids = list()
+        slice_ids = []
         empty_parent_slice = True
 
         for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
             for parent_record in self.parent_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice, stream_state=stream_state,
             ):
                 # Skip non-records (eg AirbyteLogMessage)
-                if isinstance(parent_record, AirbyteMessage):
-                    if parent_record.type == Type.RECORD:
-                        parent_record = parent_record.record.data
+                if isinstance(parent_record, AirbyteMessage) and parent_record.type == Type.RECORD:
+                    parent_record = parent_record.record.data
 
                 try:
                     substream_slice = dpath.util.get(parent_record, self.parent_field)
@@ -201,7 +197,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
                         # yield slice with desired number of ids
                         if self.nested_items_per_page == len(slice_ids):
                             yield {self.substream_slice_field: slice_ids}
-                            slice_ids = list()
+                            slice_ids = []
         # yield leftover ids if any left
         if slice_ids:
             yield {self.substream_slice_field: slice_ids}
@@ -214,4 +210,4 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
 
         slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, parent_state)
-        yield from [slice for slice in slices_generator] if self.parent_complete_fetch else slices_generator
+        yield from list(slices_generator) if self.parent_complete_fetch else slices_generator

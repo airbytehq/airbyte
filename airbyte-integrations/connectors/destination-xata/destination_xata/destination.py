@@ -5,11 +5,12 @@
 import logging
 from typing import Any, Iterable, Mapping
 
+from xata.client import XataClient
+from xata.helpers import BulkProcessor
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from xata.client import XataClient
-from xata.helpers import BulkProcessor
 
 __version__ = "0.0.1"
 
@@ -18,10 +19,9 @@ logger = logging.getLogger("airbyte")
 
 class DestinationXata(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -34,7 +34,6 @@ class DestinationXata(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-
         xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
         xata.set_header("user-agent", f"airbyte/destination-xata:{__version__}")
 
@@ -52,12 +51,11 @@ class DestinationXata(Destination):
         if count != bp.get_stats()["total"] or bp.get_stats()["failed_batches"] != 0:
             raise Exception(
                 "inconsistency found, expected %d records pushed, actual: %d with %d failures."
-                % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"])
+                % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"]),
             )
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -73,7 +71,8 @@ class DestinationXata(Destination):
 
             r = xata.users().getUser()
             if r.status_code != 200:
-                raise Exception("Invalid connection parameters.")
+                msg = "Invalid connection parameters."
+                raise Exception(msg)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

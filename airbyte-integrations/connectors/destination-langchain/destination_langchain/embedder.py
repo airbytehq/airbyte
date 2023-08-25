@@ -5,15 +5,16 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from destination_langchain.config import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
-from destination_langchain.utils import format_exception
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 
+from destination_langchain.config import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
+from destination_langchain.utils import format_exception
+
 
 class Embedder(ABC):
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     @abstractmethod

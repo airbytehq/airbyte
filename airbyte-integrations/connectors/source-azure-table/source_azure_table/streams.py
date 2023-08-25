@@ -32,12 +32,11 @@ class AzureTableStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        """
-        Create and retrieve the report.
+        """Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         """
         table_client = self.azure_table_reader.get_table_client(self.stream_name)

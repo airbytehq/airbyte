@@ -3,26 +3,27 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.create_partial import _key_is_unset_or_identical, create
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
 
 class AClass:
-    def __init__(self, parameter, another_param, parameters):
+    def __init__(self, parameter, another_param, parameters) -> None:
         self.parameter = parameter
         self.another_param = another_param
         self.parameters = parameters
 
 
 class OuterClass:
-    def __init__(self, name, some_field, inner_param):
+    def __init__(self, name, some_field, inner_param) -> None:
         self.name = name
         self.some_field = some_field
         self.inner_param = inner_param
 
 
 class OuterOuterClass:
-    def __init__(self, name, param, inner_class):
+    def __init__(self, name, param, inner_class) -> None:
         self.name = name
         self.param = param
         self.inner_class = inner_class
@@ -70,7 +71,7 @@ def test_string_interpolation_through_parameters_keyword():
 
 
 @pytest.mark.parametrize(
-    "test_name, key, value, expected_result",
+    ("test_name", "key", "value", "expected_result"),
     [
         ("test", "key", "value", True),
         ("test", "key", "a_different_value", False),

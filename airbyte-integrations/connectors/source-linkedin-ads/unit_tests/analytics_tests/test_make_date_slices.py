@@ -9,12 +9,10 @@ TEST_END_DATE = "2021-10-01"
 
 
 def test_make_date_slices():
-    """
-    : By default we use the `WINDOW_SIZE = 30`, as it set in the analytics module
+    """: By default we use the `WINDOW_SIZE = 30`, as it set in the analytics module
     : This value could be changed by setting the corresponding argument in the method.
     : The `end_date` is not specified by default, but for this test it was specified to have the test static.
     """
-
     expected_output = [
         {"dateRange": {"start.day": 1, "start.month": 8, "start.year": 2021, "end.day": 31, "end.month": 8, "end.year": 2021}},
         {"dateRange": {"start.day": 31, "start.month": 8, "start.year": 2021, "end.day": 30, "end.month": 9, "end.year": 2021}},

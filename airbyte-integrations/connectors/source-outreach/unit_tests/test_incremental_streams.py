@@ -5,12 +5,13 @@
 
 from unittest.mock import MagicMock
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_outreach.source import IncrementalOutreachStream
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalOutreachStream, "path", "v0/example_endpoint")

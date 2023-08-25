@@ -8,11 +8,12 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
 from source_notion.streams import Blocks, NotionStream, Users
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(NotionStream, "path", "v0/example_endpoint")
@@ -131,10 +132,7 @@ def test_users_request_params(patch_base_class):
 
 
 def test_user_stream_handles_pagination_correctly(requests_mock):
-    """
-    Test shows that Users stream uses pagination as per Notion API docs.
-    """
-
+    """Test shows that Users stream uses pagination as per Notion API docs."""
     response_body = {
         "object": "list",
         "results": [{"id": f"{x}", "object": "user", "type": ["person", "bot"][random.randint(0, 1)]} for x in range(100)],

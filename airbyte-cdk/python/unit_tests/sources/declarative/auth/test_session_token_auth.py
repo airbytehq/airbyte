@@ -3,8 +3,9 @@
 #
 
 import pytest
-from airbyte_cdk.sources.declarative.auth.token import LegacySessionTokenAuthenticator, get_new_session_token
 from requests.exceptions import HTTPError
+
+from airbyte_cdk.sources.declarative.auth.token import LegacySessionTokenAuthenticator, get_new_session_token
 
 parameters = {"hello": "world"}
 instance_api_url = "https://airbyte.metabaseapp.com/api/"
@@ -73,7 +74,7 @@ def test_auth_header():
 
 def test_get_token_valid_session(requests_mock):
     requests_mock.get(
-        f"{config_session_token['instance_api_url']}user/current", json={"common_name": "common_name", "last_login": "last_login"}
+        f"{config_session_token['instance_api_url']}user/current", json={"common_name": "common_name", "last_login": "last_login"},
     )
 
     token = LegacySessionTokenAuthenticator(
@@ -177,6 +178,6 @@ def test_get_new_session_token(requests_mock):
     requests_mock.post(f"{config['instance_api_url']}session", headers={"Content-Type": "application/json"}, json={"id": "some session id"})
 
     session_token = get_new_session_token(
-        f'{config["instance_api_url"]}session', config["username"], config["password"], config["session_token_response_key"]
+        f'{config["instance_api_url"]}session', config["username"], config["password"], config["session_token_response_key"],
     )
     assert session_token == "some session id"

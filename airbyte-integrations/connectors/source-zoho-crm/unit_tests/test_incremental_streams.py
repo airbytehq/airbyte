@@ -5,11 +5,12 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_zoho_crm.streams import IncrementalZohoCrmStream as BaseIncrementalZohoCrmStream
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def stream_factory(mocker):
     def wrapper(stream_name, schema=None):
         class IncrementalZohoStream(BaseIncrementalZohoCrmStream):
@@ -38,7 +39,7 @@ def test_updated_state(mocker, stream_factory):
                 {"Name": "Joan", "Surname": "Arc", "Modified_Time": "2021-12-12T13:15:09+02:00"},
                 {"Name": "Jack", "Surname": "Sparrow", "Modified_Time": "2022-03-03T12:31:05+02:00"},
                 {"Name": "Ron", "Surname": "Weasley", "Modified_Time": "2022-02-03T00:00:00+02:00"},
-            ]
+            ],
         ),
     )
     for _ in stream.read_records(SyncMode.incremental):

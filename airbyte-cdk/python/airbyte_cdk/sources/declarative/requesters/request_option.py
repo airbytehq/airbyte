@@ -8,9 +8,7 @@ from typing import Any, Mapping
 
 
 class RequestOptionType(Enum):
-    """
-    Describes where to set a value on a request
-    """
+    """Describes where to set a value on a request."""
 
     request_parameter = "request_parameter"
     header = "header"
@@ -20,8 +18,7 @@ class RequestOptionType(Enum):
 
 @dataclass
 class RequestOption:
-    """
-    Describes an option to set on a request
+    """Describes an option to set on a request.
 
     Attributes:
         field_name (str): Describes the name of the parameter to inject

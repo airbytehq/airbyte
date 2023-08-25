@@ -7,12 +7,11 @@ from source_amazon_ads.streams.common import SubProfilesStream
 
 
 class SponsoredBrandsCampaigns(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Brands Campaigns
-    https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns
+    """This stream corresponds to Amazon Advertising API - Sponsored Brands Campaigns
+    https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.state_filter = kwargs.get("config", {}).get("state_filter")
 
@@ -31,9 +30,8 @@ class SponsoredBrandsCampaigns(SubProfilesStream):
 
 
 class SponsoredBrandsAdGroups(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Brands Ad groups
-    https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups
+    """This stream corresponds to Amazon Advertising API - Sponsored Brands Ad groups
+    https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups.
     """
 
     primary_key = "adGroupId"
@@ -44,9 +42,8 @@ class SponsoredBrandsAdGroups(SubProfilesStream):
 
 
 class SponsoredBrandsKeywords(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Brands Keywords
-    https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords
+    """This stream corresponds to Amazon Advertising API - Sponsored Brands Keywords
+    https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords.
     """
 
     primary_key = "adGroupId"

@@ -9,9 +9,7 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 
 
 class DatetimeFormatInferrer:
-    """
-    This class is used to detect toplevel fields in records that might be datetime values, along with the used format.
-    """
+    """This class is used to detect toplevel fields in records that might be datetime values, along with the used format."""
 
     def __init__(self) -> None:
         self._parser = DatetimeParser()
@@ -35,7 +33,8 @@ class DatetimeFormatInferrer:
         """Checks if the value can be a datetime.
         This is the case if the value is a string or an integer between 1_000_000_000 and 2_000_000_000 for seconds
         or between 1_000_000_000_000 and 2_000_000_000_000 for milliseconds.
-        This is separate from the format check for performance reasons"""
+        This is separate from the format check for performance reasons.
+        """
         for timestamp_range in self._timestamp_heuristic_ranges:
             if isinstance(value, str) and (not value.isdecimal() or int(value) in timestamp_range):
                 return True
@@ -44,7 +43,7 @@ class DatetimeFormatInferrer:
         return False
 
     def _matches_format(self, value: Any, format: str) -> bool:
-        """Checks if the value matches the format"""
+        """Checks if the value matches the format."""
         try:
             self._parser.parse(value, format)
             return True
@@ -52,7 +51,7 @@ class DatetimeFormatInferrer:
             return False
 
     def _initialize(self, record: AirbyteRecordMessage) -> None:
-        """Initializes the internal state of the class"""
+        """Initializes the internal state of the class."""
         self._datetime_candidates = {}
         for field_name, field_value in record.data.items():
             if not self._can_be_datetime(field_value):
@@ -63,7 +62,7 @@ class DatetimeFormatInferrer:
                     break
 
     def _validate(self, record: AirbyteRecordMessage) -> None:
-        """Validates that the record is consistent with the inferred datetime formats"""
+        """Validates that the record is consistent with the inferred datetime formats."""
         if self._datetime_candidates:
             for candidate_field_name in list(self._datetime_candidates.keys()):
                 candidate_field_format = self._datetime_candidates[candidate_field_name]
@@ -76,12 +75,11 @@ class DatetimeFormatInferrer:
                     self._datetime_candidates.pop(candidate_field_name)
 
     def accumulate(self, record: AirbyteRecordMessage) -> None:
-        """Analyzes the record and updates the internal state of candidate datetime fields"""
+        """Analyzes the record and updates the internal state of candidate datetime fields."""
         self._initialize(record) if self._datetime_candidates is None else self._validate(record)
 
     def get_inferred_datetime_formats(self) -> Dict[str, str]:
-        """
-        Returns the list of candidate datetime fields - the keys are the field names and the values are the inferred datetime formats.
+        """Returns the list of candidate datetime fields - the keys are the field names and the values are the inferred datetime formats.
         For these fields the format was consistent across all visited records.
         """
         return self._datetime_candidates or {}

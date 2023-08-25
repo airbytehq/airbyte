@@ -5,6 +5,7 @@
 from typing import List, Mapping
 
 import pytest
+
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 
@@ -12,7 +13,7 @@ NOW = 1234567
 
 
 @pytest.mark.parametrize(
-    "input_records,expected_schemas",
+    ("input_records", "expected_schemas"),
     [
         pytest.param(
             [
@@ -43,8 +44,8 @@ NOW = 1234567
                             "data": {"type": "array", "items": {"type": "number"}},
                             "other_key": {"type": "string"},
                         },
-                    }
-                }
+                    },
+                },
             },
             id="test_derive_schema_for_nested_structures",
         ),
@@ -98,8 +99,8 @@ NOW = 1234567
                     "field_A": {
                         "type": ["object", "null"],
                         "properties": {"nested": {"type": "string"}, "nully": {"type": ["null", "string"]}},
-                    }
-                }
+                    },
+                },
             },
             id="test_any_of_with_null_union",
         ),
@@ -114,8 +115,8 @@ NOW = 1234567
                     "field_A": {
                         "type": ["object", "null"],
                         "properties": {"nested": {"type": "string"}, "nully": {"type": ["null", "string"]}},
-                    }
-                }
+                    },
+                },
             },
             id="test_any_of_with_null_union_changed_order",
         ),
@@ -134,7 +135,7 @@ NOW = 1234567
                 "my_stream": {
                     "field_A": {"type": "string"},
                     "nested": {"type": "array", "items": {"type": "object", "properties": {"field_C": {"type": "string"}}}},
-                }
+                },
             },
             id="test_array_nested_null",
         ),
@@ -147,7 +148,7 @@ NOW = 1234567
                 "my_stream": {
                     "field_A": {"type": "string"},
                     "nested": {"type": ["array", "null"], "items": {"type": "object", "properties": {"field_C": {"type": "string"}}}},
-                }
+                },
             },
             id="test_array_top_level_null",
         ),

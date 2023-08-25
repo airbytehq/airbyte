@@ -14,8 +14,6 @@ import freezegun
 import pendulum
 import pytest
 import requests_mock
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
-from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
@@ -29,14 +27,17 @@ from source_salesforce.streams import (
     RestSalesforceStream,
 )
 
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
+from airbyte_cdk.utils import AirbyteTracedException
+
 
 @pytest.mark.parametrize(
-    "login_status_code, login_json_resp, expected_error_msg, is_config_error",
+    ("login_status_code", "login_json_resp", "expected_error_msg", "is_config_error"),
     [
         (400, {"error": "invalid_grant", "error_description": "expired access/refresh token"}, AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"), True),
         (400, {"error": "invalid_grant", "error_description": "Authentication failure."}, 'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}', False),
         (401, {"error": "Unauthorized", "error_description": "Unautorized"}, 'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}', False),
-    ]
+    ],
 )
 def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error):
     source = SourceSalesforce()
@@ -64,8 +65,7 @@ def test_bulk_sync_creation_failed(stream_config, stream_api):
 
 
 def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stream_api):
-    """
-    Here we mock BULK API with response returning error, saying BULK is not supported for this kind of entity.
+    """Here we mock BULK API with response returning error, saying BULK is not supported for this kind of entity.
     On the other hand, we mock REST API for this same entity with a successful response.
     After having instantiated a BulkStream, sync should succeed in case it falls back to REST API. Otherwise it would throw an error.
     """
@@ -89,17 +89,14 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
-    """
-    Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
-    """
+    """Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it."""
     stream_name = "AcceptedEventRelation"
     stream = generate_stream(stream_name, stream_config, stream_api)
     assert not isinstance(stream, BulkSalesforceStream)
 
 
 def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_api_v2):
-    """
-    Stream `Account` contains compound field such as BillingAddress, which is not supported by BULK API (csv),
+    """Stream `Account` contains compound field such as BillingAddress, which is not supported by BULK API (csv),
     in that case REST API stream will be used for it.
     """
     stream_name = "Account"
@@ -116,8 +113,8 @@ def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results",
                                             [{"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
                                              {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
-                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}}
-                                             ]
+                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}},
+                                             ],
                                             )
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
 
@@ -140,7 +137,7 @@ def _prepare_mock(m, stream):
 
 def _get_result_id(stream):
     stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-    return int(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))[0]["ID"])
+    return int(next(iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)))["ID"])
 
 
 def test_bulk_sync_successful(stream_config, stream_api):
@@ -179,7 +176,6 @@ def test_bulk_sync_successful_retry(stream_config, stream_api):
         # 2 failed attempts, 3rd one should be successful
         states = [{"json": {"state": "InProgress", "id": job_id}}] * 17
         states.append({"json": {"state": "JobComplete", "id": job_id}})
-        # raise Exception(states)
         m.register_uri("GET", stream.path() + f"/{job_id}", states)
         assert _get_result_id(stream) == 1
 
@@ -198,7 +194,7 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
 
 
 @pytest.mark.parametrize(
-    "start_date_provided,stream_name,expected_start_date",
+    ("start_date_provided", "stream_name", "expected_start_date"),
     [
         (True, "Account", "2010-01-18T21:18:20Z"),
         (False, "Account", None),
@@ -282,7 +278,7 @@ def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stre
 
 
 @pytest.mark.parametrize(
-    "chunk_size, content_type_header, content, expected_result",
+    ("chunk_size", "content_type_header", "content", "expected_result"),
     encoding_symbols_parameters(),
     ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
 )
@@ -298,7 +294,7 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
 
 
 @pytest.mark.parametrize(
-    "login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg",
+    ("login_status_code", "login_json_resp", "discovery_status_code", "discovery_resp_json", "expected_error_msg"),
     (
         (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}], 200, {}, "API Call limit is exceeded"),
         (
@@ -311,7 +307,7 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
     ),
 )
 def test_check_connection_rate_limit(
-    stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg
+    stream_config, login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg,
 ):
     source = SourceSalesforce()
     logger = logging.getLogger("airbyte")
@@ -319,7 +315,7 @@ def test_check_connection_rate_limit(
     with requests_mock.Mocker() as m:
         m.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
         m.register_uri(
-            "GET", "https://instance_url/services/data/v57.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
+            "GET", "https://instance_url/services/data/v57.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code,
         )
         result, msg = source.check_connection(logger, stream_config)
         assert result is False
@@ -335,13 +331,12 @@ def configure_request_params_mock(stream_1, stream_2):
 
 
 def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
-    """
-    Connector should stop the sync if one stream reached rate limit
+    """Connector should stop the sync if one stream reached rate limit
     stream_1, stream_2, stream_3, ...
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
-    stream_config.update({'start_date': '2021-10-01'})
+    stream_config.update({"start_date": "2021-10-01"})
     stream_1: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     stream_2: BulkIncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api)
     streams = [stream_1, stream_2]
@@ -378,7 +373,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
 
             m.register_uri("POST", stream.path(), creation_responses)
 
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
+        result = list(source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state))
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
@@ -387,18 +382,17 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
         records = [item for item in result if item.type == Type.RECORD]
         assert len(records) == 6  # stream page size: 6
 
-        state_record = [item for item in result if item.type == Type.STATE][0]
+        state_record = next(item for item in result if item.type == Type.STATE)
         assert state_record.state.data["Account"]["LastModifiedDate"] == "2021-10-05T00:00:00+00:00"  # state checkpoint interval is 5.
 
 
 def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
-    """
-    Connector should stop the sync if one stream reached rate limit
+    """Connector should stop the sync if one stream reached rate limit
     stream_1, stream_2, stream_3, ...
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
-    stream_config.update({'start_date': '2021-11-01'})
+    stream_config.update({"start_date": "2021-11-01"})
 
     stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
     stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
@@ -446,7 +440,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         m.register_uri("GET", stream_1.path(), json=response_1, status_code=200)
         m.register_uri("GET", next_page_url, json=response_2, status_code=403)
 
-        result = [i for i in source.read(logger=logger, config=stream_config, catalog=rest_catalog, state=state)]
+        result = list(source.read(logger=logger, config=stream_config, catalog=rest_catalog, state=state))
 
         assert stream_1.request_params.called
         assert (
@@ -456,7 +450,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
         records = [item for item in result if item.type == Type.RECORD]
         assert len(records) == 5
 
-        state_record = [item for item in result if item.type == Type.STATE][0]
+        state_record = next(item for item in result if item.type == Type.STATE)
         assert state_record.state.data["KnowledgeArticle"]["LastModifiedDate"] == "2021-11-17T00:00:00+00:00"
 
 
@@ -499,7 +493,7 @@ def test_pagination_rest(stream_config, stream_api):
         m.register_uri("GET", stream.path(), json=resp_1)
         m.register_uri("GET", next_page_url, json=resp_2)
 
-        records = [record for record in stream.read_records(sync_mode=SyncMode.full_refresh)]
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert len(records) == 4
 
 
@@ -523,12 +517,12 @@ def test_csv_reader_dialect_unix():
     with requests_mock.Mocker() as m:
         m.register_uri("GET", url_results, text=text)
         tmp_file, response_encoding, _ = stream.download_data(url=url_results)
-        result = [i for i in stream.read_with_chunks(tmp_file, response_encoding)]
+        result = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert result == data
 
 
 @pytest.mark.parametrize(
-    "stream_names,catalog_stream_names,",
+    ("stream_names", "catalog_stream_names"),
     (
         (
             ["stream_1", "stream_2", "Describe"],
@@ -554,13 +548,13 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
             streams=[
                 ConfiguredAirbyteStream(
                     stream=AirbyteStream(
-                        name=catalog_stream_name, supported_sync_modes=[SyncMode.full_refresh], json_schema={"type": "object"}
+                        name=catalog_stream_name, supported_sync_modes=[SyncMode.full_refresh], json_schema={"type": "object"},
                     ),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
                 for catalog_stream_name in catalog_stream_names
-            ]
+            ],
         )
     with requests_mock.Mocker() as m:
         m.register_uri("POST", token_matcher, json={"instance_url": "https://fake-url.com", "access_token": "fake-token"})
@@ -572,8 +566,8 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
                     {
                         "name": "field",
                         "type": "string",
-                    }
-                ]
+                    },
+                ],
             },
         )
         m.register_uri(
@@ -595,12 +589,11 @@ def test_forwarding_sobject_options(stream_config, stream_names, catalog_stream_
         source.catalog = catalog
         streams = source.streams(config=stream_config)
     expected_names = catalog_stream_names if catalog else stream_names
-    assert not set(expected_names).symmetric_difference(set(stream.name for stream in streams)), "doesn't match excepted streams"
+    assert not set(expected_names).symmetric_difference({stream.name for stream in streams}), "doesn't match excepted streams"
 
     for stream in streams:
         if stream.name != "Describe":
             assert stream.sobject_options == {"flag1": True, "queryable": True}
-    return
 
 
 def test_csv_field_size_limit():
@@ -654,8 +647,8 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
                         {"Id": 2, "propertyA": "A"},
                         {"Id": 3, "propertyA": "A"},
                         {"Id": 4, "propertyA": "A"},
-                    ]
-                }
+                    ],
+                },
             },
             {"json": {"nextRecordsUrl": next_page_url, "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]}},
             # 2 for 2 chunks above
@@ -696,13 +689,13 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
 
 
 @pytest.mark.parametrize(
-    "status_code,response_json,log_message",
+    ("status_code", "response_json", "log_message"),
     [
         (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
         (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
         (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
-        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
-    ]
+        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed."),
+    ],
 )
 def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, stream_api, status_code, response_json, log_message, caplog):
     """
@@ -724,10 +717,10 @@ def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, s
 
 
 @pytest.mark.parametrize(
-    "status_code,response_json,error_message",
+    ("status_code", "response_json", "error_message"),
     [
         (400, [{"errorCode": "TXN_SECURITY_METERING_ERROR", "message": "We can't complete the action because enabled transaction security policies took too long to complete."}], 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'),
-    ]
+    ],
 )
 def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_api, status_code, response_json, error_message):
 
@@ -753,8 +746,8 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api):
     start_date = pendulum.parse(stream.start_date, tz="UTC")
     while start_date < today:
         expected_slices.append({
-            'start_date': start_date.isoformat(timespec="milliseconds"),
-            'end_date': min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds")
+            "start_date": start_date.isoformat(timespec="milliseconds"),
+            "end_date": min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds"),
         })
         start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
     assert expected_slices == stream_slices
@@ -762,7 +755,7 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api):
 
 @freezegun.freeze_time("2023-04-01")
 def test_bulk_stream_request_params_states(stream_config_date_format, stream_api, bulk_catalog, requests_mock):
-    """Check that request params ignore records cursor and use start date from slice ONLY"""
+    """Check that request params ignore records cursor and use start date from slice ONLY."""
     stream_config_date_format.update({"start_date": "2023-01-01"})
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api)
 
@@ -794,7 +787,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     logger = logging.getLogger("airbyte")
     state = {"Account": {"LastModifiedDate": "2023-01-01T10:10:10.000Z"}}
     bulk_catalog.streams.pop(1)
-    result = [i for i in source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state)]
+    result = list(source.read(logger=logger, config=stream_config_date_format, catalog=bulk_catalog, state=state))
 
     actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
     # assert request params

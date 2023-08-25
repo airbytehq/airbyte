@@ -8,6 +8,7 @@ from typing import List, Optional
 
 import anyio
 from dagger import File, QueryError
+
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
@@ -94,7 +95,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         return step_results
 
     build_connector_image_results = await BuildConnectorImage(context, LOCAL_BUILD_PLATFORM).run(
-        build_distribution_tar_results.output_artifact
+        build_distribution_tar_results.output_artifact,
     )
     step_results.append(build_connector_image_results)
     if build_connector_image_results.status is StepStatus.FAILURE:
@@ -106,7 +107,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         build_normalization_results = await BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM).run()
         normalization_container = build_normalization_results.output_artifact
         normalization_tar_file, _ = await export_container_to_tarball(
-            context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+            context, normalization_container, tar_file_name=f"{context.connector.normalization_repository}_{context.git_revision}.tar",
         )
         step_results.append(build_normalization_results)
     else:

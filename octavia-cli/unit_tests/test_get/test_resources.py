@@ -3,15 +3,16 @@
 #
 
 import pytest
+from octavia_cli.get.resources import BaseResource, Connection, Destination, DuplicateResourceError, ResourceNotFoundError, Source
+
 from airbyte_api_client.api import destination_api, source_api, web_backend_api
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.web_backend_connection_request_body import WebBackendConnectionRequestBody
-from octavia_cli.get.resources import BaseResource, Connection, Destination, DuplicateResourceError, ResourceNotFoundError, Source
 
 
 class TestBaseResource:
-    @pytest.fixture
+    @pytest.fixture()
     def patch_base_class(self, mocker):
         # Mock abstract methods to enable instantiating abstract class
         mocker.patch.object(BaseResource, "__abstractmethods__", set())
@@ -22,7 +23,7 @@ class TestBaseResource:
         mocker.patch.object(BaseResource, "name", "fake_resource")
 
     @pytest.mark.parametrize(
-        "resource_id, resource_name, expected_error, expected_error_message",
+        ("resource_id", "resource_name", "expected_error", "expected_error_message"),
         [
             ("my_resource_id", None, None, None),
             (None, "my_resource_name", None, None),
@@ -45,7 +46,7 @@ class TestBaseResource:
             assert base_resource.resource_name == resource_name
 
     @pytest.mark.parametrize(
-        "resource_name, api_response_resources_names, expected_error, expected_error_message",
+        ("resource_name", "api_response_resources_names", "expected_error", "expected_error_message"),
         [
             ("foo", ["foo", "bar"], None, None),
             ("foo", ["bar", "fooo"], ResourceNotFoundError, "The fake_resource foo was not found in your current Airbyte workspace."),
@@ -58,7 +59,7 @@ class TestBaseResource:
         ],
     )
     def test__find_by_resource_name(
-        self, mocker, patch_base_class, mock_api_client, resource_name, api_response_resources_names, expected_error, expected_error_message
+        self, mocker, patch_base_class, mock_api_client, resource_name, api_response_resources_names, expected_error, expected_error_message,
     ):
         mock_api_response_records = []
         for fake_resource_name in api_response_resources_names:
@@ -67,7 +68,7 @@ class TestBaseResource:
             mock_api_response_records.append(mock_api_response_record)
 
         mocker.patch.object(
-            BaseResource, "_list_for_workspace_fn", mocker.Mock(return_value=mocker.Mock(fake_resources=mock_api_response_records))
+            BaseResource, "_list_for_workspace_fn", mocker.Mock(return_value=mocker.Mock(fake_resources=mock_api_response_records)),
         )
         base_resource = BaseResource(mock_api_client, "workspace_id", resource_id=None, resource_name=resource_name)
         if not expected_error:
@@ -83,7 +84,7 @@ class TestBaseResource:
         base_resource._find_by_resource_id()
         base_resource._get_fn.assert_called_with(base_resource.api_instance, base_resource.get_payload)
 
-    @pytest.mark.parametrize("resource_id, resource_name", [("my_resource_id", None), (None, "my_resource_name")])
+    @pytest.mark.parametrize(("resource_id", "resource_name"), [("my_resource_id", None), (None, "my_resource_name")])
     def test_get_remote_resource(self, mocker, patch_base_class, mock_api_client, resource_id, resource_name):
         mocker.patch.object(BaseResource, "_find_by_resource_id")
         mocker.patch.object(BaseResource, "_find_by_resource_name")
@@ -100,7 +101,7 @@ class TestBaseResource:
 
     def test_to_json(self, mocker, patch_base_class, mock_api_client):
         mocker.patch.object(
-            BaseResource, "get_remote_resource", mocker.Mock(return_value=mocker.Mock(to_dict=mocker.Mock(return_value={"foo": "bar"})))
+            BaseResource, "get_remote_resource", mocker.Mock(return_value=mocker.Mock(to_dict=mocker.Mock(return_value={"foo": "bar"}))),
         )
         base_resource = BaseResource(mock_api_client, "workspace_id", resource_id="my_resource_id")
         json_repr = base_resource.to_json()

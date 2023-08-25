@@ -8,7 +8,7 @@ from .base import DateSlicesMixin, MixpanelStream
 class Annotations(DateSlicesMixin, MixpanelStream):
     """List the annotations for a given date range.
     API Docs: https://developer.mixpanel.com/reference/list-all-annotations-for-project
-    Endpoint: https://mixpanel.com/api/app/projects/{projectId}/annotations
+    Endpoint: https://mixpanel.com/api/app/projects/{projectId}/annotations.
 
     Output example:
     {

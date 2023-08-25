@@ -585,7 +585,7 @@ class EnterpriseServerUserAccountsUploadOrderField(sgqlc.types.Enum):
 
 class EnterpriseServerUserAccountsUploadSyncState(sgqlc.types.Enum):
     """Synchronization state of the Enterprise Server user accounts
-    upload
+    upload.
 
     Enumeration Choices:
 
@@ -695,7 +695,7 @@ class GistOrderField(sgqlc.types.Enum):
 
 
 class GistPrivacy(sgqlc.types.Enum):
-    """The privacy of a Gist
+    """The privacy of a Gist.
 
     Enumeration Choices:
 
@@ -715,7 +715,7 @@ class GitObjectID(sgqlc.types.Scalar):
 
 
 class GitSSHRemote(sgqlc.types.Scalar):
-    """Git SSH string"""
+    """Git SSH string."""
 
     __schema__ = github_schema
 
@@ -1182,7 +1182,7 @@ class NotificationRestrictionSettingValue(sgqlc.types.Enum):
 
 
 class OIDCProviderType(sgqlc.types.Enum):
-    """The OIDC identity provider type
+    """The OIDC identity provider type.
 
     Enumeration Choices:
 
@@ -1211,7 +1211,7 @@ class OauthApplicationCreateAuditEntryState(sgqlc.types.Enum):
 
 
 class OperationType(sgqlc.types.Enum):
-    """The corresponding operation type for the action
+    """The corresponding operation type for the action.
 
     Enumeration Choices:
 
@@ -1679,7 +1679,7 @@ class ProjectCardArchivedState(sgqlc.types.Enum):
 
 
 class ProjectCardState(sgqlc.types.Enum):
-    """Various content states of a ProjectCard
+    """Various content states of a ProjectCard.
 
     Enumeration Choices:
 
@@ -1790,7 +1790,7 @@ class ProjectOrderField(sgqlc.types.Enum):
 
 
 class ProjectState(sgqlc.types.Enum):
-    """State of the project; either 'open' or 'closed'
+    """State of the project; either 'open' or 'closed'.
 
     Enumeration Choices:
 
@@ -1803,7 +1803,7 @@ class ProjectState(sgqlc.types.Enum):
 
 
 class ProjectTemplate(sgqlc.types.Enum):
-    """GitHub-provided templates for Projects
+    """GitHub-provided templates for Projects.
 
     Enumeration Choices:
 
@@ -2203,7 +2203,7 @@ class ReleaseOrderField(sgqlc.types.Enum):
 
 
 class RepoAccessAuditEntryVisibility(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2219,7 +2219,7 @@ class RepoAccessAuditEntryVisibility(sgqlc.types.Enum):
 
 
 class RepoAddMemberAuditEntryVisibility(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2235,7 +2235,7 @@ class RepoAddMemberAuditEntryVisibility(sgqlc.types.Enum):
 
 
 class RepoArchivedAuditEntryVisibility(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2268,7 +2268,7 @@ class RepoChangeMergeSettingAuditEntryMergeType(sgqlc.types.Enum):
 
 
 class RepoCreateAuditEntryVisibility(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2284,7 +2284,7 @@ class RepoCreateAuditEntryVisibility(sgqlc.types.Enum):
 
 
 class RepoDestroyAuditEntryVisibility(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2300,7 +2300,7 @@ class RepoDestroyAuditEntryVisibility(sgqlc.types.Enum):
 
 
 class RepoRemoveMemberAuditEntryVisibility(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2333,7 +2333,7 @@ class ReportedContentClassifiers(sgqlc.types.Enum):
 
 
 class RepositoryAffiliation(sgqlc.types.Enum):
-    """The affiliation of a user to a repository
+    """The affiliation of a user to a repository.
 
     Enumeration Choices:
 
@@ -2373,7 +2373,7 @@ class RepositoryInteractionLimit(sgqlc.types.Enum):
     * `COLLABORATORS_ONLY`: Users that are not collaborators will not
       be able to interact with the repository.
     * `CONTRIBUTORS_ONLY`: Users that have not previously committed to
-      a repository’s default branch will be unable to interact with
+      a repository`s default branch will be unable to interact with
       the repository.
     * `EXISTING_USERS`: Users that have recently created their account
       will be unable to interact with the repository.
@@ -2491,7 +2491,7 @@ class RepositoryOrderField(sgqlc.types.Enum):
 
 
 class RepositoryPermission(sgqlc.types.Enum):
-    """The access level to a repository
+    """The access level to a repository.
 
     Enumeration Choices:
 
@@ -2514,7 +2514,7 @@ class RepositoryPermission(sgqlc.types.Enum):
 
 
 class RepositoryPrivacy(sgqlc.types.Enum):
-    """The privacy of a repository
+    """The privacy of a repository.
 
     Enumeration Choices:
 
@@ -2543,7 +2543,7 @@ class RepositoryVisibility(sgqlc.types.Enum):
 
 
 class RepositoryVulnerabilityAlertState(sgqlc.types.Enum):
-    """The possible states of an alert
+    """The possible states of an alert.
 
     Enumeration Choices:
 
@@ -2869,7 +2869,7 @@ class SponsorshipOrderField(sgqlc.types.Enum):
 
 
 class SponsorshipPrivacy(sgqlc.types.Enum):
-    """The privacy of a sponsorship
+    """The privacy of a sponsorship.
 
     Enumeration Choices:
 
@@ -3135,7 +3135,7 @@ class VerifiableDomainOrderField(sgqlc.types.Enum):
 
 
 class X509Certificate(sgqlc.types.Scalar):
-    """A valid x509 certificate string"""
+    """A valid x509 certificate string."""
 
     __schema__ = github_schema
 
@@ -3144,7 +3144,7 @@ class X509Certificate(sgqlc.types.Scalar):
 # Input Objects
 ########################################################################
 class AbortQueuedMigrationsInput(sgqlc.types.Input):
-    """Autogenerated input type of AbortQueuedMigrations"""
+    """Autogenerated input type of AbortQueuedMigrations."""
 
     __schema__ = github_schema
     __field_names__ = ("owner_id", "client_mutation_id")
@@ -3157,7 +3157,7 @@ class AbortQueuedMigrationsInput(sgqlc.types.Input):
 
 class AcceptEnterpriseAdministratorInvitationInput(sgqlc.types.Input):
     """Autogenerated input type of
-    AcceptEnterpriseAdministratorInvitation
+    AcceptEnterpriseAdministratorInvitation.
     """
 
     __schema__ = github_schema
@@ -3170,7 +3170,7 @@ class AcceptEnterpriseAdministratorInvitationInput(sgqlc.types.Input):
 
 
 class AcceptTopicSuggestionInput(sgqlc.types.Input):
-    """Autogenerated input type of AcceptTopicSuggestion"""
+    """Autogenerated input type of AcceptTopicSuggestion."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "name", "client_mutation_id")
@@ -3185,7 +3185,7 @@ class AcceptTopicSuggestionInput(sgqlc.types.Input):
 
 
 class AddAssigneesToAssignableInput(sgqlc.types.Input):
-    """Autogenerated input type of AddAssigneesToAssignable"""
+    """Autogenerated input type of AddAssigneesToAssignable."""
 
     __schema__ = github_schema
     __field_names__ = ("assignable_id", "assignee_ids", "client_mutation_id")
@@ -3200,7 +3200,7 @@ class AddAssigneesToAssignableInput(sgqlc.types.Input):
 
 
 class AddCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of AddComment"""
+    """Autogenerated input type of AddComment."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "body", "client_mutation_id")
@@ -3215,7 +3215,7 @@ class AddCommentInput(sgqlc.types.Input):
 
 
 class AddDiscussionCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of AddDiscussionComment"""
+    """Autogenerated input type of AddDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("discussion_id", "reply_to_id", "body", "client_mutation_id")
@@ -3235,7 +3235,7 @@ class AddDiscussionCommentInput(sgqlc.types.Input):
 
 
 class AddDiscussionPollVoteInput(sgqlc.types.Input):
-    """Autogenerated input type of AddDiscussionPollVote"""
+    """Autogenerated input type of AddDiscussionPollVote."""
 
     __schema__ = github_schema
     __field_names__ = ("poll_option_id", "client_mutation_id")
@@ -3247,7 +3247,7 @@ class AddDiscussionPollVoteInput(sgqlc.types.Input):
 
 
 class AddEnterpriseSupportEntitlementInput(sgqlc.types.Input):
-    """Autogenerated input type of AddEnterpriseSupportEntitlement"""
+    """Autogenerated input type of AddEnterpriseSupportEntitlement."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "login", "client_mutation_id")
@@ -3262,7 +3262,7 @@ class AddEnterpriseSupportEntitlementInput(sgqlc.types.Input):
 
 
 class AddLabelsToLabelableInput(sgqlc.types.Input):
-    """Autogenerated input type of AddLabelsToLabelable"""
+    """Autogenerated input type of AddLabelsToLabelable."""
 
     __schema__ = github_schema
     __field_names__ = ("labelable_id", "label_ids", "client_mutation_id")
@@ -3277,7 +3277,7 @@ class AddLabelsToLabelableInput(sgqlc.types.Input):
 
 
 class AddProjectCardInput(sgqlc.types.Input):
-    """Autogenerated input type of AddProjectCard"""
+    """Autogenerated input type of AddProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("project_column_id", "content_id", "note", "client_mutation_id")
@@ -3297,7 +3297,7 @@ class AddProjectCardInput(sgqlc.types.Input):
 
 
 class AddProjectColumnInput(sgqlc.types.Input):
-    """Autogenerated input type of AddProjectColumn"""
+    """Autogenerated input type of AddProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "name", "client_mutation_id")
@@ -3312,7 +3312,7 @@ class AddProjectColumnInput(sgqlc.types.Input):
 
 
 class AddProjectDraftIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of AddProjectDraftIssue"""
+    """Autogenerated input type of AddProjectDraftIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "title", "body", "assignee_ids", "client_mutation_id")
@@ -3333,7 +3333,7 @@ class AddProjectDraftIssueInput(sgqlc.types.Input):
 
 
 class AddProjectNextItemInput(sgqlc.types.Input):
-    """Autogenerated input type of AddProjectNextItem"""
+    """Autogenerated input type of AddProjectNextItem."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "content_id", "client_mutation_id")
@@ -3348,7 +3348,7 @@ class AddProjectNextItemInput(sgqlc.types.Input):
 
 
 class AddPullRequestReviewCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of AddPullRequestReviewComment"""
+    """Autogenerated input type of AddPullRequestReviewComment."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -3387,7 +3387,7 @@ class AddPullRequestReviewCommentInput(sgqlc.types.Input):
 
 
 class AddPullRequestReviewInput(sgqlc.types.Input):
-    """Autogenerated input type of AddPullRequestReview"""
+    """Autogenerated input type of AddPullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "commit_oid", "body", "event", "comments", "threads", "client_mutation_id")
@@ -3414,7 +3414,7 @@ class AddPullRequestReviewInput(sgqlc.types.Input):
 
 
 class AddPullRequestReviewThreadInput(sgqlc.types.Input):
-    """Autogenerated input type of AddPullRequestReviewThread"""
+    """Autogenerated input type of AddPullRequestReviewThread."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -3461,7 +3461,7 @@ class AddPullRequestReviewThreadInput(sgqlc.types.Input):
 
 
 class AddReactionInput(sgqlc.types.Input):
-    """Autogenerated input type of AddReaction"""
+    """Autogenerated input type of AddReaction."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "content", "client_mutation_id")
@@ -3476,7 +3476,7 @@ class AddReactionInput(sgqlc.types.Input):
 
 
 class AddStarInput(sgqlc.types.Input):
-    """Autogenerated input type of AddStar"""
+    """Autogenerated input type of AddStar."""
 
     __schema__ = github_schema
     __field_names__ = ("starrable_id", "client_mutation_id")
@@ -3488,7 +3488,7 @@ class AddStarInput(sgqlc.types.Input):
 
 
 class AddUpvoteInput(sgqlc.types.Input):
-    """Autogenerated input type of AddUpvote"""
+    """Autogenerated input type of AddUpvote."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "client_mutation_id")
@@ -3500,7 +3500,7 @@ class AddUpvoteInput(sgqlc.types.Input):
 
 
 class AddVerifiableDomainInput(sgqlc.types.Input):
-    """Autogenerated input type of AddVerifiableDomain"""
+    """Autogenerated input type of AddVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("owner_id", "domain", "client_mutation_id")
@@ -3515,7 +3515,7 @@ class AddVerifiableDomainInput(sgqlc.types.Input):
 
 
 class ApproveDeploymentsInput(sgqlc.types.Input):
-    """Autogenerated input type of ApproveDeployments"""
+    """Autogenerated input type of ApproveDeployments."""
 
     __schema__ = github_schema
     __field_names__ = ("workflow_run_id", "environment_ids", "comment", "client_mutation_id")
@@ -3535,7 +3535,7 @@ class ApproveDeploymentsInput(sgqlc.types.Input):
 
 
 class ApproveVerifiableDomainInput(sgqlc.types.Input):
-    """Autogenerated input type of ApproveVerifiableDomain"""
+    """Autogenerated input type of ApproveVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -3547,7 +3547,7 @@ class ApproveVerifiableDomainInput(sgqlc.types.Input):
 
 
 class ArchiveRepositoryInput(sgqlc.types.Input):
-    """Autogenerated input type of ArchiveRepository"""
+    """Autogenerated input type of ArchiveRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "client_mutation_id")
@@ -3571,7 +3571,7 @@ class AuditLogOrder(sgqlc.types.Input):
 
 
 class CancelEnterpriseAdminInvitationInput(sgqlc.types.Input):
-    """Autogenerated input type of CancelEnterpriseAdminInvitation"""
+    """Autogenerated input type of CancelEnterpriseAdminInvitation."""
 
     __schema__ = github_schema
     __field_names__ = ("invitation_id", "client_mutation_id")
@@ -3583,7 +3583,7 @@ class CancelEnterpriseAdminInvitationInput(sgqlc.types.Input):
 
 
 class CancelSponsorshipInput(sgqlc.types.Input):
-    """Autogenerated input type of CancelSponsorship"""
+    """Autogenerated input type of CancelSponsorship."""
 
     __schema__ = github_schema
     __field_names__ = ("sponsor_id", "sponsor_login", "sponsorable_id", "sponsorable_login", "client_mutation_id")
@@ -3613,7 +3613,7 @@ class CancelSponsorshipInput(sgqlc.types.Input):
 
 
 class ChangeUserStatusInput(sgqlc.types.Input):
-    """Autogenerated input type of ChangeUserStatus"""
+    """Autogenerated input type of ChangeUserStatus."""
 
     __schema__ = github_schema
     __field_names__ = ("emoji", "message", "organization_id", "limited_availability", "expires_at", "client_mutation_id")
@@ -3784,7 +3784,7 @@ class CheckSuiteFilter(sgqlc.types.Input):
 
 
 class ClearLabelsFromLabelableInput(sgqlc.types.Input):
-    """Autogenerated input type of ClearLabelsFromLabelable"""
+    """Autogenerated input type of ClearLabelsFromLabelable."""
 
     __schema__ = github_schema
     __field_names__ = ("labelable_id", "client_mutation_id")
@@ -3796,7 +3796,7 @@ class ClearLabelsFromLabelableInput(sgqlc.types.Input):
 
 
 class CloneProjectInput(sgqlc.types.Input):
-    """Autogenerated input type of CloneProject"""
+    """Autogenerated input type of CloneProject."""
 
     __schema__ = github_schema
     __field_names__ = ("target_owner_id", "source_id", "include_workflows", "name", "body", "public", "client_mutation_id")
@@ -3823,7 +3823,7 @@ class CloneProjectInput(sgqlc.types.Input):
 
 
 class CloneTemplateRepositoryInput(sgqlc.types.Input):
-    """Autogenerated input type of CloneTemplateRepository"""
+    """Autogenerated input type of CloneTemplateRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "name", "owner_id", "description", "visibility", "include_all_branches", "client_mutation_id")
@@ -3853,7 +3853,7 @@ class CloneTemplateRepositoryInput(sgqlc.types.Input):
 
 
 class CloseIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of CloseIssue"""
+    """Autogenerated input type of CloseIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("issue_id", "state_reason", "client_mutation_id")
@@ -3868,7 +3868,7 @@ class CloseIssueInput(sgqlc.types.Input):
 
 
 class ClosePullRequestInput(sgqlc.types.Input):
-    """Autogenerated input type of ClosePullRequest"""
+    """Autogenerated input type of ClosePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "client_mutation_id")
@@ -3909,7 +3909,7 @@ class CommitContributionOrder(sgqlc.types.Input):
 
 
 class CommitMessage(sgqlc.types.Input):
-    """A message to include with a new commit"""
+    """A message to include with a new commit."""
 
     __schema__ = github_schema
     __field_names__ = ("headline", "body")
@@ -3929,7 +3929,7 @@ class CommittableBranch(sgqlc.types.Input):
     Specify a branch using a global node ID:      { "id":
     "MDM6UmVmMTpyZWZzL2hlYWRzL21haW4=" }  Specify a branch using
     nameWithOwner and branch name:      {       "nameWithOwner":
-    "github/graphql-client",       "branchName": "main"     }
+    "github/graphql-client",       "branchName": "main"     }.
     """
 
     __schema__ = github_schema
@@ -3954,7 +3954,7 @@ class ContributionOrder(sgqlc.types.Input):
 
 
 class ConvertProjectCardNoteToIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of ConvertProjectCardNoteToIssue"""
+    """Autogenerated input type of ConvertProjectCardNoteToIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("project_card_id", "repository_id", "title", "body", "client_mutation_id")
@@ -3977,7 +3977,7 @@ class ConvertProjectCardNoteToIssueInput(sgqlc.types.Input):
 
 
 class ConvertPullRequestToDraftInput(sgqlc.types.Input):
-    """Autogenerated input type of ConvertPullRequestToDraft"""
+    """Autogenerated input type of ConvertPullRequestToDraft."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "client_mutation_id")
@@ -3989,7 +3989,7 @@ class ConvertPullRequestToDraftInput(sgqlc.types.Input):
 
 
 class CreateBranchProtectionRuleInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateBranchProtectionRule"""
+    """Autogenerated input type of CreateBranchProtectionRule."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4073,7 +4073,7 @@ class CreateBranchProtectionRuleInput(sgqlc.types.Input):
     """
 
     bypass_pull_request_actor_ids = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="bypassPullRequestActorIds"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="bypassPullRequestActorIds",
     )
     """A list of User, Team, or App IDs allowed to bypass pull requests
     targeting matching branches.
@@ -4093,14 +4093,14 @@ class CreateBranchProtectionRuleInput(sgqlc.types.Input):
     """
 
     required_status_check_contexts = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="requiredStatusCheckContexts"
+        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="requiredStatusCheckContexts",
     )
     """List of required status check contexts that must pass for commits
     to be accepted to matching branches.
     """
 
     required_status_checks = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("RequiredStatusCheckInput")), graphql_name="requiredStatusChecks"
+        sgqlc.types.list_of(sgqlc.types.non_null("RequiredStatusCheckInput")), graphql_name="requiredStatusChecks",
     )
     """The list of required status checks"""
 
@@ -4112,7 +4112,7 @@ class CreateBranchProtectionRuleInput(sgqlc.types.Input):
 
 
 class CreateCheckRunInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateCheckRun"""
+    """Autogenerated input type of CreateCheckRun."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4171,7 +4171,7 @@ class CreateCheckRunInput(sgqlc.types.Input):
 
 
 class CreateCheckSuiteInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateCheckSuite"""
+    """Autogenerated input type of CreateCheckSuite."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "head_sha", "client_mutation_id")
@@ -4186,7 +4186,7 @@ class CreateCheckSuiteInput(sgqlc.types.Input):
 
 
 class CreateCommitOnBranchInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateCommitOnBranch"""
+    """Autogenerated input type of CreateCommitOnBranch."""
 
     __schema__ = github_schema
     __field_names__ = ("branch", "file_changes", "message", "expected_head_oid", "client_mutation_id")
@@ -4209,7 +4209,7 @@ class CreateCommitOnBranchInput(sgqlc.types.Input):
 
 
 class CreateDiscussionInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateDiscussion"""
+    """Autogenerated input type of CreateDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "title", "body", "category_id", "client_mutation_id")
@@ -4232,7 +4232,7 @@ class CreateDiscussionInput(sgqlc.types.Input):
 
 
 class CreateEnterpriseOrganizationInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateEnterpriseOrganization"""
+    """Autogenerated input type of CreateEnterpriseOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "login", "profile_name", "billing_email", "admin_logins", "client_mutation_id")
@@ -4256,7 +4256,7 @@ class CreateEnterpriseOrganizationInput(sgqlc.types.Input):
 
 
 class CreateEnvironmentInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateEnvironment"""
+    """Autogenerated input type of CreateEnvironment."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "name", "client_mutation_id")
@@ -4271,7 +4271,7 @@ class CreateEnvironmentInput(sgqlc.types.Input):
 
 
 class CreateIpAllowListEntryInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateIpAllowListEntry"""
+    """Autogenerated input type of CreateIpAllowListEntry."""
 
     __schema__ = github_schema
     __field_names__ = ("owner_id", "allow_list_value", "name", "is_active", "client_mutation_id")
@@ -4296,7 +4296,7 @@ class CreateIpAllowListEntryInput(sgqlc.types.Input):
 
 
 class CreateIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateIssue"""
+    """Autogenerated input type of CreateIssue."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4341,7 +4341,7 @@ class CreateIssueInput(sgqlc.types.Input):
 
 
 class CreateMigrationSourceInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateMigrationSource"""
+    """Autogenerated input type of CreateMigrationSource."""
 
     __schema__ = github_schema
     __field_names__ = ("name", "url", "access_token", "type", "owner_id", "github_pat", "client_mutation_id")
@@ -4372,7 +4372,7 @@ class CreateMigrationSourceInput(sgqlc.types.Input):
 
 
 class CreateProjectInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateProject"""
+    """Autogenerated input type of CreateProject."""
 
     __schema__ = github_schema
     __field_names__ = ("owner_id", "name", "body", "template", "repository_ids", "client_mutation_id")
@@ -4398,7 +4398,7 @@ class CreateProjectInput(sgqlc.types.Input):
 
 
 class CreatePullRequestInput(sgqlc.types.Input):
-    """Autogenerated input type of CreatePullRequest"""
+    """Autogenerated input type of CreatePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4444,7 +4444,7 @@ class CreatePullRequestInput(sgqlc.types.Input):
 
 
 class CreateRefInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateRef"""
+    """Autogenerated input type of CreateRef."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "name", "oid", "client_mutation_id")
@@ -4466,7 +4466,7 @@ class CreateRefInput(sgqlc.types.Input):
 
 
 class CreateRepositoryInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateRepository"""
+    """Autogenerated input type of CreateRepository."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4520,7 +4520,7 @@ class CreateRepositoryInput(sgqlc.types.Input):
 
 
 class CreateSponsorsTierInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateSponsorsTier"""
+    """Autogenerated input type of CreateSponsorsTier."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4594,7 +4594,7 @@ class CreateSponsorsTierInput(sgqlc.types.Input):
 
 
 class CreateSponsorshipInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateSponsorship"""
+    """Autogenerated input type of CreateSponsorship."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -4661,7 +4661,7 @@ class CreateSponsorshipInput(sgqlc.types.Input):
 
 
 class CreateTeamDiscussionCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateTeamDiscussionComment"""
+    """Autogenerated input type of CreateTeamDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("discussion_id", "body", "client_mutation_id")
@@ -4676,7 +4676,7 @@ class CreateTeamDiscussionCommentInput(sgqlc.types.Input):
 
 
 class CreateTeamDiscussionInput(sgqlc.types.Input):
-    """Autogenerated input type of CreateTeamDiscussion"""
+    """Autogenerated input type of CreateTeamDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("team_id", "title", "body", "private", "client_mutation_id")
@@ -4700,7 +4700,7 @@ class CreateTeamDiscussionInput(sgqlc.types.Input):
 
 
 class DeclineTopicSuggestionInput(sgqlc.types.Input):
-    """Autogenerated input type of DeclineTopicSuggestion"""
+    """Autogenerated input type of DeclineTopicSuggestion."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "name", "reason", "client_mutation_id")
@@ -4718,7 +4718,7 @@ class DeclineTopicSuggestionInput(sgqlc.types.Input):
 
 
 class DeleteBranchProtectionRuleInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteBranchProtectionRule"""
+    """Autogenerated input type of DeleteBranchProtectionRule."""
 
     __schema__ = github_schema
     __field_names__ = ("branch_protection_rule_id", "client_mutation_id")
@@ -4730,7 +4730,7 @@ class DeleteBranchProtectionRuleInput(sgqlc.types.Input):
 
 
 class DeleteDeploymentInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteDeployment"""
+    """Autogenerated input type of DeleteDeployment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4742,7 +4742,7 @@ class DeleteDeploymentInput(sgqlc.types.Input):
 
 
 class DeleteDiscussionCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteDiscussionComment"""
+    """Autogenerated input type of DeleteDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4754,7 +4754,7 @@ class DeleteDiscussionCommentInput(sgqlc.types.Input):
 
 
 class DeleteDiscussionInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteDiscussion"""
+    """Autogenerated input type of DeleteDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4766,7 +4766,7 @@ class DeleteDiscussionInput(sgqlc.types.Input):
 
 
 class DeleteEnvironmentInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteEnvironment"""
+    """Autogenerated input type of DeleteEnvironment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4778,7 +4778,7 @@ class DeleteEnvironmentInput(sgqlc.types.Input):
 
 
 class DeleteIpAllowListEntryInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteIpAllowListEntry"""
+    """Autogenerated input type of DeleteIpAllowListEntry."""
 
     __schema__ = github_schema
     __field_names__ = ("ip_allow_list_entry_id", "client_mutation_id")
@@ -4790,7 +4790,7 @@ class DeleteIpAllowListEntryInput(sgqlc.types.Input):
 
 
 class DeleteIssueCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteIssueComment"""
+    """Autogenerated input type of DeleteIssueComment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4802,7 +4802,7 @@ class DeleteIssueCommentInput(sgqlc.types.Input):
 
 
 class DeleteIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteIssue"""
+    """Autogenerated input type of DeleteIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("issue_id", "client_mutation_id")
@@ -4814,7 +4814,7 @@ class DeleteIssueInput(sgqlc.types.Input):
 
 
 class DeleteProjectCardInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteProjectCard"""
+    """Autogenerated input type of DeleteProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("card_id", "client_mutation_id")
@@ -4826,7 +4826,7 @@ class DeleteProjectCardInput(sgqlc.types.Input):
 
 
 class DeleteProjectColumnInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteProjectColumn"""
+    """Autogenerated input type of DeleteProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("column_id", "client_mutation_id")
@@ -4838,7 +4838,7 @@ class DeleteProjectColumnInput(sgqlc.types.Input):
 
 
 class DeleteProjectInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteProject"""
+    """Autogenerated input type of DeleteProject."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "client_mutation_id")
@@ -4850,7 +4850,7 @@ class DeleteProjectInput(sgqlc.types.Input):
 
 
 class DeleteProjectNextItemInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteProjectNextItem"""
+    """Autogenerated input type of DeleteProjectNextItem."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "item_id", "client_mutation_id")
@@ -4865,7 +4865,7 @@ class DeleteProjectNextItemInput(sgqlc.types.Input):
 
 
 class DeletePullRequestReviewCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of DeletePullRequestReviewComment"""
+    """Autogenerated input type of DeletePullRequestReviewComment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4877,7 +4877,7 @@ class DeletePullRequestReviewCommentInput(sgqlc.types.Input):
 
 
 class DeletePullRequestReviewInput(sgqlc.types.Input):
-    """Autogenerated input type of DeletePullRequestReview"""
+    """Autogenerated input type of DeletePullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_review_id", "client_mutation_id")
@@ -4889,7 +4889,7 @@ class DeletePullRequestReviewInput(sgqlc.types.Input):
 
 
 class DeleteRefInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteRef"""
+    """Autogenerated input type of DeleteRef."""
 
     __schema__ = github_schema
     __field_names__ = ("ref_id", "client_mutation_id")
@@ -4901,7 +4901,7 @@ class DeleteRefInput(sgqlc.types.Input):
 
 
 class DeleteTeamDiscussionCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteTeamDiscussionComment"""
+    """Autogenerated input type of DeleteTeamDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4913,7 +4913,7 @@ class DeleteTeamDiscussionCommentInput(sgqlc.types.Input):
 
 
 class DeleteTeamDiscussionInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteTeamDiscussion"""
+    """Autogenerated input type of DeleteTeamDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4925,7 +4925,7 @@ class DeleteTeamDiscussionInput(sgqlc.types.Input):
 
 
 class DeleteVerifiableDomainInput(sgqlc.types.Input):
-    """Autogenerated input type of DeleteVerifiableDomain"""
+    """Autogenerated input type of DeleteVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -4937,7 +4937,7 @@ class DeleteVerifiableDomainInput(sgqlc.types.Input):
 
 
 class DeploymentOrder(sgqlc.types.Input):
-    """Ordering options for deployment connections"""
+    """Ordering options for deployment connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -4949,7 +4949,7 @@ class DeploymentOrder(sgqlc.types.Input):
 
 
 class DisablePullRequestAutoMergeInput(sgqlc.types.Input):
-    """Autogenerated input type of DisablePullRequestAutoMerge"""
+    """Autogenerated input type of DisablePullRequestAutoMerge."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "client_mutation_id")
@@ -4987,7 +4987,7 @@ class DiscussionPollOptionOrder(sgqlc.types.Input):
 
 
 class DismissPullRequestReviewInput(sgqlc.types.Input):
-    """Autogenerated input type of DismissPullRequestReview"""
+    """Autogenerated input type of DismissPullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_review_id", "message", "client_mutation_id")
@@ -5002,7 +5002,7 @@ class DismissPullRequestReviewInput(sgqlc.types.Input):
 
 
 class DismissRepositoryVulnerabilityAlertInput(sgqlc.types.Input):
-    """Autogenerated input type of DismissRepositoryVulnerabilityAlert"""
+    """Autogenerated input type of DismissRepositoryVulnerabilityAlert."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_vulnerability_alert_id", "dismiss_reason", "client_mutation_id")
@@ -5062,7 +5062,7 @@ class DraftPullRequestReviewThread(sgqlc.types.Input):
 
 
 class EnablePullRequestAutoMergeInput(sgqlc.types.Input):
-    """Autogenerated input type of EnablePullRequestAutoMerge"""
+    """Autogenerated input type of EnablePullRequestAutoMerge."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "commit_headline", "commit_body", "merge_method", "author_email", "client_mutation_id")
@@ -5091,7 +5091,7 @@ class EnablePullRequestAutoMergeInput(sgqlc.types.Input):
 
 class EnterpriseAdministratorInvitationOrder(sgqlc.types.Input):
     """Ordering options for enterprise administrator invitation
-    connections
+    connections.
     """
 
     __schema__ = github_schema
@@ -5234,7 +5234,7 @@ class FileChanges(sgqlc.types.Input):
     "deletions" [            {              "path": "docs/README.txt",
     }          ],          "additions" [            {
     "path": "newdocs/README.txt",              "contents":
-    base64encode("new contents\n")            }          ]        }
+    base64encode("new contents\n")            }          ]        }.
     """
 
     __schema__ = github_schema
@@ -5258,7 +5258,7 @@ class FileDeletion(sgqlc.types.Input):
 
 
 class FollowOrganizationInput(sgqlc.types.Input):
-    """Autogenerated input type of FollowOrganization"""
+    """Autogenerated input type of FollowOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("organization_id", "client_mutation_id")
@@ -5270,7 +5270,7 @@ class FollowOrganizationInput(sgqlc.types.Input):
 
 
 class FollowUserInput(sgqlc.types.Input):
-    """Autogenerated input type of FollowUser"""
+    """Autogenerated input type of FollowUser."""
 
     __schema__ = github_schema
     __field_names__ = ("user_id", "client_mutation_id")
@@ -5282,7 +5282,7 @@ class FollowUserInput(sgqlc.types.Input):
 
 
 class GistOrder(sgqlc.types.Input):
-    """Ordering options for gist connections"""
+    """Ordering options for gist connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -5295,7 +5295,7 @@ class GistOrder(sgqlc.types.Input):
 
 class GrantEnterpriseOrganizationsMigratorRoleInput(sgqlc.types.Input):
     """Autogenerated input type of
-    GrantEnterpriseOrganizationsMigratorRole
+    GrantEnterpriseOrganizationsMigratorRole.
     """
 
     __schema__ = github_schema
@@ -5313,7 +5313,7 @@ class GrantEnterpriseOrganizationsMigratorRoleInput(sgqlc.types.Input):
 
 
 class GrantMigratorRoleInput(sgqlc.types.Input):
-    """Autogenerated input type of GrantMigratorRole"""
+    """Autogenerated input type of GrantMigratorRole."""
 
     __schema__ = github_schema
     __field_names__ = ("organization_id", "actor", "actor_type", "client_mutation_id")
@@ -5331,7 +5331,7 @@ class GrantMigratorRoleInput(sgqlc.types.Input):
 
 
 class InviteEnterpriseAdminInput(sgqlc.types.Input):
-    """Autogenerated input type of InviteEnterpriseAdmin"""
+    """Autogenerated input type of InviteEnterpriseAdmin."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "invitee", "email", "role", "client_mutation_id")
@@ -5469,7 +5469,7 @@ class LanguageOrder(sgqlc.types.Input):
 
 
 class LinkRepositoryToProjectInput(sgqlc.types.Input):
-    """Autogenerated input type of LinkRepositoryToProject"""
+    """Autogenerated input type of LinkRepositoryToProject."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "repository_id", "client_mutation_id")
@@ -5484,7 +5484,7 @@ class LinkRepositoryToProjectInput(sgqlc.types.Input):
 
 
 class LockLockableInput(sgqlc.types.Input):
-    """Autogenerated input type of LockLockable"""
+    """Autogenerated input type of LockLockable."""
 
     __schema__ = github_schema
     __field_names__ = ("lockable_id", "lock_reason", "client_mutation_id")
@@ -5499,7 +5499,7 @@ class LockLockableInput(sgqlc.types.Input):
 
 
 class MarkDiscussionCommentAsAnswerInput(sgqlc.types.Input):
-    """Autogenerated input type of MarkDiscussionCommentAsAnswer"""
+    """Autogenerated input type of MarkDiscussionCommentAsAnswer."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -5511,7 +5511,7 @@ class MarkDiscussionCommentAsAnswerInput(sgqlc.types.Input):
 
 
 class MarkFileAsViewedInput(sgqlc.types.Input):
-    """Autogenerated input type of MarkFileAsViewed"""
+    """Autogenerated input type of MarkFileAsViewed."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "path", "client_mutation_id")
@@ -5526,7 +5526,7 @@ class MarkFileAsViewedInput(sgqlc.types.Input):
 
 
 class MarkPullRequestReadyForReviewInput(sgqlc.types.Input):
-    """Autogenerated input type of MarkPullRequestReadyForReview"""
+    """Autogenerated input type of MarkPullRequestReadyForReview."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "client_mutation_id")
@@ -5538,7 +5538,7 @@ class MarkPullRequestReadyForReviewInput(sgqlc.types.Input):
 
 
 class MergeBranchInput(sgqlc.types.Input):
-    """Autogenerated input type of MergeBranch"""
+    """Autogenerated input type of MergeBranch."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "base", "head", "commit_message", "author_email", "client_mutation_id")
@@ -5570,7 +5570,7 @@ class MergeBranchInput(sgqlc.types.Input):
 
 
 class MergePullRequestInput(sgqlc.types.Input):
-    """Autogenerated input type of MergePullRequest"""
+    """Autogenerated input type of MergePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -5623,7 +5623,7 @@ class MilestoneOrder(sgqlc.types.Input):
 
 
 class MinimizeCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of MinimizeComment"""
+    """Autogenerated input type of MinimizeComment."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "classifier", "client_mutation_id")
@@ -5638,7 +5638,7 @@ class MinimizeCommentInput(sgqlc.types.Input):
 
 
 class MoveProjectCardInput(sgqlc.types.Input):
-    """Autogenerated input type of MoveProjectCard"""
+    """Autogenerated input type of MoveProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("card_id", "column_id", "after_card_id", "client_mutation_id")
@@ -5658,7 +5658,7 @@ class MoveProjectCardInput(sgqlc.types.Input):
 
 
 class MoveProjectColumnInput(sgqlc.types.Input):
-    """Autogenerated input type of MoveProjectColumn"""
+    """Autogenerated input type of MoveProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("column_id", "after_column_id", "client_mutation_id")
@@ -5743,7 +5743,7 @@ class PackageVersionOrder(sgqlc.types.Input):
 
 
 class PinIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of PinIssue"""
+    """Autogenerated input type of PinIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("issue_id", "client_mutation_id")
@@ -5806,7 +5806,7 @@ class RefOrder(sgqlc.types.Input):
 
 class RegenerateEnterpriseIdentityProviderRecoveryCodesInput(sgqlc.types.Input):
     """Autogenerated input type of
-    RegenerateEnterpriseIdentityProviderRecoveryCodes
+    RegenerateEnterpriseIdentityProviderRecoveryCodes.
     """
 
     __schema__ = github_schema
@@ -5819,7 +5819,7 @@ class RegenerateEnterpriseIdentityProviderRecoveryCodesInput(sgqlc.types.Input):
 
 
 class RegenerateVerifiableDomainTokenInput(sgqlc.types.Input):
-    """Autogenerated input type of RegenerateVerifiableDomainToken"""
+    """Autogenerated input type of RegenerateVerifiableDomainToken."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -5833,7 +5833,7 @@ class RegenerateVerifiableDomainTokenInput(sgqlc.types.Input):
 
 
 class RejectDeploymentsInput(sgqlc.types.Input):
-    """Autogenerated input type of RejectDeployments"""
+    """Autogenerated input type of RejectDeployments."""
 
     __schema__ = github_schema
     __field_names__ = ("workflow_run_id", "environment_ids", "comment", "client_mutation_id")
@@ -5865,7 +5865,7 @@ class ReleaseOrder(sgqlc.types.Input):
 
 
 class RemoveAssigneesFromAssignableInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveAssigneesFromAssignable"""
+    """Autogenerated input type of RemoveAssigneesFromAssignable."""
 
     __schema__ = github_schema
     __field_names__ = ("assignable_id", "assignee_ids", "client_mutation_id")
@@ -5880,7 +5880,7 @@ class RemoveAssigneesFromAssignableInput(sgqlc.types.Input):
 
 
 class RemoveEnterpriseAdminInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveEnterpriseAdmin"""
+    """Autogenerated input type of RemoveEnterpriseAdmin."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "login", "client_mutation_id")
@@ -5895,7 +5895,7 @@ class RemoveEnterpriseAdminInput(sgqlc.types.Input):
 
 
 class RemoveEnterpriseIdentityProviderInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveEnterpriseIdentityProvider"""
+    """Autogenerated input type of RemoveEnterpriseIdentityProvider."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "client_mutation_id")
@@ -5909,7 +5909,7 @@ class RemoveEnterpriseIdentityProviderInput(sgqlc.types.Input):
 
 
 class RemoveEnterpriseOrganizationInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveEnterpriseOrganization"""
+    """Autogenerated input type of RemoveEnterpriseOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "organization_id", "client_mutation_id")
@@ -5926,7 +5926,7 @@ class RemoveEnterpriseOrganizationInput(sgqlc.types.Input):
 
 
 class RemoveEnterpriseSupportEntitlementInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveEnterpriseSupportEntitlement"""
+    """Autogenerated input type of RemoveEnterpriseSupportEntitlement."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "login", "client_mutation_id")
@@ -5941,7 +5941,7 @@ class RemoveEnterpriseSupportEntitlementInput(sgqlc.types.Input):
 
 
 class RemoveLabelsFromLabelableInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveLabelsFromLabelable"""
+    """Autogenerated input type of RemoveLabelsFromLabelable."""
 
     __schema__ = github_schema
     __field_names__ = ("labelable_id", "label_ids", "client_mutation_id")
@@ -5956,7 +5956,7 @@ class RemoveLabelsFromLabelableInput(sgqlc.types.Input):
 
 
 class RemoveOutsideCollaboratorInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveOutsideCollaborator"""
+    """Autogenerated input type of RemoveOutsideCollaborator."""
 
     __schema__ = github_schema
     __field_names__ = ("user_id", "organization_id", "client_mutation_id")
@@ -5973,7 +5973,7 @@ class RemoveOutsideCollaboratorInput(sgqlc.types.Input):
 
 
 class RemoveReactionInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveReaction"""
+    """Autogenerated input type of RemoveReaction."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "content", "client_mutation_id")
@@ -5988,7 +5988,7 @@ class RemoveReactionInput(sgqlc.types.Input):
 
 
 class RemoveStarInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveStar"""
+    """Autogenerated input type of RemoveStar."""
 
     __schema__ = github_schema
     __field_names__ = ("starrable_id", "client_mutation_id")
@@ -6000,7 +6000,7 @@ class RemoveStarInput(sgqlc.types.Input):
 
 
 class RemoveUpvoteInput(sgqlc.types.Input):
-    """Autogenerated input type of RemoveUpvote"""
+    """Autogenerated input type of RemoveUpvote."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "client_mutation_id")
@@ -6012,7 +6012,7 @@ class RemoveUpvoteInput(sgqlc.types.Input):
 
 
 class ReopenIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of ReopenIssue"""
+    """Autogenerated input type of ReopenIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("issue_id", "client_mutation_id")
@@ -6024,7 +6024,7 @@ class ReopenIssueInput(sgqlc.types.Input):
 
 
 class ReopenPullRequestInput(sgqlc.types.Input):
-    """Autogenerated input type of ReopenPullRequest"""
+    """Autogenerated input type of ReopenPullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "client_mutation_id")
@@ -6060,7 +6060,7 @@ class RepositoryMigrationOrder(sgqlc.types.Input):
 
 
 class RepositoryOrder(sgqlc.types.Input):
-    """Ordering options for repository connections"""
+    """Ordering options for repository connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -6072,7 +6072,7 @@ class RepositoryOrder(sgqlc.types.Input):
 
 
 class RequestReviewsInput(sgqlc.types.Input):
-    """Autogenerated input type of RequestReviews"""
+    """Autogenerated input type of RequestReviews."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "user_ids", "team_ids", "union", "client_mutation_id")
@@ -6113,7 +6113,7 @@ class RequiredStatusCheckInput(sgqlc.types.Input):
 
 
 class RerequestCheckSuiteInput(sgqlc.types.Input):
-    """Autogenerated input type of RerequestCheckSuite"""
+    """Autogenerated input type of RerequestCheckSuite."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "check_suite_id", "client_mutation_id")
@@ -6128,7 +6128,7 @@ class RerequestCheckSuiteInput(sgqlc.types.Input):
 
 
 class ResolveReviewThreadInput(sgqlc.types.Input):
-    """Autogenerated input type of ResolveReviewThread"""
+    """Autogenerated input type of ResolveReviewThread."""
 
     __schema__ = github_schema
     __field_names__ = ("thread_id", "client_mutation_id")
@@ -6141,7 +6141,7 @@ class ResolveReviewThreadInput(sgqlc.types.Input):
 
 class RevokeEnterpriseOrganizationsMigratorRoleInput(sgqlc.types.Input):
     """Autogenerated input type of
-    RevokeEnterpriseOrganizationsMigratorRole
+    RevokeEnterpriseOrganizationsMigratorRole.
     """
 
     __schema__ = github_schema
@@ -6159,7 +6159,7 @@ class RevokeEnterpriseOrganizationsMigratorRoleInput(sgqlc.types.Input):
 
 
 class RevokeMigratorRoleInput(sgqlc.types.Input):
-    """Autogenerated input type of RevokeMigratorRole"""
+    """Autogenerated input type of RevokeMigratorRole."""
 
     __schema__ = github_schema
     __field_names__ = ("organization_id", "actor", "actor_type", "client_mutation_id")
@@ -6201,7 +6201,7 @@ class SecurityAdvisoryIdentifierFilter(sgqlc.types.Input):
 
 
 class SecurityAdvisoryOrder(sgqlc.types.Input):
-    """Ordering options for security advisory connections"""
+    """Ordering options for security advisory connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -6213,7 +6213,7 @@ class SecurityAdvisoryOrder(sgqlc.types.Input):
 
 
 class SecurityVulnerabilityOrder(sgqlc.types.Input):
-    """Ordering options for security vulnerability connections"""
+    """Ordering options for security vulnerability connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -6225,7 +6225,7 @@ class SecurityVulnerabilityOrder(sgqlc.types.Input):
 
 
 class SetEnterpriseIdentityProviderInput(sgqlc.types.Input):
-    """Autogenerated input type of SetEnterpriseIdentityProvider"""
+    """Autogenerated input type of SetEnterpriseIdentityProvider."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "sso_url", "issuer", "idp_certificate", "signature_method", "digest_method", "client_mutation_id")
@@ -6258,7 +6258,7 @@ class SetEnterpriseIdentityProviderInput(sgqlc.types.Input):
 
 
 class SetOrganizationInteractionLimitInput(sgqlc.types.Input):
-    """Autogenerated input type of SetOrganizationInteractionLimit"""
+    """Autogenerated input type of SetOrganizationInteractionLimit."""
 
     __schema__ = github_schema
     __field_names__ = ("organization_id", "limit", "expiry", "client_mutation_id")
@@ -6276,7 +6276,7 @@ class SetOrganizationInteractionLimitInput(sgqlc.types.Input):
 
 
 class SetRepositoryInteractionLimitInput(sgqlc.types.Input):
-    """Autogenerated input type of SetRepositoryInteractionLimit"""
+    """Autogenerated input type of SetRepositoryInteractionLimit."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "limit", "expiry", "client_mutation_id")
@@ -6294,7 +6294,7 @@ class SetRepositoryInteractionLimitInput(sgqlc.types.Input):
 
 
 class SetUserInteractionLimitInput(sgqlc.types.Input):
-    """Autogenerated input type of SetUserInteractionLimit"""
+    """Autogenerated input type of SetUserInteractionLimit."""
 
     __schema__ = github_schema
     __field_names__ = ("user_id", "limit", "expiry", "client_mutation_id")
@@ -6400,7 +6400,7 @@ class StarOrder(sgqlc.types.Input):
 
 
 class StartRepositoryMigrationInput(sgqlc.types.Input):
-    """Autogenerated input type of StartRepositoryMigration"""
+    """Autogenerated input type of StartRepositoryMigration."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -6453,7 +6453,7 @@ class StartRepositoryMigrationInput(sgqlc.types.Input):
 
 
 class SubmitPullRequestReviewInput(sgqlc.types.Input):
-    """Autogenerated input type of SubmitPullRequestReview"""
+    """Autogenerated input type of SubmitPullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "pull_request_review_id", "event", "body", "client_mutation_id")
@@ -6498,7 +6498,7 @@ class TeamDiscussionOrder(sgqlc.types.Input):
 
 
 class TeamMemberOrder(sgqlc.types.Input):
-    """Ordering options for team member connections"""
+    """Ordering options for team member connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -6522,7 +6522,7 @@ class TeamOrder(sgqlc.types.Input):
 
 
 class TeamRepositoryOrder(sgqlc.types.Input):
-    """Ordering options for team repository connections"""
+    """Ordering options for team repository connections."""
 
     __schema__ = github_schema
     __field_names__ = ("field", "direction")
@@ -6534,7 +6534,7 @@ class TeamRepositoryOrder(sgqlc.types.Input):
 
 
 class TransferIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of TransferIssue"""
+    """Autogenerated input type of TransferIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("issue_id", "repository_id", "client_mutation_id")
@@ -6549,7 +6549,7 @@ class TransferIssueInput(sgqlc.types.Input):
 
 
 class UnarchiveRepositoryInput(sgqlc.types.Input):
-    """Autogenerated input type of UnarchiveRepository"""
+    """Autogenerated input type of UnarchiveRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "client_mutation_id")
@@ -6561,7 +6561,7 @@ class UnarchiveRepositoryInput(sgqlc.types.Input):
 
 
 class UnfollowOrganizationInput(sgqlc.types.Input):
-    """Autogenerated input type of UnfollowOrganization"""
+    """Autogenerated input type of UnfollowOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("organization_id", "client_mutation_id")
@@ -6573,7 +6573,7 @@ class UnfollowOrganizationInput(sgqlc.types.Input):
 
 
 class UnfollowUserInput(sgqlc.types.Input):
-    """Autogenerated input type of UnfollowUser"""
+    """Autogenerated input type of UnfollowUser."""
 
     __schema__ = github_schema
     __field_names__ = ("user_id", "client_mutation_id")
@@ -6585,7 +6585,7 @@ class UnfollowUserInput(sgqlc.types.Input):
 
 
 class UnlinkRepositoryFromProjectInput(sgqlc.types.Input):
-    """Autogenerated input type of UnlinkRepositoryFromProject"""
+    """Autogenerated input type of UnlinkRepositoryFromProject."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "repository_id", "client_mutation_id")
@@ -6600,7 +6600,7 @@ class UnlinkRepositoryFromProjectInput(sgqlc.types.Input):
 
 
 class UnlockLockableInput(sgqlc.types.Input):
-    """Autogenerated input type of UnlockLockable"""
+    """Autogenerated input type of UnlockLockable."""
 
     __schema__ = github_schema
     __field_names__ = ("lockable_id", "client_mutation_id")
@@ -6612,7 +6612,7 @@ class UnlockLockableInput(sgqlc.types.Input):
 
 
 class UnmarkDiscussionCommentAsAnswerInput(sgqlc.types.Input):
-    """Autogenerated input type of UnmarkDiscussionCommentAsAnswer"""
+    """Autogenerated input type of UnmarkDiscussionCommentAsAnswer."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -6624,7 +6624,7 @@ class UnmarkDiscussionCommentAsAnswerInput(sgqlc.types.Input):
 
 
 class UnmarkFileAsViewedInput(sgqlc.types.Input):
-    """Autogenerated input type of UnmarkFileAsViewed"""
+    """Autogenerated input type of UnmarkFileAsViewed."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "path", "client_mutation_id")
@@ -6639,7 +6639,7 @@ class UnmarkFileAsViewedInput(sgqlc.types.Input):
 
 
 class UnmarkIssueAsDuplicateInput(sgqlc.types.Input):
-    """Autogenerated input type of UnmarkIssueAsDuplicate"""
+    """Autogenerated input type of UnmarkIssueAsDuplicate."""
 
     __schema__ = github_schema
     __field_names__ = ("duplicate_id", "canonical_id", "client_mutation_id")
@@ -6656,7 +6656,7 @@ class UnmarkIssueAsDuplicateInput(sgqlc.types.Input):
 
 
 class UnminimizeCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of UnminimizeComment"""
+    """Autogenerated input type of UnminimizeComment."""
 
     __schema__ = github_schema
     __field_names__ = ("subject_id", "client_mutation_id")
@@ -6668,7 +6668,7 @@ class UnminimizeCommentInput(sgqlc.types.Input):
 
 
 class UnpinIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of UnpinIssue"""
+    """Autogenerated input type of UnpinIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("issue_id", "client_mutation_id")
@@ -6680,7 +6680,7 @@ class UnpinIssueInput(sgqlc.types.Input):
 
 
 class UnresolveReviewThreadInput(sgqlc.types.Input):
-    """Autogenerated input type of UnresolveReviewThread"""
+    """Autogenerated input type of UnresolveReviewThread."""
 
     __schema__ = github_schema
     __field_names__ = ("thread_id", "client_mutation_id")
@@ -6692,7 +6692,7 @@ class UnresolveReviewThreadInput(sgqlc.types.Input):
 
 
 class UpdateBranchProtectionRuleInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateBranchProtectionRule"""
+    """Autogenerated input type of UpdateBranchProtectionRule."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -6774,7 +6774,7 @@ class UpdateBranchProtectionRuleInput(sgqlc.types.Input):
     """
 
     bypass_pull_request_actor_ids = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="bypassPullRequestActorIds"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="bypassPullRequestActorIds",
     )
     """A list of User, Team, or App IDs allowed to bypass pull requests
     targeting matching branches.
@@ -6794,14 +6794,14 @@ class UpdateBranchProtectionRuleInput(sgqlc.types.Input):
     """
 
     required_status_check_contexts = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="requiredStatusCheckContexts"
+        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="requiredStatusCheckContexts",
     )
     """List of required status check contexts that must pass for commits
     to be accepted to matching branches.
     """
 
     required_status_checks = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(RequiredStatusCheckInput)), graphql_name="requiredStatusChecks"
+        sgqlc.types.list_of(sgqlc.types.non_null(RequiredStatusCheckInput)), graphql_name="requiredStatusChecks",
     )
     """The list of required status checks"""
 
@@ -6813,7 +6813,7 @@ class UpdateBranchProtectionRuleInput(sgqlc.types.Input):
 
 
 class UpdateCheckRunInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateCheckRun"""
+    """Autogenerated input type of UpdateCheckRun."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -6872,7 +6872,7 @@ class UpdateCheckRunInput(sgqlc.types.Input):
 
 
 class UpdateCheckSuitePreferencesInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateCheckSuitePreferences"""
+    """Autogenerated input type of UpdateCheckSuitePreferences."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "auto_trigger_preferences", "client_mutation_id")
@@ -6890,7 +6890,7 @@ class UpdateCheckSuitePreferencesInput(sgqlc.types.Input):
 
 
 class UpdateDiscussionCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateDiscussionComment"""
+    """Autogenerated input type of UpdateDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("comment_id", "body", "client_mutation_id")
@@ -6905,7 +6905,7 @@ class UpdateDiscussionCommentInput(sgqlc.types.Input):
 
 
 class UpdateDiscussionInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateDiscussion"""
+    """Autogenerated input type of UpdateDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("discussion_id", "title", "body", "category_id", "client_mutation_id")
@@ -6928,7 +6928,7 @@ class UpdateDiscussionInput(sgqlc.types.Input):
 
 
 class UpdateEnterpriseAdministratorRoleInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateEnterpriseAdministratorRole"""
+    """Autogenerated input type of UpdateEnterpriseAdministratorRole."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "login", "role", "client_mutation_id")
@@ -6947,7 +6947,7 @@ class UpdateEnterpriseAdministratorRoleInput(sgqlc.types.Input):
 
 class UpdateEnterpriseAllowPrivateRepositoryForkingSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseAllowPrivateRepositoryForkingSetting
+    UpdateEnterpriseAllowPrivateRepositoryForkingSetting.
     """
 
     __schema__ = github_schema
@@ -6968,7 +6968,7 @@ class UpdateEnterpriseAllowPrivateRepositoryForkingSettingInput(sgqlc.types.Inpu
 
 class UpdateEnterpriseDefaultRepositoryPermissionSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseDefaultRepositoryPermissionSetting
+    UpdateEnterpriseDefaultRepositoryPermissionSetting.
     """
 
     __schema__ = github_schema
@@ -6989,7 +6989,7 @@ class UpdateEnterpriseDefaultRepositoryPermissionSettingInput(sgqlc.types.Input)
 
 class UpdateEnterpriseMembersCanChangeRepositoryVisibilitySettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanChangeRepositoryVisibilitySetting
+    UpdateEnterpriseMembersCanChangeRepositoryVisibilitySetting.
     """
 
     __schema__ = github_schema
@@ -7010,7 +7010,7 @@ class UpdateEnterpriseMembersCanChangeRepositoryVisibilitySettingInput(sgqlc.typ
 
 class UpdateEnterpriseMembersCanCreateRepositoriesSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanCreateRepositoriesSetting
+    UpdateEnterpriseMembersCanCreateRepositoriesSetting.
     """
 
     __schema__ = github_schema
@@ -7060,7 +7060,7 @@ class UpdateEnterpriseMembersCanCreateRepositoriesSettingInput(sgqlc.types.Input
 
 class UpdateEnterpriseMembersCanDeleteIssuesSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanDeleteIssuesSetting
+    UpdateEnterpriseMembersCanDeleteIssuesSetting.
     """
 
     __schema__ = github_schema
@@ -7081,7 +7081,7 @@ class UpdateEnterpriseMembersCanDeleteIssuesSettingInput(sgqlc.types.Input):
 
 class UpdateEnterpriseMembersCanDeleteRepositoriesSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanDeleteRepositoriesSetting
+    UpdateEnterpriseMembersCanDeleteRepositoriesSetting.
     """
 
     __schema__ = github_schema
@@ -7102,7 +7102,7 @@ class UpdateEnterpriseMembersCanDeleteRepositoriesSettingInput(sgqlc.types.Input
 
 class UpdateEnterpriseMembersCanInviteCollaboratorsSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanInviteCollaboratorsSetting
+    UpdateEnterpriseMembersCanInviteCollaboratorsSetting.
     """
 
     __schema__ = github_schema
@@ -7123,7 +7123,7 @@ class UpdateEnterpriseMembersCanInviteCollaboratorsSettingInput(sgqlc.types.Inpu
 
 class UpdateEnterpriseMembersCanMakePurchasesSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanMakePurchasesSetting
+    UpdateEnterpriseMembersCanMakePurchasesSetting.
     """
 
     __schema__ = github_schema
@@ -7144,7 +7144,7 @@ class UpdateEnterpriseMembersCanMakePurchasesSettingInput(sgqlc.types.Input):
 
 class UpdateEnterpriseMembersCanUpdateProtectedBranchesSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanUpdateProtectedBranchesSetting
+    UpdateEnterpriseMembersCanUpdateProtectedBranchesSetting.
     """
 
     __schema__ = github_schema
@@ -7165,7 +7165,7 @@ class UpdateEnterpriseMembersCanUpdateProtectedBranchesSettingInput(sgqlc.types.
 
 class UpdateEnterpriseMembersCanViewDependencyInsightsSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseMembersCanViewDependencyInsightsSetting
+    UpdateEnterpriseMembersCanViewDependencyInsightsSetting.
     """
 
     __schema__ = github_schema
@@ -7186,7 +7186,7 @@ class UpdateEnterpriseMembersCanViewDependencyInsightsSettingInput(sgqlc.types.I
 
 class UpdateEnterpriseOrganizationProjectsSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseOrganizationProjectsSetting
+    UpdateEnterpriseOrganizationProjectsSetting.
     """
 
     __schema__ = github_schema
@@ -7204,7 +7204,7 @@ class UpdateEnterpriseOrganizationProjectsSettingInput(sgqlc.types.Input):
 
 
 class UpdateEnterpriseOwnerOrganizationRoleInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateEnterpriseOwnerOrganizationRole"""
+    """Autogenerated input type of UpdateEnterpriseOwnerOrganizationRole."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "organization_id", "organization_role", "client_mutation_id")
@@ -7222,7 +7222,7 @@ class UpdateEnterpriseOwnerOrganizationRoleInput(sgqlc.types.Input):
 
 
 class UpdateEnterpriseProfileInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateEnterpriseProfile"""
+    """Autogenerated input type of UpdateEnterpriseProfile."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "name", "description", "website_url", "location", "client_mutation_id")
@@ -7247,7 +7247,7 @@ class UpdateEnterpriseProfileInput(sgqlc.types.Input):
 
 class UpdateEnterpriseRepositoryProjectsSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseRepositoryProjectsSetting
+    UpdateEnterpriseRepositoryProjectsSetting.
     """
 
     __schema__ = github_schema
@@ -7265,7 +7265,7 @@ class UpdateEnterpriseRepositoryProjectsSettingInput(sgqlc.types.Input):
 
 
 class UpdateEnterpriseTeamDiscussionsSettingInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateEnterpriseTeamDiscussionsSetting"""
+    """Autogenerated input type of UpdateEnterpriseTeamDiscussionsSetting."""
 
     __schema__ = github_schema
     __field_names__ = ("enterprise_id", "setting_value", "client_mutation_id")
@@ -7283,7 +7283,7 @@ class UpdateEnterpriseTeamDiscussionsSettingInput(sgqlc.types.Input):
 
 class UpdateEnterpriseTwoFactorAuthenticationRequiredSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateEnterpriseTwoFactorAuthenticationRequiredSetting
+    UpdateEnterpriseTwoFactorAuthenticationRequiredSetting.
     """
 
     __schema__ = github_schema
@@ -7303,7 +7303,7 @@ class UpdateEnterpriseTwoFactorAuthenticationRequiredSettingInput(sgqlc.types.In
 
 
 class UpdateEnvironmentInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateEnvironment"""
+    """Autogenerated input type of UpdateEnvironment."""
 
     __schema__ = github_schema
     __field_names__ = ("environment_id", "wait_timer", "reviewers", "client_mutation_id")
@@ -7323,7 +7323,7 @@ class UpdateEnvironmentInput(sgqlc.types.Input):
 
 
 class UpdateIpAllowListEnabledSettingInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateIpAllowListEnabledSetting"""
+    """Autogenerated input type of UpdateIpAllowListEnabledSetting."""
 
     __schema__ = github_schema
     __field_names__ = ("owner_id", "setting_value", "client_mutation_id")
@@ -7340,7 +7340,7 @@ class UpdateIpAllowListEnabledSettingInput(sgqlc.types.Input):
 
 
 class UpdateIpAllowListEntryInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateIpAllowListEntry"""
+    """Autogenerated input type of UpdateIpAllowListEntry."""
 
     __schema__ = github_schema
     __field_names__ = ("ip_allow_list_entry_id", "allow_list_value", "name", "is_active", "client_mutation_id")
@@ -7364,7 +7364,7 @@ class UpdateIpAllowListEntryInput(sgqlc.types.Input):
 
 class UpdateIpAllowListForInstalledAppsEnabledSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateIpAllowListForInstalledAppsEnabledSetting
+    UpdateIpAllowListForInstalledAppsEnabledSetting.
     """
 
     __schema__ = github_schema
@@ -7382,7 +7382,7 @@ class UpdateIpAllowListForInstalledAppsEnabledSettingInput(sgqlc.types.Input):
 
 
 class UpdateIssueCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateIssueComment"""
+    """Autogenerated input type of UpdateIssueComment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "body", "client_mutation_id")
@@ -7397,7 +7397,7 @@ class UpdateIssueCommentInput(sgqlc.types.Input):
 
 
 class UpdateIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateIssue"""
+    """Autogenerated input type of UpdateIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "title", "body", "assignee_ids", "milestone_id", "label_ids", "state", "project_ids", "client_mutation_id")
@@ -7430,7 +7430,7 @@ class UpdateIssueInput(sgqlc.types.Input):
 
 
 class UpdateNotificationRestrictionSettingInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateNotificationRestrictionSetting"""
+    """Autogenerated input type of UpdateNotificationRestrictionSetting."""
 
     __schema__ = github_schema
     __field_names__ = ("owner_id", "setting_value", "client_mutation_id")
@@ -7448,7 +7448,7 @@ class UpdateNotificationRestrictionSettingInput(sgqlc.types.Input):
 
 class UpdateOrganizationAllowPrivateRepositoryForkingSettingInput(sgqlc.types.Input):
     """Autogenerated input type of
-    UpdateOrganizationAllowPrivateRepositoryForkingSetting
+    UpdateOrganizationAllowPrivateRepositoryForkingSetting.
     """
 
     __schema__ = github_schema
@@ -7466,7 +7466,7 @@ class UpdateOrganizationAllowPrivateRepositoryForkingSettingInput(sgqlc.types.In
 
 
 class UpdateProjectCardInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateProjectCard"""
+    """Autogenerated input type of UpdateProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("project_card_id", "is_archived", "note", "client_mutation_id")
@@ -7484,7 +7484,7 @@ class UpdateProjectCardInput(sgqlc.types.Input):
 
 
 class UpdateProjectColumnInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateProjectColumn"""
+    """Autogenerated input type of UpdateProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("project_column_id", "name", "client_mutation_id")
@@ -7499,7 +7499,7 @@ class UpdateProjectColumnInput(sgqlc.types.Input):
 
 
 class UpdateProjectDraftIssueInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateProjectDraftIssue"""
+    """Autogenerated input type of UpdateProjectDraftIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("draft_issue_id", "title", "body", "assignee_ids", "client_mutation_id")
@@ -7520,7 +7520,7 @@ class UpdateProjectDraftIssueInput(sgqlc.types.Input):
 
 
 class UpdateProjectInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateProject"""
+    """Autogenerated input type of UpdateProject."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "name", "body", "state", "public", "client_mutation_id")
@@ -7544,7 +7544,7 @@ class UpdateProjectInput(sgqlc.types.Input):
 
 
 class UpdateProjectNextInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateProjectNext"""
+    """Autogenerated input type of UpdateProjectNext."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "title", "description", "short_description", "closed", "public", "client_mutation_id")
@@ -7571,7 +7571,7 @@ class UpdateProjectNextInput(sgqlc.types.Input):
 
 
 class UpdateProjectNextItemFieldInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateProjectNextItemField"""
+    """Autogenerated input type of UpdateProjectNextItemField."""
 
     __schema__ = github_schema
     __field_names__ = ("project_id", "item_id", "field_id", "value", "client_mutation_id")
@@ -7592,7 +7592,7 @@ class UpdateProjectNextItemFieldInput(sgqlc.types.Input):
 
 
 class UpdatePullRequestBranchInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdatePullRequestBranch"""
+    """Autogenerated input type of UpdatePullRequestBranch."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_id", "expected_head_oid", "client_mutation_id")
@@ -7607,7 +7607,7 @@ class UpdatePullRequestBranchInput(sgqlc.types.Input):
 
 
 class UpdatePullRequestInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdatePullRequest"""
+    """Autogenerated input type of UpdatePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -7662,7 +7662,7 @@ class UpdatePullRequestInput(sgqlc.types.Input):
 
 
 class UpdatePullRequestReviewCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdatePullRequestReviewComment"""
+    """Autogenerated input type of UpdatePullRequestReviewComment."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_review_comment_id", "body", "client_mutation_id")
@@ -7677,7 +7677,7 @@ class UpdatePullRequestReviewCommentInput(sgqlc.types.Input):
 
 
 class UpdatePullRequestReviewInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdatePullRequestReview"""
+    """Autogenerated input type of UpdatePullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("pull_request_review_id", "body", "client_mutation_id")
@@ -7692,7 +7692,7 @@ class UpdatePullRequestReviewInput(sgqlc.types.Input):
 
 
 class UpdateRefInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateRef"""
+    """Autogenerated input type of UpdateRef."""
 
     __schema__ = github_schema
     __field_names__ = ("ref_id", "oid", "force", "client_mutation_id")
@@ -7710,7 +7710,7 @@ class UpdateRefInput(sgqlc.types.Input):
 
 
 class UpdateRepositoryInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateRepository"""
+    """Autogenerated input type of UpdateRepository."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -7764,7 +7764,7 @@ class UpdateRepositoryInput(sgqlc.types.Input):
 
 
 class UpdateSponsorshipPreferencesInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateSponsorshipPreferences"""
+    """Autogenerated input type of UpdateSponsorshipPreferences."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -7813,7 +7813,7 @@ class UpdateSponsorshipPreferencesInput(sgqlc.types.Input):
 
 
 class UpdateSubscriptionInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateSubscription"""
+    """Autogenerated input type of UpdateSubscription."""
 
     __schema__ = github_schema
     __field_names__ = ("subscribable_id", "state", "client_mutation_id")
@@ -7828,7 +7828,7 @@ class UpdateSubscriptionInput(sgqlc.types.Input):
 
 
 class UpdateTeamDiscussionCommentInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateTeamDiscussionComment"""
+    """Autogenerated input type of UpdateTeamDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "body", "body_version", "client_mutation_id")
@@ -7846,7 +7846,7 @@ class UpdateTeamDiscussionCommentInput(sgqlc.types.Input):
 
 
 class UpdateTeamDiscussionInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateTeamDiscussion"""
+    """Autogenerated input type of UpdateTeamDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "title", "body", "body_version", "pinned", "client_mutation_id")
@@ -7873,7 +7873,7 @@ class UpdateTeamDiscussionInput(sgqlc.types.Input):
 
 
 class UpdateTeamsRepositoryInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateTeamsRepository"""
+    """Autogenerated input type of UpdateTeamsRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "team_ids", "permission", "client_mutation_id")
@@ -7891,7 +7891,7 @@ class UpdateTeamsRepositoryInput(sgqlc.types.Input):
 
 
 class UpdateTopicsInput(sgqlc.types.Input):
-    """Autogenerated input type of UpdateTopics"""
+    """Autogenerated input type of UpdateTopics."""
 
     __schema__ = github_schema
     __field_names__ = ("repository_id", "topic_names", "client_mutation_id")
@@ -7930,7 +7930,7 @@ class VerifiableDomainOrder(sgqlc.types.Input):
 
 
 class VerifyVerifiableDomainInput(sgqlc.types.Input):
-    """Autogenerated input type of VerifyVerifiableDomain"""
+    """Autogenerated input type of VerifyVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("id", "client_mutation_id")
@@ -7945,7 +7945,7 @@ class VerifyVerifiableDomainInput(sgqlc.types.Input):
 # Output Objects and Interfaces
 ########################################################################
 class AbortQueuedMigrationsPayload(sgqlc.types.Type):
-    """Autogenerated return type of AbortQueuedMigrations"""
+    """Autogenerated return type of AbortQueuedMigrations."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "success")
@@ -7958,7 +7958,7 @@ class AbortQueuedMigrationsPayload(sgqlc.types.Type):
 
 class AcceptEnterpriseAdministratorInvitationPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    AcceptEnterpriseAdministratorInvitation
+    AcceptEnterpriseAdministratorInvitation.
     """
 
     __schema__ = github_schema
@@ -7976,7 +7976,7 @@ class AcceptEnterpriseAdministratorInvitationPayload(sgqlc.types.Type):
 
 
 class AcceptTopicSuggestionPayload(sgqlc.types.Type):
-    """Autogenerated return type of AcceptTopicSuggestion"""
+    """Autogenerated return type of AcceptTopicSuggestion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "topic")
@@ -8017,7 +8017,7 @@ class Actor(sgqlc.types.Interface):
 
 
 class ActorLocation(sgqlc.types.Type):
-    """Location information for an actor"""
+    """Location information for an actor."""
 
     __schema__ = github_schema
     __field_names__ = ("city", "country", "country_code", "region", "region_code")
@@ -8038,7 +8038,7 @@ class ActorLocation(sgqlc.types.Type):
 
 
 class AddAssigneesToAssignablePayload(sgqlc.types.Type):
-    """Autogenerated return type of AddAssigneesToAssignable"""
+    """Autogenerated return type of AddAssigneesToAssignable."""
 
     __schema__ = github_schema
     __field_names__ = ("assignable", "client_mutation_id")
@@ -8050,7 +8050,7 @@ class AddAssigneesToAssignablePayload(sgqlc.types.Type):
 
 
 class AddCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddComment"""
+    """Autogenerated return type of AddComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "comment_edge", "subject", "timeline_edge")
@@ -8068,7 +8068,7 @@ class AddCommentPayload(sgqlc.types.Type):
 
 
 class AddDiscussionCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddDiscussionComment"""
+    """Autogenerated return type of AddDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "comment")
@@ -8080,7 +8080,7 @@ class AddDiscussionCommentPayload(sgqlc.types.Type):
 
 
 class AddDiscussionPollVotePayload(sgqlc.types.Type):
-    """Autogenerated return type of AddDiscussionPollVote"""
+    """Autogenerated return type of AddDiscussionPollVote."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "poll_option")
@@ -8092,7 +8092,7 @@ class AddDiscussionPollVotePayload(sgqlc.types.Type):
 
 
 class AddEnterpriseSupportEntitlementPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddEnterpriseSupportEntitlement"""
+    """Autogenerated return type of AddEnterpriseSupportEntitlement."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "message")
@@ -8104,7 +8104,7 @@ class AddEnterpriseSupportEntitlementPayload(sgqlc.types.Type):
 
 
 class AddLabelsToLabelablePayload(sgqlc.types.Type):
-    """Autogenerated return type of AddLabelsToLabelable"""
+    """Autogenerated return type of AddLabelsToLabelable."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "labelable")
@@ -8116,7 +8116,7 @@ class AddLabelsToLabelablePayload(sgqlc.types.Type):
 
 
 class AddProjectCardPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddProjectCard"""
+    """Autogenerated return type of AddProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("card_edge", "client_mutation_id", "project_column")
@@ -8131,7 +8131,7 @@ class AddProjectCardPayload(sgqlc.types.Type):
 
 
 class AddProjectColumnPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddProjectColumn"""
+    """Autogenerated return type of AddProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "column_edge", "project")
@@ -8146,7 +8146,7 @@ class AddProjectColumnPayload(sgqlc.types.Type):
 
 
 class AddProjectDraftIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of AddProjectDraftIssue"""
+    """Autogenerated return type of AddProjectDraftIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_next_item")
@@ -8158,7 +8158,7 @@ class AddProjectDraftIssuePayload(sgqlc.types.Type):
 
 
 class AddProjectNextItemPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddProjectNextItem"""
+    """Autogenerated return type of AddProjectNextItem."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_next_item")
@@ -8170,7 +8170,7 @@ class AddProjectNextItemPayload(sgqlc.types.Type):
 
 
 class AddPullRequestReviewCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddPullRequestReviewComment"""
+    """Autogenerated return type of AddPullRequestReviewComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "comment", "comment_edge")
@@ -8185,7 +8185,7 @@ class AddPullRequestReviewCommentPayload(sgqlc.types.Type):
 
 
 class AddPullRequestReviewPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddPullRequestReview"""
+    """Autogenerated return type of AddPullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review", "review_edge")
@@ -8200,7 +8200,7 @@ class AddPullRequestReviewPayload(sgqlc.types.Type):
 
 
 class AddPullRequestReviewThreadPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddPullRequestReviewThread"""
+    """Autogenerated return type of AddPullRequestReviewThread."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "thread")
@@ -8212,7 +8212,7 @@ class AddPullRequestReviewThreadPayload(sgqlc.types.Type):
 
 
 class AddReactionPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddReaction"""
+    """Autogenerated return type of AddReaction."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "reaction", "subject")
@@ -8227,7 +8227,7 @@ class AddReactionPayload(sgqlc.types.Type):
 
 
 class AddStarPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddStar"""
+    """Autogenerated return type of AddStar."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "starrable")
@@ -8239,7 +8239,7 @@ class AddStarPayload(sgqlc.types.Type):
 
 
 class AddUpvotePayload(sgqlc.types.Type):
-    """Autogenerated return type of AddUpvote"""
+    """Autogenerated return type of AddUpvote."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "subject")
@@ -8251,7 +8251,7 @@ class AddUpvotePayload(sgqlc.types.Type):
 
 
 class AddVerifiableDomainPayload(sgqlc.types.Type):
-    """Autogenerated return type of AddVerifiableDomain"""
+    """Autogenerated return type of AddVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "domain")
@@ -8263,7 +8263,7 @@ class AddVerifiableDomainPayload(sgqlc.types.Type):
 
 
 class ApproveDeploymentsPayload(sgqlc.types.Type):
-    """Autogenerated return type of ApproveDeployments"""
+    """Autogenerated return type of ApproveDeployments."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "deployments")
@@ -8275,7 +8275,7 @@ class ApproveDeploymentsPayload(sgqlc.types.Type):
 
 
 class ApproveVerifiableDomainPayload(sgqlc.types.Type):
-    """Autogenerated return type of ApproveVerifiableDomain"""
+    """Autogenerated return type of ApproveVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "domain")
@@ -8287,7 +8287,7 @@ class ApproveVerifiableDomainPayload(sgqlc.types.Type):
 
 
 class ArchiveRepositoryPayload(sgqlc.types.Type):
-    """Autogenerated return type of ArchiveRepository"""
+    """Autogenerated return type of ArchiveRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -8312,7 +8312,7 @@ class Assignable(sgqlc.types.Interface):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of Users assigned to this object.
@@ -8390,7 +8390,7 @@ class AuditEntry(sgqlc.types.Interface):
 
 
 class AutoMergeRequest(sgqlc.types.Type):
-    """Represents an auto-merge request for a pull request"""
+    """Represents an auto-merge request for a pull request."""
 
     __schema__ = github_schema
     __field_names__ = ("author_email", "commit_body", "commit_headline", "enabled_at", "enabled_by", "merge_method", "pull_request")
@@ -8592,7 +8592,7 @@ class BypassPullRequestAllowanceEdge(sgqlc.types.Type):
 
 
 class CVSS(sgqlc.types.Type):
-    """The Common Vulnerability Scoring System"""
+    """The Common Vulnerability Scoring System."""
 
     __schema__ = github_schema
     __field_names__ = ("score", "vector_string")
@@ -8634,7 +8634,7 @@ class CWEEdge(sgqlc.types.Type):
 
 
 class CancelEnterpriseAdminInvitationPayload(sgqlc.types.Type):
-    """Autogenerated return type of CancelEnterpriseAdminInvitation"""
+    """Autogenerated return type of CancelEnterpriseAdminInvitation."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "invitation", "message")
@@ -8651,7 +8651,7 @@ class CancelEnterpriseAdminInvitationPayload(sgqlc.types.Type):
 
 
 class CancelSponsorshipPayload(sgqlc.types.Type):
-    """Autogenerated return type of CancelSponsorship"""
+    """Autogenerated return type of CancelSponsorship."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "sponsors_tier")
@@ -8663,7 +8663,7 @@ class CancelSponsorshipPayload(sgqlc.types.Type):
 
 
 class ChangeUserStatusPayload(sgqlc.types.Type):
-    """Autogenerated return type of ChangeUserStatus"""
+    """Autogenerated return type of ChangeUserStatus."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "status")
@@ -8881,7 +8881,7 @@ class CheckSuiteEdge(sgqlc.types.Type):
 
 
 class ClearLabelsFromLabelablePayload(sgqlc.types.Type):
-    """Autogenerated return type of ClearLabelsFromLabelable"""
+    """Autogenerated return type of ClearLabelsFromLabelable."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "labelable")
@@ -8893,7 +8893,7 @@ class ClearLabelsFromLabelablePayload(sgqlc.types.Type):
 
 
 class CloneProjectPayload(sgqlc.types.Type):
-    """Autogenerated return type of CloneProject"""
+    """Autogenerated return type of CloneProject."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "job_status_id", "project")
@@ -8908,7 +8908,7 @@ class CloneProjectPayload(sgqlc.types.Type):
 
 
 class CloneTemplateRepositoryPayload(sgqlc.types.Type):
-    """Autogenerated return type of CloneTemplateRepository"""
+    """Autogenerated return type of CloneTemplateRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -8920,7 +8920,7 @@ class CloneTemplateRepositoryPayload(sgqlc.types.Type):
 
 
 class Closable(sgqlc.types.Interface):
-    """An object that can be closed"""
+    """An object that can be closed."""
 
     __schema__ = github_schema
     __field_names__ = ("closed", "closed_at")
@@ -8934,7 +8934,7 @@ class Closable(sgqlc.types.Interface):
 
 
 class CloseIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of CloseIssue"""
+    """Autogenerated return type of CloseIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue")
@@ -8946,7 +8946,7 @@ class CloseIssuePayload(sgqlc.types.Type):
 
 
 class ClosePullRequestPayload(sgqlc.types.Type):
-    """Autogenerated return type of ClosePullRequest"""
+    """Autogenerated return type of ClosePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -9027,7 +9027,7 @@ class Comment(sgqlc.types.Interface):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of edits to this content.
@@ -9112,7 +9112,7 @@ class CommitContributionsByRepository(sgqlc.types.Type):
                     "order_by",
                     sgqlc.types.Arg(CommitContributionOrder, graphql_name="orderBy", default={"field": "OCCURRED_AT", "direction": "DESC"}),
                 ),
-            )
+            ),
         ),
     )
     """The commit contributions, each representing a day.
@@ -9216,7 +9216,7 @@ class ContributionCalendar(sgqlc.types.Type):
     """
 
     months = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ContributionCalendarMonth"))), graphql_name="months"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ContributionCalendarMonth"))), graphql_name="months",
     )
     """A list of the months of contributions in this calendar."""
 
@@ -9224,7 +9224,7 @@ class ContributionCalendar(sgqlc.types.Type):
     """The count of total contributions in the calendar."""
 
     weeks = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ContributionCalendarWeek"))), graphql_name="weeks"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ContributionCalendarWeek"))), graphql_name="weeks",
     )
     """A list of the weeks of contributions in this calendar."""
 
@@ -9280,7 +9280,7 @@ class ContributionCalendarWeek(sgqlc.types.Type):
     __schema__ = github_schema
     __field_names__ = ("contribution_days", "first_day")
     contribution_days = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ContributionCalendarDay))), graphql_name="contributionDays"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ContributionCalendarDay))), graphql_name="contributionDays",
     )
     """The days of contributions in this week."""
 
@@ -9351,7 +9351,7 @@ class ContributionsCollection(sgqlc.types.Type):
     """A calendar of this user's contributions on GitHub."""
 
     contribution_years = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Int))), graphql_name="contributionYears"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Int))), graphql_name="contributionYears",
     )
     """The years the user has been making contributions with the most
     recent year first.
@@ -9380,7 +9380,7 @@ class ContributionsCollection(sgqlc.types.Type):
     """
 
     first_pull_request_contribution = sgqlc.types.Field(
-        "CreatedPullRequestOrRestrictedContribution", graphql_name="firstPullRequestContribution"
+        "CreatedPullRequestOrRestrictedContribution", graphql_name="firstPullRequestContribution",
     )
     """The first pull request the user opened on GitHub. This will be
     null if that pull request was opened outside the collection's time
@@ -9390,7 +9390,7 @@ class ContributionsCollection(sgqlc.types.Type):
     """
 
     first_repository_contribution = sgqlc.types.Field(
-        "CreatedRepositoryOrRestrictedContribution", graphql_name="firstRepositoryContribution"
+        "CreatedRepositoryOrRestrictedContribution", graphql_name="firstRepositoryContribution",
     )
     """The first repository the user created on GitHub. This will be null
     if that first repository was created outside the collection's time
@@ -9430,7 +9430,7 @@ class ContributionsCollection(sgqlc.types.Type):
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """A list of issues the user opened.
@@ -9460,7 +9460,7 @@ class ContributionsCollection(sgqlc.types.Type):
                 ("max_repositories", sgqlc.types.Arg(Int, graphql_name="maxRepositories", default=25)),
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
-            )
+            ),
         ),
     )
     """Issue contributions made by the user, grouped by repository.
@@ -9494,7 +9494,7 @@ class ContributionsCollection(sgqlc.types.Type):
     """
 
     most_recent_collection_without_activity = sgqlc.types.Field(
-        "ContributionsCollection", graphql_name="mostRecentCollectionWithoutActivity"
+        "ContributionsCollection", graphql_name="mostRecentCollectionWithoutActivity",
     )
     """Returns a different contributions collection from an earlier time
     range than this one that does not have any contributions.
@@ -9522,7 +9522,7 @@ class ContributionsCollection(sgqlc.types.Type):
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """Pull request contributions made by the user.
@@ -9552,7 +9552,7 @@ class ContributionsCollection(sgqlc.types.Type):
                 ("max_repositories", sgqlc.types.Arg(Int, graphql_name="maxRepositories", default=25)),
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
-            )
+            ),
         ),
     )
     """Pull request contributions made by the user, grouped by
@@ -9578,7 +9578,7 @@ class ContributionsCollection(sgqlc.types.Type):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """Pull request review contributions made by the user.
@@ -9621,7 +9621,7 @@ class ContributionsCollection(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """A list of repositories owned by the user that the user created in
@@ -9661,7 +9661,7 @@ class ContributionsCollection(sgqlc.types.Type):
             (
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
-            )
+            ),
         ),
     )
     """How many issues the user opened.
@@ -9681,7 +9681,7 @@ class ContributionsCollection(sgqlc.types.Type):
             (
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
-            )
+            ),
         ),
     )
     """How many pull requests the user opened.
@@ -9695,12 +9695,12 @@ class ContributionsCollection(sgqlc.types.Type):
     """
 
     total_pull_request_review_contributions = sgqlc.types.Field(
-        sgqlc.types.non_null(Int), graphql_name="totalPullRequestReviewContributions"
+        sgqlc.types.non_null(Int), graphql_name="totalPullRequestReviewContributions",
     )
     """How many pull request reviews the user left."""
 
     total_repositories_with_contributed_commits = sgqlc.types.Field(
-        sgqlc.types.non_null(Int), graphql_name="totalRepositoriesWithContributedCommits"
+        sgqlc.types.non_null(Int), graphql_name="totalRepositoriesWithContributedCommits",
     )
     """How many different repositories the user committed to."""
 
@@ -9711,7 +9711,7 @@ class ContributionsCollection(sgqlc.types.Type):
             (
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
-            )
+            ),
         ),
     )
     """How many different repositories the user opened issues in.
@@ -9725,7 +9725,7 @@ class ContributionsCollection(sgqlc.types.Type):
     """
 
     total_repositories_with_contributed_pull_request_reviews = sgqlc.types.Field(
-        sgqlc.types.non_null(Int), graphql_name="totalRepositoriesWithContributedPullRequestReviews"
+        sgqlc.types.non_null(Int), graphql_name="totalRepositoriesWithContributedPullRequestReviews",
     )
     """How many different repositories the user left pull request reviews
     in.
@@ -9738,7 +9738,7 @@ class ContributionsCollection(sgqlc.types.Type):
             (
                 ("exclude_first", sgqlc.types.Arg(Boolean, graphql_name="excludeFirst", default=False)),
                 ("exclude_popular", sgqlc.types.Arg(Boolean, graphql_name="excludePopular", default=False)),
-            )
+            ),
         ),
     )
     """How many different repositories the user opened pull requests in.
@@ -9769,7 +9769,7 @@ class ContributionsCollection(sgqlc.types.Type):
 
 
 class ConvertProjectCardNoteToIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of ConvertProjectCardNoteToIssue"""
+    """Autogenerated return type of ConvertProjectCardNoteToIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_card")
@@ -9781,7 +9781,7 @@ class ConvertProjectCardNoteToIssuePayload(sgqlc.types.Type):
 
 
 class ConvertPullRequestToDraftPayload(sgqlc.types.Type):
-    """Autogenerated return type of ConvertPullRequestToDraft"""
+    """Autogenerated return type of ConvertPullRequestToDraft."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -9793,7 +9793,7 @@ class ConvertPullRequestToDraftPayload(sgqlc.types.Type):
 
 
 class CreateBranchProtectionRulePayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateBranchProtectionRule"""
+    """Autogenerated return type of CreateBranchProtectionRule."""
 
     __schema__ = github_schema
     __field_names__ = ("branch_protection_rule", "client_mutation_id")
@@ -9805,7 +9805,7 @@ class CreateBranchProtectionRulePayload(sgqlc.types.Type):
 
 
 class CreateCheckRunPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateCheckRun"""
+    """Autogenerated return type of CreateCheckRun."""
 
     __schema__ = github_schema
     __field_names__ = ("check_run", "client_mutation_id")
@@ -9817,7 +9817,7 @@ class CreateCheckRunPayload(sgqlc.types.Type):
 
 
 class CreateCheckSuitePayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateCheckSuite"""
+    """Autogenerated return type of CreateCheckSuite."""
 
     __schema__ = github_schema
     __field_names__ = ("check_suite", "client_mutation_id")
@@ -9829,7 +9829,7 @@ class CreateCheckSuitePayload(sgqlc.types.Type):
 
 
 class CreateCommitOnBranchPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateCommitOnBranch"""
+    """Autogenerated return type of CreateCommitOnBranch."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "commit", "ref")
@@ -9844,7 +9844,7 @@ class CreateCommitOnBranchPayload(sgqlc.types.Type):
 
 
 class CreateDiscussionPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateDiscussion"""
+    """Autogenerated return type of CreateDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "discussion")
@@ -9856,7 +9856,7 @@ class CreateDiscussionPayload(sgqlc.types.Type):
 
 
 class CreateEnterpriseOrganizationPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateEnterpriseOrganization"""
+    """Autogenerated return type of CreateEnterpriseOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "enterprise", "organization")
@@ -9871,7 +9871,7 @@ class CreateEnterpriseOrganizationPayload(sgqlc.types.Type):
 
 
 class CreateEnvironmentPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateEnvironment"""
+    """Autogenerated return type of CreateEnvironment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "environment")
@@ -9883,7 +9883,7 @@ class CreateEnvironmentPayload(sgqlc.types.Type):
 
 
 class CreateIpAllowListEntryPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateIpAllowListEntry"""
+    """Autogenerated return type of CreateIpAllowListEntry."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "ip_allow_list_entry")
@@ -9895,7 +9895,7 @@ class CreateIpAllowListEntryPayload(sgqlc.types.Type):
 
 
 class CreateIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateIssue"""
+    """Autogenerated return type of CreateIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue")
@@ -9907,7 +9907,7 @@ class CreateIssuePayload(sgqlc.types.Type):
 
 
 class CreateMigrationSourcePayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateMigrationSource"""
+    """Autogenerated return type of CreateMigrationSource."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "migration_source")
@@ -9919,7 +9919,7 @@ class CreateMigrationSourcePayload(sgqlc.types.Type):
 
 
 class CreateProjectPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateProject"""
+    """Autogenerated return type of CreateProject."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project")
@@ -9931,7 +9931,7 @@ class CreateProjectPayload(sgqlc.types.Type):
 
 
 class CreatePullRequestPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreatePullRequest"""
+    """Autogenerated return type of CreatePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -9943,7 +9943,7 @@ class CreatePullRequestPayload(sgqlc.types.Type):
 
 
 class CreateRefPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateRef"""
+    """Autogenerated return type of CreateRef."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "ref")
@@ -9955,7 +9955,7 @@ class CreateRefPayload(sgqlc.types.Type):
 
 
 class CreateRepositoryPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateRepository"""
+    """Autogenerated return type of CreateRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -9967,7 +9967,7 @@ class CreateRepositoryPayload(sgqlc.types.Type):
 
 
 class CreateSponsorsTierPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateSponsorsTier"""
+    """Autogenerated return type of CreateSponsorsTier."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "sponsors_tier")
@@ -9979,7 +9979,7 @@ class CreateSponsorsTierPayload(sgqlc.types.Type):
 
 
 class CreateSponsorshipPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateSponsorship"""
+    """Autogenerated return type of CreateSponsorship."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "sponsorship")
@@ -9991,7 +9991,7 @@ class CreateSponsorshipPayload(sgqlc.types.Type):
 
 
 class CreateTeamDiscussionCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateTeamDiscussionComment"""
+    """Autogenerated return type of CreateTeamDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "team_discussion_comment")
@@ -10003,7 +10003,7 @@ class CreateTeamDiscussionCommentPayload(sgqlc.types.Type):
 
 
 class CreateTeamDiscussionPayload(sgqlc.types.Type):
-    """Autogenerated return type of CreateTeamDiscussion"""
+    """Autogenerated return type of CreateTeamDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "team_discussion")
@@ -10167,7 +10167,7 @@ class CreatedRepositoryContributionEdge(sgqlc.types.Type):
 
 
 class DeclineTopicSuggestionPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeclineTopicSuggestion"""
+    """Autogenerated return type of DeclineTopicSuggestion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "topic")
@@ -10188,7 +10188,7 @@ class Deletable(sgqlc.types.Interface):
 
 
 class DeleteBranchProtectionRulePayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteBranchProtectionRule"""
+    """Autogenerated return type of DeleteBranchProtectionRule."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10197,7 +10197,7 @@ class DeleteBranchProtectionRulePayload(sgqlc.types.Type):
 
 
 class DeleteDeploymentPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteDeployment"""
+    """Autogenerated return type of DeleteDeployment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10206,7 +10206,7 @@ class DeleteDeploymentPayload(sgqlc.types.Type):
 
 
 class DeleteDiscussionCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteDiscussionComment"""
+    """Autogenerated return type of DeleteDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "comment")
@@ -10218,7 +10218,7 @@ class DeleteDiscussionCommentPayload(sgqlc.types.Type):
 
 
 class DeleteDiscussionPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteDiscussion"""
+    """Autogenerated return type of DeleteDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "discussion")
@@ -10230,7 +10230,7 @@ class DeleteDiscussionPayload(sgqlc.types.Type):
 
 
 class DeleteEnvironmentPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteEnvironment"""
+    """Autogenerated return type of DeleteEnvironment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10239,7 +10239,7 @@ class DeleteEnvironmentPayload(sgqlc.types.Type):
 
 
 class DeleteIpAllowListEntryPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteIpAllowListEntry"""
+    """Autogenerated return type of DeleteIpAllowListEntry."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "ip_allow_list_entry")
@@ -10251,7 +10251,7 @@ class DeleteIpAllowListEntryPayload(sgqlc.types.Type):
 
 
 class DeleteIssueCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteIssueComment"""
+    """Autogenerated return type of DeleteIssueComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10260,7 +10260,7 @@ class DeleteIssueCommentPayload(sgqlc.types.Type):
 
 
 class DeleteIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteIssue"""
+    """Autogenerated return type of DeleteIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -10272,7 +10272,7 @@ class DeleteIssuePayload(sgqlc.types.Type):
 
 
 class DeleteProjectCardPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteProjectCard"""
+    """Autogenerated return type of DeleteProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "column", "deleted_card_id")
@@ -10287,7 +10287,7 @@ class DeleteProjectCardPayload(sgqlc.types.Type):
 
 
 class DeleteProjectColumnPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteProjectColumn"""
+    """Autogenerated return type of DeleteProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "deleted_column_id", "project")
@@ -10302,7 +10302,7 @@ class DeleteProjectColumnPayload(sgqlc.types.Type):
 
 
 class DeleteProjectNextItemPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteProjectNextItem"""
+    """Autogenerated return type of DeleteProjectNextItem."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "deleted_item_id")
@@ -10314,7 +10314,7 @@ class DeleteProjectNextItemPayload(sgqlc.types.Type):
 
 
 class DeleteProjectPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteProject"""
+    """Autogenerated return type of DeleteProject."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "owner")
@@ -10326,7 +10326,7 @@ class DeleteProjectPayload(sgqlc.types.Type):
 
 
 class DeletePullRequestReviewCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeletePullRequestReviewComment"""
+    """Autogenerated return type of DeletePullRequestReviewComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review")
@@ -10338,7 +10338,7 @@ class DeletePullRequestReviewCommentPayload(sgqlc.types.Type):
 
 
 class DeletePullRequestReviewPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeletePullRequestReview"""
+    """Autogenerated return type of DeletePullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review")
@@ -10350,7 +10350,7 @@ class DeletePullRequestReviewPayload(sgqlc.types.Type):
 
 
 class DeleteRefPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteRef"""
+    """Autogenerated return type of DeleteRef."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10359,7 +10359,7 @@ class DeleteRefPayload(sgqlc.types.Type):
 
 
 class DeleteTeamDiscussionCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteTeamDiscussionComment"""
+    """Autogenerated return type of DeleteTeamDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10368,7 +10368,7 @@ class DeleteTeamDiscussionCommentPayload(sgqlc.types.Type):
 
 
 class DeleteTeamDiscussionPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteTeamDiscussion"""
+    """Autogenerated return type of DeleteTeamDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id",)
@@ -10377,7 +10377,7 @@ class DeleteTeamDiscussionPayload(sgqlc.types.Type):
 
 
 class DeleteVerifiableDomainPayload(sgqlc.types.Type):
-    """Autogenerated return type of DeleteVerifiableDomain"""
+    """Autogenerated return type of DeleteVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "owner")
@@ -10389,7 +10389,7 @@ class DeleteVerifiableDomainPayload(sgqlc.types.Type):
 
 
 class DependabotUpdateError(sgqlc.types.Type):
-    """An error produced from a Dependabot Update"""
+    """An error produced from a Dependabot Update."""
 
     __schema__ = github_schema
     __field_names__ = ("body", "error_type", "title")
@@ -10480,7 +10480,7 @@ class DeploymentProtectionRule(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The teams or users that can review the deployment
@@ -10552,7 +10552,7 @@ class DeploymentRequest(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The teams or users that can review the deployment
@@ -10695,7 +10695,7 @@ class DeploymentStatusEdge(sgqlc.types.Type):
 
 
 class DisablePullRequestAutoMergePayload(sgqlc.types.Type):
-    """Autogenerated return type of DisablePullRequestAutoMerge"""
+    """Autogenerated return type of DisablePullRequestAutoMerge."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "pull_request")
@@ -10830,7 +10830,7 @@ class DiscussionPollOptionEdge(sgqlc.types.Type):
 
 
 class DismissPullRequestReviewPayload(sgqlc.types.Type):
-    """Autogenerated return type of DismissPullRequestReview"""
+    """Autogenerated return type of DismissPullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review")
@@ -10842,7 +10842,7 @@ class DismissPullRequestReviewPayload(sgqlc.types.Type):
 
 
 class DismissRepositoryVulnerabilityAlertPayload(sgqlc.types.Type):
-    """Autogenerated return type of DismissRepositoryVulnerabilityAlert"""
+    """Autogenerated return type of DismissRepositoryVulnerabilityAlert."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository_vulnerability_alert")
@@ -10854,7 +10854,7 @@ class DismissRepositoryVulnerabilityAlertPayload(sgqlc.types.Type):
 
 
 class EnablePullRequestAutoMergePayload(sgqlc.types.Type):
-    """Autogenerated return type of EnablePullRequestAutoMerge"""
+    """Autogenerated return type of EnablePullRequestAutoMerge."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "pull_request")
@@ -11115,7 +11115,7 @@ class EnterpriseOutsideCollaboratorEdge(sgqlc.types.Type):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(RepositoryOrder, graphql_name="orderBy", default={"field": "NAME", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """The enterprise organization repositories this user is a member of.
@@ -11207,7 +11207,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of all of the administrators for this enterprise.
@@ -11238,7 +11238,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users in the enterprise who currently have two-factor
@@ -11255,14 +11255,14 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     affiliated_users_with_two_factor_disabled_exist = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="affiliatedUsersWithTwoFactorDisabledExist"
+        sgqlc.types.non_null(Boolean), graphql_name="affiliatedUsersWithTwoFactorDisabledExist",
     )
     """Whether or not affiliated users with two-factor authentication
     disabled exist in the enterprise.
     """
 
     allow_private_repository_forking_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="allowPrivateRepositoryForkingSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="allowPrivateRepositoryForkingSetting",
     )
     """The setting value for whether private repository forking is
     enabled for repositories in organizations in this enterprise.
@@ -11279,7 +11279,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11301,7 +11301,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     default_repository_permission_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseDefaultRepositoryPermissionSettingValue), graphql_name="defaultRepositoryPermissionSetting"
+        sgqlc.types.non_null(EnterpriseDefaultRepositoryPermissionSettingValue), graphql_name="defaultRepositoryPermissionSetting",
     )
     """The setting value for base repository permissions for
     organizations in this enterprise.
@@ -11318,7 +11318,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(DefaultRepositoryPermissionField), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11354,7 +11354,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                     "order_by",
                     sgqlc.types.Arg(VerifiableDomainOrder, graphql_name="orderBy", default={"field": "DOMAIN", "direction": "ASC"}),
                 ),
-            )
+            ),
         ),
     )
     """A list of domains owned by the enterprise.
@@ -11389,10 +11389,10 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        EnterpriseServerInstallationOrder, graphql_name="orderBy", default={"field": "HOST_NAME", "direction": "ASC"}
+                        EnterpriseServerInstallationOrder, graphql_name="orderBy", default={"field": "HOST_NAME", "direction": "ASC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Enterprise Server installations owned by the enterprise.
@@ -11413,7 +11413,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     ip_allow_list_enabled_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(IpAllowListEnabledSettingValue), graphql_name="ipAllowListEnabledSetting"
+        sgqlc.types.non_null(IpAllowListEnabledSettingValue), graphql_name="ipAllowListEnabledSetting",
     )
     """The setting value for whether the enterprise has an IP allow list
     enabled.
@@ -11431,10 +11431,10 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        IpAllowListEntryOrder, graphql_name="orderBy", default={"field": "ALLOW_LIST_VALUE", "direction": "ASC"}
+                        IpAllowListEntryOrder, graphql_name="orderBy", default={"field": "ALLOW_LIST_VALUE", "direction": "ASC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """The IP addresses that are allowed to access resources owned by the
@@ -11454,14 +11454,14 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     ip_allow_list_for_installed_apps_enabled_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(IpAllowListForInstalledAppsEnabledSettingValue), graphql_name="ipAllowListForInstalledAppsEnabledSetting"
+        sgqlc.types.non_null(IpAllowListForInstalledAppsEnabledSettingValue), graphql_name="ipAllowListForInstalledAppsEnabledSetting",
     )
     """The setting value for whether the enterprise has IP allow list
     configuration for installed GitHub Apps enabled.
     """
 
     is_updating_default_repository_permission = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="isUpdatingDefaultRepositoryPermission"
+        sgqlc.types.non_null(Boolean), graphql_name="isUpdatingDefaultRepositoryPermission",
     )
     """Whether or not the base repository permission is currently being
     updated.
@@ -11473,7 +11473,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_change_repository_visibility_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanChangeRepositoryVisibilitySetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanChangeRepositoryVisibilitySetting",
     )
     """The setting value for whether organization members with admin
     permissions on a repository can change repository visibility.
@@ -11490,7 +11490,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11512,7 +11512,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_create_internal_repositories_setting = sgqlc.types.Field(
-        Boolean, graphql_name="membersCanCreateInternalRepositoriesSetting"
+        Boolean, graphql_name="membersCanCreateInternalRepositoriesSetting",
     )
     """The setting value for whether members of organizations in the
     enterprise can create internal repositories.
@@ -11529,7 +11529,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_create_repositories_setting = sgqlc.types.Field(
-        EnterpriseMembersCanCreateRepositoriesSettingValue, graphql_name="membersCanCreateRepositoriesSetting"
+        EnterpriseMembersCanCreateRepositoriesSettingValue, graphql_name="membersCanCreateRepositoriesSetting",
     )
     """The setting value for whether members of organizations in the
     enterprise can create repositories.
@@ -11547,11 +11547,11 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 (
                     "value",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(OrganizationMembersCanCreateRepositoriesSettingValue), graphql_name="value", default=None
+                        sgqlc.types.non_null(OrganizationMembersCanCreateRepositoriesSettingValue), graphql_name="value", default=None,
                     ),
                 ),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11574,7 +11574,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_delete_issues_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanDeleteIssuesSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanDeleteIssuesSetting",
     )
     """The setting value for whether members with admin permissions for
     repositories can delete issues.
@@ -11591,7 +11591,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11613,7 +11613,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_delete_repositories_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanDeleteRepositoriesSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanDeleteRepositoriesSetting",
     )
     """The setting value for whether members with admin permissions for
     repositories can delete or transfer repositories.
@@ -11630,7 +11630,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11652,7 +11652,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_invite_collaborators_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanInviteCollaboratorsSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanInviteCollaboratorsSetting",
     )
     """The setting value for whether members of organizations in the
     enterprise can invite outside collaborators.
@@ -11669,7 +11669,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11691,14 +11691,14 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_make_purchases_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseMembersCanMakePurchasesSettingValue), graphql_name="membersCanMakePurchasesSetting"
+        sgqlc.types.non_null(EnterpriseMembersCanMakePurchasesSettingValue), graphql_name="membersCanMakePurchasesSetting",
     )
     """Indicates whether members of this enterprise's organizations can
     purchase additional services for those organizations.
     """
 
     members_can_update_protected_branches_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanUpdateProtectedBranchesSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanUpdateProtectedBranchesSetting",
     )
     """The setting value for whether members with admin permissions for
     repositories can update protected branches.
@@ -11715,7 +11715,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11737,7 +11737,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     members_can_view_dependency_insights_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanViewDependencyInsightsSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="membersCanViewDependencyInsightsSetting",
     )
     """The setting value for whether members can view dependency
     insights.
@@ -11754,7 +11754,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11776,7 +11776,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     notification_delivery_restriction_enabled_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(NotificationRestrictionSettingValue), graphql_name="notificationDeliveryRestrictionEnabledSetting"
+        sgqlc.types.non_null(NotificationRestrictionSettingValue), graphql_name="notificationDeliveryRestrictionEnabledSetting",
     )
     """Indicates if email notification delivery for this enterprise is
     restricted to verified or approved domains.
@@ -11786,7 +11786,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """The OIDC Identity Provider for the enterprise."""
 
     organization_projects_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="organizationProjectsSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="organizationProjectsSetting",
     )
     """The setting value for whether organization projects are enabled
     for organizations in this enterprise.
@@ -11803,7 +11803,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -11845,7 +11845,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of outside collaborators across the repositories in the
@@ -11883,7 +11883,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        EnterpriseAdministratorInvitationOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"}
+                        EnterpriseAdministratorInvitationOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"},
                     ),
                 ),
                 ("role", sgqlc.types.Arg(EnterpriseAdministratorRole, graphql_name="role", default=None)),
@@ -11891,7 +11891,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pending administrator invitations for the enterprise.
@@ -11921,14 +11921,14 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        RepositoryInvitationOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"}
+                        RepositoryInvitationOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"},
                     ),
                 ),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pending collaborator invitations across the repositories
@@ -11962,7 +11962,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pending member invitations for organizations in the
@@ -11982,7 +11982,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     repository_projects_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="repositoryProjectsSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="repositoryProjectsSetting",
     )
     """The setting value for whether repository projects are enabled in
     this enterprise.
@@ -11999,7 +11999,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -12037,7 +12037,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(IdentityProviderConfigurationState), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the SAML single
@@ -12071,7 +12071,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of members with a support entitlement.
@@ -12090,7 +12090,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     team_discussions_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="teamDiscussionsSetting"
+        sgqlc.types.non_null(EnterpriseEnabledDisabledSettingValue), graphql_name="teamDiscussionsSetting",
     )
     """The setting value for whether team discussions are enabled for
     organizations in this enterprise.
@@ -12107,7 +12107,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the provided
@@ -12129,7 +12129,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
     """
 
     two_factor_required_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseEnabledSettingValue), graphql_name="twoFactorRequiredSetting"
+        sgqlc.types.non_null(EnterpriseEnabledSettingValue), graphql_name="twoFactorRequiredSetting",
     )
     """The setting value for whether the enterprise requires two-factor
     authentication for its organizations and users.
@@ -12146,7 +12146,7 @@ class EnterpriseOwnerInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("value", sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="value", default=None)),
                 ("order_by", sgqlc.types.Arg(OrganizationOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"})),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations configured with the two-factor
@@ -12412,7 +12412,7 @@ class EnvironmentEdge(sgqlc.types.Type):
 
 
 class ExternalIdentityAttribute(sgqlc.types.Type):
-    """An attribute for the External Identity attributes collection"""
+    """An attribute for the External Identity attributes collection."""
 
     __schema__ = github_schema
     __field_names__ = ("metadata", "name", "value")
@@ -12457,12 +12457,12 @@ class ExternalIdentityEdge(sgqlc.types.Type):
 
 
 class ExternalIdentitySamlAttributes(sgqlc.types.Type):
-    """SAML attributes for the External Identity"""
+    """SAML attributes for the External Identity."""
 
     __schema__ = github_schema
     __field_names__ = ("attributes", "emails", "family_name", "given_name", "groups", "name_id", "username")
     attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ExternalIdentityAttribute))), graphql_name="attributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ExternalIdentityAttribute))), graphql_name="attributes",
     )
     """SAML Identity attributes"""
 
@@ -12486,7 +12486,7 @@ class ExternalIdentitySamlAttributes(sgqlc.types.Type):
 
 
 class ExternalIdentityScimAttributes(sgqlc.types.Type):
-    """SCIM attributes for the External Identity"""
+    """SCIM attributes for the External Identity."""
 
     __schema__ = github_schema
     __field_names__ = ("emails", "family_name", "given_name", "groups", "username")
@@ -12507,7 +12507,7 @@ class ExternalIdentityScimAttributes(sgqlc.types.Type):
 
 
 class FollowOrganizationPayload(sgqlc.types.Type):
-    """Autogenerated return type of FollowOrganization"""
+    """Autogenerated return type of FollowOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "organization")
@@ -12519,7 +12519,7 @@ class FollowOrganizationPayload(sgqlc.types.Type):
 
 
 class FollowUserPayload(sgqlc.types.Type):
-    """Autogenerated return type of FollowUser"""
+    """Autogenerated return type of FollowUser."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "user")
@@ -12670,7 +12670,7 @@ class GistFile(sgqlc.types.Type):
     """The gist file size in bytes."""
 
     text = sgqlc.types.Field(
-        String, graphql_name="text", args=sgqlc.types.ArgDict((("truncate", sgqlc.types.Arg(Int, graphql_name="truncate", default=None)),))
+        String, graphql_name="text", args=sgqlc.types.ArgDict((("truncate", sgqlc.types.Arg(Int, graphql_name="truncate", default=None)),)),
     )
     """UTF8 text data or null if the file is binary
 
@@ -12768,7 +12768,7 @@ class GitHubMetadata(sgqlc.types.Type):
     """IP addresses that the importer connects from"""
 
     is_password_authentication_verifiable = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="isPasswordAuthenticationVerifiable"
+        sgqlc.types.non_null(Boolean), graphql_name="isPasswordAuthenticationVerifiable",
     )
     """Whether or not users are verified"""
 
@@ -12833,7 +12833,7 @@ class GitSignature(sgqlc.types.Interface):
 
 class GrantEnterpriseOrganizationsMigratorRolePayload(sgqlc.types.Type):
     """Autogenerated return type of
-    GrantEnterpriseOrganizationsMigratorRole
+    GrantEnterpriseOrganizationsMigratorRole.
     """
 
     __schema__ = github_schema
@@ -12850,7 +12850,7 @@ class GrantEnterpriseOrganizationsMigratorRolePayload(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The organizations that had the migrator role applied to for the
@@ -12868,7 +12868,7 @@ class GrantEnterpriseOrganizationsMigratorRolePayload(sgqlc.types.Type):
 
 
 class GrantMigratorRolePayload(sgqlc.types.Type):
-    """Autogenerated return type of GrantMigratorRole"""
+    """Autogenerated return type of GrantMigratorRole."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "success")
@@ -12880,18 +12880,18 @@ class GrantMigratorRolePayload(sgqlc.types.Type):
 
 
 class Hovercard(sgqlc.types.Type):
-    """Detail needed to display a hovercard for a user"""
+    """Detail needed to display a hovercard for a user."""
 
     __schema__ = github_schema
     __field_names__ = ("contexts",)
     contexts = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("HovercardContext"))), graphql_name="contexts"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("HovercardContext"))), graphql_name="contexts",
     )
     """Each of the contexts for this hovercard"""
 
 
 class HovercardContext(sgqlc.types.Interface):
-    """An individual line of a hovercard"""
+    """An individual line of a hovercard."""
 
     __schema__ = github_schema
     __field_names__ = ("message", "octicon")
@@ -12903,7 +12903,7 @@ class HovercardContext(sgqlc.types.Interface):
 
 
 class InviteEnterpriseAdminPayload(sgqlc.types.Type):
-    """Autogenerated return type of InviteEnterpriseAdmin"""
+    """Autogenerated return type of InviteEnterpriseAdmin."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "invitation")
@@ -13007,7 +13007,7 @@ class IssueContributionsByRepository(sgqlc.types.Type):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """The issue contributions.
@@ -13177,7 +13177,7 @@ class Labelable(sgqlc.types.Interface):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of labels associated with the object.
@@ -13231,7 +13231,7 @@ class LanguageEdge(sgqlc.types.Type):
 
 
 class LicenseRule(sgqlc.types.Type):
-    """Describes a License's conditions, permissions, and limitations"""
+    """Describes a License's conditions, permissions, and limitations."""
 
     __schema__ = github_schema
     __field_names__ = ("description", "key", "label")
@@ -13246,7 +13246,7 @@ class LicenseRule(sgqlc.types.Type):
 
 
 class LinkRepositoryToProjectPayload(sgqlc.types.Type):
-    """Autogenerated return type of LinkRepositoryToProject"""
+    """Autogenerated return type of LinkRepositoryToProject."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project", "repository")
@@ -13261,7 +13261,7 @@ class LinkRepositoryToProjectPayload(sgqlc.types.Type):
 
 
 class LockLockablePayload(sgqlc.types.Type):
-    """Autogenerated return type of LockLockable"""
+    """Autogenerated return type of LockLockable."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "locked_record")
@@ -13288,7 +13288,7 @@ class Lockable(sgqlc.types.Interface):
 
 
 class MarkDiscussionCommentAsAnswerPayload(sgqlc.types.Type):
-    """Autogenerated return type of MarkDiscussionCommentAsAnswer"""
+    """Autogenerated return type of MarkDiscussionCommentAsAnswer."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "discussion")
@@ -13300,7 +13300,7 @@ class MarkDiscussionCommentAsAnswerPayload(sgqlc.types.Type):
 
 
 class MarkFileAsViewedPayload(sgqlc.types.Type):
-    """Autogenerated return type of MarkFileAsViewed"""
+    """Autogenerated return type of MarkFileAsViewed."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -13312,7 +13312,7 @@ class MarkFileAsViewedPayload(sgqlc.types.Type):
 
 
 class MarkPullRequestReadyForReviewPayload(sgqlc.types.Type):
-    """Autogenerated return type of MarkPullRequestReadyForReview"""
+    """Autogenerated return type of MarkPullRequestReadyForReview."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -13324,7 +13324,7 @@ class MarkPullRequestReadyForReviewPayload(sgqlc.types.Type):
 
 
 class MarketplaceListingConnection(sgqlc.types.relay.Connection):
-    """Look up Marketplace Listings"""
+    """Look up Marketplace Listings."""
 
     __schema__ = github_schema
     __field_names__ = ("edges", "nodes", "page_info", "total_count")
@@ -13371,7 +13371,7 @@ class MemberStatusable(sgqlc.types.Interface):
                     "order_by",
                     sgqlc.types.Arg(UserStatusOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"}),
                 ),
-            )
+            ),
         ),
     )
     """Get the status messages members of this entity have set that are
@@ -13392,7 +13392,7 @@ class MemberStatusable(sgqlc.types.Interface):
 
 
 class MergeBranchPayload(sgqlc.types.Type):
-    """Autogenerated return type of MergeBranch"""
+    """Autogenerated return type of MergeBranch."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "merge_commit")
@@ -13404,7 +13404,7 @@ class MergeBranchPayload(sgqlc.types.Type):
 
 
 class MergePullRequestPayload(sgqlc.types.Type):
-    """Autogenerated return type of MergePullRequest"""
+    """Autogenerated return type of MergePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "pull_request")
@@ -13508,7 +13508,7 @@ class Minimizable(sgqlc.types.Interface):
 
 
 class MinimizeCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of MinimizeComment"""
+    """Autogenerated return type of MinimizeComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "minimized_comment")
@@ -13520,7 +13520,7 @@ class MinimizeCommentPayload(sgqlc.types.Type):
 
 
 class MoveProjectCardPayload(sgqlc.types.Type):
-    """Autogenerated return type of MoveProjectCard"""
+    """Autogenerated return type of MoveProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("card_edge", "client_mutation_id")
@@ -13532,7 +13532,7 @@ class MoveProjectCardPayload(sgqlc.types.Type):
 
 
 class MoveProjectColumnPayload(sgqlc.types.Type):
-    """Autogenerated return type of MoveProjectColumn"""
+    """Autogenerated return type of MoveProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "column_edge")
@@ -13730,7 +13730,7 @@ class Mutation(sgqlc.types.Type):
         AbortQueuedMigrationsPayload,
         graphql_name="abortQueuedMigrations",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AbortQueuedMigrationsInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AbortQueuedMigrationsInput), graphql_name="input", default=None)),),
         ),
     )
     """Clear all of a customer's queued migrations
@@ -13750,7 +13750,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(AcceptEnterpriseAdministratorInvitationInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     """Accepts a pending invitation for a user to become an administrator
@@ -13766,7 +13766,7 @@ class Mutation(sgqlc.types.Type):
         AcceptTopicSuggestionPayload,
         graphql_name="acceptTopicSuggestion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AcceptTopicSuggestionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AcceptTopicSuggestionInput), graphql_name="input", default=None)),),
         ),
     )
     """Applies a suggested topic to the repository.
@@ -13781,7 +13781,7 @@ class Mutation(sgqlc.types.Type):
         AddAssigneesToAssignablePayload,
         graphql_name="addAssigneesToAssignable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddAssigneesToAssignableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddAssigneesToAssignableInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds assignees to an assignable object.
@@ -13808,7 +13808,7 @@ class Mutation(sgqlc.types.Type):
         AddDiscussionCommentPayload,
         graphql_name="addDiscussionComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddDiscussionCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddDiscussionCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a comment to a Discussion, possibly as a reply to another
@@ -13824,7 +13824,7 @@ class Mutation(sgqlc.types.Type):
         AddDiscussionPollVotePayload,
         graphql_name="addDiscussionPollVote",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddDiscussionPollVoteInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddDiscussionPollVoteInput), graphql_name="input", default=None)),),
         ),
     )
     """Vote for an option in a discussion poll.
@@ -13839,7 +13839,7 @@ class Mutation(sgqlc.types.Type):
         AddEnterpriseSupportEntitlementPayload,
         graphql_name="addEnterpriseSupportEntitlement",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddEnterpriseSupportEntitlementInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddEnterpriseSupportEntitlementInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a support entitlement to an enterprise member.
@@ -13854,7 +13854,7 @@ class Mutation(sgqlc.types.Type):
         AddLabelsToLabelablePayload,
         graphql_name="addLabelsToLabelable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddLabelsToLabelableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddLabelsToLabelableInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds labels to a labelable object.
@@ -13869,7 +13869,7 @@ class Mutation(sgqlc.types.Type):
         AddProjectCardPayload,
         graphql_name="addProjectCard",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectCardInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectCardInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a card to a ProjectColumn. Either `contentId` or `note` must
@@ -13884,7 +13884,7 @@ class Mutation(sgqlc.types.Type):
         AddProjectColumnPayload,
         graphql_name="addProjectColumn",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectColumnInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectColumnInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a column to a Project.
@@ -13899,7 +13899,7 @@ class Mutation(sgqlc.types.Type):
         AddProjectDraftIssuePayload,
         graphql_name="addProjectDraftIssue",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectDraftIssueInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectDraftIssueInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a new draft issue and add it to a Project.
@@ -13914,7 +13914,7 @@ class Mutation(sgqlc.types.Type):
         AddProjectNextItemPayload,
         graphql_name="addProjectNextItem",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectNextItemInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddProjectNextItemInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds an existing item (Issue or PullRequest) to a Project.
@@ -13929,7 +13929,7 @@ class Mutation(sgqlc.types.Type):
         AddPullRequestReviewPayload,
         graphql_name="addPullRequestReview",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddPullRequestReviewInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddPullRequestReviewInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a review to a Pull Request.
@@ -13944,7 +13944,7 @@ class Mutation(sgqlc.types.Type):
         AddPullRequestReviewCommentPayload,
         graphql_name="addPullRequestReviewComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddPullRequestReviewCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddPullRequestReviewCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a comment to a review.
@@ -13959,7 +13959,7 @@ class Mutation(sgqlc.types.Type):
         AddPullRequestReviewThreadPayload,
         graphql_name="addPullRequestReviewThread",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddPullRequestReviewThreadInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddPullRequestReviewThreadInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a new thread to a pending Pull Request Review.
@@ -14010,7 +14010,7 @@ class Mutation(sgqlc.types.Type):
         AddVerifiableDomainPayload,
         graphql_name="addVerifiableDomain",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddVerifiableDomainInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(AddVerifiableDomainInput), graphql_name="input", default=None)),),
         ),
     )
     """Adds a verifiable domain to an owning account.
@@ -14025,7 +14025,7 @@ class Mutation(sgqlc.types.Type):
         ApproveDeploymentsPayload,
         graphql_name="approveDeployments",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ApproveDeploymentsInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ApproveDeploymentsInput), graphql_name="input", default=None)),),
         ),
     )
     """Approve all pending deployments under one or more environments
@@ -14040,7 +14040,7 @@ class Mutation(sgqlc.types.Type):
         ApproveVerifiableDomainPayload,
         graphql_name="approveVerifiableDomain",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ApproveVerifiableDomainInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ApproveVerifiableDomainInput), graphql_name="input", default=None)),),
         ),
     )
     """Approve a verifiable domain for notification delivery.
@@ -14055,7 +14055,7 @@ class Mutation(sgqlc.types.Type):
         ArchiveRepositoryPayload,
         graphql_name="archiveRepository",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ArchiveRepositoryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ArchiveRepositoryInput), graphql_name="input", default=None)),),
         ),
     )
     """Marks a repository as archived.
@@ -14070,7 +14070,7 @@ class Mutation(sgqlc.types.Type):
         CancelEnterpriseAdminInvitationPayload,
         graphql_name="cancelEnterpriseAdminInvitation",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CancelEnterpriseAdminInvitationInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CancelEnterpriseAdminInvitationInput), graphql_name="input", default=None)),),
         ),
     )
     """Cancels a pending invitation for an administrator to join an
@@ -14086,7 +14086,7 @@ class Mutation(sgqlc.types.Type):
         CancelSponsorshipPayload,
         graphql_name="cancelSponsorship",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CancelSponsorshipInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CancelSponsorshipInput), graphql_name="input", default=None)),),
         ),
     )
     """Cancel an active sponsorship.
@@ -14101,7 +14101,7 @@ class Mutation(sgqlc.types.Type):
         ChangeUserStatusPayload,
         graphql_name="changeUserStatus",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ChangeUserStatusInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ChangeUserStatusInput), graphql_name="input", default=None)),),
         ),
     )
     """Update your status on GitHub.
@@ -14116,7 +14116,7 @@ class Mutation(sgqlc.types.Type):
         ClearLabelsFromLabelablePayload,
         graphql_name="clearLabelsFromLabelable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ClearLabelsFromLabelableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ClearLabelsFromLabelableInput), graphql_name="input", default=None)),),
         ),
     )
     """Clears all labels from a labelable object.
@@ -14131,7 +14131,7 @@ class Mutation(sgqlc.types.Type):
         CloneProjectPayload,
         graphql_name="cloneProject",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CloneProjectInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CloneProjectInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a new project by cloning configuration from an existing
@@ -14146,7 +14146,7 @@ class Mutation(sgqlc.types.Type):
         CloneTemplateRepositoryPayload,
         graphql_name="cloneTemplateRepository",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CloneTemplateRepositoryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CloneTemplateRepositoryInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a new repository with the same files and directory
@@ -14174,7 +14174,7 @@ class Mutation(sgqlc.types.Type):
         ClosePullRequestPayload,
         graphql_name="closePullRequest",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ClosePullRequestInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ClosePullRequestInput), graphql_name="input", default=None)),),
         ),
     )
     """Close a pull request.
@@ -14189,7 +14189,7 @@ class Mutation(sgqlc.types.Type):
         ConvertProjectCardNoteToIssuePayload,
         graphql_name="convertProjectCardNoteToIssue",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ConvertProjectCardNoteToIssueInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ConvertProjectCardNoteToIssueInput), graphql_name="input", default=None)),),
         ),
     )
     """Convert a project note card to one associated with a newly created
@@ -14205,7 +14205,7 @@ class Mutation(sgqlc.types.Type):
         ConvertPullRequestToDraftPayload,
         graphql_name="convertPullRequestToDraft",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ConvertPullRequestToDraftInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ConvertPullRequestToDraftInput), graphql_name="input", default=None)),),
         ),
     )
     """Converts a pull request to draft
@@ -14220,7 +14220,7 @@ class Mutation(sgqlc.types.Type):
         CreateBranchProtectionRulePayload,
         graphql_name="createBranchProtectionRule",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateBranchProtectionRuleInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateBranchProtectionRuleInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a new branch protection rule
@@ -14235,7 +14235,7 @@ class Mutation(sgqlc.types.Type):
         CreateCheckRunPayload,
         graphql_name="createCheckRun",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateCheckRunInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateCheckRunInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a check run.
@@ -14249,7 +14249,7 @@ class Mutation(sgqlc.types.Type):
         CreateCheckSuitePayload,
         graphql_name="createCheckSuite",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateCheckSuiteInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateCheckSuiteInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a check suite
@@ -14264,7 +14264,7 @@ class Mutation(sgqlc.types.Type):
         CreateCommitOnBranchPayload,
         graphql_name="createCommitOnBranch",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateCommitOnBranchInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateCommitOnBranchInput), graphql_name="input", default=None)),),
         ),
     )
     """Appends a commit to the given branch as the authenticated user.
@@ -14304,7 +14304,7 @@ class Mutation(sgqlc.types.Type):
         CreateDiscussionPayload,
         graphql_name="createDiscussion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateDiscussionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateDiscussionInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a discussion.
@@ -14319,7 +14319,7 @@ class Mutation(sgqlc.types.Type):
         CreateEnterpriseOrganizationPayload,
         graphql_name="createEnterpriseOrganization",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateEnterpriseOrganizationInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateEnterpriseOrganizationInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates an organization as part of an enterprise account.
@@ -14334,7 +14334,7 @@ class Mutation(sgqlc.types.Type):
         CreateEnvironmentPayload,
         graphql_name="createEnvironment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateEnvironmentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateEnvironmentInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates an environment or simply returns it if already exists.
@@ -14349,7 +14349,7 @@ class Mutation(sgqlc.types.Type):
         CreateIpAllowListEntryPayload,
         graphql_name="createIpAllowListEntry",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateIpAllowListEntryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateIpAllowListEntryInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a new IP allow list entry.
@@ -14376,7 +14376,7 @@ class Mutation(sgqlc.types.Type):
         CreateMigrationSourcePayload,
         graphql_name="createMigrationSource",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateMigrationSourceInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateMigrationSourceInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates an Octoshift migration source.
@@ -14391,7 +14391,7 @@ class Mutation(sgqlc.types.Type):
         CreateProjectPayload,
         graphql_name="createProject",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateProjectInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateProjectInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a new project.
@@ -14405,7 +14405,7 @@ class Mutation(sgqlc.types.Type):
         CreatePullRequestPayload,
         graphql_name="createPullRequest",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreatePullRequestInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreatePullRequestInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a new pull request
@@ -14432,7 +14432,7 @@ class Mutation(sgqlc.types.Type):
         CreateRepositoryPayload,
         graphql_name="createRepository",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateRepositoryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateRepositoryInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a new repository.
@@ -14447,7 +14447,7 @@ class Mutation(sgqlc.types.Type):
         CreateSponsorsTierPayload,
         graphql_name="createSponsorsTier",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateSponsorsTierInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateSponsorsTierInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a new payment tier for your GitHub Sponsors profile.
@@ -14462,7 +14462,7 @@ class Mutation(sgqlc.types.Type):
         CreateSponsorshipPayload,
         graphql_name="createSponsorship",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateSponsorshipInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateSponsorshipInput), graphql_name="input", default=None)),),
         ),
     )
     """Start a new sponsorship of a maintainer in GitHub Sponsors, or
@@ -14478,7 +14478,7 @@ class Mutation(sgqlc.types.Type):
         CreateTeamDiscussionPayload,
         graphql_name="createTeamDiscussion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateTeamDiscussionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateTeamDiscussionInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a new team discussion.
@@ -14493,7 +14493,7 @@ class Mutation(sgqlc.types.Type):
         CreateTeamDiscussionCommentPayload,
         graphql_name="createTeamDiscussionComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateTeamDiscussionCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CreateTeamDiscussionCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a new team discussion comment.
@@ -14508,7 +14508,7 @@ class Mutation(sgqlc.types.Type):
         DeclineTopicSuggestionPayload,
         graphql_name="declineTopicSuggestion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeclineTopicSuggestionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeclineTopicSuggestionInput), graphql_name="input", default=None)),),
         ),
     )
     """Rejects a suggested topic for the repository.
@@ -14523,7 +14523,7 @@ class Mutation(sgqlc.types.Type):
         DeleteBranchProtectionRulePayload,
         graphql_name="deleteBranchProtectionRule",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteBranchProtectionRuleInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteBranchProtectionRuleInput), graphql_name="input", default=None)),),
         ),
     )
     """Delete a branch protection rule
@@ -14538,7 +14538,7 @@ class Mutation(sgqlc.types.Type):
         DeleteDeploymentPayload,
         graphql_name="deleteDeployment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteDeploymentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteDeploymentInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a deployment.
@@ -14553,7 +14553,7 @@ class Mutation(sgqlc.types.Type):
         DeleteDiscussionPayload,
         graphql_name="deleteDiscussion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteDiscussionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteDiscussionInput), graphql_name="input", default=None)),),
         ),
     )
     """Delete a discussion and all of its replies.
@@ -14568,7 +14568,7 @@ class Mutation(sgqlc.types.Type):
         DeleteDiscussionCommentPayload,
         graphql_name="deleteDiscussionComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteDiscussionCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteDiscussionCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Delete a discussion comment. If it has replies, wipe it instead.
@@ -14583,7 +14583,7 @@ class Mutation(sgqlc.types.Type):
         DeleteEnvironmentPayload,
         graphql_name="deleteEnvironment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteEnvironmentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteEnvironmentInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes an environment
@@ -14598,7 +14598,7 @@ class Mutation(sgqlc.types.Type):
         DeleteIpAllowListEntryPayload,
         graphql_name="deleteIpAllowListEntry",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteIpAllowListEntryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteIpAllowListEntryInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes an IP allow list entry.
@@ -14625,7 +14625,7 @@ class Mutation(sgqlc.types.Type):
         DeleteIssueCommentPayload,
         graphql_name="deleteIssueComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteIssueCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteIssueCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes an IssueComment object.
@@ -14640,7 +14640,7 @@ class Mutation(sgqlc.types.Type):
         DeleteProjectPayload,
         graphql_name="deleteProject",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a project.
@@ -14654,7 +14654,7 @@ class Mutation(sgqlc.types.Type):
         DeleteProjectCardPayload,
         graphql_name="deleteProjectCard",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectCardInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectCardInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a project card.
@@ -14669,7 +14669,7 @@ class Mutation(sgqlc.types.Type):
         DeleteProjectColumnPayload,
         graphql_name="deleteProjectColumn",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectColumnInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectColumnInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a project column.
@@ -14684,7 +14684,7 @@ class Mutation(sgqlc.types.Type):
         DeleteProjectNextItemPayload,
         graphql_name="deleteProjectNextItem",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectNextItemInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteProjectNextItemInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes an item from a Project.
@@ -14699,7 +14699,7 @@ class Mutation(sgqlc.types.Type):
         DeletePullRequestReviewPayload,
         graphql_name="deletePullRequestReview",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeletePullRequestReviewInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeletePullRequestReviewInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a pull request review.
@@ -14714,7 +14714,7 @@ class Mutation(sgqlc.types.Type):
         DeletePullRequestReviewCommentPayload,
         graphql_name="deletePullRequestReviewComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeletePullRequestReviewCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeletePullRequestReviewCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a pull request review comment.
@@ -14741,7 +14741,7 @@ class Mutation(sgqlc.types.Type):
         DeleteTeamDiscussionPayload,
         graphql_name="deleteTeamDiscussion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteTeamDiscussionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteTeamDiscussionInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a team discussion.
@@ -14756,7 +14756,7 @@ class Mutation(sgqlc.types.Type):
         DeleteTeamDiscussionCommentPayload,
         graphql_name="deleteTeamDiscussionComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteTeamDiscussionCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteTeamDiscussionCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a team discussion comment.
@@ -14771,7 +14771,7 @@ class Mutation(sgqlc.types.Type):
         DeleteVerifiableDomainPayload,
         graphql_name="deleteVerifiableDomain",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteVerifiableDomainInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DeleteVerifiableDomainInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a verifiable domain.
@@ -14786,7 +14786,7 @@ class Mutation(sgqlc.types.Type):
         DisablePullRequestAutoMergePayload,
         graphql_name="disablePullRequestAutoMerge",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DisablePullRequestAutoMergeInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DisablePullRequestAutoMergeInput), graphql_name="input", default=None)),),
         ),
     )
     """Disable auto merge on the given pull request
@@ -14801,7 +14801,7 @@ class Mutation(sgqlc.types.Type):
         DismissPullRequestReviewPayload,
         graphql_name="dismissPullRequestReview",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DismissPullRequestReviewInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(DismissPullRequestReviewInput), graphql_name="input", default=None)),),
         ),
     )
     """Dismisses an approved or rejected pull request review.
@@ -14821,7 +14821,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(DismissRepositoryVulnerabilityAlertInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     """Dismisses the Dependabot alert.
@@ -14836,7 +14836,7 @@ class Mutation(sgqlc.types.Type):
         EnablePullRequestAutoMergePayload,
         graphql_name="enablePullRequestAutoMerge",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(EnablePullRequestAutoMergeInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(EnablePullRequestAutoMergeInput), graphql_name="input", default=None)),),
         ),
     )
     """Enable the default auto-merge on a pull request.
@@ -14851,7 +14851,7 @@ class Mutation(sgqlc.types.Type):
         FollowOrganizationPayload,
         graphql_name="followOrganization",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(FollowOrganizationInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(FollowOrganizationInput), graphql_name="input", default=None)),),
         ),
     )
     """Follow an organization.
@@ -14882,10 +14882,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(GrantEnterpriseOrganizationsMigratorRoleInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(GrantEnterpriseOrganizationsMigratorRoleInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Grant the migrator role to a user for all organizations under an
@@ -14901,7 +14901,7 @@ class Mutation(sgqlc.types.Type):
         GrantMigratorRolePayload,
         graphql_name="grantMigratorRole",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(GrantMigratorRoleInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(GrantMigratorRoleInput), graphql_name="input", default=None)),),
         ),
     )
     """Grant the migrator role to a user or a team.
@@ -14916,7 +14916,7 @@ class Mutation(sgqlc.types.Type):
         InviteEnterpriseAdminPayload,
         graphql_name="inviteEnterpriseAdmin",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(InviteEnterpriseAdminInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(InviteEnterpriseAdminInput), graphql_name="input", default=None)),),
         ),
     )
     """Invite someone to become an administrator of the enterprise.
@@ -14931,7 +14931,7 @@ class Mutation(sgqlc.types.Type):
         LinkRepositoryToProjectPayload,
         graphql_name="linkRepositoryToProject",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(LinkRepositoryToProjectInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(LinkRepositoryToProjectInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates a repository link for a project.
@@ -14946,7 +14946,7 @@ class Mutation(sgqlc.types.Type):
         LockLockablePayload,
         graphql_name="lockLockable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(LockLockableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(LockLockableInput), graphql_name="input", default=None)),),
         ),
     )
     """Lock a lockable object
@@ -14960,7 +14960,7 @@ class Mutation(sgqlc.types.Type):
         MarkDiscussionCommentAsAnswerPayload,
         graphql_name="markDiscussionCommentAsAnswer",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarkDiscussionCommentAsAnswerInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarkDiscussionCommentAsAnswerInput), graphql_name="input", default=None)),),
         ),
     )
     """Mark a discussion comment as the chosen answer for discussions in
@@ -14976,7 +14976,7 @@ class Mutation(sgqlc.types.Type):
         MarkFileAsViewedPayload,
         graphql_name="markFileAsViewed",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarkFileAsViewedInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarkFileAsViewedInput), graphql_name="input", default=None)),),
         ),
     )
     """Mark a pull request file as viewed
@@ -14991,7 +14991,7 @@ class Mutation(sgqlc.types.Type):
         MarkPullRequestReadyForReviewPayload,
         graphql_name="markPullRequestReadyForReview",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarkPullRequestReadyForReviewInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarkPullRequestReadyForReviewInput), graphql_name="input", default=None)),),
         ),
     )
     """Marks a pull request ready for review.
@@ -15018,7 +15018,7 @@ class Mutation(sgqlc.types.Type):
         MergePullRequestPayload,
         graphql_name="mergePullRequest",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MergePullRequestInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MergePullRequestInput), graphql_name="input", default=None)),),
         ),
     )
     """Merge a pull request.
@@ -15033,7 +15033,7 @@ class Mutation(sgqlc.types.Type):
         MinimizeCommentPayload,
         graphql_name="minimizeComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MinimizeCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MinimizeCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Minimizes a comment on an Issue, Commit, Pull Request, or Gist
@@ -15048,7 +15048,7 @@ class Mutation(sgqlc.types.Type):
         MoveProjectCardPayload,
         graphql_name="moveProjectCard",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MoveProjectCardInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MoveProjectCardInput), graphql_name="input", default=None)),),
         ),
     )
     """Moves a project card to another place.
@@ -15063,7 +15063,7 @@ class Mutation(sgqlc.types.Type):
         MoveProjectColumnPayload,
         graphql_name="moveProjectColumn",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MoveProjectColumnInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MoveProjectColumnInput), graphql_name="input", default=None)),),
         ),
     )
     """Moves a project column to another place.
@@ -15094,10 +15094,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(RegenerateEnterpriseIdentityProviderRecoveryCodesInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(RegenerateEnterpriseIdentityProviderRecoveryCodesInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Regenerates the identity provider recovery codes for an enterprise
@@ -15113,7 +15113,7 @@ class Mutation(sgqlc.types.Type):
         "RegenerateVerifiableDomainTokenPayload",
         graphql_name="regenerateVerifiableDomainToken",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RegenerateVerifiableDomainTokenInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RegenerateVerifiableDomainTokenInput), graphql_name="input", default=None)),),
         ),
     )
     """Regenerates a verifiable domain's verification token.
@@ -15128,7 +15128,7 @@ class Mutation(sgqlc.types.Type):
         "RejectDeploymentsPayload",
         graphql_name="rejectDeployments",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RejectDeploymentsInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RejectDeploymentsInput), graphql_name="input", default=None)),),
         ),
     )
     """Reject all pending deployments under one or more environments
@@ -15143,7 +15143,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveAssigneesFromAssignablePayload",
         graphql_name="removeAssigneesFromAssignable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveAssigneesFromAssignableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveAssigneesFromAssignableInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes assignees from an assignable object.
@@ -15158,7 +15158,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveEnterpriseAdminPayload",
         graphql_name="removeEnterpriseAdmin",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseAdminInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseAdminInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes an administrator from the enterprise.
@@ -15173,7 +15173,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveEnterpriseIdentityProviderPayload",
         graphql_name="removeEnterpriseIdentityProvider",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseIdentityProviderInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseIdentityProviderInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes the identity provider from an enterprise
@@ -15188,7 +15188,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveEnterpriseOrganizationPayload",
         graphql_name="removeEnterpriseOrganization",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseOrganizationInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseOrganizationInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes an organization from the enterprise
@@ -15203,7 +15203,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveEnterpriseSupportEntitlementPayload",
         graphql_name="removeEnterpriseSupportEntitlement",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseSupportEntitlementInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveEnterpriseSupportEntitlementInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes a support entitlement from an enterprise member.
@@ -15218,7 +15218,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveLabelsFromLabelablePayload",
         graphql_name="removeLabelsFromLabelable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveLabelsFromLabelableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveLabelsFromLabelableInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes labels from a Labelable object.
@@ -15233,7 +15233,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveOutsideCollaboratorPayload",
         graphql_name="removeOutsideCollaborator",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveOutsideCollaboratorInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveOutsideCollaboratorInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes outside collaborator from all repositories in an
@@ -15249,7 +15249,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveReactionPayload",
         graphql_name="removeReaction",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveReactionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveReactionInput), graphql_name="input", default=None)),),
         ),
     )
     """Removes a reaction from a subject.
@@ -15275,7 +15275,7 @@ class Mutation(sgqlc.types.Type):
         "RemoveUpvotePayload",
         graphql_name="removeUpvote",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveUpvoteInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RemoveUpvoteInput), graphql_name="input", default=None)),),
         ),
     )
     """Remove an upvote to a discussion or discussion comment.
@@ -15301,7 +15301,7 @@ class Mutation(sgqlc.types.Type):
         "ReopenPullRequestPayload",
         graphql_name="reopenPullRequest",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ReopenPullRequestInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ReopenPullRequestInput), graphql_name="input", default=None)),),
         ),
     )
     """Reopen a pull request.
@@ -15316,7 +15316,7 @@ class Mutation(sgqlc.types.Type):
         "RequestReviewsPayload",
         graphql_name="requestReviews",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RequestReviewsInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RequestReviewsInput), graphql_name="input", default=None)),),
         ),
     )
     """Set review requests on a pull request.
@@ -15330,7 +15330,7 @@ class Mutation(sgqlc.types.Type):
         "RerequestCheckSuitePayload",
         graphql_name="rerequestCheckSuite",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RerequestCheckSuiteInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RerequestCheckSuiteInput), graphql_name="input", default=None)),),
         ),
     )
     """Rerequests an existing check suite.
@@ -15345,7 +15345,7 @@ class Mutation(sgqlc.types.Type):
         "ResolveReviewThreadPayload",
         graphql_name="resolveReviewThread",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ResolveReviewThreadInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ResolveReviewThreadInput), graphql_name="input", default=None)),),
         ),
     )
     """Marks a review thread as resolved.
@@ -15364,10 +15364,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(RevokeEnterpriseOrganizationsMigratorRoleInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(RevokeEnterpriseOrganizationsMigratorRoleInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Revoke the migrator role to a user for all organizations under an
@@ -15383,7 +15383,7 @@ class Mutation(sgqlc.types.Type):
         "RevokeMigratorRolePayload",
         graphql_name="revokeMigratorRole",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RevokeMigratorRoleInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(RevokeMigratorRoleInput), graphql_name="input", default=None)),),
         ),
     )
     """Revoke the migrator role from a user or a team.
@@ -15398,7 +15398,7 @@ class Mutation(sgqlc.types.Type):
         "SetEnterpriseIdentityProviderPayload",
         graphql_name="setEnterpriseIdentityProvider",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetEnterpriseIdentityProviderInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetEnterpriseIdentityProviderInput), graphql_name="input", default=None)),),
         ),
     )
     """Creates or updates the identity provider for an enterprise.
@@ -15413,7 +15413,7 @@ class Mutation(sgqlc.types.Type):
         "SetOrganizationInteractionLimitPayload",
         graphql_name="setOrganizationInteractionLimit",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetOrganizationInteractionLimitInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetOrganizationInteractionLimitInput), graphql_name="input", default=None)),),
         ),
     )
     """Set an organization level interaction limit for an organization's
@@ -15429,7 +15429,7 @@ class Mutation(sgqlc.types.Type):
         "SetRepositoryInteractionLimitPayload",
         graphql_name="setRepositoryInteractionLimit",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetRepositoryInteractionLimitInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetRepositoryInteractionLimitInput), graphql_name="input", default=None)),),
         ),
     )
     """Sets an interaction limit setting for a repository.
@@ -15444,7 +15444,7 @@ class Mutation(sgqlc.types.Type):
         "SetUserInteractionLimitPayload",
         graphql_name="setUserInteractionLimit",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetUserInteractionLimitInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SetUserInteractionLimitInput), graphql_name="input", default=None)),),
         ),
     )
     """Set a user level interaction limit for an user's public
@@ -15460,7 +15460,7 @@ class Mutation(sgqlc.types.Type):
         "StartRepositoryMigrationPayload",
         graphql_name="startRepositoryMigration",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(StartRepositoryMigrationInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(StartRepositoryMigrationInput), graphql_name="input", default=None)),),
         ),
     )
     """Start a repository migration.
@@ -15475,7 +15475,7 @@ class Mutation(sgqlc.types.Type):
         "SubmitPullRequestReviewPayload",
         graphql_name="submitPullRequestReview",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SubmitPullRequestReviewInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(SubmitPullRequestReviewInput), graphql_name="input", default=None)),),
         ),
     )
     """Submits a pending pull request review.
@@ -15490,7 +15490,7 @@ class Mutation(sgqlc.types.Type):
         "TransferIssuePayload",
         graphql_name="transferIssue",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(TransferIssueInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(TransferIssueInput), graphql_name="input", default=None)),),
         ),
     )
     """Transfer an issue to a different repository
@@ -15504,7 +15504,7 @@ class Mutation(sgqlc.types.Type):
         "UnarchiveRepositoryPayload",
         graphql_name="unarchiveRepository",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnarchiveRepositoryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnarchiveRepositoryInput), graphql_name="input", default=None)),),
         ),
     )
     """Unarchives a repository.
@@ -15519,7 +15519,7 @@ class Mutation(sgqlc.types.Type):
         "UnfollowOrganizationPayload",
         graphql_name="unfollowOrganization",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnfollowOrganizationInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnfollowOrganizationInput), graphql_name="input", default=None)),),
         ),
     )
     """Unfollow an organization.
@@ -15534,7 +15534,7 @@ class Mutation(sgqlc.types.Type):
         "UnfollowUserPayload",
         graphql_name="unfollowUser",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnfollowUserInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnfollowUserInput), graphql_name="input", default=None)),),
         ),
     )
     """Unfollow a user.
@@ -15548,7 +15548,7 @@ class Mutation(sgqlc.types.Type):
         "UnlinkRepositoryFromProjectPayload",
         graphql_name="unlinkRepositoryFromProject",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnlinkRepositoryFromProjectInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnlinkRepositoryFromProjectInput), graphql_name="input", default=None)),),
         ),
     )
     """Deletes a repository link from a project.
@@ -15563,7 +15563,7 @@ class Mutation(sgqlc.types.Type):
         "UnlockLockablePayload",
         graphql_name="unlockLockable",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnlockLockableInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnlockLockableInput), graphql_name="input", default=None)),),
         ),
     )
     """Unlock a lockable object
@@ -15577,7 +15577,7 @@ class Mutation(sgqlc.types.Type):
         "UnmarkDiscussionCommentAsAnswerPayload",
         graphql_name="unmarkDiscussionCommentAsAnswer",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnmarkDiscussionCommentAsAnswerInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnmarkDiscussionCommentAsAnswerInput), graphql_name="input", default=None)),),
         ),
     )
     """Unmark a discussion comment as the chosen answer for discussions
@@ -15593,7 +15593,7 @@ class Mutation(sgqlc.types.Type):
         "UnmarkFileAsViewedPayload",
         graphql_name="unmarkFileAsViewed",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnmarkFileAsViewedInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnmarkFileAsViewedInput), graphql_name="input", default=None)),),
         ),
     )
     """Unmark a pull request file as viewed
@@ -15608,7 +15608,7 @@ class Mutation(sgqlc.types.Type):
         "UnmarkIssueAsDuplicatePayload",
         graphql_name="unmarkIssueAsDuplicate",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnmarkIssueAsDuplicateInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnmarkIssueAsDuplicateInput), graphql_name="input", default=None)),),
         ),
     )
     """Unmark an issue as a duplicate of another issue.
@@ -15623,7 +15623,7 @@ class Mutation(sgqlc.types.Type):
         "UnminimizeCommentPayload",
         graphql_name="unminimizeComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnminimizeCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnminimizeCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Unminimizes a comment on an Issue, Commit, Pull Request, or Gist
@@ -15650,7 +15650,7 @@ class Mutation(sgqlc.types.Type):
         "UnresolveReviewThreadPayload",
         graphql_name="unresolveReviewThread",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnresolveReviewThreadInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UnresolveReviewThreadInput), graphql_name="input", default=None)),),
         ),
     )
     """Marks a review thread as unresolved.
@@ -15665,7 +15665,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateBranchProtectionRulePayload",
         graphql_name="updateBranchProtectionRule",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateBranchProtectionRuleInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateBranchProtectionRuleInput), graphql_name="input", default=None)),),
         ),
     )
     """Create a new branch protection rule
@@ -15680,7 +15680,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateCheckRunPayload",
         graphql_name="updateCheckRun",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateCheckRunInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateCheckRunInput), graphql_name="input", default=None)),),
         ),
     )
     """Update a check run
@@ -15694,7 +15694,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateCheckSuitePreferencesPayload",
         graphql_name="updateCheckSuitePreferences",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateCheckSuitePreferencesInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateCheckSuitePreferencesInput), graphql_name="input", default=None)),),
         ),
     )
     """Modifies the settings of an existing check suite
@@ -15709,7 +15709,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateDiscussionPayload",
         graphql_name="updateDiscussion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateDiscussionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateDiscussionInput), graphql_name="input", default=None)),),
         ),
     )
     """Update a discussion
@@ -15724,7 +15724,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateDiscussionCommentPayload",
         graphql_name="updateDiscussionComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateDiscussionCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateDiscussionCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Update the contents of a comment on a Discussion
@@ -15739,7 +15739,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateEnterpriseAdministratorRolePayload",
         graphql_name="updateEnterpriseAdministratorRole",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnterpriseAdministratorRoleInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnterpriseAdministratorRoleInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates the role of an enterprise administrator.
@@ -15758,10 +15758,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseAllowPrivateRepositoryForkingSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseAllowPrivateRepositoryForkingSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether private repository forks are enabled for an
@@ -15783,10 +15783,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseDefaultRepositoryPermissionSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseDefaultRepositoryPermissionSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets the base repository permission for organizations in an
@@ -15813,7 +15813,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether organization members with admin permissions on a
@@ -15834,10 +15834,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseMembersCanCreateRepositoriesSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseMembersCanCreateRepositoriesSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets the members can create repositories setting for an
@@ -15859,10 +15859,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseMembersCanDeleteIssuesSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseMembersCanDeleteIssuesSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets the members can delete issues setting for an enterprise.
@@ -15881,10 +15881,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseMembersCanDeleteRepositoriesSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseMembersCanDeleteRepositoriesSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets the members can delete repositories setting for an
@@ -15906,10 +15906,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseMembersCanInviteCollaboratorsSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseMembersCanInviteCollaboratorsSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether members can invite collaborators are enabled for an
@@ -15931,10 +15931,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseMembersCanMakePurchasesSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseMembersCanMakePurchasesSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether or not an organization admin can make purchases.
@@ -15959,7 +15959,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets the members can update protected branches setting for an
@@ -15985,7 +15985,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets the members can view dependency insights for an enterprise.
@@ -16005,10 +16005,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseOrganizationProjectsSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseOrganizationProjectsSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether organization projects are enabled for an enterprise.
@@ -16028,7 +16028,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnterpriseOwnerOrganizationRoleInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     """Updates the role of an enterprise owner with an organization.
@@ -16043,7 +16043,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateEnterpriseProfilePayload",
         graphql_name="updateEnterpriseProfile",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnterpriseProfileInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnterpriseProfileInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an enterprise's profile.
@@ -16062,10 +16062,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateEnterpriseRepositoryProjectsSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateEnterpriseRepositoryProjectsSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether repository projects are enabled for a enterprise.
@@ -16085,7 +16085,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnterpriseTeamDiscussionsSettingInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether team discussions are enabled for an enterprise.
@@ -16109,7 +16109,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether two factor authentication is required for all users
@@ -16126,7 +16126,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateEnvironmentPayload",
         graphql_name="updateEnvironment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnvironmentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateEnvironmentInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an environment.
@@ -16141,7 +16141,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateIpAllowListEnabledSettingPayload",
         graphql_name="updateIpAllowListEnabledSetting",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateIpAllowListEnabledSettingInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateIpAllowListEnabledSettingInput), graphql_name="input", default=None)),),
         ),
     )
     """Sets whether an IP allow list is enabled on an owner.
@@ -16156,7 +16156,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateIpAllowListEntryPayload",
         graphql_name="updateIpAllowListEntry",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateIpAllowListEntryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateIpAllowListEntryInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an IP allow list entry.
@@ -16175,10 +16175,10 @@ class Mutation(sgqlc.types.Type):
                 (
                     "input",
                     sgqlc.types.Arg(
-                        sgqlc.types.non_null(UpdateIpAllowListForInstalledAppsEnabledSettingInput), graphql_name="input", default=None
+                        sgqlc.types.non_null(UpdateIpAllowListForInstalledAppsEnabledSettingInput), graphql_name="input", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether IP allow list configuration for installed GitHub Apps
@@ -16207,7 +16207,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateIssueCommentPayload",
         graphql_name="updateIssueComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateIssueCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateIssueCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an IssueComment object.
@@ -16227,7 +16227,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(UpdateNotificationRestrictionSettingInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     """Update the setting to restrict notifications to only verified or
@@ -16252,7 +16252,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """Sets whether private repository forks are enabled for an
@@ -16269,7 +16269,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateProjectPayload",
         graphql_name="updateProject",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an existing project.
@@ -16283,7 +16283,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateProjectCardPayload",
         graphql_name="updateProjectCard",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectCardInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectCardInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an existing project card.
@@ -16298,7 +16298,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateProjectColumnPayload",
         graphql_name="updateProjectColumn",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectColumnInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectColumnInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an existing project column.
@@ -16313,7 +16313,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateProjectDraftIssuePayload",
         graphql_name="updateProjectDraftIssue",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectDraftIssueInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectDraftIssueInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates a draft issue within a Project.
@@ -16328,7 +16328,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateProjectNextPayload",
         graphql_name="updateProjectNext",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectNextInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectNextInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates an existing project (beta).
@@ -16343,7 +16343,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateProjectNextItemFieldPayload",
         graphql_name="updateProjectNextItemField",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectNextItemFieldInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateProjectNextItemFieldInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates a field of an item from a Project.
@@ -16358,7 +16358,7 @@ class Mutation(sgqlc.types.Type):
         "UpdatePullRequestPayload",
         graphql_name="updatePullRequest",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestInput), graphql_name="input", default=None)),),
         ),
     )
     """Update a pull request
@@ -16373,7 +16373,7 @@ class Mutation(sgqlc.types.Type):
         "UpdatePullRequestBranchPayload",
         graphql_name="updatePullRequestBranch",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestBranchInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestBranchInput), graphql_name="input", default=None)),),
         ),
     )
     """Merge or Rebase HEAD from upstream branch into pull request branch
@@ -16388,7 +16388,7 @@ class Mutation(sgqlc.types.Type):
         "UpdatePullRequestReviewPayload",
         graphql_name="updatePullRequestReview",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestReviewInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestReviewInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates the body of a pull request review.
@@ -16403,7 +16403,7 @@ class Mutation(sgqlc.types.Type):
         "UpdatePullRequestReviewCommentPayload",
         graphql_name="updatePullRequestReviewComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestReviewCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdatePullRequestReviewCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates a pull request review comment.
@@ -16430,7 +16430,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateRepositoryPayload",
         graphql_name="updateRepository",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateRepositoryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateRepositoryInput), graphql_name="input", default=None)),),
         ),
     )
     """Update information about a repository.
@@ -16445,7 +16445,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateSponsorshipPreferencesPayload",
         graphql_name="updateSponsorshipPreferences",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateSponsorshipPreferencesInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateSponsorshipPreferencesInput), graphql_name="input", default=None)),),
         ),
     )
     """Change visibility of your sponsorship and opt in or out of email
@@ -16461,7 +16461,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateSubscriptionPayload",
         graphql_name="updateSubscription",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateSubscriptionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateSubscriptionInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates the state for subscribable subjects.
@@ -16476,7 +16476,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateTeamDiscussionPayload",
         graphql_name="updateTeamDiscussion",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTeamDiscussionInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTeamDiscussionInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates a team discussion.
@@ -16491,7 +16491,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateTeamDiscussionCommentPayload",
         graphql_name="updateTeamDiscussionComment",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTeamDiscussionCommentInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTeamDiscussionCommentInput), graphql_name="input", default=None)),),
         ),
     )
     """Updates a discussion comment.
@@ -16506,7 +16506,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateTeamsRepositoryPayload",
         graphql_name="updateTeamsRepository",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTeamsRepositoryInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTeamsRepositoryInput), graphql_name="input", default=None)),),
         ),
     )
     """Update team repository.
@@ -16521,7 +16521,7 @@ class Mutation(sgqlc.types.Type):
         "UpdateTopicsPayload",
         graphql_name="updateTopics",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTopicsInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(UpdateTopicsInput), graphql_name="input", default=None)),),
         ),
     )
     """Replaces the repository's topics with the given topics.
@@ -16535,7 +16535,7 @@ class Mutation(sgqlc.types.Type):
         "VerifyVerifiableDomainPayload",
         graphql_name="verifyVerifiableDomain",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(VerifyVerifiableDomainInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(VerifyVerifiableDomainInput), graphql_name="input", default=None)),),
         ),
     )
     """Verify that a verifiable domain has the expected DNS record.
@@ -16557,7 +16557,7 @@ class Node(sgqlc.types.Interface):
 
 
 class OauthApplicationAuditEntryData(sgqlc.types.Interface):
-    """Metadata for an audit entry with action oauth_application.*"""
+    """Metadata for an audit entry with action oauth_application.*."""
 
     __schema__ = github_schema
     __field_names__ = ("oauth_application_name", "oauth_application_resource_path", "oauth_application_url")
@@ -16590,7 +16590,7 @@ class OrganizationAuditEntryConnection(sgqlc.types.relay.Connection):
 
 
 class OrganizationAuditEntryData(sgqlc.types.Interface):
-    """Metadata for an audit entry with action org.*"""
+    """Metadata for an audit entry with action org.*."""
 
     __schema__ = github_schema
     __field_names__ = ("organization", "organization_name", "organization_resource_path", "organization_url")
@@ -16832,7 +16832,7 @@ class PackageOwner(sgqlc.types.Interface):
                 ("repository_id", sgqlc.types.Arg(ID, graphql_name="repositoryId", default=None)),
                 ("package_type", sgqlc.types.Arg(PackageType, graphql_name="packageType", default=None)),
                 ("order_by", sgqlc.types.Arg(PackageOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"})),
-            )
+            ),
         ),
     )
     """A list of packages under the owner.
@@ -16941,7 +16941,7 @@ class PermissionSource(sgqlc.types.Type):
 
 
 class PinIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of PinIssue"""
+    """Autogenerated return type of PinIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue")
@@ -17061,7 +17061,7 @@ class ProfileItemShowcase(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The repositories and gists in the showcase. If the profile owner
@@ -17141,7 +17141,7 @@ class ProfileOwner(sgqlc.types.Interface):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of repositories and gists this profile owner can pin to
@@ -17169,7 +17169,7 @@ class ProfileOwner(sgqlc.types.Interface):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of repositories and gists this profile owner has pinned to
@@ -17320,7 +17320,7 @@ class ProjectNextEdge(sgqlc.types.Type):
 
 
 class ProjectNextFieldCommon(sgqlc.types.Interface):
-    """Common fields across different field types"""
+    """Common fields across different field types."""
 
     __schema__ = github_schema
     __field_names__ = ("created_at", "data_type", "database_id", "id", "name", "project", "settings", "updated_at")
@@ -17468,7 +17468,7 @@ class ProjectNextOwner(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("sort_by", sgqlc.types.Arg(ProjectNextOrderField, graphql_name="sortBy", default="TITLE")),
-            )
+            ),
         ),
     )
     """A list of projects (beta) under the owner.
@@ -17519,7 +17519,7 @@ class ProjectOwner(sgqlc.types.Interface):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of projects under the owner.
@@ -17763,7 +17763,7 @@ class PullRequestContributionsByRepository(sgqlc.types.Type):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """The pull request contributions.
@@ -17862,7 +17862,7 @@ class PullRequestReviewContributionsByRepository(sgqlc.types.Type):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(ContributionOrder, graphql_name="orderBy", default={"direction": "DESC"})),
-            )
+            ),
         ),
     )
     """The pull request review contributions.
@@ -18117,7 +18117,7 @@ class Query(sgqlc.types.Type):
             (
                 ("slug", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="slug", default=None)),
                 ("invitation_token", sgqlc.types.Arg(String, graphql_name="invitationToken", default=None)),
-            )
+            ),
         ),
     )
     """Look up an enterprise by URL slug.
@@ -18136,7 +18136,7 @@ class Query(sgqlc.types.Type):
                 ("user_login", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="userLogin", default=None)),
                 ("enterprise_slug", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="enterpriseSlug", default=None)),
                 ("role", sgqlc.types.Arg(sgqlc.types.non_null(EnterpriseAdministratorRole), graphql_name="role", default=None)),
-            )
+            ),
         ),
     )
     """Look up a pending enterprise administrator invitation by invitee,
@@ -18156,7 +18156,7 @@ class Query(sgqlc.types.Type):
         "EnterpriseAdministratorInvitation",
         graphql_name="enterpriseAdministratorInvitationByToken",
         args=sgqlc.types.ArgDict(
-            (("invitation_token", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="invitationToken", default=None)),)
+            (("invitation_token", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="invitationToken", default=None)),),
         ),
     )
     """Look up a pending enterprise administrator invitation by
@@ -18194,7 +18194,7 @@ class Query(sgqlc.types.Type):
                 ),
                 ("exclude_empty", sgqlc.types.Arg(Boolean, graphql_name="excludeEmpty", default=None)),
                 ("exclude_subcategories", sgqlc.types.Arg(Boolean, graphql_name="excludeSubcategories", default=None)),
-            )
+            ),
         ),
     )
     """Get alphabetically sorted list of Marketplace categories
@@ -18216,7 +18216,7 @@ class Query(sgqlc.types.Type):
             (
                 ("slug", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="slug", default=None)),
                 ("use_topic_aliases", sgqlc.types.Arg(Boolean, graphql_name="useTopicAliases", default=None)),
-            )
+            ),
         ),
     )
     """Look up a Marketplace category by its slug.
@@ -18259,7 +18259,7 @@ class Query(sgqlc.types.Type):
                 ("slugs", sgqlc.types.Arg(sgqlc.types.list_of(String), graphql_name="slugs", default=None)),
                 ("primary_category_only", sgqlc.types.Arg(Boolean, graphql_name="primaryCategoryOnly", default=False)),
                 ("with_free_trials_only", sgqlc.types.Arg(Boolean, graphql_name="withFreeTrialsOnly", default=False)),
-            )
+            ),
         ),
     )
     """Look up Marketplace listings
@@ -18319,7 +18319,7 @@ class Query(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ID))), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     """Lookup nodes by a list of IDs.
@@ -18367,7 +18367,7 @@ class Query(sgqlc.types.Type):
                 ("owner", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="owner", default=None)),
                 ("name", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="name", default=None)),
                 ("follow_renames", sgqlc.types.Arg(Boolean, graphql_name="followRenames", default=True)),
-            )
+            ),
         ),
     )
     """Lookup a given repository by the owner and repository name.
@@ -18417,7 +18417,7 @@ class Query(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("query", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="query", default=None)),
                 ("type", sgqlc.types.Arg(sgqlc.types.non_null(SearchType), graphql_name="type", default=None)),
-            )
+            ),
         ),
     )
     """Perform a search across resources.
@@ -18459,7 +18459,7 @@ class Query(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """GitHub Security Advisories
@@ -18505,7 +18505,7 @@ class Query(sgqlc.types.Type):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        SecurityVulnerabilityOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"}
+                        SecurityVulnerabilityOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"},
                     ),
                 ),
                 ("ecosystem", sgqlc.types.Arg(SecurityAdvisoryEcosystem, graphql_name="ecosystem", default=None)),
@@ -18513,7 +18513,7 @@ class Query(sgqlc.types.Type):
                 (
                     "severities",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisorySeverity)), graphql_name="severities", default=None
+                        sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisorySeverity)), graphql_name="severities", default=None,
                     ),
                 ),
                 (
@@ -18528,7 +18528,7 @@ class Query(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Software Vulnerabilities documented by GitHub Security Advisories
@@ -18568,7 +18568,7 @@ class Query(sgqlc.types.Type):
                 ("org_login_for_dependencies", sgqlc.types.Arg(String, graphql_name="orgLoginForDependencies", default=None)),
                 ("dependency_ecosystem", sgqlc.types.Arg(SecurityAdvisoryEcosystem, graphql_name="dependencyEcosystem", default=None)),
                 ("ecosystem", sgqlc.types.Arg(DependencyGraphEcosystem, graphql_name="ecosystem", default=None)),
-            )
+            ),
         ),
     )
     """Users and organizations who can be sponsored via GitHub Sponsors.
@@ -18690,7 +18690,7 @@ class Reactable(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("content", sgqlc.types.Arg(ReactionContent, graphql_name="content", default=None)),
                 ("order_by", sgqlc.types.Arg(ReactionOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list of Reactions left on the Issue.
@@ -18800,7 +18800,7 @@ class ReactionGroup(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Reactors to the reaction subject with the emotion represented by
@@ -18947,7 +18947,7 @@ class RefUpdateRule(sgqlc.types.Type):
 
 class RegenerateEnterpriseIdentityProviderRecoveryCodesPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    RegenerateEnterpriseIdentityProviderRecoveryCodes
+    RegenerateEnterpriseIdentityProviderRecoveryCodes.
     """
 
     __schema__ = github_schema
@@ -18960,7 +18960,7 @@ class RegenerateEnterpriseIdentityProviderRecoveryCodesPayload(sgqlc.types.Type)
 
 
 class RegenerateVerifiableDomainTokenPayload(sgqlc.types.Type):
-    """Autogenerated return type of RegenerateVerifiableDomainToken"""
+    """Autogenerated return type of RegenerateVerifiableDomainToken."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "verification_token")
@@ -18972,7 +18972,7 @@ class RegenerateVerifiableDomainTokenPayload(sgqlc.types.Type):
 
 
 class RejectDeploymentsPayload(sgqlc.types.Type):
-    """Autogenerated return type of RejectDeployments"""
+    """Autogenerated return type of RejectDeployments."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "deployments")
@@ -19044,7 +19044,7 @@ class ReleaseEdge(sgqlc.types.Type):
 
 
 class RemoveAssigneesFromAssignablePayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveAssigneesFromAssignable"""
+    """Autogenerated return type of RemoveAssigneesFromAssignable."""
 
     __schema__ = github_schema
     __field_names__ = ("assignable", "client_mutation_id")
@@ -19056,7 +19056,7 @@ class RemoveAssigneesFromAssignablePayload(sgqlc.types.Type):
 
 
 class RemoveEnterpriseAdminPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveEnterpriseAdmin"""
+    """Autogenerated return type of RemoveEnterpriseAdmin."""
 
     __schema__ = github_schema
     __field_names__ = ("admin", "client_mutation_id", "enterprise", "message", "viewer")
@@ -19077,7 +19077,7 @@ class RemoveEnterpriseAdminPayload(sgqlc.types.Type):
 
 
 class RemoveEnterpriseIdentityProviderPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveEnterpriseIdentityProvider"""
+    """Autogenerated return type of RemoveEnterpriseIdentityProvider."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "identity_provider")
@@ -19089,7 +19089,7 @@ class RemoveEnterpriseIdentityProviderPayload(sgqlc.types.Type):
 
 
 class RemoveEnterpriseOrganizationPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveEnterpriseOrganization"""
+    """Autogenerated return type of RemoveEnterpriseOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "enterprise", "organization", "viewer")
@@ -19107,7 +19107,7 @@ class RemoveEnterpriseOrganizationPayload(sgqlc.types.Type):
 
 
 class RemoveEnterpriseSupportEntitlementPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveEnterpriseSupportEntitlement"""
+    """Autogenerated return type of RemoveEnterpriseSupportEntitlement."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "message")
@@ -19121,7 +19121,7 @@ class RemoveEnterpriseSupportEntitlementPayload(sgqlc.types.Type):
 
 
 class RemoveLabelsFromLabelablePayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveLabelsFromLabelable"""
+    """Autogenerated return type of RemoveLabelsFromLabelable."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "labelable")
@@ -19133,7 +19133,7 @@ class RemoveLabelsFromLabelablePayload(sgqlc.types.Type):
 
 
 class RemoveOutsideCollaboratorPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveOutsideCollaborator"""
+    """Autogenerated return type of RemoveOutsideCollaborator."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "removed_user")
@@ -19145,7 +19145,7 @@ class RemoveOutsideCollaboratorPayload(sgqlc.types.Type):
 
 
 class RemoveReactionPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveReaction"""
+    """Autogenerated return type of RemoveReaction."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "reaction", "subject")
@@ -19160,7 +19160,7 @@ class RemoveReactionPayload(sgqlc.types.Type):
 
 
 class RemoveStarPayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveStar"""
+    """Autogenerated return type of RemoveStar."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "starrable")
@@ -19172,7 +19172,7 @@ class RemoveStarPayload(sgqlc.types.Type):
 
 
 class RemoveUpvotePayload(sgqlc.types.Type):
-    """Autogenerated return type of RemoveUpvote"""
+    """Autogenerated return type of RemoveUpvote."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "subject")
@@ -19184,7 +19184,7 @@ class RemoveUpvotePayload(sgqlc.types.Type):
 
 
 class ReopenIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of ReopenIssue"""
+    """Autogenerated return type of ReopenIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue")
@@ -19196,7 +19196,7 @@ class ReopenIssuePayload(sgqlc.types.Type):
 
 
 class ReopenPullRequestPayload(sgqlc.types.Type):
-    """Autogenerated return type of ReopenPullRequest"""
+    """Autogenerated return type of ReopenPullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -19208,7 +19208,7 @@ class ReopenPullRequestPayload(sgqlc.types.Type):
 
 
 class RepositoryAuditEntryData(sgqlc.types.Interface):
-    """Metadata for an audit entry with action repo.*"""
+    """Metadata for an audit entry with action repo.*."""
 
     __schema__ = github_schema
     __field_names__ = ("repository", "repository_name", "repository_resource_path", "repository_url")
@@ -19231,7 +19231,7 @@ class RepositoryCodeowners(sgqlc.types.Type):
     __schema__ = github_schema
     __field_names__ = ("errors",)
     errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("RepositoryCodeownersError"))), graphql_name="errors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("RepositoryCodeownersError"))), graphql_name="errors",
     )
     """Any problems that were encountered while parsing the `CODEOWNERS`
     file.
@@ -19358,7 +19358,7 @@ class RepositoryDiscussionAuthor(sgqlc.types.Interface):
                 ),
                 ("repository_id", sgqlc.types.Arg(ID, graphql_name="repositoryId", default=None)),
                 ("answered", sgqlc.types.Arg(Boolean, graphql_name="answered", default=None)),
-            )
+            ),
         ),
     )
     """Discussions this user has started.
@@ -19398,7 +19398,7 @@ class RepositoryDiscussionCommentAuthor(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("repository_id", sgqlc.types.Arg(ID, graphql_name="repositoryId", default=None)),
                 ("only_answers", sgqlc.types.Arg(Boolean, graphql_name="onlyAnswers", default=False)),
-            )
+            ),
         ),
     )
     """Discussion comments this user has authored.
@@ -19688,7 +19688,7 @@ class RepositoryOwner(sgqlc.types.Interface):
                 (
                     "owner_affiliations",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR")
+                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR"),
                     ),
                 ),
                 ("is_locked", sgqlc.types.Arg(Boolean, graphql_name="isLocked", default=None)),
@@ -19697,7 +19697,7 @@ class RepositoryOwner(sgqlc.types.Interface):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("is_fork", sgqlc.types.Arg(Boolean, graphql_name="isFork", default=None)),
-            )
+            ),
         ),
     )
     """A list of repositories that the user owns.
@@ -19736,7 +19736,7 @@ class RepositoryOwner(sgqlc.types.Interface):
             (
                 ("name", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="name", default=None)),
                 ("follow_renames", sgqlc.types.Arg(Boolean, graphql_name="followRenames", default=True)),
-            )
+            ),
         ),
     )
     """Find Repository.
@@ -19817,7 +19817,7 @@ class RepositoryVulnerabilityAlertEdge(sgqlc.types.Type):
 
 
 class RequestReviewsPayload(sgqlc.types.Type):
-    """Autogenerated return type of RequestReviews"""
+    """Autogenerated return type of RequestReviews."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "pull_request", "requested_reviewers_edge")
@@ -19848,7 +19848,7 @@ class RequirableByPullRequest(sgqlc.types.Interface):
             (
                 ("pull_request_id", sgqlc.types.Arg(ID, graphql_name="pullRequestId", default=None)),
                 ("pull_request_number", sgqlc.types.Arg(Int, graphql_name="pullRequestNumber", default=None)),
-            )
+            ),
         ),
     )
     """Whether this is required to pass before merging for a specific
@@ -19880,7 +19880,7 @@ class RequiredStatusCheckDescription(sgqlc.types.Type):
 
 
 class RerequestCheckSuitePayload(sgqlc.types.Type):
-    """Autogenerated return type of RerequestCheckSuite"""
+    """Autogenerated return type of RerequestCheckSuite."""
 
     __schema__ = github_schema
     __field_names__ = ("check_suite", "client_mutation_id")
@@ -19892,7 +19892,7 @@ class RerequestCheckSuitePayload(sgqlc.types.Type):
 
 
 class ResolveReviewThreadPayload(sgqlc.types.Type):
-    """Autogenerated return type of ResolveReviewThread"""
+    """Autogenerated return type of ResolveReviewThread."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "thread")
@@ -19965,7 +19965,7 @@ class ReviewRequestEdge(sgqlc.types.Type):
 
 class RevokeEnterpriseOrganizationsMigratorRolePayload(sgqlc.types.Type):
     """Autogenerated return type of
-    RevokeEnterpriseOrganizationsMigratorRole
+    RevokeEnterpriseOrganizationsMigratorRole.
     """
 
     __schema__ = github_schema
@@ -19982,7 +19982,7 @@ class RevokeEnterpriseOrganizationsMigratorRolePayload(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The organizations that had the migrator role revoked for the given
@@ -20000,7 +20000,7 @@ class RevokeEnterpriseOrganizationsMigratorRolePayload(sgqlc.types.Type):
 
 
 class RevokeMigratorRolePayload(sgqlc.types.Type):
-    """Autogenerated return type of RevokeMigratorRole"""
+    """Autogenerated return type of RevokeMigratorRole."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "success")
@@ -20130,7 +20130,7 @@ class SecurityAdvisoryEdge(sgqlc.types.Type):
 
 
 class SecurityAdvisoryIdentifier(sgqlc.types.Type):
-    """A GitHub Security Advisory Identifier"""
+    """A GitHub Security Advisory Identifier."""
 
     __schema__ = github_schema
     __field_names__ = ("type", "value")
@@ -20142,7 +20142,7 @@ class SecurityAdvisoryIdentifier(sgqlc.types.Type):
 
 
 class SecurityAdvisoryPackage(sgqlc.types.Type):
-    """An individual package"""
+    """An individual package."""
 
     __schema__ = github_schema
     __field_names__ = ("ecosystem", "name")
@@ -20154,7 +20154,7 @@ class SecurityAdvisoryPackage(sgqlc.types.Type):
 
 
 class SecurityAdvisoryPackageVersion(sgqlc.types.Type):
-    """An individual package version"""
+    """An individual package version."""
 
     __schema__ = github_schema
     __field_names__ = ("identifier",)
@@ -20163,7 +20163,7 @@ class SecurityAdvisoryPackageVersion(sgqlc.types.Type):
 
 
 class SecurityAdvisoryReference(sgqlc.types.Type):
-    """A GitHub Security Advisory Reference"""
+    """A GitHub Security Advisory Reference."""
 
     __schema__ = github_schema
     __field_names__ = ("url",)
@@ -20172,7 +20172,7 @@ class SecurityAdvisoryReference(sgqlc.types.Type):
 
 
 class SecurityVulnerability(sgqlc.types.Type):
-    """An individual vulnerability within an Advisory"""
+    """An individual vulnerability within an Advisory."""
 
     __schema__ = github_schema
     __field_names__ = ("advisory", "first_patched_version", "package", "severity", "updated_at", "vulnerable_version_range")
@@ -20234,7 +20234,7 @@ class SecurityVulnerabilityEdge(sgqlc.types.Type):
 
 
 class SetEnterpriseIdentityProviderPayload(sgqlc.types.Type):
-    """Autogenerated return type of SetEnterpriseIdentityProvider"""
+    """Autogenerated return type of SetEnterpriseIdentityProvider."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "identity_provider")
@@ -20246,7 +20246,7 @@ class SetEnterpriseIdentityProviderPayload(sgqlc.types.Type):
 
 
 class SetOrganizationInteractionLimitPayload(sgqlc.types.Type):
-    """Autogenerated return type of SetOrganizationInteractionLimit"""
+    """Autogenerated return type of SetOrganizationInteractionLimit."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "organization")
@@ -20258,7 +20258,7 @@ class SetOrganizationInteractionLimitPayload(sgqlc.types.Type):
 
 
 class SetRepositoryInteractionLimitPayload(sgqlc.types.Type):
-    """Autogenerated return type of SetRepositoryInteractionLimit"""
+    """Autogenerated return type of SetRepositoryInteractionLimit."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -20270,7 +20270,7 @@ class SetRepositoryInteractionLimitPayload(sgqlc.types.Type):
 
 
 class SetUserInteractionLimitPayload(sgqlc.types.Type):
-    """Autogenerated return type of SetUserInteractionLimit"""
+    """Autogenerated return type of SetUserInteractionLimit."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "user")
@@ -20326,7 +20326,7 @@ class SponsorEdge(sgqlc.types.Type):
 
 
 class Sponsorable(sgqlc.types.Interface):
-    """Entities that can be sponsored through GitHub Sponsors"""
+    """Entities that can be sponsored through GitHub Sponsors."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -20348,7 +20348,7 @@ class Sponsorable(sgqlc.types.Interface):
         "viewer_is_sponsoring",
     )
     estimated_next_sponsors_payout_in_cents = sgqlc.types.Field(
-        sgqlc.types.non_null(Int), graphql_name="estimatedNextSponsorsPayoutInCents"
+        sgqlc.types.non_null(Int), graphql_name="estimatedNextSponsorsPayoutInCents",
     )
     """The estimated next GitHub Sponsors payout for this
     user/organization in cents (USD).
@@ -20361,7 +20361,7 @@ class Sponsorable(sgqlc.types.Interface):
         sgqlc.types.non_null(Boolean),
         graphql_name="isSponsoredBy",
         args=sgqlc.types.ArgDict(
-            (("account_login", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="accountLogin", default=None)),)
+            (("account_login", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="accountLogin", default=None)),),
         ),
     )
     """Check if the given account is sponsoring this user/organization.
@@ -20375,7 +20375,7 @@ class Sponsorable(sgqlc.types.Interface):
     """True if the viewer is sponsored by this user/organization."""
 
     monthly_estimated_sponsors_income_in_cents = sgqlc.types.Field(
-        sgqlc.types.non_null(Int), graphql_name="monthlyEstimatedSponsorsIncomeInCents"
+        sgqlc.types.non_null(Int), graphql_name="monthlyEstimatedSponsorsIncomeInCents",
     )
     """The estimated monthly GitHub Sponsors income for this
     user/organization in cents (USD).
@@ -20391,7 +20391,7 @@ class Sponsorable(sgqlc.types.Interface):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(SponsorOrder, graphql_name="orderBy", default={"field": "RELEVANCE", "direction": "DESC"})),
-            )
+            ),
         ),
     )
     """List of users and organizations this entity is sponsoring.
@@ -20420,7 +20420,7 @@ class Sponsorable(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("tier_id", sgqlc.types.Arg(ID, graphql_name="tierId", default=None)),
                 ("order_by", sgqlc.types.Arg(SponsorOrder, graphql_name="orderBy", default={"field": "RELEVANCE", "direction": "DESC"})),
-            )
+            ),
         ),
     )
     """List of sponsors for this user or organization.
@@ -20455,7 +20455,7 @@ class Sponsorable(sgqlc.types.Interface):
                     "order_by",
                     sgqlc.types.Arg(SponsorsActivityOrder, graphql_name="orderBy", default={"field": "TIMESTAMP", "direction": "DESC"}),
                 ),
-            )
+            ),
         ),
     )
     """Events involving this sponsorable, such as new sponsorships.
@@ -20503,10 +20503,10 @@ class Sponsorable(sgqlc.types.Interface):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        SponsorshipNewsletterOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"}
+                        SponsorshipNewsletterOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """List of sponsorship updates sent from this sponsorable to
@@ -20536,7 +20536,7 @@ class Sponsorable(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("include_private", sgqlc.types.Arg(Boolean, graphql_name="includePrivate", default=False)),
                 ("order_by", sgqlc.types.Arg(SponsorshipOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """This object's sponsorships as the maintainer.
@@ -20566,7 +20566,7 @@ class Sponsorable(sgqlc.types.Interface):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(SponsorshipOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """This object's sponsorships as the sponsor.
@@ -20699,7 +20699,7 @@ class SponsorsTierAdminInfo(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("include_private", sgqlc.types.Arg(Boolean, graphql_name="includePrivate", default=False)),
                 ("order_by", sgqlc.types.Arg(SponsorshipOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """The sponsorships associated with this tier.
@@ -20781,7 +20781,7 @@ class SponsorshipConnection(sgqlc.types.relay.Connection):
     """
 
     total_recurring_monthly_price_in_dollars = sgqlc.types.Field(
-        sgqlc.types.non_null(Int), graphql_name="totalRecurringMonthlyPriceInDollars"
+        sgqlc.types.non_null(Int), graphql_name="totalRecurringMonthlyPriceInDollars",
     )
     """The total amount in USD of all recurring sponsorships in the
     connection whose amount you can view. Does not include one-time
@@ -20883,7 +20883,7 @@ class Starrable(sgqlc.types.Interface):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(StarOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list of users who have starred this starrable.
@@ -20943,7 +20943,7 @@ class StarredRepositoryEdge(sgqlc.types.Type):
 
 
 class StartRepositoryMigrationPayload(sgqlc.types.Type):
-    """Autogenerated return type of StartRepositoryMigration"""
+    """Autogenerated return type of StartRepositoryMigration."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository_migration")
@@ -20985,7 +20985,7 @@ class StatusCheckRollupContextEdge(sgqlc.types.Type):
 
 
 class SubmitPullRequestReviewPayload(sgqlc.types.Type):
-    """Autogenerated return type of SubmitPullRequestReview"""
+    """Autogenerated return type of SubmitPullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review")
@@ -21089,7 +21089,7 @@ class SuggestedReviewer(sgqlc.types.Type):
 
 
 class TeamAuditEntryData(sgqlc.types.Interface):
-    """Metadata for an audit entry with action team.*"""
+    """Metadata for an audit entry with action team.*."""
 
     __schema__ = github_schema
     __field_names__ = ("team", "team_name", "team_resource_path", "team_url")
@@ -21275,7 +21275,7 @@ class TextMatch(sgqlc.types.Type):
     """The specific text fragment within the property matched on."""
 
     highlights = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TextMatchHighlight"))), graphql_name="highlights"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TextMatchHighlight"))), graphql_name="highlights",
     )
     """Highlights within the matched fragment."""
 
@@ -21311,7 +21311,7 @@ class TopicAuditEntryData(sgqlc.types.Interface):
 
 
 class TransferIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of TransferIssue"""
+    """Autogenerated return type of TransferIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue")
@@ -21376,7 +21376,7 @@ class TreeEntry(sgqlc.types.Type):
 
 
 class UnarchiveRepositoryPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnarchiveRepository"""
+    """Autogenerated return type of UnarchiveRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -21388,7 +21388,7 @@ class UnarchiveRepositoryPayload(sgqlc.types.Type):
 
 
 class UnfollowOrganizationPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnfollowOrganization"""
+    """Autogenerated return type of UnfollowOrganization."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "organization")
@@ -21400,7 +21400,7 @@ class UnfollowOrganizationPayload(sgqlc.types.Type):
 
 
 class UnfollowUserPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnfollowUser"""
+    """Autogenerated return type of UnfollowUser."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "user")
@@ -21424,7 +21424,7 @@ class UniformResourceLocatable(sgqlc.types.Interface):
 
 
 class UnlinkRepositoryFromProjectPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnlinkRepositoryFromProject"""
+    """Autogenerated return type of UnlinkRepositoryFromProject."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project", "repository")
@@ -21439,7 +21439,7 @@ class UnlinkRepositoryFromProjectPayload(sgqlc.types.Type):
 
 
 class UnlockLockablePayload(sgqlc.types.Type):
-    """Autogenerated return type of UnlockLockable"""
+    """Autogenerated return type of UnlockLockable."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "unlocked_record")
@@ -21454,7 +21454,7 @@ class UnlockLockablePayload(sgqlc.types.Type):
 
 
 class UnmarkDiscussionCommentAsAnswerPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnmarkDiscussionCommentAsAnswer"""
+    """Autogenerated return type of UnmarkDiscussionCommentAsAnswer."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "discussion")
@@ -21466,7 +21466,7 @@ class UnmarkDiscussionCommentAsAnswerPayload(sgqlc.types.Type):
 
 
 class UnmarkFileAsViewedPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnmarkFileAsViewed"""
+    """Autogenerated return type of UnmarkFileAsViewed."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -21478,7 +21478,7 @@ class UnmarkFileAsViewedPayload(sgqlc.types.Type):
 
 
 class UnmarkIssueAsDuplicatePayload(sgqlc.types.Type):
-    """Autogenerated return type of UnmarkIssueAsDuplicate"""
+    """Autogenerated return type of UnmarkIssueAsDuplicate."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "duplicate")
@@ -21490,7 +21490,7 @@ class UnmarkIssueAsDuplicatePayload(sgqlc.types.Type):
 
 
 class UnminimizeCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnminimizeComment"""
+    """Autogenerated return type of UnminimizeComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "unminimized_comment")
@@ -21502,7 +21502,7 @@ class UnminimizeCommentPayload(sgqlc.types.Type):
 
 
 class UnpinIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of UnpinIssue"""
+    """Autogenerated return type of UnpinIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue")
@@ -21514,7 +21514,7 @@ class UnpinIssuePayload(sgqlc.types.Type):
 
 
 class UnresolveReviewThreadPayload(sgqlc.types.Type):
-    """Autogenerated return type of UnresolveReviewThread"""
+    """Autogenerated return type of UnresolveReviewThread."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "thread")
@@ -21540,13 +21540,13 @@ class UpdatableComment(sgqlc.types.Interface):
     __schema__ = github_schema
     __field_names__ = ("viewer_cannot_update_reasons",)
     viewer_cannot_update_reasons = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CommentCannotUpdateReason))), graphql_name="viewerCannotUpdateReasons"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CommentCannotUpdateReason))), graphql_name="viewerCannotUpdateReasons",
     )
     """Reasons why the current viewer can not update this comment."""
 
 
 class UpdateBranchProtectionRulePayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateBranchProtectionRule"""
+    """Autogenerated return type of UpdateBranchProtectionRule."""
 
     __schema__ = github_schema
     __field_names__ = ("branch_protection_rule", "client_mutation_id")
@@ -21558,7 +21558,7 @@ class UpdateBranchProtectionRulePayload(sgqlc.types.Type):
 
 
 class UpdateCheckRunPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateCheckRun"""
+    """Autogenerated return type of UpdateCheckRun."""
 
     __schema__ = github_schema
     __field_names__ = ("check_run", "client_mutation_id")
@@ -21570,7 +21570,7 @@ class UpdateCheckRunPayload(sgqlc.types.Type):
 
 
 class UpdateCheckSuitePreferencesPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateCheckSuitePreferences"""
+    """Autogenerated return type of UpdateCheckSuitePreferences."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -21582,7 +21582,7 @@ class UpdateCheckSuitePreferencesPayload(sgqlc.types.Type):
 
 
 class UpdateDiscussionCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateDiscussionComment"""
+    """Autogenerated return type of UpdateDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "comment")
@@ -21594,7 +21594,7 @@ class UpdateDiscussionCommentPayload(sgqlc.types.Type):
 
 
 class UpdateDiscussionPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateDiscussion"""
+    """Autogenerated return type of UpdateDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "discussion")
@@ -21606,7 +21606,7 @@ class UpdateDiscussionPayload(sgqlc.types.Type):
 
 
 class UpdateEnterpriseAdministratorRolePayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateEnterpriseAdministratorRole"""
+    """Autogenerated return type of UpdateEnterpriseAdministratorRole."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "message")
@@ -21621,7 +21621,7 @@ class UpdateEnterpriseAdministratorRolePayload(sgqlc.types.Type):
 
 class UpdateEnterpriseAllowPrivateRepositoryForkingSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseAllowPrivateRepositoryForkingSetting
+    UpdateEnterpriseAllowPrivateRepositoryForkingSetting.
     """
 
     __schema__ = github_schema
@@ -21642,7 +21642,7 @@ class UpdateEnterpriseAllowPrivateRepositoryForkingSettingPayload(sgqlc.types.Ty
 
 class UpdateEnterpriseDefaultRepositoryPermissionSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseDefaultRepositoryPermissionSetting
+    UpdateEnterpriseDefaultRepositoryPermissionSetting.
     """
 
     __schema__ = github_schema
@@ -21663,7 +21663,7 @@ class UpdateEnterpriseDefaultRepositoryPermissionSettingPayload(sgqlc.types.Type
 
 class UpdateEnterpriseMembersCanChangeRepositoryVisibilitySettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanChangeRepositoryVisibilitySetting
+    UpdateEnterpriseMembersCanChangeRepositoryVisibilitySetting.
     """
 
     __schema__ = github_schema
@@ -21684,7 +21684,7 @@ class UpdateEnterpriseMembersCanChangeRepositoryVisibilitySettingPayload(sgqlc.t
 
 class UpdateEnterpriseMembersCanCreateRepositoriesSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanCreateRepositoriesSetting
+    UpdateEnterpriseMembersCanCreateRepositoriesSetting.
     """
 
     __schema__ = github_schema
@@ -21705,7 +21705,7 @@ class UpdateEnterpriseMembersCanCreateRepositoriesSettingPayload(sgqlc.types.Typ
 
 class UpdateEnterpriseMembersCanDeleteIssuesSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanDeleteIssuesSetting
+    UpdateEnterpriseMembersCanDeleteIssuesSetting.
     """
 
     __schema__ = github_schema
@@ -21724,7 +21724,7 @@ class UpdateEnterpriseMembersCanDeleteIssuesSettingPayload(sgqlc.types.Type):
 
 class UpdateEnterpriseMembersCanDeleteRepositoriesSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanDeleteRepositoriesSetting
+    UpdateEnterpriseMembersCanDeleteRepositoriesSetting.
     """
 
     __schema__ = github_schema
@@ -21745,7 +21745,7 @@ class UpdateEnterpriseMembersCanDeleteRepositoriesSettingPayload(sgqlc.types.Typ
 
 class UpdateEnterpriseMembersCanInviteCollaboratorsSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanInviteCollaboratorsSetting
+    UpdateEnterpriseMembersCanInviteCollaboratorsSetting.
     """
 
     __schema__ = github_schema
@@ -21766,7 +21766,7 @@ class UpdateEnterpriseMembersCanInviteCollaboratorsSettingPayload(sgqlc.types.Ty
 
 class UpdateEnterpriseMembersCanMakePurchasesSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanMakePurchasesSetting
+    UpdateEnterpriseMembersCanMakePurchasesSetting.
     """
 
     __schema__ = github_schema
@@ -21787,7 +21787,7 @@ class UpdateEnterpriseMembersCanMakePurchasesSettingPayload(sgqlc.types.Type):
 
 class UpdateEnterpriseMembersCanUpdateProtectedBranchesSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanUpdateProtectedBranchesSetting
+    UpdateEnterpriseMembersCanUpdateProtectedBranchesSetting.
     """
 
     __schema__ = github_schema
@@ -21808,7 +21808,7 @@ class UpdateEnterpriseMembersCanUpdateProtectedBranchesSettingPayload(sgqlc.type
 
 class UpdateEnterpriseMembersCanViewDependencyInsightsSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseMembersCanViewDependencyInsightsSetting
+    UpdateEnterpriseMembersCanViewDependencyInsightsSetting.
     """
 
     __schema__ = github_schema
@@ -21829,7 +21829,7 @@ class UpdateEnterpriseMembersCanViewDependencyInsightsSettingPayload(sgqlc.types
 
 class UpdateEnterpriseOrganizationProjectsSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseOrganizationProjectsSetting
+    UpdateEnterpriseOrganizationProjectsSetting.
     """
 
     __schema__ = github_schema
@@ -21847,7 +21847,7 @@ class UpdateEnterpriseOrganizationProjectsSettingPayload(sgqlc.types.Type):
 
 
 class UpdateEnterpriseOwnerOrganizationRolePayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateEnterpriseOwnerOrganizationRole"""
+    """Autogenerated return type of UpdateEnterpriseOwnerOrganizationRole."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "message")
@@ -21861,7 +21861,7 @@ class UpdateEnterpriseOwnerOrganizationRolePayload(sgqlc.types.Type):
 
 
 class UpdateEnterpriseProfilePayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateEnterpriseProfile"""
+    """Autogenerated return type of UpdateEnterpriseProfile."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "enterprise")
@@ -21874,7 +21874,7 @@ class UpdateEnterpriseProfilePayload(sgqlc.types.Type):
 
 class UpdateEnterpriseRepositoryProjectsSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseRepositoryProjectsSetting
+    UpdateEnterpriseRepositoryProjectsSetting.
     """
 
     __schema__ = github_schema
@@ -21893,7 +21893,7 @@ class UpdateEnterpriseRepositoryProjectsSettingPayload(sgqlc.types.Type):
 
 class UpdateEnterpriseTeamDiscussionsSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseTeamDiscussionsSetting
+    UpdateEnterpriseTeamDiscussionsSetting.
     """
 
     __schema__ = github_schema
@@ -21912,7 +21912,7 @@ class UpdateEnterpriseTeamDiscussionsSettingPayload(sgqlc.types.Type):
 
 class UpdateEnterpriseTwoFactorAuthenticationRequiredSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateEnterpriseTwoFactorAuthenticationRequiredSetting
+    UpdateEnterpriseTwoFactorAuthenticationRequiredSetting.
     """
 
     __schema__ = github_schema
@@ -21932,7 +21932,7 @@ class UpdateEnterpriseTwoFactorAuthenticationRequiredSettingPayload(sgqlc.types.
 
 
 class UpdateEnvironmentPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateEnvironment"""
+    """Autogenerated return type of UpdateEnvironment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "environment")
@@ -21944,7 +21944,7 @@ class UpdateEnvironmentPayload(sgqlc.types.Type):
 
 
 class UpdateIpAllowListEnabledSettingPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateIpAllowListEnabledSetting"""
+    """Autogenerated return type of UpdateIpAllowListEnabledSetting."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "owner")
@@ -21956,7 +21956,7 @@ class UpdateIpAllowListEnabledSettingPayload(sgqlc.types.Type):
 
 
 class UpdateIpAllowListEntryPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateIpAllowListEntry"""
+    """Autogenerated return type of UpdateIpAllowListEntry."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "ip_allow_list_entry")
@@ -21969,7 +21969,7 @@ class UpdateIpAllowListEntryPayload(sgqlc.types.Type):
 
 class UpdateIpAllowListForInstalledAppsEnabledSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateIpAllowListForInstalledAppsEnabledSetting
+    UpdateIpAllowListForInstalledAppsEnabledSetting.
     """
 
     __schema__ = github_schema
@@ -21982,7 +21982,7 @@ class UpdateIpAllowListForInstalledAppsEnabledSettingPayload(sgqlc.types.Type):
 
 
 class UpdateIssueCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateIssueComment"""
+    """Autogenerated return type of UpdateIssueComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "issue_comment")
@@ -21994,7 +21994,7 @@ class UpdateIssueCommentPayload(sgqlc.types.Type):
 
 
 class UpdateIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateIssue"""
+    """Autogenerated return type of UpdateIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "issue")
@@ -22009,7 +22009,7 @@ class UpdateIssuePayload(sgqlc.types.Type):
 
 
 class UpdateNotificationRestrictionSettingPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateNotificationRestrictionSetting"""
+    """Autogenerated return type of UpdateNotificationRestrictionSetting."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "owner")
@@ -22022,7 +22022,7 @@ class UpdateNotificationRestrictionSettingPayload(sgqlc.types.Type):
 
 class UpdateOrganizationAllowPrivateRepositoryForkingSettingPayload(sgqlc.types.Type):
     """Autogenerated return type of
-    UpdateOrganizationAllowPrivateRepositoryForkingSetting
+    UpdateOrganizationAllowPrivateRepositoryForkingSetting.
     """
 
     __schema__ = github_schema
@@ -22042,7 +22042,7 @@ class UpdateOrganizationAllowPrivateRepositoryForkingSettingPayload(sgqlc.types.
 
 
 class UpdateProjectCardPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateProjectCard"""
+    """Autogenerated return type of UpdateProjectCard."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_card")
@@ -22054,7 +22054,7 @@ class UpdateProjectCardPayload(sgqlc.types.Type):
 
 
 class UpdateProjectColumnPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateProjectColumn"""
+    """Autogenerated return type of UpdateProjectColumn."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_column")
@@ -22066,7 +22066,7 @@ class UpdateProjectColumnPayload(sgqlc.types.Type):
 
 
 class UpdateProjectDraftIssuePayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateProjectDraftIssue"""
+    """Autogenerated return type of UpdateProjectDraftIssue."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "draft_issue")
@@ -22078,7 +22078,7 @@ class UpdateProjectDraftIssuePayload(sgqlc.types.Type):
 
 
 class UpdateProjectNextItemFieldPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateProjectNextItemField"""
+    """Autogenerated return type of UpdateProjectNextItemField."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_next_item")
@@ -22090,7 +22090,7 @@ class UpdateProjectNextItemFieldPayload(sgqlc.types.Type):
 
 
 class UpdateProjectNextPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateProjectNext"""
+    """Autogenerated return type of UpdateProjectNext."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project_next")
@@ -22102,7 +22102,7 @@ class UpdateProjectNextPayload(sgqlc.types.Type):
 
 
 class UpdateProjectPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateProject"""
+    """Autogenerated return type of UpdateProject."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "project")
@@ -22114,7 +22114,7 @@ class UpdateProjectPayload(sgqlc.types.Type):
 
 
 class UpdatePullRequestBranchPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdatePullRequestBranch"""
+    """Autogenerated return type of UpdatePullRequestBranch."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request")
@@ -22126,7 +22126,7 @@ class UpdatePullRequestBranchPayload(sgqlc.types.Type):
 
 
 class UpdatePullRequestPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdatePullRequest"""
+    """Autogenerated return type of UpdatePullRequest."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "client_mutation_id", "pull_request")
@@ -22141,7 +22141,7 @@ class UpdatePullRequestPayload(sgqlc.types.Type):
 
 
 class UpdatePullRequestReviewCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdatePullRequestReviewComment"""
+    """Autogenerated return type of UpdatePullRequestReviewComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review_comment")
@@ -22153,7 +22153,7 @@ class UpdatePullRequestReviewCommentPayload(sgqlc.types.Type):
 
 
 class UpdatePullRequestReviewPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdatePullRequestReview"""
+    """Autogenerated return type of UpdatePullRequestReview."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "pull_request_review")
@@ -22165,7 +22165,7 @@ class UpdatePullRequestReviewPayload(sgqlc.types.Type):
 
 
 class UpdateRefPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateRef"""
+    """Autogenerated return type of UpdateRef."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "ref")
@@ -22177,7 +22177,7 @@ class UpdateRefPayload(sgqlc.types.Type):
 
 
 class UpdateRepositoryPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateRepository"""
+    """Autogenerated return type of UpdateRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository")
@@ -22189,7 +22189,7 @@ class UpdateRepositoryPayload(sgqlc.types.Type):
 
 
 class UpdateSponsorshipPreferencesPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateSponsorshipPreferences"""
+    """Autogenerated return type of UpdateSponsorshipPreferences."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "sponsorship")
@@ -22201,7 +22201,7 @@ class UpdateSponsorshipPreferencesPayload(sgqlc.types.Type):
 
 
 class UpdateSubscriptionPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateSubscription"""
+    """Autogenerated return type of UpdateSubscription."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "subscribable")
@@ -22213,7 +22213,7 @@ class UpdateSubscriptionPayload(sgqlc.types.Type):
 
 
 class UpdateTeamDiscussionCommentPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateTeamDiscussionComment"""
+    """Autogenerated return type of UpdateTeamDiscussionComment."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "team_discussion_comment")
@@ -22225,7 +22225,7 @@ class UpdateTeamDiscussionCommentPayload(sgqlc.types.Type):
 
 
 class UpdateTeamDiscussionPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateTeamDiscussion"""
+    """Autogenerated return type of UpdateTeamDiscussion."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "team_discussion")
@@ -22237,7 +22237,7 @@ class UpdateTeamDiscussionPayload(sgqlc.types.Type):
 
 
 class UpdateTeamsRepositoryPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateTeamsRepository"""
+    """Autogenerated return type of UpdateTeamsRepository."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "repository", "teams")
@@ -22252,7 +22252,7 @@ class UpdateTeamsRepositoryPayload(sgqlc.types.Type):
 
 
 class UpdateTopicsPayload(sgqlc.types.Type):
-    """Autogenerated return type of UpdateTopics"""
+    """Autogenerated return type of UpdateTopics."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "invalid_topic_names", "repository")
@@ -22327,7 +22327,7 @@ class UserEdge(sgqlc.types.Type):
 
 
 class UserEmailMetadata(sgqlc.types.Type):
-    """Email attributes from External Identity"""
+    """Email attributes from External Identity."""
 
     __schema__ = github_schema
     __field_names__ = ("primary", "type", "value")
@@ -22402,7 +22402,7 @@ class VerifiableDomainEdge(sgqlc.types.Type):
 
 
 class VerifyVerifiableDomainPayload(sgqlc.types.Type):
-    """Autogenerated return type of VerifyVerifiableDomain"""
+    """Autogenerated return type of VerifyVerifiableDomain."""
 
     __schema__ = github_schema
     __field_names__ = ("client_mutation_id", "domain")
@@ -22484,10 +22484,10 @@ class App(sgqlc.types.Type, Node):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        IpAllowListEntryOrder, graphql_name="orderBy", default={"field": "ALLOW_LIST_VALUE", "direction": "ASC"}
+                        IpAllowListEntryOrder, graphql_name="orderBy", default={"field": "ALLOW_LIST_VALUE", "direction": "ASC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """The IP addresses of the app.
@@ -22847,7 +22847,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of conflicts matching branches protection rule and other
@@ -22872,7 +22872,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of actors able to force push for this branch protection
@@ -22897,7 +22897,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of actors able to bypass PRs for this branch protection
@@ -22937,7 +22937,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Repository refs that are protected by this rule
@@ -22965,7 +22965,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list push allowances for this branch protection rule.
@@ -22992,7 +22992,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
     """
 
     required_status_checks = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(RequiredStatusCheckDescription)), graphql_name="requiredStatusChecks"
+        sgqlc.types.list_of(sgqlc.types.non_null(RequiredStatusCheckDescription)), graphql_name="requiredStatusChecks",
     )
     """List of required status checks that must pass for commits to be
     accepted to matching branches.
@@ -23034,7 +23034,7 @@ class BranchProtectionRule(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list review dismissal allowances for this branch protection
@@ -23084,7 +23084,7 @@ class BypassPullRequestAllowance(sgqlc.types.Type, Node):
 
 
 class CWE(sgqlc.types.Type, Node):
-    """A common weakness enumeration"""
+    """A common weakness enumeration."""
 
     __schema__ = github_schema
     __field_names__ = ("cwe_id", "description", "name")
@@ -23131,7 +23131,7 @@ class CheckRun(sgqlc.types.Type, Node, UniformResourceLocatable, RequirableByPul
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The check run's annotations
@@ -23197,7 +23197,7 @@ class CheckRun(sgqlc.types.Type, Node, UniformResourceLocatable, RequirableByPul
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("number", sgqlc.types.Arg(Int, graphql_name="number", default=None)),
-            )
+            ),
         ),
     )
     """The check run's steps
@@ -23261,7 +23261,7 @@ class CheckSuite(sgqlc.types.Type, Node):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("filter_by", sgqlc.types.Arg(CheckRunFilter, graphql_name="filterBy", default=None)),
-            )
+            ),
         ),
     )
     """The check runs associated with a check suite.
@@ -23310,7 +23310,7 @@ class CheckSuite(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of open pull requests matching the check suite.
@@ -23379,7 +23379,7 @@ class ClosedEvent(sgqlc.types.Type, Node, UniformResourceLocatable):
 
 
 class CodeOfConduct(sgqlc.types.Type, Node):
-    """The Code of Conduct for a repository"""
+    """The Code of Conduct for a repository."""
 
     __schema__ = github_schema
     __field_names__ = ("body", "key", "name", "resource_path", "url")
@@ -23475,7 +23475,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                     "order_by",
                     sgqlc.types.Arg(PullRequestOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "ASC"}),
                 ),
-            )
+            ),
         ),
     )
     """The merged Pull Request that introduced the commit to the
@@ -23512,7 +23512,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The list of authors for this commit based on the git author and
@@ -23555,7 +23555,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("filter_by", sgqlc.types.Arg(CheckSuiteFilter, graphql_name="filterBy", default=None)),
-            )
+            ),
         ),
     )
     """The check suites associated with a commit.
@@ -23581,7 +23581,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Comments made on the commit.
@@ -23622,7 +23622,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The deployments associated with a commit.
@@ -23667,7 +23667,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("author", sgqlc.types.Arg(CommitAuthor, graphql_name="author", default=None)),
                 ("since", sgqlc.types.Arg(GitTimestamp, graphql_name="since", default=None)),
                 ("until", sgqlc.types.Arg(GitTimestamp, graphql_name="until", default=None)),
-            )
+            ),
         ),
     )
     """The linear commit history starting from (and including) this
@@ -23718,7 +23718,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The parents of a commit.
@@ -23754,7 +23754,7 @@ class Commit(sgqlc.types.Type, Node, GitObject, Subscribable, UniformResourceLoc
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Returns a list of all submodules in this repository as of this
@@ -23829,7 +23829,7 @@ class CommitCommentThread(sgqlc.types.Type, Node, RepositoryNode):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The comments that exist in this thread.
@@ -24040,7 +24040,7 @@ class DemilestonedEvent(sgqlc.types.Type, Node):
 
 
 class DependabotUpdate(sgqlc.types.Type, RepositoryNode):
-    """A Dependabot Update for a dependency in a repository"""
+    """A Dependabot Update for a dependency in a repository."""
 
     __schema__ = github_schema
     __field_names__ = ("error", "pull_request")
@@ -24174,7 +24174,7 @@ class Deployment(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of statuses associated with the deployment.
@@ -24236,7 +24236,7 @@ class DeploymentReview(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The environments approved or rejected
@@ -24312,7 +24312,7 @@ class DisconnectedEvent(sgqlc.types.Type, Node):
 
 
 class Discussion(
-    sgqlc.types.Type, Comment, Updatable, Deletable, Labelable, Lockable, RepositoryNode, Subscribable, Reactable, Votable, Node
+    sgqlc.types.Type, Comment, Updatable, Deletable, Labelable, Lockable, RepositoryNode, Subscribable, Reactable, Votable, Node,
 ):
     """A discussion in a repository."""
 
@@ -24350,7 +24350,7 @@ class Discussion(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The replies to the discussion.
@@ -24443,7 +24443,7 @@ class DiscussionComment(sgqlc.types.Type, Comment, Deletable, Minimizable, Updat
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The threaded replies to this comment.
@@ -24494,10 +24494,10 @@ class DiscussionPoll(sgqlc.types.Type, Node):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        DiscussionPollOptionOrder, graphql_name="orderBy", default={"field": "AUTHORED_ORDER", "direction": "ASC"}
+                        DiscussionPollOptionOrder, graphql_name="orderBy", default={"field": "AUTHORED_ORDER", "direction": "ASC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """The options for this poll.
@@ -24571,7 +24571,7 @@ class DraftIssue(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users to assigned to this draft issue.
@@ -24651,7 +24651,7 @@ class Enterprise(sgqlc.types.Type, Node):
     """
 
     billing_info = sgqlc.types.Field(EnterpriseBillingInfo, graphql_name="billingInfo")
-    """Enterprise billing information visible to enterprise billing
+    """Enterprise billing information visible to enterprise billing
     managers.
     """
 
@@ -24690,7 +24690,7 @@ class Enterprise(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users who are members of this enterprise.
@@ -24730,7 +24730,7 @@ class Enterprise(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of organizations that belong to this enterprise.
@@ -24834,7 +24834,7 @@ class EnterpriseIdentityProvider(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """ExternalIdentities provisioned by this identity provider.
@@ -24924,14 +24924,14 @@ class EnterpriseServerInstallation(sgqlc.types.Type, Node):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        EnterpriseServerUserAccountOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"}
+                        EnterpriseServerUserAccountOrder, graphql_name="orderBy", default={"field": "LOGIN", "direction": "ASC"},
                     ),
                 ),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """User accounts on this Enterprise Server installation.
@@ -24966,7 +24966,7 @@ class EnterpriseServerInstallation(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """User accounts uploads for the Enterprise Server installation.
@@ -25012,14 +25012,14 @@ class EnterpriseServerUserAccount(sgqlc.types.Type, Node):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        EnterpriseServerUserAccountEmailOrder, graphql_name="orderBy", default={"field": "EMAIL", "direction": "ASC"}
+                        EnterpriseServerUserAccountEmailOrder, graphql_name="orderBy", default={"field": "EMAIL", "direction": "ASC"},
                     ),
                 ),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """User emails belonging to this user account.
@@ -25038,7 +25038,7 @@ class EnterpriseServerUserAccount(sgqlc.types.Type, Node):
     """
 
     enterprise_server_installation = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseServerInstallation), graphql_name="enterpriseServerInstallation"
+        sgqlc.types.non_null(EnterpriseServerInstallation), graphql_name="enterpriseServerInstallation",
     )
     """The Enterprise Server installation on which this user account
     exists.
@@ -25108,7 +25108,7 @@ class EnterpriseServerUserAccountsUpload(sgqlc.types.Type, Node):
     """The enterprise to which this upload belongs."""
 
     enterprise_server_installation = sgqlc.types.Field(
-        sgqlc.types.non_null(EnterpriseServerInstallation), graphql_name="enterpriseServerInstallation"
+        sgqlc.types.non_null(EnterpriseServerInstallation), graphql_name="enterpriseServerInstallation",
     )
     """The Enterprise Server installation for which this upload was
     generated.
@@ -25152,7 +25152,7 @@ class EnterpriseUserAccount(sgqlc.types.Type, Actor, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of enterprise organizations this user is a member of.
@@ -25200,7 +25200,7 @@ class Environment(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The protection rules defined for this environment
@@ -25242,7 +25242,7 @@ class ExternalIdentity(sgqlc.types.Type, Node):
 
 
 class GenericHovercardContext(sgqlc.types.Type, HovercardContext):
-    """A generic hovercard context with a message and icon"""
+    """A generic hovercard context with a message and icon."""
 
     __schema__ = github_schema
     __field_names__ = ()
@@ -25274,7 +25274,7 @@ class Gist(sgqlc.types.Type, Node, Starrable, UniformResourceLocatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of comments associated with the gist
@@ -25302,7 +25302,7 @@ class Gist(sgqlc.types.Type, Node, Starrable, UniformResourceLocatable):
             (
                 ("limit", sgqlc.types.Arg(Int, graphql_name="limit", default=10)),
                 ("oid", sgqlc.types.Arg(GitObjectID, graphql_name="oid", default=None)),
-            )
+            ),
         ),
     )
     """The files in this gist.
@@ -25324,7 +25324,7 @@ class Gist(sgqlc.types.Type, Node, Starrable, UniformResourceLocatable):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(GistOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list of forks associated with the gist
@@ -25535,7 +25535,7 @@ class Issue(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of comments associated with the Issue.
@@ -25556,7 +25556,7 @@ class Issue(
         sgqlc.types.non_null(Hovercard),
         graphql_name="hovercard",
         args=sgqlc.types.ArgDict(
-            (("include_notification_contexts", sgqlc.types.Arg(Boolean, graphql_name="includeNotificationContexts", default=True)),)
+            (("include_notification_contexts", sgqlc.types.Arg(Boolean, graphql_name="includeNotificationContexts", default=True)),),
         ),
     )
     """The hovercard information for this issue
@@ -25590,7 +25590,7 @@ class Issue(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of Users that are participating in the Issue conversation.
@@ -25617,10 +25617,10 @@ class Issue(
                 (
                     "archived_states",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED")
+                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED"),
                     ),
                 ),
-            )
+            ),
         ),
     )
     """List of project cards associated with this issue.
@@ -25648,7 +25648,7 @@ class Issue(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of project (beta) items associated with this issue.
@@ -25681,14 +25681,14 @@ class Issue(
                 (
                     "item_types",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(sgqlc.types.non_null(IssueTimelineItemsItemType)), graphql_name="itemTypes", default=None
+                        sgqlc.types.list_of(sgqlc.types.non_null(IssueTimelineItemsItemType)), graphql_name="itemTypes", default=None,
                     ),
                 ),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of events, comments, commits, etc. associated with the
@@ -25724,7 +25724,7 @@ class Issue(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issues that track this issue
@@ -25748,7 +25748,7 @@ class Issue(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issues tracked inside the current issue
@@ -25767,7 +25767,7 @@ class Issue(
         sgqlc.types.non_null(Int),
         graphql_name="trackedIssuesCount",
         args=sgqlc.types.ArgDict(
-            (("states", sgqlc.types.Arg(sgqlc.types.list_of(TrackedIssueStates), graphql_name="states", default=None)),)
+            (("states", sgqlc.types.Arg(sgqlc.types.list_of(TrackedIssueStates), graphql_name="states", default=None)),),
         ),
     )
     """The number of tracked issues for this issue
@@ -25850,7 +25850,7 @@ class Label(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issues associated with this label.
@@ -25893,7 +25893,7 @@ class Label(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pull requests associated with this label.
@@ -25962,7 +25962,7 @@ class Language(sgqlc.types.Type, Node):
 
 
 class License(sgqlc.types.Type, Node):
-    """A repository's open source license"""
+    """A repository's open source license."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -26292,7 +26292,7 @@ class MarketplaceListing(sgqlc.types.Type, Node):
     """
 
     is_verification_pending_from_unverified = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="isVerificationPendingFromUnverified"
+        sgqlc.types.non_null(Boolean), graphql_name="isVerificationPendingFromUnverified",
     )
     """Whether this unverified listing has been submitted for review from
     GitHub for approval to be verified in the Marketplace.
@@ -26309,7 +26309,7 @@ class MarketplaceListing(sgqlc.types.Type, Node):
     """
 
     logo_url = sgqlc.types.Field(
-        URI, graphql_name="logoUrl", args=sgqlc.types.ArgDict((("size", sgqlc.types.Arg(Int, graphql_name="size", default=400)),))
+        URI, graphql_name="logoUrl", args=sgqlc.types.ArgDict((("size", sgqlc.types.Arg(Int, graphql_name="size", default=400)),)),
     )
     """URL for the listing's logo image.
 
@@ -26414,7 +26414,7 @@ class MarketplaceListing(sgqlc.types.Type, Node):
     """
 
     viewer_has_purchased_for_all_organizations = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="viewerHasPurchasedForAllOrganizations"
+        sgqlc.types.non_null(Boolean), graphql_name="viewerHasPurchasedForAllOrganizations",
     )
     """Indicates if the current user has purchased a subscription to this
     Marketplace listing for all of the organizations the user owns.
@@ -26544,7 +26544,7 @@ class Milestone(sgqlc.types.Type, Node, Closable, UniformResourceLocatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issues associated with the milestone.
@@ -26590,7 +26590,7 @@ class Milestone(sgqlc.types.Type, Node, Closable, UniformResourceLocatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pull requests associated with the milestone.
@@ -26687,7 +26687,7 @@ class OIDCProvider(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """ExternalIdentities provisioned by this identity provider.
@@ -26734,7 +26734,7 @@ class OauthApplicationCreateAuditEntry(sgqlc.types.Type, Node, AuditEntry, Oauth
 
 
 class OrgAddBillingManagerAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData):
-    """Audit log entry for a org.add_billing_manager"""
+    """Audit log entry for a org.add_billing_manager."""
 
     __schema__ = github_schema
     __field_names__ = ("invitation_email",)
@@ -26745,7 +26745,7 @@ class OrgAddBillingManagerAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organiz
 
 
 class OrgAddMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData):
-    """Audit log entry for a org.add_member"""
+    """Audit log entry for a org.add_member."""
 
     __schema__ = github_schema
     __field_names__ = ("permission",)
@@ -26754,7 +26754,7 @@ class OrgAddMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAud
 
 
 class OrgBlockUserAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData):
-    """Audit log entry for a org.block_user"""
+    """Audit log entry for a org.block_user."""
 
     __schema__ = github_schema
     __field_names__ = ("blocked_user", "blocked_user_name", "blocked_user_resource_path", "blocked_user_url")
@@ -26913,7 +26913,7 @@ class OrgRemoveMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organization
     __schema__ = github_schema
     __field_names__ = ("membership_types", "reason")
     membership_types = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(OrgRemoveMemberAuditEntryMembershipType)), graphql_name="membershipTypes"
+        sgqlc.types.list_of(sgqlc.types.non_null(OrgRemoveMemberAuditEntryMembershipType)), graphql_name="membershipTypes",
     )
     """The types of membership the member has with the organization."""
 
@@ -26927,7 +26927,7 @@ class OrgRemoveOutsideCollaboratorAuditEntry(sgqlc.types.Type, Node, AuditEntry,
     __schema__ = github_schema
     __field_names__ = ("membership_types", "reason")
     membership_types = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(OrgRemoveOutsideCollaboratorAuditEntryMembershipType)), graphql_name="membershipTypes"
+        sgqlc.types.list_of(sgqlc.types.non_null(OrgRemoveOutsideCollaboratorAuditEntryMembershipType)), graphql_name="membershipTypes",
     )
     """The types of membership the outside collaborator has with the
     organization.
@@ -26959,7 +26959,7 @@ class OrgRestoreMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organizatio
     """The number of issue assignments for the restored member."""
 
     restored_memberships = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("OrgRestoreMemberAuditEntryMembership")), graphql_name="restoredMemberships"
+        sgqlc.types.list_of(sgqlc.types.non_null("OrgRestoreMemberAuditEntryMembership")), graphql_name="restoredMemberships",
     )
     """Restored organization membership objects."""
 
@@ -26978,7 +26978,7 @@ class OrgRestoreMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organizatio
 
 class OrgRestoreMemberMembershipOrganizationAuditEntryData(sgqlc.types.Type, OrganizationAuditEntryData):
     """Metadata for an organization membership for org.restore_member
-    actions
+    actions.
     """
 
     __schema__ = github_schema
@@ -26987,7 +26987,7 @@ class OrgRestoreMemberMembershipOrganizationAuditEntryData(sgqlc.types.Type, Org
 
 class OrgRestoreMemberMembershipRepositoryAuditEntryData(sgqlc.types.Type, RepositoryAuditEntryData):
     """Metadata for a repository membership for org.restore_member
-    actions
+    actions.
     """
 
     __schema__ = github_schema
@@ -26995,14 +26995,14 @@ class OrgRestoreMemberMembershipRepositoryAuditEntryData(sgqlc.types.Type, Repos
 
 
 class OrgRestoreMemberMembershipTeamAuditEntryData(sgqlc.types.Type, TeamAuditEntryData):
-    """Metadata for a team membership for org.restore_member actions"""
+    """Metadata for a team membership for org.restore_member actions."""
 
     __schema__ = github_schema
     __field_names__ = ()
 
 
 class OrgUnblockUserAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData):
-    """Audit log entry for a org.unblock_user"""
+    """Audit log entry for a org.unblock_user."""
 
     __schema__ = github_schema
     __field_names__ = ("blocked_user", "blocked_user_name", "blocked_user_resource_path", "blocked_user_url")
@@ -27020,7 +27020,7 @@ class OrgUnblockUserAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationA
 
 
 class OrgUpdateDefaultRepositoryPermissionAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData):
-    """Audit log entry for a org.update_default_repository_permission"""
+    """Audit log entry for a org.update_default_repository_permission."""
 
     __schema__ = github_schema
     __field_names__ = ("permission", "permission_was")
@@ -27067,7 +27067,7 @@ class OrgUpdateMemberRepositoryInvitationPermissionAuditEntry(sgqlc.types.Type, 
     __schema__ = github_schema
     __field_names__ = ("can_invite_outside_collaborators_to_repositories",)
     can_invite_outside_collaborators_to_repositories = sgqlc.types.Field(
-        Boolean, graphql_name="canInviteOutsideCollaboratorsToRepositories"
+        Boolean, graphql_name="canInviteOutsideCollaboratorsToRepositories",
     )
     """Can outside collaborators be invited to repositories in the
     organization.
@@ -27140,7 +27140,7 @@ class Organization(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("order_by", sgqlc.types.Arg(AuditLogOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "DESC"})),
-            )
+            ),
         ),
     )
     """Audit log entries of the organization
@@ -27186,7 +27186,7 @@ class Organization(
                     "order_by",
                     sgqlc.types.Arg(VerifiableDomainOrder, graphql_name="orderBy", default={"field": "DOMAIN", "direction": "ASC"}),
                 ),
-            )
+            ),
         ),
     )
     """A list of domains owned by the organization.
@@ -27223,7 +27223,7 @@ class Organization(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of owners of the organization's enterprise account.
@@ -27248,7 +27248,7 @@ class Organization(
     """The interaction ability settings for this organization."""
 
     ip_allow_list_enabled_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(IpAllowListEnabledSettingValue), graphql_name="ipAllowListEnabledSetting"
+        sgqlc.types.non_null(IpAllowListEnabledSettingValue), graphql_name="ipAllowListEnabledSetting",
     )
     """The setting value for whether the organization has an IP allow
     list enabled.
@@ -27266,10 +27266,10 @@ class Organization(
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        IpAllowListEntryOrder, graphql_name="orderBy", default={"field": "ALLOW_LIST_VALUE", "direction": "ASC"}
+                        IpAllowListEntryOrder, graphql_name="orderBy", default={"field": "ALLOW_LIST_VALUE", "direction": "ASC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """The IP addresses that are allowed to access resources owned by the
@@ -27289,7 +27289,7 @@ class Organization(
     """
 
     ip_allow_list_for_installed_apps_enabled_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(IpAllowListForInstalledAppsEnabledSettingValue), graphql_name="ipAllowListForInstalledAppsEnabledSetting"
+        sgqlc.types.non_null(IpAllowListForInstalledAppsEnabledSettingValue), graphql_name="ipAllowListForInstalledAppsEnabledSetting",
     )
     """The setting value for whether the organization has IP allow list
     configuration for installed GitHub Apps enabled.
@@ -27301,7 +27301,7 @@ class Organization(
     """
 
     members_can_fork_private_repositories = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="membersCanForkPrivateRepositories"
+        sgqlc.types.non_null(Boolean), graphql_name="membersCanForkPrivateRepositories",
     )
     """Members can fork private repositories in this organization"""
 
@@ -27314,7 +27314,7 @@ class Organization(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users who are members of this organization.
@@ -27336,7 +27336,7 @@ class Organization(
     """The HTTP URL creating a new team"""
 
     notification_delivery_restriction_enabled_setting = sgqlc.types.Field(
-        sgqlc.types.non_null(NotificationRestrictionSettingValue), graphql_name="notificationDeliveryRestrictionEnabledSetting"
+        sgqlc.types.non_null(NotificationRestrictionSettingValue), graphql_name="notificationDeliveryRestrictionEnabledSetting",
     )
     """Indicates if email notification delivery for this organization is
     restricted to verified or approved domains.
@@ -27354,7 +27354,7 @@ class Organization(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users who have been invited to join this organization.
@@ -27384,7 +27384,7 @@ class Organization(
                     "order_by",
                     sgqlc.types.Arg(RepositoryMigrationOrder, graphql_name="orderBy", default={"field": "CREATED_AT", "direction": "ASC"}),
                 ),
-            )
+            ),
         ),
     )
     """A list of all repository migrations for this organization.
@@ -27445,7 +27445,7 @@ class Organization(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of teams in this organization.
@@ -27503,7 +27503,7 @@ class Organization(
 
 class OrganizationIdentityProvider(sgqlc.types.Type, Node):
     """An Identity Provider configured to provision SAML and SCIM
-    identities for Organizations
+    identities for Organizations.
     """
 
     __schema__ = github_schema
@@ -27525,7 +27525,7 @@ class OrganizationIdentityProvider(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """External Identities provisioned by this Identity Provider
@@ -27594,7 +27594,7 @@ class OrganizationInvitation(sgqlc.types.Type, Node):
 
 
 class OrganizationTeamsHovercardContext(sgqlc.types.Type, HovercardContext):
-    """An organization teams hovercard context"""
+    """An organization teams hovercard context."""
 
     __schema__ = github_schema
     __field_names__ = ("relevant_teams", "teams_resource_path", "teams_url", "total_team_count")
@@ -27607,7 +27607,7 @@ class OrganizationTeamsHovercardContext(sgqlc.types.Type, HovercardContext):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Teams in this organization the user is a member of that are
@@ -27634,7 +27634,7 @@ class OrganizationTeamsHovercardContext(sgqlc.types.Type, HovercardContext):
 
 
 class OrganizationsHovercardContext(sgqlc.types.Type, HovercardContext):
-    """An organization list hovercard context"""
+    """An organization list hovercard context."""
 
     __schema__ = github_schema
     __field_names__ = ("relevant_organizations", "total_organization_count")
@@ -27647,7 +27647,7 @@ class OrganizationsHovercardContext(sgqlc.types.Type, HovercardContext):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Organizations this user is a member of that are relevant
@@ -27711,7 +27711,7 @@ class Package(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """list of versions for this package
@@ -27791,7 +27791,7 @@ class PackageVersion(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of files associated with this package version
@@ -27859,7 +27859,7 @@ class PinnedDiscussion(sgqlc.types.Type, Node, RepositoryNode):
     """The discussion that was pinned."""
 
     gradient_stop_colors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="gradientStopColors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="gradientStopColors",
     )
     """Color stops of the chosen gradient"""
 
@@ -27910,7 +27910,7 @@ class PinnedIssue(sgqlc.types.Type, Node):
 
 
 class PrivateRepositoryForkingDisableAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, EnterpriseAuditEntryData, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, EnterpriseAuditEntryData, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a private_repository_forking.disable event."""
 
@@ -27919,7 +27919,7 @@ class PrivateRepositoryForkingDisableAuditEntry(
 
 
 class PrivateRepositoryForkingEnableAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, EnterpriseAuditEntryData, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, EnterpriseAuditEntryData, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a private_repository_forking.enable event."""
 
@@ -27965,7 +27965,7 @@ class Project(sgqlc.types.Type, Node, Closable, Updatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of columns in the project
@@ -28012,10 +28012,10 @@ class Project(sgqlc.types.Type, Node, Closable, Updatable):
                 (
                     "archived_states",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED")
+                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED"),
                     ),
                 ),
-            )
+            ),
         ),
     )
     """List of pending cards in this project
@@ -28126,10 +28126,10 @@ class ProjectColumn(sgqlc.types.Type, Node):
                 (
                     "archived_states",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED")
+                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED"),
                     ),
                 ),
-            )
+            ),
         ),
     )
     """List of cards in the column
@@ -28217,7 +28217,7 @@ class ProjectNext(sgqlc.types.Type, Node, Closable, Updatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of fields in the project
@@ -28241,7 +28241,7 @@ class ProjectNext(sgqlc.types.Type, Node, Closable, Updatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of items in the project
@@ -28274,7 +28274,7 @@ class ProjectNext(sgqlc.types.Type, Node, Closable, Updatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The repositories the project is linked to.
@@ -28313,7 +28313,7 @@ class ProjectNext(sgqlc.types.Type, Node, Closable, Updatable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of views in the project
@@ -28373,7 +28373,7 @@ class ProjectNextItem(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of field values
@@ -28471,7 +28471,7 @@ class ProjectView(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The view's filtered items.
@@ -28673,7 +28673,7 @@ class PullRequest(
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(IssueOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """List of issues that were may be closed by this pull request
@@ -28702,7 +28702,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of comments associated with the pull request.
@@ -28728,7 +28728,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of commits present in this pull request's head branch not
@@ -28756,7 +28756,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Lists the files changed within this pull request.
@@ -28796,7 +28796,7 @@ class PullRequest(
         sgqlc.types.non_null(Hovercard),
         graphql_name="hovercard",
         args=sgqlc.types.ArgDict(
-            (("include_notification_contexts", sgqlc.types.Arg(Boolean, graphql_name="includeNotificationContexts", default=True)),)
+            (("include_notification_contexts", sgqlc.types.Arg(Boolean, graphql_name="includeNotificationContexts", default=True)),),
         ),
     )
     """The hovercard information for this issue
@@ -28826,7 +28826,7 @@ class PullRequest(
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("writers_only", sgqlc.types.Arg(Boolean, graphql_name="writersOnly", default=False)),
-            )
+            ),
         ),
     )
     """A list of latest reviews per user associated with the pull
@@ -28853,7 +28853,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of latest reviews per user associated with the pull request
@@ -28909,7 +28909,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of Users that are participating in the Pull Request
@@ -28948,10 +28948,10 @@ class PullRequest(
                 (
                     "archived_states",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED")
+                        sgqlc.types.list_of(ProjectCardArchivedState), graphql_name="archivedStates", default=("ARCHIVED", "NOT_ARCHIVED"),
                     ),
                 ),
-            )
+            ),
         ),
     )
     """List of project cards associated with this pull request.
@@ -28979,7 +28979,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of project (beta) items associated with this pull request.
@@ -29016,7 +29016,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of review requests associated with the pull request.
@@ -29040,7 +29040,7 @@ class PullRequest(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The list of all review threads for this pull request.
@@ -29069,7 +29069,7 @@ class PullRequest(
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(PullRequestReviewState)), graphql_name="states", default=None),
                 ),
                 ("author", sgqlc.types.Arg(String, graphql_name="author", default=None)),
-            )
+            ),
         ),
     )
     """A list of reviews associated with the pull request.
@@ -29105,14 +29105,14 @@ class PullRequest(
                 (
                     "item_types",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(sgqlc.types.non_null(PullRequestTimelineItemsItemType)), graphql_name="itemTypes", default=None
+                        sgqlc.types.list_of(sgqlc.types.non_null(PullRequestTimelineItemsItemType)), graphql_name="itemTypes", default=None,
                     ),
                 ),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of events, comments, commits, etc. associated with the pull
@@ -29217,7 +29217,7 @@ class PullRequestCommitCommentThread(sgqlc.types.Type, RepositoryNode, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The comments that exist in this thread.
@@ -29276,7 +29276,7 @@ class PullRequestReview(sgqlc.types.Type, Node, Comment, Deletable, Updatable, U
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of review comments for the current pull request review.
@@ -29303,7 +29303,7 @@ class PullRequestReview(sgqlc.types.Type, Node, Comment, Deletable, Updatable, U
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of teams that this review was made on behalf of.
@@ -29337,7 +29337,7 @@ class PullRequestReview(sgqlc.types.Type, Node, Comment, Deletable, Updatable, U
 
 
 class PullRequestReviewComment(
-    sgqlc.types.Type, Node, Comment, Deletable, Minimizable, Updatable, UpdatableComment, Reactable, RepositoryNode
+    sgqlc.types.Type, Node, Comment, Deletable, Minimizable, Updatable, UpdatableComment, Reactable, RepositoryNode,
 ):
     """A review comment associated with a given repository pull request."""
 
@@ -29434,7 +29434,7 @@ class PullRequestReviewThread(sgqlc.types.Type, Node):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("skip", sgqlc.types.Arg(Int, graphql_name="skip", default=None)),
-            )
+            ),
         ),
     )
     """A list of pull request comments associated with the thread.
@@ -29600,7 +29600,7 @@ class Ref(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pull requests with this ref as the head ref.
@@ -29728,7 +29728,7 @@ class Release(sgqlc.types.Type, Node, UniformResourceLocatable, Reactable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users mentioned in the release description
@@ -29759,7 +29759,7 @@ class Release(sgqlc.types.Type, Node, UniformResourceLocatable, Reactable):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("name", sgqlc.types.Arg(String, graphql_name="name", default=None)),
-            )
+            ),
         ),
     )
     """List of releases assets which are dependent on this release.
@@ -29871,7 +29871,7 @@ class RemovedFromProjectEvent(sgqlc.types.Type, Node):
 
 
 class RenamedTitleEvent(sgqlc.types.Type, Node):
-    """Represents a 'renamed' event on a given issue or pull request"""
+    """Represents a 'renamed' event on a given issue or pull request."""
 
     __schema__ = github_schema
     __field_names__ = ("actor", "created_at", "current_title", "previous_title", "subject")
@@ -29958,7 +29958,7 @@ class RepoChangeMergeSettingAuditEntry(sgqlc.types.Type, Node, AuditEntry, Repos
 
 
 class RepoConfigDisableAnonymousGitAccessAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a repo.config.disable_anonymous_git_access
     event.
@@ -29969,7 +29969,7 @@ class RepoConfigDisableAnonymousGitAccessAuditEntry(
 
 
 class RepoConfigDisableCollaboratorsOnlyAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a repo.config.disable_collaborators_only
     event.
@@ -29987,7 +29987,7 @@ class RepoConfigDisableContributorsOnlyAuditEntry(sgqlc.types.Type, Node, AuditE
 
 
 class RepoConfigDisableSockpuppetDisallowedAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a repo.config.disable_sockpuppet_disallowed
     event.
@@ -29998,7 +29998,7 @@ class RepoConfigDisableSockpuppetDisallowedAuditEntry(
 
 
 class RepoConfigEnableAnonymousGitAccessAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a repo.config.enable_anonymous_git_access
     event.
@@ -30023,7 +30023,7 @@ class RepoConfigEnableContributorsOnlyAuditEntry(sgqlc.types.Type, Node, AuditEn
 
 
 class RepoConfigEnableSockpuppetDisallowedAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a repo.config.enable_sockpuppet_disallowed
     event.
@@ -30041,7 +30041,7 @@ class RepoConfigLockAnonymousGitAccessAuditEntry(sgqlc.types.Type, Node, AuditEn
 
 
 class RepoConfigUnlockAnonymousGitAccessAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData,
 ):
     """Audit log entry for a repo.config.unlock_anonymous_git_access
     event.
@@ -30085,7 +30085,7 @@ class RepoRemoveMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organizatio
 
 
 class RepoRemoveTopicAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, RepositoryAuditEntryData, OrganizationAuditEntryData, TopicAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, RepositoryAuditEntryData, OrganizationAuditEntryData, TopicAuditEntryData,
 ):
     """Audit log entry for a repo.remove_topic event."""
 
@@ -30187,7 +30187,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users that can be assigned to issues in this repository.
@@ -30218,7 +30218,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of branch protection rules for this repository.
@@ -30260,7 +30260,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of collaborators associated with the repository.
@@ -30288,7 +30288,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of commit comments associated with the repository.
@@ -30326,7 +30326,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of deploy keys that are on this repository.
@@ -30355,7 +30355,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Deployments associated with the repository
@@ -30397,7 +30397,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("filter_by_assignable", sgqlc.types.Arg(Boolean, graphql_name="filterByAssignable", default=False)),
-            )
+            ),
         ),
     )
     """A list of discussion categories that are available in the
@@ -30429,7 +30429,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                     "order_by",
                     sgqlc.types.Arg(DiscussionOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"}),
                 ),
-            )
+            ),
         ),
     )
     """A list of discussions that have been opened in the repository.
@@ -30474,7 +30474,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of environments that are in this repository.
@@ -30503,7 +30503,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 (
                     "owner_affiliations",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR")
+                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR"),
                     ),
                 ),
                 ("is_locked", sgqlc.types.Arg(Boolean, graphql_name="isLocked", default=None)),
@@ -30511,7 +30511,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of direct forked repositories.
@@ -30542,7 +30542,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
     """
 
     funding_links = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(FundingLink))), graphql_name="fundingLinks"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(FundingLink))), graphql_name="fundingLinks",
     )
     """The funding links for this repository"""
 
@@ -30605,7 +30605,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issues that have been opened in the repository.
@@ -30651,7 +30651,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     """A list of labels associated with the repository.
@@ -30681,7 +30681,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(LanguageOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list containing a breakdown of the language composition of the
@@ -30711,7 +30711,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of Users that can be mentioned in the context of the
@@ -30758,7 +30758,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("states", sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(MilestoneState)), graphql_name="states", default=None)),
                 ("order_by", sgqlc.types.Arg(MilestoneOrder, graphql_name="orderBy", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     """A list of milestones associated with the repository.
@@ -30784,7 +30784,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
             (
                 ("oid", sgqlc.types.Arg(GitObjectID, graphql_name="oid", default=None)),
                 ("expression", sgqlc.types.Arg(String, graphql_name="expression", default=None)),
-            )
+            ),
         ),
     )
     """A Git object in the repository
@@ -30808,7 +30808,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of discussions that have been pinned in this repository.
@@ -30832,7 +30832,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pinned issues for this repository.
@@ -30874,7 +30874,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("sort_by", sgqlc.types.Arg(ProjectNextOrderField, graphql_name="sortBy", default="TITLE")),
-            )
+            ),
         ),
     )
     """List of projects (beta) linked to this repository.
@@ -30908,7 +30908,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
     """
 
     pull_request_templates = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(PullRequestTemplate)), graphql_name="pullRequestTemplates"
+        sgqlc.types.list_of(sgqlc.types.non_null(PullRequestTemplate)), graphql_name="pullRequestTemplates",
     )
     """Returns a list of pull request templates associated to the
     repository
@@ -30931,7 +30931,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pull requests that have been opened in the repository.
@@ -30963,7 +30963,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
         Ref,
         graphql_name="ref",
         args=sgqlc.types.ArgDict(
-            (("qualified_name", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="qualifiedName", default=None)),)
+            (("qualified_name", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="qualifiedName", default=None)),),
         ),
     )
     """Fetch a given ref from the repository
@@ -30989,7 +30989,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("ref_prefix", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="refPrefix", default=None)),
                 ("direction", sgqlc.types.Arg(OrderDirection, graphql_name="direction", default=None)),
                 ("order_by", sgqlc.types.Arg(RefOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """Fetch a list of refs from the repository
@@ -31034,7 +31034,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(ReleaseOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """List of releases which are dependent on this repository.
@@ -31059,7 +31059,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of applied repository-topic associations for this
@@ -31098,7 +31098,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Returns a list of all submodules in this repository parsed from
@@ -31144,7 +31144,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
     """
 
     viewer_possible_commit_emails = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="viewerPossibleCommitEmails"
+        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="viewerPossibleCommitEmails",
     )
     """A list of emails this viewer can commit with."""
 
@@ -31160,10 +31160,10 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 (
                     "states",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(sgqlc.types.non_null(RepositoryVulnerabilityAlertState)), graphql_name="states", default=None
+                        sgqlc.types.list_of(sgqlc.types.non_null(RepositoryVulnerabilityAlertState)), graphql_name="states", default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     """A list of vulnerability alerts that are on this repository.
@@ -31189,7 +31189,7 @@ class Repository(sgqlc.types.Type, Node, ProjectOwner, PackageOwner, Subscribabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users watching the repository.
@@ -31491,7 +31491,7 @@ class SavedReply(sgqlc.types.Type, Node):
 
 
 class SecurityAdvisory(sgqlc.types.Type, Node):
-    """A GitHub Security Advisory"""
+    """A GitHub Security Advisory."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -31528,7 +31528,7 @@ class SecurityAdvisory(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """CWEs associated with this Advisory
@@ -31553,7 +31553,7 @@ class SecurityAdvisory(sgqlc.types.Type, Node):
     """The GitHub Security Advisory ID"""
 
     identifiers = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisoryIdentifier))), graphql_name="identifiers"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisoryIdentifier))), graphql_name="identifiers",
     )
     """A list of identifiers for this advisory"""
 
@@ -31570,7 +31570,7 @@ class SecurityAdvisory(sgqlc.types.Type, Node):
     """When the advisory was published"""
 
     references = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisoryReference))), graphql_name="references"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisoryReference))), graphql_name="references",
     )
     """A list of references for this advisory"""
 
@@ -31591,7 +31591,7 @@ class SecurityAdvisory(sgqlc.types.Type, Node):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        SecurityVulnerabilityOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"}
+                        SecurityVulnerabilityOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"},
                     ),
                 ),
                 ("ecosystem", sgqlc.types.Arg(SecurityAdvisoryEcosystem, graphql_name="ecosystem", default=None)),
@@ -31599,7 +31599,7 @@ class SecurityAdvisory(sgqlc.types.Type, Node):
                 (
                     "severities",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisorySeverity)), graphql_name="severities", default=None
+                        sgqlc.types.list_of(sgqlc.types.non_null(SecurityAdvisorySeverity)), graphql_name="severities", default=None,
                     ),
                 ),
                 (
@@ -31614,7 +31614,7 @@ class SecurityAdvisory(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """Vulnerabilities associated with this Advisory
@@ -31742,10 +31742,10 @@ class SponsorsListing(sgqlc.types.Type, Node):
                 (
                     "order_by",
                     sgqlc.types.Arg(
-                        SponsorsTierOrder, graphql_name="orderBy", default={"field": "MONTHLY_PRICE_IN_CENTS", "direction": "ASC"}
+                        SponsorsTierOrder, graphql_name="orderBy", default={"field": "MONTHLY_PRICE_IN_CENTS", "direction": "ASC"},
                     ),
                 ),
-            )
+            ),
         ),
     )
     """The published tiers for this GitHub Sponsors listing.
@@ -31829,7 +31829,7 @@ class SponsorsTier(sgqlc.types.Type, Node):
 
 
 class Sponsorship(sgqlc.types.Type, Node):
-    """A sponsorship relationship between a sponsor and a maintainer"""
+    """A sponsorship relationship between a sponsor and a maintainer."""
 
     __schema__ = github_schema
     __field_names__ = (
@@ -31918,7 +31918,7 @@ class Status(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of status contexts and check runs for this commit.
@@ -31974,7 +31974,7 @@ class StatusCheckRollup(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of status contexts and check runs for this commit.
@@ -31994,12 +31994,12 @@ class StatusCheckRollup(sgqlc.types.Type, Node):
 
 
 class StatusContext(sgqlc.types.Type, RequirableByPullRequest, Node):
-    """Represents an individual commit status context"""
+    """Represents an individual commit status context."""
 
     __schema__ = github_schema
     __field_names__ = ("avatar_url", "commit", "context", "created_at", "creator", "description", "state", "target_url")
     avatar_url = sgqlc.types.Field(
-        URI, graphql_name="avatarUrl", args=sgqlc.types.ArgDict((("size", sgqlc.types.Arg(Int, graphql_name="size", default=40)),))
+        URI, graphql_name="avatarUrl", args=sgqlc.types.ArgDict((("size", sgqlc.types.Arg(Int, graphql_name="size", default=40)),)),
     )
     """The avatar of the OAuth application or the user that created the
     status
@@ -32113,7 +32113,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of teams that are ancestors of this team.
@@ -32129,7 +32129,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
     """
 
     avatar_url = sgqlc.types.Field(
-        URI, graphql_name="avatarUrl", args=sgqlc.types.ArgDict((("size", sgqlc.types.Arg(Int, graphql_name="size", default=400)),))
+        URI, graphql_name="avatarUrl", args=sgqlc.types.ArgDict((("size", sgqlc.types.Arg(Int, graphql_name="size", default=400)),)),
     )
     """A URL pointing to the team's avatar.
 
@@ -32154,7 +32154,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """List of child teams belonging to this team
@@ -32209,7 +32209,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("is_pinned", sgqlc.types.Arg(Boolean, graphql_name="isPinned", default=None)),
                 ("order_by", sgqlc.types.Arg(TeamDiscussionOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list of team discussions.
@@ -32248,7 +32248,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pending invitations for users to this team
@@ -32276,7 +32276,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
                 ("membership", sgqlc.types.Arg(TeamMembershipType, graphql_name="membership", default="ALL")),
                 ("role", sgqlc.types.Arg(TeamMemberRole, graphql_name="role", default=None)),
                 ("order_by", sgqlc.types.Arg(TeamMemberOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list of users who are members of this team.
@@ -32331,7 +32331,7 @@ class Team(sgqlc.types.Type, Node, Subscribable, MemberStatusable):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("order_by", sgqlc.types.Arg(TeamRepositoryOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """A list of repositories this team has access to.
@@ -32386,7 +32386,7 @@ class TeamAddMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, OrganizationAu
 
 
 class TeamAddRepositoryAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData, TeamAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData, TeamAuditEntryData,
 ):
     """Audit log entry for a team.add_repository event."""
 
@@ -32440,7 +32440,7 @@ class TeamChangeParentTeamAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organiz
 
 
 class TeamDiscussion(
-    sgqlc.types.Type, Node, Comment, Deletable, Reactable, Subscribable, UniformResourceLocatable, Updatable, UpdatableComment
+    sgqlc.types.Type, Node, Comment, Deletable, Reactable, Subscribable, UniformResourceLocatable, Updatable, UpdatableComment,
 ):
     """A team discussion."""
 
@@ -32471,7 +32471,7 @@ class TeamDiscussion(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(TeamDiscussionCommentOrder, graphql_name="orderBy", default=None)),
                 ("from_comment", sgqlc.types.Arg(Int, graphql_name="fromComment", default=None)),
-            )
+            ),
         ),
     )
     """A list of comments on this discussion.
@@ -32541,7 +32541,7 @@ class TeamRemoveMemberAuditEntry(sgqlc.types.Type, Node, AuditEntry, Organizatio
 
 
 class TeamRemoveRepositoryAuditEntry(
-    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData, TeamAuditEntryData
+    sgqlc.types.Type, Node, AuditEntry, OrganizationAuditEntryData, RepositoryAuditEntryData, TeamAuditEntryData,
 ):
     """Audit log entry for a team.remove_repository event."""
 
@@ -32583,7 +32583,7 @@ class Topic(sgqlc.types.Type, Node, Starrable):
                 (
                     "owner_affiliations",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR")
+                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR"),
                     ),
                 ),
                 ("is_locked", sgqlc.types.Arg(Boolean, graphql_name="isLocked", default=None)),
@@ -32592,7 +32592,7 @@ class Topic(sgqlc.types.Type, Node, Starrable):
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("sponsorable_only", sgqlc.types.Arg(Boolean, graphql_name="sponsorableOnly", default=False)),
-            )
+            ),
         ),
     )
     """A list of repositories.
@@ -32859,7 +32859,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of commit comments made by this user.
@@ -32888,7 +32888,7 @@ class User(
                 ("organization_id", sgqlc.types.Arg(ID, graphql_name="organizationID", default=None)),
                 ("from_", sgqlc.types.Arg(DateTime, graphql_name="from", default=None)),
                 ("to", sgqlc.types.Arg(DateTime, graphql_name="to", default=None)),
-            )
+            ),
         ),
     )
     """The collection of contributions this user has made to different
@@ -32920,7 +32920,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users the given user is followed by.
@@ -32944,7 +32944,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of users the given user is following.
@@ -32980,7 +32980,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of gist comments made by this user.
@@ -33006,7 +33006,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of the Gists the user has created.
@@ -33083,7 +33083,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issue comments made by this user.
@@ -33113,7 +33113,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of issues associated with this user.
@@ -33171,7 +33171,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of organizations the user belongs to.
@@ -33195,7 +33195,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of public keys associated with this user.
@@ -33227,7 +33227,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of pull requests associated with this user.
@@ -33269,7 +33269,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of repositories that the user recently contributed to.
@@ -33308,7 +33308,7 @@ class User(
                     "order_by",
                     sgqlc.types.Arg(SavedReplyOrder, graphql_name="orderBy", default={"field": "UPDATED_AT", "direction": "DESC"}),
                 ),
-            )
+            ),
         ),
     )
     """Replies this user has saved
@@ -33336,7 +33336,7 @@ class User(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("owned_by_viewer", sgqlc.types.Arg(Boolean, graphql_name="ownedByViewer", default=None)),
                 ("order_by", sgqlc.types.Arg(StarOrder, graphql_name="orderBy", default=None)),
-            )
+            ),
         ),
     )
     """Repositories the user has starred.
@@ -33368,7 +33368,7 @@ class User(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("order_by", sgqlc.types.Arg(sgqlc.types.non_null(RepositoryOrder), graphql_name="orderBy", default=None)),
                 ("since", sgqlc.types.Arg(DateTime, graphql_name="since", default=None)),
-            )
+            ),
         ),
     )
     """Repositories the user has contributed to, ordered by contribution
@@ -33413,7 +33413,7 @@ class User(
                 (
                     "owner_affiliations",
                     sgqlc.types.Arg(
-                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR")
+                        sgqlc.types.list_of(RepositoryAffiliation), graphql_name="ownerAffiliations", default=("OWNER", "COLLABORATOR"),
                     ),
                 ),
                 ("is_locked", sgqlc.types.Arg(Boolean, graphql_name="isLocked", default=None)),
@@ -33421,7 +33421,7 @@ class User(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """A list of repositories the given user is watching.
@@ -33471,7 +33471,7 @@ class UserBlockedEvent(sgqlc.types.Type, Node):
 
 
 class UserContentEdit(sgqlc.types.Type, Node):
-    """An edit on user content"""
+    """An edit on user content."""
 
     __schema__ = github_schema
     __field_names__ = ("created_at", "deleted_at", "deleted_by", "diff", "edited_at", "editor", "updated_at")
@@ -33680,7 +33680,7 @@ class WorkflowRun(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The log of deployment reviews
@@ -33704,7 +33704,7 @@ class WorkflowRun(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
-            )
+            ),
         ),
     )
     """The pending deployment requests of all check runs in this workflow
@@ -33825,7 +33825,7 @@ class IssueOrPullRequest(sgqlc.types.Union):
 
 
 class IssueTimelineItem(sgqlc.types.Union):
-    """An item in an issue timeline"""
+    """An item in an issue timeline."""
 
     __schema__ = github_schema
     __types__ = (
@@ -33852,7 +33852,7 @@ class IssueTimelineItem(sgqlc.types.Union):
 
 
 class IssueTimelineItems(sgqlc.types.Union):
-    """An item in an issue timeline"""
+    """An item in an issue timeline."""
 
     __schema__ = github_schema
     __types__ = (
@@ -33977,7 +33977,7 @@ class OrganizationAuditEntry(sgqlc.types.Union):
 
 
 class PermissionGranter(sgqlc.types.Union):
-    """Types that can grant permissions on a repository to a user"""
+    """Types that can grant permissions on a repository to a user."""
 
     __schema__ = github_schema
     __types__ = (Organization, Repository, Team)
@@ -34005,7 +34005,7 @@ class ProjectNextItemContent(sgqlc.types.Union):
 
 
 class PullRequestTimelineItem(sgqlc.types.Union):
-    """An item in a pull request timeline"""
+    """An item in a pull request timeline."""
 
     __schema__ = github_schema
     __types__ = (
@@ -34046,7 +34046,7 @@ class PullRequestTimelineItem(sgqlc.types.Union):
 
 
 class PullRequestTimelineItems(sgqlc.types.Union):
-    """An item in a pull request timeline"""
+    """An item in a pull request timeline."""
 
     __schema__ = github_schema
     __types__ = (
@@ -34124,14 +34124,14 @@ class Reactor(sgqlc.types.Union):
 
 
 class ReferencedSubject(sgqlc.types.Union):
-    """Any referencable object"""
+    """Any referencable object."""
 
     __schema__ = github_schema
     __types__ = (Issue, PullRequest)
 
 
 class RenamedTitleSubject(sgqlc.types.Union):
-    """An object which has a renamable title"""
+    """An object which has a renamable title."""
 
     __schema__ = github_schema
     __types__ = (Issue, PullRequest)
@@ -34159,14 +34159,14 @@ class SearchResultItem(sgqlc.types.Union):
 
 
 class Sponsor(sgqlc.types.Union):
-    """Entities that can sponsor others via GitHub Sponsors"""
+    """Entities that can sponsor others via GitHub Sponsors."""
 
     __schema__ = github_schema
     __types__ = (Organization, User)
 
 
 class SponsorableItem(sgqlc.types.Union):
-    """Entities that can be sponsored via GitHub Sponsors"""
+    """Entities that can be sponsored via GitHub Sponsors."""
 
     __schema__ = github_schema
     __types__ = (Organization, User)

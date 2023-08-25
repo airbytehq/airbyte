@@ -11,8 +11,7 @@ from source_wrike.source import SourceWrike
 
 @fixture()
 def config(request):
-    args = {"access_token": "foo", "wrike_instance": "app-us2.wrike.com"}
-    return args
+    return {"access_token": "foo", "wrike_instance": "app-us2.wrike.com"}
 
 
 def test_check_connection(mocker, config):

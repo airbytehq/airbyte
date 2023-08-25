@@ -8,7 +8,7 @@ from pytest import fixture
 from source_zendesk_sell.source import SourceZendeskSell
 
 
-@fixture
+@fixture()
 def config():
     return {"config": {"user_auth_key": "", "start_date": "2021-01-01T00:00:00Z", "outcome_names": ""}}
 

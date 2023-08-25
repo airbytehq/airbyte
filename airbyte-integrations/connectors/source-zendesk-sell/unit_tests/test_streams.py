@@ -9,7 +9,7 @@ import pytest
 from source_zendesk_sell.source import ZendeskSellStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(ZendeskSellStream, "path", "v0/example_endpoint")
@@ -86,7 +86,7 @@ def test_parse_response(patch_base_class, mocker):
                     "last_name": "Squidington",
                 },
                 "meta": {"version": 36, "type": "contact"},
-            }
+            },
         ],
         "meta": {
             "type": "collection",

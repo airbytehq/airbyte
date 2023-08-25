@@ -7,8 +7,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import
 
 
 class QontoApiKeyAuthenticator(AbstractHeaderAuthenticator):
-    """
-    QontoApiKeyAuthenticator sets a request header on the HTTP requests sent.
+    """QontoApiKeyAuthenticator sets a request header on the HTTP requests sent.
 
     The header is of the form:
     `"Authorization": "<api-key>"`

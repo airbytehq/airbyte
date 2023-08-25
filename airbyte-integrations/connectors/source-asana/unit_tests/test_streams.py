@@ -6,8 +6,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests_mock as req_mock
-from airbyte_cdk.models import SyncMode
 from source_asana.streams import AsanaStream, Sections, Stories, Tags, Tasks, TeamMemberships, Users
+
+from airbyte_cdk.models import SyncMode
 
 
 @pytest.mark.parametrize(
@@ -43,8 +44,7 @@ def test_next_page_token():
     ],
 )
 def test_should_retry(http_status_code, should_retry):
-    """
-    402, 403, 404, 451 - should not retry.
+    """402, 403, 404, 451 - should not retry.
     429 - should retry.
     """
     response_mock = MagicMock()

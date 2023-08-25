@@ -8,6 +8,9 @@ import time
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_meilisearch.destination import DestinationMeilisearch, get_client
+from meilisearch import Client
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,13 +23,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_meilisearch.destination import DestinationMeilisearch, get_client
-from meilisearch import Client
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -36,7 +37,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     overwrite_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="_airbyte", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+            name="_airbyte", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh],
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.overwrite,
@@ -72,7 +73,7 @@ def test_check_valid_config(config: Mapping):
 
 def test_check_invalid_config():
     outcome = DestinationMeilisearch().check(
-        logging.getLogger("airbyte"), {"api_key": "not_a_real_key", "host": "https://www.meilisearch.com"}
+        logging.getLogger("airbyte"), {"api_key": "not_a_real_key", "host": "https://www.meilisearch.com"},
     )
     assert outcome.status == Status.FAILED
 
@@ -83,7 +84,7 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0),
     )
 
 

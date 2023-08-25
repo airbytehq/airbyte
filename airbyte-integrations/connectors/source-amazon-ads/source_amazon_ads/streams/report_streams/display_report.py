@@ -217,9 +217,7 @@ TACTICS = ["T00020", "T00030"]
 
 
 class SponsoredDisplayReportStream(ReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports
-    """
+    """https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports."""
 
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/sd/{record_type}/report"

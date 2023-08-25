@@ -3,12 +3,13 @@
 #
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import Status
 from source_bamboo_hr.source import CustomReportsStream, EmployeesDirectoryStream, SourceBambooHr
 
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import Status
 
-@pytest.fixture
+
+@pytest.fixture()
 def config():
     return {"api_key": "foo", "subdomain": "bar", "authenticator": "baz", "custom_reports_include_default_fields": True}
 
@@ -20,7 +21,7 @@ def test_source_bamboo_hr_client_wrong_credentials():
 
 
 @pytest.mark.parametrize(
-    "custom_reports_fields,custom_reports_include_default_fields,available_fields,expected_message",
+    ("custom_reports_fields", "custom_reports_include_default_fields", "available_fields", "expected_message"),
     [
         (
             "",
@@ -38,7 +39,7 @@ def test_source_bamboo_hr_client_wrong_credentials():
     ],
 )
 def test_check_failed(
-    config, requests_mock, custom_reports_fields, custom_reports_include_default_fields, available_fields, expected_message
+    config, requests_mock, custom_reports_fields, custom_reports_include_default_fields, available_fields, expected_message,
 ):
     config["custom_reports_fields"] = custom_reports_fields
     config["custom_reports_include_default_fields"] = custom_reports_include_default_fields

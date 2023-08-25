@@ -6,7 +6,6 @@ import json
 import time
 
 import pytest
-from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test import conftest
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
@@ -16,9 +15,11 @@ from connector_acceptance_test.config import (
     IgnoredFieldsConfiguration,
 )
 
+from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+
 
 @pytest.mark.parametrize(
-    "test_strictness_level, basic_read_test_config, expect_test_failure",
+    ("test_strictness_level", "basic_read_test_config", "expect_test_failure"),
     [
         pytest.param(
             Config.TestStrictnessLevel.low,
@@ -29,7 +30,7 @@ from connector_acceptance_test.config import (
         pytest.param(
             Config.TestStrictnessLevel.low,
             BasicReadTestConfig(
-                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")}
+                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")},
             ),
             False,
             id="[LOW test strictness level] Empty streams can be declared with a bypass_reason.",
@@ -43,7 +44,7 @@ from connector_acceptance_test.config import (
         pytest.param(
             Config.TestStrictnessLevel.high,
             BasicReadTestConfig(
-                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")}
+                config_path="config_path", empty_streams={EmptyStreamConfiguration(name="my_empty_stream", bypass_reason="good reason")},
             ),
             False,
             id="[HIGH test strictness level] Empty streams can be declared with a bypass_reason.",
@@ -61,7 +62,7 @@ def test_empty_streams_fixture(mocker, test_strictness_level, basic_read_test_co
 
 
 @pytest.mark.parametrize(
-    "test_strictness_level, basic_read_test_config, expect_test_failure",
+    ("test_strictness_level", "basic_read_test_config", "expect_test_failure"),
     [
         pytest.param(
             Config.TestStrictnessLevel.low,
@@ -130,12 +131,12 @@ TEST_CONFIGURED_AIRBYTE_STREAM_C = ConfiguredAirbyteStream(
 )
 
 TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
-    streams=[TEST_CONFIGURED_AIRBYTE_STREAM_A, TEST_CONFIGURED_AIRBYTE_STREAM_B, TEST_CONFIGURED_AIRBYTE_STREAM_C]
+    streams=[TEST_CONFIGURED_AIRBYTE_STREAM_A, TEST_CONFIGURED_AIRBYTE_STREAM_B, TEST_CONFIGURED_AIRBYTE_STREAM_C],
 )
 
 
 @pytest.mark.parametrize(
-    "test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, should_fail",
+    ("test_strictness_level", "configured_catalog", "empty_streams", "expected_records", "expected_records_config", "should_fail"),
     [
         pytest.param(
             Config.TestStrictnessLevel.high,
@@ -203,7 +204,7 @@ TEST_CONFIGURED_CATALOG = ConfiguredAirbyteCatalog(
     ],
 )
 def test_expected_records_by_stream_fixture(
-    tmp_path, mocker, test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, should_fail
+    tmp_path, mocker, test_strictness_level, configured_catalog, empty_streams, expected_records, expected_records_config, should_fail,
 ):
     mocker.patch.object(conftest.pytest, "fail")
 
@@ -213,7 +214,7 @@ def test_expected_records_by_stream_fixture(
             expected_records_file.write(json.dumps(record) + "\n")
 
     conftest.expected_records_by_stream_fixture.__wrapped__(
-        test_strictness_level, configured_catalog, empty_streams, expected_records_config, base_path
+        test_strictness_level, configured_catalog, empty_streams, expected_records_config, base_path,
     )
     if should_fail:
         conftest.pytest.fail.assert_called_once()
@@ -236,7 +237,7 @@ def test_configured_catalog_fixture(mocker, configured_catalog_path):
 
 
 @pytest.mark.parametrize(
-    "updated_configurations", [[], ["config|created_last.json"], ["config|created_first.json", "config|created_last.json"]]
+    "updated_configurations", [[], ["config|created_last.json"], ["config|created_first.json", "config|created_last.json"]],
 )
 def test_connector_config_path_fixture(mocker, tmp_path, updated_configurations):
     inputs = mocker.Mock(config_path="config.json")

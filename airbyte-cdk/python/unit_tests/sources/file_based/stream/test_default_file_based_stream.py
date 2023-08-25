@@ -8,6 +8,7 @@ from typing import Any, Iterable, Iterator, Mapping
 from unittest.mock import Mock
 
 import pytest
+
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
@@ -20,7 +21,7 @@ from airbyte_cdk.sources.file_based.stream.default_file_based_stream import Defa
 
 
 @pytest.mark.parametrize(
-    "input_schema, expected_output",
+    ("input_schema", "expected_output"),
     [
         pytest.param({}, {}, id="empty-schema"),
         pytest.param(
@@ -91,14 +92,13 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
     def test_when_read_records_from_slice_then_return_records(self) -> None:
         self._parser.parse_records.return_value = [self._A_RECORD]
         messages = list(self._stream.read_records_from_slice({"files": [RemoteFile(uri="uri", last_modified=self._NOW)]}))
-        assert list(map(lambda message: message.record.data["data"], messages)) == [self._A_RECORD]
+        assert [message.record.data["data"] for message in messages] == [self._A_RECORD]
 
     def test_given_exception_when_read_records_from_slice_then_do_process_other_files(self) -> None:
-        """
-        The current behavior for source-s3 v3 does not fail sync on some errors and hence, we will keep this behaviour for now. One example
+        """The current behavior for source-s3 v3 does not fail sync on some errors and hence, we will keep this behaviour for now. One example
         we can easily reproduce this is by having a file with gzip extension that is not actually a gzip file. The reader will fail to open
         the file but the sync won't fail.
-        Ticket: https://github.com/airbytehq/airbyte/issues/29680
+        Ticket: https://github.com/airbytehq/airbyte/issues/29680.
         """
         self._parser.parse_records.side_effect = [ValueError("An error"), [self._A_RECORD]]
 

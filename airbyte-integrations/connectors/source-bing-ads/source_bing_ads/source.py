@@ -9,12 +9,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
 
+from bingads.service_client import ServiceClient
+from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
+from suds import sudsobject
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from bingads.service_client import ServiceClient
-from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from source_bing_ads.reports import (
@@ -29,7 +31,6 @@ from source_bing_ads.reports import (
     PerformanceReportsMixin,
     ReportsMixin,
 )
-from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
 
@@ -47,35 +48,24 @@ class BingAdsStream(Stream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
-        """
-        Specifies root object name in a stream response
-        """
-        pass
+        """Specifies root object name in a stream response."""
 
     @property
     @abstractmethod
     def service_name(self) -> str:
-        """
-        Specifies bing ads service name for a current stream
-        """
-        pass
+        """Specifies bing ads service name for a current stream."""
 
     @property
     @abstractmethod
     def operation_name(self) -> str:
-        """
-        Specifies operation name to use for a current stream
-        """
-        pass
+        """Specifies operation name to use for a current stream."""
 
     @property
     @abstractmethod
     def additional_fields(self) -> Optional[str]:
+        """Specifies which additional fields to fetch for a current stream.
+        Expected format: field names separated by space.
         """
-        Specifies which additional fields to fetch for a current stream.
-        Expected format: field names separated by space
-        """
-        pass
 
     @property
     def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
@@ -92,7 +82,7 @@ class BingAdsStream(Stream, ABC):
             return self._service.GetUser().User.Id
         except URLError as error:
             if isinstance(error.reason, ssl.SSLError):
-                self.logger.warn("SSL certificate error, retrying...")
+                self.logger.warning("SSL certificate error, retrying...")
                 if number_of_retries > 0:
                     time.sleep(1)
                     return self._get_user_id(number_of_retries - 1)
@@ -100,9 +90,7 @@ class BingAdsStream(Stream, ABC):
                     raise error
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        """
-        Default method for streams that don't support pagination
-        """
+        """Default method for streams that don't support pagination."""
         return None
 
     def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
@@ -111,7 +99,7 @@ class BingAdsStream(Stream, ABC):
 
         yield from []
 
-    def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str = None) -> Mapping[str, Any]:
+    def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: Optional[str] = None) -> Mapping[str, Any]:
         request_kwargs = {
             "service_name": self.service_name,
             "customer_id": customer_id,
@@ -129,8 +117,8 @@ class BingAdsStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
@@ -146,8 +134,7 @@ class BingAdsStream(Stream, ABC):
                 account_id=account_id,
             )
             response = self.send_request(params, customer_id=customer_id, account_id=account_id)
-            for record in self.parse_response(response):
-                yield record
+            yield from self.parse_response(response)
 
             next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
@@ -157,11 +144,10 @@ class BingAdsStream(Stream, ABC):
 
 
 class Accounts(BingAdsStream):
-    """
-    Searches for accounts that the current authenticated user can access.
+    """Searches for accounts that the current authenticated user can access.
     API doc: https://docs.microsoft.com/en-us/advertising/customer-management-service/searchaccounts?view=bingads-13
     Account schema: https://docs.microsoft.com/en-us/advertising/customer-management-service/advertiseraccount?view=bingads-13
-    Stream caches incoming responses to be able to reuse this data in Campaigns stream
+    Stream caches incoming responses to be able to reuse this data in Campaigns stream.
     """
 
     primary_key = "Id"
@@ -183,7 +169,7 @@ class Accounts(BingAdsStream):
 
     def request_params(
         self,
-        next_page_token: Mapping[str, Any] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
         **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         predicates = {
@@ -192,8 +178,8 @@ class Accounts(BingAdsStream):
                     "Field": "UserId",
                     "Operator": "Equals",
                     "Value": self._user_id,
-                }
-            ]
+                },
+            ],
         }
 
         paging = self._service.factory.create("ns5:Paging")
@@ -207,11 +193,10 @@ class Accounts(BingAdsStream):
 
 
 class Campaigns(BingAdsStream):
-    """
-    Gets the campaigns for all provided accounts.
+    """Gets the campaigns for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
     Campaign schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/campaign?view=bingads-13
-    Stream caches incoming responses to be able to reuse this data in AdGroups stream
+    Stream caches incoming responses to be able to reuse this data in AdGroups stream.
     """
 
     primary_key = "Id"
@@ -236,7 +221,7 @@ class Campaigns(BingAdsStream):
 
     def request_params(
         self,
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return {
@@ -256,11 +241,10 @@ class Campaigns(BingAdsStream):
 
 
 class AdGroups(BingAdsStream):
-    """
-    Gets the ad groups for all provided accounts.
+    """Gets the ad groups for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
     AdGroup schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/adgroup?view=bingads-13
-    Stream caches incoming responses to be able to reuse this data in Ads stream
+    Stream caches incoming responses to be able to reuse this data in Ads stream.
     """
 
     primary_key = "Id"
@@ -273,7 +257,7 @@ class AdGroups(BingAdsStream):
 
     def request_params(
         self,
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return {"CampaignId": stream_slice["campaign_id"], "ReturnAdditionalFields": self.additional_fields}
@@ -285,7 +269,7 @@ class AdGroups(BingAdsStream):
         campaigns = Campaigns(self.client, self.config)
         for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
             for campaign in campaigns.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+                sync_mode=SyncMode.full_refresh, stream_slice={"account_id": account["Id"], "customer_id": account["ParentCustomerId"]},
             ):
                 yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
@@ -293,10 +277,9 @@ class AdGroups(BingAdsStream):
 
 
 class Ads(BingAdsStream):
-    """
-    Retrieves the ads for all provided accounts.
+    """Retrieves the ads for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13
-    Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13
+    Ad schema: https://docs.microsoft.com/en-us/advertising/campaign-management-service/ad?view=bingads-13.
     """
 
     primary_key = "Id"
@@ -317,7 +300,7 @@ class Ads(BingAdsStream):
 
     def request_params(
         self,
-        stream_slice: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
         **kwargs: Mapping[str, Any],
     ) -> MutableMapping[str, Any]:
         return {
@@ -835,9 +818,7 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
 
 
 class SourceBingAds(AbstractSource):
-    """
-    Source implementation of Bing Ads API. Fetches advertising data from accounts
-    """
+    """Source implementation of Bing Ads API. Fetches advertising data from accounts."""
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
@@ -846,7 +827,8 @@ class SourceBingAds(AbstractSource):
             if account_ids:
                 return True, None
             else:
-                raise Exception("You don't have accounts assigned to this user.")
+                msg = "You don't have accounts assigned to this user."
+                raise Exception(msg)
         except Exception as error:
             return False, error
 

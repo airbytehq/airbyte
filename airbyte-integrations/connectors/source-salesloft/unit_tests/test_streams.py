@@ -22,7 +22,7 @@ def test_incremental_request_params(config):
         "page": 1,
         "per_page": 100,
         "created_at[gt]": "2020-01-01T00:00:00.000000Z",
-        "updated_at[gt]": "2020-01-01T00:00:00.000000Z"
+        "updated_at[gt]": "2020-01-01T00:00:00.000000Z",
     }
     assert stream.request_params(**inputs) == expected_params
 
@@ -52,11 +52,11 @@ def test_get_updated_state():
 
 
 @pytest.mark.parametrize(
-    "return_value, expected_records",
+    ("return_value", "expected_records"),
     (
         ({}, []),
-        ({"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}])
-    )
+        ({"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
+    ),
 )
 def test_parse_response(config, return_value, expected_records):
     stream = Users(authenticator=MagicMock(), start_date=config["start_date"])

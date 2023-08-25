@@ -20,7 +20,7 @@ def test_source_streams():
 
 def test_source_check_connection_old_config(requests_mock):
     requests_mock.get(
-        "https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["responses_read_detail", "surveys_read", "users_read"]}}
+        "https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["responses_read_detail", "surveys_read", "users_read"]}},
     )
 
     results = SourceSurveymonkey().check_connection(logger=None, config=source_config)
@@ -29,7 +29,7 @@ def test_source_check_connection_old_config(requests_mock):
 
 def test_source_check_connection_new_config(requests_mock):
     requests_mock.get(
-        "https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["responses_read_detail", "surveys_read", "users_read"]}}
+        "https://api.surveymonkey.com/v3/users/me", json={"scopes": {"granted": ["responses_read_detail", "surveys_read", "users_read"]}},
     )
 
     results = SourceSurveymonkey().check_connection(logger=None, config=new_source_config)
@@ -44,7 +44,7 @@ def test_source_check_connection_failed_missing_scopes(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "config, err_msg",
+    ("config", "err_msg"),
     [
         (
             {

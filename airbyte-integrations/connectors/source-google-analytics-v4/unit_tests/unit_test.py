@@ -8,7 +8,6 @@ from urllib.parse import unquote
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode, Type
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
     DATA_IS_NOT_GOLDEN_MSG,
@@ -18,6 +17,8 @@ from source_google_analytics_v4.source import (
     GoogleAnalyticsV4TypesList,
     SourceGoogleAnalyticsV4,
 )
+
+from airbyte_cdk.models import SyncMode, Type
 
 expected_metrics_dimensions_type_map = (
     {"ga:users": "INTEGER", "ga:newUsers": "INTEGER"},
@@ -96,11 +97,10 @@ def test_check_connection_fails_jwt(
     test_config_auth_service,
     requests_mock,
     mock_metrics_dimensions_type_list_link,
-    mock_auth_call
+    mock_auth_call,
 ):
-    """
-    check_connection fails because of the API returns no records,
-    then we assume than user doesn't have permission to read requested `view`
+    """check_connection fails because of the API returns no records,
+    then we assume than user doesn't have permission to read requested `view`.
     """
     source = SourceGoogleAnalyticsV4()
     requests_mock.register_uri("POST", "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
@@ -128,9 +128,8 @@ def test_check_connection_success_jwt(
     mock_auth_call,
     mock_api_returns_valid_records,
 ):
-    """
-    check_connection succeeds because of the API returns valid records for the latest date based slice,
-    then we assume than user has permission to read requested `view`
+    """check_connection succeeds because of the API returns valid records for the latest date based slice,
+    then we assume than user has permission to read requested `view`.
     """
     source = SourceGoogleAnalyticsV4()
     is_success, msg = source.check_connection(MagicMock(), test_config_auth_service)
@@ -147,11 +146,10 @@ def test_check_connection_fails_oauth(
     test_config,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
-    requests_mock
+    requests_mock,
 ):
-    """
-    check_connection fails because of the API returns no records,
-    then we assume than user doesn't have permission to read requested `view`
+    """check_connection fails because of the API returns no records,
+    then we assume than user doesn't have permission to read requested `view`.
     """
     source = SourceGoogleAnalyticsV4()
     requests_mock.register_uri("POST", "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
@@ -181,9 +179,8 @@ def test_check_connection_success_oauth(
     mock_auth_call,
     mock_api_returns_valid_records,
 ):
-    """
-    check_connection succeeds because of the API returns valid records for the latest date based slice,
-    then we assume than user has permission to read requested `view`
+    """check_connection succeeds because of the API returns valid records for the latest date based slice,
+    then we assume than user has permission to read requested `view`.
     """
     source = SourceGoogleAnalyticsV4()
     is_success, msg = source.check_connection(MagicMock(), test_config)
@@ -199,7 +196,7 @@ def test_check_connection_success_oauth(
 
 
 def test_unknown_metrics_or_dimensions_error_validation(
-    mocker, test_config, mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error
+    mocker, test_config, mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error,
 ):
     records = GoogleAnalyticsV4Stream(test_config).read_records(sync_mode=None)
     assert list(records) == []
@@ -262,7 +259,7 @@ def test_connection_fail_invalid_reports_json(test_config):
     ),
 )
 def test_connection_fail_due_to_http_status(
-    mocker, test_config, requests_mock, mock_auth_call, mock_metrics_dimensions_type_list_link, status, json_resp
+    mocker, test_config, requests_mock, mock_auth_call, mock_metrics_dimensions_type_list_link, status, json_resp,
 ):
     mocker.patch("time.sleep")
     requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", status_code=status, json=json_resp)
@@ -276,7 +273,7 @@ def test_connection_fail_due_to_http_status(
 
 
 def test_is_data_golden_flag_missing_equals_false(
-    mock_api_returns_is_data_golden_false, test_config, configured_catalog, mock_metrics_dimensions_type_list_link, mock_auth_call
+    mock_api_returns_is_data_golden_false, test_config, configured_catalog, mock_metrics_dimensions_type_list_link, mock_auth_call,
 ):
     source = SourceGoogleAnalyticsV4()
     for message in source.read(logging.getLogger(), test_config, configured_catalog):
@@ -285,7 +282,7 @@ def test_is_data_golden_flag_missing_equals_false(
 
 
 @pytest.mark.parametrize(
-    "configured_response, expected_token",
+    ("configured_response", "expected_token"),
     (
         ({}, None),
         ({"reports": []}, None),

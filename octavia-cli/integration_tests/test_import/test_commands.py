@@ -11,8 +11,6 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from airbyte_api_client.api import connection_api
-from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 from click.testing import CliRunner
 from octavia_cli._import.commands import all as octavia_import_all
 from octavia_cli._import.commands import connection as octavia_import_connection
@@ -21,6 +19,9 @@ from octavia_cli._import.commands import source as octavia_import_source
 from octavia_cli.apply.commands import apply as octavia_apply
 from octavia_cli.apply.resources import ResourceState
 from octavia_cli.apply.resources import factory as resource_factory
+
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 
 pytestmark = pytest.mark.integration
 click_runner = CliRunner()
@@ -78,12 +79,12 @@ def initialized_project_directory(context_object):
 
 @pytest.fixture(scope="module")
 def expected_source(initialized_project_directory):
-    yield initialized_project_directory[0]
+    return initialized_project_directory[0]
 
 
 @pytest.fixture(scope="module")
 def expected_destination(initialized_project_directory):
-    yield initialized_project_directory[1]
+    return initialized_project_directory[1]
 
 
 @pytest.fixture(scope="module")
@@ -96,7 +97,7 @@ def expected_connection(initialized_project_directory, context_object, expected_
     connection_api_instance.delete_connection(
         ConnectionIdRequestBody(
             connection_id=connection.resource_id,
-        )
+        ),
     )
     # Delete source and destination after connection to not make the connection deprecated
     source = resource_factory(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], expected_source[1])
@@ -109,7 +110,8 @@ def test_import_source(expected_source, context_object):
     source_id, expected_configuration_path, expected_state_path = expected_source
     result = click_runner.invoke(octavia_import_source, source_id, obj=context_object)
     assert result.exit_code == 0
-    assert Path(expected_configuration_path).is_file() and Path(expected_state_path).is_file()
+    assert Path(expected_configuration_path).is_file()
+    assert Path(expected_state_path).is_file()
     source = resource_factory(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], expected_configuration_path)
     assert source.was_created  # Check if the remote resource is considered as managed by octavia and exists remotely
     assert source.get_diff_with_remote_resource() == ""
@@ -120,7 +122,8 @@ def test_import_destination(expected_destination, context_object):
     destination_id, expected_configuration_path, expected_state_path = expected_destination
     result = click_runner.invoke(octavia_import_destination, destination_id, obj=context_object)
     assert result.exit_code == 0
-    assert Path(expected_configuration_path).is_file() and Path(expected_state_path).is_file()
+    assert Path(expected_configuration_path).is_file()
+    assert Path(expected_state_path).is_file()
     destination = resource_factory(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], expected_configuration_path)
     assert destination.was_created  # Check if the remote resource is considered as managed by octavia and exists remotely
     assert destination.get_diff_with_remote_resource() == ""
@@ -132,7 +135,8 @@ def test_import_connection(expected_connection, context_object):
     connection_id, expected_configuration_path, expected_state_path = expected_connection
     result = click_runner.invoke(octavia_import_connection, connection_id, obj=context_object)
     assert result.exit_code == 0
-    assert Path(expected_configuration_path).is_file() and Path(expected_state_path).is_file()
+    assert Path(expected_configuration_path).is_file()
+    assert Path(expected_state_path).is_file()
     connection = resource_factory(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], expected_configuration_path)
     assert connection.was_created  # Check if the remote resource is considered as managed by octavia and exists remotely
     assert connection.get_diff_with_remote_resource() == ""

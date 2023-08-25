@@ -5,15 +5,12 @@
 import os
 from typing import List
 
-import numpy as np
-import pandas as pd
 import yaml
-from dagster import OpExecutionContext, Output, asset
+from dagster import OpExecutionContext, asset
 from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from orchestrator.config import get_public_url_for_gcs_file
 from orchestrator.logging import sentry
-from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition, PartialMetadataDefinition
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 
 GROUP_NAME = "metadata"
@@ -26,8 +23,7 @@ CLOUD_SUFFIX = "_cloud"
 
 
 def get_primary_registry_suffix(merged_df):
-    """
-    Returns the suffix for the primary registry and the secondary registry.
+    """Returns the suffix for the primary registry and the secondary registry.
     The primary registry is the one that is used for the final metadata.
     The secondary registry is the one that is used for overrides.
 
@@ -40,11 +36,9 @@ def get_primary_registry_suffix(merged_df):
 
 
 def get_field_with_fallback(merged_df, field):
-    """
-    Returns the value of the field from the primary registry.
+    """Returns the value of the field from the primary registry.
     If the field is not present in the primary registry, the value from the secondary registry is returned.
     """
-
     primary_suffix, secondary_suffix = get_primary_registry_suffix(merged_df)
 
     primary_field = field + primary_suffix
@@ -55,9 +49,7 @@ def get_field_with_fallback(merged_df, field):
 
 
 def compute_registry_overrides(merged_df):
-    """
-    Returns the registry overrides section for the metadata file.
-    """
+    """Returns the registry overrides section for the metadata file."""
     cloud_only = merged_df["_merge"] == "right_only"
     oss_only = merged_df["_merge"] == "left_only"
 

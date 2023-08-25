@@ -82,15 +82,14 @@ class SftpClient:
             file.seek(0)
             lines = file.readlines()
             file.seek(pos)
-            data = [json.loads(line.strip()) for line in lines]
-        return data
+            return [json.loads(line.strip()) for line in lines]
 
     def delete(self, stream: str) -> None:
         with sftp_client(self.host, self.port, self.username, self.password) as sftp:
             try:
                 path = self._get_path(stream)
                 sftp.remove(path)
-            except IOError as err:
+            except OSError as err:
                 # Ignore the case where the file doesn't exist, only raise the
                 # exception if it's something else
                 if err.errno != errno.ENOENT:

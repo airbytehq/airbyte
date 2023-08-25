@@ -6,9 +6,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, Tuple
 
 import asyncer
+
 from pipelines.bases import Step, StepStatus
 
 if TYPE_CHECKING:
@@ -16,8 +17,8 @@ if TYPE_CHECKING:
 
 
 async def run_steps(
-    steps_and_run_args: List[Union[Step, Tuple[Step, Tuple]] | List[Union[Step, Tuple[Step, Tuple]]]], results: List[StepResult] = []
-) -> List[StepResult]:
+    steps_and_run_args: list[Step | tuple[Step, tuple] | list[Step | tuple[Step, tuple]]], results: list[StepResult] | None = None,
+) -> list[StepResult]:
     """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
 
     Args:
@@ -28,6 +29,8 @@ async def run_steps(
         List[StepResult]: List of step results.
     """
     # If there are no steps to run, return the results
+    if results is None:
+        results = []
     if not steps_and_run_args:
         return results
 

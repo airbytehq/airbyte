@@ -22,7 +22,7 @@ def setup_responses():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(LemlistStream, "path", "v0/example_endpoint")

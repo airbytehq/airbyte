@@ -5,6 +5,7 @@
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -14,7 +15,7 @@ class OneCall(HttpStream):
     url_base = "https://api.openweathermap.org/data/3.0/"
     primary_key = None
 
-    def __init__(self, appid: str, lat: float, lon: float, lang: str = None, units: str = None):
+    def __init__(self, appid: str, lat: float, lon: float, lang: Optional[str] = None, units: Optional[str] = None):
         super().__init__()
         self.appid = appid
         self.lat = lat
@@ -23,7 +24,7 @@ class OneCall(HttpStream):
         self.units = units
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "onecall"
 
@@ -32,8 +33,7 @@ class OneCall(HttpStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = {"appid": self.appid, "lat": self.lat, "lon": self.lon, "lang": self.lang, "units": self.units}
-        params = {k: v for k, v in params.items() if v is not None}
-        return params
+        return {k: v for k, v in params.items() if v is not None}
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = response.json()

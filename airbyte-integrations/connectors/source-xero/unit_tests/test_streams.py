@@ -10,7 +10,7 @@ import pytest
 from source_xero.streams import XeroStream, parse_date
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     mocker.patch.object(XeroStream, "path", "v0/example_endpoint")
     mocker.patch.object(XeroStream, "primary_key", "test_primary_key")

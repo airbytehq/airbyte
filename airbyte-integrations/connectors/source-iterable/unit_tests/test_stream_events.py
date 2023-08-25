@@ -12,7 +12,7 @@ from source_iterable.streams import Events
 
 @responses.activate
 @pytest.mark.parametrize(
-    "response_objects,expected_objects,jsonl_body",
+    ("response_objects", "expected_objects", "jsonl_body"),
     [
         (
             [
@@ -82,7 +82,7 @@ from source_iterable.streams import Events
                     "channelIds": [],
                     "email": "test@mail.com",
                     "profileUpdatedAt": "2021",
-                }
+                },
             ],
             [],
             False,
@@ -164,7 +164,7 @@ from source_iterable.streams import Events
                     "channelIds": [],
                     "email": "test@mail.com",
                     "profileUpdatedAt": "2021",
-                }
+                },
             ],
             [
                 {
@@ -179,24 +179,21 @@ from source_iterable.streams import Events
                         "channelIds": [],
                         "profileUpdatedAt": "2021",
                     },
-                }
+                },
             ],
             True,
         ),
     ],
 )
 def test_events_parse_response(response_objects, expected_objects, jsonl_body):
-    if jsonl_body:
-        response_body = "\n".join([json.dumps(obj) for obj in response_objects])
-    else:
-        response_body = json.dumps(response_objects)
+    response_body = "\n".join([json.dumps(obj) for obj in response_objects]) if jsonl_body else json.dumps(response_objects)
     responses.add(responses.GET, "https://example.com", body=response_body)
     response = requests.get("https://example.com")
     stream = Events(authenticator=None)
 
     if jsonl_body:
-        records = [record for record in stream.parse_response(response)]
+        records = list(stream.parse_response(response))
         assert records == expected_objects
     else:
         with pytest.raises(TypeError):
-            [record for record in stream.parse_response(response)]
+            list(stream.parse_response(response))

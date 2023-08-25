@@ -21,7 +21,6 @@ class ZendeskAuthentication:
 
     def get_auth(self) -> TokenAuthenticator:
         """Return the TokenAuthenticator object with access_token."""
-
         # the old config supports for backward capability
         access_token = self.config.get("access_token")
         if not access_token:

@@ -7,7 +7,6 @@ import pathlib
 from base64 import b64encode
 from typing import Any, List, Mapping
 
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from streams import (
     DashboardsGenerator,
     FiltersGenerator,
@@ -29,13 +28,15 @@ from streams import (
     WorkflowsGenerator,
 )
 
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
 
 class Generator:
     base_config_path = "secrets/config.json"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.configs = None
-        super(Generator, self).__init__()
+        super().__init__()
 
     def _get_configs(self):
         if not self.configs:
@@ -48,8 +49,7 @@ class Generator:
     @staticmethod
     def _get_authenticator(config: Mapping[str, Any]):
         token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
-        authenticator = TokenAuthenticator(token, auth_method="Basic")
-        return authenticator
+        return TokenAuthenticator(token, auth_method="Basic")
 
     def streams(self) -> List:
         config = self._get_configs()

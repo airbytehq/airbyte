@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -30,11 +31,11 @@ class AsanaStream(HttpStream, ABC):
         return self.__class__
 
     def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code in ASANA_ERRORS_MAPPING.keys():
+        if response.status_code in ASANA_ERRORS_MAPPING:
             self.logger.error(
-                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Full error message: {response.text}"
+                f"Skipping stream {self.name}. {ASANA_ERRORS_MAPPING.get(response.status_code)}. Full error message: {response.text}",
             )
-            setattr(self, "raise_on_http_errors", False)
+            self.raise_on_http_errors = False
             return False
         return super().should_retry(response)
 
@@ -42,14 +43,16 @@ class AsanaStream(HttpStream, ABC):
         delay_time = response.headers.get("Retry-After")
         if delay_time:
             return int(delay_time)
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
         next_page = decoded_response.get("next_page")
         if next_page:
             return {"offset": next_page["offset"]}
+        return None
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"limit": self.page_size}
         params.update(self.get_opt_fields())
         if next_page_token:
@@ -57,8 +60,7 @@ class AsanaStream(HttpStream, ABC):
         return params
 
     def get_opt_fields(self) -> MutableMapping[str, str]:
-        """
-        For "GET all" request for almost each stream Asana API by default returns 3 fields for each
+        """For "GET all" request for almost each stream Asana API by default returns 3 fields for each
         record: `gid`, `name`, `resource_type`. Since we want to get all fields we need to specify those fields in each
         request. For each stream set of fields will be different and we get those fields from stream's schema.
         Also each nested object, like `workspace`, or list of nested objects, like `followers`, also by default returns
@@ -67,7 +69,7 @@ class AsanaStream(HttpStream, ABC):
         Plus each stream can have it's exceptions about how request required fields, like in `Tasks` stream.
         More info can be found here - https://developers.asana.com/docs/input-output-options.
         """
-        opt_fields = list()
+        opt_fields = []
         schema = self.get_json_schema()
 
         for prop, value in schema["properties"].items():
@@ -78,7 +80,7 @@ class AsanaStream(HttpStream, ABC):
             else:
                 opt_fields.append(prop)
 
-        return {"opt_fields": ",".join(opt_fields)} if opt_fields else dict()
+        return {"opt_fields": ",".join(opt_fields)} if opt_fields else {}
 
     def _handle_object_type(self, prop: str, value: MutableMapping[str, Any]) -> str:
         return f"{prop}.gid"
@@ -94,8 +96,7 @@ class AsanaStream(HttpStream, ABC):
         yield from response_json.get("data", [])  # Asana puts records in a container array "data"
 
     def read_slices_from_records(self, stream_class: AsanaStreamType, slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        General function for getting parent stream (which should be passed through `stream_class`) slice.
+        """General function for getting parent stream (which should be passed through `stream_class`) slice.
         Generates dicts with `gid` of parent streams.
         """
         stream = stream_class(authenticator=self.authenticator)
@@ -106,8 +107,7 @@ class AsanaStream(HttpStream, ABC):
 
 
 class WorkspaceRelatedStream(AsanaStream, ABC):
-    """
-    Few streams (CustomFields, Projects, Tags, Teams and Users) require passing `workspace` either as request argument
+    """Few streams (CustomFields, Projects, Tags, Teams and Users) require passing `workspace` either as request argument
     or as part of a path. The point of this class is to get `workspace_gid`. Child classes then either will insert it
     into the path or will pass it as a request parameter.
     """
@@ -119,20 +119,18 @@ class WorkspaceRelatedStream(AsanaStream, ABC):
 
 
 class WorkspaceRequestParamsRelatedStream(WorkspaceRelatedStream, ABC):
-    """
-    Few streams (Projects, Tags and Users) require passing `workspace` as request argument.
+    """Few streams (Projects, Tags and Users) require passing `workspace` as request argument.
     So this is basically the whole point of this class - to pass `workspace` as request argument.
     """
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
         params["workspace"] = stream_slice["workspace_gid"]
         return params
 
 
 class ProjectRelatedStream(AsanaStream, ABC):
-    """
-    Few streams (Sections and Tasks) depends on `project gid`: Sections as a part of url and Tasks as `projects`
+    """Few streams (Sections and Tasks) depends on `project gid`: Sections as a part of url and Tasks as `projects`
     argument in request.
     """
 
@@ -141,7 +139,7 @@ class ProjectRelatedStream(AsanaStream, ABC):
 
 
 class CustomFields(WorkspaceRelatedStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         workspace_gid = stream_slice["workspace_gid"]
         return f"workspaces/{workspace_gid}/custom_fields"
 
@@ -154,13 +152,13 @@ class Projects(WorkspaceRequestParamsRelatedStream):
 
 
 class Sections(ProjectRelatedStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         project_gid = stream_slice["project_gid"]
         return f"projects/{project_gid}/sections"
 
 
 class Stories(AsanaStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         task_gid = stream_slice["task_gid"]
         return f"tasks/{task_gid}/stories"
 
@@ -177,7 +175,7 @@ class Tasks(ProjectRelatedStream):
     def path(self, **kwargs) -> str:
         return "tasks"
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["project"] = stream_slice["project_gid"]
         return params
@@ -194,13 +192,13 @@ class Tasks(ProjectRelatedStream):
 
 
 class Teams(WorkspaceRelatedStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         workspace_gid = stream_slice["workspace_gid"]
         return f"organizations/{workspace_gid}/teams"
 
 
 class TeamMemberships(AsanaStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         team_gid = stream_slice["team_gid"]
         return f"teams/{team_gid}/team_memberships"
 

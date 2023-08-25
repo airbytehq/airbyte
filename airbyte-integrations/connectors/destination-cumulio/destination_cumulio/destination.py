@@ -93,8 +93,8 @@ class DestinationCumulio(Destination):
             # The Cumul.io Python SDK currently returns a generic error message when an issue occurs during the request,
             # or when the request return e.g. a 401 Unauthorized HTTP response code.
             # We'll assume that either the API host is incorrect, or the API key and token are no longer valid.
-            if not e == "Something went wrong":
-                return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            if e != "Something went wrong":
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")
             return AirbyteConnectionStatus(
                 status=Status.FAILED,
                 message="An exception occurred: could it be that the API host is incorrect, or the API key and token are no longer valid?",

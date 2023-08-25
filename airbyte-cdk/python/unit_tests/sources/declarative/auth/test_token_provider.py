@@ -6,9 +6,10 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
+from isodate import parse_duration
+
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider
 from airbyte_cdk.sources.declarative.exceptions import ReadException
-from isodate import parse_duration
 
 
 def create_session_token_provider():

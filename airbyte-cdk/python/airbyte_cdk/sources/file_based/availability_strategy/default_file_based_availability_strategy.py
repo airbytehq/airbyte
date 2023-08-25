@@ -22,8 +22,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         self.stream_reader = stream_reader
 
     def check_availability(self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:  # type: ignore[override]
-        """
-        Perform a connection check for the stream (verify that we can list files from the stream).
+        """Perform a connection check for the stream (verify that we can list files from the stream).
 
         Returns (True, None) if successful, otherwise (False, <error message>).
         """
@@ -35,10 +34,9 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         return True, None
 
     def check_availability_and_parsability(
-        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
+        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source],
     ) -> Tuple[bool, Optional[str]]:
-        """
-        Perform a connection check for the stream.
+        """Perform a connection check for the stream.
 
         Returns (True, None) if successful, otherwise (False, <error message>).
 
@@ -86,12 +84,11 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
 
         schema = stream.catalog_schema or stream.config.input_schema
-        if schema and stream.validation_policy.validate_schema_before_sync:
-            if not conforms_to_schema(record, schema):  # type: ignore
-                raise CheckAvailabilityError(
-                    FileBasedSourceError.ERROR_VALIDATING_RECORD,
-                    stream=stream.name,
-                    file=file.uri,
-                )
+        if schema and stream.validation_policy.validate_schema_before_sync and not conforms_to_schema(record, schema):  # type: ignore
+            raise CheckAvailabilityError(
+                FileBasedSourceError.ERROR_VALIDATING_RECORD,
+                stream=stream.name,
+                file=file.uri,
+            )
 
-        return None
+        return

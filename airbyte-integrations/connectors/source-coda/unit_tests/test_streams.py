@@ -7,8 +7,9 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_coda.source import CodaStream
+
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 logger = logging.getLogger()
 logger.level = logging.DEBUG
@@ -17,7 +18,7 @@ logger.level = logging.DEBUG
 authenticator = TokenAuthenticator(token="test_token"),
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(CodaStream, "path", "v0/example_endpoint")
@@ -37,7 +38,7 @@ def test_next_page_token(patch_base_class):
     response = MagicMock()
     response.json.return_value = {
        "id": "1244fds",
-       "name": "Test doc"
+       "name": "Test doc",
     }
     inputs = {"response": response}
     expected_token = None
@@ -48,10 +49,10 @@ def test_parse_response(patch_base_class):
     stream = CodaStream(authenticator=authenticator)
 
     response = MagicMock()
-    response.json = MagicMock(return_value={'items': [{"id": 101}]})
+    response.json = MagicMock(return_value={"items": [{"id": 101}]})
 
     inputs = {"response": response}
-    expected_parsed_object = response.json()['items'][0]
+    expected_parsed_object = response.json()["items"][0]
     assert next(iter(stream.parse_response(**inputs))) == expected_parsed_object
 
 

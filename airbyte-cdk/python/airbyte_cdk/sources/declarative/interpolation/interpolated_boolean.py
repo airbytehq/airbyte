@@ -29,8 +29,7 @@ class InterpolatedBoolean:
         self._parameters = parameters
 
     def eval(self, config: Config, **additional_parameters):
-        """
-        Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
+        """Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
 
         :param config: The user-provided configuration as specified by the source's spec
         :param additional_parameters: Optional parameters used for interpolation
@@ -40,7 +39,7 @@ class InterpolatedBoolean:
             return self.condition
         else:
             evaluated = self._interpolation.eval(
-                self.condition, config, self._default, parameters=self._parameters, **additional_parameters
+                self.condition, config, self._default, parameters=self._parameters, **additional_parameters,
             )
             if evaluated in FALSE_VALUES:
                 return False

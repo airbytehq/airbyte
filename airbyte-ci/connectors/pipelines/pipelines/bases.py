@@ -13,18 +13,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Set
+from typing import TYPE_CHECKING, Any, ClassVar, List
 
 import anyio
 import asyncer
 from anyio import Path
-from connector_ops.utils import Connector, console
 from dagger import Container, DaggerError
 from jinja2 import Environment, PackageLoader, select_autoescape
-from pipelines import sentry_utils
-from pipelines.actions import remote_storage
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import METADATA_FILE_NAME, check_path_in_workdir, format_duration, get_exec_result
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -32,13 +27,19 @@ from rich.table import Table
 from rich.text import Text
 from tabulate import tabulate
 
+from connector_ops.utils import Connector, console
+from pipelines import sentry_utils
+from pipelines.actions import remote_storage
+from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from pipelines.utils import METADATA_FILE_NAME, check_path_in_workdir, format_duration, get_exec_result
+
 if TYPE_CHECKING:
     from pipelines.contexts import PipelineContext
 
 
 @dataclass(frozen=True)
 class ConnectorWithModifiedFiles(Connector):
-    modified_files: Set[Path] = field(default_factory=frozenset)
+    modified_files: set[Path] = field(default_factory=frozenset)
 
     @property
     def has_metadata_change(self) -> bool:
@@ -72,6 +73,7 @@ class StepStatus(Enum):
             return Style(color="red", bold=True)
         if self is StepStatus.SKIPPED:
             return Style(color="yellow")
+        return None
 
     def get_emoji(self) -> str:
         """Match emoji used in the console output to the step status."""
@@ -81,6 +83,7 @@ class StepStatus(Enum):
             return "❌"
         if self is StepStatus.SKIPPED:
             return "🟡"
+        return None
 
     def __str__(self) -> str:  # noqa D105
         return self.value
@@ -174,8 +177,7 @@ class Step(ABC):
         self.log_step_result(step_result)
 
         lets_retry = self.should_retry(step_result)
-        step_result = await self.retry(step_result, *args, **kwargs) if lets_retry else step_result
-        return step_result
+        return await self.retry(step_result, *args, **kwargs) if lets_retry else step_result
 
     def should_retry(self, step_result: StepResult) -> bool:
         """Return True if the step should be retried."""
@@ -186,8 +188,8 @@ class Step(ABC):
 
     async def retry(self, step_result, *args, **kwargs) -> StepResult:
         self.retry_count += 1
-        self.logger.warn(
-            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
+        self.logger.warning(
+            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds...",
         )
         await anyio.sleep(self.retry_delay.total_seconds())
         return await self.run(*args, **kwargs)
@@ -215,7 +217,7 @@ class Step(ABC):
         """
         ...
 
-    def skip(self, reason: str = None) -> StepResult:
+    def skip(self, reason: str | None = None) -> StepResult:
         """Declare a step as skipped.
 
         Args:
@@ -304,7 +306,7 @@ class PytestStep(Step, ABC):
                     test_directory,
                     "-c",
                     test_config,
-                ]
+                ],
             )
             return await self.get_step_result(tester)
 
@@ -333,10 +335,10 @@ class StepResult:
     step: Step
     status: StepStatus
     created_at: datetime = field(default_factory=datetime.utcnow)
-    stderr: Optional[str] = None
-    stdout: Optional[str] = None
+    stderr: str | None = None
+    stdout: str | None = None
     output_artifact: Any = None
-    exc_info: Optional[Exception] = None
+    exc_info: Exception | None = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
@@ -361,7 +363,7 @@ class Report:
     """A dataclass to build reports to share pipelines executions results with the user."""
 
     pipeline_context: PipelineContext
-    steps_results: List[StepResult]
+    steps_results: list[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
     filename: str = "output"
@@ -413,7 +415,7 @@ class Report:
         await local_path.write_text(content)
         return local_path
 
-    async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
+    async def save_remote(self, local_path: Path, remote_key: str, content_type: str | None = None) -> int:
         gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
         local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
         report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
@@ -464,7 +466,7 @@ class Report:
                 "ci_context": self.pipeline_context.ci_context,
                 "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
                 "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
-            }
+            },
         )
 
     def print(self):
@@ -487,7 +489,7 @@ class Report:
             if step_result.status is StepStatus.SKIPPED:
                 step_results_table.add_row(step, result, "N/A")
             else:
-                run_time = format_duration((step_result.created_at - step_result.step.started_at))
+                run_time = format_duration(step_result.created_at - step_result.step.started_at)
                 step_results_table.add_row(step, result, run_time)
 
         to_render = [step_results_table]
@@ -564,7 +566,7 @@ class ConnectorReport(Report):
                 "cdk_version": self.pipeline_context.cdk_version,
                 "html_report_url": self.html_report_url,
                 "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
-            }
+            },
         )
 
     def post_comment_on_pr(self) -> None:
@@ -649,7 +651,7 @@ class ConnectorReport(Report):
             result.stylize(step_result.status.get_rich_style())
             step_results_table.add_row(step, result, format_duration(step_result.step.run_duration))
 
-        details_instructions = Text("ℹ️  You can find more details with step executions logs in the saved HTML report.")
+        details_instructions = Text("i️  You can find more details with step executions logs in the saved HTML report.")
         to_render = [step_results_table, details_instructions]
 
         if self.pipeline_context.dagger_cloud_url:

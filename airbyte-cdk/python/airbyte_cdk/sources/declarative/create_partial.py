@@ -9,13 +9,12 @@ PARAMETERS_STR = "$parameters"
 
 
 def create(func, /, *args, **keywords):
-    """
-    Create a partial on steroids.
+    """Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
     The interpolation will take in kwargs, and config as parameters that can be accessed through interpolating.
     If any of the parameters are also create functions, they will also be created.
-    kwargs are propagated to the recursive method calls
+    kwargs are propagated to the recursive method calls.
 
     :param func: Function
     :param args:
@@ -32,10 +31,7 @@ def create(func, /, *args, **keywords):
         config = all_keywords.pop("config", None)
 
         # $parameters is a special keyword used for interpolation and propagation
-        if PARAMETERS_STR in all_keywords:
-            parameters = all_keywords.get(PARAMETERS_STR)
-        else:
-            parameters = dict()
+        parameters = all_keywords.get(PARAMETERS_STR) if PARAMETERS_STR in all_keywords else {}
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:
@@ -55,7 +51,8 @@ def create(func, /, *args, **keywords):
         try:
             ret = func(*args, *fargs, **dynamic_args)
         except TypeError as e:
-            raise Exception(f"failed to create object of type {func} because {e}")
+            msg = f"failed to create object of type {func} because {e}"
+            raise Exception(msg)
         return ret
 
     newfunc.func = func
@@ -83,7 +80,7 @@ def _key_is_unset_or_identical(key: str, value: Any, mapping: Mapping[str, Any])
 
 
 def _create_inner_objects(keywords, kwargs):
-    fully_created = dict()
+    fully_created = {}
     for k, v in keywords.items():
         if type(v) == type(create):
             fully_created[k] = v(kwargs=kwargs)

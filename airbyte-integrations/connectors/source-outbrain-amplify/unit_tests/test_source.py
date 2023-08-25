@@ -12,12 +12,12 @@ def test_check_connection(mocker):
         "credentials":
         {
             "type": "access_token",
-            "access_token" : "MTY1OTUyO"
+            "access_token" : "MTY1OTUyO",
         },
         "report_granularity": "daily",
         "geo_location_breakdown": "region",
         "start_date" : "2022-04-01",
-        "end_date" : "2022-04-30"
+        "end_date" : "2022-04-30",
     }
     source = SourceOutbrainAmplify()
     cond = source.check_connection(True, config)[0]

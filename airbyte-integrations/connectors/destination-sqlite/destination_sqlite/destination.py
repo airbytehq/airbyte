@@ -19,27 +19,25 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 class DestinationSqlite(Destination):
     @staticmethod
     def _get_destination_path(destination_path: str) -> str:
-        """
-        Get a normalized version of the destination path.
-        Automatically append /local/ to the start of the path
+        """Get a normalized version of the destination path.
+        Automatically append /local/ to the start of the path.
         """
         if not destination_path.startswith("/local"):
             destination_path = os.path.join("/local", destination_path)
 
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
+            msg = f"destination_path={destination_path} is not a valid path.A valid path shall start with /local or no / prefix"
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                msg,
             )
 
         return destination_path
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -63,22 +61,18 @@ class DestinationSqlite(Destination):
                 table_name = f"_airbyte_raw_{name}"
                 if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                     # delete the tables
-                    query = """
-                    DROP TABLE IF EXISTS {}
-                    """.format(
-                        table_name
-                    )
+                    query = f"""
+                    DROP TABLE IF EXISTS {table_name}
+                    """
                     con.execute(query)
                 # create the table if needed
-                query = """
+                query = f"""
                 CREATE TABLE IF NOT EXISTS {table_name} (
                     _airbyte_ab_id TEXT PRIMARY KEY,
                     _airbyte_emitted_at TEXT,
                     _airbyte_data TEXT
                 )
-                """.format(
-                    table_name=table_name
-                )
+                """
                 con.execute(query)
 
             buffer = defaultdict(list)
@@ -86,13 +80,13 @@ class DestinationSqlite(Destination):
             for message in input_messages:
                 if message.type == Type.STATE:
                     # flush the buffer
-                    for stream_name in buffer.keys():
+                    for stream_name in buffer:
 
                         query = """
                         INSERT INTO {table_name}
                         VALUES (?,?,?)
                         """.format(
-                            table_name=f"_airbyte_raw_{stream_name}"
+                            table_name=f"_airbyte_raw_{stream_name}",
                         )
 
                         con.executemany(query, buffer[stream_name])
@@ -112,13 +106,13 @@ class DestinationSqlite(Destination):
                     buffer[stream].append((str(uuid.uuid4()), datetime.datetime.now().isoformat(), json.dumps(data)))
 
             # flush any remaining messages
-            for stream_name in buffer.keys():
+            for stream_name in buffer:
 
                 query = """
                 INSERT INTO {table_name}
                 VALUES (?,?,?)
                 """.format(
-                    table_name=f"_airbyte_raw_{stream_name}"
+                    table_name=f"_airbyte_raw_{stream_name}",
                 )
 
                 con.executemany(query, buffer[stream_name])
@@ -126,8 +120,7 @@ class DestinationSqlite(Destination):
             con.commit()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
         :param logger: Logging object to display debug/info/error to the logs
@@ -148,4 +141,4 @@ class DestinationSqlite(Destination):
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")

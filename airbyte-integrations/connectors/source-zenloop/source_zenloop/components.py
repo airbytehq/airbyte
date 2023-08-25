@@ -16,9 +16,7 @@ class ZenloopPartitionRouter(SubstreamPartitionRouter):
     config: Config
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        """
-
-        config_parent_field : parent field name in config
+        """config_parent_field : parent field name in config.
 
         Use parent id's as stream state value if it specified in config or
         create stream_slices according SubstreamSlicer logic.

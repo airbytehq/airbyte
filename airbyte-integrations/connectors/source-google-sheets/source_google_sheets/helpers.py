@@ -9,11 +9,12 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 
 from .models.spreadsheet import RowData, Spreadsheet
 from .utils import safe_name_conversion
@@ -23,7 +24,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.
 logger = logging.getLogger("airbyte")
 
 
-class Helpers(object):
+class Helpers:
     @staticmethod
     def get_authenticated_sheets_client(credentials: Dict[str, str], scopes: List[str] = SCOPES) -> discovery.Resource:
         creds = Helpers.get_authenticated_google_credentials(credentials, scopes)
@@ -41,18 +42,18 @@ class Helpers(object):
             return service_account.Credentials.from_service_account_info(json.loads(credentials["service_account_info"]), scopes=scopes)
         elif auth_type == "Client":
             return client_account.Credentials.from_authorized_user_info(info=credentials)
+        return None
 
     @staticmethod
     def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
-        """
-        Parses sheet headers from the provided row. This method assumes that data is contiguous
+        """Parses sheet headers from the provided row. This method assumes that data is contiguous
         i.e: every cell contains a value and the first cell which does not contain a value denotes the end
         of the headers. For example, if the first row contains "One | Two | | Three" then this method
         will parse the headers as ["One", "Two"]. This assumption is made for simplicity and can be modified later.
         """
         fields, duplicate_fields = Helpers.get_valid_headers_and_duplicates(header_row_values)
         if duplicate_fields:
-            logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
+            logger.warning(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -84,8 +85,7 @@ class Helpers(object):
 
     @staticmethod
     def get_formatted_row_values(row_data: RowData) -> List[str]:
-        """
-        Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet. It can be a raw
+        """Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet. It can be a raw
         string input by the user, or the result of a sheets function call.
         """
         return [value.formattedValue for value in row_data.values]
@@ -97,11 +97,13 @@ class Helpers(object):
         # There is only one sheet since we are specifying the sheet in the requested ranges.
         returned_sheets = spreadsheet.sheets
         if len(returned_sheets) != 1:
-            raise Exception(f"Unexpected return result: Sheet {sheet_name} was expected to contain data on exactly 1 sheet. ")
+            msg = f"Unexpected return result: Sheet {sheet_name} was expected to contain data on exactly 1 sheet. "
+            raise Exception(msg)
 
         range_data = returned_sheets[0].data
         if len(range_data) != 1:
-            raise Exception(f"Expected data for exactly one range for sheet {sheet_name}")
+            msg = f"Expected data for exactly one range for sheet {sheet_name}"
+            raise Exception(msg)
 
         all_row_data = range_data[0].rowData
         if not all_row_data:
@@ -110,7 +112,8 @@ class Helpers(object):
             return []
 
         if len(all_row_data) != 1:
-            raise Exception(f"Expected data for exactly one row for sheet {sheet_name}")
+            msg = f"Expected data for exactly one row for sheet {sheet_name}"
+            raise Exception(msg)
 
         first_row_data = all_row_data[0]
 
@@ -141,7 +144,7 @@ class Helpers(object):
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]], names_conversion: bool = False
+        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]], names_conversion: bool = False,
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
         logger.info(f"Available sheets: {available_sheets}")
@@ -173,7 +176,7 @@ class Helpers(object):
 
     @staticmethod
     def get_grid_sheets(spreadsheet_metadata) -> List[str]:
-        """Return grid only diagram, filter out sheets with image/diagram only
+        """Return grid only diagram, filter out sheets with image/diagram only.
 
         https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#sheetproperties
         """
@@ -197,17 +200,11 @@ class Helpers(object):
 
     @staticmethod
     def is_row_empty(cell_values: List[str]) -> bool:
-        for cell in cell_values:
-            if cell.strip() != "":
-                return False
-        return True
+        return all(cell.strip() == "" for cell in cell_values)
 
     @staticmethod
     def row_contains_relevant_data(cell_values: List[str], relevant_indices: Iterable[int]) -> bool:
-        for idx in relevant_indices:
-            if len(cell_values) > idx and cell_values[idx].strip() != "":
-                return True
-        return False
+        return any(len(cell_values) > idx and cell_values[idx].strip() != "" for idx in relevant_indices)
 
     @staticmethod
     def get_spreadsheet_id(id_or_url: str) -> str:
@@ -216,6 +213,7 @@ class Helpers(object):
             m = re.search(r"(/)([-\w]{20,})([/]?)", id_or_url)
             if m is not None and m.group(2):
                 return m.group(2)
+            return None
         else:
             return id_or_url
 

@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -20,13 +21,13 @@ class LinkedinPagesStream(HttpStream, ABC):
     url_base = "https://api.linkedin.com/v2/"
     primary_key = None
 
-    def __init__(self, config):
+    def __init__(self, config) -> None:
         super().__init__(authenticator=config.get("authenticator"))
         self.config = config
 
     @property
     def org(self):
-        """Property to return the user Organization Id from input"""
+        """Property to return the user Organization Id from input."""
         return self.config.get("org_id")
 
     def path(self, **kwargs) -> str:
@@ -37,7 +38,7 @@ class LinkedinPagesStream(HttpStream, ABC):
         return None
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         return [response.json()]
 
@@ -57,18 +58,16 @@ class LinkedinPagesStream(HttpStream, ABC):
 class OrganizationLookup(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
-        path = f"organizations/{self.org}"
-        return path
+        return f"organizations/{self.org}"
 
 
 class FollowerStatistics(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
-        path = f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
-        return path
+        return f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         yield from response.json().get("elements")
 
@@ -76,11 +75,10 @@ class FollowerStatistics(LinkedinPagesStream):
 class ShareStatistics(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
-        path = f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
-        return path
+        return f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         yield from response.json().get("elements")
 
@@ -88,25 +86,22 @@ class ShareStatistics(LinkedinPagesStream):
 class TotalFollowerCount(LinkedinPagesStream):
     def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
 
-        path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
-        return path
+        return f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
 
 
 class SourceLinkedinPages(AbstractSource):
-    """
-    Abstract Source inheritance, provides:
+    """Abstract Source inheritance, provides:
     - implementation for `check` connector's connectivity
     - implementation to call each stream with it's input parameters.
     """
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> TokenAuthenticator:
-        """
-        Validate input parameters and generate a necessary Authentication object
+        """Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
         1) direct access token with TTL = 2 months
         2) refresh token (TTL = 1 year) which can be converted to access tokens
-           Every new refresh revokes all previous access tokens q
+           Every new refresh revokes all previous access tokens q.
         """
         auth_method = config.get("credentials", {}).get("auth_method")
         if not auth_method or auth_method == "access_token":
@@ -120,17 +115,15 @@ class SourceLinkedinPages(AbstractSource):
                 client_secret=config["credentials"]["client_secret"],
                 refresh_token=config["credentials"]["refresh_token"],
             )
-        raise Exception("incorrect input parameters")
+        msg = "incorrect input parameters"
+        raise Exception(msg)
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         # RUN $ python main.py check --config secrets/config.json
-
-        """
-        Testing connection availability for the connector.
+        """Testing connection availability for the connector.
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.
-        :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
+        :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin.
         """
-
         config["authenticator"] = self.get_authenticator(config)
         stream = OrganizationLookup(config)
         stream.records_limit = 1

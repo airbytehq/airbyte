@@ -7,6 +7,7 @@ import sys
 from typing import Dict, List, Set, Union
 
 import yaml
+
 from connector_ops import utils
 
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
@@ -79,7 +80,7 @@ def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
     if connectors_with_bad_strictness_level:
         logging.error(
-            f"The following connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level"
+            f"The following connectors must enable high test strictness level: {connectors_with_bad_strictness_level}. Please check this documentation for details: https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/#strictness-level",
         )
         sys.exit(1)
     else:
@@ -91,7 +92,7 @@ def write_review_requirements_file():
 
     if mandatory_reviewers:
         requirements_file_content = [
-            {"name": "Required reviewers from the connector org teams", "paths": "unmatched", "teams": mandatory_reviewers}
+            {"name": "Required reviewers from the connector org teams", "paths": "unmatched", "teams": mandatory_reviewers},
         ]
         with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:
             yaml.safe_dump(requirements_file_content, requirements_file)

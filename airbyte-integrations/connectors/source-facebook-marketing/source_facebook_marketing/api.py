@@ -9,27 +9,28 @@ from time import sleep
 
 import backoff
 import pendulum
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
+
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
 
 
 class FacebookAPIException(Exception):
-    """General class for all API errors"""
+    """General class for all API errors."""
 
 
 backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
-    """Custom Facebook API class to intercept all API calls and handle call rate limits"""
+    """Custom Facebook API class to intercept all API calls and handle call rate limits."""
 
     MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
     MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
@@ -42,7 +43,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     @dataclass
     class Throttle:
-        """Utilization of call rate in %, from 0 to 100"""
+        """Utilization of call rate in %, from 0 to 100."""
 
         per_application: float
         per_account: float
@@ -131,8 +132,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
             sleep(sleep_time.total_seconds())
 
     def _update_insights_throttle_limit(self, response: FacebookResponse):
-        """
-        For /insights call every response contains x-fb-ads-insights-throttle
+        """For /insights call every response contains x-fb-ads-insights-throttle
         header representing current throttle limit parameter for async insights
         jobs for current app/account.  We need this information to adjust
         number of running async jobs for optimal performance.
@@ -146,11 +146,10 @@ class MyFacebookAdsApi(FacebookAdsApi):
             )
 
     def _should_restore_default_page_size(self, params):
+        """Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
+        based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`).
         """
-        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
-        based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
-        """
-        params = True if params else False
+        params = bool(params)
         return params and not self.request_record_limit_is_reduced and self.last_api_call_is_successful
 
     @backoff_policy
@@ -164,7 +163,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         url_override=None,
         api_version=None,
     ):
-        """Makes an API call, delegate actual work to parent class and handles call rates"""
+        """Makes an API call, delegate actual work to parent class and handles call rates."""
         if self._should_restore_default_page_size(params):
             params.update(**{"limit": self.default_page_size})
         response = super().call(method, path, params, headers, files, url_override, api_version)
@@ -174,7 +173,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
 
 class API:
-    """Simple wrapper around Facebook API"""
+    """Simple wrapper around Facebook API."""
 
     def __init__(self, account_id: str, access_token: str, page_size: int = 100):
         self._account_id = account_id
@@ -182,18 +181,18 @@ class API:
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         # adding the default page size from config to the api base class
         # reference issue: https://github.com/airbytehq/airbyte/issues/25383
-        setattr(self.api, "default_page_size", page_size)
+        self.api.default_page_size = page_size
         # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
     def account(self) -> AdAccount:
-        """Find current account"""
+        """Find current account."""
         return self._find_account(self._account_id)
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
-        """Actual implementation of find account"""
+        """Actual implementation of find account."""
         try:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:

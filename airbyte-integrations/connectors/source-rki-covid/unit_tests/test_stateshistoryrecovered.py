@@ -9,7 +9,7 @@ from pytest import fixture
 from source_rki_covid.source import StatesHistoryRecovered
 
 
-@fixture
+@fixture()
 def patch_states_history_recovered(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(StatesHistoryRecovered, "primary_key", None)

@@ -30,7 +30,7 @@ json_credentials = """
 """
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "path", f"{random.randint(100000000, 999999999)}:runReport")
@@ -53,14 +53,14 @@ def patch_base_class(mocker):
                 "bounceRate",
             ],
             "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
-        }
+        },
     }
 
 
 def test_request_params(patch_base_class):
     assert (
         GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_params(
-            stream_state=MagicMock(), stream_slice=MagicMock(), next_page_token=MagicMock()
+            stream_state=MagicMock(), stream_slice=MagicMock(), next_page_token=MagicMock(),
         )
         == {}
     )
@@ -93,7 +93,7 @@ def test_request_body_json(patch_base_class):
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(
-        **request_body_params
+        **request_body_params,
     )
     assert request_body_json == expected_body_json
 
@@ -347,13 +347,13 @@ def test_read_incremental(requests_mock):
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "112"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "125"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],

@@ -10,22 +10,23 @@ from typing import Any, Mapping
 
 import pytest
 import requests_mock
+from source_salesforce.source import SourceSalesforce
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from source_salesforce.source import SourceSalesforce
 
 HERE = Path(__file__).parent
 
 
 @pytest.fixture(name="input_config")
 def parse_input_config():
-    with open(HERE.parent / "secrets/config.json", "r") as file:
+    with open(HERE.parent / "secrets/config.json") as file:
         return json.loads(file.read())
 
 
 @pytest.fixture(name="input_sandbox_config")
 def parse_input_sandbox_config():
-    with open(HERE.parent / "secrets/config_sandbox.json", "r") as file:
+    with open(HERE.parent / "secrets/config_sandbox.json") as file:
         return json.loads(file.read())
 
 
@@ -56,7 +57,7 @@ def test_not_queryable_stream(caplog, input_config):
 
 
 @pytest.mark.parametrize(
-    "stream_name,log_messages",
+    ("stream_name", "log_messages"),
     (
         (
             "Dashboard",
@@ -74,9 +75,9 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
     stream = get_stream(input_sandbox_config, stream_name)
     stream_slice = {
         "start_date": "2023-01-01T00:00:00.000+0000",
-        "end_date": "2023-02-01T00:00:00.000+0000"
+        "end_date": "2023-02-01T00:00:00.000+0000",
     }
-    expected_record_ids = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+    expected_record_ids = {record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)}
 
     create_query_matcher = re.compile(r"jobs/query$")
     job_matcher = re.compile(r"jobs/query/fake_id$")
@@ -92,7 +93,7 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
         m.register_uri("GET", job_matcher, json={"state": "Failed", "errorMessage": "unknown error"})
         m.register_uri("DELETE", job_matcher, json={})
         with caplog.at_level(logging.WARNING):
-            loaded_record_ids = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+            loaded_record_ids = {record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)}
 
         caplog_rec_counter = len(caplog.records) - 1
         for log_message in log_messages:

@@ -11,7 +11,7 @@ from .zuora_endpoint import get_url_base
 
 
 class OAuth(Oauth2Authenticator):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:

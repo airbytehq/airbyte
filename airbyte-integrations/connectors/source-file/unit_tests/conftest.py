@@ -8,22 +8,21 @@ import pytest
 from source_file.client import Client
 
 
-@pytest.fixture
+@pytest.fixture()
 def read_file():
     def _read_file(file_name):
         parent_location = Path(__file__).absolute().parent
-        file = open(parent_location / file_name).read()
-        return file
+        return open(parent_location / file_name).read()
 
     return _read_file
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {"dataset_name": "test", "format": "json", "url": "https://airbyte.com", "provider": {"storage": "HTTPS"}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_config(read_file):
     return {
         "dataset_name": "test",
@@ -34,7 +33,7 @@ def invalid_config(read_file):
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_reader_options_config(read_file):
     return {
         "dataset_name": "test",
@@ -45,7 +44,7 @@ def invalid_reader_options_config(read_file):
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_dropbox_link():
     return {
         "dataset_name": "test",
@@ -58,7 +57,7 @@ def config_dropbox_link():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def client():
     return Client(
         dataset_name="test_dataset",
@@ -67,17 +66,17 @@ def client():
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def absolute_path():
     return Path(__file__).parent.absolute()
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_files():
     return "../integration_tests/sample_files"
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_read_config():
     return {
         "dataset_name": "integrationTestFile",

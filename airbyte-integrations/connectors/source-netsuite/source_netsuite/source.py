@@ -9,9 +9,10 @@ from json import JSONDecodeError
 from typing import Any, List, Mapping, Tuple, Union
 
 import requests
+from requests_oauthlib import OAuth1
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from requests_oauthlib import OAuth1
 from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
 from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
 
@@ -61,6 +62,7 @@ class SourceNetsuite(AbstractSource):
                     return True, None
                 except requests.exceptions.HTTPError as e:
                     return False, e
+            return None
         else:
             # if `object_types` are not provided, use `Contact` object
             # there should be at least 1 contact available in every NetSuite account by default.
@@ -73,9 +75,7 @@ class SourceNetsuite(AbstractSource):
                 return False, e
 
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        """
-        Handles multivariance of object_names type input and fetches the schema for each object type provided.
-        """
+        """Handles multivariance of object_names type input and fetches the schema for each object type provided."""
         try:
             if isinstance(object_names, list):
                 schemas = {}
@@ -85,16 +85,15 @@ class SourceNetsuite(AbstractSource):
             elif isinstance(object_names, str):
                 return self.fetch_schema(object_names, session, metadata_url)
             else:
+                msg = f"Object Types has unknown structure, should be either `dict` or `str`, actual input: {object_names}"
                 raise NotImplementedError(
-                    f"Object Types has unknown structure, should be either `dict` or `str`, actual input: {object_names}"
+                    msg,
                 )
         except JSONDecodeError as e:
             self.logger.error(f"Unexpected output while fetching the object schema. Full error: {e.__repr__()}")
 
     def fetch_schema(self, object_name: str, session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        """
-        Calls the API for specific object type and returns schema as a dict.
-        """
+        """Calls the API for specific object type and returns schema as a dict."""
         return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
 
     def generate_stream(
@@ -121,9 +120,9 @@ class SourceNetsuite(AbstractSource):
         schema = schemas[object_name]
         schema_props = schema.get("properties")
         if schema_props:
-            if INCREMENTAL_CURSOR in schema_props.keys():
+            if INCREMENTAL_CURSOR in schema_props:
                 return IncrementalNetsuiteStream(**input_args)
-            elif CUSTOM_INCREMENTAL_CURSOR in schema_props.keys():
+            elif CUSTOM_INCREMENTAL_CURSOR in schema_props:
                 return CustomIncrementalNetsuiteStream(**input_args)
             else:
                 # all other streams are full_refresh
@@ -131,7 +130,7 @@ class SourceNetsuite(AbstractSource):
         else:
             retry_attempt = 1
             while retry_attempt <= max_retry:
-                self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}")
+                self.logger.warning(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}")
                 # somethimes object metadata returns data with missing `properties` key,
                 # we should try to fetch metadata again to that object
                 schemas = self.get_schemas(object_name, session, metadata_url)
@@ -139,7 +138,7 @@ class SourceNetsuite(AbstractSource):
                     input_args.update(**{"session": session, "metadata_url": metadata_url, "schemas": schemas})
                     return self.generate_stream(**input_args)
                 retry_attempt += 1
-            self.logger.warn(f"Object `{object_name}` schema is not available. Skipping this stream.")
+            self.logger.warning(f"Object `{object_name}` schema is not available. Skipping this stream.")
             return None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -163,7 +162,7 @@ class SourceNetsuite(AbstractSource):
                 "start_datetime": config["start_datetime"],
                 "window_in_days": config["window_in_days"],
                 "schemas": schemas,
-            }
+            },
         )
         # build streams
         streams: list = []

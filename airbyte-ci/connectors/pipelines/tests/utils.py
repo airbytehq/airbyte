@@ -3,6 +3,7 @@
 #
 
 import random
+from typing import Optional
 
 from connector_ops.utils import Connector, ConnectorLanguage, get_all_connectors_in_repo
 
@@ -10,7 +11,7 @@ ALL_CONNECTORS = get_all_connectors_in_repo()
 
 
 def pick_a_random_connector(
-    language: ConnectorLanguage = None, support_level: str = None, other_picked_connectors: list = None
+    language: ConnectorLanguage = None, support_level: Optional[str] = None, other_picked_connectors: Optional[list] = None,
 ) -> Connector:
     """Pick a random connector from the list of all connectors."""
     all_connectors = list(ALL_CONNECTORS)

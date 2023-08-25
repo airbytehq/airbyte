@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Dict, Generator
 
 import boto3
+from botocore.exceptions import ClientError
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -20,7 +22,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources.source import Source
-from botocore.exceptions import ClientError
 
 
 class SourceAmazonSqs(Source):
@@ -28,14 +29,16 @@ class SourceAmazonSqs(Source):
         try:
             message.delete()
         except ClientError:
-            raise Exception("Couldn't delete message: %s - does your IAM user have sqs:DeleteMessage?", message.message_id)
+            msg = "Couldn't delete message: %s - does your IAM user have sqs:DeleteMessage?"
+            raise Exception(msg, message.message_id)
 
     def change_message_visibility(self, message, visibility_timeout):
         try:
             message.change_visibility(VisibilityTimeout=visibility_timeout)
         except ClientError:
+            msg = "Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?"
             raise Exception(
-                "Couldn't change message visibility: %s - does your IAM user have sqs:ChangeMessageVisibility?", message.message_id
+                msg, message.message_id,
             )
 
     def parse_queue_name(self, url: str) -> str:
@@ -46,11 +49,13 @@ class SourceAmazonSqs(Source):
             if "max_batch_size" in config:
                 # Max batch size must be between 1 and 10
                 if config["max_batch_size"] > 10 or config["max_batch_size"] < 1:
-                    raise Exception("max_batch_size must be between 1 and 10")
+                    msg = "max_batch_size must be between 1 and 10"
+                    raise Exception(msg)
             if "max_wait_time" in config:
                 # Max wait time must be between 1 and 20
                 if config["max_wait_time"] > 20 or config["max_wait_time"] < 1:
-                    raise Exception("max_wait_time must be between 1 and 20")
+                    msg = "max_wait_time must be between 1 and 20"
+                    raise Exception(msg)
 
             # Required propeties
             queue_url = config["queue_url"]
@@ -73,10 +78,10 @@ class SourceAmazonSqs(Source):
             else:
                 return AirbyteConnectionStatus(status=Status.FAILED, message="Amazon SQS Source Config Check - Could not connect to queue")
         except ClientError as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {str(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Amazon SQS Source Config Check - Error in AWS Client: {e!s}")
         except Exception as e:
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {str(e)}"
+                status=Status.FAILED, message=f"Amazon SQS Source Config Check - An exception occurred: {e!s}",
             )
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
@@ -95,7 +100,7 @@ class SourceAmazonSqs(Source):
         return AirbyteCatalog(streams=streams)
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any],
     ) -> Generator[AirbyteMessage, None, None]:
         stream_name = self.parse_queue_name(config["queue_url"])
         logger.debug("Amazon SQS Source Read - stream is: " + stream_name)
@@ -110,10 +115,7 @@ class SourceAmazonSqs(Source):
         max_wait_time = config.get("max_wait_time", 20)
         visibility_timeout = config.get("visibility_timeout")
         attributes_to_return = config.get("attributes_to_return")
-        if attributes_to_return is None:
-            attributes_to_return = ["All"]
-        else:
-            attributes_to_return = attributes_to_return.split(",")
+        attributes_to_return = ["All"] if attributes_to_return is None else attributes_to_return.split(",")
 
         # Senstive Properties
         access_key = config["access_key"]
@@ -129,7 +131,7 @@ class SourceAmazonSqs(Source):
             try:
                 logger.debug("Amazon SQS Source Read - Beginning message poll ---")
                 messages = queue.receive_messages(
-                    MessageAttributeNames=attributes_to_return, MaxNumberOfMessages=max_batch_size, WaitTimeSeconds=max_wait_time
+                    MessageAttributeNames=attributes_to_return, MaxNumberOfMessages=max_batch_size, WaitTimeSeconds=max_wait_time,
                 )
 
                 if not messages:

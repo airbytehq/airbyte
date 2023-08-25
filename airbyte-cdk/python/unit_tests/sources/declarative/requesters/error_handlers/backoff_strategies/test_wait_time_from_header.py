@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
@@ -13,7 +14,7 @@ SOME_BACKOFF_TIME = 60
 
 
 @pytest.mark.parametrize(
-    "test_name, header, header_value, regex, expected_backoff_time",
+    ("test_name", "header", "header_value", "regex", "expected_backoff_time"),
     [
         ("test_wait_time_from_header", "wait_time", SOME_BACKOFF_TIME, None, SOME_BACKOFF_TIME),
         ("test_wait_time_from_header_string", "wait_time", "60", None, SOME_BACKOFF_TIME),
@@ -29,7 +30,7 @@ def test_wait_time_from_header(test_name, header, header_value, regex, expected_
     response_mock = MagicMock()
     response_mock.headers = {"wait_time": header_value}
     backoff_stratery = WaitTimeFromHeaderBackoffStrategy(
-        header=header, regex=regex, parameters={"wait_time": "wait_time"}, config={"wait_time": "wait_time"}
+        header=header, regex=regex, parameters={"wait_time": "wait_time"}, config={"wait_time": "wait_time"},
     )
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time

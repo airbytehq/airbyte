@@ -9,9 +9,8 @@ from typing import Optional, Tuple
 
 @dataclass(repr=False, eq=False, frozen=True)
 class GAQL:
-    """
-    Simple regex parser of Google Ads Query Language
-    https://developers.google.com/google-ads/api/docs/query/grammar
+    """Simple regex parser of Google Ads Query Language
+    https://developers.google.com/google-ads/api/docs/query/grammar.
     """
 
     fields: Tuple[str]
@@ -62,7 +61,7 @@ class GAQL:
         parameters = cls._normalize(m.group("ParametersClause") or "")
         return cls(tuple(fields), resource_name, where, order_by, limit, parameters)
 
-    def __str__(self):
+    def __str__(self) -> str:
         fields = ", ".join(self.fields)
         query = f"SELECT {fields} FROM {self.resource_name}"
         if self.where:
@@ -75,7 +74,7 @@ class GAQL:
             query += " PARAMETERS " + self.parameters
         return query
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     @staticmethod

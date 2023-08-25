@@ -58,7 +58,7 @@ class ShopifyNonRetryableErrors:
             402: f"Stream `{stream}`. The shop's plan does not have access to this feature. Please upgrade your plan to be  able to access this stream.",
             403: f"Stream `{stream}`. Unable to access Shopify endpoint for {stream}. Check that you have the appropriate access scopes to read data from this endpoint.",
             404: f"Stream `{stream}`. Not available or missing.",
-            500: f"Stream `{stream}`. Entity might not be available or missing."
+            500: f"Stream `{stream}`. Entity might not be available or missing.",
             # extend the mapping with more handable errors, if needed.
         }
 
@@ -68,32 +68,32 @@ class ShopifyAccessScopesError(Exception):
 
     help_url = "https://shopify.dev/docs/api/usage/access-scopes#authenticated-access-scopes"
 
-    def __init__(self, response):
+    def __init__(self, response) -> None:
         super().__init__(
-            f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}"
+            f"Reason: Scopes are not available, make sure you're using the correct `Shopify Store` name. Actual response: {response}. More info about: {self.help_url}",
         )
 
 
 class ShopifyBadJsonError(ShopifyAccessScopesError):
-    """Raises the error when Shopify replies with broken json for `access_scopes` request"""
+    """Raises the error when Shopify replies with broken json for `access_scopes` request."""
 
-    def __init__(self, message):
+    def __init__(self, message) -> None:
         super().__init__(f"Reason: Bad JSON Response from the Shopify server. Details: {message}.")
 
 
 class ShopifyConnectionError(ShopifyAccessScopesError):
-    """Raises the error when Shopify replies with broken connection error for `access_scopes` request"""
+    """Raises the error when Shopify replies with broken connection error for `access_scopes` request."""
 
-    def __init__(self, details):
+    def __init__(self, details) -> None:
         super().__init__(f"Invalid `Shopify Store` name used or `host` couldn't be verified by Shopify. Details: {details}")
 
 
 class ShopifyWrongShopNameError(Exception):
-    """Raises the error when `Shopify Store` name is incorrect or couldn't be verified by the Shopify"""
+    """Raises the error when `Shopify Store` name is incorrect or couldn't be verified by the Shopify."""
 
-    def __init__(self, url):
+    def __init__(self, url) -> None:
         super().__init__(
-            f"Reason: The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
+            f"Reason: The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}",
         )
 
 
@@ -111,8 +111,7 @@ class ApiTypeEnum(enum.Enum):
 
 
 class ShopifyRateLimiter:
-    """
-    Define timings for RateLimits. Adjust timings if needed.
+    """Define timings for RateLimits. Adjust timings if needed.
 
     :: on_unknown_load = 1.0 sec - Shopify recommended time to hold between each API call.
     :: on_low_load = 0.2 sec (200 miliseconds) - ideal ratio between hold time and api call, also the standard hold time between each API call.
@@ -127,8 +126,7 @@ class ShopifyRateLimiter:
 
     @staticmethod
     def _convert_load_to_time(load: Optional[float], threshold: float) -> float:
-        """
-        Define wait_time based on load conditions.
+        """Define wait_time based on load conditions.
 
         :: load - represents how close we are to being throttled
                 - 0.5 is half way through our allowance
@@ -151,8 +149,7 @@ class ShopifyRateLimiter:
 
     @staticmethod
     def get_rest_api_wait_time(*args, threshold: float = 0.9, rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit"):
-        """
-        To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
+        """To avoid reaching Shopify REST API Rate Limits, use the "X-Shopify-Shop-Api-Call-Limit" header value,
         to determine the current rate limits and load and handle wait_time based on load %.
         Recomended wait_time between each request is 1 sec, we would handle this dynamicaly.
 
@@ -177,13 +174,11 @@ class ShopifyRateLimiter:
             load = int(current_rate) / int(max_rate_limit)
         else:
             load = None
-        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
-        return wait_time
+        return ShopifyRateLimiter._convert_load_to_time(load, threshold)
 
     @staticmethod
     def get_graphql_api_wait_time(*args, threshold: float = 0.9):
-        """
-        To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
+        """To avoid reaching Shopify Graphql API Rate Limits, use the extensions dict in the response.
 
         :: threshold - is the % cutoff for the % load, if this cutoff is crossed,
                         the connector waits `sleep_on_high_load` amount of time
@@ -225,8 +220,7 @@ class ShopifyRateLimiter:
         else:
             load = None
 
-        wait_time = ShopifyRateLimiter._convert_load_to_time(load, threshold)
-        return wait_time
+        return ShopifyRateLimiter._convert_load_to_time(load, threshold)
 
     @staticmethod
     def wait_time(wait_time: float):
@@ -238,8 +232,7 @@ class ShopifyRateLimiter:
         rate_limit_header: str = "X-Shopify-Shop-Api-Call-Limit",
         api_type: ApiTypeEnum = ApiTypeEnum.rest.value,
     ):
-        """
-        The decorator function.
+        """The decorator function.
         Adjust `threshold`, `rate_limit_header` and `api_type` if needed.
         """
 
@@ -248,12 +241,13 @@ class ShopifyRateLimiter:
             def wrapper_balance_rate_limit(*args, **kwargs):
                 if api_type == ApiTypeEnum.rest.value:
                     ShopifyRateLimiter.wait_time(
-                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
+                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header),
                     )
                 elif api_type == ApiTypeEnum.graphql.value:
                     ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold))
                 else:
-                    raise UnrecognisedApiType(f"unrecognised api type: {api_type}. valid values are: {ApiTypeEnum.api_types()}")
+                    msg = f"unrecognised api type: {api_type}. valid values are: {ApiTypeEnum.api_types()}"
+                    raise UnrecognisedApiType(msg)
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit
@@ -262,8 +256,7 @@ class ShopifyRateLimiter:
 
 
 class EagerlyCachedStreamState:
-    """
-    This is the placeholder for the tmp stream state for each incremental stream,
+    """This is the placeholder for the tmp stream state for each incremental stream,
     It's empty, once the sync has started and is being updated while sync operation takes place,
     It holds the `temporary stream state values` before they are updated to have the opportunity to reuse this state.
     """
@@ -272,8 +265,7 @@ class EagerlyCachedStreamState:
 
     @staticmethod
     def stream_state_to_tmp(*args, state_object: Dict = cached_state, **kwargs) -> Dict:
-        """
-        Method to save the current stream state for future re-use within slicing.
+        """Method to save the current stream state for future re-use within slicing.
         The method requires having the temporary `state_object` as placeholder.
         Because of the specific of Shopify's entities relations, we have the opportunity to fetch the updates,
         for particular stream using the `Incremental Refresh`, inside slicing.
@@ -294,7 +286,7 @@ class EagerlyCachedStreamState:
             # Check if we have the saved state and keep the minimun value
             if tmp_stream_state_value:
                 state_object[stream.name] = {
-                    stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value)
+                    stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value),
                 }
 
         return state_object

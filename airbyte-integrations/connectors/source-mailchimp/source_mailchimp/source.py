@@ -7,11 +7,12 @@ import base64
 from typing import Any, List, Mapping, Tuple
 
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from requests.auth import AuthBase
 
 from .streams import Automations, Campaigns, EmailActivity, Lists, Reports
 
@@ -21,11 +22,12 @@ class MailChimpAuthenticator:
     def get_server_prefix(access_token: str) -> str:
         try:
             response = requests.get(
-                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)}
+                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": f"OAuth {access_token}"},
             )
             return response.json()["dc"]
         except Exception as e:
-            raise Exception(f"Cannot retrieve server_prefix for you account. \n {repr(e)}")
+            msg = f"Cannot retrieve server_prefix for you account. \n {e!r}"
+            raise Exception(msg)
 
     def get_auth(self, config: Mapping[str, Any]) -> AuthBase:
         authorization = config.get("credentials", {})
@@ -35,8 +37,9 @@ class MailChimpAuthenticator:
             # See https://mailchimp.com/developer/marketing/docs/fundamentals/#api-structure
             apikey = authorization.get("apikey") or config.get("apikey")
             if not apikey:
-                raise Exception("No apikey in creds")
-            auth_string = f"anystring:{apikey}".encode("utf8")
+                msg = "No apikey in creds"
+                raise Exception(msg)
+            auth_string = f"anystring:{apikey}".encode()
             b64_encoded = base64.b64encode(auth_string).decode("utf8")
             auth = TokenAuthenticator(token=b64_encoded, auth_method="Basic")
             auth.data_center = apikey.split("-").pop()
@@ -47,7 +50,8 @@ class MailChimpAuthenticator:
             auth.data_center = self.get_server_prefix(access_token)
 
         else:
-            raise Exception(f"Invalid auth type: {auth_type}")
+            msg = f"Invalid auth type: {auth_type}"
+            raise Exception(msg)
 
         return auth
 

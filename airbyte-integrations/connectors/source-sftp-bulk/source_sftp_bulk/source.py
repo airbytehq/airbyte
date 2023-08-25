@@ -87,7 +87,7 @@ class SourceFtp(AbstractSource):
             logger.error(
                 f"Failed to connect to FTP server: {ex}",
             )
-            return (False, AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(ex)}"))
+            return (False, AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {ex!s}"))
 
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         _, status = self.check_connection(logger, config)
@@ -114,7 +114,7 @@ class SourceFtp(AbstractSource):
                 supported_sync_modes=sync_modes,
                 source_defined_cursor=True,
                 default_cursor_field=[] if file_most_recent else ["last_modified"],
-            )
+            ),
         )
 
         conn.close()

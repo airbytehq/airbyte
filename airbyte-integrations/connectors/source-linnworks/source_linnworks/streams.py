@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import contextlib
 import json
 import os
 from abc import ABC, abstractmethod
@@ -11,16 +12,17 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 import vcr
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from requests.auth import AuthBase
 from vcr.cassette import Cassette
+
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 
 class LinnworksStream(HttpStream, ABC):
     http_method = "POST"
 
-    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: str = None):
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, start_date: Optional[str] = None):
         super().__init__(authenticator=authenticator)
 
         self._authenticator = authenticator
@@ -34,7 +36,7 @@ class LinnworksStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -42,13 +44,13 @@ class LinnworksStream(HttpStream, ABC):
         json = response.json()
         if not isinstance(json, list):
             json = [json]
-        for record in json:
-            yield record
+        yield from json
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
         if delay_time:
             return int(delay_time)
+        return None
 
 
 class LinnworksGenericPagedResult(ABC):
@@ -67,6 +69,7 @@ class LinnworksGenericPagedResult(ABC):
                 "TotalEntries": result["TotalEntries"],
                 "TotalPages": result["TotalPages"],
             }
+        return None
 
 
 class StockLocations(LinnworksStream):
@@ -77,7 +80,7 @@ class StockLocations(LinnworksStream):
     use_cache = True
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "/api/Inventory/GetStockLocations"
 
@@ -88,11 +91,11 @@ class StockLocationDetails(HttpSubStream, StockLocations):
     # Allows 150 calls per minute
     primary_key = "StockLocationIntId"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(StockLocations(**kwargs), **kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "/api/Locations/GetLocation"
 
@@ -110,7 +113,7 @@ class StockItems(LinnworksStream):
     raise_on_http_errors = False
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "/api/Stock/GetStockItemsFull"
 
@@ -128,6 +131,7 @@ class StockItems(LinnworksStream):
                 "entriesPerPage": page_size,
                 "pageNumber": page_number + 1,
             }
+        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code == requests.codes.bad_request:
@@ -136,7 +140,7 @@ class StockItems(LinnworksStream):
         yield from super().parse_response(response, **kwargs)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {
             "entriesPerPage": self.page_size,
@@ -179,7 +183,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
     def path(self, **kwargs) -> str:
         return "/api/ProcessedOrders/SearchProcessedOrders"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if not stream_state:
             stream_state = {}
 
@@ -204,7 +208,7 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
                 break
 
     def request_body_data(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         request = {
             "DateField": "processed",
@@ -223,14 +227,12 @@ class ProcessedOrders(LinnworksGenericPagedResult, IncrementalLinnworksStream):
         return response.json()["ProcessedOrders"]
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in self.paged_result(response)["Data"]:
-            yield record
+        yield from self.paged_result(response)["Data"]
 
     def request_cache(self) -> Cassette:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(self.cache_filename)
-        except FileNotFoundError:
-            pass
+
 
         return vcr.use_cassette(
             self.cache_filename,
@@ -248,13 +250,13 @@ class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
     cursor_field = "ProcessedDateTime"
     page_size = 100
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(ProcessedOrders(**kwargs), **kwargs)
 
     def path(self, **kwargs) -> str:
         return "/api/Orders/GetOrdersById"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         parent_stream_state = None
         if stream_state:
             parent_stream_state = {"dProcessedOn": stream_state["ProcessedDateTime"]}
@@ -269,7 +271,7 @@ class ProcessedOrderDetails(HttpSubStream, IncrementalLinnworksStream):
             yield buffer
 
     def request_body_data(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "pkOrderIds": json.dumps(stream_slice, separators=(",", ":")),

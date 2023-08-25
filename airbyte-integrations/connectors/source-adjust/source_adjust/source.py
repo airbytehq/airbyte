@@ -7,6 +7,7 @@ import decimal
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 import source_adjust.model
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
@@ -16,9 +17,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 
 class AdjustReportStream(HttpStream, IncrementalMixin):
-    """
-    Adjust reports service integration with support for incremental synchronization.
-    """
+    """Adjust reports service integration with support for incremental synchronization."""
 
     def __init__(self, connector: "SourceAdjust", config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
@@ -33,10 +32,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 
     @property
     def state(self):
-        if self._cursor is not None:
-            cursor = self._cursor.isoformat()
-        else:
-            cursor = self.config["ingest_start"]
+        cursor = self._cursor.isoformat() if self._cursor is not None else self.config["ingest_start"]
 
         return {
             self.cursor_field: cursor,
@@ -67,9 +63,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        """
-        Report URL path suffix.
-        """
+        """Report URL path suffix."""
         return "report"
 
     def request_params(
@@ -78,9 +72,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Get query parameter definitions.
-        """
+        """Get query parameter definitions."""
         required_dimensions = ["day"]
         dimensions = required_dimensions + self.config["dimensions"]
         metrics = self.config["metrics"] + self.config["additional_metrics"]
@@ -127,19 +119,14 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
         else:
             date = datetime.date.fromisoformat(self.config["ingest_start"])
 
-        if self.config["until_today"]:
-            end_date = now
-        else:
-            end_date = now + datetime.timedelta(days=1)
+        end_date = now if self.config["until_today"] else now + datetime.timedelta(days=1)
 
         while date < end_date:
             yield {cf: date.isoformat()}
             date += datetime.timedelta(days=1)
 
     def get_json_schema(self):
-        """
-        Prune the schema to only include selected fields to synchronize.
-        """
+        """Prune the schema to only include selected fields to synchronize."""
         schema = source_adjust.model.Report.schema()
         properties = schema["properties"]
 
@@ -157,9 +144,7 @@ class AdjustReportStream(HttpStream, IncrementalMixin):
 
     @property
     def cursor_field(self) -> str:
-        """
-        Name of the field in the API response body used as cursor.
-        """
+        """Name of the field in the API response body used as cursor."""
         return "day"
 
     @property
@@ -174,8 +159,7 @@ class SourceAdjust(AbstractSource):
     check_endpoint = "https://dash.adjust.com/control-center/reports-service/filters_data"
 
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        """
-        Verify the configuration supplied can be used to connect to the API.
+        """Verify the configuration supplied can be used to connect to the API.
 
         :param config:  config object as per definition in spec.yaml
         :param logger:  logger object
@@ -189,8 +173,7 @@ class SourceAdjust(AbstractSource):
         return True, None  # Are we coding in go?
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Stream registry.
+        """Stream registry.
 
         :param config: user input configuration as defined in the connector spec.
         """
@@ -202,9 +185,7 @@ class SourceAdjust(AbstractSource):
         return self._streams
 
     def checkpoint(self):
-        """
-        Checkpoint state.
-        """
+        """Checkpoint state."""
         state = AirbyteMessage(
             type=Type.STATE,
             state=AirbyteStateMessage(

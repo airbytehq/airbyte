@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-"""
-MIT License
+"""MIT License.
 
 Copyright (c) 2020 Airbyte
 

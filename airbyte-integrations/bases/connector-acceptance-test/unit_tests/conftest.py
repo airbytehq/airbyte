@@ -10,13 +10,13 @@ import dagger
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def mssql_spec_schema():
     with open("unit_tests/data/mssql_spec.json") as f:
         return json.load(f).get("connectionSpecification")
 
 
-@pytest.fixture
+@pytest.fixture()
 def postgres_source_spec_schema():
     with open("unit_tests/data/postgres_spec.json") as f:
         return json.load(f).get("connectionSpecification")

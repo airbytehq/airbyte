@@ -10,7 +10,7 @@ import requests
 from source_qonto.source import QontoStream, Transactions
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(QontoStream, "path", "v0/example_endpoint")

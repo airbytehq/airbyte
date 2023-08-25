@@ -5,11 +5,12 @@
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import PineconeIndexingModel
 from destination_langchain.indexer import PineconeIndexer
 from langchain.document_loaders.base import Document
 from pinecone import IndexDescription
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 def create_pinecone_indexer():
@@ -42,7 +43,7 @@ def create_index_description(dimensions=3, pod_type="p1"):
 
 @pytest.fixture(scope="module", autouse=True)
 def mock_describe_index():
-    with patch('pinecone.describe_index') as mock:
+    with patch("pinecone.describe_index") as mock:
         mock.return_value = create_index_description()
         yield mock
 
@@ -151,8 +152,8 @@ def generate_catalog():
                     "sync_mode": "full_refresh",
                     "destination_sync_mode": "overwrite",
                 },
-            ]
-        }
+            ],
+        },
     )
 
 
@@ -172,7 +173,7 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
 
 
 @pytest.mark.parametrize(
-    "describe_throws,reported_dimensions,check_succeeds",
+    ("describe_throws", "reported_dimensions", "check_succeeds"),
     [
         (False, 3, True),
         (False, 4, False),

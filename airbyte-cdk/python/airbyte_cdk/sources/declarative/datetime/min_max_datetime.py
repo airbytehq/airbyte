@@ -12,8 +12,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 
 @dataclass
 class MinMaxDatetime:
-    """
-    Compares the provided date against optional minimum or maximum times. If date is earlier than
+    """Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
     If neither, the input date is returned.
 
@@ -44,11 +43,10 @@ class MinMaxDatetime:
         self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None
 
     def get_datetime(self, config, **additional_parameters) -> dt.datetime:
-        """
-        Evaluates and returns the datetime
+        """Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
         :param additional_parameters: Additional arguments to be passed to the strings for interpolation
-        :return: The evaluated datetime
+        :return: The evaluated datetime.
         """
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
         datetime_format = self._datetime_format
@@ -71,12 +69,12 @@ class MinMaxDatetime:
 
     @property
     def datetime_format(self) -> str:
-        """The format of the string representing the datetime"""
+        """The format of the string representing the datetime."""
         return self._datetime_format
 
     @datetime_format.setter
     def datetime_format(self, value: str):
-        """Setter for the datetime format"""
+        """Setter for the datetime format."""
         # Covers the case where datetime_format is not provided in the constructor, which causes the property object
         # to be set which we need to avoid doing
         if not isinstance(value, property):

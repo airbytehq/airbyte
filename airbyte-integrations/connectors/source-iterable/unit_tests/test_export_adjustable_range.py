@@ -12,15 +12,16 @@ import freezegun
 import pendulum
 import pytest
 import responses
-from airbyte_cdk.models import Type as MessageType
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator
 from source_iterable.source import SourceIterable
 
+from airbyte_cdk.models import Type as MessageType
+
 TEST_START_DATE = "2020"
 
 
-@pytest.fixture
+@pytest.fixture()
 def time_mock(request):
     with freezegun.freeze_time() as time_mock:
         yield time_mock
@@ -40,7 +41,7 @@ def read_from_source(catalog):
             {"start_date": TEST_START_DATE, "api_key": "api_key"},
             catalog,
             None,
-        )
+        ),
     )
 
 
@@ -76,7 +77,7 @@ def test_email_stream(mock_lists_resp, catalog, time_mock):
 
 @responses.activate
 @pytest.mark.parametrize(
-    "catalog, days_duration, days_per_minute_rate",
+    ("catalog", "days_duration", "days_per_minute_rate"),
     [
         ("email_send", 10, 200),
         ("email_send", 100, 200000),
@@ -100,7 +101,7 @@ def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_du
         # Every request fails with 2 ChunkedEncodingError exception but works well on third time.
         if encoding_throw < 2:
             encoding_throw += 1
-            raise ChunkedEncodingError()
+            raise ChunkedEncodingError
         encoding_throw = 0
         days = get_range_days_from_request(req)
         ranges.append(days)

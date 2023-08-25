@@ -5,8 +5,9 @@
 from glob import glob
 from typing import List, Optional, Tuple
 
-import airbyte_api_client
 import click
+
+import airbyte_api_client
 from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import REQUIRED_PROJECT_DIRECTORIES, requires_init
 
@@ -30,7 +31,7 @@ def apply(ctx: click.Context, configurations_files: List[click.Path], force: boo
 
 
 def get_resources_to_apply(
-    configuration_files: List[str], api_client: airbyte_api_client.ApiClient, workspace_id: str
+    configuration_files: List[str], api_client: airbyte_api_client.ApiClient, workspace_id: str,
 ) -> List[BaseResource]:
     """Create resource objects with factory and sort according to apply priority.
 
@@ -58,7 +59,7 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
             click.style(
                 f"🐙 - {resource.resource_name} exists on your Airbyte instance according to your state file, let's check if we need to update it!",
                 fg="yellow",
-            )
+            ),
         )
         messages = update_resource(resource, force)
     else:
@@ -106,7 +107,7 @@ def prompt_for_diff_validation(resource_name: str, diff: str) -> bool:
     """
     if diff:
         click.echo(
-            click.style("👀 - Here's the computed diff (🚨 remind that diff on secret fields are not displayed):", fg="magenta", bold=True)
+            click.style("👀 - Here's the computed diff (🚨 remind that diff on secret fields are not displayed):", fg="magenta", bold=True),
         )
         for line in diff.split("\n"):
             display_diff_line(line)
@@ -152,7 +153,7 @@ def update_resource(resource: BaseResource, force: bool) -> List[str]:
     if should_update:
         updated_resource, state = resource.update()
         output_messages.append(
-            click.style(f"🎉 - Successfully updated {updated_resource.name} on your Airbyte instance!", fg="green", bold=True)
+            click.style(f"🎉 - Successfully updated {updated_resource.name} on your Airbyte instance!", fg="green", bold=True),
         )
         output_messages.append(click.style(f"💾 - New state for {updated_resource.name} stored at {state.path}.", fg="yellow"))
     return output_messages

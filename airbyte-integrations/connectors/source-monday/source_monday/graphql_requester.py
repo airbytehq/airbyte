@@ -21,18 +21,17 @@ class MondayGraphqlRequester(HttpRequester):
     nested_limit: Union[InterpolatedString, str, int] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        super(MondayGraphqlRequester, self).__post_init__(parameters)
+        super().__post_init__(parameters)
 
         self.limit = InterpolatedString.create(self.limit, parameters=parameters)
         self.nested_limit = InterpolatedString.create(self.nested_limit, parameters=parameters)
         self.name = parameters.get("name", "").lower()
 
     def _ensure_type(self, t: Type, o: Any):
-        """
-        Ensure given object `o` is of type `t`
-        """
+        """Ensure given object `o` is of type `t`."""
         if not isinstance(o, t):
-            raise TypeError(f"{type(o)} {o} is not of type {t}")
+            msg = f"{type(o)} {o} is not of type {t}"
+            raise TypeError(msg)
 
     def _get_schema_root_properties(self):
         schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
@@ -54,23 +53,22 @@ class MondayGraphqlRequester(HttpRequester):
                 f"{argument}:{value}" if argument != "fromt" else f'from:"{value}"'
                 for argument, value in object_arguments.items()
                 if value is not None
-            ]
+            ],
         )
 
     def _build_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
-        """
-        Recursive function that builds a GraphQL query string by traversing given stream schema properties.
-        Attributes
+        """Recursive function that builds a GraphQL query string by traversing given stream schema properties.
+
+        Attributes:
             object_name (str): the name of root object
             field_schema (dict): configured catalog schema for current stream
-            object_arguments (dict): arguments such as limit, page, ids, ... etc to be passed for given object
+            object_arguments (dict): arguments such as limit, page, ids, ... etc to be passed for given object.
         """
         fields = []
         for field, nested_schema in field_schema.items():
             nested_fields = nested_schema.get("properties", nested_schema.get("items", {}).get("properties"))
             if nested_fields:
                 # preconfigured_arguments = get properties from schema or any other source ...
-                # fields.append(self._build_query(field, nested_fields, **preconfigured_arguments))
                 fields.append(self._build_query(field, nested_fields))
             else:
                 fields.append(field)
@@ -82,9 +80,8 @@ class MondayGraphqlRequester(HttpRequester):
         return f"{object_name}{arguments}{{{fields}}}"
 
     def _build_items_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
-        """
-        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
-        See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+        """Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        See https://developer.monday.com/api-reference/docs/items-queries#items-queries.
         """
         nested_limit = self.nested_limit.eval(self.config)
 
@@ -93,9 +90,8 @@ class MondayGraphqlRequester(HttpRequester):
         return f"boards({arguments}){{{query}}}"
 
     def _build_items_incremental_query(self, object_name: str, field_schema: dict, stream_slice: dict, **object_arguments) -> str:
-        """
-        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
-        See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+        """Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        See https://developer.monday.com/api-reference/docs/items-queries#items-queries.
         """
         nested_limit = self.nested_limit.eval(self.config)
 
@@ -104,9 +100,8 @@ class MondayGraphqlRequester(HttpRequester):
         return self._build_query("items", field_schema, **object_arguments)
 
     def _build_teams_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
-        """
-        Special optimization needed for tests to pass successfully because of rate limits.
-        It makes a query cost less points, but it is never used in production
+        """Special optimization needed for tests to pass successfully because of rate limits.
+        It makes a query cost less points, but it is never used in production.
         """
         teams_limit = self.config.get("teams_limit")
         if teams_limit:
@@ -117,13 +112,12 @@ class MondayGraphqlRequester(HttpRequester):
         return self._build_query(object_name=object_name, field_schema=field_schema, **object_arguments)
 
     def _build_activity_query(self, object_name: str, field_schema: dict, sub_page: Optional[int], **object_arguments) -> str:
-        """
-        Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
-        See https://developer.monday.com/api-reference/docs/items-queries#items-queries
+        """Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
+        See https://developer.monday.com/api-reference/docs/items-queries#items-queries.
         """
         nested_limit = self.nested_limit.eval(self.config)
 
-        created_at = (object_arguments.get("stream_state", dict()) or dict()).get("created_at_int")
+        created_at = (object_arguments.get("stream_state", {}) or {}).get("created_at_int")
         object_arguments.pop("stream_state")
 
         if created_at:
@@ -140,9 +134,7 @@ class MondayGraphqlRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Combines queries to a single GraphQL query.
-        """
+        """Combines queries to a single GraphQL query."""
         limit = self.limit.eval(self.config)
 
         page = next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]

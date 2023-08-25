@@ -7,7 +7,7 @@ from typing import Any, Mapping
 
 def deep_map(function, collection):
     if isinstance(collection, list):
-        return list(map(lambda val: deep_map(function, val), collection))
+        return [deep_map(function, val) for val in collection]
 
     collection = function(collection)
     for key, val in collection.items():
@@ -27,7 +27,7 @@ def normalize(collection):
 def _normalizer(dictionary):
     out = {}
     for key, val in dictionary.items():
-        if not key == "_links":
+        if key != "_links":
             out[key] = val
     return out
 

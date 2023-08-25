@@ -25,7 +25,7 @@ def run_check(transform_object, schema, checks):
 
 
 @pytest.mark.parametrize(
-    "transform_object, schema, checks",
+    ("transform_object", "schema", "checks"),
     [
         (
             {"id": 1},
@@ -108,7 +108,7 @@ def test_enforcer_correct_type(transform_object, schema, checks):
 
 
 @pytest.mark.parametrize(
-    "transform_object, schema, checks",
+    ("transform_object", "schema", "checks"),
     [
         (
             {
@@ -155,7 +155,7 @@ def test_enforcer_string_to_number(transform_object, schema, checks):
 
 
 @pytest.mark.parametrize(
-    "transform_object, schema, checks",
+    ("transform_object", "schema", "checks"),
     [
         (
             {
@@ -170,7 +170,7 @@ def test_enforcer_string_to_number(transform_object, schema, checks):
             [
                 {"path": ["customer", "total_spent"], "expected_type": Decimal},
             ],
-        )
+        ),
     ],
 )
 def test_enforcer_nested_object(transform_object, schema, checks):
@@ -178,7 +178,7 @@ def test_enforcer_nested_object(transform_object, schema, checks):
 
 
 @pytest.mark.parametrize(
-    "transform_object, schema, checks",
+    ("transform_object", "schema", "checks"),
     [
         (
             {
@@ -229,7 +229,7 @@ def test_enforcer_nested_array(transform_object, schema, checks):
 
 
 @pytest.mark.parametrize(
-    "transform_object, schema, checks",
+    ("transform_object", "schema", "checks"),
     [
         (
             {

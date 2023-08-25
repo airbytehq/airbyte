@@ -4,6 +4,7 @@
 from dagster import Definitions, EnvVar, ScheduleDefinition, load_assets_from_modules
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
+
 from orchestrator.assets import connector_test_report, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask
 from orchestrator.config import (
     CI_MASTER_TEST_OUTPUT_REGEX,
@@ -48,7 +49,7 @@ ASSETS = load_assets_from_modules(
         registry_report,
         connector_test_report,
         registry_entry,
-    ]
+    ],
 )
 
 SLACK_RESOURCE_TREE = {
@@ -65,7 +66,7 @@ GITHUB_RESOURCE_TREE = {
             "workflow_id": NIGHTLY_GHA_WORKFLOW_ID,
             "branch": "master",
             "status": "success",
-        }
+        },
     ),
 }
 
@@ -73,7 +74,7 @@ GCS_RESOURCE_TREE = {
     "gcp_gcs_client": gcp_gcs_client.configured(
         {
             "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
-        }
+        },
     ),
     "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
     "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
@@ -84,10 +85,10 @@ METADATA_RESOURCE_TREE = {
     **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "all_metadata_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*/{METADATA_FILE_NAME}$"}
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*/{METADATA_FILE_NAME}$"},
     ),
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"},
     ),
 }
 
@@ -95,10 +96,10 @@ REGISTRY_RESOURCE_TREE = {
     **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "latest_oss_registry_gcs_blob": gcs_file_blob.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"},
     ),
     "latest_cloud_registry_gcs_blob": gcs_file_blob.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"}
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"},
     ),
 }
 
@@ -106,10 +107,10 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
     **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "latest_cloud_registry_entries_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/cloud.json$"}
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": ".*latest/cloud.json$"},
     ),
     "latest_oss_registry_entries_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/oss.json$"}
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": ".*latest/oss.json$"},
     ),
 }
 
@@ -118,17 +119,17 @@ CONNECTOR_TEST_REPORT_RESOURCE_TREE = {
     **GITHUB_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
     "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
+        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"},
     ),
     "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
         {
             "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
             "prefix": NIGHTLY_FOLDER,
             "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$",
-        }
+        },
     ),
     "all_connector_test_output_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": CI_TEST_REPORT_PREFIX, "match_regex": CI_MASTER_TEST_OUTPUT_REGEX}
+        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": CI_TEST_REPORT_PREFIX, "match_regex": CI_MASTER_TEST_OUTPUT_REGEX},
     ),
 }
 

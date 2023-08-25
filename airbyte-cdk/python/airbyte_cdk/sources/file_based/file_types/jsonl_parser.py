@@ -26,8 +26,7 @@ class JsonlParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        """
-        Infers the schema for the file by inferring the schema for each line, and merging
+        """Infers the schema for the file by inferring the schema for each line, and merging
         it with the previously-inferred schema.
         """
         inferred_schema: Mapping[str, Any] = {}
@@ -46,12 +45,11 @@ class JsonlParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        """
-        This code supports parsing json objects over multiple lines even though this does not align with the JSONL format. This is for
+        """This code supports parsing json objects over multiple lines even though this does not align with the JSONL format. This is for
         backward compatibility reasons i.e. the previous source-s3 parser did support this. The drawback is:
         * performance as the way we support json over multiple lines is very brute forced
         * given that we don't have `newlines_in_values` config to scope the possible inputs, we might parse the whole file before knowing if
-          the input is improperly formatted or if the json is over multiple lines
+          the input is improperly formatted or if the json is over multiple lines.
 
         The goal is to run the V4 of source-s3 in production, track the warning log emitted when there are multiline json objects and
         deprecate this feature if it's not a valid use case.
@@ -108,7 +106,7 @@ class JsonlParser(FileTypeParser):
                 if read_limit and yielded_at_least_once and read_bytes >= self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:
                     logger.warning(
                         f"Exceeded the maximum number of bytes per file for schema inference ({self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE}). "
-                        f"Inferring schema from an incomplete set of records."
+                        f"Inferring schema from an incomplete set of records.",
                     )
                     break
 
@@ -121,3 +119,4 @@ class JsonlParser(FileTypeParser):
             return bytes("", json.detect_encoding(line))
         elif isinstance(line, str):
             return ""
+        return None

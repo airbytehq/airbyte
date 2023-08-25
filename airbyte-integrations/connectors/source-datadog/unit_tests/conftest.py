@@ -46,7 +46,7 @@ def mock_responses():
                     "modified_at": "2019-09-19T10:00:00.000Z",
                     "title": "string",
                     "url": "string",
-                }
+                },
             ],
         },
         "Downtimes": {
@@ -107,7 +107,7 @@ def mock_responses():
                     "config": {
                         "assertions": [{"operator": "contains", "property": "string", "target": 123456, "type": "statusCode"}],
                         "configVariables": [
-                            {"example": "string", "id": "string", "name": "VARIABLE_NAME", "pattern": "string", "type": "text"}
+                            {"example": "string", "id": "string", "name": "VARIABLE_NAME", "pattern": "string", "type": "text"},
                         ],
                         "request": {
                             "allow_insecure": False,
@@ -176,13 +176,13 @@ def mock_responses():
                             "params": {},
                             "timeout": "integer",
                             "type": "assertElementContent",
-                        }
+                        },
                     ],
                     "subtype": "http",
                     "tags": [],
                     "type": "string",
-                }
-            ]
+                },
+            ],
         },
         "Metrics": {"data": [{"id": "test.metric.latency", "type": "metrics"}]},
         "Incidents": {
@@ -216,7 +216,7 @@ def mock_responses():
                         "last_modified_by_user": {"data": {"id": "00000000-0000-0000-2345-000000000000", "type": "users"}},
                     },
                     "type": "incidents",
-                }
+                },
             ],
             "included": [
                 {
@@ -241,7 +241,7 @@ def mock_responses():
                         "roles": {"data": [{"id": "3653d3c6-0c75-11ea-ad28-fb5701eabc7d", "type": "roles"}]},
                     },
                     "type": "users",
-                }
+                },
             ],
             "meta": {"pagination": {"next_offset": 1000, "offset": 10, "size": 1000}},
         },
@@ -255,7 +255,7 @@ def mock_responses():
                         "last_modified_by": {"data": {"id": "00000000-0000-0000-2345-000000000000", "type": "users"}},
                     },
                     "type": "teams",
-                }
+                },
             ],
             "included": [
                 {
@@ -280,7 +280,7 @@ def mock_responses():
                         "roles": {"data": [{"id": "3653d3c6-0c75-11ea-ad28-fb5701eabc7d", "type": "roles"}]},
                     },
                     "type": "users",
-                }
+                },
             ],
             "meta": {"pagination": {"next_offset": 1000, "offset": 10, "size": 1000}},
         },
@@ -308,7 +308,7 @@ def mock_responses():
                         "roles": {"data": [{"id": "3653d3c6-0c75-11ea-ad28-fb5701eabc7d", "type": "roles"}]},
                     },
                     "type": "users",
-                }
+                },
             ],
             "included": [
                 {
@@ -324,7 +324,7 @@ def mock_responses():
                     },
                     "id": "string",
                     "type": "orgs",
-                }
+                },
             ],
             "meta": {"page": {"total_count": "integer", "total_filtered_count": "integer"}},
         },
@@ -342,10 +342,10 @@ def mock_responses():
                     },
                     "id": "AAAAAWgN8Xwgr1vKDQAAAABBV2dOOFh3ZzZobm1mWXJFYTR0OA",
                     "type": "log",
-                }
+                },
             ],
             "links": {
-                "next": "https://app.datadoghq.com/api/v2/logs/event?filter[query]=foo\u0026page[cursor]=eyJzdGFydEF0IjoiQVFBQUFYS2tMS3pPbm40NGV3QUFBQUJCV0V0clRFdDZVbG8zY3pCRmNsbHJiVmxDWlEifQ=="
+                "next": "https://app.datadoghq.com/api/v2/logs/event?filter[query]=foo\u0026page[cursor]=eyJzdGFydEF0IjoiQVFBQUFYS2tMS3pPbm40NGV3QUFBQUJCV0V0clRFdDZVbG8zY3pCRmNsbHJiVmxDWlEifQ==",
             },
             "meta": {
                 "elapsed": 132,
@@ -357,7 +357,7 @@ def mock_responses():
                         "code": "unknown_index",
                         "detail": "indexes: foo, bar",
                         "title": "One or several indexes are missing or invalid, results hold data from the other indexes",
-                    }
+                    },
                 ],
             },
         },
@@ -372,10 +372,10 @@ def mock_responses():
                     },
                     "id": "AAAAAWgN8Xwgr1vKDQAAAABBV2dOOFh3ZzZobm1mWXJFYTR0OA",
                     "type": "audit",
-                }
+                },
             ],
             "links": {
-                "next": "https://app.datadoghq.com/api/v2/audit/event?filter[query]=foo\u0026page[cursor]=eyJzdGFydEF0IjoiQVFBQUFYS2tMS3pPbm40NGV3QUFBQUJCV0V0clRFdDZVbG8zY3pCRmNsbHJiVmxDWlEifQ=="
+                "next": "https://app.datadoghq.com/api/v2/audit/event?filter[query]=foo\u0026page[cursor]=eyJzdGFydEF0IjoiQVFBQUFYS2tMS3pPbm40NGV3QUFBQUJCV0V0clRFdDZVbG8zY3pCRmNsbHJiVmxDWlEifQ==",
             },
             "meta": {
                 "elapsed": 132,
@@ -387,7 +387,7 @@ def mock_responses():
                         "code": "unknown_index",
                         "detail": "indexes: foo, bar",
                         "title": "One or several indexes are missing or invalid, results hold data from the other indexes",
-                    }
+                    },
                 ],
             },
         },
@@ -420,14 +420,14 @@ def config_timeseries_fixture():
             {
                 "name": "NodeCount",
                 "data_source": "metrics",
-                "query": "kubernetes_state.node.count{*}"
+                "query": "kubernetes_state.node.count{*}",
             },
             {
                 "name": "Resource",
                 "data_source": "rum",
-                "query": "@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)"
-            }
-        ]
+                "query": "@type:resource @resource.status_code:>=400 @resource.type:(xhr OR fetch)",
+            },
+        ],
     }
 
 
@@ -452,6 +452,6 @@ def config_timeseries_invalid_fixture():
             {
                 "name": "MissingQuery",
                 "data_source": "metrics",
-            }
-        ]
+            },
+        ],
     }

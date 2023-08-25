@@ -11,9 +11,10 @@ from pathlib import Path
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
+
+from airbyte_cdk.models import SyncMode
 
 HERE = Path(__file__).parent
 
@@ -23,7 +24,7 @@ UPDATED_NOTE_CONTENT = "It's the updated note for integration test"
 
 @pytest.fixture(scope="module")
 def input_sandbox_config():
-    with open(HERE.parent / "secrets/config_sandbox.json", "r") as file:
+    with open(HERE.parent / "secrets/config_sandbox.json") as file:
         return json.loads(file.read())
 
 
@@ -86,9 +87,9 @@ def test_update_for_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
-        notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+        notes = {record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)}
         try:
             assert created_note_id in notes, "The stream didn't return the note we created"
             break
@@ -110,7 +111,7 @@ def test_update_for_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
             if created_note_id == record["Id"]:
@@ -147,9 +148,9 @@ def test_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
-        notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+        notes = {record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)}
         try:
             assert created_note_id in notes, "No created note during the sync"
             break
@@ -173,7 +174,7 @@ def test_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
         record = None
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):

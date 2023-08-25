@@ -3,26 +3,23 @@
 #
 
 import logging
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, Optional
 
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class NotImplementedAuth(Exception):
-    """Not implemented Auth option error"""
+    """Not implemented Auth option error."""
 
     logger = logging.getLogger("airbyte")
 
-    def __init__(self, auth_method: str = None):
+    def __init__(self, auth_method: Optional[str] = None):
         self.message = f"Not implemented Auth method = {auth_method}"
         super().__init__(self.logger.error(self.message))
 
 
 class ShopifyAuthenticator(TokenAuthenticator):
-
-    """
-    Making Authenticator to be able to accept Header-Based authentication.
-    """
+    """Making Authenticator to be able to accept Header-Based authentication."""
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config

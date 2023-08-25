@@ -9,12 +9,12 @@ import requests
 from source_greenhouse.source import SourceGreenhouse
 
 
-@pytest.fixture
+@pytest.fixture()
 def applications_stream():
     source = SourceGreenhouse()
     streams = source.streams({})
 
-    return [s for s in streams if s.name == "applications"][0]
+    return next(s for s in streams if s.name == "applications")
 
 
 def create_response(headers):
@@ -44,7 +44,7 @@ def test_request_params_next_page_token_is_not_none(applications_stream):
     next_page_token = applications_stream.retriever._next_page_token(response=response)
     request_params = applications_stream.retriever._request_params(next_page_token=next_page_token, stream_state={})
     path = applications_stream.retriever._paginator_path()
-    assert "applications?per_page=100&since_id=123456789" == path
+    assert path == "applications?per_page=100&since_id=123456789"
     assert request_params == {"per_page": 100}
 
 
@@ -149,7 +149,7 @@ def test_parse_response_empty_content(applications_stream):
     response.status_code = 200
     response._content = b"[]"
     parsed_response = applications_stream.retriever._parse_response(response, stream_state={})
-    records = [record for record in parsed_response]
+    records = list(parsed_response)
 
     assert records == []
 
@@ -165,7 +165,7 @@ def test_ignore_403(applications_stream):
     response.status_code = 403
     response._content = b""
     parsed_response = applications_stream.retriever._parse_response(response, stream_state={})
-    records = [record for record in parsed_response]
+    records = list(parsed_response)
     assert records == []
 
 

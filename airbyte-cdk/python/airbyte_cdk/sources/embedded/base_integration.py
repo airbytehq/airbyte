@@ -26,16 +26,14 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
 
     @abstractmethod
     def _handle_record(self, record: AirbyteRecordMessage, id: Optional[str]) -> Optional[TOutput]:
-        """
-        Turn an Airbyte record into the appropriate output type for the integration.
-        """
-        pass
+        """Turn an Airbyte record into the appropriate output type for the integration."""
 
     def _load_data(self, stream_name: str, state: Optional[AirbyteStateMessage] = None) -> Iterable[TOutput]:
         catalog = self.source.discover(self.config)
         stream = get_stream(catalog, stream_name)
         if not stream:
-            raise ValueError(f"Stream {stream_name} not found, the following streams are available: {', '.join(get_stream_names(catalog))}")
+            msg = f"Stream {stream_name} not found, the following streams are available: {', '.join(get_stream_names(catalog))}"
+            raise ValueError(msg)
         if SyncMode.incremental not in stream.supported_sync_modes:
             configured_catalog = create_configured_catalog(stream, sync_mode=SyncMode.full_refresh)
         else:

@@ -24,11 +24,11 @@ class SourceRecharge(AbstractSource):
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         stream = Shop(config, authenticator=auth)
         try:
-            result = list(stream.read_records(SyncMode.full_refresh))[0]
-            if stream.name in result.keys():
+            result = next(iter(stream.read_records(SyncMode.full_refresh)))
+            if stream.name in result:
                 return True, None
         except Exception as error:
-            return False, f"Unable to connect to Recharge API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Recharge API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])

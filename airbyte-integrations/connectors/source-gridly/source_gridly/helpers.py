@@ -5,12 +5,13 @@
 from typing import Any, Dict
 
 import requests
+
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
-class Helpers(object):
+class Helpers:
     base_url = "https://api.gridly.com/v1/"
 
     @staticmethod
@@ -33,11 +34,14 @@ class Helpers(object):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
-                raise Exception("Invalid API Key")
+                msg = "Invalid API Key"
+                raise Exception(msg)
             elif e.response.status_code == 404:
-                raise Exception(f"Grid id '{grid_id}' not found")
+                msg = f"Grid id '{grid_id}' not found"
+                raise Exception(msg)
             else:
-                raise Exception(f"Error getting listing views of grid '{grid_id}'")
+                msg = f"Error getting listing views of grid '{grid_id}'"
+                raise Exception(msg)
 
         return response.json()
 
@@ -49,11 +53,14 @@ class Helpers(object):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
-                raise Exception("Invalid API Key")
+                msg = "Invalid API Key"
+                raise Exception(msg)
             elif e.response.status_code == 404:
-                raise Exception(f"Grid '{grid_id}' not found")
+                msg = f"Grid '{grid_id}' not found"
+                raise Exception(msg)
             else:
-                raise Exception(f"Error getting grid {grid_id}: {e}")
+                msg = f"Error getting grid {grid_id}: {e}"
+                raise Exception(msg)
         return response.json()
 
     @staticmethod
@@ -64,11 +71,14 @@ class Helpers(object):
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
-                raise Exception("Invalid API Key")
+                msg = "Invalid API Key"
+                raise Exception(msg)
             elif e.response.status_code == 404:
-                raise Exception(f"View '{view_id}' not found")
+                msg = f"View '{view_id}' not found"
+                raise Exception(msg)
             else:
-                raise Exception(f"Error getting view {view_id}: {e}")
+                msg = f"Error getting view {view_id}: {e}"
+                raise Exception(msg)
         return response.json()
 
     @staticmethod
@@ -90,12 +100,11 @@ class Helpers(object):
             column_type = column.get("type", "singleLine")
             properties[column_id] = {"type": ["null", Helpers.to_airbyte_data_type(column_type)]}
 
-        json_schema = {
+        return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": properties,
         }
-        return json_schema
 
     @staticmethod
     def get_airbyte_stream(view: Dict[str, Any]) -> AirbyteStream:

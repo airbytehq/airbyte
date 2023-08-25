@@ -38,7 +38,7 @@ ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
 
 
 def validate_metadata_images_in_dockerhub(
-    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
@@ -77,18 +77,18 @@ def validate_metadata_images_in_dockerhub(
 
 
 def validate_at_least_one_language_tag(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
     tags = get(metadata_definition, "data.tags", [])
-    if not any([tag.startswith("language:") for tag in tags]):
+    if not any(tag.startswith("language:") for tag in tags):
         return False, "At least one tag must be of the form language:<LANG>"
 
     return True, None
 
 
 def validate_all_tags_are_keyvalue_pairs(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     """Ensure that all tags are of the form <KEY>:<VALUE>."""
     tags = get(metadata_definition, "data.tags", [])
@@ -100,13 +100,13 @@ def validate_all_tags_are_keyvalue_pairs(
 
 
 def is_major_version(version: str) -> bool:
-    """Check whether the version is of format N.0.0"""
+    """Check whether the version is of format N.0.0."""
     semver_version = semver.Version.parse(version)
     return semver_version.minor == 0 and semver_version.patch == 0 and semver_version.prerelease is None
 
 
 def validate_major_version_bump_has_breaking_change_entry(
-    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions,
 ) -> ValidationResult:
     """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
     metadata_definition_dict = metadata_definition.dict()
@@ -131,7 +131,7 @@ def validate_major_version_bump_has_breaking_change_entry(
         )
 
     breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
-    if image_tag not in breaking_changes.keys():
+    if image_tag not in breaking_changes:
         return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
 
     return True, None
@@ -143,9 +143,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_major_version_bump_has_breaking_change_entry,
 ]
 
-POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
-    validate_metadata_images_in_dockerhub,
-]
+POST_UPLOAD_VALIDATORS = [*PRE_UPLOAD_VALIDATORS, validate_metadata_images_in_dockerhub]
 
 
 def validate_and_load(

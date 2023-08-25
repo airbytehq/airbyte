@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -14,7 +15,7 @@ config = {"option": "OPTION"}
 
 
 @pytest.mark.parametrize(
-    "test_name, input_request_params, expected_request_params",
+    ("test_name", "input_request_params", "expected_request_params"),
     [
         ("test_static_param", {"a_static_request_param": "a_static_value"}, {"a_static_request_param": "a_static_value"}),
         ("test_value_depends_on_state", {"read_from_state": "{{ stream_state['date'] }}"}, {"read_from_state": "2021-01-01"}),
@@ -42,7 +43,7 @@ def test_interpolated_request_params(test_name, input_request_params, expected_r
 
 
 @pytest.mark.parametrize(
-    "test_name, input_request_json, expected_request_json",
+    ("test_name", "input_request_json", "expected_request_json"),
     [
         ("test_static_json", {"a_static_request_param": "a_static_value"}, {"a_static_request_param": "a_static_value"}),
         ("test_value_depends_on_state", {"read_from_state": "{{ stream_state['date'] }}"}, {"read_from_state": "2021-01-01"}),
@@ -73,7 +74,7 @@ def test_interpolated_request_json(test_name, input_request_json, expected_reque
 
 
 @pytest.mark.parametrize(
-    "test_name, input_request_data, expected_request_data",
+    ("test_name", "input_request_data", "expected_request_data"),
     [
         ("test_static_map_data", {"a_static_request_param": "a_static_value"}, {"a_static_request_param": "a_static_value"}),
         ("test_map_depends_on_stream_slice", {"read_from_slice": "{{ stream_slice['start_date'] }}"}, {"read_from_slice": "2020-01-01"}),

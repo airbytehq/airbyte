@@ -6,43 +6,44 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_freshcaller.streams import APIIncrementalFreshcallerStream, CallMetrics, Calls
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(APIIncrementalFreshcallerStream, "cursor_field", "created_time")
     mocker.patch.object(APIIncrementalFreshcallerStream, "__abstractmethods__", set())
 
 
-@pytest.fixture
+@pytest.fixture()
 def args():
     return {"authenticator": None, "config": {"api_key": "", "domain": "airbyte", "start_date": "2021-01-01T00:00:00.000Z"}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream(patch_incremental_base_class, args):
     return APIIncrementalFreshcallerStream(**args)
 
 
-@pytest.fixture
+@pytest.fixture()
 def call_metrics_stream(args):
     return CallMetrics(**args)
 
 
-@pytest.fixture
+@pytest.fixture()
 def calls_stream(args):
     return Calls(**args)
 
 
-@pytest.fixture
+@pytest.fixture()
 def streams_dict(calls_stream, call_metrics_stream):
     return {"calls_stream": calls_stream, "call_metrics_stream": call_metrics_stream}
 
 
-@pytest.mark.parametrize("fixture_name, expected", [("calls_stream", "created_time"), ("call_metrics_stream", "created_time")])
+@pytest.mark.parametrize(("fixture_name", "expected"), [("calls_stream", "created_time"), ("call_metrics_stream", "created_time")])
 def test_cursor_field(streams_dict, fixture_name, expected):
     stream = streams_dict[fixture_name]
     assert stream.cursor_field == expected
@@ -85,7 +86,7 @@ def test_end_of_stream_state(calls_stream, requests_mock):
     state = {"created_time": "2021-10-01T00:00:00.00Z"}
     sync_mode = SyncMode.incremental
     last_state = None
-    for idx, app_slice in enumerate(stream.stream_slices(state, **MagicMock())):
+    for _idx, app_slice in enumerate(stream.stream_slices(state, **MagicMock())):
         for record in stream.read_records(sync_mode=sync_mode, stream_slice=app_slice):
             state = stream.get_updated_state(state, record)
             last_state = state["created_time"]

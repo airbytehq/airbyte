@@ -10,7 +10,7 @@ import pytest
 from source_appsflyer.source import AppsflyerStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     def __init__(self):

@@ -22,7 +22,7 @@ def test_get_files_matching_pattern_match():
         {
             "filepath": "test.csv",
             "last_modified": "2021-01-01 00:00:00",
-        }
+        },
     ]
 
 

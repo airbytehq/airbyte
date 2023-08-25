@@ -51,7 +51,7 @@ class AuxiliaryRequest:
 
 
 @dataclass
-class StreamRead(object):
+class StreamRead:
     logs: List[LogMessage]
     slices: List[StreamReadSlices]
     test_read_limit_reached: bool

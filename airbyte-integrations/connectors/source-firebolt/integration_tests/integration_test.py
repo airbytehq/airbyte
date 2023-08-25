@@ -8,6 +8,10 @@ from json import load
 from typing import Dict, Generator
 from unittest.mock import MagicMock
 
+from firebolt.db import Connection
+from pytest import fixture
+from source_firebolt.source import SourceFirebolt, establish_connection
+
 from airbyte_cdk.models import Status
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteStream,
@@ -16,9 +20,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from firebolt.db import Connection
-from pytest import fixture
-from source_firebolt.source import SourceFirebolt, establish_connection
 
 
 @fixture(scope="module")
@@ -38,19 +39,19 @@ def create_test_data(config: Dict[str, str], test_table_name: str, test_view_nam
     with establish_connection(config, MagicMock()) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
-                f"CREATE DIMENSION TABLE {test_table_name} (column1 STRING NULL, column2 INT NULL, column3 DATE NULL, column4 DATETIME NULL, column5 DECIMAL(38, 31) NULL, column6 ARRAY(INT), column7 BOOLEAN NULL)"
+                f"CREATE DIMENSION TABLE {test_table_name} (column1 STRING NULL, column2 INT NULL, column3 DATE NULL, column4 DATETIME NULL, column5 DECIMAL(38, 31) NULL, column6 ARRAY(INT), column7 BOOLEAN NULL)",
             )
             cursor.execute(
-                f"INSERT INTO {test_table_name} VALUES ('my_value',221,'2021-01-01','2021-01-01 12:00:01', Null, [1,2,3], true), ('my_value2',null,'2021-01-02','2021-01-02 12:00:02','1231232.1234599999904570548442587065362', [1,2,3], null)"
+                f"INSERT INTO {test_table_name} VALUES ('my_value',221,'2021-01-01','2021-01-01 12:00:01', Null, [1,2,3], true), ('my_value2',null,'2021-01-02','2021-01-02 12:00:02','1231232.1234599999904570548442587065362', [1,2,3], null)",
             )
             cursor.execute(f"CREATE VIEW {test_view_name} AS SELECT column1, column2 FROM {test_table_name}")
             yield connection
             cursor.execute(f"DROP TABLE {test_table_name} CASCADE")
 
 
-@fixture
+@fixture()
 def table_schema() -> str:
-    schema = {
+    return {
         "type": "object",
         "properties": {
             "column1": {"type": ["null", "string"]},
@@ -69,32 +70,30 @@ def table_schema() -> str:
             "column7": {"type": ["null", "boolean"]},
         },
     }
-    return schema
 
 
-@fixture
+@fixture()
 def test_stream(test_table_name: str, table_schema: str) -> AirbyteStream:
     return AirbyteStream(name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.full_refresh])
 
 
-@fixture
+@fixture()
 def view_schema() -> str:
-    schema = {
+    return {
         "type": "object",
         "properties": {
             "column1": {"type": ["null", "string"]},
             "column2": {"type": ["null", "integer"]},
         },
     }
-    return schema
 
 
-@fixture
+@fixture()
 def test_view_stream(test_view_name: str, view_schema: str) -> AirbyteStream:
     return AirbyteStream(name=test_view_name, json_schema=view_schema, supported_sync_modes=[SyncMode.full_refresh])
 
 
-@fixture
+@fixture()
 def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     # Deleting one column to simulate manipulation in UI
     del table_schema["properties"]["column1"]
@@ -106,7 +105,7 @@ def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredA
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
 
-@fixture
+@fixture()
 def configured_view_catalogue(test_view_name: str, view_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name=test_view_name, json_schema=view_schema, supported_sync_modes=[SyncMode.full_refresh]),
@@ -183,7 +182,7 @@ def test_read(
     source = SourceFirebolt()
     result = source.read(logger=MagicMock(), config=config, catalog=configured_catalogue, state={})
     data = list(result)
-    assert all([x.record.stream == test_table_name for x in data]), "Table name is incorrect"
+    assert all(x.record.stream == test_table_name for x in data), "Table name is incorrect"
     assert [x.record.data for x in data] == expected_data, "Test data is not matching"
 
 
@@ -202,5 +201,5 @@ def test_view_read(
     source = SourceFirebolt()
     result = source.read(logger=MagicMock(), config=config, catalog=configured_view_catalogue, state={})
     data = list(result)
-    assert all([x.record.stream == test_view_name for x in data]), "Table name is incorrect"
+    assert all(x.record.stream == test_view_name for x in data), "Table name is incorrect"
     assert [x.record.data for x in data] == expected_data, "Test data is not matching"

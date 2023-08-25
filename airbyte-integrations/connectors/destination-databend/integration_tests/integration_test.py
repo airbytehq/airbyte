@@ -7,6 +7,9 @@ import logging
 from typing import Any, Dict, List, Mapping
 
 import pytest
+from destination_databend import DestinationDatabend
+from destination_databend.client import DatabendClient
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -19,13 +22,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_databend import DestinationDatabend
-from destination_databend.client import DatabendClient
 
 
 @pytest.fixture(name="databendConfig")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -62,12 +63,12 @@ def client_fixture(databendConfig) -> DatabendClient:
 
 
 def test_check_valid_config(databendConfig: Mapping):
-    outcome = DestinationDatabend().check(logging.getLogger('airbyte'), databendConfig)
+    outcome = DestinationDatabend().check(logging.getLogger("airbyte"), databendConfig)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationDatabend().check(logging.getLogger('airbyte'), {"bucket_id": "not_a_real_id"})
+    outcome = DestinationDatabend().check(logging.getLogger("airbyte"), {"bucket_id": "not_a_real_id"})
     assert outcome.status == Status.FAILED
 
 
@@ -77,7 +78,7 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0),
     )
 
 
@@ -87,15 +88,13 @@ def retrieve_records(stream_name: str, client: DatabendClient) -> List[AirbyteRe
     all_records = cursor.fetchall()
     out = []
     for record in all_records:
-        # key = record[0]
-        # stream = key.split("__ab__")[0]
         value = json.loads(record[2])
         out.append(_record(stream_name, value["str_col"], value["int_col"]))
     return out
 
 
 def retrieve_all_records(client: DatabendClient) -> List[AirbyteRecordMessage]:
-    """retrieves and formats all records in databend as Airbyte messages"""
+    """Retrieves and formats all records in databend as Airbyte messages."""
     overwrite_stream = "overwrite_stream"
     append_stream = "append_stream"
     overwrite_out = retrieve_records(overwrite_stream, client)
@@ -104,11 +103,10 @@ def retrieve_all_records(client: DatabendClient) -> List[AirbyteRecordMessage]:
 
 
 def test_write(databendConfig: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: DatabendClient):
-    """
-    This test verifies that:
-        1. writing a stream in "overwrite" mode overwrites any existing data for that stream
-        2. writing a stream in "append" mode appends new records without deleting the old ones
-        3. The correct state message is output by the connector at the end of the sync
+    """This test verifies that:
+    1. writing a stream in "overwrite" mode overwrites any existing data for that stream
+    2. writing a stream in "append" mode appends new records without deleting the old ones
+    3. The correct state message is output by the connector at the end of the sync.
     """
     append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
     first_state_message = _state({"state": "1"})
@@ -124,8 +122,8 @@ def test_write(databendConfig: Mapping, configured_catalog: ConfiguredAirbyteCat
     expected_states = [first_state_message, second_state_message]
     output_states = list(
         destination.write(
-            databendConfig, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
-        )
+            databendConfig, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message],
+        ),
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 

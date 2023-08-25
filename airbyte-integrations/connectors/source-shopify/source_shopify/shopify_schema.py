@@ -3100,7 +3100,7 @@ class CollectionInput(sgqlc.types.Input):
     image = sgqlc.types.Field("ImageInput", graphql_name="image")
     products = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="products")
     private_metafields = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("PrivateMetafieldInput")), graphql_name="privateMetafields"
+        sgqlc.types.list_of(sgqlc.types.non_null("PrivateMetafieldInput")), graphql_name="privateMetafields",
     )
     rule_set = sgqlc.types.Field("CollectionRuleSetInput", graphql_name="ruleSet")
     template_suffix = sgqlc.types.Field(String, graphql_name="templateSuffix")
@@ -3287,7 +3287,7 @@ class CustomerEmailMarketingConsentUpdateInput(sgqlc.types.Input):
     __field_names__ = ("customer_id", "email_marketing_consent")
     customer_id = sgqlc.types.Field(sgqlc.types.non_null(ID), graphql_name="customerId")
     email_marketing_consent = sgqlc.types.Field(
-        sgqlc.types.non_null(CustomerEmailMarketingConsentInput), graphql_name="emailMarketingConsent"
+        sgqlc.types.non_null(CustomerEmailMarketingConsentInput), graphql_name="emailMarketingConsent",
     )
 
 
@@ -3320,7 +3320,7 @@ class CustomerInput(sgqlc.types.Input):
     note = sgqlc.types.Field(String, graphql_name="note")
     phone = sgqlc.types.Field(String, graphql_name="phone")
     private_metafields = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("PrivateMetafieldInput")), graphql_name="privateMetafields"
+        sgqlc.types.list_of(sgqlc.types.non_null("PrivateMetafieldInput")), graphql_name="privateMetafields",
     )
     tags = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="tags")
     email_marketing_consent = sgqlc.types.Field(CustomerEmailMarketingConsentInput, graphql_name="emailMarketingConsent")
@@ -3334,7 +3334,7 @@ class CustomerPaymentMethodRemoteInput(sgqlc.types.Input):
     __field_names__ = ("stripe_payment_method", "authorize_net_customer_payment_profile", "braintree_payment_method")
     stripe_payment_method = sgqlc.types.Field("RemoteStripePaymentMethodInput", graphql_name="stripePaymentMethod")
     authorize_net_customer_payment_profile = sgqlc.types.Field(
-        "RemoteAuthorizeNetCustomerPaymentProfileInput", graphql_name="authorizeNetCustomerPaymentProfile"
+        "RemoteAuthorizeNetCustomerPaymentProfileInput", graphql_name="authorizeNetCustomerPaymentProfile",
     )
     braintree_payment_method = sgqlc.types.Field("RemoteBraintreePaymentMethodInput", graphql_name="braintreePaymentMethod")
 
@@ -3358,7 +3358,7 @@ class DelegateAccessTokenInput(sgqlc.types.Input):
     __schema__ = shopify_schema
     __field_names__ = ("delegate_access_scope", "expires_in")
     delegate_access_scope = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="delegateAccessScope"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="delegateAccessScope",
     )
     expires_in = sgqlc.types.Field(Int, graphql_name="expiresIn")
 
@@ -3412,10 +3412,10 @@ class DeliveryMethodDefinitionInput(sgqlc.types.Input):
         graphql_name="weightConditionsToCreate",
     )
     price_conditions_to_create = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("DeliveryPriceConditionInput")), graphql_name="priceConditionsToCreate"
+        sgqlc.types.list_of(sgqlc.types.non_null("DeliveryPriceConditionInput")), graphql_name="priceConditionsToCreate",
     )
     conditions_to_update = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("DeliveryUpdateConditionInput")), graphql_name="conditionsToUpdate"
+        sgqlc.types.list_of(sgqlc.types.non_null("DeliveryUpdateConditionInput")), graphql_name="conditionsToUpdate",
     )
 
 
@@ -3434,7 +3434,7 @@ class DeliveryParticipantInput(sgqlc.types.Input):
     fixed_fee = sgqlc.types.Field("MoneyInput", graphql_name="fixedFee")
     percentage_of_rate_fee = sgqlc.types.Field(Float, graphql_name="percentageOfRateFee")
     participant_services = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("DeliveryParticipantServiceInput")), graphql_name="participantServices"
+        sgqlc.types.list_of(sgqlc.types.non_null("DeliveryParticipantServiceInput")), graphql_name="participantServices",
     )
     adapt_to_new_services = sgqlc.types.Field(Boolean, graphql_name="adaptToNewServices")
 
@@ -3487,14 +3487,14 @@ class DeliveryProfileInput(sgqlc.types.Input):
     variants_to_dissociate = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="variantsToDissociate")
     zones_to_delete = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="zonesToDelete")
     method_definitions_to_delete = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="methodDefinitionsToDelete"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="methodDefinitionsToDelete",
     )
     conditions_to_delete = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="conditionsToDelete")
     selling_plan_groups_to_associate = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="sellingPlanGroupsToAssociate"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="sellingPlanGroupsToAssociate",
     )
     selling_plan_groups_to_dissociate = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="sellingPlanGroupsToDissociate"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="sellingPlanGroupsToDissociate",
     )
 
 
@@ -3504,10 +3504,10 @@ class DeliveryProfileLocationGroupInput(sgqlc.types.Input):
     id = sgqlc.types.Field(ID, graphql_name="id")
     locations = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="locations")
     zones_to_create = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(DeliveryLocationGroupZoneInput)), graphql_name="zonesToCreate"
+        sgqlc.types.list_of(sgqlc.types.non_null(DeliveryLocationGroupZoneInput)), graphql_name="zonesToCreate",
     )
     zones_to_update = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(DeliveryLocationGroupZoneInput)), graphql_name="zonesToUpdate"
+        sgqlc.types.list_of(sgqlc.types.non_null(DeliveryLocationGroupZoneInput)), graphql_name="zonesToUpdate",
     )
 
 
@@ -3899,10 +3899,10 @@ class DraftOrderInput(sgqlc.types.Input):
     line_items = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null("DraftOrderLineItemInput")), graphql_name="lineItems")
     metafields = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null("MetafieldInput")), graphql_name="metafields")
     private_metafields = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("PrivateMetafieldInput")), graphql_name="privateMetafields"
+        sgqlc.types.list_of(sgqlc.types.non_null("PrivateMetafieldInput")), graphql_name="privateMetafields",
     )
     localization_extensions = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("LocalizationExtensionInput")), graphql_name="localizationExtensions"
+        sgqlc.types.list_of(sgqlc.types.non_null("LocalizationExtensionInput")), graphql_name="localizationExtensions",
     )
     note = sgqlc.types.Field(String, graphql_name="note")
     shipping_address = sgqlc.types.Field("MailingAddressInput", graphql_name="shippingAddress")
@@ -4451,7 +4451,7 @@ class MetafieldDefinitionInput(sgqlc.types.Input):
     owner_type = sgqlc.types.Field(sgqlc.types.non_null(MetafieldOwnerType), graphql_name="ownerType")
     type = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="type")
     validations = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("MetafieldDefinitionValidationInput")), graphql_name="validations"
+        sgqlc.types.list_of(sgqlc.types.non_null("MetafieldDefinitionValidationInput")), graphql_name="validations",
     )
     visible_to_storefront_api = sgqlc.types.Field(Boolean, graphql_name="visibleToStorefrontApi")
     pin = sgqlc.types.Field(Boolean, graphql_name="pin")
@@ -4568,7 +4568,7 @@ class OrderInput(sgqlc.types.Input):
     custom_attributes = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(AttributeInput)), graphql_name="customAttributes")
     metafields = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(MetafieldInput)), graphql_name="metafields")
     localization_extensions = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(LocalizationExtensionInput)), graphql_name="localizationExtensions"
+        sgqlc.types.list_of(sgqlc.types.non_null(LocalizationExtensionInput)), graphql_name="localizationExtensions",
     )
 
 
@@ -4745,7 +4745,7 @@ class PriceRuleInput(sgqlc.types.Input):
     item_prerequisites = sgqlc.types.Field("PriceRuleItemPrerequisitesInput", graphql_name="itemPrerequisites")
     shipping_entitlements = sgqlc.types.Field("PriceRuleShippingEntitlementsInput", graphql_name="shippingEntitlements")
     prerequisite_to_entitlement_quantity_ratio = sgqlc.types.Field(
-        "PriceRulePrerequisiteToEntitlementQuantityRatioInput", graphql_name="prerequisiteToEntitlementQuantityRatio"
+        "PriceRulePrerequisiteToEntitlementQuantityRatioInput", graphql_name="prerequisiteToEntitlementQuantityRatio",
     )
 
 
@@ -4904,7 +4904,7 @@ class ProductInput(sgqlc.types.Input):
     images = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ImageInput)), graphql_name="images")
     metafields = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(MetafieldInput)), graphql_name="metafields")
     private_metafields = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(PrivateMetafieldInput)), graphql_name="privateMetafields"
+        sgqlc.types.list_of(sgqlc.types.non_null(PrivateMetafieldInput)), graphql_name="privateMetafields",
     )
     options = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="options")
     variants = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null("ProductVariantInput")), graphql_name="variants")
@@ -4998,12 +4998,12 @@ class ProductVariantInput(sgqlc.types.Input):
     media_src = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="mediaSrc")
     inventory_policy = sgqlc.types.Field(ProductVariantInventoryPolicy, graphql_name="inventoryPolicy")
     inventory_quantities = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(InventoryLevelInput)), graphql_name="inventoryQuantities"
+        sgqlc.types.list_of(sgqlc.types.non_null(InventoryLevelInput)), graphql_name="inventoryQuantities",
     )
     inventory_item = sgqlc.types.Field(InventoryItemInput, graphql_name="inventoryItem")
     metafields = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(MetafieldInput)), graphql_name="metafields")
     private_metafields = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(PrivateMetafieldInput)), graphql_name="privateMetafields"
+        sgqlc.types.list_of(sgqlc.types.non_null(PrivateMetafieldInput)), graphql_name="privateMetafields",
     )
     options = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="options")
     position = sgqlc.types.Field(Int, graphql_name="position")
@@ -5057,12 +5057,12 @@ class ProductVariantsBulkInput(sgqlc.types.Input):
     media_src = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="mediaSrc")
     inventory_policy = sgqlc.types.Field(ProductVariantInventoryPolicy, graphql_name="inventoryPolicy")
     inventory_quantities = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(InventoryLevelInput)), graphql_name="inventoryQuantities"
+        sgqlc.types.list_of(sgqlc.types.non_null(InventoryLevelInput)), graphql_name="inventoryQuantities",
     )
     inventory_item = sgqlc.types.Field(InventoryItemInput, graphql_name="inventoryItem")
     metafields = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(MetafieldInput)), graphql_name="metafields")
     private_metafields = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(PrivateMetafieldInput)), graphql_name="privateMetafields"
+        sgqlc.types.list_of(sgqlc.types.non_null(PrivateMetafieldInput)), graphql_name="privateMetafields",
     )
     options = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="options")
     price = sgqlc.types.Field(Money, graphql_name="price")
@@ -5248,7 +5248,7 @@ class SellingPlanFixedBillingPolicyInput(sgqlc.types.Input):
         "checkout_charge",
     )
     remaining_balance_charge_trigger = sgqlc.types.Field(
-        SellingPlanRemainingBalanceChargeTrigger, graphql_name="remainingBalanceChargeTrigger"
+        SellingPlanRemainingBalanceChargeTrigger, graphql_name="remainingBalanceChargeTrigger",
     )
     remaining_balance_charge_exact_time = sgqlc.types.Field(DateTime, graphql_name="remainingBalanceChargeExactTime")
     remaining_balance_charge_time_after_checkout = sgqlc.types.Field(String, graphql_name="remainingBalanceChargeTimeAfterCheckout")
@@ -5299,10 +5299,10 @@ class SellingPlanGroupInput(sgqlc.types.Input):
     merchant_code = sgqlc.types.Field(String, graphql_name="merchantCode")
     description = sgqlc.types.Field(String, graphql_name="description")
     selling_plans_to_create = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("SellingPlanInput")), graphql_name="sellingPlansToCreate"
+        sgqlc.types.list_of(sgqlc.types.non_null("SellingPlanInput")), graphql_name="sellingPlansToCreate",
     )
     selling_plans_to_update = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("SellingPlanInput")), graphql_name="sellingPlansToUpdate"
+        sgqlc.types.list_of(sgqlc.types.non_null("SellingPlanInput")), graphql_name="sellingPlansToUpdate",
     )
     selling_plans_to_delete = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="sellingPlansToDelete")
     options = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="options")
@@ -5337,7 +5337,7 @@ class SellingPlanInput(sgqlc.types.Input):
     delivery_policy = sgqlc.types.Field(SellingPlanDeliveryPolicyInput, graphql_name="deliveryPolicy")
     inventory_policy = sgqlc.types.Field("SellingPlanInventoryPolicyInput", graphql_name="inventoryPolicy")
     pricing_policies = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("SellingPlanPricingPolicyInput")), graphql_name="pricingPolicies"
+        sgqlc.types.list_of(sgqlc.types.non_null("SellingPlanPricingPolicyInput")), graphql_name="pricingPolicies",
     )
     options = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="options")
     position = sgqlc.types.Field(Int, graphql_name="position")
@@ -5827,7 +5827,7 @@ class WebhookSubscriptionInput(sgqlc.types.Input):
     include_fields = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="includeFields")
     metafield_namespaces = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="metafieldNamespaces")
     private_metafield_namespaces = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="privateMetafieldNamespaces"
+        sgqlc.types.list_of(sgqlc.types.non_null(String)), graphql_name="privateMetafieldNamespaces",
     )
 
 
@@ -5964,7 +5964,7 @@ class AppPurchaseOneTimeConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("AppPurchaseOneTimeEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("AppPurchaseOneTimeEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("AppPurchaseOneTime"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -6106,7 +6106,7 @@ class AppSubscriptionLineItem(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(AppUsageRecordSortKeys, graphql_name="sortKey", default="CREATED_AT")),
-            )
+            ),
         ),
     )
 
@@ -6301,7 +6301,7 @@ class CalculatedDraftOrder(sgqlc.types.Type):
         graphql_name="availableShippingRates",
     )
     billing_address_matches_shipping_address = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="billingAddressMatchesShippingAddress"
+        sgqlc.types.non_null(Boolean), graphql_name="billingAddressMatchesShippingAddress",
     )
     currency_code = sgqlc.types.Field(sgqlc.types.non_null(CurrencyCode), graphql_name="currencyCode")
     customer = sgqlc.types.Field("Customer", graphql_name="customer")
@@ -6364,7 +6364,7 @@ class CalculatedDraftOrderLineItem(sgqlc.types.Type):
     applied_discount = sgqlc.types.Field("DraftOrderAppliedDiscount", graphql_name="appliedDiscount")
     custom = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="custom")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     custom_attributes_v2 = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TypedAttribute"))),
@@ -6424,7 +6424,7 @@ class CalculatedLineItem(sgqlc.types.Type):
         graphql_name="calculatedDiscountAllocations",
     )
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     discounted_unit_price_set = sgqlc.types.Field(sgqlc.types.non_null("MoneyBag"), graphql_name="discountedUnitPriceSet")
     editable_quantity = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="editableQuantity")
@@ -6452,7 +6452,7 @@ class CalculatedLineItemConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CalculatedLineItemEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CalculatedLineItemEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CalculatedLineItem))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -6574,7 +6574,7 @@ class CollectionPublishPayload(sgqlc.types.Type):
     __field_names__ = ("collection", "collection_publications", "shop", "user_errors")
     collection = sgqlc.types.Field("Collection", graphql_name="collection")
     collection_publications = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(CollectionPublication)), graphql_name="collectionPublications"
+        sgqlc.types.list_of(sgqlc.types.non_null(CollectionPublication)), graphql_name="collectionPublications",
     )
     shop = sgqlc.types.Field(sgqlc.types.non_null("Shop"), graphql_name="shop")
     user_errors = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("UserError"))), graphql_name="userErrors")
@@ -6729,7 +6729,7 @@ class CompanyContactAssignRolesPayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("role_assignments", "user_errors")
     role_assignments = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRoleAssignment")), graphql_name="roleAssignments"
+        sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRoleAssignment")), graphql_name="roleAssignments",
     )
     user_errors = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("BusinessCustomerUserError"))),
@@ -6817,7 +6817,7 @@ class CompanyContactRoleConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRoleEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRoleEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRole"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -6891,7 +6891,7 @@ class CompanyLocationAssignRolesPayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("role_assignments", "user_errors")
     role_assignments = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRoleAssignment")), graphql_name="roleAssignments"
+        sgqlc.types.list_of(sgqlc.types.non_null("CompanyContactRoleAssignment")), graphql_name="roleAssignments",
     )
     user_errors = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("BusinessCustomerUserError"))),
@@ -6998,7 +6998,7 @@ class CompanyLocationsDeletePayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("deleted_company_location_ids", "user_errors")
     deleted_company_location_ids = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="deletedCompanyLocationIds"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="deletedCompanyLocationIds",
     )
     user_errors = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("BusinessCustomerUserError"))),
@@ -7030,7 +7030,7 @@ class CountriesInShippingZones(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("country_codes", "include_rest_of_world")
     country_codes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="countryCodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="countryCodes",
     )
     include_rest_of_world = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="includeRestOfWorld")
 
@@ -7256,7 +7256,7 @@ class CustomerJourneySummary(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     moments_count = sgqlc.types.Field(Int, graphql_name="momentsCount")
@@ -7305,7 +7305,7 @@ class CustomerPaymentMethodConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CustomerPaymentMethod"))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("CustomerPaymentMethod"))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
 
@@ -7606,7 +7606,7 @@ class DeliveryCountryCodesOrRestOfWorld(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("country_codes", "rest_of_world")
     country_codes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="countryCodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="countryCodes",
     )
     rest_of_world = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="restOfWorld")
 
@@ -7622,7 +7622,7 @@ class DeliveryLocationGroupZone(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("method_definition_counts", "method_definitions", "zone")
     method_definition_counts = sgqlc.types.Field(
-        sgqlc.types.non_null("DeliveryMethodDefinitionCounts"), graphql_name="methodDefinitionCounts"
+        sgqlc.types.non_null("DeliveryMethodDefinitionCounts"), graphql_name="methodDefinitionCounts",
     )
     method_definitions = sgqlc.types.Field(
         sgqlc.types.non_null("DeliveryMethodDefinitionConnection"),
@@ -7637,7 +7637,7 @@ class DeliveryLocationGroupZone(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(MethodDefinitionSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     zone = sgqlc.types.Field(sgqlc.types.non_null("DeliveryZone"), graphql_name="zone")
@@ -7651,7 +7651,7 @@ class DeliveryLocationGroupZoneConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DeliveryLocationGroupZone))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DeliveryLocationGroupZone))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
 
@@ -7724,7 +7724,7 @@ class DeliveryProfileItemConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DeliveryProfileItemEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DeliveryProfileItemEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DeliveryProfileItem"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -7755,7 +7755,7 @@ class DeliveryProfileLocationGroup(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -7808,7 +7808,7 @@ class DiscountApplicationConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountApplicationEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountApplicationEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DiscountApplication))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -7826,7 +7826,7 @@ class DiscountAutomaticActivatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_discount_node", "user_errors")
     automatic_discount_node = sgqlc.types.Field("DiscountAutomaticNode", graphql_name="automaticDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7859,7 +7859,7 @@ class DiscountAutomaticAppCreatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_app_discount", "user_errors")
     automatic_app_discount = sgqlc.types.Field(DiscountAutomaticApp, graphql_name="automaticAppDiscount")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7868,7 +7868,7 @@ class DiscountAutomaticAppUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_app_discount", "user_errors")
     automatic_app_discount = sgqlc.types.Field(DiscountAutomaticApp, graphql_name="automaticAppDiscount")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7907,7 +7907,7 @@ class DiscountAutomaticBasicCreatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_discount_node", "user_errors")
     automatic_discount_node = sgqlc.types.Field("DiscountAutomaticNode", graphql_name="automaticDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7916,7 +7916,7 @@ class DiscountAutomaticBasicUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_discount_node", "user_errors")
     automatic_discount_node = sgqlc.types.Field("DiscountAutomaticNode", graphql_name="automaticDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7925,7 +7925,7 @@ class DiscountAutomaticBulkDeletePayload(sgqlc.types.Type):
     __field_names__ = ("job", "user_errors")
     job = sgqlc.types.Field("Job", graphql_name="job")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7934,7 +7934,7 @@ class DiscountAutomaticBxgyCreatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_discount_node", "user_errors")
     automatic_discount_node = sgqlc.types.Field("DiscountAutomaticNode", graphql_name="automaticDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7943,7 +7943,7 @@ class DiscountAutomaticBxgyUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_discount_node", "user_errors")
     automatic_discount_node = sgqlc.types.Field("DiscountAutomaticNode", graphql_name="automaticDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7951,7 +7951,7 @@ class DiscountAutomaticConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountAutomaticEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountAutomaticEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountAutomatic"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -7962,7 +7962,7 @@ class DiscountAutomaticDeactivatePayload(sgqlc.types.Type):
     __field_names__ = ("automatic_discount_node", "user_errors")
     automatic_discount_node = sgqlc.types.Field("DiscountAutomaticNode", graphql_name="automaticDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7971,7 +7971,7 @@ class DiscountAutomaticDeletePayload(sgqlc.types.Type):
     __field_names__ = ("deleted_automatic_discount_id", "user_errors")
     deleted_automatic_discount_id = sgqlc.types.Field(ID, graphql_name="deletedAutomaticDiscountId")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -7990,7 +7990,7 @@ class DiscountAutomaticNodeConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountAutomaticNode"))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountAutomaticNode"))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
 
@@ -8007,7 +8007,7 @@ class DiscountCodeActivatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8052,7 +8052,7 @@ class DiscountCodeApp(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(DiscountCodeSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     combines_with = sgqlc.types.Field(sgqlc.types.non_null("DiscountCombinesWith"), graphql_name="combinesWith")
@@ -8080,7 +8080,7 @@ class DiscountCodeAppCreatePayload(sgqlc.types.Type):
     __field_names__ = ("code_app_discount", "user_errors")
     code_app_discount = sgqlc.types.Field(DiscountCodeApp, graphql_name="codeAppDiscount")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8089,7 +8089,7 @@ class DiscountCodeAppUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("code_app_discount", "user_errors")
     code_app_discount = sgqlc.types.Field(DiscountCodeApp, graphql_name="codeAppDiscount")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8134,7 +8134,7 @@ class DiscountCodeBasic(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(DiscountCodeSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     combines_with = sgqlc.types.Field(sgqlc.types.non_null("DiscountCombinesWith"), graphql_name="combinesWith")
@@ -8164,7 +8164,7 @@ class DiscountCodeBasicCreatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8173,7 +8173,7 @@ class DiscountCodeBasicUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8182,7 +8182,7 @@ class DiscountCodeBulkActivatePayload(sgqlc.types.Type):
     __field_names__ = ("job", "user_errors")
     job = sgqlc.types.Field("Job", graphql_name="job")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8191,7 +8191,7 @@ class DiscountCodeBulkDeactivatePayload(sgqlc.types.Type):
     __field_names__ = ("job", "user_errors")
     job = sgqlc.types.Field("Job", graphql_name="job")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8200,7 +8200,7 @@ class DiscountCodeBulkDeletePayload(sgqlc.types.Type):
     __field_names__ = ("job", "user_errors")
     job = sgqlc.types.Field("Job", graphql_name="job")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8244,7 +8244,7 @@ class DiscountCodeBxgy(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(DiscountCodeSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     combines_with = sgqlc.types.Field(sgqlc.types.non_null("DiscountCombinesWith"), graphql_name="combinesWith")
@@ -8273,7 +8273,7 @@ class DiscountCodeBxgyCreatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8282,7 +8282,7 @@ class DiscountCodeBxgyUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8291,7 +8291,7 @@ class DiscountCodeDeactivatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8300,7 +8300,7 @@ class DiscountCodeDeletePayload(sgqlc.types.Type):
     __field_names__ = ("deleted_code_discount_id", "user_errors")
     deleted_code_discount_id = sgqlc.types.Field(ID, graphql_name="deletedCodeDiscountId")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8350,14 +8350,14 @@ class DiscountCodeFreeShipping(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(DiscountCodeSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     combines_with = sgqlc.types.Field(sgqlc.types.non_null("DiscountCombinesWith"), graphql_name="combinesWith")
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
     customer_selection = sgqlc.types.Field(sgqlc.types.non_null("DiscountCustomerSelection"), graphql_name="customerSelection")
     destination_selection = sgqlc.types.Field(
-        sgqlc.types.non_null("DiscountShippingDestinationSelection"), graphql_name="destinationSelection"
+        sgqlc.types.non_null("DiscountShippingDestinationSelection"), graphql_name="destinationSelection",
     )
     discount_class = sgqlc.types.Field(sgqlc.types.non_null(ShippingDiscountClass), graphql_name="discountClass")
     ends_at = sgqlc.types.Field(DateTime, graphql_name="endsAt")
@@ -8383,7 +8383,7 @@ class DiscountCodeFreeShippingCreatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8392,7 +8392,7 @@ class DiscountCodeFreeShippingUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("code_discount_node", "user_errors")
     code_discount_node = sgqlc.types.Field("DiscountCodeNode", graphql_name="codeDiscountNode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8416,7 +8416,7 @@ class DiscountCodeRedeemCodeBulkDeletePayload(sgqlc.types.Type):
     __field_names__ = ("job", "user_errors")
     job = sgqlc.types.Field("Job", graphql_name="job")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8433,7 +8433,7 @@ class DiscountCollections(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -8546,7 +8546,7 @@ class DiscountProducts(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -8559,7 +8559,7 @@ class DiscountProducts(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -8590,7 +8590,7 @@ class DiscountRedeemCodeBulkAddPayload(sgqlc.types.Type):
     __field_names__ = ("bulk_creation", "user_errors")
     bulk_creation = sgqlc.types.Field("DiscountRedeemCodeBulkCreation", graphql_name="bulkCreation")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8627,7 +8627,7 @@ class DiscountRedeemCodeConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountRedeemCodeEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DiscountRedeemCodeEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DiscountRedeemCode))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -8670,7 +8670,7 @@ class DomainLocalization(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("alternate_locales", "country", "default_locale")
     alternate_locales = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="alternateLocales"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="alternateLocales",
     )
     country = sgqlc.types.Field(String, graphql_name="country")
     default_locale = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="defaultLocale")
@@ -8790,7 +8790,7 @@ class DraftOrderLineItemConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DraftOrderLineItemEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DraftOrderLineItemEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DraftOrderLineItem"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -8896,7 +8896,7 @@ class FileCreatePayload(sgqlc.types.Type):
     __field_names__ = ("files", "user_errors")
     files = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(File)), graphql_name="files")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FilesUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FilesUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8905,7 +8905,7 @@ class FileDeletePayload(sgqlc.types.Type):
     __field_names__ = ("deleted_file_ids", "user_errors")
     deleted_file_ids = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="deletedFileIds")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FilesUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FilesUserError"))), graphql_name="userErrors",
     )
 
 
@@ -8929,7 +8929,7 @@ class FileUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("files", "user_errors")
     files = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null(File)), graphql_name="files")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FilesUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FilesUserError"))), graphql_name="userErrors",
     )
 
 
@@ -9001,7 +9001,7 @@ class FulfillmentLineItemConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FulfillmentLineItemEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FulfillmentLineItemEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("FulfillmentLineItem"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -9372,7 +9372,7 @@ class GiftCardCreatePayload(sgqlc.types.Type):
     gift_card = sgqlc.types.Field("GiftCard", graphql_name="giftCard")
     gift_card_code = sgqlc.types.Field(String, graphql_name="giftCardCode")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("GiftCardUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("GiftCardUserError"))), graphql_name="userErrors",
     )
 
 
@@ -9412,7 +9412,7 @@ class HasEvents(sgqlc.types.Interface):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(EventSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
 
@@ -9446,7 +9446,7 @@ class HasLocalizationExtensions(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -9471,7 +9471,7 @@ class HasMetafieldDefinitions(sgqlc.types.Interface):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(MetafieldDefinitionSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
 
@@ -9486,7 +9486,7 @@ class HasMetafields(sgqlc.types.Interface):
             (
                 ("namespace", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="namespace", default=None)),
                 ("key", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="key", default=None)),
-            )
+            ),
         ),
     )
     metafields = sgqlc.types.Field(
@@ -9500,7 +9500,7 @@ class HasMetafields(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     private_metafield = sgqlc.types.Field(
@@ -9510,7 +9510,7 @@ class HasMetafields(sgqlc.types.Interface):
             (
                 ("namespace", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="namespace", default=None)),
                 ("key", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="key", default=None)),
-            )
+            ),
         ),
     )
     private_metafields = sgqlc.types.Field(
@@ -9524,7 +9524,7 @@ class HasMetafields(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -9539,7 +9539,7 @@ class HasPublishedTranslations(sgqlc.types.Interface):
             (
                 ("locale", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="locale", default=None)),
                 ("market_id", sgqlc.types.Arg(ID, graphql_name="marketId", default=None)),
-            )
+            ),
         ),
     )
 
@@ -9866,7 +9866,7 @@ class MarketCreatePayload(sgqlc.types.Type):
     __field_names__ = ("market", "user_errors")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -9892,7 +9892,7 @@ class MarketDeletePayload(sgqlc.types.Type):
     __field_names__ = ("deleted_id", "user_errors")
     deleted_id = sgqlc.types.Field(ID, graphql_name="deletedId")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -9934,7 +9934,7 @@ class MarketLocalizableResourceConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(MarketLocalizableResource))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(MarketLocalizableResource))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
 
@@ -9959,7 +9959,7 @@ class MarketLocalizationsRegisterPayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("market_localizations", "user_errors")
     market_localizations = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(MarketLocalization)), graphql_name="marketLocalizations"
+        sgqlc.types.list_of(sgqlc.types.non_null(MarketLocalization)), graphql_name="marketLocalizations",
     )
     user_errors = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TranslationUserError"))),
@@ -9971,7 +9971,7 @@ class MarketLocalizationsRemovePayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("market_localizations", "user_errors")
     market_localizations = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(MarketLocalization)), graphql_name="marketLocalizations"
+        sgqlc.types.list_of(sgqlc.types.non_null(MarketLocalization)), graphql_name="marketLocalizations",
     )
     user_errors = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TranslationUserError"))),
@@ -10000,7 +10000,7 @@ class MarketRegionDeletePayload(sgqlc.types.Type):
     deleted_id = sgqlc.types.Field(ID, graphql_name="deletedId")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -10016,7 +10016,7 @@ class MarketRegionsCreatePayload(sgqlc.types.Type):
     __field_names__ = ("market", "user_errors")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -10025,7 +10025,7 @@ class MarketUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("market", "user_errors")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -10034,7 +10034,7 @@ class MarketWebPresenceCreatePayload(sgqlc.types.Type):
     __field_names__ = ("market", "user_errors")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -10044,7 +10044,7 @@ class MarketWebPresenceDeletePayload(sgqlc.types.Type):
     deleted_id = sgqlc.types.Field(ID, graphql_name="deletedId")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -10060,7 +10060,7 @@ class MarketWebPresenceUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("market", "user_errors")
     market = sgqlc.types.Field("Market", graphql_name="market")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketUserError"))), graphql_name="userErrors",
     )
 
 
@@ -10068,7 +10068,7 @@ class MarketingActivityConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketingActivityEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketingActivityEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MarketingActivity"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -10201,10 +10201,10 @@ class Media(sgqlc.types.Interface):
     alt = sgqlc.types.Field(String, graphql_name="alt")
     media_content_type = sgqlc.types.Field(sgqlc.types.non_null(MediaContentType), graphql_name="mediaContentType")
     media_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaError"))), graphql_name="mediaErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaError"))), graphql_name="mediaErrors",
     )
     media_warnings = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaWarning"))), graphql_name="mediaWarnings"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaWarning"))), graphql_name="mediaWarnings",
     )
     preview = sgqlc.types.Field("MediaPreviewImage", graphql_name="preview")
     status = sgqlc.types.Field(sgqlc.types.non_null(MediaStatus), graphql_name="status")
@@ -10272,7 +10272,7 @@ class MetafieldDefinitionConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MetafieldDefinitionEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MetafieldDefinitionEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MetafieldDefinition"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -10380,7 +10380,7 @@ class MetafieldReferenceConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MetafieldReferenceEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MetafieldReferenceEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of("MetafieldReference")), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -10789,7 +10789,7 @@ class Mutation(sgqlc.types.Type):
                 ),
                 ("amount", sgqlc.types.Arg(sgqlc.types.non_null(MoneyInput), graphql_name="amount", default=None)),
                 ("test", sgqlc.types.Arg(Boolean, graphql_name="test", default=False)),
-            )
+            ),
         ),
     )
     app_purchase_one_time_create = sgqlc.types.Field(
@@ -10801,7 +10801,7 @@ class Mutation(sgqlc.types.Type):
                 ("price", sgqlc.types.Arg(sgqlc.types.non_null(MoneyInput), graphql_name="price", default=None)),
                 ("return_url", sgqlc.types.Arg(sgqlc.types.non_null(URL), graphql_name="returnUrl", default=None)),
                 ("test", sgqlc.types.Arg(Boolean, graphql_name="test", default=False)),
-            )
+            ),
         ),
     )
     app_revenue_attribution_record_create = sgqlc.types.Field(
@@ -10817,7 +10817,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     app_revenue_attribution_record_delete = sgqlc.types.Field(
@@ -10832,7 +10832,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("prorate", sgqlc.types.Arg(Boolean, graphql_name="prorate", default=False)),
-            )
+            ),
         ),
     )
     app_subscription_create = sgqlc.types.Field(
@@ -10856,7 +10856,7 @@ class Mutation(sgqlc.types.Type):
                     "replacement_behavior",
                     sgqlc.types.Arg(AppSubscriptionReplacementBehavior, graphql_name="replacementBehavior", default="STANDARD"),
                 ),
-            )
+            ),
         ),
     )
     app_subscription_line_item_update = sgqlc.types.Field(
@@ -10869,7 +10869,7 @@ class Mutation(sgqlc.types.Type):
                     "capped_amount",
                     sgqlc.types.Arg(sgqlc.types.non_null(MoneyInput), graphql_name="cappedAmount", default=None),
                 ),
-            )
+            ),
         ),
     )
     app_subscription_trial_extend = sgqlc.types.Field(
@@ -10879,7 +10879,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("days", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="days", default=None)),
-            )
+            ),
         ),
     )
     app_usage_record_create = sgqlc.types.Field(
@@ -10896,7 +10896,7 @@ class Mutation(sgqlc.types.Type):
                     "description",
                     sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="description", default=None),
                 ),
-            )
+            ),
         ),
     )
     bulk_operation_cancel = sgqlc.types.Field(
@@ -10915,7 +10915,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="stagedUploadPath", default=None),
                 ),
                 ("client_identifier", sgqlc.types.Arg(String, graphql_name="clientIdentifier", default=None)),
-            )
+            ),
         ),
     )
     bulk_operation_run_query = sgqlc.types.Field(
@@ -10936,7 +10936,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     collection_add_products = sgqlc.types.Field(
@@ -10953,7 +10953,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     collection_add_products_v2 = sgqlc.types.Field(
@@ -10970,7 +10970,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     collection_create = sgqlc.types.Field(
@@ -10987,7 +10987,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(CollectionDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     collection_remove_products = sgqlc.types.Field(
@@ -11004,7 +11004,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     collection_reorder_products = sgqlc.types.Field(
@@ -11021,7 +11021,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     collection_update = sgqlc.types.Field(
@@ -11042,7 +11042,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_address_delete = sgqlc.types.Field(
@@ -11057,7 +11057,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("company_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyId", default=None)),
                 ("customer_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="customerId", default=None)),
-            )
+            ),
         ),
     )
     company_assign_main_contact = sgqlc.types.Field(
@@ -11070,7 +11070,7 @@ class Mutation(sgqlc.types.Type):
                     "company_contact_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyContactId", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_contact_assign_role = sgqlc.types.Field(
@@ -11090,7 +11090,7 @@ class Mutation(sgqlc.types.Type):
                     "company_location_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyLocationId", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_contact_assign_roles = sgqlc.types.Field(
@@ -11110,7 +11110,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_contact_create = sgqlc.types.Field(
@@ -11123,7 +11123,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(CompanyContactInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_contact_delete = sgqlc.types.Field(
@@ -11135,7 +11135,7 @@ class Mutation(sgqlc.types.Type):
                     "company_contact_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyContactId", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_contact_revoke_role = sgqlc.types.Field(
@@ -11151,7 +11151,7 @@ class Mutation(sgqlc.types.Type):
                     "company_contact_role_assignment_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyContactRoleAssignmentId", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_contact_revoke_roles = sgqlc.types.Field(
@@ -11168,7 +11168,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="roleAssignmentIds", default=None),
                 ),
                 ("revoke_all", sgqlc.types.Arg(Boolean, graphql_name="revokeAll", default=False)),
-            )
+            ),
         ),
     )
     company_contact_update = sgqlc.types.Field(
@@ -11184,7 +11184,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(CompanyContactInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_contacts_delete = sgqlc.types.Field(
@@ -11200,14 +11200,14 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_create = sgqlc.types.Field(
         CompanyCreatePayload,
         graphql_name="companyCreate",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CompanyCreateInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CompanyCreateInput), graphql_name="input", default=None)),),
         ),
     )
     company_delete = sgqlc.types.Field(
@@ -11233,7 +11233,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_location_assign_roles = sgqlc.types.Field(
@@ -11253,7 +11253,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_location_assign_tax_exemptions = sgqlc.types.Field(
@@ -11273,7 +11273,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_location_create = sgqlc.types.Field(
@@ -11286,7 +11286,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(CompanyLocationInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_location_create_tax_registration = sgqlc.types.Field(
@@ -11296,7 +11296,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("location_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="locationId", default=None)),
                 ("tax_id", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="taxId", default=None)),
-            )
+            ),
         ),
     )
     company_location_delete = sgqlc.types.Field(
@@ -11308,7 +11308,7 @@ class Mutation(sgqlc.types.Type):
                     "company_location_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyLocationId", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_location_revoke_roles = sgqlc.types.Field(
@@ -11328,7 +11328,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_location_revoke_tax_exemptions = sgqlc.types.Field(
@@ -11348,7 +11348,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_location_revoke_tax_registration = sgqlc.types.Field(
@@ -11360,7 +11360,7 @@ class Mutation(sgqlc.types.Type):
                     "company_location_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyLocationId", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_location_update = sgqlc.types.Field(
@@ -11376,7 +11376,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(CompanyLocationUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     company_locations_delete = sgqlc.types.Field(
@@ -11392,7 +11392,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     company_revoke_main_contact = sgqlc.types.Field(
@@ -11407,7 +11407,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("company_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="companyId", default=None)),
                 ("input", sgqlc.types.Arg(sgqlc.types.non_null(CompanyInput), graphql_name="input", default=None)),
-            )
+            ),
         ),
     )
     customer_add_tax_exemptions = sgqlc.types.Field(
@@ -11424,7 +11424,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     customer_create = sgqlc.types.Field(
@@ -11436,7 +11436,7 @@ class Mutation(sgqlc.types.Type):
         CustomerDeletePayload,
         graphql_name="customerDelete",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CustomerDeleteInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(CustomerDeleteInput), graphql_name="input", default=None)),),
         ),
     )
     customer_email_marketing_consent_update = sgqlc.types.Field(
@@ -11452,7 +11452,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     customer_generate_account_activation_url = sgqlc.types.Field(
@@ -11471,7 +11471,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(MailingAddressInput), graphql_name="billingAddress", default=None),
                 ),
                 ("session_id", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="sessionId", default=None)),
-            )
+            ),
         ),
     )
     customer_payment_method_credit_card_update = sgqlc.types.Field(
@@ -11485,7 +11485,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(MailingAddressInput), graphql_name="billingAddress", default=None),
                 ),
                 ("session_id", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="sessionId", default=None)),
-            )
+            ),
         ),
     )
     customer_payment_method_get_update_url = sgqlc.types.Field(
@@ -11497,7 +11497,7 @@ class Mutation(sgqlc.types.Type):
                     "customer_payment_method_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="customerPaymentMethodId", default=None),
                 ),
-            )
+            ),
         ),
     )
     customer_payment_method_paypal_billing_agreement_create = sgqlc.types.Field(
@@ -11512,7 +11512,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="billingAgreementId", default=None),
                 ),
                 ("inactive", sgqlc.types.Arg(Boolean, graphql_name="inactive", default=False)),
-            )
+            ),
         ),
     )
     customer_payment_method_paypal_billing_agreement_update = sgqlc.types.Field(
@@ -11525,7 +11525,7 @@ class Mutation(sgqlc.types.Type):
                     "billing_address",
                     sgqlc.types.Arg(sgqlc.types.non_null(MailingAddressInput), graphql_name="billingAddress", default=None),
                 ),
-            )
+            ),
         ),
     )
     customer_payment_method_remote_create = sgqlc.types.Field(
@@ -11542,7 +11542,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     customer_payment_method_revoke = sgqlc.types.Field(
@@ -11554,7 +11554,7 @@ class Mutation(sgqlc.types.Type):
                     "customer_payment_method_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="customerPaymentMethodId", default=None),
                 ),
-            )
+            ),
         ),
     )
     customer_payment_method_send_update_email = sgqlc.types.Field(
@@ -11567,7 +11567,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="customerPaymentMethodId", default=None),
                 ),
                 ("email", sgqlc.types.Arg(EmailInput, graphql_name="email", default=None)),
-            )
+            ),
         ),
     )
     customer_remove_tax_exemptions = sgqlc.types.Field(
@@ -11584,7 +11584,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     customer_replace_tax_exemptions = sgqlc.types.Field(
@@ -11601,7 +11601,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     customer_sms_marketing_consent_update = sgqlc.types.Field(
@@ -11613,7 +11613,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(CustomerSmsMarketingConsentUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     customer_update = sgqlc.types.Field(
@@ -11628,7 +11628,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("customer_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="customerId", default=None)),
                 ("address_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="addressId", default=None)),
-            )
+            ),
         ),
     )
     delegate_access_token_create = sgqlc.types.Field(
@@ -11640,7 +11640,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(DelegateAccessTokenInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     delivery_profile_create = sgqlc.types.Field(
@@ -11652,7 +11652,7 @@ class Mutation(sgqlc.types.Type):
                     "profile",
                     sgqlc.types.Arg(sgqlc.types.non_null(DeliveryProfileInput), graphql_name="profile", default=None),
                 ),
-            )
+            ),
         ),
     )
     delivery_profile_remove = sgqlc.types.Field(
@@ -11674,7 +11674,7 @@ class Mutation(sgqlc.types.Type):
                     "leave_legacy_mode_profiles",
                     sgqlc.types.Arg(Boolean, graphql_name="leaveLegacyModeProfiles", default=None),
                 ),
-            )
+            ),
         ),
     )
     delivery_setting_update = sgqlc.types.Field(
@@ -11686,7 +11686,7 @@ class Mutation(sgqlc.types.Type):
                     "setting",
                     sgqlc.types.Arg(sgqlc.types.non_null(DeliverySettingInput), graphql_name="setting", default=None),
                 ),
-            )
+            ),
         ),
     )
     delivery_shipping_origin_assign = sgqlc.types.Field(
@@ -11712,7 +11712,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_app_update = sgqlc.types.Field(
@@ -11729,7 +11729,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_basic_create = sgqlc.types.Field(
@@ -11745,7 +11745,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_basic_update = sgqlc.types.Field(
@@ -11762,7 +11762,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_bulk_delete = sgqlc.types.Field(
@@ -11776,7 +11776,7 @@ class Mutation(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_bxgy_create = sgqlc.types.Field(
@@ -11792,7 +11792,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_bxgy_update = sgqlc.types.Field(
@@ -11809,7 +11809,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_automatic_deactivate = sgqlc.types.Field(
@@ -11836,7 +11836,7 @@ class Mutation(sgqlc.types.Type):
                     "code_app_discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(DiscountCodeAppInput), graphql_name="codeAppDiscount", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_app_update = sgqlc.types.Field(
@@ -11849,7 +11849,7 @@ class Mutation(sgqlc.types.Type):
                     "code_app_discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(DiscountCodeAppInput), graphql_name="codeAppDiscount", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_basic_create = sgqlc.types.Field(
@@ -11861,7 +11861,7 @@ class Mutation(sgqlc.types.Type):
                     "basic_code_discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(DiscountCodeBasicInput), graphql_name="basicCodeDiscount", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_basic_update = sgqlc.types.Field(
@@ -11874,7 +11874,7 @@ class Mutation(sgqlc.types.Type):
                     "basic_code_discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(DiscountCodeBasicInput), graphql_name="basicCodeDiscount", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_bulk_activate = sgqlc.types.Field(
@@ -11888,7 +11888,7 @@ class Mutation(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_bulk_deactivate = sgqlc.types.Field(
@@ -11902,7 +11902,7 @@ class Mutation(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_bulk_delete = sgqlc.types.Field(
@@ -11916,7 +11916,7 @@ class Mutation(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_bxgy_create = sgqlc.types.Field(
@@ -11928,7 +11928,7 @@ class Mutation(sgqlc.types.Type):
                     "bxgy_code_discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(DiscountCodeBxgyInput), graphql_name="bxgyCodeDiscount", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_bxgy_update = sgqlc.types.Field(
@@ -11941,7 +11941,7 @@ class Mutation(sgqlc.types.Type):
                     "bxgy_code_discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(DiscountCodeBxgyInput), graphql_name="bxgyCodeDiscount", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_code_deactivate = sgqlc.types.Field(
@@ -11967,7 +11967,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_code_free_shipping_update = sgqlc.types.Field(
@@ -11984,7 +11984,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     discount_code_redeem_code_bulk_delete = sgqlc.types.Field(
@@ -11999,7 +11999,7 @@ class Mutation(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     discount_redeem_code_bulk_add = sgqlc.types.Field(
@@ -12016,7 +12016,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     dispute_evidence_update = sgqlc.types.Field(
@@ -12033,7 +12033,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     draft_order_bulk_add_tags = sgqlc.types.Field(
@@ -12055,7 +12055,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     draft_order_bulk_delete = sgqlc.types.Field(
@@ -12069,7 +12069,7 @@ class Mutation(sgqlc.types.Type):
                     "ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="ids", default=None),
                 ),
-            )
+            ),
         ),
     )
     draft_order_bulk_remove_tags = sgqlc.types.Field(
@@ -12091,7 +12091,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     draft_order_calculate = sgqlc.types.Field(
@@ -12108,7 +12108,7 @@ class Mutation(sgqlc.types.Type):
                 ("payment_pending", sgqlc.types.Arg(Boolean, graphql_name="paymentPending", default=False)),
                 ("payment_gateway_id", sgqlc.types.Arg(ID, graphql_name="paymentGatewayId", default=None)),
                 ("source_name", sgqlc.types.Arg(String, graphql_name="sourceName", default=None)),
-            )
+            ),
         ),
     )
     draft_order_create = sgqlc.types.Field(
@@ -12135,7 +12135,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(DraftOrderDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     draft_order_duplicate = sgqlc.types.Field(
@@ -12150,7 +12150,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("email", sgqlc.types.Arg(EmailInput, graphql_name="email", default=None)),
-            )
+            ),
         ),
     )
     draft_order_invoice_send = sgqlc.types.Field(
@@ -12160,7 +12160,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("email", sgqlc.types.Arg(EmailInput, graphql_name="email", default=None)),
-            )
+            ),
         ),
     )
     draft_order_update = sgqlc.types.Field(
@@ -12170,7 +12170,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("input", sgqlc.types.Arg(sgqlc.types.non_null(DraftOrderInput), graphql_name="input", default=None)),
-            )
+            ),
         ),
     )
     event_bridge_webhook_subscription_create = sgqlc.types.Field(
@@ -12190,7 +12190,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     event_bridge_webhook_subscription_update = sgqlc.types.Field(
@@ -12207,7 +12207,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     file_create = sgqlc.types.Field(
@@ -12223,7 +12223,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     file_delete = sgqlc.types.Field(
@@ -12239,7 +12239,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     file_update = sgqlc.types.Field(
@@ -12255,7 +12255,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     flow_trigger_receive = sgqlc.types.Field(
@@ -12278,7 +12278,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(FulfillmentV2Input), graphql_name="fulfillment", default=None),
                 ),
                 ("message", sgqlc.types.Arg(String, graphql_name="message", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_accept_cancellation_request = sgqlc.types.Field(
@@ -12288,7 +12288,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("message", sgqlc.types.Arg(String, graphql_name="message", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_accept_fulfillment_request = sgqlc.types.Field(
@@ -12298,7 +12298,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("message", sgqlc.types.Arg(String, graphql_name="message", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_cancel = sgqlc.types.Field(
@@ -12313,7 +12313,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("message", sgqlc.types.Arg(String, graphql_name="message", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_hold = sgqlc.types.Field(
@@ -12326,7 +12326,7 @@ class Mutation(sgqlc.types.Type):
                     "fulfillment_hold",
                     sgqlc.types.Arg(sgqlc.types.non_null(FulfillmentOrderHoldInput), graphql_name="fulfillmentHold", default=None),
                 ),
-            )
+            ),
         ),
     )
     fulfillment_order_move = sgqlc.types.Field(
@@ -12339,7 +12339,7 @@ class Mutation(sgqlc.types.Type):
                     "new_location_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="newLocationId", default=None),
                 ),
-            )
+            ),
         ),
     )
     fulfillment_order_open = sgqlc.types.Field(
@@ -12354,7 +12354,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("message", sgqlc.types.Arg(String, graphql_name="message", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_reject_fulfillment_request = sgqlc.types.Field(
@@ -12373,7 +12373,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     fulfillment_order_release_hold = sgqlc.types.Field(
@@ -12388,7 +12388,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("fulfill_at", sgqlc.types.Arg(sgqlc.types.non_null(DateTime), graphql_name="fulfillAt", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_submit_cancellation_request = sgqlc.types.Field(
@@ -12398,7 +12398,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("message", sgqlc.types.Arg(String, graphql_name="message", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_order_submit_fulfillment_request = sgqlc.types.Field(
@@ -12418,7 +12418,7 @@ class Mutation(sgqlc.types.Type):
                     ),
                 ),
                 ("shipping_method", sgqlc.types.Arg(String, graphql_name="shippingMethod", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_orders_set_fulfillment_deadline = sgqlc.types.Field(
@@ -12438,7 +12438,7 @@ class Mutation(sgqlc.types.Type):
                     "fulfillment_deadline",
                     sgqlc.types.Arg(sgqlc.types.non_null(DateTime), graphql_name="fulfillmentDeadline", default=None),
                 ),
-            )
+            ),
         ),
     )
     fulfillment_service_create = sgqlc.types.Field(
@@ -12455,7 +12455,7 @@ class Mutation(sgqlc.types.Type):
                 ),
                 ("permits_sku_sharing", sgqlc.types.Arg(Boolean, graphql_name="permitsSkuSharing", default=False)),
                 ("inventory_management", sgqlc.types.Arg(Boolean, graphql_name="inventoryManagement", default=False)),
-            )
+            ),
         ),
     )
     fulfillment_service_delete = sgqlc.types.Field(
@@ -12465,7 +12465,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("destination_location_id", sgqlc.types.Arg(ID, graphql_name="destinationLocationId", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_service_update = sgqlc.types.Field(
@@ -12482,7 +12482,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(Boolean, graphql_name="fulfillmentOrdersOptIn", default=None),
                 ),
                 ("permits_sku_sharing", sgqlc.types.Arg(Boolean, graphql_name="permitsSkuSharing", default=None)),
-            )
+            ),
         ),
     )
     fulfillment_tracking_info_update_v2 = sgqlc.types.Field(
@@ -12499,14 +12499,14 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(FulfillmentTrackingInput), graphql_name="trackingInfoInput", default=None),
                 ),
                 ("notify_customer", sgqlc.types.Arg(Boolean, graphql_name="notifyCustomer", default=None)),
-            )
+            ),
         ),
     )
     gift_card_create = sgqlc.types.Field(
         GiftCardCreatePayload,
         graphql_name="giftCardCreate",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(GiftCardCreateInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(GiftCardCreateInput), graphql_name="input", default=None)),),
         ),
     )
     gift_card_disable = sgqlc.types.Field(
@@ -12524,7 +12524,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(GiftCardUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     inventory_activate = sgqlc.types.Field(
@@ -12538,7 +12538,7 @@ class Mutation(sgqlc.types.Type):
                 ),
                 ("location_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="locationId", default=None)),
                 ("available", sgqlc.types.Arg(Int, graphql_name="available", default=None)),
-            )
+            ),
         ),
     )
     inventory_adjust_quantity = sgqlc.types.Field(
@@ -12550,7 +12550,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(InventoryAdjustQuantityInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     inventory_bulk_adjust_quantity_at_location = sgqlc.types.Field(
@@ -12567,7 +12567,7 @@ class Mutation(sgqlc.types.Type):
                     ),
                 ),
                 ("location_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="locationId", default=None)),
-            )
+            ),
         ),
     )
     inventory_bulk_toggle_activation = sgqlc.types.Field(
@@ -12587,7 +12587,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     inventory_deactivate = sgqlc.types.Field(
@@ -12599,7 +12599,7 @@ class Mutation(sgqlc.types.Type):
                     "inventory_level_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="inventoryLevelId", default=None),
                 ),
-            )
+            ),
         ),
     )
     inventory_item_update = sgqlc.types.Field(
@@ -12612,7 +12612,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(InventoryItemUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     location_activate = sgqlc.types.Field(
@@ -12632,7 +12632,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("location_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="locationId", default=None)),
                 ("destination_location_id", sgqlc.types.Arg(ID, graphql_name="destinationLocationId", default=None)),
-            )
+            ),
         ),
     )
     location_delete = sgqlc.types.Field(
@@ -12647,14 +12647,14 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("input", sgqlc.types.Arg(sgqlc.types.non_null(LocationEditInput), graphql_name="input", default=None)),
-            )
+            ),
         ),
     )
     market_create = sgqlc.types.Field(
         MarketCreatePayload,
         graphql_name="marketCreate",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarketCreateInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(MarketCreateInput), graphql_name="input", default=None)),),
         ),
     )
     market_currency_settings_update = sgqlc.types.Field(
@@ -12667,7 +12667,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketCurrencySettingsUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     market_delete = sgqlc.types.Field(
@@ -12689,7 +12689,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     market_localizations_remove = sgqlc.types.Field(
@@ -12714,7 +12714,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     market_region_delete = sgqlc.types.Field(
@@ -12736,7 +12736,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     market_update = sgqlc.types.Field(
@@ -12746,7 +12746,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("input", sgqlc.types.Arg(sgqlc.types.non_null(MarketUpdateInput), graphql_name="input", default=None)),
-            )
+            ),
         ),
     )
     market_web_presence_create = sgqlc.types.Field(
@@ -12759,7 +12759,7 @@ class Mutation(sgqlc.types.Type):
                     "web_presence",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketWebPresenceCreateInput), graphql_name="webPresence", default=None),
                 ),
-            )
+            ),
         ),
     )
     market_web_presence_delete = sgqlc.types.Field(
@@ -12777,7 +12777,7 @@ class Mutation(sgqlc.types.Type):
                     "web_presence",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketWebPresenceUpdateInput), graphql_name="webPresence", default=None),
                 ),
-            )
+            ),
         ),
     )
     marketing_activity_create = sgqlc.types.Field(
@@ -12789,7 +12789,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketingActivityCreateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     marketing_activity_create_external = sgqlc.types.Field(
@@ -12801,7 +12801,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketingActivityCreateExternalInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     marketing_activity_update = sgqlc.types.Field(
@@ -12813,7 +12813,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketingActivityUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     marketing_activity_update_external = sgqlc.types.Field(
@@ -12828,7 +12828,7 @@ class Mutation(sgqlc.types.Type):
                 ("marketing_activity_id", sgqlc.types.Arg(ID, graphql_name="marketingActivityId", default=None)),
                 ("remote_id", sgqlc.types.Arg(String, graphql_name="remoteId", default=None)),
                 ("utm", sgqlc.types.Arg(UTMInput, graphql_name="utm", default=None)),
-            )
+            ),
         ),
     )
     marketing_engagement_create = sgqlc.types.Field(
@@ -12844,7 +12844,7 @@ class Mutation(sgqlc.types.Type):
                     "marketing_engagement",
                     sgqlc.types.Arg(sgqlc.types.non_null(MarketingEngagementInput), graphql_name="marketingEngagement", default=None),
                 ),
-            )
+            ),
         ),
     )
     metafield_definition_create = sgqlc.types.Field(
@@ -12856,7 +12856,7 @@ class Mutation(sgqlc.types.Type):
                     "definition",
                     sgqlc.types.Arg(sgqlc.types.non_null(MetafieldDefinitionInput), graphql_name="definition", default=None),
                 ),
-            )
+            ),
         ),
     )
     metafield_definition_delete = sgqlc.types.Field(
@@ -12869,21 +12869,21 @@ class Mutation(sgqlc.types.Type):
                     "delete_all_associated_metafields",
                     sgqlc.types.Arg(Boolean, graphql_name="deleteAllAssociatedMetafields", default=False),
                 ),
-            )
+            ),
         ),
     )
     metafield_definition_pin = sgqlc.types.Field(
         MetafieldDefinitionPinPayload,
         graphql_name="metafieldDefinitionPin",
         args=sgqlc.types.ArgDict(
-            (("definition_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="definitionId", default=None)),)
+            (("definition_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="definitionId", default=None)),),
         ),
     )
     metafield_definition_unpin = sgqlc.types.Field(
         MetafieldDefinitionUnpinPayload,
         graphql_name="metafieldDefinitionUnpin",
         args=sgqlc.types.ArgDict(
-            (("definition_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="definitionId", default=None)),)
+            (("definition_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="definitionId", default=None)),),
         ),
     )
     metafield_definition_update = sgqlc.types.Field(
@@ -12895,7 +12895,7 @@ class Mutation(sgqlc.types.Type):
                     "definition",
                     sgqlc.types.Arg(sgqlc.types.non_null(MetafieldDefinitionUpdateInput), graphql_name="definition", default=None),
                 ),
-            )
+            ),
         ),
     )
     metafield_delete = sgqlc.types.Field(
@@ -12907,7 +12907,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(MetafieldDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     metafield_storefront_visibility_create = sgqlc.types.Field(
@@ -12919,7 +12919,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(MetafieldStorefrontVisibilityInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     metafield_storefront_visibility_delete = sgqlc.types.Field(
@@ -12940,14 +12940,14 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     order_capture = sgqlc.types.Field(
         "OrderCapturePayload",
         graphql_name="orderCapture",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(OrderCaptureInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(OrderCaptureInput), graphql_name="input", default=None)),),
         ),
     )
     order_close = sgqlc.types.Field(
@@ -12968,7 +12968,7 @@ class Mutation(sgqlc.types.Type):
                 ),
                 ("mandate_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="mandateId", default=None)),
                 ("auto_capture", sgqlc.types.Arg(Boolean, graphql_name="autoCapture", default=True)),
-            )
+            ),
         ),
     )
     order_edit_add_custom_item = sgqlc.types.Field(
@@ -12983,7 +12983,7 @@ class Mutation(sgqlc.types.Type):
                 ("quantity", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="quantity", default=None)),
                 ("taxable", sgqlc.types.Arg(Boolean, graphql_name="taxable", default=None)),
                 ("requires_shipping", sgqlc.types.Arg(Boolean, graphql_name="requiresShipping", default=None)),
-            )
+            ),
         ),
     )
     order_edit_add_line_item_discount = sgqlc.types.Field(
@@ -12997,7 +12997,7 @@ class Mutation(sgqlc.types.Type):
                     "discount",
                     sgqlc.types.Arg(sgqlc.types.non_null(OrderEditAppliedDiscountInput), graphql_name="discount", default=None),
                 ),
-            )
+            ),
         ),
     )
     order_edit_add_variant = sgqlc.types.Field(
@@ -13010,7 +13010,7 @@ class Mutation(sgqlc.types.Type):
                 ("location_id", sgqlc.types.Arg(ID, graphql_name="locationId", default=None)),
                 ("quantity", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="quantity", default=None)),
                 ("allow_duplicates", sgqlc.types.Arg(Boolean, graphql_name="allowDuplicates", default=False)),
-            )
+            ),
         ),
     )
     order_edit_begin = sgqlc.types.Field(
@@ -13026,7 +13026,7 @@ class Mutation(sgqlc.types.Type):
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("notify_customer", sgqlc.types.Arg(Boolean, graphql_name="notifyCustomer", default=None)),
                 ("staff_note", sgqlc.types.Arg(String, graphql_name="staffNote", default=None)),
-            )
+            ),
         ),
     )
     order_edit_remove_line_item_discount = sgqlc.types.Field(
@@ -13039,7 +13039,7 @@ class Mutation(sgqlc.types.Type):
                     "discount_application_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="discountApplicationId", default=None),
                 ),
-            )
+            ),
         ),
     )
     order_edit_set_quantity = sgqlc.types.Field(
@@ -13051,7 +13051,7 @@ class Mutation(sgqlc.types.Type):
                 ("line_item_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="lineItemId", default=None)),
                 ("quantity", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="quantity", default=None)),
                 ("restock", sgqlc.types.Arg(Boolean, graphql_name="restock", default=None)),
-            )
+            ),
         ),
     )
     order_invoice_send = sgqlc.types.Field(
@@ -13061,7 +13061,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("email", sgqlc.types.Arg(EmailInput, graphql_name="email", default=None)),
-            )
+            ),
         ),
     )
     order_mark_as_paid = sgqlc.types.Field(
@@ -13073,7 +13073,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(OrderMarkAsPaidInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     order_open = sgqlc.types.Field(
@@ -13100,7 +13100,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     payment_terms_delete = sgqlc.types.Field(
@@ -13112,7 +13112,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(PaymentTermsDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     payment_terms_update = sgqlc.types.Field(
@@ -13124,7 +13124,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(PaymentTermsUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     price_list_create = sgqlc.types.Field(
@@ -13136,7 +13136,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(PriceListCreateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     price_list_delete = sgqlc.types.Field(
@@ -13158,7 +13158,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     price_list_fixed_prices_delete = sgqlc.types.Field(
@@ -13175,7 +13175,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     price_list_update = sgqlc.types.Field(
@@ -13188,7 +13188,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(PriceListUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     price_rule_activate = sgqlc.types.Field(
@@ -13209,7 +13209,7 @@ class Mutation(sgqlc.types.Type):
                     "price_rule_discount_code",
                     sgqlc.types.Arg(PriceRuleDiscountCodeInput, graphql_name="priceRuleDiscountCode", default=None),
                 ),
-            )
+            ),
         ),
     )
     price_rule_deactivate = sgqlc.types.Field(
@@ -13229,7 +13229,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("price_rule_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="priceRuleId", default=None)),
                 ("code", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="code", default=None)),
-            )
+            ),
         ),
     )
     price_rule_discount_code_update = sgqlc.types.Field(
@@ -13239,7 +13239,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("price_rule_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="priceRuleId", default=None)),
                 ("code", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="code", default=None)),
-            )
+            ),
         ),
     )
     price_rule_update = sgqlc.types.Field(
@@ -13256,7 +13256,7 @@ class Mutation(sgqlc.types.Type):
                     "price_rule_discount_code",
                     sgqlc.types.Arg(PriceRuleDiscountCodeInput, graphql_name="priceRuleDiscountCode", default=None),
                 ),
-            )
+            ),
         ),
     )
     private_metafield_delete = sgqlc.types.Field(
@@ -13268,7 +13268,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(PrivateMetafieldDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     private_metafield_upsert = sgqlc.types.Field(
@@ -13280,7 +13280,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(PrivateMetafieldInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     product_append_images = sgqlc.types.Field(
@@ -13292,7 +13292,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(ProductAppendImagesInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     product_change_status = sgqlc.types.Field(
@@ -13302,7 +13302,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("product_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="productId", default=None)),
                 ("status", sgqlc.types.Arg(sgqlc.types.non_null(ProductStatus), graphql_name="status", default=None)),
-            )
+            ),
         ),
     )
     product_create = sgqlc.types.Field(
@@ -13315,7 +13315,7 @@ class Mutation(sgqlc.types.Type):
                     "media",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(CreateMediaInput)), graphql_name="media", default=None),
                 ),
-            )
+            ),
         ),
     )
     product_create_media = sgqlc.types.Field(
@@ -13332,14 +13332,14 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_delete = sgqlc.types.Field(
         "ProductDeletePayload",
         graphql_name="productDelete",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ProductDeleteInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ProductDeleteInput), graphql_name="input", default=None)),),
         ),
     )
     product_delete_images = sgqlc.types.Field(
@@ -13356,7 +13356,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_delete_media = sgqlc.types.Field(
@@ -13373,7 +13373,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_duplicate = sgqlc.types.Field(
@@ -13385,7 +13385,7 @@ class Mutation(sgqlc.types.Type):
                 ("new_title", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="newTitle", default=None)),
                 ("new_status", sgqlc.types.Arg(ProductStatus, graphql_name="newStatus", default=None)),
                 ("include_images", sgqlc.types.Arg(Boolean, graphql_name="includeImages", default=False)),
-            )
+            ),
         ),
     )
     product_image_update = sgqlc.types.Field(
@@ -13395,7 +13395,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("product_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="productId", default=None)),
                 ("image", sgqlc.types.Arg(sgqlc.types.non_null(ImageInput), graphql_name="image", default=None)),
-            )
+            ),
         ),
     )
     product_join_selling_plan_groups = sgqlc.types.Field(
@@ -13412,7 +13412,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_leave_selling_plan_groups = sgqlc.types.Field(
@@ -13429,7 +13429,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_reorder_images = sgqlc.types.Field(
@@ -13446,7 +13446,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_reorder_media = sgqlc.types.Field(
@@ -13463,7 +13463,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_update = sgqlc.types.Field(
@@ -13485,7 +13485,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_variant_append_media = sgqlc.types.Field(
@@ -13502,14 +13502,14 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_variant_create = sgqlc.types.Field(
         "ProductVariantCreatePayload",
         graphql_name="productVariantCreate",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ProductVariantInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ProductVariantInput), graphql_name="input", default=None)),),
         ),
     )
     product_variant_delete = sgqlc.types.Field(
@@ -13531,7 +13531,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_variant_join_selling_plan_groups = sgqlc.types.Field(
@@ -13548,7 +13548,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_variant_leave_selling_plan_groups = sgqlc.types.Field(
@@ -13565,14 +13565,14 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_variant_update = sgqlc.types.Field(
         "ProductVariantUpdatePayload",
         graphql_name="productVariantUpdate",
         args=sgqlc.types.ArgDict(
-            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ProductVariantInput), graphql_name="input", default=None)),)
+            (("input", sgqlc.types.Arg(sgqlc.types.non_null(ProductVariantInput), graphql_name="input", default=None)),),
         ),
     )
     product_variants_bulk_create = sgqlc.types.Field(
@@ -13589,7 +13589,7 @@ class Mutation(sgqlc.types.Type):
                     ),
                 ),
                 ("product_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="productId", default=None)),
-            )
+            ),
         ),
     )
     product_variants_bulk_delete = sgqlc.types.Field(
@@ -13606,7 +13606,7 @@ class Mutation(sgqlc.types.Type):
                     ),
                 ),
                 ("product_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="productId", default=None)),
-            )
+            ),
         ),
     )
     product_variants_bulk_reorder = sgqlc.types.Field(
@@ -13623,7 +13623,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     product_variants_bulk_update = sgqlc.types.Field(
@@ -13640,7 +13640,7 @@ class Mutation(sgqlc.types.Type):
                     ),
                 ),
                 ("product_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="productId", default=None)),
-            )
+            ),
         ),
     )
     pub_sub_webhook_subscription_create = sgqlc.types.Field(
@@ -13660,7 +13660,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     pub_sub_webhook_subscription_update = sgqlc.types.Field(
@@ -13673,7 +13673,7 @@ class Mutation(sgqlc.types.Type):
                     "webhook_subscription",
                     sgqlc.types.Arg(PubSubWebhookSubscriptionInput, graphql_name="webhookSubscription", default=None),
                 ),
-            )
+            ),
         ),
     )
     publishable_publish = sgqlc.types.Field(
@@ -13690,7 +13690,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     publishable_publish_to_current_channel = sgqlc.types.Field(
@@ -13712,7 +13712,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     publishable_unpublish_to_current_channel = sgqlc.types.Field(
@@ -13734,7 +13734,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SavedSearchCreateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     saved_search_delete = sgqlc.types.Field(
@@ -13746,7 +13746,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SavedSearchDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     saved_search_update = sgqlc.types.Field(
@@ -13758,7 +13758,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SavedSearchUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     script_tag_create = sgqlc.types.Field(
@@ -13778,7 +13778,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("input", sgqlc.types.Arg(sgqlc.types.non_null(ScriptTagInput), graphql_name="input", default=None)),
-            )
+            ),
         ),
     )
     segment_create = sgqlc.types.Field(
@@ -13788,7 +13788,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("name", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="name", default=None)),
                 ("query", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     segment_delete = sgqlc.types.Field(
@@ -13804,7 +13804,7 @@ class Mutation(sgqlc.types.Type):
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("name", sgqlc.types.Arg(String, graphql_name="name", default=None)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     selling_plan_group_add_product_variants = sgqlc.types.Field(
@@ -13821,7 +13821,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     selling_plan_group_add_products = sgqlc.types.Field(
@@ -13838,7 +13838,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     selling_plan_group_create = sgqlc.types.Field(
@@ -13851,7 +13851,7 @@ class Mutation(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(SellingPlanGroupInput), graphql_name="input", default=None),
                 ),
                 ("resources", sgqlc.types.Arg(SellingPlanGroupResourceInput, graphql_name="resources", default=None)),
-            )
+            ),
         ),
     )
     selling_plan_group_delete = sgqlc.types.Field(
@@ -13873,7 +13873,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     selling_plan_group_remove_products = sgqlc.types.Field(
@@ -13890,7 +13890,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     selling_plan_group_update = sgqlc.types.Field(
@@ -13900,7 +13900,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("input", sgqlc.types.Arg(SellingPlanGroupInput, graphql_name="input", default=None)),
-            )
+            ),
         ),
     )
     shipping_package_delete = sgqlc.types.Field(
@@ -13933,7 +13933,7 @@ class Mutation(sgqlc.types.Type):
                     "market_web_presence_ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="marketWebPresenceIds", default=None),
                 ),
-            )
+            ),
         ),
     )
     shop_locale_update = sgqlc.types.Field(
@@ -13946,7 +13946,7 @@ class Mutation(sgqlc.types.Type):
                     "shop_locale",
                     sgqlc.types.Arg(sgqlc.types.non_null(ShopLocaleInput), graphql_name="shopLocale", default=None),
                 ),
-            )
+            ),
         ),
     )
     shop_policy_update = sgqlc.types.Field(
@@ -13958,7 +13958,7 @@ class Mutation(sgqlc.types.Type):
                     "shop_policy",
                     sgqlc.types.Arg(sgqlc.types.non_null(ShopPolicyInput), graphql_name="shopPolicy", default=None),
                 ),
-            )
+            ),
         ),
     )
     staged_uploads_create = sgqlc.types.Field(
@@ -13974,7 +13974,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     standard_metafield_definition_enable = sgqlc.types.Field(
@@ -13994,7 +13994,7 @@ class Mutation(sgqlc.types.Type):
                     "visible_to_storefront_api",
                     sgqlc.types.Arg(Boolean, graphql_name="visibleToStorefrontApi", default=None),
                 ),
-            )
+            ),
         ),
     )
     storefront_access_token_create = sgqlc.types.Field(
@@ -14006,7 +14006,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(StorefrontAccessTokenInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     storefront_access_token_delete = sgqlc.types.Field(
@@ -14018,7 +14018,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(StorefrontAccessTokenDeleteInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_attempt_create = sgqlc.types.Field(
@@ -14038,7 +14038,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_cycle_contract_draft_commit = sgqlc.types.Field(
@@ -14060,7 +14060,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_cycle_contract_edit = sgqlc.types.Field(
@@ -14076,7 +14076,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_cycle_edit_delete = sgqlc.types.Field(
@@ -14092,7 +14092,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_cycle_edits_delete = sgqlc.types.Field(
@@ -14109,7 +14109,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_cycle_schedule_edit = sgqlc.types.Field(
@@ -14133,7 +14133,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_contract_create = sgqlc.types.Field(
@@ -14145,7 +14145,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionContractCreateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_contract_set_next_billing_date = sgqlc.types.Field(
@@ -14155,7 +14155,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("contract_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="contractId", default=None)),
                 ("date", sgqlc.types.Arg(sgqlc.types.non_null(DateTime), graphql_name="date", default=None)),
-            )
+            ),
         ),
     )
     subscription_contract_update = sgqlc.types.Field(
@@ -14178,7 +14178,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionManualDiscountInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_draft_discount_code_apply = sgqlc.types.Field(
@@ -14188,7 +14188,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("draft_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="draftId", default=None)),
                 ("redeem_code", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="redeemCode", default=None)),
-            )
+            ),
         ),
     )
     subscription_draft_discount_remove = sgqlc.types.Field(
@@ -14198,7 +14198,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("draft_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="draftId", default=None)),
                 ("discount_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="discountId", default=None)),
-            )
+            ),
         ),
     )
     subscription_draft_discount_update = sgqlc.types.Field(
@@ -14212,7 +14212,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionManualDiscountInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_draft_free_shipping_discount_add = sgqlc.types.Field(
@@ -14225,7 +14225,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionFreeShippingDiscountInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_draft_free_shipping_discount_update = sgqlc.types.Field(
@@ -14239,7 +14239,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionFreeShippingDiscountInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_draft_line_add = sgqlc.types.Field(
@@ -14252,7 +14252,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionLineInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_draft_line_remove = sgqlc.types.Field(
@@ -14262,7 +14262,7 @@ class Mutation(sgqlc.types.Type):
             (
                 ("draft_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="draftId", default=None)),
                 ("line_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="lineId", default=None)),
-            )
+            ),
         ),
     )
     subscription_draft_line_update = sgqlc.types.Field(
@@ -14276,7 +14276,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionLineUpdateInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     subscription_draft_update = sgqlc.types.Field(
@@ -14289,7 +14289,7 @@ class Mutation(sgqlc.types.Type):
                     "input",
                     sgqlc.types.Arg(sgqlc.types.non_null(SubscriptionDraftInput), graphql_name="input", default=None),
                 ),
-            )
+            ),
         ),
     )
     tags_add = sgqlc.types.Field(
@@ -14306,7 +14306,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     tags_remove = sgqlc.types.Field(
@@ -14323,7 +14323,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     translations_register = sgqlc.types.Field(
@@ -14340,7 +14340,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     translations_remove = sgqlc.types.Field(
@@ -14369,7 +14369,7 @@ class Mutation(sgqlc.types.Type):
                     "market_ids",
                     sgqlc.types.Arg(sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="marketIds", default=None),
                 ),
-            )
+            ),
         ),
     )
     url_redirect_bulk_delete_all = sgqlc.types.Field("UrlRedirectBulkDeleteAllPayload", graphql_name="urlRedirectBulkDeleteAll")
@@ -14386,7 +14386,7 @@ class Mutation(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     url_redirect_bulk_delete_by_saved_search = sgqlc.types.Field(
@@ -14398,7 +14398,7 @@ class Mutation(sgqlc.types.Type):
                     "saved_search_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="savedSearchId", default=None),
                 ),
-            )
+            ),
         ),
     )
     url_redirect_bulk_delete_by_search = sgqlc.types.Field(
@@ -14415,7 +14415,7 @@ class Mutation(sgqlc.types.Type):
                     "url_redirect",
                     sgqlc.types.Arg(sgqlc.types.non_null(UrlRedirectInput), graphql_name="urlRedirect", default=None),
                 ),
-            )
+            ),
         ),
     )
     url_redirect_delete = sgqlc.types.Field(
@@ -14443,7 +14443,7 @@ class Mutation(sgqlc.types.Type):
                     "url_redirect",
                     sgqlc.types.Arg(sgqlc.types.non_null(UrlRedirectInput), graphql_name="urlRedirect", default=None),
                 ),
-            )
+            ),
         ),
     )
     web_pixel_create = sgqlc.types.Field(
@@ -14455,7 +14455,7 @@ class Mutation(sgqlc.types.Type):
                     "web_pixel",
                     sgqlc.types.Arg(sgqlc.types.non_null(WebPixelInput), graphql_name="webPixel", default=None),
                 ),
-            )
+            ),
         ),
     )
     web_pixel_delete = sgqlc.types.Field(
@@ -14473,7 +14473,7 @@ class Mutation(sgqlc.types.Type):
                     "web_pixel",
                     sgqlc.types.Arg(sgqlc.types.non_null(WebPixelInput), graphql_name="webPixel", default=None),
                 ),
-            )
+            ),
         ),
     )
     webhook_subscription_create = sgqlc.types.Field(
@@ -14489,7 +14489,7 @@ class Mutation(sgqlc.types.Type):
                     "webhook_subscription",
                     sgqlc.types.Arg(sgqlc.types.non_null(WebhookSubscriptionInput), graphql_name="webhookSubscription", default=None),
                 ),
-            )
+            ),
         ),
     )
     webhook_subscription_delete = sgqlc.types.Field(
@@ -14507,7 +14507,7 @@ class Mutation(sgqlc.types.Type):
                     "webhook_subscription",
                     sgqlc.types.Arg(sgqlc.types.non_null(WebhookSubscriptionInput), graphql_name="webhookSubscription", default=None),
                 ),
-            )
+            ),
         ),
     )
 
@@ -14677,7 +14677,7 @@ class OrderPaymentCollectionDetails(sgqlc.types.Type):
     __field_names__ = ("additional_payment_collection_url", "vaulted_payment_methods")
     additional_payment_collection_url = sgqlc.types.Field(URL, graphql_name="additionalPaymentCollectionUrl")
     vaulted_payment_methods = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("PaymentMandate")), graphql_name="vaultedPaymentMethods"
+        sgqlc.types.list_of(sgqlc.types.non_null("PaymentMandate")), graphql_name="vaultedPaymentMethods",
     )
 
 
@@ -14734,7 +14734,7 @@ class OrderStagedChangeConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("OrderStagedChangeEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("OrderStagedChangeEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("OrderStagedChange"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
@@ -14874,7 +14874,7 @@ class PriceListCreatePayload(sgqlc.types.Type):
     __field_names__ = ("price_list", "user_errors")
     price_list = sgqlc.types.Field("PriceList", graphql_name="priceList")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListUserError"))), graphql_name="userErrors",
     )
 
 
@@ -14883,7 +14883,7 @@ class PriceListDeletePayload(sgqlc.types.Type):
     __field_names__ = ("deleted_id", "user_errors")
     deleted_id = sgqlc.types.Field(ID, graphql_name="deletedId")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListUserError"))), graphql_name="userErrors",
     )
 
 
@@ -14908,7 +14908,7 @@ class PriceListFixedPricesDeletePayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("deleted_fixed_price_variant_ids", "user_errors")
     deleted_fixed_price_variant_ids = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="deletedFixedPriceVariantIds"
+        sgqlc.types.list_of(sgqlc.types.non_null(ID)), graphql_name="deletedFixedPriceVariantIds",
     )
     user_errors = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListPriceUserError"))),
@@ -14951,7 +14951,7 @@ class PriceListUpdatePayload(sgqlc.types.Type):
     __field_names__ = ("price_list", "user_errors")
     price_list = sgqlc.types.Field("PriceList", graphql_name="priceList")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceListUserError"))), graphql_name="userErrors",
     )
 
 
@@ -15000,7 +15000,7 @@ class PriceRuleCustomerSelection(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(CustomerSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     for_all_customers = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="forAllCustomers")
@@ -15036,7 +15036,7 @@ class PriceRuleDiscountCodeConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceRuleDiscountCode"))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PriceRuleDiscountCode"))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -15103,7 +15103,7 @@ class PriceRuleItemEntitlements(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     product_variants = sgqlc.types.Field(
@@ -15116,7 +15116,7 @@ class PriceRuleItemEntitlements(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -15129,7 +15129,7 @@ class PriceRuleItemEntitlements(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     target_all_line_items = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="targetAllLineItems")
@@ -15148,7 +15148,7 @@ class PriceRuleLineItemPrerequisites(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     product_variants = sgqlc.types.Field(
@@ -15161,7 +15161,7 @@ class PriceRuleLineItemPrerequisites(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -15174,7 +15174,7 @@ class PriceRuleLineItemPrerequisites(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -15223,7 +15223,7 @@ class PriceRuleShippingLineEntitlements(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("country_codes", "include_rest_of_world", "target_all_shipping_lines")
     country_codes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="countryCodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="countryCodes",
     )
     include_rest_of_world = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="includeRestOfWorld")
     target_all_shipping_lines = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="targetAllShippingLines")
@@ -15345,7 +15345,7 @@ class ProductDeleteImagesPayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("deleted_image_ids", "product", "user_errors")
     deleted_image_ids = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ID))), graphql_name="deletedImageIds"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ID))), graphql_name="deletedImageIds",
     )
     product = sgqlc.types.Field("Product", graphql_name="product")
     user_errors = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("UserError"))), graphql_name="userErrors")
@@ -15441,7 +15441,7 @@ class ProductPublicationConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ProductPublicationEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ProductPublicationEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ProductPublication))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
@@ -15521,7 +15521,7 @@ class ProductVariantAppendMediaPayload(sgqlc.types.Type):
     product = sgqlc.types.Field("Product", graphql_name="product")
     product_variants = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null("ProductVariant")), graphql_name="productVariants")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaUserError"))), graphql_name="userErrors",
     )
 
 
@@ -15562,7 +15562,7 @@ class ProductVariantDetachMediaPayload(sgqlc.types.Type):
     product = sgqlc.types.Field("Product", graphql_name="product")
     product_variants = sgqlc.types.Field(sgqlc.types.list_of(sgqlc.types.non_null("ProductVariant")), graphql_name="productVariants")
     user_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaUserError"))), graphql_name="userErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("MediaUserError"))), graphql_name="userErrors",
     )
 
 
@@ -15608,7 +15608,7 @@ class ProductVariantPricePairConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ProductVariantPricePair))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ProductVariantPricePair))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -15727,7 +15727,7 @@ class Publishable(sgqlc.types.Interface):
         sgqlc.types.non_null(Boolean),
         graphql_name="publishedOnPublication",
         args=sgqlc.types.ArgDict(
-            (("publication_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="publicationId", default=None)),)
+            (("publication_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="publicationId", default=None)),),
         ),
     )
     resource_publications = sgqlc.types.Field(
@@ -15741,7 +15741,7 @@ class Publishable(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     resource_publications_v2 = sgqlc.types.Field(
@@ -15755,7 +15755,7 @@ class Publishable(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     unpublished_publications = sgqlc.types.Field(
@@ -15768,7 +15768,7 @@ class Publishable(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -15990,7 +15990,7 @@ class QueryRoot(sgqlc.types.Type):
         AppDiscountType,
         graphql_name="appDiscountType",
         args=sgqlc.types.ArgDict(
-            (("function_id", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="functionId", default=None)),)
+            (("function_id", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="functionId", default=None)),),
         ),
     )
     app_discount_types = sgqlc.types.Field(
@@ -16015,7 +16015,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(AppInstallationSortKeys, graphql_name="sortKey", default="INSTALLED_AT")),
                 ("category", sgqlc.types.Arg(AppInstallationCategory, graphql_name="category", default=None)),
                 ("privacy", sgqlc.types.Arg(AppInstallationPrivacy, graphql_name="privacy", default="PUBLIC")),
-            )
+            ),
         ),
     )
     automatic_discount_node = sgqlc.types.Field(
@@ -16036,7 +16036,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(AutomaticDiscountSortKeys, graphql_name="sortKey", default="CREATED_AT")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     automatic_discount_saved_searches = sgqlc.types.Field(
@@ -16049,7 +16049,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     available_carrier_services = sgqlc.types.Field(
@@ -16057,7 +16057,7 @@ class QueryRoot(sgqlc.types.Type):
         graphql_name="availableCarrierServices",
     )
     available_locales = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Locale))), graphql_name="availableLocales"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Locale))), graphql_name="availableLocales",
     )
     carrier_service = sgqlc.types.Field(
         "DeliveryCarrierService",
@@ -16081,7 +16081,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CheckoutProfileSortKeys, graphql_name="sortKey", default="UPDATED_AT")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     code_discount_node = sgqlc.types.Field(
@@ -16107,7 +16107,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(CodeDiscountSortKeys, graphql_name="sortKey", default="CREATED_AT")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     code_discount_saved_searches = sgqlc.types.Field(
@@ -16120,7 +16120,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     collection = sgqlc.types.Field(
@@ -16147,7 +16147,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     collections = sgqlc.types.Field(
@@ -16163,7 +16163,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(CollectionSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     companies = sgqlc.types.Field(
@@ -16178,7 +16178,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CompanySortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     company = sgqlc.types.Field(
@@ -16214,7 +16214,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CompanyLocationSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     current_app_installation = sgqlc.types.Field(sgqlc.types.non_null("AppInstallation"), graphql_name="currentAppInstallation")
@@ -16235,7 +16235,7 @@ class QueryRoot(sgqlc.types.Type):
             (
                 ("id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="id", default=None)),
                 ("show_revoked", sgqlc.types.Arg(Boolean, graphql_name="showRevoked", default=False)),
-            )
+            ),
         ),
     )
     customer_segment_members = sgqlc.types.Field(
@@ -16252,7 +16252,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
     customer_segment_membership = sgqlc.types.Field(
@@ -16269,7 +16269,7 @@ class QueryRoot(sgqlc.types.Type):
                     ),
                 ),
                 ("customer_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="customerId", default=None)),
-            )
+            ),
         ),
     )
     customers = sgqlc.types.Field(
@@ -16284,7 +16284,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CustomerSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     deletion_events = sgqlc.types.Field(
@@ -16307,7 +16307,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(DeletionEventSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     delivery_profile = sgqlc.types.Field(
@@ -16326,7 +16326,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     delivery_settings = sgqlc.types.Field(DeliverySetting, graphql_name="deliverySettings")
@@ -16353,7 +16353,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(DiscountSortKeys, graphql_name="sortKey", default="CREATED_AT")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     discount_redeem_code_bulk_creation = sgqlc.types.Field(
@@ -16373,7 +16373,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(DiscountCodeSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     dispute = sgqlc.types.Field(
@@ -16406,7 +16406,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     draft_order_tag = sgqlc.types.Field(
@@ -16427,7 +16427,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(DraftOrderSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     file_saved_searches = sgqlc.types.Field(
@@ -16440,7 +16440,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     files = sgqlc.types.Field(
@@ -16456,7 +16456,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(FileSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     fulfillment = sgqlc.types.Field(
@@ -16492,7 +16492,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(GiftCardSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     gift_cards_count = sgqlc.types.Field(
@@ -16516,7 +16516,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     inventory_level = sgqlc.types.Field(
@@ -16548,7 +16548,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("include_legacy", sgqlc.types.Arg(Boolean, graphql_name="includeLegacy", default=False)),
                 ("include_inactive", sgqlc.types.Arg(Boolean, graphql_name="includeInactive", default=False)),
-            )
+            ),
         ),
     )
     locations_available_for_delivery_profiles_connection = sgqlc.types.Field(
@@ -16561,7 +16561,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     manual_holds_fulfillment_orders = sgqlc.types.Field(
@@ -16575,7 +16575,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     market = sgqlc.types.Field(
@@ -16592,7 +16592,7 @@ class QueryRoot(sgqlc.types.Type):
                     "country_code",
                     sgqlc.types.Arg(sgqlc.types.non_null(CountryCode), graphql_name="countryCode", default=None),
                 ),
-            )
+            ),
         ),
     )
     market_localizable_resource = sgqlc.types.Field(
@@ -16614,7 +16614,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     market_localizable_resources_by_ids = sgqlc.types.Field(
@@ -16635,7 +16635,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     marketing_activities = sgqlc.types.Field(
@@ -16660,7 +16660,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(MarketingActivitySortKeys, graphql_name="sortKey", default="CREATED_AT")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     marketing_activity = sgqlc.types.Field(
@@ -16685,7 +16685,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(MarketingEventSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     markets = sgqlc.types.Field(
@@ -16698,7 +16698,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     metafield = sgqlc.types.Field(
@@ -16737,7 +16737,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(MetafieldDefinitionSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     metafield_storefront_visibilities = sgqlc.types.Field(
@@ -16751,7 +16751,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     metafield_storefront_visibility = sgqlc.types.Field(
@@ -16777,7 +16777,7 @@ class QueryRoot(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     order = sgqlc.types.Field(
@@ -16795,7 +16795,7 @@ class QueryRoot(sgqlc.types.Type):
                     sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="paymentReferenceId", default=None),
                 ),
                 ("order_id", sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="orderId", default=None)),
-            )
+            ),
         ),
     )
     order_saved_searches = sgqlc.types.Field(
@@ -16808,7 +16808,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     orders = sgqlc.types.Field(
@@ -16824,14 +16824,14 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(OrderSortKeys, graphql_name="sortKey", default="PROCESSED_AT")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     payment_terms_templates = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("PaymentTermsTemplate"))),
         graphql_name="paymentTermsTemplates",
         args=sgqlc.types.ArgDict(
-            (("payment_terms_type", sgqlc.types.Arg(PaymentTermsType, graphql_name="paymentTermsType", default=None)),)
+            (("payment_terms_type", sgqlc.types.Arg(PaymentTermsType, graphql_name="paymentTermsType", default=None)),),
         ),
     )
     price_list = sgqlc.types.Field(
@@ -16851,7 +16851,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(PriceListSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     price_rule = sgqlc.types.Field(
@@ -16869,7 +16869,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     price_rules = sgqlc.types.Field(
@@ -16885,7 +16885,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(PriceRuleSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     primary_market = sgqlc.types.Field(sgqlc.types.non_null("Market"), graphql_name="primaryMarket")
@@ -16906,7 +16906,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     product = sgqlc.types.Field(
@@ -16934,7 +16934,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     product_variant = sgqlc.types.Field(
@@ -16955,7 +16955,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(ProductVariantSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -16971,11 +16971,11 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(ProductSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     public_api_versions = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ApiVersion))), graphql_name="publicApiVersions"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ApiVersion))), graphql_name="publicApiVersions",
     )
     publication = sgqlc.types.Field(
         "Publication",
@@ -16992,7 +16992,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     refund = sgqlc.types.Field(
@@ -17016,7 +17016,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("src", sgqlc.types.Arg(URL, graphql_name="src", default=None)),
-            )
+            ),
         ),
     )
     segment = sgqlc.types.Field(
@@ -17033,7 +17033,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("search", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="search", default=None)),
                 ("first", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="first", default=None)),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
-            )
+            ),
         ),
     )
     segment_filters = sgqlc.types.Field(
@@ -17045,7 +17045,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
     segment_migrations = sgqlc.types.Field(
@@ -17058,7 +17058,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
     segment_value_suggestions = sgqlc.types.Field(
@@ -17072,7 +17072,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
     segments = sgqlc.types.Field(
@@ -17087,7 +17087,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(SegmentSortKeys, graphql_name="sortKey", default="CREATION_DATE")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     selling_plan_group = sgqlc.types.Field(
@@ -17107,7 +17107,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(SellingPlanGroupSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     shop = sgqlc.types.Field(sgqlc.types.non_null("Shop"), graphql_name="shop")
@@ -17132,7 +17132,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     subscription_billing_attempt = sgqlc.types.Field(
@@ -17153,7 +17153,7 @@ class QueryRoot(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     subscription_billing_cycles = sgqlc.types.Field(
@@ -17187,7 +17187,7 @@ class QueryRoot(sgqlc.types.Type):
                     "sort_key",
                     sgqlc.types.Arg(SubscriptionBillingCyclesSortKeys, graphql_name="sortKey", default="CYCLE_INDEX"),
                 ),
-            )
+            ),
         ),
     )
     subscription_contract = sgqlc.types.Field(
@@ -17205,7 +17205,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     subscription_draft = sgqlc.types.Field(
@@ -17224,7 +17224,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     translatable_resource = sgqlc.types.Field(
@@ -17246,7 +17246,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     translatable_resources_by_ids = sgqlc.types.Field(
@@ -17267,7 +17267,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     url_redirect = sgqlc.types.Field(
@@ -17290,7 +17290,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     url_redirects = sgqlc.types.Field(
@@ -17306,7 +17306,7 @@ class QueryRoot(sgqlc.types.Type):
                 ("sort_key", sgqlc.types.Arg(UrlRedirectSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     web_pixel = sgqlc.types.Field(
@@ -17344,7 +17344,7 @@ class QueryRoot(sgqlc.types.Type):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
 
@@ -17405,7 +17405,7 @@ class ResourceAlert(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("actions", "content", "dismissible_handle", "icon", "severity", "title")
     actions = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ResourceAlertAction"))), graphql_name="actions"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ResourceAlertAction"))), graphql_name="actions",
     )
     content = sgqlc.types.Field(sgqlc.types.non_null(HTML), graphql_name="content")
     dismissible_handle = sgqlc.types.Field(String, graphql_name="dismissibleHandle")
@@ -17452,7 +17452,7 @@ class ResourcePublicationConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ResourcePublicationEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ResourcePublicationEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ResourcePublication))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
@@ -17563,7 +17563,7 @@ class SalesAgreement(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     user = sgqlc.types.Field("StaffMember", graphql_name="user")
@@ -17811,7 +17811,7 @@ class SegmentEventFilterValueConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SegmentEventFilterValue))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SegmentEventFilterValue))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -17857,7 +17857,7 @@ class SegmentMembershipResponse(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("memberships",)
     memberships = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SegmentMembership))), graphql_name="memberships"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SegmentMembership))), graphql_name="memberships",
     )
 
 
@@ -17896,7 +17896,7 @@ class SegmentStatistics(sgqlc.types.Type):
                     "attribute_name",
                     sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="attributeName", default=None),
                 ),
-            )
+            ),
         ),
     )
     total_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="totalCount")
@@ -17917,7 +17917,7 @@ class SegmentStringFilterValueConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SegmentStringFilterValue))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SegmentStringFilterValue))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -18014,7 +18014,7 @@ class SellingPlanFixedBillingPolicy(sgqlc.types.Type):
     remaining_balance_charge_exact_time = sgqlc.types.Field(DateTime, graphql_name="remainingBalanceChargeExactTime")
     remaining_balance_charge_time_after_checkout = sgqlc.types.Field(String, graphql_name="remainingBalanceChargeTimeAfterCheckout")
     remaining_balance_charge_trigger = sgqlc.types.Field(
-        sgqlc.types.non_null(SellingPlanRemainingBalanceChargeTrigger), graphql_name="remainingBalanceChargeTrigger"
+        sgqlc.types.non_null(SellingPlanRemainingBalanceChargeTrigger), graphql_name="remainingBalanceChargeTrigger",
     )
 
 
@@ -18034,7 +18034,7 @@ class SellingPlanFixedDeliveryPolicy(sgqlc.types.Type):
     fulfillment_trigger = sgqlc.types.Field(sgqlc.types.non_null(SellingPlanFulfillmentTrigger), graphql_name="fulfillmentTrigger")
     intent = sgqlc.types.Field(sgqlc.types.non_null(SellingPlanFixedDeliveryPolicyIntent), graphql_name="intent")
     pre_anchor_behavior = sgqlc.types.Field(
-        sgqlc.types.non_null(SellingPlanFixedDeliveryPolicyPreAnchorBehavior), graphql_name="preAnchorBehavior"
+        sgqlc.types.non_null(SellingPlanFixedDeliveryPolicyPreAnchorBehavior), graphql_name="preAnchorBehavior",
     )
 
 
@@ -18164,7 +18164,7 @@ class SellingPlanRecurringDeliveryPolicy(sgqlc.types.Type):
     interval = sgqlc.types.Field(sgqlc.types.non_null(SellingPlanInterval), graphql_name="interval")
     interval_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="intervalCount")
     pre_anchor_behavior = sgqlc.types.Field(
-        sgqlc.types.non_null(SellingPlanRecurringDeliveryPolicyPreAnchorBehavior), graphql_name="preAnchorBehavior"
+        sgqlc.types.non_null(SellingPlanRecurringDeliveryPolicyPreAnchorBehavior), graphql_name="preAnchorBehavior",
     )
 
 
@@ -18431,7 +18431,7 @@ class ShopifyPaymentsDisputeConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ShopifyPaymentsDispute"))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ShopifyPaymentsDispute"))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -18478,7 +18478,7 @@ class ShopifyPaymentsPayoutConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ShopifyPaymentsPayout"))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ShopifyPaymentsPayout"))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -18596,7 +18596,7 @@ class StagedUploadTarget(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("parameters", "url")
     parameters = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ImageUploadParameter))), graphql_name="parameters"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ImageUploadParameter))), graphql_name="parameters",
     )
     url = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="url")
 
@@ -18671,7 +18671,7 @@ class StorefrontAccessTokenConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("StorefrontAccessToken"))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("StorefrontAccessToken"))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -18776,7 +18776,7 @@ class SubscriptionBillingCycle(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     cycle_end_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="cycleEndAt")
@@ -18797,7 +18797,7 @@ class SubscriptionBillingCycleConnection(sgqlc.types.relay.Connection):
         graphql_name="edges",
     )
     nodes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SubscriptionBillingCycle))), graphql_name="nodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SubscriptionBillingCycle))), graphql_name="nodes",
     )
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
 
@@ -18901,7 +18901,7 @@ class SubscriptionContractBase(sgqlc.types.Interface):
     app_admin_url = sgqlc.types.Field(URL, graphql_name="appAdminUrl")
     currency_code = sgqlc.types.Field(sgqlc.types.non_null(CurrencyCode), graphql_name="currencyCode")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     customer = sgqlc.types.Field("Customer", graphql_name="customer")
     customer_payment_method = sgqlc.types.Field(
@@ -18921,7 +18921,7 @@ class SubscriptionContractBase(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     line_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="lineCount")
@@ -18935,7 +18935,7 @@ class SubscriptionContractBase(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     note = sgqlc.types.Field(String, graphql_name="note")
@@ -18949,7 +18949,7 @@ class SubscriptionContractBase(sgqlc.types.Interface):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     updated_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="updatedAt")
@@ -19017,7 +19017,7 @@ class SubscriptionDeliveryMethodLocalDelivery(sgqlc.types.Type):
     __field_names__ = ("address", "local_delivery_option")
     address = sgqlc.types.Field(sgqlc.types.non_null("SubscriptionMailingAddress"), graphql_name="address")
     local_delivery_option = sgqlc.types.Field(
-        sgqlc.types.non_null("SubscriptionDeliveryMethodLocalDeliveryOption"), graphql_name="localDeliveryOption"
+        sgqlc.types.non_null("SubscriptionDeliveryMethodLocalDeliveryOption"), graphql_name="localDeliveryOption",
     )
 
 
@@ -19127,7 +19127,7 @@ class SubscriptionDiscountEntitledLines(sgqlc.types.Type):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -19236,7 +19236,7 @@ class SubscriptionDraftLineRemovePayload(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("discounts_updated", "draft", "line_removed", "user_errors")
     discounts_updated = sgqlc.types.Field(
-        sgqlc.types.list_of(sgqlc.types.non_null("SubscriptionManualDiscount")), graphql_name="discountsUpdated"
+        sgqlc.types.list_of(sgqlc.types.non_null("SubscriptionManualDiscount")), graphql_name="discountsUpdated",
     )
     draft = sgqlc.types.Field("SubscriptionDraft", graphql_name="draft")
     line_removed = sgqlc.types.Field("SubscriptionLine", graphql_name="lineRemoved")
@@ -19290,7 +19290,7 @@ class SubscriptionLine(sgqlc.types.Type):
     )
     current_price = sgqlc.types.Field(sgqlc.types.non_null(MoneyV2), graphql_name="currentPrice")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     discount_allocations = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SubscriptionDiscountAllocation))),
@@ -19521,10 +19521,10 @@ class SuggestedRefund(sgqlc.types.Type):
     discounted_subtotal_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="discountedSubtotalSet")
     maximum_refundable_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="maximumRefundableSet")
     refund_duties = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(RefundDuty))), graphql_name="refundDuties"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(RefundDuty))), graphql_name="refundDuties",
     )
     refund_line_items = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(RefundLineItem))), graphql_name="refundLineItems"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(RefundLineItem))), graphql_name="refundLineItems",
     )
     shipping = sgqlc.types.Field(sgqlc.types.non_null(ShippingRefund), graphql_name="shipping")
     subtotal_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="subtotalSet")
@@ -19565,7 +19565,7 @@ class TenderTransactionConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TenderTransactionEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TenderTransactionEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("TenderTransaction"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
@@ -19610,7 +19610,7 @@ class TranslatableResource(sgqlc.types.Type):
                 ("locale", sgqlc.types.Arg(sgqlc.types.non_null(String), graphql_name="locale", default=None)),
                 ("outdated", sgqlc.types.Arg(Boolean, graphql_name="outdated", default=None)),
                 ("market_id", sgqlc.types.Arg(ID, graphql_name="marketId", default=None)),
-            )
+            ),
         ),
     )
 
@@ -19881,7 +19881,7 @@ class WebhookSubscriptionConnection(sgqlc.types.relay.Connection):
     __schema__ = shopify_schema
     __field_names__ = ("edges", "nodes", "page_info")
     edges = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("WebhookSubscriptionEdge"))), graphql_name="edges"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("WebhookSubscriptionEdge"))), graphql_name="edges",
     )
     nodes = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("WebhookSubscription"))), graphql_name="nodes")
     page_info = sgqlc.types.Field(sgqlc.types.non_null(PageInfo), graphql_name="pageInfo")
@@ -20045,7 +20045,7 @@ class AppInstallation(sgqlc.types.Type, HasMetafields, Node):
         "uninstall_url",
     )
     access_scopes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(AccessScope))), graphql_name="accessScopes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(AccessScope))), graphql_name="accessScopes",
     )
     active_subscriptions = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("AppSubscription"))),
@@ -20062,7 +20062,7 @@ class AppInstallation(sgqlc.types.Type, HasMetafields, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(AppSubscriptionSortKeys, graphql_name="sortKey", default="CREATED_AT")),
-            )
+            ),
         ),
     )
     app = sgqlc.types.Field(sgqlc.types.non_null(App), graphql_name="app")
@@ -20077,7 +20077,7 @@ class AppInstallation(sgqlc.types.Type, HasMetafields, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(AppTransactionSortKeys, graphql_name="sortKey", default="CREATED_AT")),
-            )
+            ),
         ),
     )
     launch_url = sgqlc.types.Field(sgqlc.types.non_null(URL), graphql_name="launchUrl")
@@ -20092,7 +20092,7 @@ class AppInstallation(sgqlc.types.Type, HasMetafields, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(AppTransactionSortKeys, graphql_name="sortKey", default="CREATED_AT")),
-            )
+            ),
         ),
     )
     publication = sgqlc.types.Field("Publication", graphql_name="publication")
@@ -20110,7 +20110,7 @@ class AppInstallation(sgqlc.types.Type, HasMetafields, Node):
                     "sort_key",
                     sgqlc.types.Arg(AppRevenueAttributionRecordSortKeys, graphql_name="sortKey", default="CREATED_AT"),
                 ),
-            )
+            ),
         ),
     )
     uninstall_url = sgqlc.types.Field(URL, graphql_name="uninstallUrl")
@@ -20291,7 +20291,7 @@ class CalculatedOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     added_line_items = sgqlc.types.Field(
@@ -20304,7 +20304,7 @@ class CalculatedOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     cart_discount_amount_set = sgqlc.types.Field(MoneyBag, graphql_name="cartDiscountAmountSet")
@@ -20320,7 +20320,7 @@ class CalculatedOrder(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     notification_preview_html = sgqlc.types.Field(HTML, graphql_name="notificationPreviewHtml")
@@ -20336,7 +20336,7 @@ class CalculatedOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     subtotal_line_items_quantity = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="subtotalLineItemsQuantity")
@@ -20374,7 +20374,7 @@ class Channel(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     collections = sgqlc.types.Field(
@@ -20387,7 +20387,7 @@ class Channel(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     has_collection = sgqlc.types.Field(
@@ -20406,7 +20406,7 @@ class Channel(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -20419,7 +20419,7 @@ class Channel(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     supports_future_publishing = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="supportsFuturePublishing")
@@ -20499,7 +20499,7 @@ class Collection(sgqlc.types.Type, HasMetafieldDefinitions, HasMetafields, HasPu
                     "sort_key",
                     sgqlc.types.Arg(ProductCollectionSortKeys, graphql_name="sortKey", default="COLLECTION_DEFAULT"),
                 ),
-            )
+            ),
         ),
     )
     products_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="productsCount")
@@ -20567,7 +20567,7 @@ class Company(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigable, Node)
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CompanyContactRoleSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     contacts = sgqlc.types.Field(
@@ -20582,7 +20582,7 @@ class Company(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigable, Node)
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CompanyContactSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
@@ -20600,7 +20600,7 @@ class Company(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigable, Node)
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(DraftOrderSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     external_id = sgqlc.types.Field(String, graphql_name="externalId")
@@ -20618,7 +20618,7 @@ class Company(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigable, Node)
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CompanyLocationSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     main_contact = sgqlc.types.Field("CompanyContact", graphql_name="mainContact")
@@ -20636,7 +20636,7 @@ class Company(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigable, Node)
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(OrderSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     total_spent = sgqlc.types.Field(sgqlc.types.non_null(MoneyV2), graphql_name="totalSpent")
@@ -20676,7 +20676,7 @@ class CompanyAddress(sgqlc.types.Type, Node):
             (
                 ("with_name", sgqlc.types.Arg(Boolean, graphql_name="withName", default=False)),
                 ("with_company_name", sgqlc.types.Arg(Boolean, graphql_name="withCompanyName", default=True)),
-            )
+            ),
         ),
     )
     formatted_area = sgqlc.types.Field(String, graphql_name="formattedArea")
@@ -20718,7 +20718,7 @@ class CompanyContact(sgqlc.types.Type, Node):
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(DraftOrderSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     is_main_contact = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="isMainContact")
@@ -20735,7 +20735,7 @@ class CompanyContact(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(OrderSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     role_assignments = sgqlc.types.Field(
@@ -20753,7 +20753,7 @@ class CompanyContact(sgqlc.types.Type, Node):
                     sgqlc.types.Arg(CompanyContactRoleAssignmentSortKeys, graphql_name="sortKey", default="ID"),
                 ),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     title = sgqlc.types.Field(String, graphql_name="title")
@@ -20819,7 +20819,7 @@ class CompanyLocation(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigabl
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(DraftOrderSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     external_id = sgqlc.types.Field(String, graphql_name="externalId")
@@ -20839,7 +20839,7 @@ class CompanyLocation(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigabl
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(OrderSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     phone = sgqlc.types.Field(String, graphql_name="phone")
@@ -20858,12 +20858,12 @@ class CompanyLocation(sgqlc.types.Type, CommentEventSubject, HasEvents, Navigabl
                     sgqlc.types.Arg(CompanyContactRoleAssignmentSortKeys, graphql_name="sortKey", default="ID"),
                 ),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     shipping_address = sgqlc.types.Field(CompanyAddress, graphql_name="shippingAddress")
     tax_exemptions = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TaxExemption))), graphql_name="taxExemptions"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TaxExemption))), graphql_name="taxExemptions",
     )
     tax_registration_id = sgqlc.types.Field(String, graphql_name="taxRegistrationId")
     total_spent = sgqlc.types.Field(sgqlc.types.non_null(MoneyV2), graphql_name="totalSpent")
@@ -20956,7 +20956,7 @@ class Customer(
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(OrderSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     payment_methods = sgqlc.types.Field(
@@ -20970,12 +20970,12 @@ class Customer(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     phone = sgqlc.types.Field(String, graphql_name="phone")
     product_subscriber_status = sgqlc.types.Field(
-        sgqlc.types.non_null(CustomerProductSubscriberStatus), graphql_name="productSubscriberStatus"
+        sgqlc.types.non_null(CustomerProductSubscriberStatus), graphql_name="productSubscriberStatus",
     )
     sms_marketing_consent = sgqlc.types.Field(CustomerSmsMarketingConsentState, graphql_name="smsMarketingConsent")
     state = sgqlc.types.Field(sgqlc.types.non_null(CustomerState), graphql_name="state")
@@ -20990,13 +20990,13 @@ class Customer(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     tags = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="tags")
     tax_exempt = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="taxExempt")
     tax_exemptions = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TaxExemption))), graphql_name="taxExemptions"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TaxExemption))), graphql_name="taxExemptions",
     )
     unsubscribe_url = sgqlc.types.Field(sgqlc.types.non_null(URL), graphql_name="unsubscribeUrl")
     updated_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="updatedAt")
@@ -21027,7 +21027,7 @@ class CustomerPaymentMethod(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -21112,7 +21112,7 @@ class DeliveryCarrierService(sgqlc.types.Type, Node):
                     "rest_of_world",
                     sgqlc.types.Arg(sgqlc.types.non_null(Boolean), graphql_name="restOfWorld", default=None),
                 ),
-            )
+            ),
         ),
     )
     formatted_name = sgqlc.types.Field(String, graphql_name="formattedName")
@@ -21134,7 +21134,7 @@ class DeliveryCountry(sgqlc.types.Type, Node):
     code = sgqlc.types.Field(sgqlc.types.non_null(DeliveryCountryCodeOrRestOfWorld), graphql_name="code")
     name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="name")
     provinces = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DeliveryProvince"))), graphql_name="provinces"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("DeliveryProvince"))), graphql_name="provinces",
     )
     translated_name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="translatedName")
 
@@ -21156,7 +21156,7 @@ class DeliveryLocationGroup(sgqlc.types.Type, Node):
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("include_legacy", sgqlc.types.Arg(Boolean, graphql_name="includeLegacy", default=False)),
                 ("include_inactive", sgqlc.types.Arg(Boolean, graphql_name="includeInactive", default=False)),
-            )
+            ),
         ),
     )
 
@@ -21234,7 +21234,7 @@ class DeliveryProfile(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     profile_location_groups = sgqlc.types.Field(
@@ -21251,11 +21251,11 @@ class DeliveryProfile(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     unassigned_locations = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("Location"))), graphql_name="unassignedLocations"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("Location"))), graphql_name="unassignedLocations",
     )
     zone_country_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="zoneCountryCount")
 
@@ -21274,7 +21274,7 @@ class DeliveryProfileItem(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -21297,7 +21297,7 @@ class DeliveryZone(sgqlc.types.Type, Node):
     __schema__ = shopify_schema
     __field_names__ = ("countries", "name")
     countries = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DeliveryCountry))), graphql_name="countries"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DeliveryCountry))), graphql_name="countries",
     )
     name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="name")
 
@@ -21369,7 +21369,7 @@ class DiscountRedeemCodeBulkCreation(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     codes_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="codesCount")
@@ -21464,13 +21464,13 @@ class DraftOrder(
     applied_discount = sgqlc.types.Field(DraftOrderAppliedDiscount, graphql_name="appliedDiscount")
     billing_address = sgqlc.types.Field("MailingAddress", graphql_name="billingAddress")
     billing_address_matches_shipping_address = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="billingAddressMatchesShippingAddress"
+        sgqlc.types.non_null(Boolean), graphql_name="billingAddressMatchesShippingAddress",
     )
     completed_at = sgqlc.types.Field(DateTime, graphql_name="completedAt")
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
     currency_code = sgqlc.types.Field(sgqlc.types.non_null(CurrencyCode), graphql_name="currencyCode")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     customer = sgqlc.types.Field(Customer, graphql_name="customer")
     email = sgqlc.types.Field(String, graphql_name="email")
@@ -21487,7 +21487,7 @@ class DraftOrder(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     line_items_subtotal_price = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="lineItemsSubtotalPrice")
@@ -21560,7 +21560,7 @@ class DraftOrderLineItem(sgqlc.types.Type, Node):
     applied_discount = sgqlc.types.Field(DraftOrderAppliedDiscount, graphql_name="appliedDiscount")
     custom = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="custom")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     custom_attributes_v2 = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TypedAttribute))),
@@ -21672,7 +21672,7 @@ class Fulfillment(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(FulfillmentEventSortKeys, graphql_name="sortKey", default="HAPPENED_AT")),
-            )
+            ),
         ),
     )
     fulfillment_line_items = sgqlc.types.Field(
@@ -21685,7 +21685,7 @@ class Fulfillment(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     fulfillment_orders = sgqlc.types.Field(
@@ -21698,7 +21698,7 @@ class Fulfillment(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     in_transit_at = sgqlc.types.Field(DateTime, graphql_name="inTransitAt")
@@ -21772,7 +21772,7 @@ class FulfillmentOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     international_duties = sgqlc.types.Field(FulfillmentOrderInternationalDuties, graphql_name="internationalDuties")
@@ -21786,7 +21786,7 @@ class FulfillmentOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     locations_for_move = sgqlc.types.Field(
@@ -21799,7 +21799,7 @@ class FulfillmentOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     merchant_requests = sgqlc.types.Field(
@@ -21813,7 +21813,7 @@ class FulfillmentOrder(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     order = sgqlc.types.Field(sgqlc.types.non_null("Order"), graphql_name="order")
@@ -21999,7 +21999,7 @@ class InventoryItem(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
@@ -22022,7 +22022,7 @@ class InventoryItem(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     locations_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="locationsCount")
@@ -22098,7 +22098,7 @@ class LineItem(sgqlc.types.Type, Node):
     contract = sgqlc.types.Field("SubscriptionContract", graphql_name="contract")
     current_quantity = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="currentQuantity")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     discount_allocations = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DiscountAllocation))),
@@ -22172,7 +22172,7 @@ class LineItemMutable(sgqlc.types.Type, Node):
         "vendor",
     )
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     discount_allocations = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(DiscountAllocation))),
@@ -22258,7 +22258,7 @@ class Location(sgqlc.types.Type, HasMetafieldDefinitions, HasMetafields, LegacyI
                     "inventory_item_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="inventoryItemId", default=None),
                 ),
-            )
+            ),
         ),
     )
     inventory_levels = sgqlc.types.Field(
@@ -22272,7 +22272,7 @@ class Location(sgqlc.types.Type, HasMetafieldDefinitions, HasMetafields, LegacyI
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     is_active = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="isActive")
@@ -22351,7 +22351,7 @@ class MailingAddress(sgqlc.types.Type, Node):
             (
                 ("with_name", sgqlc.types.Arg(Boolean, graphql_name="withName", default=False)),
                 ("with_company", sgqlc.types.Arg(Boolean, graphql_name="withCompany", default=True)),
-            )
+            ),
         ),
     )
     formatted_area = sgqlc.types.Field(String, graphql_name="formattedArea")
@@ -22390,7 +22390,7 @@ class Market(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     web_presence = sgqlc.types.Field("MarketWebPresence", graphql_name="webPresence")
@@ -22418,7 +22418,7 @@ class MarketWebPresence(sgqlc.types.Type, Node):
     __schema__ = shopify_schema
     __field_names__ = ("alternate_locales", "default_locale", "domain", "market", "root_urls", "subfolder_suffix")
     alternate_locales = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="alternateLocales"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="alternateLocales",
     )
     default_locale = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="defaultLocale")
     domain = sgqlc.types.Field(Domain, graphql_name="domain")
@@ -22563,7 +22563,7 @@ class Metafield(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
     type = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="type")
@@ -22604,7 +22604,7 @@ class MetafieldDefinition(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     metafields_count = sgqlc.types.Field(
@@ -22616,7 +22616,7 @@ class MetafieldDefinition(sgqlc.types.Type, Node):
                     "validation_status",
                     sgqlc.types.Arg(MetafieldValidationStatus, graphql_name="validationStatus", default=None),
                 ),
-            )
+            ),
         ),
     )
     name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="name")
@@ -22826,14 +22826,14 @@ class Order(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     alerts = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(ResourceAlert))), graphql_name="alerts")
     app = sgqlc.types.Field(OrderApp, graphql_name="app")
     billing_address = sgqlc.types.Field(MailingAddress, graphql_name="billingAddress")
     billing_address_matches_shipping_address = sgqlc.types.Field(
-        sgqlc.types.non_null(Boolean), graphql_name="billingAddressMatchesShippingAddress"
+        sgqlc.types.non_null(Boolean), graphql_name="billingAddressMatchesShippingAddress",
     )
     can_mark_as_paid = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="canMarkAsPaid")
     can_notify_customer = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="canNotifyCustomer")
@@ -22852,7 +22852,7 @@ class Order(
     current_subtotal_line_items_quantity = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="currentSubtotalLineItemsQuantity")
     current_subtotal_price_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="currentSubtotalPriceSet")
     current_tax_lines = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TaxLine))), graphql_name="currentTaxLines"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(TaxLine))), graphql_name="currentTaxLines",
     )
     current_total_discounts_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="currentTotalDiscountsSet")
     current_total_duties_set = sgqlc.types.Field(MoneyBag, graphql_name="currentTotalDutiesSet")
@@ -22860,7 +22860,7 @@ class Order(
     current_total_tax_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="currentTotalTaxSet")
     current_total_weight = sgqlc.types.Field(sgqlc.types.non_null(UnsignedInt64), graphql_name="currentTotalWeight")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     customer = sgqlc.types.Field(Customer, graphql_name="customer")
     customer_accepts_marketing = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="customerAcceptsMarketing")
@@ -22876,20 +22876,20 @@ class Order(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     discount_code = sgqlc.types.Field(String, graphql_name="discountCode")
     discount_codes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="discountCodes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="discountCodes",
     )
     display_address = sgqlc.types.Field(MailingAddress, graphql_name="displayAddress")
     display_financial_status = sgqlc.types.Field(OrderDisplayFinancialStatus, graphql_name="displayFinancialStatus")
     display_fulfillment_status = sgqlc.types.Field(
-        sgqlc.types.non_null(OrderDisplayFulfillmentStatus), graphql_name="displayFulfillmentStatus"
+        sgqlc.types.non_null(OrderDisplayFulfillmentStatus), graphql_name="displayFulfillmentStatus",
     )
     disputes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("OrderDisputeSummary"))), graphql_name="disputes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("OrderDisputeSummary"))), graphql_name="disputes",
     )
     edited = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="edited")
     email = sgqlc.types.Field(String, graphql_name="email")
@@ -22907,7 +22907,7 @@ class Order(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     fulfillments = sgqlc.types.Field(
@@ -22926,12 +22926,12 @@ class Order(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     merchant_editable = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="merchantEditable")
     merchant_editable_errors = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="merchantEditableErrors"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="merchantEditableErrors",
     )
     merchant_of_record_app = sgqlc.types.Field(OrderApp, graphql_name="merchantOfRecordApp")
     name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="name")
@@ -22946,17 +22946,17 @@ class Order(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     note = sgqlc.types.Field(String, graphql_name="note")
     original_total_duties_set = sgqlc.types.Field(MoneyBag, graphql_name="originalTotalDutiesSet")
     original_total_price_set = sgqlc.types.Field(sgqlc.types.non_null(MoneyBag), graphql_name="originalTotalPriceSet")
     payment_collection_details = sgqlc.types.Field(
-        sgqlc.types.non_null(OrderPaymentCollectionDetails), graphql_name="paymentCollectionDetails"
+        sgqlc.types.non_null(OrderPaymentCollectionDetails), graphql_name="paymentCollectionDetails",
     )
     payment_gateway_names = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="paymentGatewayNames"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="paymentGatewayNames",
     )
     payment_terms = sgqlc.types.Field("PaymentTerms", graphql_name="paymentTerms")
     phone = sgqlc.types.Field(String, graphql_name="phone")
@@ -22993,7 +22993,7 @@ class Order(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     source_identifier = sgqlc.types.Field(String, graphql_name="sourceIdentifier")
@@ -23023,7 +23023,7 @@ class Order(
                     ),
                 ),
                 ("suggest_full_refund", sgqlc.types.Arg(Boolean, graphql_name="suggestFullRefund", default=False)),
-            )
+            ),
         ),
     )
     tags = sgqlc.types.Field(sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="tags")
@@ -23049,7 +23049,7 @@ class Order(
                 ("first", sgqlc.types.Arg(Int, graphql_name="first", default=None)),
                 ("capturable", sgqlc.types.Arg(Boolean, graphql_name="capturable", default=None)),
                 ("manually_resolvable", sgqlc.types.Arg(Boolean, graphql_name="manuallyResolvable", default=None)),
-            )
+            ),
         ),
     )
     unpaid = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="unpaid")
@@ -23177,7 +23177,7 @@ class PaymentTerms(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     payment_terms_name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="paymentTermsName")
@@ -23231,7 +23231,7 @@ class PriceList(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
 
@@ -23302,7 +23302,7 @@ class PriceRule(sgqlc.types.Type, CommentEventSubject, HasEvents, LegacyInterope
                 ("sort_key", sgqlc.types.Arg(DiscountCodeSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
                 ("saved_search_id", sgqlc.types.Arg(ID, graphql_name="savedSearchId", default=None)),
-            )
+            ),
         ),
     )
     discount_codes_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="discountCodesCount")
@@ -23315,7 +23315,7 @@ class PriceRule(sgqlc.types.Type, CommentEventSubject, HasEvents, LegacyInterope
     prerequisite_shipping_price_range = sgqlc.types.Field(PriceRuleMoneyRange, graphql_name="prerequisiteShippingPriceRange")
     prerequisite_subtotal_range = sgqlc.types.Field(PriceRuleMoneyRange, graphql_name="prerequisiteSubtotalRange")
     prerequisite_to_entitlement_quantity_ratio = sgqlc.types.Field(
-        PriceRulePrerequisiteToEntitlementQuantityRatio, graphql_name="prerequisiteToEntitlementQuantityRatio"
+        PriceRulePrerequisiteToEntitlementQuantityRatio, graphql_name="prerequisiteToEntitlementQuantityRatio",
     )
     shareable_urls = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(PriceRuleShareableUrl))),
@@ -23423,7 +23423,7 @@ class Product(
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(CollectionSortKeys, graphql_name="sortKey", default="ID")),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     contextual_pricing = sgqlc.types.Field(
@@ -23435,7 +23435,7 @@ class Product(
                     "context",
                     sgqlc.types.Arg(sgqlc.types.non_null(ContextualPricingContext), graphql_name="context", default=None),
                 ),
-            )
+            ),
         ),
     )
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
@@ -23463,7 +23463,7 @@ class Product(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(ProductImageSortKeys, graphql_name="sortKey", default="POSITION")),
-            )
+            ),
         ),
     )
     in_collection = sgqlc.types.Field(
@@ -23483,7 +23483,7 @@ class Product(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(ProductMediaSortKeys, graphql_name="sortKey", default="POSITION")),
-            )
+            ),
         ),
     )
     media_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="mediaCount")
@@ -23499,7 +23499,7 @@ class Product(
     published_at = sgqlc.types.Field(DateTime, graphql_name="publishedAt")
     requires_selling_plan = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="requiresSellingPlan")
     resource_publication_on_current_publication = sgqlc.types.Field(
-        ResourcePublicationV2, graphql_name="resourcePublicationOnCurrentPublication"
+        ResourcePublicationV2, graphql_name="resourcePublicationOnCurrentPublication",
     )
     selling_plan_group_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="sellingPlanGroupCount")
     selling_plan_groups = sgqlc.types.Field(
@@ -23512,7 +23512,7 @@ class Product(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     seo = sgqlc.types.Field(sgqlc.types.non_null(SEO), graphql_name="seo")
@@ -23535,7 +23535,7 @@ class Product(
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(ProductVariantSortKeys, graphql_name="sortKey", default="POSITION")),
-            )
+            ),
         ),
     )
     vendor = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="vendor")
@@ -23621,7 +23621,7 @@ class ProductVariant(
                     "context",
                     sgqlc.types.Arg(sgqlc.types.non_null(ContextualPricingContext), graphql_name="context", default=None),
                 ),
-            )
+            ),
         ),
     )
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
@@ -23642,14 +23642,14 @@ class ProductVariant(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     position = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="position")
     price = sgqlc.types.Field(sgqlc.types.non_null(Money), graphql_name="price")
     product = sgqlc.types.Field(sgqlc.types.non_null(Product), graphql_name="product")
     selected_options = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SelectedOption))), graphql_name="selectedOptions"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(SelectedOption))), graphql_name="selectedOptions",
     )
     sellable_online_quantity = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="sellableOnlineQuantity")
     selling_plan_group_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="sellingPlanGroupCount")
@@ -23663,7 +23663,7 @@ class ProductVariant(
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     sku = sgqlc.types.Field(String, graphql_name="sku")
@@ -23734,7 +23734,7 @@ class Publication(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     collections = sgqlc.types.Field(
@@ -23747,7 +23747,7 @@ class Publication(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     has_collection = sgqlc.types.Field(
@@ -23766,7 +23766,7 @@ class Publication(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -23779,7 +23779,7 @@ class Publication(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     supports_future_publishing = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="supportsFuturePublishing")
@@ -23812,7 +23812,7 @@ class Refund(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     staff_member = sgqlc.types.Field("StaffMember", graphql_name="staffMember")
@@ -23827,7 +23827,7 @@ class Refund(sgqlc.types.Type, LegacyInteroperability, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     updated_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="updatedAt")
@@ -23886,7 +23886,7 @@ class SegmentAssociationFilter(sgqlc.types.Type, SegmentFilter):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
 
@@ -23913,7 +23913,7 @@ class SegmentEnumFilter(sgqlc.types.Type, SegmentFilter):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
 
@@ -23935,7 +23935,7 @@ class SegmentEventFilter(sgqlc.types.Type, SegmentFilter):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
 
@@ -23962,7 +23962,7 @@ class SegmentStringFilter(sgqlc.types.Type, SegmentFilter):
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
-            )
+            ),
         ),
     )
 
@@ -24037,7 +24037,7 @@ class SellingPlanGroup(sgqlc.types.Type, Node):
                     "product_variant_id",
                     sgqlc.types.Arg(sgqlc.types.non_null(ID), graphql_name="productVariantId", default=None),
                 ),
-            )
+            ),
         ),
     )
     applies_to_product_variants = sgqlc.types.Field(
@@ -24068,7 +24068,7 @@ class SellingPlanGroup(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     products = sgqlc.types.Field(
@@ -24081,7 +24081,7 @@ class SellingPlanGroup(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     selling_plans = sgqlc.types.Field(
@@ -24094,7 +24094,7 @@ class SellingPlanGroup(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     summary = sgqlc.types.Field(String, graphql_name="summary")
@@ -24203,7 +24203,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(FulfillmentOrderSortKeys, graphql_name="sortKey", default="ID")),
-            )
+            ),
         ),
     )
     available_channel_apps = sgqlc.types.Field(
@@ -24216,7 +24216,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     billing_address = sgqlc.types.Field(sgqlc.types.non_null(MailingAddress), graphql_name="billingAddress")
@@ -24239,7 +24239,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     customer_accounts = sgqlc.types.Field(sgqlc.types.non_null(ShopCustomerAccountsSetting), graphql_name="customerAccounts")
@@ -24282,7 +24282,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
             (
                 ("first", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="first", default=None)),
                 ("sort", sgqlc.types.Arg(ShopTagSort, graphql_name="sort", default="ALPHABETICAL")),
-            )
+            ),
         ),
     )
     payment_settings = sgqlc.types.Field(sgqlc.types.non_null(PaymentSettings), graphql_name="paymentSettings")
@@ -24299,7 +24299,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("sort_key", sgqlc.types.Arg(ProductImageSortKeys, graphql_name="sortKey", default="CREATED_AT")),
-            )
+            ),
         ),
     )
     product_tags = sgqlc.types.Field(
@@ -24332,16 +24332,16 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ),
                 ("first", sgqlc.types.Arg(sgqlc.types.non_null(Int), graphql_name="first", default=None)),
                 ("after", sgqlc.types.Arg(String, graphql_name="after", default=None)),
-            )
+            ),
         ),
     )
     search_filters = sgqlc.types.Field(sgqlc.types.non_null(SearchFilterOptions), graphql_name="searchFilters")
     setup_required = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="setupRequired")
     ships_to_countries = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="shipsToCountries"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(CountryCode))), graphql_name="shipsToCountries",
     )
     shop_policies = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ShopPolicy"))), graphql_name="shopPolicies"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ShopPolicy"))), graphql_name="shopPolicies",
     )
     staff_members = sgqlc.types.Field(
         sgqlc.types.non_null(StaffMemberConnection),
@@ -24353,7 +24353,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     storefront_access_tokens = sgqlc.types.Field(
@@ -24366,7 +24366,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     tax_shipping = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="taxShipping")
@@ -24389,7 +24389,7 @@ class Shop(sgqlc.types.Type, HasMetafields, HasPublishedTranslations, Node):
                         default=None,
                     ),
                 ),
-            )
+            ),
         ),
     )
     url = sgqlc.types.Field(sgqlc.types.non_null(URL), graphql_name="url")
@@ -24441,7 +24441,7 @@ class ShopifyPaymentsAccount(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     charge_statement_descriptors = sgqlc.types.Field(ShopifyPaymentsChargeStatementDescriptor, graphql_name="chargeStatementDescriptors")
@@ -24458,12 +24458,12 @@ class ShopifyPaymentsAccount(sgqlc.types.Type, Node):
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
                 ("query", sgqlc.types.Arg(String, graphql_name="query", default=None)),
-            )
+            ),
         ),
     )
     fraud_settings = sgqlc.types.Field(sgqlc.types.non_null(ShopifyPaymentsFraudSettings), graphql_name="fraudSettings")
     notification_settings = sgqlc.types.Field(
-        sgqlc.types.non_null(ShopifyPaymentsNotificationSettings), graphql_name="notificationSettings"
+        sgqlc.types.non_null(ShopifyPaymentsNotificationSettings), graphql_name="notificationSettings",
     )
     onboardable = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="onboardable")
     payout_schedule = sgqlc.types.Field(sgqlc.types.non_null(ShopifyPaymentsPayoutSchedule), graphql_name="payoutSchedule")
@@ -24482,7 +24482,7 @@ class ShopifyPaymentsAccount(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     permitted_verification_documents = sgqlc.types.Field(
@@ -24528,7 +24528,7 @@ class ShopifyPaymentsBankAccount(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     routing_number = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="routingNumber")
@@ -24722,7 +24722,7 @@ class StandardMetafieldDefinitionTemplate(sgqlc.types.Type, Node):
     name = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="name")
     namespace = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="namespace")
     owner_types = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(MetafieldOwnerType))), graphql_name="ownerTypes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(MetafieldOwnerType))), graphql_name="ownerTypes",
     )
     type = sgqlc.types.Field(sgqlc.types.non_null(MetafieldDefinitionType), graphql_name="type")
     validations = sgqlc.types.Field(
@@ -24736,7 +24736,7 @@ class StorefrontAccessToken(sgqlc.types.Type, Node):
     __schema__ = shopify_schema
     __field_names__ = ("access_scopes", "access_token", "created_at", "title", "updated_at")
     access_scopes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(AccessScope))), graphql_name="accessScopes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(AccessScope))), graphql_name="accessScopes",
     )
     access_token = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="accessToken")
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
@@ -24787,7 +24787,7 @@ class SubscriptionBillingCycleEditedContract(sgqlc.types.Type, SubscriptionContr
                     "sort_key",
                     sgqlc.types.Arg(SubscriptionBillingCyclesSortKeys, graphql_name="sortKey", default="CYCLE_INDEX"),
                 ),
-            )
+            ),
         ),
     )
     created_at = sgqlc.types.Field(sgqlc.types.non_null(DateTime), graphql_name="createdAt")
@@ -24821,7 +24821,7 @@ class SubscriptionContract(sgqlc.types.Type, Node, SubscriptionContractBase):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     billing_policy = sgqlc.types.Field(sgqlc.types.non_null(SubscriptionBillingPolicy), graphql_name="billingPolicy")
@@ -24881,12 +24881,12 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                     "sort_key",
                     sgqlc.types.Arg(SubscriptionBillingCyclesSortKeys, graphql_name="sortKey", default="CYCLE_INDEX"),
                 ),
-            )
+            ),
         ),
     )
     currency_code = sgqlc.types.Field(sgqlc.types.non_null(CurrencyCode), graphql_name="currencyCode")
     custom_attributes = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(Attribute))), graphql_name="customAttributes",
     )
     customer = sgqlc.types.Field(sgqlc.types.non_null(Customer), graphql_name="customer")
     customer_payment_method = sgqlc.types.Field(
@@ -24899,7 +24899,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
         "SubscriptionDeliveryOptionResult",
         graphql_name="deliveryOptions",
         args=sgqlc.types.ArgDict(
-            (("delivery_address", sgqlc.types.Arg(MailingAddressInput, graphql_name="deliveryAddress", default=None)),)
+            (("delivery_address", sgqlc.types.Arg(MailingAddressInput, graphql_name="deliveryAddress", default=None)),),
         ),
     )
     delivery_policy = sgqlc.types.Field(sgqlc.types.non_null(SubscriptionDeliveryPolicy), graphql_name="deliveryPolicy")
@@ -24914,7 +24914,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     discounts_added = sgqlc.types.Field(
@@ -24927,7 +24927,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     discounts_removed = sgqlc.types.Field(
@@ -24940,7 +24940,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     discounts_updated = sgqlc.types.Field(
@@ -24953,7 +24953,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     lines = sgqlc.types.Field(
@@ -24966,7 +24966,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     lines_added = sgqlc.types.Field(
@@ -24979,7 +24979,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     lines_removed = sgqlc.types.Field(
@@ -24992,7 +24992,7 @@ class SubscriptionDraft(sgqlc.types.Type, Node):
                 ("last", sgqlc.types.Arg(Int, graphql_name="last", default=None)),
                 ("before", sgqlc.types.Arg(String, graphql_name="before", default=None)),
                 ("reverse", sgqlc.types.Arg(Boolean, graphql_name="reverse", default=False)),
-            )
+            ),
         ),
     )
     next_billing_date = sgqlc.types.Field(DateTime, graphql_name="nextBillingDate")
@@ -25147,10 +25147,10 @@ class WebhookSubscription(sgqlc.types.Type, LegacyInteroperability, Node):
     endpoint = sgqlc.types.Field(sgqlc.types.non_null("WebhookSubscriptionEndpoint"), graphql_name="endpoint")
     format = sgqlc.types.Field(sgqlc.types.non_null(WebhookSubscriptionFormat), graphql_name="format")
     include_fields = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="includeFields"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="includeFields",
     )
     metafield_namespaces = sgqlc.types.Field(
-        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="metafieldNamespaces"
+        sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))), graphql_name="metafieldNamespaces",
     )
     private_metafield_namespaces = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null(String))),

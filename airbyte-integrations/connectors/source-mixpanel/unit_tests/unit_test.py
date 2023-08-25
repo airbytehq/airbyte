@@ -5,8 +5,9 @@
 from datetime import date, timedelta
 
 import pendulum
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_mixpanel.streams import Annotations, Export
+
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 def test_date_slices():
@@ -14,9 +15,9 @@ def test_date_slices():
     now = pendulum.today(tz="US/Pacific").date()
     # Test with start_date now range
     stream_slices = Annotations(
-        authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU", project_timezone="US/Pacific"
+        authenticator=NoAuth(), start_date=now, end_date=now, date_window_size=1, region="EU", project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
-    assert 1 == len(list(stream_slices))
+    assert len(list(stream_slices)) == 1
 
     stream_slices = Annotations(
         authenticator=NoAuth(),
@@ -26,7 +27,7 @@ def test_date_slices():
         region="US",
         project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
-    assert 2 == len(list(stream_slices))
+    assert len(list(stream_slices)) == 2
 
     stream_slices = Annotations(
         authenticator=NoAuth(),
@@ -36,7 +37,7 @@ def test_date_slices():
         date_window_size=1,
         project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
-    assert 3 == len(list(stream_slices))
+    assert len(list(stream_slices)) == 3
 
     stream_slices = Annotations(
         authenticator=NoAuth(),
@@ -46,7 +47,7 @@ def test_date_slices():
         date_window_size=10,
         project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
-    assert 1 == len(list(stream_slices))
+    assert len(list(stream_slices)) == 1
 
     # test with attribution_window
     stream_slices = Annotations(
@@ -58,7 +59,7 @@ def test_date_slices():
         region="US",
         project_timezone="US/Pacific",
     ).stream_slices(sync_mode="any")
-    assert 8 == len(list(stream_slices))
+    assert len(list(stream_slices)) == 8
 
     # Test with start_date end_date range
     stream_slices = Annotations(
@@ -116,5 +117,5 @@ def test_date_slices():
     ).stream_slices(sync_mode="any", stream_state={"time": "2021-07-02T00:00:00Z"})
     assert [
         {"start_date": "2021-07-02", "end_date": "2021-07-02", "time": "2021-07-02T00:00:00Z"},
-        {"start_date": "2021-07-03", "end_date": "2021-07-03", "time": "2021-07-02T00:00:00Z"}
+        {"start_date": "2021-07-03", "end_date": "2021-07-03", "time": "2021-07-02T00:00:00Z"},
     ] == list(stream_slices)

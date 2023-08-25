@@ -12,9 +12,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class InterpolatedNestedRequestInputProvider:
-    """
-    Helper class that generically performs string interpolation on a provided deeply nested dictionary or string input
-    """
+    """Helper class that generically performs string interpolation on a provided deeply nested dictionary or string input."""
 
     parameters: InitVar[Mapping[str, Any]]
     request_inputs: Optional[NestedMapping] = field(default=None)
@@ -31,10 +29,9 @@ class InterpolatedNestedRequestInputProvider:
             self._interpolator = InterpolatedNestedMapping(self._request_inputs, parameters=parameters)
 
     def eval_request_inputs(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        """
-        Returns the request inputs to set on an outgoing HTTP request
+        """Returns the request inputs to set on an outgoing HTTP request.
 
         :param stream_state: The stream state
         :param stream_slice: The stream slice

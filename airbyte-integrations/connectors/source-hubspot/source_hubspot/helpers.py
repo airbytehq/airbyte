@@ -4,12 +4,11 @@
 
 import abc
 import urllib.parse
-from typing import Iterator, List, MutableMapping
+from typing import Iterator, List, MutableMapping, Optional
 
 
 class IRecordPostProcessor(abc.ABC):
-    """
-    The interface is designed to post process records (like group them by ID and update) after the API response is parsed and
+    """The interface is designed to post process records (like group them by ID and update) after the API response is parsed and
     before they are emitted up the stack.
     """
 
@@ -24,7 +23,7 @@ class IRecordPostProcessor(abc.ABC):
 
 
 class GroupByKey(IRecordPostProcessor):
-    def __init__(self, primary_key: str = None):
+    def __init__(self, primary_key: Optional[str] = None):
         self._storage = {}
         self._primary_key = primary_key
 
@@ -43,7 +42,7 @@ class GroupByKey(IRecordPostProcessor):
 
 
 class StoreAsIs(IRecordPostProcessor):
-    def __init__(self):
+    def __init__(self) -> None:
         self._storage = []
 
     def add_record(self, record: MutableMapping):
@@ -62,7 +61,7 @@ class IURLPropertyRepresentation(abc.ABC):
     def __init__(self, properties: List[str]):
         self.properties = properties
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self.properties)
 
     @property

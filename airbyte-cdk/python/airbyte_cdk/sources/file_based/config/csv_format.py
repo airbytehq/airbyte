@@ -44,7 +44,7 @@ class CsvFormat(BaseModel):
         description='The character encoding of the CSV data. Leave blank to default to <strong>UTF8</strong>. See <a href="https://docs.python.org/3/library/codecs.html#standard-encodings" target="_blank">list of python encodings</a> for allowable options.',
     )
     double_quote: bool = Field(
-        title="Double Quote", default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data."
+        title="Double Quote", default=True, description="Whether two quotes in a quoted CSV value denote a single quote in the data.",
     )
     null_values: Set[str] = Field(
         title="Null Values",
@@ -62,7 +62,7 @@ class CsvFormat(BaseModel):
         description="The number of rows to skip before the header row. For example, if the header row is on the 3rd row, enter 2 in this field.",
     )
     skip_rows_after_header: int = Field(
-        title="Skip Rows After Header", default=0, description="The number of rows to skip after the header row."
+        title="Skip Rows After Header", default=0, description="The number of rows to skip after the header row.",
     )
     autogenerate_column_names: bool = Field(
         title="Autogenerate Column Names",
@@ -89,21 +89,25 @@ class CsvFormat(BaseModel):
     @validator("delimiter")
     def validate_delimiter(cls, v: str) -> str:
         if len(v) != 1:
-            raise ValueError("delimiter should only be one character")
+            msg = "delimiter should only be one character"
+            raise ValueError(msg)
         if v in {"\r", "\n"}:
-            raise ValueError(f"delimiter cannot be {v}")
+            msg = f"delimiter cannot be {v}"
+            raise ValueError(msg)
         return v
 
     @validator("quote_char")
     def validate_quote_char(cls, v: str) -> str:
         if len(v) != 1:
-            raise ValueError("quote_char should only be one character")
+            msg = "quote_char should only be one character"
+            raise ValueError(msg)
         return v
 
     @validator("escape_char")
     def validate_escape_char(cls, v: str) -> str:
         if v is not None and len(v) != 1:
-            raise ValueError("escape_char should only be one character")
+            msg = "escape_char should only be one character"
+            raise ValueError(msg)
         return v
 
     @validator("encoding")
@@ -111,5 +115,6 @@ class CsvFormat(BaseModel):
         try:
             codecs.lookup(v)
         except LookupError:
-            raise ValueError(f"invalid encoding format: {v}")
+            msg = f"invalid encoding format: {v}"
+            raise ValueError(msg)
         return v

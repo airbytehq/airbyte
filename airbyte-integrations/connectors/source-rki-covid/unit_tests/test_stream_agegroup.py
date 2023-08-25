@@ -6,7 +6,7 @@ import pytest
 from source_rki_covid.source import GermanyAgeGroups
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_age_group(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(GermanyAgeGroups, "primary_key", None)

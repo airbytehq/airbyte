@@ -8,7 +8,7 @@ from pytest import fixture
 from source_tplcentral.source import SourceTplcentral
 
 
-@fixture
+@fixture()
 def config():
     return {
         "url_base": "https://secure-wms.com/",

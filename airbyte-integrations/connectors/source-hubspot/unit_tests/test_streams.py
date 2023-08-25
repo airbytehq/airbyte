@@ -4,7 +4,6 @@
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_hubspot.streams import (
     Campaigns,
     Companies,
@@ -35,13 +34,14 @@ from source_hubspot.streams import (
     Workflows,
 )
 
+from airbyte_cdk.models import SyncMode
+
 from .utils import read_full_refresh, read_incremental
 
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
+    return mocker.patch("time.sleep", lambda x: None)
 
 
 def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
@@ -56,8 +56,8 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
                         "createdAt": "2022-03-25T16:43:11Z",
                     },
                 ],
-            }
-        }
+            },
+        },
     ]
     properties_response = [
         {
@@ -67,7 +67,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
-        }
+        },
     ]
 
     requests_mock.register_uri("GET", stream.url, responses)
@@ -83,7 +83,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint, cursor_value",
+    ("stream", "endpoint", "cursor_value"),
     [
         (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -125,10 +125,10 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
                     }
-                    | cursor_value
+                    | cursor_value,
                 ],
-            }
-        }
+            },
+        },
     ]
     properties_response = [
         {
@@ -138,7 +138,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
-        }
+        },
     ]
     contact_reponse = [
         {
@@ -148,30 +148,30 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
                         "id": "test_id",
                         "created": "2022-06-25T16:43:11Z",
                         "properties": {
-                            "hs_merged_object_ids": "test_id"
-                        }
+                            "hs_merged_object_ids": "test_id",
+                        },
                     }
-                    | cursor_value
+                    | cursor_value,
                 ],
-            }
-        }
+            },
+        },
     ]
     read_batch_contact_v1_response = [
         {
             "json": {
                 "test_id": {
                     "vid": "test_id",
-                    'merge-audits': [
+                    "merge-audits": [
                         {
-                            'canonical-vid': 2,
-                            'vid-to-merge': 5608,
-                            'timestamp': 1653322839932
-                        }
-                    ]
-                }
+                            "canonical-vid": 2,
+                            "vid-to-merge": 5608,
+                            "timestamp": 1653322839932,
+                        },
+                    ],
+                },
             },
             "status_code": 200,
-        }
+        },
     ]
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
@@ -202,7 +202,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     ],
 )
 def test_common_error_retry(error_response, requests_mock, common_params, fake_properties_list):
-    """Error once, check that we retry and not fail"""
+    """Error once, check that we retry and not fail."""
     properties_response = [
         {"name": property_name, "type": "string",
             "updatedAt": 1571085954360, "createdAt": 1565059306048}
@@ -225,7 +225,7 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
                 "created": "2022-02-25T16:43:11Z",
                 "updatedAt": "2022-02-25T16:43:11Z",
                 "lastUpdatedTime": "2022-02-25T16:43:11Z",
-            }
+            },
         ],
     }
     requests_mock.register_uri(
@@ -261,9 +261,9 @@ def test_contact_lists_transform(requests_mock, common_params):
                         "createdAt": 1654117200002,
                         "filters": [[{"value": 1000}]],
                     },
-                ]
-            }
-        }
+                ],
+            },
+        },
     ]
 
     requests_mock.register_uri("GET", stream.url, responses)
@@ -289,8 +289,8 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
                     {"id": "test_id_3", "createdAt": "2022-03-25T16:43:11Z",
                         "updatedAt": "2023-02-20T23:46:36.287Z"},
                 ],
-            }
-        }
+            },
+        },
     ]
     properties_response = [
         {
@@ -300,7 +300,7 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
-        }
+        },
     ]
 
     requests_mock.register_uri("GET", stream.url, responses)
@@ -313,7 +313,7 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
 
 
 @pytest.mark.parametrize(
-    "state, record, expected",
+    ("state", "record", "expected"),
     [
         ({"updatedAt": ""}, {"id": "test_id_1", "updatedAt": "2023-01-30T23:46:36.287Z"},
          (True, {"updatedAt": "2023-01-30T23:46:36.287000+00:00"})),
@@ -323,7 +323,7 @@ def test_client_side_incremental_stream(requests_mock, common_params, fake_prope
     ids=[
         "Empty Sting in state + new record",
         "State + old record",
-    ]
+    ],
 )
 def test_empty_string_in_state(state, record, expected, requests_mock, common_params, fake_properties_list):
     stream = Forms(**common_params)
@@ -338,7 +338,7 @@ def test_empty_string_in_state(state, record, expected, requests_mock, common_pa
                 for property_name in fake_properties_list
             ],
             "status_code": 200,
-        }
+        },
     ]
     requests_mock.register_uri("GET", stream.url, json=record)
     requests_mock.register_uri(
@@ -383,7 +383,7 @@ def custom_object_schema_fixture():
                 "hubspotDefined": False,
                 "modificationMetadata": {"archivable": True, "readOnlyDefinition": True, "readOnlyValue": False},
                 "formField": True,
-            }
+            },
         ],
         "associations": [],
         "name": "animals",
@@ -407,7 +407,7 @@ def expected_custom_object_json_schema():
 
 
 def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_available(
-    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
+    requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params,
 ):
     stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema,
                           fully_qualified_name="p123_animals", **common_params)
@@ -430,13 +430,13 @@ def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(req
             {
                 "json": [
                     {
-                        'name': 'hs_object_id',
-                        'label': 'Record ID',
-                        'type': 'number',
-                    }
-                ]
-            }
-        ]
+                        "name": "hs_object_id",
+                        "label": "Record ID",
+                        "type": "number",
+                    },
+                ],
+            },
+        ],
     )
     _ = stream.get_json_schema()
 

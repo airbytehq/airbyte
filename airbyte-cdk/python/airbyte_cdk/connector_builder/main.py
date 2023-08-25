@@ -18,31 +18,31 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
     parsed_args = AirbyteEntrypoint.parse_args(args)
     config_path, catalog_path = parsed_args.config, parsed_args.catalog
     if parsed_args.command != "read":
-        raise ValueError("Only read commands are allowed for Connector Builder requests.")
+        msg = "Only read commands are allowed for Connector Builder requests."
+        raise ValueError(msg)
 
     config = BaseConnector.read_config(config_path)
 
     if "__command" not in config:
+        msg = f"Invalid config: `__command` should be provided at the root of the config but config only has keys {list(config.keys())}"
         raise ValueError(
-            f"Invalid config: `__command` should be provided at the root of the config but config only has keys {list(config.keys())}"
+            msg,
         )
 
     command = config["__command"]
-    if command == "test_read":
-        catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
-    else:
-        catalog = None
+    catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path)) if command == "test_read" else None
 
     if "__injected_declarative_manifest" not in config:
+        msg = f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
         raise ValueError(
-            f"Invalid config: `__injected_declarative_manifest` should be provided at the root of the config but config only has keys {list(config.keys())}"
+            msg,
         )
 
     return command, config, catalog
 
 
 def handle_connector_builder_request(
-    source: ManifestDeclarativeSource, command: str, config: Mapping[str, Any], catalog: Optional[ConfiguredAirbyteCatalog], limits: TestReadLimits
+    source: ManifestDeclarativeSource, command: str, config: Mapping[str, Any], catalog: Optional[ConfiguredAirbyteCatalog], limits: TestReadLimits,
 ) -> AirbyteMessage:
     if command == "resolve_manifest":
         return resolve_manifest(source)
@@ -50,7 +50,8 @@ def handle_connector_builder_request(
         assert catalog is not None, "`test_read` requires a valid `ConfiguredAirbyteCatalog`, got None."
         return read_stream(source, config, catalog, limits)
     else:
-        raise ValueError(f"Unrecognized command {command}.")
+        msg = f"Unrecognized command {command}."
+        raise ValueError(msg)
 
 
 def handle_request(args: List[str]) -> AirbyteMessage:
@@ -64,6 +65,6 @@ if __name__ == "__main__":
     try:
         print(handle_request(sys.argv[1:]))
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {str(exc)}")
+        error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {exc!s}")
         m = error.as_airbyte_message()
         print(error.as_airbyte_message().json(exclude_unset=True))

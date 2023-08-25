@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -30,12 +31,12 @@ class ExchangeRates(HttpStream):
         return None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return stream_slice["date"]
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # The api requires that we include apikey as a header so we do that in this method
         return {"apikey": self.apikey}
@@ -43,8 +44,8 @@ class ExchangeRates(HttpStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include the base currency as a query param so we do that in this method
         return {"base": self.base}
@@ -53,8 +54,8 @@ class ExchangeRates(HttpStream):
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
@@ -71,8 +72,7 @@ class ExchangeRates(HttpStream):
             return {"date": self.start_date.strftime("%Y-%m-%d")}
 
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
-        """
-        Returns a list of each day between the start date and now.
+        """Returns a list of each day between the start date and now.
         The return value is a list of dicts {'date': date_string}.
         """
         dates = []
@@ -84,7 +84,7 @@ class ExchangeRates(HttpStream):
         return dates
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
         start_date = datetime.strptime(stream_state["date"], "%Y-%m-%d") if stream_state and "date" in stream_state else self.start_date
         return self._chunk_date_range(start_date)

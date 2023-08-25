@@ -8,8 +8,6 @@ from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from source_mixpanel.streams import (
     Annotations,
     CohortMembers,
@@ -26,6 +24,9 @@ from source_mixpanel.streams import (
 )
 from source_mixpanel.utils import read_full_refresh
 
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+
 from .utils import get_url_to_mock, read_incremental, setup_response
 
 logger = AirbyteLogger()
@@ -33,7 +34,7 @@ logger = AirbyteLogger()
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(MixpanelStream, "path", "v0/example_endpoint")
@@ -41,7 +42,7 @@ def patch_base_class(mocker):
     mocker.patch.object(MixpanelStream, "__abstractmethods__", set())
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalMixpanelStream, "path", "v0/example_endpoint")
@@ -52,8 +53,7 @@ def patch_incremental_base_class(mocker):
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
+    return mocker.patch("time.sleep", lambda x: None)
 
 
 def test_url_base(patch_base_class, config):
@@ -72,13 +72,13 @@ def test_updated_state(patch_incremental_base_class, config):
     stream = IncrementalMixpanelStream(authenticator=MagicMock(), **config)
 
     updated_state = stream.get_updated_state(
-        current_stream_state={"date": "2021-01-25T00:00:00Z"}, latest_record={"date": "2021-02-25T00:00:00Z"}
+        current_stream_state={"date": "2021-01-25T00:00:00Z"}, latest_record={"date": "2021-02-25T00:00:00Z"},
     )
 
     assert updated_state == {"date": "2021-02-25T00:00:00Z"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def cohorts_response():
     return setup_response(
         200,
@@ -116,7 +116,7 @@ def test_cohorts_stream_incremental(requests_mock, cohorts_response, config):
     assert records_length == 1
 
 
-@pytest.fixture
+@pytest.fixture()
 def engage_response():
     return setup_response(
         200,
@@ -176,15 +176,15 @@ def test_cohort_members_stream_incremental(requests_mock, engage_response, cohor
     stream.set_cursor(["created"])
     stream_state = {"created": "2008-12-12T11:20:47"}
     records = stream.read_records(
-        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000}
+        sync_mode=SyncMode.incremental, cursor_field=["created"], stream_state=stream_state, stream_slice={"id": 1000},
     )
 
-    records = [item for item in records]
+    records = list(records)
     assert len(records) == 1
     assert stream.get_updated_state(current_stream_state=stream_state, latest_record=records[-1]) == {"created": "2008-12-12T11:20:47"}
 
 
-@pytest.fixture
+@pytest.fixture()
 def funnels_list_response():
     return setup_response(200, [{"funnel_id": 1, "name": "Signup funnel"}])
 
@@ -199,13 +199,13 @@ def test_funnels_list_stream(requests_mock, config, funnels_list_response):
     assert records_length == 1
 
 
-@pytest.fixture
+@pytest.fixture()
 def funnels_list_url(config):
     funnel_list = FunnelsList(authenticator=MagicMock(), **config)
     return get_url_to_mock(funnel_list)
 
 
-@pytest.fixture
+@pytest.fixture()
 def funnels_response(start_date):
     first_date = start_date + timedelta(days=1)
     second_date = start_date + timedelta(days=10)
@@ -272,7 +272,7 @@ def test_funnels_stream(requests_mock, config, funnels_response, funnels_list_re
     assert new_state == {str(last_record["funnel_id"]): {"date": str(last_record_date + timedelta(days=1))}}
 
 
-@pytest.fixture
+@pytest.fixture()
 def engage_schema_response():
     return setup_response(
         200,
@@ -281,7 +281,7 @@ def engage_schema_response():
                 "$browser": {"count": 124, "type": "string"},
                 "$browser_version": {"count": 124, "type": "string"},
                 "$created": {"count": 124, "type": "string"},
-            }
+            },
         },
     )
 
@@ -307,7 +307,7 @@ def test_update_engage_schema(requests_mock, config):
             {
                 "results": {
                     "$someNewSchemaField": {"count": 124, "type": "string"},
-                }
+                },
             },
         ),
     )
@@ -316,7 +316,7 @@ def test_update_engage_schema(requests_mock, config):
     assert "someNewSchemaField" in engage_schema["properties"]
 
 
-@pytest.fixture
+@pytest.fixture()
 def annotations_response():
     return setup_response(
         200,
@@ -324,7 +324,7 @@ def annotations_response():
             "annotations": [
                 {"id": 640999, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks good"},
                 {"id": 640000, "project_id": 2117889, "date": "2021-06-16 00:00:00", "description": "Looks bad"},
-            ]
+            ],
         },
     )
 
@@ -342,7 +342,7 @@ def test_annotations_stream(requests_mock, annotations_response, config):
     assert records_length == 2
 
 
-@pytest.fixture
+@pytest.fixture()
 def revenue_response():
     return setup_response(
         200,
@@ -372,7 +372,7 @@ def test_revenue_stream(requests_mock, revenue_response, config):
     assert records_length == 2
 
 
-@pytest.fixture
+@pytest.fixture()
 def export_schema_response():
     return setup_response(
         200,
@@ -402,7 +402,7 @@ def test_export_schema(requests_mock, export_schema_response, config):
     assert records_length == 10
 
 
-@pytest.fixture
+@pytest.fixture()
 def export_response():
     return setup_response(
         200,

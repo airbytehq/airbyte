@@ -7,8 +7,7 @@ from typing import Union
 
 
 class DatetimeParser:
-    """
-    Parses and formats datetime objects according to a specified format.
+    """Parses and formats datetime objects according to a specified format.
 
     This class mainly acts as a wrapper to properly handling timestamp formatting through the "%s" directive.
 

@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 import pytest
+
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage
 
 
@@ -21,7 +22,7 @@ def test_uncaught_exception_handler():
     )
 
     expected_log_message = AirbyteMessage(
-        type="LOG", log=AirbyteLogMessage(level="FATAL", message=f"{exception_message}\n{exception_trace}")
+        type="LOG", log=AirbyteLogMessage(level="FATAL", message=f"{exception_message}\n{exception_trace}"),
     )
 
     expected_trace_message = AirbyteMessage(

@@ -8,6 +8,7 @@ from typing import List
 
 import click
 from github import PullRequest
+
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.utils import (
@@ -28,7 +29,7 @@ from .groups.tests import test
 
 
 def get_modified_files(
-    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
+    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest,
 ) -> List[str]:
     """Get the list of modified files in the current git branch.
     If the current branch is master, it will return the list of modified files in the head commit.
@@ -97,7 +98,7 @@ def airbyte_ci(
     ci_gcs_credentials: str,
     ci_job_key: str,
     show_dagger_logs: bool,
-):  # noqa D103
+):  # D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
     ctx.obj["is_ci"] = not is_local
@@ -122,7 +123,7 @@ def airbyte_ci(
         ctx.obj["pull_request"] = None
 
     ctx.obj["modified_files"] = transform_strs_to_paths(
-        get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
+        get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"]),
     )
 
     if not is_local:

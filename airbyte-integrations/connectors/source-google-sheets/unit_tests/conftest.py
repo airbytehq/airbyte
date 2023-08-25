@@ -5,7 +5,7 @@
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def invalid_config():
     return {
         "spreadsheet_id": "invalid_spreadsheet_id",
@@ -14,6 +14,6 @@ def invalid_config():
                 "auth_type": "Client",
                 "client_id": "fake_client_id",
                 "client_secret": "fake_client_secret",
-                "refresh_token": "fake_refresh_token"
-            }
+                "refresh_token": "fake_refresh_token",
+            },
     }

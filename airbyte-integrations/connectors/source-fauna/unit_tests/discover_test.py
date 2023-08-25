@@ -4,11 +4,12 @@
 
 from unittest.mock import MagicMock, Mock
 
-from airbyte_cdk.models import AirbyteStream
 from faunadb import query as q
 from faunadb.objects import Ref
 from source_fauna import SourceFauna
 from test_util import config, mock_logger
+
+from airbyte_cdk.models import AirbyteStream
 
 
 def mock_source() -> SourceFauna:
@@ -36,7 +37,7 @@ def query_hardcoded(expr):
         return {
             "data": [
                 Ref("ts", Ref("indexes")),
-            ]
+            ],
         }
     elif expr == q.get(Ref("ts", Ref("indexes"))):
         return {
@@ -49,7 +50,8 @@ def query_hardcoded(expr):
             "terms": [],
         }
     else:
-        raise ValueError(f"invalid query {expr}")
+        msg = f"invalid query {expr}"
+        raise ValueError(msg)
 
 
 def test_simple_discover():

@@ -10,7 +10,7 @@ import tempfile
 import traceback
 import urllib
 from os import environ
-from typing import Iterable
+from typing import Iterable, Optional
 from urllib.parse import urlparse
 from zipfile import BadZipFile
 
@@ -22,9 +22,6 @@ import numpy as np
 import pandas as pd
 import smart_open
 import smart_open.ssh
-from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
@@ -36,6 +33,10 @@ from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
+from airbyte_cdk.entrypoint import logger
+from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
+
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
@@ -45,15 +46,15 @@ logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
 class ConfigurationError(Exception):
-    """Client mis-configured"""
+    """Client mis-configured."""
 
 
 class PermissionsError(Exception):
-    """User don't have enough permissions"""
+    """User don't have enough permissions."""
 
 
 class URLFile:
-    """Class to manage read from file located at different providers
+    """Class to manage read from file located at different providers.
 
     Supported examples of URL this class can accept are as follows:
     ```
@@ -103,7 +104,6 @@ class URLFile:
         # https://github.com/airbytehq/oncall/issues/1954
         if isinstance(error, SSHException) and str(error).startswith("Error reading SSH protocol banner"):
             # We need to clear smart_open internal _SSH cache from the previous attempt, otherwise:
-            # SSHException('SSH session not active')
             # will be raised
             smart_open.ssh._SSH.clear()
             return False
@@ -144,7 +144,8 @@ class URLFile:
             try:
                 port = int(_port_value)
             except ValueError as err:
-                raise ValueError(f"{_port_value} is not a valid integer for the port") from err
+                msg = f"{_port_value} is not a valid integer for the port"
+                raise ValueError(msg) from err
             # Explicitly turn off ssh keys stored in ~/.ssh
             transport_params = {"connect_kwargs": {"look_for_keys": False}, "timeout": SSH_TIMEOUT}
             if "password" in self._provider:
@@ -165,7 +166,7 @@ class URLFile:
     @property
     def url(self) -> str:
         """Convert URL to remove the URL prefix (scheme)
-        :return: the corresponding URL without URL prefix / scheme
+        :return: the corresponding URL without URL prefix / scheme.
         """
         parse_result = urlparse(self._url)
         if parse_result.scheme:
@@ -176,7 +177,7 @@ class URLFile:
     @property
     def storage_scheme(self) -> str:
         """Convert Storage Names to the proper URL Prefix
-        :return: the corresponding URL prefix / scheme
+        :return: the corresponding URL prefix / scheme.
         """
         storage_name = self._provider["storage"].upper()
         parse_result = urlparse(self._url)
@@ -209,7 +210,7 @@ class URLFile:
             try:
                 credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse gcs service account json: {repr(err)}"
+                error_msg = f"Failed to parse gcs service account json: {err!r}"
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 
@@ -218,9 +219,8 @@ class URLFile:
             client = GCSClient(credentials=credentials, project=credentials._project_id)
         else:
             client = GCSClient.create_anonymous_client()
-        file_to_close = smart_open.open(self.full_url, transport_params={"client": client}, **self.args)
+        return smart_open.open(self.full_url, transport_params={"client": client}, **self.args)
 
-        return file_to_close
 
     def _open_aws_url(self):
         aws_access_key_id = self._provider.get("aws_access_key_id")
@@ -253,17 +253,17 @@ class URLFile:
             client = BlobServiceClient(account_url=storage_acc_url)
 
         url = f"{self.storage_scheme}{self.url}"
-        return smart_open.open(url, transport_params=dict(client=client), **self.args)
+        return smart_open.open(url, transport_params={"client": client}, **self.args)
 
 
 class Client:
-    """Class that manages reading and parsing data from streams"""
+    """Class that manages reading and parsing data from streams."""
 
     CSV_CHUNK_SIZE = 10_000
     reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
-    def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
+    def __init__(self, dataset_name: str, url: str, provider: dict, format: Optional[str] = None, reader_options: Optional[dict] = None):
         self._dataset_name = dataset_name
         self._url = url
         self._provider = provider
@@ -311,9 +311,10 @@ class Client:
     def load_yaml(self, fp):
         if self._reader_format == "yaml":
             return pd.DataFrame(safe_load(fp))
+        return None
 
     def load_dataframes(self, fp, skip_data=False, read_sample_chunk: bool = False) -> Iterable:
-        """load and return the appropriate pandas dataframe.
+        """Load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
         :param skip_data: limit reading data
@@ -370,7 +371,7 @@ class Client:
         except UnicodeDecodeError as err:
             error_msg = (
                 f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
-                f"Please check provided Format and Reader Options. {repr(err)}."
+                f"Please check provided Format and Reader Options. {err!r}."
             )
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
@@ -402,8 +403,8 @@ class Client:
         return self.reader_class(url=self._url, provider=self._provider, binary=self.binary_source, encoding=self.encoding)
 
     @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=5, max_time=60)
-    def read(self, fields: Iterable = None) -> Iterable[dict]:
-        """Read data from the stream"""
+    def read(self, fields: Optional[Iterable] = None) -> Iterable[dict]:
+        """Read data from the stream."""
         with self.reader.open() as fp:
             try:
                 if self._reader_format in ["json", "jsonl"]:
@@ -437,7 +438,7 @@ class Client:
                 raise ConfigurationError(error_msg) from err
 
     def _cache_stream(self, fp):
-        """cache stream to file"""
+        """Cache stream to file."""
         fp_tmp = tempfile.TemporaryFile(mode="w+b")
         fp_tmp.write(fp.read())
         fp_tmp.seek(0)
@@ -445,9 +446,8 @@ class Client:
         return fp_tmp
 
     def _stream_properties(self, fp, empty_schema: bool = False, read_sample_chunk: bool = False):
-        """
-        empty_schema param is used to check connectivity, i.e. we only read a header and do not produce stream properties
-        read_sample_chunk is used to determine if just one chunk should be read to generate schema
+        """empty_schema param is used to check connectivity, i.e. we only read a header and do not produce stream properties
+        read_sample_chunk is used to determine if just one chunk should be read to generate schema.
         """
         if self._reader_format == "yaml":
             df_list = [self.load_yaml(fp)]
@@ -470,7 +470,7 @@ class Client:
         }
 
     def streams(self, empty_schema: bool = False) -> Iterable:
-        """Discovers available streams"""
+        """Discovers available streams."""
         # TODO handle discovery of directories of multiple files instead
         with self.reader.open() as fp:
             if self._reader_format in ["json", "jsonl"]:
@@ -484,7 +484,7 @@ class Client:
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
     def openpyxl_chunk_reader(self, file, **kwargs):
-        """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time"""
+        """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time."""
         work_book = load_workbook(filename=file, read_only=True)
         user_provided_column_names = kwargs.get("names")
         for sheetname in work_book.sheetnames:

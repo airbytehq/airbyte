@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -14,8 +15,7 @@ from airbyte_cdk.sources.declarative.types import Record
 
 @dataclass
 class PocketExtractor(RecordExtractor):
-    """
-    Record extractor that extracts record of the form:
+    """Record extractor that extracts record of the form:
 
     { "list": { "ID_1": record_1, "ID_2": record_2, ... } }
 

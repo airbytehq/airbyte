@@ -4,15 +4,15 @@
 
 from typing import Any, Dict, Optional, Type
 
-from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 from pydantic import BaseModel, Extra
 from pydantic.main import ModelMetaclass
 from pydantic.typing import resolve_annotations
 
+from airbyte_cdk.sources.utils.schema_helpers import expand_refs
+
 
 class AllOptional(ModelMetaclass):
-    """
-    Metaclass for marking all Pydantic model fields as Optional
+    """Metaclass for marking all Pydantic model fields as Optional
     Here is example of declaring model using this metaclass like:
     '''
             class MyModel(BaseModel, metaclass=AllOptional):
@@ -29,9 +29,7 @@ class AllOptional(ModelMetaclass):
     """
 
     def __new__(mcs, name, bases, namespaces, **kwargs):
-        """
-        Iterate through fields and wrap then with typing.Optional type.
-        """
+        """Iterate through fields and wrap then with typing.Optional type."""
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
             annotations = {**annotations, **getattr(base, "__annotations__", {})}
@@ -43,9 +41,8 @@ class AllOptional(ModelMetaclass):
 
 
 class BaseSchemaModel(BaseModel):
-    """
-    Base class for all schema models. It has some extra schema postprocessing.
-    Can be used in combination with AllOptional metaclass
+    """Base class for all schema models. It has some extra schema postprocessing.
+    Can be used in combination with AllOptional metaclass.
     """
 
     class Config:
@@ -78,7 +75,7 @@ class BaseSchemaModel(BaseModel):
 
     @classmethod
     def schema(cls, *args, **kwargs) -> Dict[str, Any]:
-        """We're overriding the schema classmethod to enable some post-processing"""
+        """We're overriding the schema classmethod to enable some post-processing."""
         schema = super().schema(*args, **kwargs)
         expand_refs(schema)
         return schema

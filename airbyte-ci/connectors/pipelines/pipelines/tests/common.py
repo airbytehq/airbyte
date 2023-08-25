@@ -13,8 +13,9 @@ from typing import ClassVar, List, Optional
 import requests
 import semver
 import yaml
-from connector_ops.utils import Connector
 from dagger import Container, Directory, File
+
+from connector_ops.utils import Connector
 from pipelines import hacks
 from pipelines.actions import environments
 from pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
@@ -22,7 +23,7 @@ from pipelines.utils import METADATA_FILE_NAME
 
 
 class VersionCheck(Step, ABC):
-    """A step to validate the connector version was bumped if files were modified"""
+    """A step to validate the connector version was bumped if files were modified."""
 
     GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
@@ -63,7 +64,7 @@ class VersionCheck(Step, ABC):
 
     @abstractmethod
     def validate(self) -> StepResult:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def _run(self) -> StepResult:
         if not self.should_run:
@@ -101,7 +102,7 @@ class VersionIncrementCheck(VersionCheck):
     def should_run(self) -> bool:
         for filename in self.context.modified_files:
             relative_path = str(filename).replace(str(self.context.connector.code_directory) + "/", "")
-            if not any([relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR]):
+            if not any(relative_path.startswith(to_bypass) for to_bypass in self.BYPASS_CHECK_FOR):
                 return True
         return False
 
@@ -140,6 +141,7 @@ class QaChecks(Step):
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
+
         Returns:
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
@@ -194,8 +196,7 @@ class AcceptanceTests(PytestStep):
         ]
 
     async def get_cat_command(self, connector_dir: Directory) -> List[str]:
-        """
-        Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
+        """Connectors can optionally setup or teardown resources before and after the acceptance tests are run.
         This is done via the acceptance.py file in their integration_tests directory.
         We append this module as a plugin the acceptance will use.
         """
@@ -231,13 +232,13 @@ class AcceptanceTests(PytestStep):
         return step_result
 
     async def get_cache_buster(self, connector_under_test_image_tar: File) -> str:
-        """
-        This bursts the CAT cached results everyday and on new version or image size change.
+        """This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
         We keep the guarantee that a CAT runs everyday.
 
         Args:
             connector_under_test_image_tar (File): The file holding the tar archive of the connector image.
+
         Returns:
             str: A string representing the cachebuster value.
         """
@@ -253,10 +254,10 @@ class AcceptanceTests(PytestStep):
         Args:
             connector_under_test_image_tar (File): The file containing the tar archive of the image of the connector under test.
             test_input (Directory): The connector under test directory.
+
         Returns:
             Container: A container with connector acceptance tests installed.
         """
-
         if self.context.connector_acceptance_test_image.endswith(":dev"):
             cat_container = self.context.connector_acceptance_test_source_dir.docker_build()
         else:
@@ -275,9 +276,9 @@ class AcceptanceTests(PytestStep):
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
             cat_container = cat_container.with_env_variable(
-                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock"
+                "_EXPERIMENTAL_DAGGER_RUNNER_HOST", "unix:///var/run/buildkit/buildkitd.sock",
             ).with_unix_socket(
-                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
+                "/var/run/buildkit/buildkitd.sock", self.context.dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock"),
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))

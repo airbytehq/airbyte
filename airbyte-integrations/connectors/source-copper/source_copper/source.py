@@ -7,6 +7,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -15,7 +16,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 # Basic full refresh stream
 class CopperStream(HttpStream, ABC):
-    def __init__(self, *args, api_key: str = None, user_email: str = None, **kwargs):
+    def __init__(self, *args, api_key: Optional[str] = None, user_email: Optional[str] = None, **kwargs):
         super().__init__(*args, **kwargs)
         self._user_email = user_email
         self._api_key = api_key
@@ -38,8 +39,8 @@ class CopperStream(HttpStream, ABC):
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
 
         if next_page_token:
@@ -48,7 +49,7 @@ class CopperStream(HttpStream, ABC):
         return {"page_number": 1, "page_size": 200}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {
             "X-PW-AccessToken": self._api_key,
@@ -68,7 +69,7 @@ class People(CopperStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "people/search"
 
@@ -77,7 +78,7 @@ class Projects(CopperStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "projects/search"
 
@@ -86,7 +87,7 @@ class Companies(CopperStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "companies/search"
 
@@ -95,7 +96,7 @@ class Opportunities(CopperStream):
     primary_key = "id"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "opportunities/search"
 
@@ -108,7 +109,7 @@ class SourceCopper(AbstractSource):
             next(records, None)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Copper API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Copper API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [People(**config), Companies(**config), Projects(**config), Opportunities(**config)]

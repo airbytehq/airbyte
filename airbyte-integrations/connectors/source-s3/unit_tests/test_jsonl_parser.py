@@ -109,7 +109,7 @@ class TestJsonlParser(AbstractTestParser):
                         "degrees": -9.2,
                         "birthday": "2021-07-14",
                         "last_seen": "2021-07-14 15:30:09.225145",
-                    }
+                    },
                 },
                 "fails": [],
             },

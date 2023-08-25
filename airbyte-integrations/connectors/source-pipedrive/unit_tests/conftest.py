@@ -9,7 +9,7 @@ from source_pipedrive.source import SourcePipedrive
 replication_start_date = "2017-01-25T00:00:00Z"
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_oauth():
     return {
         "authorization": {
@@ -22,25 +22,25 @@ def config_oauth():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_token():
     return {
         "authorization": {
             "auth_type": "Token",
-            "api_token": "api_token"
+            "api_token": "api_token",
         },
-        "replication_start_date": replication_start_date
+        "replication_start_date": replication_start_date,
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream_kwargs(config_token):
     return {"authenticator": SourcePipedrive.get_authenticator(config_token)}
 
 
-@pytest.fixture
+@pytest.fixture()
 def incremental_kwargs(config_token):
     return {
         "authenticator": SourcePipedrive.get_authenticator(config_token),
-        "replication_start_date": pendulum.parse(config_token["replication_start_date"])
+        "replication_start_date": pendulum.parse(config_token["replication_start_date"]),
     }

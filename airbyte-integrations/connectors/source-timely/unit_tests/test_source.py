@@ -10,8 +10,7 @@ from source_timely.source import SourceTimely
 
 @fixture()
 def config(request):
-    args = {"account_id": "123", "start_date": "2022-04-01", "bearer_token": "51UWRAsFuIbeygfIY3XfucQUGiX"}
-    return args
+    return {"account_id": "123", "start_date": "2022-04-01", "bearer_token": "51UWRAsFuIbeygfIY3XfucQUGiX"}
 
 
 def test_check_connection(mocker, config):

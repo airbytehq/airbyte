@@ -10,6 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -27,9 +28,7 @@ from .zuora_excluded_streams import ZUORA_EXCLUDED_STREAMS
 
 
 class ZuoraStream(HttpStream, ABC):
-    """
-    Parent class for all other classes, except of SourceZuora.
-    """
+    """Parent class for all other classes, except of SourceZuora."""
 
     # Define primary key
     primary_key = "id"
@@ -48,9 +47,7 @@ class ZuoraStream(HttpStream, ABC):
 
     @property
     def window_in_days(self) -> float:
-        """
-        Converting `Query Window` config parameter from string type into type float.
-        """
+        """Converting `Query Window` config parameter from string type into type float."""
         try:
             value = self._config["window_in_days"]
             return float(value)
@@ -58,17 +55,15 @@ class ZuoraStream(HttpStream, ABC):
             raise QueryWindowError(value)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """Abstractmethod HTTPStream CDK dependency"""
+        """Abstractmethod HTTPStream CDK dependency."""
         return None
 
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        """Abstractmethod HTTPStream CDK dependency"""
+        """Abstractmethod HTTPStream CDK dependency."""
         return {}
 
     def base_query_params(self) -> MutableMapping[str, Any]:
-        """
-        Returns base query parameters for default CDK request_json_body method
-        """
+        """Returns base query parameters for default CDK request_json_body method."""
         params = {"compression": "NONE", "output": {"target": "S3"}, "outputFormat": "JSON"}
         if self._config["data_query"] == "Unlimited":
             params["sourceData"] = "DATAHUB"
@@ -76,24 +71,20 @@ class ZuoraStream(HttpStream, ABC):
 
 
 class ZuoraBase(ZuoraStream):
-    """
-    Base child class, provides main functionality for next classes:
-        - ZuoraObjectsBase, ZuoraListObjects, ZuoraDescribeObject
+    """Base child class, provides main functionality for next classes:
+    - ZuoraObjectsBase, ZuoraListObjects, ZuoraDescribeObject.
     """
 
     def path(self, **kwargs) -> str:
-        """Abstractmethod HTTPStream CDK dependency"""
+        """Abstractmethod HTTPStream CDK dependency."""
         return ""
 
-    def request_kwargs(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
-        """
-        Override of default CDK method to return date_slices as stream_slices
-        """
+    def request_kwargs(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Mapping[str, Any]:
+        """Override of default CDK method to return date_slices as stream_slices."""
         return stream_slice if stream_slice else {}
 
     def get_zuora_data(self, date_slice: Dict, config: Dict, full_object: bool = False) -> Iterable[Mapping[str, Any]]:
-        """
-        This is the wrapper for 'Submit > Check > Get' operation.
+        """This is the wrapper for 'Submit > Check > Get' operation.
 
         :: job_id - string with submited job_id EXAMPLE: '5a96ee43-e874-4a25-a9b4-004b39fe82a4'
             for more information see: ZuoraSubmitJob
@@ -115,13 +106,11 @@ class ZuoraBase(ZuoraStream):
             job_query = self.query(stream_name=self.name, cursor_field=self.cursor_field, date_slice=date_slice)
 
         job_id: List[str] = ZuoraSubmitJob(job_query, config).read_records(sync_mode=None)
-        job_data_url: List = ZuoraJobStatusCheck(list(job_id)[0], config).read_records(sync_mode=None)
-        yield from ZuoraGetJobResult(list(job_data_url)[0]).read_records(sync_mode=None)
+        job_data_url: List = ZuoraJobStatusCheck(next(iter(job_id)), config).read_records(sync_mode=None)
+        yield from ZuoraGetJobResult(next(iter(job_data_url))).read_records(sync_mode=None)
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        """
-        Override for _send_request CDK method to send HTTP request to the Zuora API
-        """
+        """Override for _send_request CDK method to send HTTP request to the Zuora API."""
         try:
             # try to fetch with default cursor_field = UpdatedDate
             yield from self.get_zuora_data(date_slice=request_kwargs, config=self._config)
@@ -157,8 +146,7 @@ class ZuoraBase(ZuoraStream):
 
 
 class ZuoraObjectsBase(ZuoraBase):
-    """
-    Main class for all the Zuora data streams (Zuora Object names),
+    """Main class for all the Zuora data streams (Zuora Object names),
     provides functionality for dynamically created classes as streams of data.
     """
 
@@ -168,16 +156,14 @@ class ZuoraObjectsBase(ZuoraBase):
 
     @staticmethod
     def to_datetime_str(date: datetime) -> str:
-        """
-        Custom method.
+        """Custom method.
         Returns the formated datetime string in a way Zuora API endpoint recognises it as timestamp.
-        :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S.%f %Z"
+        :: Output example: '2021-07-15 07:45:55 -07:00' FROMAT : "%Y-%m-%d %H:%M:%S.%f %Z".
         """
         return date.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
     def get_cursor_from_schema(self, schema: Dict) -> str:
-        """
-        Get the cursor_field from the stream's schema rather that take it from the class attribute
+        """Get the cursor_field from the stream's schema rather that take it from the class attribute
         If the stream doesn't support 'updateddate', then we use 'createddate'.
         If the stream doesn't support 'createddate', then stream is `full_refresh` only.
         """
@@ -191,15 +177,12 @@ class ZuoraObjectsBase(ZuoraBase):
             return None
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Override get_json_schema CDK method to retrieve the schema information for Zuora Object dynamicaly.
-        """
+        """Override get_json_schema CDK method to retrieve the schema information for Zuora Object dynamicaly."""
         schema = list(ZuoraDescribeObject(self.name, config=self._config).read_records(sync_mode=None))
         return {"type": "object", "properties": {key: d[key] for d in schema for key in d}}
 
     def as_airbyte_stream(self) -> AirbyteStream:
-        """
-        Override as_airbyte_stream CDK method to replace default 'default_cursor_field' behaviour,
+        """Override as_airbyte_stream CDK method to replace default 'default_cursor_field' behaviour,
         :: We use the cursor_field defined inside schema instead of using class attribute by default.
         :: But we still need the default class attribute 'cursor_field' in order to CDK read_records works properly.
         """
@@ -215,16 +198,12 @@ class ZuoraObjectsBase(ZuoraBase):
         return stream
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Update the state value, default CDK method.
-        """
+        """Update the state value, default CDK method."""
         updated_state = max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))
         return {self.cursor_field: updated_state} if updated_state else {}
 
-    def query(self, stream_name: str, cursor_field: str = None, date_slice: Dict = None, full_object: bool = False) -> str:
-        """
-        Custom method. Returns the SQL-like query in a way Zuora API endpoint accepts the jobs.
-        """
+    def query(self, stream_name: str, cursor_field: Optional[str] = None, date_slice: Optional[Dict] = None, full_object: bool = False) -> str:
+        """Custom method. Returns the SQL-like query in a way Zuora API endpoint accepts the jobs."""
         if full_object:
             return f"""select * from {stream_name}"""
 
@@ -236,16 +215,14 @@ class ZuoraObjectsBase(ZuoraBase):
             order by {cursor_field} asc
             """
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: {
             "start_date": "2020-01-01 00:00:00 -07:00",
             "end_date": "2021-12-31 00:00:00 -07:00"
             },
             ...
         """
-
         start_date = pendulum.parse(self._config["start_date"]).astimezone()
         end_date = pendulum.now().astimezone()
 
@@ -264,9 +241,7 @@ class ZuoraObjectsBase(ZuoraBase):
 
 
 class ZuoraListObjects(ZuoraBase):
-    """
-    Provides functionality to retrieve the list of Zuora Objects as list of object names.
-    """
+    """Provides functionality to retrieve the list of Zuora Objects as list of object names."""
 
     def query(self, **kwargs) -> str:
         return "SHOW TABLES"
@@ -276,8 +251,7 @@ class ZuoraListObjects(ZuoraBase):
 
 
 class ZuoraDescribeObject(ZuoraBase):
-    """
-    Provides functionality to retrive Zuora Object (stream) schema dynamicaly from the endpoint,
+    """Provides functionality to retrive Zuora Object (stream) schema dynamicaly from the endpoint,
     convert it into JSONSchema types, for the connector's catalog.
     """
 
@@ -289,12 +263,11 @@ class ZuoraDescribeObject(ZuoraBase):
         return f"DESCRIBE {self.zuora_object_name}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[Dict]:
-        """
-        Response example:
+        """Response example:
         [
             {'Column': 'taxexempteffectivedate', 'Type': 'date', 'Extra': '', 'Comment': 'TaxExemptEffectiveDate'},
             {'Column': 'invoicetemplateid', 'Type': 'varchar', 'Extra': '', 'Comment': 'InvoiceTemplateId'}...
-        ]
+        ].
         """
         type_number = ["number", "null"]
         type_string = ["string", "null"]
@@ -338,8 +311,7 @@ class ZuoraDescribeObject(ZuoraBase):
 
 
 class ZuoraSubmitJob(ZuoraStream):
-    """
-    Provides functionality to submit ZOQL Data Query job on the server.
+    """Provides functionality to submit ZOQL Data Query job on the server.
     Return job_id as comfirmation of the successfully submited job.
     """
 
@@ -353,17 +325,13 @@ class ZuoraSubmitJob(ZuoraStream):
         return "/query/jobs"
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
-        """
-        Override of default CDK method to return SQL-like query and use it in _send_request method.
-        """
+        """Override of default CDK method to return SQL-like query and use it in _send_request method."""
         params = self.base_query_params()
         params["query"] = self.query
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> List[str]:
-
-        """
-        Response example:
+        """Response example:
         {'data':
             {
                 'id': 'c6f25f91-5357-4fec-a00d-9009cc1ae856',
@@ -376,14 +344,13 @@ class ZuoraSubmitJob(ZuoraStream):
                 'updatedOn': '2021-07-26T15:33:48.287Z',
                 'createdBy': '84f78cea-8a5b-4332-933f-27439fe3b87b'
             }
-        }
+        }.
         """
         return [response.json()["data"]["id"]]
 
 
 class ZuoraJobStatusCheck(ZuoraStream):
-    """
-    Provedes functionaluty to check the status of submited job on the server.
+    """Provedes functionaluty to check the status of submited job on the server.
     :: There are ["completed", "in_progress", "failed", "canceled", "aborted"] statuses available in check response.
     The check operation returns either dataFile URL or error message describing the error.
     """
@@ -399,9 +366,7 @@ class ZuoraJobStatusCheck(ZuoraStream):
         return [response.json()["data"]["dataFile"]]
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-
-        """
-        Override of default CDK method _send_request to check the status of submited job iteratevely,
+        """Override of default CDK method _send_request to check the status of submited job iteratevely,
         until it's either "completed" or "failed" or "canceled" for any reason.
 
         Response example:
@@ -422,7 +387,6 @@ class ZuoraJobStatusCheck(ZuoraStream):
                 }
             }
         """
-
         # Define the job error statuses
         errors = ["failed", "canceled", "aborted"]
         # Error msg: the cursor_field cannot be resolved
@@ -456,8 +420,7 @@ class ZuoraJobStatusCheck(ZuoraStream):
 
 
 class ZuoraGetJobResult(HttpStream):
-    """
-    Provides functionality to retrive the records from the file formed by submited and successfully completed job
+    """Provides functionality to retrive the records from the file formed by submited and successfully completed job
     DataFile URL example:
         {'data':
                 {
@@ -469,7 +432,7 @@ class ZuoraGetJobResult(HttpStream):
                     ...,
                     'createdBy': '84f78cea-8a5b-4332-933f-27439fe3b87b'
                 }
-        }
+        }.
     """
 
     primary_key = None
@@ -483,26 +446,22 @@ class ZuoraGetJobResult(HttpStream):
         return self.url
 
     def path(self, **kwargs) -> str:
-        """Abstractmethod HTTPStream CDK dependency"""
+        """Abstractmethod HTTPStream CDK dependency."""
         return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """Abstractmethod HTTPStream CDK dependency"""
+        """Abstractmethod HTTPStream CDK dependency."""
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> str:
-        """
-        Return records from JSONLines file from dataFile URL.
-        """
+        """Return records from JSONLines file from dataFile URL."""
         for line in response.text.splitlines():
             yield json.loads(line)
 
 
 class SourceZuora(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the token.
-        """
+        """Testing connection availability for the connector by granting the token."""
         auth = ZuoraAuthenticator(config).get_auth()
         try:
             auth.get_auth_header()
@@ -511,8 +470,7 @@ class SourceZuora(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[ZuoraStream]:
-        """
-        Mapping a input config of the user input configuration as defined in the connector spec.
+        """Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run by building stream classes dynamically.
         """
         auth = ZuoraAuthenticator(config)
@@ -520,7 +478,6 @@ class SourceZuora(AbstractSource):
         config["url_base"] = auth.url_base
 
         # List available objects (streams) names from Zuora
-        # Example: zuora_stream_names = ["account", "country", "user"]
         zuora_stream_names = ZuoraListObjects(config).read_records(sync_mode=None)
 
         streams: List[ZuoraStream] = []

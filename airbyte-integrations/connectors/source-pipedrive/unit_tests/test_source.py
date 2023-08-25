@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from source_pipedrive.source import SourcePipedrive
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -11,7 +13,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     SyncMode,
 )
-from source_pipedrive.source import SourcePipedrive
 
 logger = AirbyteLogger()
 
@@ -66,7 +67,7 @@ def test_read(config_token):
                 stream=AirbyteStream(name="deals", json_schema={}, supported_sync_modes=["full_refresh", "incremental"]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-        ]
+            ),
+        ],
     )
     assert source.read(logger, config_token, catalog)

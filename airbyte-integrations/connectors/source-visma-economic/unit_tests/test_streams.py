@@ -10,7 +10,7 @@ import requests
 from source_visma_economic.source import VismaEconomicStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(VismaEconomicStream, "path", "v0/example_endpoint")
@@ -38,7 +38,7 @@ def test_next_page_token(patch_base_class):
             "firstPage": "https://restapi.e-conomic.com/stream?skippages=0&pagesize=100",
             "nextPage": "https://restapi.e-conomic.com/stream?skippages=1&pagesize=100",
             "lastPage": "https://restapi.e-conomic.com/stream?skippages=1&pagesize=100",
-        }
+        },
     }
     response.json = MagicMock(return_value=json)
     inputs = {"response": response}

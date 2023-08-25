@@ -7,11 +7,12 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import pytest
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
-from requests import HTTPError
 
 logger = logging.getLogger("airbyte")
 
@@ -20,7 +21,7 @@ class MockHttpStream(HttpStream):
     url_base = "https://test_base_url.com"
     primary_key = ""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.resp_counter = 1
 
@@ -47,27 +48,27 @@ class MockHttpStream(HttpStream):
             "This is most likely due to insufficient permissions on the credentials in use.",
             "Something went wrong",
         ]),
-        (200, {}, True, [])
-    ]
+        (200, {}, True, []),
+    ],
 )
 @pytest.mark.parametrize(
     ("include_source", "expected_docs_url_messages"), [
         (True, ["Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."]),
         (False, ["Please visit the connector's documentation to learn more."]),
-    ]
+    ],
 )
 def test_default_http_availability_strategy(mocker, status_code, json_contents, expected_is_available, expected_messages, include_source, expected_docs_url_messages):
     http_stream = MockHttpStream()
     assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     class MockResponseWithJsonContents(requests.Response, mocker.MagicMock):
-        def __init__(self, *args, **kvargs):
+        def __init__(self, *args, **kvargs) -> None:
             mocker.MagicMock.__init__(self)
             requests.Response.__init__(self, **kvargs)
             self.json = mocker.MagicMock()
 
     class MockSource(AbstractSource):
-        def __init__(self, streams: List[Stream] = None):
+        def __init__(self, streams: Optional[List[Stream]] = None):
             self._streams = streams
 
         def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -75,7 +76,8 @@ def test_default_http_availability_strategy(mocker, status_code, json_contents, 
 
         def streams(self, config: Mapping[str, Any]) -> List[Stream]:
             if not self._streams:
-                raise Exception("Stream is not set")
+                msg = "Stream is not set"
+                raise Exception(msg)
             return self._streams
 
     response = MockResponseWithJsonContents()
@@ -134,7 +136,7 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
 def test_http_availability_strategy_on_empty_stream(mocker):
 
     class MockEmptyHttpStream(mocker.MagicMock, MockHttpStream):
-        def __init__(self, *args, **kvargs):
+        def __init__(self, *args, **kvargs) -> None:
             mocker.MagicMock.__init__(self)
             self.read_records = mocker.MagicMock()
 

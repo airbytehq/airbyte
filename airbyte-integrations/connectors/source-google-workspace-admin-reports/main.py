@@ -5,8 +5,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_google_workspace_admin_reports import SourceGoogleWorkspaceAdminReports
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceGoogleWorkspaceAdminReports()

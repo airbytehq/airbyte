@@ -15,7 +15,7 @@ SYNC_MODE = SyncMode.incremental
 
 
 class ManifestBuilder:
-    def __init__(self):
+    def __init__(self) -> None:
         self._incremental_sync = None
         self._partition_router = None
 
@@ -35,7 +35,7 @@ class ManifestBuilder:
             "datetime_format": datetime_format,
             "cursor_field": cursor_field,
             "step": step,
-            "cursor_granularity": cursor_granularity
+            "cursor_granularity": cursor_granularity,
         }
         return self
 
@@ -46,8 +46,8 @@ class ManifestBuilder:
             "check": {
                 "type": "CheckStream",
                 "stream_names": [
-                    "Rates"
-                ]
+                    "Rates",
+                ],
             },
             "streams": [
                 {
@@ -59,8 +59,8 @@ class ManifestBuilder:
                         "schema": {
                             "$schema": "http://json-schema.org/schema#",
                             "properties": {},
-                            "type": "object"
-                        }
+                            "type": "object",
+                        },
                     },
                     "retriever": {
                         "type": "SimpleRetriever",
@@ -74,11 +74,11 @@ class ManifestBuilder:
                             "type": "RecordSelector",
                             "extractor": {
                                 "type": "DpathExtractor",
-                                "field_path": []
-                            }
+                                "field_path": [],
+                            },
                         },
-                    }
-                }
+                    },
+                },
             ],
             "spec": {
                 "connection_specification": {
@@ -86,11 +86,11 @@ class ManifestBuilder:
                     "type": "object",
                     "required": [],
                     "properties": {},
-                    "additionalProperties": True
+                    "additionalProperties": True,
                 },
                 "documentation_url": "https://example.org",
-                "type": "Spec"
-            }
+                "type": "Spec",
+            },
         }
         if self._incremental_sync:
             manifest["streams"][0]["incremental_sync"] = self._incremental_sync
@@ -108,7 +108,7 @@ def test_given_state_for_only_some_partition_when_stream_slices_then_create_slic
                 cursor_field=CURSOR_FIELD,
                 step="P1M",
                 cursor_granularity="P1D",
-            ).build()
+            ).build(),
     )
     stream_instance = source.streams({})[0]
     stream_instance.state = {
@@ -116,8 +116,8 @@ def test_given_state_for_only_some_partition_when_stream_slices_then_create_slic
             {
                 "partition": {"partition_field": "1"},
                 "cursor": {CURSOR_FIELD: "2022-02-01"},
-            }
-        ]
+            },
+        ],
     }
 
     slices = stream_instance.stream_slices(
@@ -141,7 +141,7 @@ def test_given_record_for_partition_when_read_then_update_state():
                 cursor_field=CURSOR_FIELD,
                 step="P1M",
                 cursor_granularity="P1D",
-            ).build()
+            ).build(),
     )
     stream_instance = source.streams({})[0]
     list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
@@ -154,12 +154,12 @@ def test_given_record_for_partition_when_read_then_update_state():
                 stream_slice=stream_slice,
                 stream_state={"states": []},
                 cursor_field=CURSOR_FIELD,
-            )
+            ),
         )
 
     assert stream_instance.state == {"states": [
         {
             "partition": {"partition_field": "1"},
             "cursor": {CURSOR_FIELD: "2022-01-31"},
-        }
+        },
     ]}

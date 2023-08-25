@@ -9,6 +9,10 @@ from json import dumps, load
 from typing import Dict
 from unittest.mock import MagicMock
 
+from destination_firebolt.destination import DestinationFirebolt, establish_connection
+from firebolt.common.exception import FireboltError
+from pytest import fixture, mark, raises
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Status, Type
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteStream,
@@ -17,9 +21,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from destination_firebolt.destination import DestinationFirebolt, establish_connection
-from firebolt.common.exception import FireboltError
-from pytest import fixture, mark, raises
 
 
 @fixture(scope="module")
@@ -37,27 +38,25 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rnd_string}"
 
 
-@fixture
+@fixture()
 def cleanup(config: Dict[str, str], test_table_name: str):
     yield
-    with establish_connection(config, MagicMock()) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{test_table_name}")
-            cursor.execute(f"DROP TABLE IF EXISTS ex_airbyte_raw_{test_table_name}")
+    with establish_connection(config, MagicMock()) as connection, connection.cursor() as cursor:
+        cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{test_table_name}")
+        cursor.execute(f"DROP TABLE IF EXISTS ex_airbyte_raw_{test_table_name}")
 
 
-@fixture
+@fixture()
 def table_schema() -> str:
-    schema = {
+    return {
         "type": "object",
         "properties": {
             "column1": {"type": ["null", "string"]},
         },
     }
-    return schema
 
 
-@fixture
+@fixture()
 def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.incremental]),
@@ -83,7 +82,7 @@ def invalid_config_s3() -> Dict[str, str]:
         yield load(f)
 
 
-@fixture
+@fixture()
 def airbyte_message1(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
@@ -95,7 +94,7 @@ def airbyte_message1(test_table_name: str):
     )
 
 
-@fixture
+@fixture()
 def airbyte_message2(test_table_name: str):
     return AirbyteMessage(
         type=Type.RECORD,
@@ -133,15 +132,14 @@ def test_write(
     generator = destination.write(config, configured_catalogue, [airbyte_message1, airbyte_message2])
     result = list(generator)
     assert len(result) == 0
-    with establish_connection(config, MagicMock()) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
-            )
-            result = cursor.fetchall()
-            # Make sure no temporary tables present
-            with raises(FireboltError):
-                cursor.execute(f"SELECT TOP 0 * FROM ex_airbyte_raw_{test_table_name}")
+    with establish_connection(config, MagicMock()) as connection, connection.cursor() as cursor:
+        cursor.execute(
+            f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data",
+        )
+        result = cursor.fetchall()
+        # Make sure no temporary tables present
+        with raises(FireboltError):
+            cursor.execute(f"SELECT TOP 0 * FROM ex_airbyte_raw_{test_table_name}")
     assert len(result) == 2
     assert result[0][2] == dumps(airbyte_message1.record.data)
     assert result[1][2] == dumps(airbyte_message2.record.data)

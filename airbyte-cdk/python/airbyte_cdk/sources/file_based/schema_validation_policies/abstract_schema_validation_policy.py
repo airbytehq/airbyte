@@ -12,7 +12,5 @@ class AbstractSchemaValidationPolicy(ABC):
 
     @abstractmethod
     def record_passes_validation_policy(self, record: Mapping[str, Any], schema: Optional[Mapping[str, Any]]) -> bool:
-        """
-        Return True if the record passes the user's validation policy.
-        """
-        raise NotImplementedError()
+        """Return True if the record passes the user's validation policy."""
+        raise NotImplementedError

@@ -3,6 +3,8 @@
 #
 
 
+from source_instagram.source import SourceInstagram
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -12,7 +14,6 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     SyncMode,
 )
-from source_instagram.source import SourceInstagram
 
 logger = AirbyteLogger()
 
@@ -68,7 +69,7 @@ def test_read(config):
                 stream=AirbyteStream(name="users", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-        ]
+            ),
+        ],
     )
     assert source.read(logger, config, catalog)

@@ -5,15 +5,18 @@
 import logging
 import time
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
 
 
 class OnesignalStream(HttpStream, ABC):
@@ -37,8 +40,7 @@ class OnesignalStream(HttpStream, ABC):
         return None
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        OneSignal's API rates limit is 1 request per second with a 10/second burst.
+        """OneSignal's API rates limit is 1 request per second with a 10/second burst.
         RateLimit* headers will indicate how much quota is left at the time of
         the request. For example:
 
@@ -75,7 +77,7 @@ class AppSlicesStream(OnesignalStream):
         return True
 
     def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], **kwargs,
     ) -> Iterable[Mapping]:
         data = response.json().get(self.data_field)
         for record in data:
@@ -85,9 +87,9 @@ class AppSlicesStream(OnesignalStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         token = stream_slice.get("app_api_key")
         self._session.auth = TokenAuthenticator(token, "Basic")
@@ -102,8 +104,8 @@ class IncrementalOnesignalStream(AppSlicesStream, IncrementalMixin, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["app_id"] = stream_slice["app_id"]
@@ -116,23 +118,23 @@ class IncrementalOnesignalStream(AppSlicesStream, IncrementalMixin, ABC):
         self,
         response: requests.Response,
     ) -> Optional[Mapping[str, Any]]:
-        """
-        An example of response is:
+        """An example of response is:
         {
             "total_count": 553,
             "offset": 0,
             "limit": 1,
             "notifications": [ ... ]
-        }
+        }.
         """
         resp = response.json()
         total = resp["total_count"]
         next_offset = resp["offset"] + resp["limit"]
         if next_offset < total:
             return {"offset": next_offset}
+        return None
 
     def filter_by_state(
-        self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, record: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
     ) -> bool:
         app_id = stream_slice.get("app_id")
         record_value = record.get(self.cursor_field, 0)
@@ -150,18 +152,14 @@ class IncrementalOnesignalStream(AppSlicesStream, IncrementalMixin, ABC):
 
 
 class Apps(OnesignalStream):
-    """
-    Docs: https://documentation.onesignal.com/reference/view-apps-apps
-    """
+    """Docs: https://documentation.onesignal.com/reference/view-apps-apps."""
 
     def path(self, **kwargs) -> str:
         return self.name
 
 
 class Devices(IncrementalOnesignalStream):
-    """
-    Docs: https://documentation.onesignal.com/reference/view-devices
-    """
+    """Docs: https://documentation.onesignal.com/reference/view-devices."""
 
     cursor_field = "last_active"
     data_field = "players"
@@ -172,9 +170,7 @@ class Devices(IncrementalOnesignalStream):
 
 
 class Notifications(IncrementalOnesignalStream):
-    """
-    Docs: https://documentation.onesignal.com/reference/view-notifications
-    """
+    """Docs: https://documentation.onesignal.com/reference/view-notifications."""
 
     cursor_field = "queued_at"
     data_field = "notifications"
@@ -185,24 +181,22 @@ class Notifications(IncrementalOnesignalStream):
 
 
 class Outcomes(AppSlicesStream):
-    """
-    Docs: https://documentation.onesignal.com/reference/view-outcomes
-    """
+    """Docs: https://documentation.onesignal.com/reference/view-outcomes."""
 
     data_field = "outcomes"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.outcome_names = kwargs["config"]["outcome_names"]
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"apps/{stream_slice['app_id']}/outcomes"
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["outcome_names"] = self.outcome_names

@@ -8,7 +8,7 @@ from pytest import fixture
 from source_pinterest.reports import CampaignAnalyticsReport
 
 
-@fixture
+@fixture()
 def test_config():
     return {
         "client_id": "test_client_id",
@@ -18,7 +18,7 @@ def test_config():
     }
 
 
-@fixture
+@fixture()
 def wrong_date_config():
     return {
         "client_id": "test_client_id",
@@ -28,7 +28,7 @@ def wrong_date_config():
     }
 
 
-@fixture
+@fixture()
 def test_incremental_config():
     return {
         "authenticator": MagicMock(),
@@ -36,44 +36,44 @@ def test_incremental_config():
     }
 
 
-@fixture
+@fixture()
 def test_current_stream_state():
     return {"updated_time": "2021-10-22"}
 
 
-@fixture
+@fixture()
 def test_record():
     return {"items": [{}], "bookmark": "string"}
 
 
-@fixture
+@fixture()
 def test_record_filter():
     return {"items": [{"updated_time": "2021-11-01"}], "bookmark": "string"}
 
 
-@fixture
+@fixture()
 def test_response(test_record):
     response = MagicMock()
     response.json.return_value = test_record
     return response
 
 
-@fixture
+@fixture()
 def test_response_filter(test_record_filter):
     response = MagicMock()
     response.json.return_value = test_record_filter
     return response
 
 
-@fixture
+@fixture()
 def analytics_report_stream():
     return CampaignAnalyticsReport(parent=None, config=MagicMock())
 
 
-@fixture
+@fixture()
 def date_range():
     return {
-        'start_date': '2023-01-01',
-        'end_date': '2023-01-31',
-        'parent': {'id': '123'}
+        "start_date": "2023-01-01",
+        "end_date": "2023-01-31",
+        "parent": {"id": "123"},
     }

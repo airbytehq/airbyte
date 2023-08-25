@@ -34,8 +34,7 @@ class SourceKlaviyo(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        Discovery method, returns available streams
+        """Discovery method, returns available streams
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         api_key = config["api_key"]

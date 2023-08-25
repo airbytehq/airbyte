@@ -7,13 +7,13 @@ import logging
 from typing import Dict
 
 import pytest
+
 from airbyte_cdk.logger import AirbyteLogFormatter
 
 
 @pytest.fixture(scope="session")
 def logger():
-    logger = logging.getLogger("airbyte.Testlogger")
-    return logger
+    return logging.getLogger("airbyte.Testlogger")
 
 
 def test_formatter(logger, caplog):
@@ -74,7 +74,7 @@ def test_info(logger, caplog):
 
 
 def test_warn(logger, caplog):
-    logger.warn("Test warn 1")
+    logger.warning("Test warn 1")
     record = caplog.records[0]
     assert record.levelname == "WARNING"
     assert record.message == "Test warn 1"

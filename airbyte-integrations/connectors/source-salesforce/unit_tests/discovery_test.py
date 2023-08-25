@@ -10,7 +10,7 @@ from source_salesforce.exceptions import TypeSalesforceException
 
 
 @pytest.mark.parametrize(
-    "streams_criteria,predicted_filtered_streams",
+    ("streams_criteria", "predicted_filtered_streams"),
     [
         ([{"criteria": "exacts", "value": "Account"}], ["Account"]),
         (
@@ -53,8 +53,8 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
                 {"name": "OrderHistory", "queryable": True},
                 {"name": "CustomStream", "queryable": True},
                 {"name": "CustomStreamHistory", "queryable": True},
-            ]
-        }
+            ],
+        },
     )
     filtered_streams = sf_object.get_validated_streams(config=updated_config)
     assert sorted(filtered_streams.keys()) == sorted(predicted_filtered_streams)
@@ -72,15 +72,15 @@ def test_discovery_filter(stream_config):
                 {"name": "ActivityMetric", "queryable": True},
                 {"name": "ActivityMetricRollup", "queryable": True},
                 {"name": "Leads", "queryable": False},
-            ]
-        }
+            ],
+        },
     )
     filtered_streams = sf_object.get_validated_streams(config=stream_config)
     assert list(filtered_streams.keys()) == ["Account"]
 
 
 @pytest.mark.parametrize(
-    "sf_types,json_type,with_raise",
+    ("sf_types", "json_type", "with_raise"),
     (
         (STRING_TYPES, "string", False),
         (NUMBER_TYPES, "number", False),

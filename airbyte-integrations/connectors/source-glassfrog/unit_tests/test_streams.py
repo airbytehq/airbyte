@@ -9,7 +9,7 @@ import pytest
 from source_glassfrog.source import GlassfrogStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     mocker.patch.object(GlassfrogStream, "path", "v0/example_endpoint")
     mocker.patch.object(GlassfrogStream, "primary_key", "test_primary_key")

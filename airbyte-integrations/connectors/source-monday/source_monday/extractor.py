@@ -10,6 +10,7 @@ from typing import Any, List, Mapping, Union
 
 import dpath.util
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -21,8 +22,7 @@ logger = logging.getLogger("airbyte")
 
 @dataclass
 class MondayActivityExtractor(RecordExtractor):
-    """
-    Record extractor that extracts record of the form from activity logs stream:
+    """Record extractor that extracts record of the form from activity logs stream:
 
     { "list": { "ID_1": record_1, "ID_2": record_2, ... } }
 
@@ -65,9 +65,7 @@ class MondayActivityExtractor(RecordExtractor):
 
 @dataclass
 class MondayIncrementalItemsExtractor(RecordExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
-    """
+    """Record extractor that searches a decoded response over a path defined as an array of fields."""
 
     field_path: List[Union[InterpolatedString, str]]
     config: Config
@@ -106,6 +104,6 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
         for item_index in range(len(result)):
             if "updated_at" in result[item_index]:
                 result[item_index]["updated_at_int"] = int(
-                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
+                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp(),
                 )
         return result

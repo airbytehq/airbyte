@@ -5,6 +5,7 @@
 from typing import List
 
 import click
+
 from octavia_cli.base_commands import OctaviaCommand
 
 from .listings import Connections, DestinationConnectorsDefinitions, Destinations, SourceConnectorsDefinitions, Sources
@@ -37,7 +38,7 @@ def sources_connectors(ctx: click.Context):
 
 
 @connectors.command(
-    cls=OctaviaCommand, name="destinations", help="List all the destination connectors currently available on your Airbyte instance"
+    cls=OctaviaCommand, name="destinations", help="List all the destination connectors currently available on your Airbyte instance",
 )
 @click.pass_context
 def destinations_connectors(ctx: click.Context):

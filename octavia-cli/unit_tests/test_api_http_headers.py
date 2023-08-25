@@ -10,7 +10,7 @@ from octavia_cli import api_http_headers
 
 class TestApiHttpHeader:
     @pytest.mark.parametrize(
-        "header_name, header_value, expected_error, expected_name, expected_value",
+        ("header_name", "header_value", "expected_error", "expected_name", "expected_value"),
         [
             ("foo", "bar", None, "foo", "bar"),
             (" foo ", " bar ", None, "foo", "bar"),
@@ -21,13 +21,14 @@ class TestApiHttpHeader:
     def test_init(self, header_name, header_value, expected_error, expected_name, expected_value):
         if expected_error is None:
             api_http_header = api_http_headers.ApiHttpHeader(header_name, header_value)
-            assert api_http_header.name == expected_name and api_http_header.value == expected_value
+            assert api_http_header.name == expected_name
+            assert api_http_header.value == expected_value
         else:
             with pytest.raises(expected_error):
                 api_http_headers.ApiHttpHeader(header_name, header_value)
 
 
-@pytest.fixture
+@pytest.fixture()
 def api_http_header_env_var():
     os.environ["API_HTTP_HEADER_IN_ENV_VAR"] = "bar"
     yield "bar"
@@ -35,7 +36,7 @@ def api_http_header_env_var():
 
 
 @pytest.mark.parametrize(
-    "yaml_document, expected_api_http_headers, expected_error",
+    ("yaml_document", "expected_api_http_headers", "expected_error"),
     [
         (
             """
@@ -99,7 +100,7 @@ def test_deserialize_file_based_headers(api_http_header_env_var, tmp_path, yaml_
 
 
 @pytest.mark.parametrize(
-    "option_based_headers, expected_option_based_headers",
+    ("option_based_headers", "expected_option_based_headers"),
     [
         ([("Content-Type", "application/json")], [api_http_headers.ApiHttpHeader("Content-Type", "application/json")]),
         (
@@ -121,7 +122,7 @@ def test_deserialize_option_based_headers(option_based_headers, expected_option_
 
 
 @pytest.mark.parametrize(
-    "yaml_document, option_based_raw_headers, expected_merged_headers",
+    ("yaml_document", "option_based_raw_headers", "expected_merged_headers"),
     [
         (
             """
@@ -188,7 +189,7 @@ def test_merge_api_headers(tmp_path, mocker, yaml_document, option_based_raw_hea
     assert api_http_headers.merge_api_headers(option_based_raw_headers, yaml_file_path) == expected_merged_headers
     if option_based_raw_headers and yaml_file_path:
         api_http_headers.click.echo.assert_called_with(
-            "ℹ️  - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers."
+            "i️  - You passed API HTTP headers in a file and in options at the same time. Option based headers will override file based headers.",
         )
 
 
@@ -199,5 +200,5 @@ def test_set_api_headers_on_api_client(mocker, mock_api_client):
         [
             mocker.call(headers[0].name, headers[0].value),
             mocker.call(headers[1].name, headers[1].value),
-        ]
+        ],
     )

@@ -3,12 +3,13 @@
 #
 
 import os
-from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
+from typing import Any, BinaryIO, Iterator, List, Mapping, Optional, TextIO, Tuple, Union
 from urllib.parse import unquote
 
 import pyarrow.parquet as pq
-from airbyte_cdk.models import FailureType
 from pyarrow.parquet import ParquetFile
+
+from airbyte_cdk.models import FailureType
 from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 
@@ -17,7 +18,6 @@ from .parquet_spec import ParquetFormat
 
 # All possible parquet data types
 PARQUET_TYPES = {
-    # logical_type: (json_type, parquet_types, convert_function)
     # standard types
     "string": ("string", ["BYTE_ARRAY"], None),
     "boolean": ("boolean", ["BOOLEAN"], None),
@@ -53,7 +53,7 @@ class ParquetParser(AbstractFileParser):
 
     def _init_reader(self, file: Union[TextIO, BinaryIO]) -> ParquetFile:
         """Generates a new parquet reader
-        Doc: https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
+        Doc: https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html.
 
         """
         options = self._select_options("buffer_size")  # type: ignore[arg-type]
@@ -62,9 +62,9 @@ class ParquetParser(AbstractFileParser):
         return pq.ParquetFile(file, **options)
 
     @staticmethod
-    def parse_field_type(needed_logical_type: str, need_physical_type: str = None) -> Tuple[str, str]:
+    def parse_field_type(needed_logical_type: str, need_physical_type: Optional[str] = None) -> Tuple[str, str]:
         """Pyarrow can parse/support non-JSON types
-        Docs: https://github.com/apache/arrow/blob/5aa2901beddf6ad7c0a786ead45fdb7843bfcccd/python/pyarrow/_parquet.pxd#L56
+        Docs: https://github.com/apache/arrow/blob/5aa2901beddf6ad7c0a786ead45fdb7843bfcccd/python/pyarrow/_parquet.pxd#L56.
         """
         if needed_logical_type not in PARQUET_TYPES:
             # by default the pyarrow library marks scalar types as 'none' logical type.
@@ -75,24 +75,26 @@ class ParquetParser(AbstractFileParser):
         else:
             json_type, physical_types, _ = PARQUET_TYPES[needed_logical_type]
             if need_physical_type and need_physical_type not in physical_types:
-                raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
+                msg = f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}"
+                raise TypeError(msg)
             return json_type, needed_logical_type
 
-        raise TypeError(f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}")
+        msg = f"incorrect parquet physical type: {need_physical_type}; logical type: {needed_logical_type}"
+        raise TypeError(msg)
 
     @staticmethod
     def convert_field_data(logical_type: str, field_value: Any) -> Any:
-        """Converts not JSON format to JSON one"""
+        """Converts not JSON format to JSON one."""
         if field_value is None:
             return None
         if logical_type in PARQUET_TYPES:
             _, _, func = PARQUET_TYPES[logical_type]
             return func(field_value) if func else field_value
-        raise TypeError(f"unsupported field type: {logical_type}, value: {field_value}")
+        msg = f"unsupported field type: {logical_type}, value: {field_value}"
+        raise TypeError(msg)
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
-        """
-        https://arrow.apache.org/docs/python/parquet.html#finer-grained-reading-and-writing
+        """https://arrow.apache.org/docs/python/parquet.html#finer-grained-reading-and-writing.
 
         A stored schema is a part of metadata and we can extract it without parsing of full file
         """
@@ -106,11 +108,9 @@ class ParquetParser(AbstractFileParser):
         return schema_dict
 
     def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
+        """https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
+        PyArrow reads streaming batches from a Parquet file.
         """
-        https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
-        PyArrow reads streaming batches from a Parquet file
-        """
-
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
         # parsing logical_types with respect to master_schema column names.
@@ -131,13 +131,12 @@ class ParquetParser(AbstractFileParser):
             args["row_groups"] = [num_row_group]
             for batch in reader.iter_batches(**args):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column
-                # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
                 batch_dict = batch.to_pydict()
                 # sometimes the batch file has more columns than master_schema declares, like:
                 # master schema: ['number', 'name', 'flag', 'delta'],
                 # batch_file_schema: ['number', 'name', 'flag', 'delta', 'EXTRA_COL_NAME'].
                 # we need to check wether batch_file_schema == master_schema and reject extra columns, otherwise "KeyError" raises.
-                batch_columns = [column for column in batch_dict.keys() if column in self._master_schema]
+                batch_columns = [column for column in batch_dict if column in self._master_schema]
                 columnwise_record_values = [batch_dict[column] for column in batch_columns if column in self._master_schema]
                 # we zip this to get row-by-row
                 for record_values in zip(*columnwise_record_values):
@@ -148,9 +147,8 @@ class ParquetParser(AbstractFileParser):
 
     @staticmethod
     def get_partition_columns(file_path: str) -> Mapping[str, Any]:
-        """
-        Parse file path and return dict of partitioned columns names with values, example:
-        /payroll/Year=2014/Agency_Name=ADMIN/file.parquet -> {"Year": "2014", Agency_Name: "ADMIN"}
+        """Parse file path and return dict of partitioned columns names with values, example:
+        /payroll/Year=2014/Agency_Name=ADMIN/file.parquet -> {"Year": "2014", Agency_Name: "ADMIN"}.
         """
         partitions_in_path = (unquote(x) for x in file_path.split(os.sep) if "=" in x)
         return {x.split("=")[0]: x.split("=")[1] for x in partitions_in_path}

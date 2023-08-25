@@ -5,6 +5,7 @@
 from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 
 from .cohorts import Cohorts
@@ -12,19 +13,18 @@ from .engage import Engage
 
 
 class CohortMembers(Engage):
-    """Return list of users grouped by cohort"""
+    """Return list of users grouped by cohort."""
 
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
-        # example: {"filter_by_cohort": {"id": 1343181}}
         return {"filter_by_cohort": stream_slice}
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         if sync_mode == SyncMode.incremental:
             self.set_cursor(cursor_field)
@@ -35,7 +35,7 @@ class CohortMembers(Engage):
         for cohort in cohorts:
             yield {"id": cohort["id"]}
 
-    def process_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping]:
         records = super().process_response(response, **kwargs)
         for record in records:
             record["cohort_id"] = stream_slice["id"]

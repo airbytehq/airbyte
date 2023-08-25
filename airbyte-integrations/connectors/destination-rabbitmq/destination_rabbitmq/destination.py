@@ -7,11 +7,12 @@ import json
 from typing import Any, Iterable, Mapping
 
 import pika
+from pika.adapters.blocking_connection import BlockingConnection
+from pika.spec import BasicProperties
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-from pika.adapters.blocking_connection import BlockingConnection
-from pika.spec import BasicProperties
 
 _DEFAULT_PORT = 5672
 
@@ -36,7 +37,7 @@ def create_connection(config: Mapping[str, Any]) -> BlockingConnection:
 
 class DestinationRabbitmq(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
         exchange = config.get("exchange")
         routing_key = config["routing_key"]
@@ -58,7 +59,7 @@ class DestinationRabbitmq(Destination):
                     headers = {"stream": record.stream, "emitted_at": record.emitted_at, "namespace": record.namespace}
                     properties = BasicProperties(content_type="application/json", headers=headers)
                     channel.basic_publish(
-                        exchange=exchange or "", routing_key=routing_key, properties=properties, body=json.dumps(record.data)
+                        exchange=exchange or "", routing_key=routing_key, properties=properties, body=json.dumps(record.data),
                     )
                 else:
                     # Let's ignore other message types for now
@@ -71,7 +72,7 @@ class DestinationRabbitmq(Destination):
             connection = create_connection(config=config)
         except Exception as e:
             logger.error(f"Failed to create connection. Error: {e}")
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Could not create connection: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Could not create connection: {e!r}")
         try:
             channel = connection.channel()
             if channel.is_open:
@@ -79,6 +80,6 @@ class DestinationRabbitmq(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message="Could not open channel")
         except Exception as e:
             logger.error(f"Failed to open RabbitMQ channel. Error: {e}")
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!r}")
         finally:
             connection.close()

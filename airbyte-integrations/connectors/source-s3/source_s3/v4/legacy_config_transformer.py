@@ -17,8 +17,7 @@ MICROS_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class LegacyConfigTransformer:
-    """
-    Class that takes in S3 source configs in the legacy format and transforms them into
+    """Class that takes in S3 source configs in the legacy format and transforms them into
     configs that can be used by the new S3 source built with the file-based CDK.
     """
 
@@ -33,7 +32,7 @@ class LegacyConfigTransformer:
                     "globs": cls._create_globs(legacy_config.path_pattern),
                     "legacy_prefix": legacy_config.provider.path_prefix,
                     "validation_policy": "Emit Record",
-                }
+                },
             ],
         }
 
@@ -65,7 +64,8 @@ class LegacyConfigTransformer:
             parsed_datetime = datetime.strptime(datetime_str, SECONDS_FORMAT)
             return parsed_datetime.strftime(MICROS_FORMAT)
         except ValueError as e:
-            raise ValueError("Timestamp could not be parsed when transforming legacy connector config") from e
+            msg = "Timestamp could not be parsed when transforming legacy connector config"
+            raise ValueError(msg) from e
 
     @classmethod
     def _transform_file_format(cls, format_options: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat]) -> Mapping[str, Any]:
@@ -128,7 +128,7 @@ class LegacyConfigTransformer:
                     if advanced_options
                     else "" + f"additional_reader_options={additional_reader_options}"
                     if additional_reader_options
-                    else ""
+                    else "",
                 )
 
             return csv_options
@@ -139,7 +139,8 @@ class LegacyConfigTransformer:
             return {"filetype": "parquet", "decimal_as_float": True}
         else:
             # This should never happen because it would fail schema validation
-            raise ValueError(f"Format filetype {format_options} is not a supported file type")
+            msg = f"Format filetype {format_options} is not a supported file type"
+            raise ValueError(msg)
 
     @classmethod
     def parse_config_options_str(cls, options_field: str, options_value: Optional[str]) -> Dict[str, Any]:
@@ -147,7 +148,8 @@ class LegacyConfigTransformer:
         try:
             return json.loads(options_str)
         except json.JSONDecodeError as error:
-            raise ValueError(f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON.")
+            msg = f"Malformed {options_field} config json: {error}. Please ensure that it is a valid JSON."
+            raise ValueError(msg)
 
     @staticmethod
     def _filter_legacy_noops(advanced_options: Dict[str, Any]):

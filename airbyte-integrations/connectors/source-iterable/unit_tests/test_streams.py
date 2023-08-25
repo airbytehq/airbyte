@@ -9,7 +9,6 @@ import pendulum
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
 from source_iterable.streams import (
     Campaigns,
     CampaignsMetrics,
@@ -24,9 +23,11 @@ from source_iterable.streams import (
 )
 from source_iterable.utils import dateutil_parse, read_full_refresh
 
+from airbyte_cdk.models import SyncMode
+
 
 @pytest.mark.parametrize(
-    "stream,date,slice,expected_path",
+    ("stream", "date", "slice", "expected_path"),
     [
         (Lists, False, {}, "lists"),
         (Campaigns, False, {}, "campaigns"),
@@ -55,7 +56,7 @@ def test_campaigns_metrics_csv():
 
 
 @pytest.mark.parametrize(
-    "url,id",
+    ("url", "id"),
     [
         ("http://google.com?listId=1&another=another", 1),
         ("http://google.com?another=another", None),
@@ -163,7 +164,7 @@ def test_iterable_export_stream_backoff_time():
 
 
 @pytest.mark.parametrize(
-    "current_state,record_date,expected_state",
+    ("current_state", "record_date", "expected_state"),
     [
         ({}, "2022", {"profileUpdatedAt": "2022-01-01T00:00:00+00:00"}),
         ({"profileUpdatedAt": "2020-01-01T00:00:00+00:00"}, "2022", {"profileUpdatedAt": "2022-01-01T00:00:00+00:00"}),
@@ -207,12 +208,12 @@ def test_listuser_stream_keep_working_on_500():
     responses.get("https://api.iterable.com/api/lists/getUsers?listId=3000", body="one@d2.com\ntwo@d2.com\nthree@d2.com")
 
     expected_records = [
-        {'email': 'one@d1.com', 'listId': 2000},
-        {'email': 'two@d1.com', 'listId': 2000},
-        {'email': 'three@d1.com', 'listId': 2000},
-        {'email': 'one@d2.com', 'listId': 3000},
-        {'email': 'two@d2.com', 'listId': 3000},
-        {'email': 'three@d2.com', 'listId': 3000},
+        {"email": "one@d1.com", "listId": 2000},
+        {"email": "two@d1.com", "listId": 2000},
+        {"email": "three@d1.com", "listId": 2000},
+        {"email": "one@d2.com", "listId": 3000},
+        {"email": "two@d2.com", "listId": 3000},
+        {"email": "three@d2.com", "listId": 3000},
     ]
 
     records = list(read_full_refresh(users_stream))
@@ -223,7 +224,7 @@ def test_listuser_stream_keep_working_on_500():
 def test_events_read_full_refresh():
     stream = Events(authenticator=None)
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
-    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body='user1\nuser2\nuser3\nuser4\nuser5\nuser6')
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body="user1\nuser2\nuser3\nuser4\nuser5\nuser6")
 
     def get_body(emails):
         return "\n".join([json.dumps({"email": email}) for email in emails]) + "\n"
@@ -248,7 +249,7 @@ def test_events_read_full_refresh():
     m = responses.get("https://api.iterable.com/api/export/userEvents?email=user6&includeCustomEvents=true", json=generic_error2, status=500)
 
     records = list(read_full_refresh(stream))
-    assert [r["email"] for r in records] == ['user1', 'user2', 'user3', 'user5']
+    assert [r["email"] for r in records] == ["user1", "user2", "user3", "user5"]
     assert m.call_count == 3
 
 
@@ -257,12 +258,12 @@ def test_retry_read_timeout():
     stream._session.send = MagicMock(side_effect=requests.exceptions.ReadTimeout)
     with pytest.raises(requests.exceptions.ReadTimeout):
         list(read_full_refresh(stream))
-    stream._session.send.call_args[1] == {'timeout': (60, 300)}
+    stream._session.send.call_args[1] == {"timeout": (60, 300)}
     assert stream._session.send.call_count == stream.max_retries + 1
 
     stream = Campaigns(authenticator=None)
     stream._session.send = MagicMock(side_effect=requests.exceptions.ConnectionError)
     with pytest.raises(requests.exceptions.ConnectionError):
         list(read_full_refresh(stream))
-    stream._session.send.call_args[1] == {'timeout': (60, 300)}
+    stream._session.send.call_args[1] == {"timeout": (60, 300)}
     assert stream._session.send.call_count == stream.max_retries + 1

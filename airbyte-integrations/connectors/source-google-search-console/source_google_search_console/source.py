@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 import jsonschema
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -66,18 +67,21 @@ class SourceGoogleSearchConsole(AbstractSource):
             try:
                 authorization["service_account_info"] = json.loads(authorization["service_account_info"])
             except ValueError:
-                raise Exception("authorization.service_account_info is not valid JSON")
+                msg = "authorization.service_account_info is not valid JSON"
+                raise Exception(msg)
 
         if "custom_reports" in config:
             try:
                 config["custom_reports"] = json.loads(config["custom_reports"])
             except ValueError:
-                raise Exception("custom_reports is not valid JSON")
+                msg = "custom_reports is not valid JSON"
+                raise Exception(msg)
             jsonschema.validate(config["custom_reports"], custom_reports_schema)
             for report in config["custom_reports"]:
                 for dimension in report["dimensions"]:
                     if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
-                        raise Exception(f"dimension: '{dimension}' not found")
+                        msg = f"dimension: '{dimension}' not found"
+                        raise Exception(msg)
 
         pendulum.parse(config["start_date"])
         end_date = config.get("end_date")
@@ -110,7 +114,7 @@ class SourceGoogleSearchConsole(AbstractSource):
         except (Exception, UnidentifiedError) as error:
             return (
                 False,
-                f"Unable to check connectivity to Google Search Console API - {repr(error)}",
+                f"Unable to check connectivity to Google Search Console API - {error!r}",
             )
 
     def validate_site_urls(self, site_urls: List[str], auth: Union[ServiceAccountAuthenticator, Oauth2Authenticator]):
@@ -122,9 +126,8 @@ class SourceGoogleSearchConsole(AbstractSource):
         else:
             # catch the error while refreshing the access token
             auth_header = self.get_client_auth_header(auth)
-            if "error" in auth_header:
-                if auth_header.get("code", 0) in [400, 401]:
-                    raise UnauthorizedOauthError
+            if "error" in auth_header and auth_header.get("code", 0) in [400, 401]:
+                raise UnauthorizedOauthError
             # validate site urls with provided authenticator
             response = requests.get("https://www.googleapis.com/webmasters/v3/sites", headers=auth_header)
         # validate the status of the response, if it was successfull
@@ -146,9 +149,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         config = self._validate_and_transform(config)
         stream_config = self.get_stream_kwargs(config)
 
@@ -169,9 +170,8 @@ class SourceGoogleSearchConsole(AbstractSource):
             SearchAnalyticsKeywordSiteReportBySite(**stream_config),
         ]
 
-        streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)
+        return streams + self.get_custom_reports(config=config, stream_config=stream_config)
 
-        return streams
 
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
         return [
@@ -204,3 +204,4 @@ class SourceGoogleSearchConsole(AbstractSource):
                 service_account_info=authorization["service_account_info"],
                 email=authorization["email"],
             )
+        return None

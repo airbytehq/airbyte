@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
@@ -76,14 +77,15 @@ class LinnworksAuthenticator(Oauth2Authenticator):
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.access_token_name], response_json[self.expires_in_name], response_json[self.server_name]
-        except Exception as e:
+        except Exception:
             try:
                 e = Exception(response.json()["Message"])
             except Exception:
                 # Unable to get an error message from the response body.
                 # Continue with the original error.
                 pass
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
 
 class SourceLinnworks(AbstractSource):

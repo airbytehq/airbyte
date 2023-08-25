@@ -34,8 +34,8 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
                 "total_syncs_count": 3,
                 "sync_success_rate": 0.99,
                 "unexpected_column": "foobar",
-            }
-        ]
+            },
+        ],
     )
     mocker.patch.object(inputs.pd, "read_gbq", mocker.Mock(return_value=fake_bigquery_results))
     expected_columns = {
@@ -57,7 +57,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
 
 
 @pytest.mark.parametrize(
-    "connector_name, mocked_json_payload, mocked_status_code, expected_status",
+    ("connector_name", "mocked_json_payload", "mocked_status_code", "expected_status"),
     [
         (
             "connectors/source-pokeapi",
@@ -106,7 +106,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
                     "success": None,
                     "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
                     "date": "2023-06-09T06:50:04",
-                }
+                },
             ],
             200,
             inputs.BUILD_STATUSES.NOT_FOUND,

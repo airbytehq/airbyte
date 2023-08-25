@@ -7,13 +7,12 @@ import time
 from typing import Any, Mapping
 
 import boto3
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from destination_amazon_sqs import DestinationAmazonSqs
-
-# from airbyte_cdk.sources.source import Source
 from moto import mock_iam, mock_sqs
 from moto.core import set_initial_no_auth_action_count
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Status
 
 
 @mock_iam
@@ -68,7 +67,7 @@ def create_config_with_body_key(queue_url, queue_region, access_key, secret_key,
 
 
 def get_catalog() -> Mapping[str, Any]:
-    with open("sample_files/configured_catalog.json", "r") as f:
+    with open("sample_files/configured_catalog.json") as f:
         return json.load(f)
 
 
@@ -82,7 +81,7 @@ def test_check():
     queue_name = "amazon-sqs-mock-queue"
     queue_region = "eu-west-1"
     client = boto3.client(
-        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region,
     )
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
@@ -131,7 +130,7 @@ def test_write():
     # Create Queue
     queue_name = "amazon-sqs-mock-queue"
     client = boto3.client(
-        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region
+        "sqs", aws_access_key_id=user["AccessKeyId"], aws_secret_access_key=user["SecretAccessKey"], region_name=queue_region,
     )
     queue_url = client.create_queue(QueueName=queue_name)["QueueUrl"]
     # Create config
@@ -141,7 +140,7 @@ def test_write():
     # Create Destination
     destination = DestinationAmazonSqs()
     # Send messages using write()
-    for message in destination.write(config, catalog, [ab_message]):
+    for _message in destination.write(config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
@@ -160,7 +159,7 @@ def test_write():
                 continue
         if time.time() > timeout:
             print("Timed out waiting for message after 20 seconds.")
-            assert False
+            raise AssertionError
 
     # Standard Queue with a Message Key Test
     print("## Starting body key queue test ##")
@@ -170,10 +169,10 @@ def test_write():
     # Create config
     message_body_key = "body"
     key_config = create_config_with_body_key(
-        key_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_body_key, message_delay
+        key_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], message_body_key, message_delay,
     )
     # Send messages using write()
-    for message in destination.write(key_config, catalog, [ab_message]):
+    for _message in destination.write(key_config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
@@ -192,7 +191,7 @@ def test_write():
                 continue
         if time.time() > timeout:
             print("Timed out waiting for message after 20 seconds.")
-            assert False
+            raise AssertionError
 
     # FIFO Queue Test
     print("## Starting FIFO queue test ##")
@@ -201,10 +200,10 @@ def test_write():
     fifo_queue_url = client.create_queue(QueueName=fifo_queue_name, Attributes={"FifoQueue": "true"})["QueueUrl"]
     # Create config
     fifo_config = create_fifo_config(
-        fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", message_delay
+        fifo_queue_url, queue_region, user["AccessKeyId"], user["SecretAccessKey"], "fifo-group", message_delay,
     )
     # Send messages using write()
-    for message in destination.write(fifo_config, catalog, [ab_message]):
+    for _message in destination.write(fifo_config, catalog, [ab_message]):
         print(f"Message Sent with delay of {message_delay} seconds")
     # Listen for messages for max 20 seconds
     timeout = time.time() + 20
@@ -223,4 +222,4 @@ def test_write():
                 continue
         if time.time() > timeout:
             print("Timed out waiting for message after 20 seconds.")
-            assert False
+            raise AssertionError

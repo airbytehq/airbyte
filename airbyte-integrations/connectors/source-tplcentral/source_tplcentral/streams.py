@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, urlparse
 
 import arrow
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_tplcentral.util import deep_get, normalize
 
@@ -61,9 +62,10 @@ class TplcentralStream(HttpStream, ABC):
                 "pgsiz": pgsiz,
                 "pgnum": pgnum + 1,
             }
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return next_page_token
 
@@ -85,7 +87,7 @@ class StockSummaries(TplcentralStream):
     page_size = 500
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "inventory/stocksummaries"
 
@@ -104,7 +106,7 @@ class Customers(TplcentralStream):
     page_size = 100
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "customers"
 
@@ -123,14 +125,14 @@ class IncrementalTplcentralStream(TplcentralStream, ABC):
 
         return {self.cursor_field: max(latest, current)}
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         if stream_state is None:
             stream_state = {}
 
         return [{self.cursor_field: stream_state.get(self.cursor_field, self.start_date)}]
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(
             stream_state=stream_state,
@@ -152,7 +154,7 @@ class Items(IncrementalTplcentralStream):
         return f"customers/{self.customer_id}/items"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(
             stream_state=stream_state,
@@ -179,7 +181,7 @@ class StockDetails(IncrementalTplcentralStream):
         return "inventory/stockdetails"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(
             stream_state=stream_state,
@@ -192,7 +194,7 @@ class StockDetails(IncrementalTplcentralStream):
                 "customerid": self.customer_id,
                 "facilityid": self.facility_id,
                 "sort": self.upstream_cursor_field,
-            }
+            },
         )
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
@@ -212,7 +214,7 @@ class Inventory(IncrementalTplcentralStream):
         return "inventory"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(
             stream_state=stream_state,
@@ -227,9 +229,9 @@ class Inventory(IncrementalTplcentralStream):
                     [
                         f"CustomerIdentifier.Id=={self.customer_id}",
                         f"FacilityIdentifier.Id=={self.facility_id}",
-                    ]
+                    ],
                 ),
-            }
+            },
         )
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
@@ -239,9 +241,9 @@ class Inventory(IncrementalTplcentralStream):
                         [
                             params["rql"],
                             f"{self.upstream_cursor_field}=ge={cursor}",
-                        ]
-                    )
-                }
+                        ],
+                    ),
+                },
             )
 
         return params
@@ -258,7 +260,7 @@ class Orders(IncrementalTplcentralStream):
         return "orders"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(
             stream_state=stream_state,
@@ -273,9 +275,9 @@ class Orders(IncrementalTplcentralStream):
                     [
                         f"ReadOnly.CustomerIdentifier.Id=={self.customer_id}",
                         f"ReadOnly.FacilityIdentifier.Id=={self.facility_id}",
-                    ]
+                    ],
                 ),
-            }
+            },
         )
         cursor = stream_slice.get(self.cursor_field)
         if cursor:
@@ -285,9 +287,9 @@ class Orders(IncrementalTplcentralStream):
                         [
                             params["rql"],
                             f"{self.upstream_cursor_field}=ge={cursor}",
-                        ]
-                    )
-                }
+                        ],
+                    ),
+                },
             )
 
         return params

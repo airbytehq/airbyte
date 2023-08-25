@@ -2,20 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Iterable
+from typing import Iterable, Optional
 
-from airbyte_cdk.logger import AirbyteLogger
 from azure.core.paging import ItemPaged
 from azure.data.tables import TableClient, TableServiceClient
+
+from airbyte_cdk.logger import AirbyteLogger
 
 from . import constants
 
 
 class AzureTableReader:
-    """
-    This reader reads data from given table
+    """This reader reads data from given table.
 
-    Attributes
+    Attributes:
     ----------
     logger : AirbyteLogger
         Airbyte's Logger instance
@@ -28,7 +28,7 @@ class AzureTableReader:
     connection_string: str
         storage account connection string created using above params. Read more about connection string here - https://docs.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string#configure-a-connection-string-for-an-azure-storage-account
 
-    Methods
+    Methods:
     -------
     get_table_service_client()
         Returns azure table service client from connection string.
@@ -45,8 +45,7 @@ class AzureTableReader:
     """
 
     def __init__(self, logger: AirbyteLogger, config: dict):
-        """
-        Parameters
+        """Parameters
         ----------
         config : dict
             Airbyte's configuration obect
@@ -57,24 +56,23 @@ class AzureTableReader:
         self.access_key = config[constants.azure_storage_access_key_key_name]
         self.endpoint_suffix = config[constants.azure_storage_endpoint_suffix_key_name]
         self.connection_string = "DefaultEndpointsProtocol=https;AccountName={};AccountKey={};EndpointSuffix={}".format(
-            self.account_name, self.access_key, self.endpoint_suffix
+            self.account_name, self.access_key, self.endpoint_suffix,
         )
 
     def get_table_service_client(self) -> TableServiceClient:
-        """
-        Returns azure table service client from connection string.
-        Table service client facilitate interaction with tables. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-tables
+        """Returns azure table service client from connection string.
+        Table service client facilitate interaction with tables. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-tables.
 
         """
         try:
             return TableServiceClient.from_connection_string(conn_str=self.connection_string)
         except Exception as e:
-            raise Exception(f"An exception occurred: {str(e)}")
+            msg = f"An exception occurred: {e!s}"
+            raise Exception(msg)
 
     def get_table_client(self, table_name: str) -> TableClient:
-        """
-        Returns azure table client from connection string.
-        Table client facilitate interaction with table entities/rows. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-entities
+        """Returns azure table client from connection string.
+        Table client facilitate interaction with table entities/rows. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-entities.
 
         Parameters
         ----------
@@ -84,25 +82,24 @@ class AzureTableReader:
         """
         try:
             if not table_name:
-                raise Exception("An exception occurred: table name is not valid.")
+                msg = "An exception occurred: table name is not valid."
+                raise Exception(msg)
             return TableClient.from_connection_string(self.connection_string, table_name=table_name)
         except Exception as e:
-            raise Exception(f"An exception occurred: {str(e)}")
+            msg = f"An exception occurred: {e!s}"
+            raise Exception(msg)
 
     def get_tables(self) -> ItemPaged:
-        """
-        Fetches all tables from storage account and returns them in Airbyte stream.
-        """
+        """Fetches all tables from storage account and returns them in Airbyte stream."""
         try:
             table_service_client = self.get_table_service_client()
-            tables_iterator = table_service_client.list_tables(results_per_page=constants.results_per_page)
-            return tables_iterator
+            return table_service_client.list_tables(results_per_page=constants.results_per_page)
         except Exception as e:
-            raise Exception(f"An exception occurred: {str(e)}")
+            msg = f"An exception occurred: {e!s}"
+            raise Exception(msg)
 
-    def read_table(self, table_client: TableClient, filter_query: str = None) -> Iterable:
-        """
-        Reads data from an Azure table.
+    def read_table(self, table_client: TableClient, filter_query: Optional[str] = None) -> Iterable:
+        """Reads data from an Azure table.
 
         Parameters
         ----------

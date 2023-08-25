@@ -10,8 +10,9 @@ from typing import Callable, List, Optional
 
 import anyio
 import dagger
-from connector_ops.utils import ConnectorLanguage
 from dagger import Config
+
+from connector_ops.utils import ConnectorLanguage
 from pipelines.actions import environments
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext, ContextState
@@ -37,7 +38,8 @@ async def context_to_step_result(context: ConnectorContext) -> StepResult:
     if context.state == ContextState.ERROR:
         return await NoOpStep(context, StepStatus.FAILURE).run()
 
-    raise ValueError(f"Could not convert context state: {context.state} to step status")
+    msg = f"Could not convert context state: {context.state} to step status"
+    raise ValueError(msg)
 
 
 # HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
@@ -47,7 +49,6 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
 
     This is to denote when the pipeline is complete, useful for long running pipelines like nightlies.
     """
-
     if not contexts:
         return []
 
@@ -80,7 +81,6 @@ async def run_connectors_pipelines(
     *args,
 ) -> List[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
-
     default_connectors_semaphore = anyio.Semaphore(concurrency)
     dagger_logs_output = sys.stderr if not dagger_logs_path else create_and_open_file(dagger_logs_path)
     async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:

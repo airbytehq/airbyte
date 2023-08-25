@@ -7,19 +7,20 @@ import sys
 import urllib.parse as urlparse
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
+
+from airbyte_cdk.logger import AirbyteLogger
 
 logger = AirbyteLogger()
 
 
 class InstagramAPIException(Exception):
-    """General class for all API errors"""
+    """General class for all API errors."""
 
 
 class InstagramExpectedError(InstagramAPIException):
-    """Error that we expect to happen, we should continue reading without retrying failed query"""
+    """Error that we expect to happen, we should continue reading without retrying failed query."""
 
 
 def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
@@ -74,7 +75,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
 def remove_params_from_url(url, params):
     parsed = urlparse.urlparse(url)
     query = urlparse.parse_qs(parsed.query, keep_blank_values=True)
-    filtered = dict((k, v) for k, v in query.items() if k not in params)
+    filtered = {k: v for k, v in query.items() if k not in params}
     return urlparse.urlunparse(
-        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment]
+        [parsed.scheme, parsed.netloc, parsed.path, parsed.params, urlparse.urlencode(filtered, doseq=True), parsed.fragment],
     )

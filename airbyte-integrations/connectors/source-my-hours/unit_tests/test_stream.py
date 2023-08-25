@@ -10,7 +10,7 @@ from source_my_hours.constants import REQUEST_HEADERS
 from source_my_hours.stream import MyHoursStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(MyHoursStream, "path", "v0/example_endpoint")

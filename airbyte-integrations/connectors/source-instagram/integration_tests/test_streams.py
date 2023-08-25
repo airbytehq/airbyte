@@ -7,8 +7,9 @@ from typing import Any, Callable, List, MutableMapping, Tuple
 
 import pendulum
 import pytest
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from source_instagram.source import SourceInstagram
+
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 
 
 @pytest.fixture(name="state")
@@ -18,12 +19,12 @@ def state_fixture() -> MutableMapping[str, Any]:
         "user_insights": {
             "17841408147298757": {"date": (today - pendulum.duration(days=10)).to_datetime_string()},
             "17841403112736866": {"date": (today - pendulum.duration(days=5)).to_datetime_string()},
-        }
+        },
     }
 
 
 class TestInstagramSource:
-    """Custom integration tests should test incremental with nested state"""
+    """Custom integration tests should test incremental with nested state."""
 
     def test_incremental_streams(self, configured_catalog, config, state):
         catalog = self.slice_catalog(configured_catalog, lambda name: name == "user_insights")

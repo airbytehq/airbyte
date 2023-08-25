@@ -17,8 +17,7 @@ if TYPE_CHECKING:
 class AbstractFileBasedAvailabilityStrategy(AvailabilityStrategy):
     @abstractmethod
     def check_availability(self, stream: Stream, logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:
-        """
-        Perform a connection check for the stream.
+        """Perform a connection check for the stream.
 
         Returns (True, None) if successful, otherwise (False, <error message>).
         """
@@ -26,10 +25,9 @@ class AbstractFileBasedAvailabilityStrategy(AvailabilityStrategy):
 
     @abstractmethod
     def check_availability_and_parsability(
-        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]
+        self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source],
     ) -> Tuple[bool, Optional[str]]:
-        """
-        Performs a connection check for the stream, as well as additional checks that
+        """Performs a connection check for the stream, as well as additional checks that
         verify that the connection is working as expected.
 
         Returns (True, None) if successful, otherwise (False, <error message>).

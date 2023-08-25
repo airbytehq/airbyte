@@ -14,7 +14,7 @@ from source_marketo.source import Activities, MarketoAuthenticator
 @pytest.fixture(autouse=True)
 def mock_requests(requests_mock):
     requests_mock.register_uri(
-        "GET", "https://602-euo-598.mktorest.com/identity/oauth/token", json={"access_token": "token", "expires_in": 3600}
+        "GET", "https://602-euo-598.mktorest.com/identity/oauth/token", json={"access_token": "token", "expires_in": 3600},
     )
     requests_mock.register_uri(
         "POST",
@@ -28,7 +28,7 @@ def mock_requests(requests_mock):
     )
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     start_date = pendulum.now().subtract(days=75).strftime("%Y-%m-%dT%H:%M:%SZ")
     config = {
@@ -42,7 +42,7 @@ def config():
     return config
 
 
-@pytest.fixture
+@pytest.fixture()
 def activity():
     return {
         "id": 6,
@@ -59,22 +59,22 @@ def activity():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def send_email_stream(config, activity):
     stream_name = f"activities_{activity['name']}"
     cls = type(stream_name, (Activities,), {"activity": activity})
     return cls(config)
 
 
-@pytest.fixture
+@pytest.fixture()
 def file_generator(faker):
     def _generator(min_size: int):
         print(f"Generating a test file of {min_size // 1024 ** 2} MB, this could take some time")
 
         def fake_records_gen():
             new_line = "\n"
-            for i in range(1000):
-                yield f"{str(faker.random_int())},{faker.random_int()},{faker.date_of_birth()},{faker.random_int()}," f"{faker.random_int()},{faker.email()},{faker.postcode()}{new_line}"
+            for _i in range(1000):
+                yield f"{faker.random_int()!s},{faker.random_int()},{faker.date_of_birth()},{faker.random_int()},{faker.random_int()},{faker.email()},{faker.postcode()}{new_line}"
 
         size, records = 0, 0
         path = os.path.realpath(str(time.time()))

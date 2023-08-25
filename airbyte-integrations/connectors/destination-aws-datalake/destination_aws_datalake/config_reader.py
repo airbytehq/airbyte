@@ -3,6 +3,7 @@
 #
 
 import enum
+from typing import Optional
 
 
 class CredentialsType(enum.Enum):
@@ -16,7 +17,8 @@ class CredentialsType(enum.Enum):
         elif s == "IAM User":
             return CredentialsType.IAM_USER
         else:
-            raise ValueError(f"Unknown auth mode: {s}")
+            msg = f"Unknown auth mode: {s}"
+            raise ValueError(msg)
 
 
 class OutputFormat(enum.Enum):
@@ -79,20 +81,22 @@ class PartitionOptions(enum.Enum):
 class ConnectorConfig:
     def __init__(
         self,
-        aws_account_id: str = None,
-        region: str = None,
-        credentials: dict = None,
-        bucket_name: str = None,
-        bucket_prefix: str = None,
-        lakeformation_database_name: str = None,
-        lakeformation_database_default_tag_key: str = None,
-        lakeformation_database_default_tag_values: str = None,
+        aws_account_id: Optional[str] = None,
+        region: Optional[str] = None,
+        credentials: Optional[dict] = None,
+        bucket_name: Optional[str] = None,
+        bucket_prefix: Optional[str] = None,
+        lakeformation_database_name: Optional[str] = None,
+        lakeformation_database_default_tag_key: Optional[str] = None,
+        lakeformation_database_default_tag_values: Optional[str] = None,
         lakeformation_governed_tables: bool = False,
         glue_catalog_float_as_decimal: bool = False,
-        table_name: str = None,
-        format: dict = {},
-        partitioning: str = None,
+        table_name: Optional[str] = None,
+        format: Optional[dict] = None,
+        partitioning: Optional[str] = None,
     ):
+        if format is None:
+            format = {}
         self.aws_account_id = aws_account_id
         self.credentials = credentials
         self.credentials_type = CredentialsType.from_string(credentials.get("credentials_title"))
@@ -117,7 +121,8 @@ class ConnectorConfig:
         elif self.credentials_type == CredentialsType.IAM_ROLE:
             self.role_arn = self.credentials.get("role_arn")
         else:
-            raise Exception("Auth Mode not recognized.")
+            msg = "Auth Mode not recognized."
+            raise Exception(msg)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<S3Bucket(AwsAccountId={self.aws_account_id},Region={self.region},Bucket={self.bucket_name}>"

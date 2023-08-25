@@ -16,33 +16,29 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 
 @dataclass
 class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
-    """
-    Extending DatetimeBasedCursor by adding step option to existing start_time/end_time options
-    """
+    """Extending DatetimeBasedCursor by adding step option to existing start_time/end_time options."""
 
     step_option: Optional[RequestOption] = None
     stream_state_field_step: Optional[str] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        super(DatetimeIncrementalSyncComponent, self).__post_init__(parameters=parameters)
+        super().__post_init__(parameters=parameters)
 
         self.stream_slice_field_step = InterpolatedString.create(self.stream_state_field_step or "step", parameters=parameters)
 
     def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
-        options = super(DatetimeIncrementalSyncComponent, self)._get_request_options(option_type, stream_slice)
+        options = super()._get_request_options(option_type, stream_slice)
         if self.step_option and self.step_option.inject_into == option_type:
             options[self.step_option.field_name] = stream_slice.get(self.stream_slice_field_step.eval(self.config))
         return options
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
-        """
-        Puts a step to each stream slice. `step` is a difference between start/end date in days.
-        """
+        """Puts a step to each stream slice. `step` is a difference between start/end date in days."""
         get_start_time = operator.itemgetter(self.partition_field_start.eval(self.config))
         get_end_time = operator.itemgetter(self.partition_field_end.eval(self.config))
         date_range = [
             dr
-            for dr in super(DatetimeIncrementalSyncComponent, self)._partition_daterange(start, end, step)
+            for dr in super()._partition_daterange(start, end, step)
             if get_start_time(dr) < get_end_time(dr)
         ]
         for i, _slice in enumerate(date_range):

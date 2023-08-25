@@ -6,6 +6,7 @@ from typing import Callable
 
 import pytest
 from click.testing import CliRunner
+
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.commands.groups import connectors
@@ -44,7 +45,7 @@ def test_get_selected_connectors_by_support_level_no_file_modification():
         modified_files=set(),
     )
 
-    set([c.support_level for c in selected_connectors]) == {"certified"}
+    {c.support_level for c in selected_connectors} == {"certified"}
 
 
 def test_get_selected_connectors_by_language_no_file_modification():
@@ -57,7 +58,7 @@ def test_get_selected_connectors_by_language_no_file_modification():
         modified_files=set(),
     )
 
-    set([c.language for c in selected_connectors]) == {ConnectorLanguage.LOW_CODE}
+    {c.language for c in selected_connectors} == {ConnectorLanguage.LOW_CODE}
 
 
 def test_get_selected_connectors_by_name_with_file_modification():
@@ -217,7 +218,7 @@ def click_context_obj():
 
 
 @pytest.mark.parametrize(
-    "command, command_args",
+    ("command", "command_args"),
     [
         (connectors.test, []),
         (
@@ -242,13 +243,11 @@ def click_context_obj():
     ],
 )
 def test_commands_do_not_override_connector_selection(
-    mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list
+    mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list,
 ):
-    """
-    This test is here to make sure that the commands do not override the connector selection
+    """This test is here to make sure that the commands do not override the connector selection
     This is important because we want to control the connector selection in a single place.
     """
-
     selected_connector = mocker.MagicMock()
     click_context_obj["selected_connectors_with_modified_files"] = [selected_connector]
 

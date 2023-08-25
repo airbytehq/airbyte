@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from connector_ops.utils import Connector
 from pipelines.actions import environments
 from pipelines.contexts import PipelineContext
@@ -12,12 +13,12 @@ pytestmark = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def python_connector() -> Connector:
     return Connector("source-openweather")
 
 
-@pytest.fixture
+@pytest.fixture()
 def context(dagger_client):
     context = PipelineContext(
         pipeline_name="test",

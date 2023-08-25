@@ -6,13 +6,18 @@
 from __future__ import annotations
 
 import platform
+from typing import TYPE_CHECKING
 
-import anyio
-from connector_ops.utils import ConnectorLanguage
 from dagger import Platform
+
+from connector_ops.utils import ConnectorLanguage
 from pipelines.bases import ConnectorReport, StepResult
 from pipelines.builds import common, java_connectors, python_connectors
-from pipelines.contexts import ConnectorContext
+
+if TYPE_CHECKING:
+    import anyio
+
+    from pipelines.contexts import ConnectorContext
 
 
 class NoBuildStepForLanguageError(Exception):
@@ -32,7 +37,8 @@ LOCAL_BUILD_PLATFORM = Platform(f"linux/{platform.machine()}")
 async def run_connector_build(context: ConnectorContext) -> StepResult:
     """Run a build pipeline for a single connector."""
     if context.connector.language not in LANGUAGE_BUILD_CONNECTOR_MAPPING:
-        raise NoBuildStepForLanguageError(f"No build step for connector language {context.connector.language}.")
+        msg = f"No build step for connector language {context.connector.language}."
+        raise NoBuildStepForLanguageError(msg)
     return await LANGUAGE_BUILD_CONNECTOR_MAPPING[context.connector.language](context)
 
 

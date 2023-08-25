@@ -9,7 +9,7 @@ import pytest
 from source_primetric.source import PrimetricStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(PrimetricStream, "path", "v0/example_endpoint")

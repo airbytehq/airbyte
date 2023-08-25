@@ -14,12 +14,13 @@ from urllib.parse import urlparse
 import pandas as pd
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from numpy import nan
 from pendulum import DateTime
 from requests import codes, exceptions
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 
 
 class SendgridStream(HttpStream, ABC):
@@ -39,16 +40,15 @@ class SendgridStream(HttpStream, ABC):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
 
         if records is not None:
-            for record in records:
-                yield record
+            yield from records
         else:
             # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding
             #  log statements to help reproduce and prevent the connector from failing.
@@ -64,16 +64,15 @@ class SendgridStream(HttpStream, ABC):
             self.logger.info(err_msg)
 
     def should_retry(self, response: requests.Response) -> bool:
-        """Override to provide skip the stream possibility"""
-
+        """Override to provide skip the stream possibility."""
         status = response.status_code
-        if status in self.permission_error_codes.keys():
+        if status in self.permission_error_codes:
             for message in response.json().get("errors", []):
                 if message.get("message") == self.permission_error_codes.get(status):
                     self.logger.error(
-                        f"Stream `{self.name}` is not available, due to subscription plan limitations or perrmission issues. Skipping."
+                        f"Stream `{self.name}` is not available, due to subscription plan limitations or perrmission issues. Skipping.",
                     )
-                    setattr(self, "raise_on_http_errors", False)
+                    self.raise_on_http_errors = False
                     return False
         return 500 <= response.status_code < 600
 
@@ -81,7 +80,7 @@ class SendgridStream(HttpStream, ABC):
 class SendgridStreamOffsetPagination(SendgridStream):
     offset = 0
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
         params["limit"] = self.limit
         if next_page_token:
@@ -93,7 +92,7 @@ class SendgridStreamOffsetPagination(SendgridStream):
         if self.data_field:
             stream_data = stream_data[self.data_field]
         if len(stream_data) < self.limit:
-            return
+            return None
         self.offset += self.limit
         return {"offset": self.offset}
 
@@ -108,8 +107,7 @@ class SendgridStreamIncrementalMixin(HttpStream, ABC):
             self._start_time = int(pendulum.parse(self._start_time).timestamp())
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         latest_benchmark = latest_record[self.cursor_field]
@@ -130,8 +128,8 @@ class SendgridStreamMetadataPagination(SendgridStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {}
         if not next_page_token:
@@ -142,19 +140,18 @@ class SendgridStreamMetadataPagination(SendgridStream):
         next_page_url = response.json()["_metadata"].get("next", False)
         if next_page_url:
             return {"next_page_url": next_page_url.replace(self.url_base, "")}
+        return None
 
     @staticmethod
     @abstractmethod
     def initial_path() -> str:
-        """
-        :return: initial path for the API endpoint if no next metadata url found
-        """
+        """:return: initial path for the API endpoint if no next metadata url found"""
 
     def path(
         self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if next_page_token:
             return next_page_token["next_page_url"]
@@ -204,13 +201,14 @@ class Contacts(SendgridStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         csv_urls, job_status = self.execute_export_job(url=f"{self.url_base}{self.path()}")
         if job_status == "failed":
-            raise Exception(f"Export Job failed for more than 3 times, skipping reading stream {self.name}")
+            msg = f"Export Job failed for more than 3 times, skipping reading stream {self.name}"
+            raise Exception(msg)
         for url in csv_urls:
             for record in self.read_with_chunks(*self.download_data(url=url)):
                 yield record
@@ -230,9 +228,7 @@ class Contacts(SendgridStream):
         return urls, job_status
 
     def create_export_job(self, url: str) -> Optional[str]:
-        """
-        docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts
-        """
+        """docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts."""
         try:
             response = self._send_http_request("POST", url)
             job_id: str = response.json().get("id")
@@ -243,15 +239,13 @@ class Contacts(SendgridStream):
                 error_id = error_data.get("error_id")
                 error_message = error_data.get("message")
                 error_parameter = error_data.get("parameter")
-                self.logger.error(f"Cannot receive data for stream '{self.name}' ," f"{error_message=}, {error_id=}, {error_parameter=}")
+                self.logger.error(f"Cannot receive data for stream '{self.name}' ,{error_message=}, {error_id=}, {error_parameter=}")
             else:
                 raise error
         return None
 
     def wait_for_job(self, url: str) -> Tuple[List[str], str]:
-        """
-        docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts-status
-        """
+        """docs: https://docs.sendgrid.com/api-reference/contacts/export-contacts-status."""
         expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
         job_status = "pending"
         urls: List[str] = []
@@ -276,15 +270,14 @@ class Contacts(SendgridStream):
             time.sleep(delay_timeout)
             job_id = job_info["id"]
             self.logger.info(
-                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
+                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}",
             )
 
         self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
         return urls, job_status
 
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str]:
-        """
-        Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
+        """Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
         Response received in .gzip binary format.
         @ url: string - the url of the `executed_job`
         @ chunk_size: int - the buffer size for each chunk to fetch from stream, in bytes, default: 1024 bytes
@@ -296,7 +289,7 @@ class Contacts(SendgridStream):
         url_parsed = urlparse(url)
         tmp_file = os.path.realpath(os.path.basename(url_parsed.path[1:-5]))
         with closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response, open(
-            tmp_file, "wb"
+            tmp_file, "wb",
         ) as data_file:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(decompressor.decompress(chunk))
@@ -304,17 +297,17 @@ class Contacts(SendgridStream):
         if os.path.isfile(tmp_file):
             return tmp_file, self.encoding
         else:
-            raise Exception(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
+            msg = f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist."
+            raise Exception(msg)
 
     def read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        """
-        Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
+        """Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
         @ path: string - the path to the downloaded temporarily binary data.
         @ file_encoding: string - encoding for binary data file according to Standard Encodings from codecs module
         @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
         """
         try:
-            with open(path, "r", encoding=file_encoding) as data:
+            with open(path, encoding=file_encoding) as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=str)
                 for chunk in chunks:
                     chunk = ({k.lower(): v for k, v in x.items()} for x in chunk.replace({nan: None}).to_dict(orient="records"))
@@ -323,8 +316,9 @@ class Contacts(SendgridStream):
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
-        except IOError as ioe:
-            raise Exception(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
+        except OSError as ioe:
+            msg = f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}"
+            raise Exception(msg, ioe)
         finally:
             # remove binary tmp file, after data is read
             os.remove(path)
@@ -346,9 +340,7 @@ class Segments(SendgridStream):
 
 
 class SingleSends(SendgridStreamMetadataPagination):
-    """
-    https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats
-    """
+    """https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats."""
 
     data_field = "results"
 
@@ -360,7 +352,7 @@ class SingleSends(SendgridStreamMetadataPagination):
 class Templates(SendgridStreamMetadataPagination):
     data_field = "result"
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
         params["generations"] = "legacy,dynamic"
         return params

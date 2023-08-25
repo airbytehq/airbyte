@@ -13,8 +13,8 @@ def test_dict_proxy():
         "Id": "1",
         "MetaData": {
             "CreateTime": "2023-02-10T14:42:07-08:00",
-            "LastUpdatedTime": "2023-02-18T13:13:33-08:00"
-        }
+            "LastUpdatedTime": "2023-02-18T13:13:33-08:00",
+        },
     }
     proxy = LastRecordDictProxy(record, {"airbyte_cursor": "MetaData/LastUpdatedTime"})
 
@@ -39,7 +39,7 @@ def test_dict_proxy():
 
     assert record == {
         "Id": "2",
-        "MetaData": {"LastUpdatedTime": "0000-00-00T00:00:00+00:00"}
+        "MetaData": {"LastUpdatedTime": "0000-00-00T00:00:00+00:00"},
     }
 
 
@@ -55,22 +55,22 @@ def test_custom_datetime_based_cursor__close_slice():
         datetime_format="%Y-%m-%dT%H:%M:%S%z",
         cursor_granularity="PT0S",
         config={},
-        parameters={}
+        parameters={},
     )
 
     slice_end_time = "2023-03-03T00:00:00+00:00"
     date_time_based_cursor_component.close_slice(
         {
             "start_time": "2023-02-01T00:00:00+00:00",
-            "end_time": slice_end_time
+            "end_time": slice_end_time,
         },
         {
             "Id": "1",
             "MetaData": {
                 "CreateTime": "2023-02-10T14:42:07-08:00",
-                "LastUpdatedTime": record_cursor_value
-            }
-        }
+                "LastUpdatedTime": record_cursor_value,
+            },
+        },
     )
     assert date_time_based_cursor_component.get_stream_state() == {cursor_field_name: slice_end_time}
 
@@ -84,10 +84,10 @@ def test_custom_datetime_based_cursor__format_datetime():
         datetime_format="%Y-%m-%dT%H:%M:%S%z",
         cursor_granularity="PT0S",
         config={},
-        parameters={}
+        parameters={},
     )
 
-    _format_datetime = getattr(date_time_based_cursor_component, "_format_datetime")
+    _format_datetime = date_time_based_cursor_component._format_datetime
     pattern = re.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}")
     assert pattern.fullmatch(_format_datetime(datetime.now(timezone.utc)))
 
@@ -101,14 +101,14 @@ def test_custom_datetime_based_cursor__parse_datetime():
         datetime_format="%Y-%m-%dT%H:%M:%S%z",
         cursor_granularity="PT0S",
         config={},
-        parameters={}
+        parameters={},
     )
 
     datetime_string_original_offset = "2023-02-10T14:42:05-08:00"
     datetime_string_in_utc = "2023-02-10T22:42:05+00:00"
 
-    parse_date = getattr(date_time_based_cursor_component, "parse_date")
+    parse_date = date_time_based_cursor_component.parse_date
     dt_utc = parse_date(datetime_string_original_offset)
 
-    _format_datetime = getattr(date_time_based_cursor_component, "_format_datetime")
+    _format_datetime = date_time_based_cursor_component._format_datetime
     assert _format_datetime(dt_utc) == datetime_string_in_utc

@@ -7,6 +7,7 @@ import logging
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
+
 from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode
 from destination_aws_datalake.config_reader import ConnectorConfig, PartitionOptions
 
@@ -77,8 +78,7 @@ class StreamWriter:
         return fields
 
     def _drop_additional_top_level_properties(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Helper that removes any unexpected top-level properties from the record.
+        """Helper that removes any unexpected top-level properties from the record.
         Since the json schema is used to build the table and cast types correctly,
         we need to remove any unexpected properties that can't be casted accurately.
         """
@@ -92,28 +92,25 @@ class StreamWriter:
         return record
 
     def _fix_obvious_type_violations(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Helper that fixes obvious type violations in a record's top level keys that may
+        """Helper that fixes obvious type violations in a record's top level keys that may
         cause issues when casting data to pyarrow types. Such as:
         - Objects having empty strings or " " or "-" as value instead of null or {}
-        - Arrays having empty strings or " " or "-" as value instead of null or []
+        - Arrays having empty strings or " " or "-" as value instead of null or [].
         """
         schema_keys = self._schema.keys()
         for key in schema_keys:
             typ = self._schema[key].get("type")
             typ = self._get_json_schema_type(typ)
-            if typ in ["object", "array"]:
-                if record.get(key) in ["", " ", "-", "/", "null"]:
-                    record[key] = None
+            if typ in ["object", "array"] and record.get(key) in ["", " ", "-", "/", "null"]:
+                record[key] = None
 
         return record
 
     def _add_missing_columns(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Helper that adds missing columns to a record's top level keys. Required
+        """Helper that adds missing columns to a record's top level keys. Required
         for awswrangler to create the correct schema in glue, even with the explicit
         schema passed in, awswrangler will remove those columns when not present
-        in the dataframe
+        in the dataframe.
         """
         schema_keys = self._schema.keys()
         records_keys = record.keys()
@@ -188,8 +185,7 @@ class StreamWriter:
         return types
 
     def _is_invalid_struct_or_array(self, schema: Dict[str, Any]) -> bool:
-        """
-        Helper that detects issues with nested objects/arrays in the json schema.
+        """Helper that detects issues with nested objects/arrays in the json schema.
         When a complex data type is detected (schema with oneOf) or a nested object without properties
         the columns' dtype will be casted to string to avoid pyarrow conversion issues.
         """
@@ -240,10 +236,7 @@ class StreamWriter:
         return result
 
     def _get_glue_dtypes_from_json_schema(self, schema: Dict[str, Any]) -> Tuple[Dict[str, str], List[str]]:
-        """
-        Helper that infers glue dtypes from a json schema.
-        """
-
+        """Helper that infers glue dtypes from a json schema."""
         type_mapper = {
             "string": "string",
             "integer": "bigint",
@@ -402,7 +395,8 @@ class StreamWriter:
 
         else:
             self._messages = []
-            raise Exception(f"Unsupported sync mode: {self._sync_mode}")
+            msg = f"Unsupported sync mode: {self._sync_mode}"
+            raise Exception(msg)
 
         if partial:
             self._partial_flush_count += 1

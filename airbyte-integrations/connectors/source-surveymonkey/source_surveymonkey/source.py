@@ -8,6 +8,7 @@ from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -46,7 +47,7 @@ class SourceSurveymonkey(AbstractSource):
             errors = []
             for survey_id in config["survey_ids"]:
                 response = requests.head(
-                    url=f"https://api.surveymonkey.com/v3/surveys/{survey_id}/details", headers=authenticator.get_auth_header()
+                    url=f"https://api.surveymonkey.com/v3/surveys/{survey_id}/details", headers=authenticator.get_auth_header(),
                 )
                 try:
                     response.raise_for_status()
@@ -59,7 +60,7 @@ class SourceSurveymonkey(AbstractSource):
                     [
                         f"{error_type}: {', '.join(list(map(itemgetter(survey_id_index), survey_ids)))}"
                         for error_type, survey_ids in groupby(errors, lambda x: x[error_message_index])
-                    ]
+                    ],
                 )
                 return False, msg
         try:

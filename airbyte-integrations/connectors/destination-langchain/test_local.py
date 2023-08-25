@@ -12,7 +12,6 @@ from langchain.vectorstores import Chroma
 embeddings = OpenAIEmbeddings()
 vector_store = Chroma(embedding_function=embeddings, persist_directory="/tmp/airbyte_local/my_chroma_db")
 
-# print(vector_store.similarity_search("python", 1))
 
 qa = RetrievalQA.from_chain_type(llm=OpenAI(temperature=0), chain_type="stuff", retriever=vector_store.as_retriever())
 

@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import (
@@ -21,7 +22,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
 
 @pytest.mark.parametrize(
-    "test_name, page_token_request_option, stop_condition, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_records, expected_next_page_token, limit",
+    ("test_name", "page_token_request_option", "stop_condition", "expected_updated_path", "expected_request_params", "expected_headers", "expected_body_data", "expected_body_json", "last_records", "expected_next_page_token", "limit"),
     [
         (
             "test_default_paginator_path",
@@ -174,7 +175,7 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
             url_base=url_base,
             parameters={},
         )
-        assert False
+        raise AssertionError
     except ValueError:
         pass
 
@@ -186,7 +187,7 @@ def test_reset():
     config = {}
     strategy = OffsetIncrement(config={}, page_size=2, parameters={})
     paginator = DefaultPaginator(
-        strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
+        strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option,
     )
     initial_request_parameters = paginator.get_request_params()
     paginator.next_page_token(MagicMock(), [{"first key": "first value"}, {"second key": "second value"}])

@@ -109,10 +109,9 @@ class SingerHelper:
 
     @staticmethod
     def singer_catalog_to_airbyte_catalog(
-        singer_catalog: Dict[str, Any], sync_mode_overrides: Dict[str, SyncModeInfo], primary_key_overrides: Dict[str, List[str]]
+        singer_catalog: Dict[str, Any], sync_mode_overrides: Dict[str, SyncModeInfo], primary_key_overrides: Dict[str, List[str]],
     ) -> AirbyteCatalog:
-        """
-        :param singer_catalog:
+        """:param singer_catalog:
         :param sync_mode_overrides: A dict from stream name to the sync modes it should use. Each stream in this dict must exist in the Singer catalog,
           but not every stream in the catalog should exist in this
         :param primary_key_overrides: A dict of stream name -> list of fields to be used as PKs.
@@ -120,7 +119,6 @@ class SingerHelper:
         """
         airbyte_streams = []
         # according to issue CDK: typing errors #9500, mypy raises error on this line
-        # 'Item "None" of "Optional[Any]" has no attribute "__iter__" (not iterable)'
         # It occurs because default value isn't set, and it's None
         # It's needed to set default value, ignored for now
         for stream in singer_catalog.get("streams"):  # type: ignore
@@ -143,7 +141,7 @@ class SingerHelper:
     @staticmethod
     def _read_singer_catalog(logger, shell_command: str) -> Mapping[str, Any]:
         completed_process = subprocess.run(
-            shell_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True
+            shell_command, shell=True, capture_output=True, text=True,
         )
         for line in completed_process.stderr.splitlines():
             logger.log(*log_by_prefix(line, "ERROR"))
@@ -162,13 +160,11 @@ class SingerHelper:
         streams = singer_catalog.get("streams", [])
         if streams and excluded_streams:
             # according to issue CDK: typing errors #9500, mypy raises error on this line
-            # 'Unsupported target for indexed assignment ("Mapping[str, Any]")'
             # _read_singer_catalog returns Mapping, to fix this error it should be changed to MutableMapping
             # ignored for now
             singer_catalog["streams"] = [stream for stream in streams if stream["stream"] not in excluded_streams]  # type: ignore
 
         # according to issue CDK: typing errors #9500, mypy raises error on this line
-        # 'Argument 1 to "singer_catalog_to_airbyte_catalog" of "SingerHelper" has incompatible type "Mapping[str, Any]"; expected "Dict[str, Any]"'
         # singer_catalog is Mapping, because _read_singer_catalog returns Mapping, but singer_catalog_to_airbyte_catalog expects Dict
         # it's needed to check and fix, ignored for now
         airbyte_catalog = SingerHelper.singer_catalog_to_airbyte_catalog(singer_catalog, sync_mode_overrides, primary_key_overrides)  # type: ignore
@@ -193,8 +189,6 @@ class SingerHelper:
     def _read_lines(process: subprocess.Popen) -> Iterator[Tuple[str, TextIOWrapper]]:
         sel = selectors.DefaultSelector()
         # according to issue CDK: typing errors #9500, mypy raises error on this two lines
-        # 'Argument 1 to "register" of "DefaultSelector" has incompatible type "Optional[IO[Any]]"; expected "Union[int, HasFileno]"'
-        # 'Argument 1 to "register" of "DefaultSelector" has incompatible type "Optional[IO[Any]]"; expected "Union[int, HasFileno]"'
         # It's need to check, ignored for now
         sel.register(process.stdout, selectors.EVENT_READ)  # type: ignore
         sel.register(process.stderr, selectors.EVENT_READ)  # type: ignore
@@ -204,8 +198,6 @@ class SingerHelper:
             empty_line_counter = 0
             for key, _ in selects_list:
                 # according to issue CDK: typing errors #9500, mypy raises two errors on these lines
-                # 'Item "int" of "Union[int, HasFileno]" has no attribute "readline"'
-                # 'Item "HasFileno" of "Union[int, HasFileno]" has no attribute "readline"'
                 # It's need to check, ignored for now
                 line = key.fileobj.readline()  # type: ignore
                 if not line:
@@ -219,16 +211,17 @@ class SingerHelper:
                             # according to issue CDK: typing errors #9500, mypy raises error on this line
                             # 'On Python 3 '{}'.format(b'abc') produces "b'abc'", not 'abc'; use '{!r}'.format(b'abc') if this is desired behavior'
                             # It's need to fix, ignored for now
-                            raise Exception(f"Underlying command {process.args} is hanging")  # type: ignore
+                            msg = f"Underlying command {process.args} is hanging"
+                            raise Exception(msg)  # type: ignore
 
                         if process.returncode != 0:
                             # according to issue CDK: typing errors #9500, mypy raises error on this line
                             # 'On Python 3 '{}'.format(b'abc') produces "b'abc'", not 'abc'; use '{!r}'.format(b'abc') if this is desired behavior'
                             # It's need to fix, ignored for now
-                            raise Exception(f"Underlying command {process.args} failed with exit code {process.returncode}")  # type: ignore
+                            msg = f"Underlying command {process.args} failed with exit code {process.returncode}"
+                            raise Exception(msg)  # type: ignore
                 else:
                     # according to issue CDK: typing errors #9500, mypy raises error on this line
-                    # 'Incompatible types in "yield" (actual type "Tuple[Any, Union[int, HasFileno]]", expected type "Tuple[str, TextIOWrapper]")'
                     # It's need to fix, ignored for now
                     yield line, key.fileobj  # type: ignore
 
@@ -243,7 +236,6 @@ class SingerHelper:
             # todo: check that messages match the discovered schema
             stream_name = transformed_json["stream"]
             # according to issue CDK: typing errors #9500, mypy raises error on this line
-            # 'Incompatible types in assignment (expression has type "AirbyteRecordMessage", variable has type "AirbyteStateMessage")'
             # type of out_record is first initialized as AirbyteStateMessage on the line 240
             # however AirbyteRecordMessage is assigned on the line below, it causes error
             # ignored
@@ -291,7 +283,7 @@ class SingerHelper:
                             new_metadata["metadata"]["replication-method"] = replication_method
                         else:
                             if "fieldExclusions" in new_metadata["metadata"]:
-                                new_metadata["metadata"]["selected"] = True if not new_metadata["metadata"]["fieldExclusions"] else False
+                                new_metadata["metadata"]["selected"] = bool(not new_metadata["metadata"]["fieldExclusions"])
                         new_metadatas += [new_metadata]
                     singer_stream["metadata"] = new_metadatas
 

@@ -4,17 +4,18 @@
 
 from unittest.mock import MagicMock
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_rd_station_marketing.streams import IncrementalRDStationMarketingStream
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def test_current_stream_state():
     return {"updated_time": "2021-10-22"}
 
 
-@fixture
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalRDStationMarketingStream, "path", "v0/example_endpoint")

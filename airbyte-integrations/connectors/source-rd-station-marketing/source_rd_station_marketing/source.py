@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -36,16 +37,14 @@ class SourceRDStationMarketing(AbstractSource):
         except Exception as error:
             return (
                 False,
-                f"Unable to connect to RD Station Marketing API with the provided credentials - {repr(error)}",
+                f"Unable to connect to RD Station Marketing API with the provided credentials - {error!r}",
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         stream_kwargs = self.get_stream_kwargs(config)
         incremental_kwargs = {**stream_kwargs, "start_date": pendulum.parse(config["start_date"])}
-        streams = [
+        return [
             AnalyticsEmails(**incremental_kwargs),
             AnalyticsConversions(**incremental_kwargs),
             AnalyticsFunnel(**incremental_kwargs),
@@ -58,12 +57,11 @@ class SourceRDStationMarketing(AbstractSource):
             Segmentations(**stream_kwargs),
             Workflows(**stream_kwargs),
         ]
-        return streams
 
     @staticmethod
     def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
         authorization = config.get("authorization", {})
-        stream_kwargs = dict()
+        stream_kwargs = {}
 
         stream_kwargs["authenticator"] = Oauth2Authenticator(
             token_refresh_endpoint="https://api.rd.services/auth/token",

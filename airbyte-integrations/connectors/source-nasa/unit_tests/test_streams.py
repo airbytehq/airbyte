@@ -13,7 +13,7 @@ api_key_value = "foobar"
 config = {"api_key": api_key_value}
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(NasaApod, "path", "v0/example_endpoint")

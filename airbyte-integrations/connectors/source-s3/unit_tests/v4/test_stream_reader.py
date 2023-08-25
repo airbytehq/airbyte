@@ -11,14 +11,15 @@ from typing import Any, Dict, List, Optional, Set
 from unittest.mock import patch
 
 import pytest
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
 from pydantic import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
+
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 logger = logging.Logger("")
 
@@ -101,14 +102,14 @@ _get_matching_files_cases = [
 
 get_matching_files_cases = []
 for original_case, endpoint_value in product(_get_matching_files_cases, endpoint_values):
-    params = list(original_case.values) + [endpoint_value]
+    params = [*list(original_case.values), endpoint_value]
     test_case = pytest.param(*params, id=original_case.id + f"-endpoint-{endpoint_value}")
     get_matching_files_cases.append(test_case)
 
 
 @pytest.mark.parametrize(
-    "globs,mocked_response,multiple_pages,expected_uris,endpoint",
-    get_matching_files_cases
+    ("globs", "mocked_response", "multiple_pages", "expected_uris", "endpoint"),
+    get_matching_files_cases,
 )
 def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, Any]], multiple_pages: bool, expected_uris: Set[str], endpoint: Optional[str]):
     reader = SourceS3StreamReader()
@@ -127,7 +128,7 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
     stub = set_stub(reader, mocked_response, multiple_pages)
     files = list(reader.get_matching_files(globs, None, logger))
     stub.deactivate()
-    assert set(f.uri for f in files) == expected_uris
+    assert {f.uri for f in files} == expected_uris
 
 
 @patch("boto3.client")
@@ -192,7 +193,7 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, encoding, logger) as fp:
         fp.read()
 
-    smart_open_mock.assert_called_once_with('s3://test/', transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
+    smart_open_mock.assert_called_once_with("s3://test/", transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
 
 
 def test_get_s3_client_without_config_raises_exception():

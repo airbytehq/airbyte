@@ -6,6 +6,7 @@ import json
 import time
 
 import pytest
+
 from airbyte_cdk.config_observation import ConfigObserver, ObservedDict, create_connector_config_control_message, observe_connector_config
 from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, OrchestratorType, Type
 
@@ -14,7 +15,7 @@ class TestObservedDict:
     def test_update_called_on_set_item(self, mocker):
         mock_observer = mocker.Mock()
         my_observed_dict = ObservedDict(
-            {"key": "value", "nested_dict": {"key": "value"}, "list_of_dict": [{"key": "value"}, {"key": "value"}]}, mock_observer
+            {"key": "value", "nested_dict": {"key": "value"}, "list_of_dict": [{"key": "value"}, {"key": "value"}]}, mock_observer,
         )
         assert mock_observer.update.call_count == 0
 

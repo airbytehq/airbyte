@@ -13,7 +13,7 @@ from ci_credentials import SecretsManager
 from ci_credentials.models import RemoteSecret, Secret
 
 
-@pytest.fixture
+@pytest.fixture()
 def matchers():
     return {
         "secrets": re.compile("https://secretmanager.googleapis.com/v1/projects/.+/secrets"),
@@ -26,7 +26,7 @@ def matchers():
 
 
 @pytest.mark.parametrize(
-    "connector_name,gsm_secrets,expected_secrets",
+    ("connector_name", "gsm_secrets", "expected_secrets"),
     (
         (
             "source-gsm-only",
@@ -67,7 +67,7 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
                 },
             }
             for i, k in enumerate(gsm_secrets)
-        ]
+        ],
     }
 
     versions_response_list = [
@@ -77,9 +77,9 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
                     {
                         "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS/versions/1",
                         "state": "ENABLED",
-                    }
-                ]
-            }
+                    },
+                ],
+            },
         }
         for i in range(len(gsm_secrets))
     ]
@@ -101,7 +101,7 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
 
 
 @pytest.mark.parametrize(
-    "connector_name,secrets,expected_files",
+    ("connector_name", "secrets", "expected_files"),
     (
         (
             "source-test",
@@ -142,7 +142,7 @@ def test_write(tmp_path, connector_name, secrets, expected_files):
         has = False
         for secret in secrets:
             if target_file.name == secret.configuration_file_name:
-                with open(target_file, "r") as f:
+                with open(target_file) as f:
                     assert f.read() == secret.value
                 has = True
                 break
@@ -150,7 +150,7 @@ def test_write(tmp_path, connector_name, secrets, expected_files):
 
 
 @pytest.mark.parametrize(
-    "connector_name,dict_json_value,expected_secret",
+    ("connector_name", "dict_json_value", "expected_secret"),
     (
         ("source-default", '{"org_id": 111}', "::add-mask::111"),
         ("source-default", '{"org": 111}', ""),
@@ -166,7 +166,7 @@ def test_validate_mask_values(connector_name, dict_json_value, expected_secret, 
 @patch("common_utils.GoogleApi.get_access_token", lambda *args: ("fake_token", None))
 @patch("common_utils.GoogleApi.project_id", "fake_id")
 @pytest.mark.parametrize(
-    "old_secret_value, updated_configurations",
+    ("old_secret_value", "updated_configurations"),
     [
         (json.dumps({"key": "value"}), [json.dumps({"key": "new_value_1"}), json.dumps({"key": "new_value_2"})]),
         (json.dumps({"key": "value"}), [json.dumps({"key": "value"})]),

@@ -32,7 +32,7 @@ class TestSchemaWithFewNullables:
                 "oneOf": [
                     {"type": "null"},
                     {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}},
-                ]
+                ],
             },
             "items": {
                 "type": "array",
@@ -55,7 +55,7 @@ class TestSchemaWithAllOptional:
                 "oneOf": [
                     {"type": "null"},
                     {"type": "object", "properties": {"field1": {"type": ["null", "string"]}, "field2": {"type": "integer"}}},
-                ]
+                ],
             },
         },
     }

@@ -10,6 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Union
 from unittest.mock import ANY
 
 import pytest
+
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations import destination as destination_module
 from airbyte_cdk.models import (
@@ -95,7 +96,7 @@ def write_file(path: PathLike, content: Union[str, Mapping]):
 
 
 def _wrapped(
-    msg: Union[AirbyteRecordMessage, AirbyteStateMessage, AirbyteCatalog, ConnectorSpecification, AirbyteConnectionStatus]
+    msg: Union[AirbyteRecordMessage, AirbyteStateMessage, AirbyteCatalog, ConnectorSpecification, AirbyteConnectionStatus],
 ) -> AirbyteMessage:
     if isinstance(msg, AirbyteRecordMessage):
         return AirbyteMessage(type=Type.RECORD, record=msg)
@@ -112,9 +113,8 @@ def _wrapped(
 
 
 class OrderedIterableMatcher(Iterable):
-    """
-    A class whose purpose is to verify equality of one iterable object against another
-    in an ordered fashion
+    """A class whose purpose is to verify equality of one iterable object against another
+    in an ordered fashion.
     """
 
     def attempt_consume(self, iterator):
@@ -195,8 +195,8 @@ class TestRun:
                     stream=AirbyteStream(name="mystream", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.full_refresh]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
-                )
-            ]
+                ),
+            ],
         )
         catalog_path = tmp_path / "catalog.json"
         write_file(catalog_path, dummy_catalog.json(exclude_unset=True))
@@ -206,7 +206,7 @@ class TestRun:
 
         expected_write_result = [_wrapped(_state({"k1": "v1"})), _wrapped(_state({"k2": "v2"}))]
         mocker.patch.object(
-            destination, "write", return_value=iter(expected_write_result), autospec=True  # convert to iterator to mimic real usage
+            destination, "write", return_value=iter(expected_write_result), autospec=True,  # convert to iterator to mimic real usage
         )
         spec_msg = ConnectorSpecification(connectionSpecification={})
         mocker.patch.object(destination, "spec", return_value=spec_msg)

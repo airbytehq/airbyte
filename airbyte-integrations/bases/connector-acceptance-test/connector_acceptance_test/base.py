@@ -5,6 +5,7 @@
 
 import inflection
 import pytest
+
 from connector_acceptance_test.config import Config
 
 
@@ -12,7 +13,7 @@ from connector_acceptance_test.config import Config
 class BaseTest:
     @classmethod
     def config_key(cls):
-        """Name of the test in configuration file, used to override test inputs,"""
+        """Name of the test in configuration file, used to override test inputs,."""
         class_name = cls.__name__
         if class_name.startswith("Test"):
             class_name = class_name[len("Test") :]

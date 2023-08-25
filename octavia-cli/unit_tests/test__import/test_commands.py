@@ -7,12 +7,12 @@ from click.testing import CliRunner
 from octavia_cli._import import commands
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_click(mocker):
     mocker.patch.object(commands, "click")
 
 
-@pytest.fixture
+@pytest.fixture()
 def context_object(mock_api_client, mock_telemetry_client):
     return {
         "PROJECT_IS_INITIALIZED": True,
@@ -41,7 +41,7 @@ def test_import_source_or_destination(mocker, context_object, ResourceClass):
                 "connection_configuration": "bar",
                 f"{resource_type}_definition_id": f"{resource_type}_definition_id",
                 f"{resource_type}_id": f"my_{resource_type}_id",
-            }
+            },
         ),
     )
     mocker.patch.object(commands.definitions, "factory")
@@ -54,18 +54,18 @@ def test_import_source_or_destination(mocker, context_object, ResourceClass):
     )
     commands.import_source_or_destination(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_get")
     commands.get_json_representation.assert_called_with(
-        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_get"
+        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_get",
     )
     commands.json.loads.assert_called_with(commands.get_json_representation.return_value)
     remote_configuration = commands.json.loads.return_value
     commands.definitions.factory.assert_called_with(
-        resource_type, context_object["API_CLIENT"], context_object["WORKSPACE_ID"], f"{resource_type}_definition_id"
+        resource_type, context_object["API_CLIENT"], context_object["WORKSPACE_ID"], f"{resource_type}_definition_id",
     )
     commands.renderers.ConnectorSpecificationRenderer.assert_called_with("foo", commands.definitions.factory.return_value)
     renderer = commands.renderers.ConnectorSpecificationRenderer.return_value
     renderer.import_configuration.assert_called_with(project_path=".", configuration=remote_configuration["connection_configuration"])
     commands.resources.factory.assert_called_with(
-        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], renderer.import_configuration.return_value
+        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], renderer.import_configuration.return_value,
     )
     commands.resources.factory.return_value.manage.assert_called_with(remote_configuration[f"{resource_type}_id"])
     commands.click.style.assert_has_calls(
@@ -75,13 +75,13 @@ def test_import_source_or_destination(mocker, context_object, ResourceClass):
                 fg="green",
             ),
             mocker.call(f"⚠️  - Please update any secrets stored in {renderer.import_configuration.return_value}", fg="yellow"),
-        ]
+        ],
     )
     assert commands.click.echo.call_count == 2
 
 
 @pytest.mark.parametrize(
-    "source_exists, source_was_created, destination_exists, destination_was_created",
+    ("source_exists", "source_was_created", "destination_exists", "destination_was_created"),
     [
         (True, True, True, True),
         (False, False, False, False),
@@ -103,7 +103,7 @@ def test_import_connection(mocker, context_object, source_exists, source_was_cre
                 "destination": {"name": "my_destination"},
                 "name": "my_connection",
                 "connection_id": "my_connection_id",
-            }
+            },
         ),
     )
     remote_configuration = commands.json.loads.return_value
@@ -123,19 +123,19 @@ def test_import_connection(mocker, context_object, source_exists, source_was_cre
     mock_managed_connection = mocker.Mock(manage=mocker.Mock(return_value=(mock_remote_connection, mock_connection_state)))
 
     mocker.patch.object(
-        commands.resources, "factory", mocker.Mock(side_effect=[mock_managed_source, mock_managed_destination, mock_managed_connection])
+        commands.resources, "factory", mocker.Mock(side_effect=[mock_managed_source, mock_managed_destination, mock_managed_connection]),
     )
     if all([source_exists, destination_exists, source_was_created, destination_was_created]):
 
         commands.import_connection(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "resource_to_get")
         commands.get_json_representation.assert_called_with(
-            context_object["API_CLIENT"], context_object["WORKSPACE_ID"], commands.UnmanagedConnection, "resource_to_get"
+            context_object["API_CLIENT"], context_object["WORKSPACE_ID"], commands.UnmanagedConnection, "resource_to_get",
         )
         commands.renderers.ConnectorSpecificationRenderer.get_output_path.assert_has_calls(
             [
                 mocker.call(project_path=".", definition_type="source", resource_name="my_source"),
                 mocker.call(project_path=".", definition_type="destination", resource_name="my_destination"),
-            ]
+            ],
         )
         commands.resources.factory.assert_has_calls(
             [
@@ -146,10 +146,10 @@ def test_import_connection(mocker, context_object, source_exists, source_was_cre
                     context_object["WORKSPACE_ID"],
                     commands.renderers.ConnectionRenderer.return_value.import_configuration.return_value,
                 ),
-            ]
+            ],
         )
         commands.renderers.ConnectionRenderer.assert_called_with(
-            remote_configuration["name"], mock_managed_source, mock_managed_destination
+            remote_configuration["name"], mock_managed_source, mock_managed_destination,
         )
         commands.renderers.ConnectionRenderer.return_value.import_configuration.assert_called_with(".", remote_configuration)
         new_configuration_path = commands.renderers.ConnectionRenderer.return_value.import_configuration.return_value
@@ -177,7 +177,7 @@ def test_import_not_initialized(command):
 
 
 @pytest.mark.parametrize(
-    "command, ResourceClass, import_function",
+    ("command", "ResourceClass", "import_function"),
     [
         (commands.source, commands.UnmanagedSource, "import_source_or_destination"),
         (commands.destination, commands.UnmanagedDestination, "import_source_or_destination"),
@@ -191,7 +191,7 @@ def test_import_commands(mocker, context_object, ResourceClass, command, import_
     result = runner.invoke(command, ["resource_to_import"], obj=context_object)
     if import_function == "import_source_or_destination":
         mock_import_function.assert_called_with(
-            context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_import"
+            context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_import",
         )
     else:
         mock_import_function.assert_called_with(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "resource_to_import")
@@ -204,7 +204,7 @@ def test_import_all(mocker, context_object):
     mocker.patch.object(commands, "import_source_or_destination", mock_manager.import_source_or_destination)
     mocker.patch.object(commands, "import_connection", mock_manager.import_connection)
     mocker.patch.object(
-        commands, "UnmanagedSources", return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "_", "source_resource_id")]))
+        commands, "UnmanagedSources", return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "_", "source_resource_id")])),
     )
     mocker.patch.object(
         commands,
@@ -223,11 +223,11 @@ def test_import_all(mocker, context_object):
     commands.UnmanagedConnections.return_value.get_listing.assert_called_once()
     assert result.exit_code == 0
     assert mock_manager.mock_calls[0] == mocker.call.import_source_or_destination(
-        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedSource, "source_resource_id"
+        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedSource, "source_resource_id",
     )
     assert mock_manager.mock_calls[1] == mocker.call.import_source_or_destination(
-        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedDestination, "destination_resource_id"
+        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedDestination, "destination_resource_id",
     )
     assert mock_manager.mock_calls[2] == mocker.call.import_connection(
-        context_object["API_CLIENT"], "workspace_id", "connection_resource_id"
+        context_object["API_CLIENT"], "workspace_id", "connection_resource_id",
     )

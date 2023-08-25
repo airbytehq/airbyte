@@ -11,8 +11,7 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 
 class PerPartitionKeySerializer:
-    """
-    We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
+    """We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
     concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
     since they are not hashable. By creating json string using the dict, we can have a use the dict as a key to the dict since strings are
     hashable.
@@ -33,7 +32,8 @@ class PerPartitionStreamSlice(StreamSlice):
         self._partition = partition
         self._cursor_slice = cursor_slice
         if partition.keys() & cursor_slice.keys():
-            raise ValueError("Keys for partition and incremental sync cursor should not overlap")
+            msg = "Keys for partition and incremental sync cursor should not overlap"
+            raise ValueError(msg)
         self._stream_slice = dict(partition) | dict(cursor_slice)
 
     @property
@@ -44,22 +44,23 @@ class PerPartitionStreamSlice(StreamSlice):
     def cursor_slice(self):
         return self._cursor_slice
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self._stream_slice)
 
-    def __setitem__(self, key: str, value: Any):
-        raise ValueError("PerPartitionStreamSlice is immutable")
+    def __setitem__(self, key: str, value: Any) -> None:
+        msg = "PerPartitionStreamSlice is immutable"
+        raise ValueError(msg)
 
     def __getitem__(self, key: str):
         return self._stream_slice[key]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._stream_slice)
 
     def __iter__(self):
         return iter(self._stream_slice)
 
-    def __contains__(self, item: str):
+    def __contains__(self, item: str) -> bool:
         return item in self._stream_slice
 
     def keys(self):
@@ -95,8 +96,7 @@ class CursorFactory:
 
 
 class PerPartitionCursor(Cursor):
-    """
-    Given a stream has many partitions, it is important to provide a state per partition.
+    """Given a stream has many partitions, it is important to provide a state per partition.
 
     Record | Stream Slice | Last Record | DatetimeCursorBased cursor
     -- | -- | -- | --
@@ -150,12 +150,12 @@ class PerPartitionCursor(Cursor):
                 Record(most_recent_record.data, stream_slice.cursor_slice) if most_recent_record else most_recent_record
             )
             self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(
-                stream_slice.cursor_slice, cursor_most_recent_record
+                stream_slice.cursor_slice, cursor_most_recent_record,
             )
         except KeyError as exception:
+            msg = f"Partition {exception!s} could not be found in current state based on the record. This is unexpected because we should only update state for partition that where emitted during `stream_slices`"
             raise ValueError(
-                f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
-                f"we should only update state for partition that where emitted during `stream_slices`"
+                msg,
             )
 
     def get_stream_state(self) -> StreamState:
@@ -167,7 +167,7 @@ class PerPartitionCursor(Cursor):
                     {
                         "partition": self._to_dict(partition_tuple),
                         "cursor": cursor_state,
-                    }
+                    },
                 )
         return {"states": states}
 
@@ -190,7 +190,8 @@ class PerPartitionCursor(Cursor):
 
     def select_state(self, stream_slice: Optional[PerPartitionStreamSlice] = None) -> Optional[StreamState]:
         if not stream_slice:
-            raise ValueError("A partition needs to be provided in order to extract a state")
+            msg = "A partition needs to be provided in order to extract a state"
+            raise ValueError(msg)
 
         if not stream_slice:
             return None
@@ -210,9 +211,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def get_request_headers(
@@ -223,9 +224,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def get_request_body_data(
@@ -236,9 +237,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_data(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def get_request_body_json(
@@ -249,9 +250,9 @@ class PerPartitionCursor(Cursor):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._partition_router.get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.partition, next_page_token=next_page_token,
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
+            stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token,
         )
 
     def should_be_synced(self, record: Record) -> bool:
@@ -259,12 +260,13 @@ class PerPartitionCursor(Cursor):
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
         if first.associated_slice.partition != second.associated_slice.partition:
+            msg = f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
             raise ValueError(
-                f"To compare records, partition should be the same but got {first.associated_slice.partition} and {second.associated_slice.partition}"
+                msg,
             )
 
         return self._get_cursor(first).is_greater_than_or_equal(
-            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second)
+            self._convert_record_to_cursor_record(first), self._convert_record_to_cursor_record(second),
         )
 
     @staticmethod
@@ -274,6 +276,6 @@ class PerPartitionCursor(Cursor):
     def _get_cursor(self, record: Record) -> Cursor:
         partition_key = self._to_partition_key(record.associated_slice.partition)
         if partition_key not in self._cursor_per_partition:
-            raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
-        cursor = self._cursor_per_partition[partition_key]
-        return cursor
+            msg = "Invalid state as stream slices that are emitted should refer to an existing cursor"
+            raise ValueError(msg)
+        return self._cursor_per_partition[partition_key]

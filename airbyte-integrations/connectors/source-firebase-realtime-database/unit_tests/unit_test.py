@@ -10,7 +10,7 @@ from source_firebase_realtime_database.source import SourceFirebaseRealtimeDatab
 
 
 @pytest.mark.parametrize(
-    "config, stream_name",
+    ("config", "stream_name"),
     [
         (
             {"database_name": "my-database", "path": "users"},
@@ -43,19 +43,15 @@ def test_stream_name_from(config, stream_name):
 
 
 class PseudoClient:
-    """
-    Pseudo client producing records which keys and values are ordered ASCII chcaracter
-    ex. {"a": "a", "b": "b", "c": "c"}
+    """Pseudo client producing records which keys and values are ordered ASCII chcaracter
+    ex. {"a": "a", "b": "b", "c": "c"}.
     """
 
-    def __init__(self, buffer_size):
+    def __init__(self, buffer_size) -> None:
         self._buffer_size = buffer_size
 
     def fetch_records(self, start_key=None):
-        if start_key:
-            start = ord(start_key) - ord("a")
-        else:
-            start = 0
+        start = ord(start_key) - ord("a") if start_key else 0
 
         end = start + self._buffer_size
 

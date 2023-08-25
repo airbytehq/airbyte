@@ -5,11 +5,13 @@
 
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs
 
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -17,8 +19,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
-from pendulum.datetime import DateTime
-from requests.auth import AuthBase
+
+if TYPE_CHECKING:
+    from pendulum.datetime import DateTime
 
 
 class TypeformStream(HttpStream, ABC):
@@ -53,9 +56,7 @@ class PaginatedStream(TypeformStream):
         return None if not page or response.json()["page_count"] <= page else page + 1
 
     def get_current_page_token(self, url: str) -> Optional[int]:
-        """
-        Fetches page query parameter from URL
-        """
+        """Fetches page query parameter from URL."""
         parsed = urlparse.urlparse(url)
         page = parse_qs(parsed.query).get("page")
         return int(page[0]) if page else None
@@ -67,9 +68,8 @@ class PaginatedStream(TypeformStream):
 
 
 class TrimForms(PaginatedStream):
-    """
-    This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
-    API doc: https://developer.typeform.com/create/reference/retrieve-forms/
+    """This stream is responsible for fetching list of from_id(s) which required to process data from Forms and Responses.
+    API doc: https://developer.typeform.com/create/reference/retrieve-forms/.
     """
 
     primary_key = "id"
@@ -92,14 +92,13 @@ class TrimFormsMixin:
 
 
 class Forms(TrimFormsMixin, TypeformStream):
-    """
-    This stream is responsible for detailed information about Form.
-    API doc: https://developer.typeform.com/create/reference/retrieve-form/
+    """This stream is responsible for detailed information about Form.
+    API doc: https://developer.typeform.com/create/reference/retrieve-form/.
     """
 
     primary_key = "id"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"forms/{stream_slice['form_id']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -132,9 +131,8 @@ class IncrementalTypeformStream(TypeformStream, ABC):
 
 
 class Responses(TrimFormsMixin, IncrementalTypeformStream):
-    """
-    This stream is responsible for fetching responses for particular form_id.
-    API doc: https://developer.typeform.com/responses/reference/retrieve-responses/
+    """This stream is responsible for fetching responses for particular form_id.
+    API doc: https://developer.typeform.com/responses/reference/retrieve-responses/.
     """
 
     primary_key = "response_id"
@@ -144,9 +142,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
         return f"forms/{stream_slice['form_id']}/responses"
 
     def get_form_id(self, record: Mapping[str, Any]) -> Optional[str]:
-        """
-        Fetches form id to which current record belongs.
-        """
+        """Fetches form id to which current record belongs."""
         referer = record.get("metadata", {}).get("referer")
         return urlparse.urlparse(referer).path.split("/")[-1] if referer else None
 
@@ -177,7 +173,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Optional[Mapping[str, any]] = None,
         next_page_token: Optional[Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.limit}
@@ -205,9 +201,8 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
 
 
 class Webhooks(TrimFormsMixin, TypeformStream):
-    """
-    This stream is responsible for fetching webhooks for particular form_id.
-    API doc: https://developer.typeform.com/webhooks/reference/retrieve-webhooks/
+    """This stream is responsible for fetching webhooks for particular form_id.
+    API doc: https://developer.typeform.com/webhooks/reference/retrieve-webhooks/.
     """
 
     primary_key = "id"
@@ -217,9 +212,8 @@ class Webhooks(TrimFormsMixin, TypeformStream):
 
 
 class Workspaces(PaginatedStream):
-    """
-    This stream is responsible for fetching workspaces.
-    API doc: https://developer.typeform.com/create/reference/retrieve-workspaces/
+    """This stream is responsible for fetching workspaces.
+    API doc: https://developer.typeform.com/create/reference/retrieve-workspaces/.
     """
 
     primary_key = "id"
@@ -229,9 +223,8 @@ class Workspaces(PaginatedStream):
 
 
 class Images(TypeformStream):
-    """
-    This stream is responsible for fetching images.
-    API doc: https://developer.typeform.com/create/reference/retrieve-images-collection/
+    """This stream is responsible for fetching images.
+    API doc: https://developer.typeform.com/create/reference/retrieve-images-collection/.
     """
 
     primary_key = "id"
@@ -244,9 +237,8 @@ class Images(TypeformStream):
 
 
 class Themes(PaginatedStream):
-    """
-    This stream is responsible for fetching themes.
-    API doc: https://developer.typeform.com/create/reference/retrieve-themes/
+    """This stream is responsible for fetching themes.
+    API doc: https://developer.typeform.com/create/reference/retrieve-themes/.
     """
 
     primary_key = "id"

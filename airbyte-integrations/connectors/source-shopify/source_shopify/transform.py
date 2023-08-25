@@ -3,20 +3,19 @@
 #
 
 from decimal import Decimal
-from typing import Any, Iterable, List, Mapping, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 
 class DataTypeEnforcer:
-    """
-    Transform class was implemented according to issue #4841
+    """Transform class was implemented according to issue #4841
     Shopify API returns price fields as a string and it should be converted to the number
     Some records fields contain objects and arrays, which contain price fields.
     Those price fields should be transformed too.
     This solution designed to convert string into number, but in future can be modified for general purpose
     Correct types placed in schemes
-    Transformer iterates over records, compare values type with schema type and transform if it's needed
+    Transformer iterates over records, compare values type with schema type and transform if it's needed.
 
-    Methods
+    Methods:
     -------
     _transform_array(self, array: List[Any], item_properties: Mapping[str, Any])
         Some fields type is array. Items inside array contain price fields, which should be transformed
@@ -84,7 +83,7 @@ class DataTypeEnforcer:
                 record[object_property] = self.transform(value, object_properties)
         return record
 
-    def transform(self, field: Any, schema: Mapping[str, Any] = None) -> Iterable[MutableMapping]:
+    def transform(self, field: Any, schema: Optional[Mapping[str, Any]] = None) -> Iterable[MutableMapping]:
         schema = schema if schema is not None else self._schema
         # get available types from schema
         schema_types = self._types_from_schema(schema)

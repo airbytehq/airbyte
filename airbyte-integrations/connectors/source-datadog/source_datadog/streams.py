@@ -7,17 +7,16 @@ from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.sources.streams.http import HttpStream
 from dateutil.parser import parse
 from pydantic.datetime_parse import timedelta
 
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.http import HttpStream
+
 
 class DatadogStream(HttpStream, ABC):
-    """
-    Datadog API Reference: https://docs.datadoghq.com/api/latest/
-    """
+    """Datadog API Reference: https://docs.datadoghq.com/api/latest/."""
 
     primary_key: Optional[str] = None
     parse_response_root: Optional[str] = None
@@ -31,7 +30,7 @@ class DatadogStream(HttpStream, ABC):
         end_date: str,
         query_start_date: str,
         query_end_date: str,
-        queries: List[Dict[str, str]] = None,
+        queries: Optional[List[Dict[str, str]]] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -56,7 +55,7 @@ class DatadogStream(HttpStream, ABC):
         }
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params: Dict[str, str] = {}
 
@@ -89,9 +88,7 @@ class V1ApiDatadogStream(DatadogStream, ABC):
 
 
 class Dashboards(V1ApiDatadogStream):
-    """
-    https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards
-    """
+    """https://docs.datadoghq.com/api/latest/dashboards/#get-all-dashboards."""
 
     parse_response_root: Optional[str] = "dashboards"
 
@@ -100,18 +97,14 @@ class Dashboards(V1ApiDatadogStream):
 
 
 class Downtimes(V1ApiDatadogStream):
-    """
-    https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes
-    """
+    """https://docs.datadoghq.com/api/latest/downtimes/#get-all-downtimes."""
 
     def path(self, **kwargs) -> str:
         return "downtime"
 
 
 class SyntheticTests(V1ApiDatadogStream):
-    """
-    https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests
-    """
+    """https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests."""
 
     parse_response_root: Optional[str] = "tests"
 
@@ -155,8 +148,8 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         cursor = None
         if next_page_token:
@@ -168,6 +161,7 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
         cursor = response_json.get("meta", {}).get("page", {}).get("after", {})
         if not cursor:
             self._cursor_value = self.end_date
+            return None
         else:
             return self.get_payload(cursor)
 
@@ -178,9 +172,9 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         if self.start_date >= self.end_date or self.end_date <= self._cursor_value:
             return []
@@ -198,18 +192,14 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
 
 
 class AuditLogs(IncrementalSearchableStream):
-    """
-    https://docs.datadoghq.com/api/latest/audit/#search-audit-logs-events
-    """
+    """https://docs.datadoghq.com/api/latest/audit/#search-audit-logs-events."""
 
     def path(self, **kwargs) -> str:
         return "audit/events/search"
 
 
 class Logs(IncrementalSearchableStream):
-    """
-    https://docs.datadoghq.com/api/latest/logs/#search-logs
-    """
+    """https://docs.datadoghq.com/api/latest/logs/#search-logs."""
 
     def path(self, **kwargs) -> str:
         return "logs/events/search"
@@ -224,9 +214,7 @@ class BasedListStream(V2ApiDatadogStream, ABC):
 
 
 class Metrics(BasedListStream):
-    """
-    https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics
-    """
+    """https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics."""
 
     def path(self, **kwargs) -> str:
         return "metrics?window[seconds]=1209600"  # max value allowed (2 weeks)
@@ -241,9 +229,9 @@ class PaginatedBasedListStream(BasedListStream, ABC):
     def path(
         self,
         *,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         offset = None
         if next_page_token:
@@ -252,9 +240,7 @@ class PaginatedBasedListStream(BasedListStream, ABC):
 
     @abstractmethod
     def get_url_path(self, offset: Optional[str]) -> str:
-        """
-        Returns the relative URL with the corresponding offset
-        """
+        """Returns the relative URL with the corresponding offset."""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
@@ -267,9 +253,7 @@ class PaginatedBasedListStream(BasedListStream, ABC):
 
 
 class Incidents(PaginatedBasedListStream):
-    """
-    https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents
-    """
+    """https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents."""
 
     def get_url_path(self, offset: Optional[str]) -> str:
         params = f"&page[offset]={offset}" if offset else ""
@@ -277,9 +261,7 @@ class Incidents(PaginatedBasedListStream):
 
 
 class IncidentTeams(PaginatedBasedListStream):
-    """
-    https://docs.datadoghq.com/api/latest/incident-teams/#get-a-list-of-all-incident-teams
-    """
+    """https://docs.datadoghq.com/api/latest/incident-teams/#get-a-list-of-all-incident-teams."""
 
     def get_url_path(self, offset: Optional[str]) -> str:
         params = f"&page[offset]={offset}" if offset else ""
@@ -287,9 +269,7 @@ class IncidentTeams(PaginatedBasedListStream):
 
 
 class Users(PaginatedBasedListStream):
-    """
-    https://docs.datadoghq.com/api/latest/users/#list-all-users
-    """
+    """https://docs.datadoghq.com/api/latest/users/#list-all-users."""
 
     current_page = 0
 
@@ -307,14 +287,12 @@ class Users(PaginatedBasedListStream):
 
 
 class SeriesStream(IncrementalSearchableStream, ABC):
-    """
-    https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products
-    """
+    """https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products."""
 
     primary_key: Optional[str] = None
     parse_response_root: Optional[str] = "data"
 
-    def __init__(self, name, data_source, query_string, **kwargs):
+    def __init__(self, name, data_source, query_string, **kwargs) -> None:
         super().__init__(**kwargs)
         self.name = name
         self.data_source = data_source
@@ -342,14 +320,11 @@ class SeriesStream(IncrementalSearchableStream, ABC):
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
 
-        if self.query_end_date:
-            end_date = int(parse(self.query_end_date).timestamp() * 1000)
-        else:
-            end_date = int(datetime.now().timestamp()) * 1000
+        end_date = int(parse(self.query_end_date).timestamp() * 1000) if self.query_end_date else int(datetime.now().timestamp()) * 1000
 
         if self.query_start_date:
             start_date = int(parse(self.query_start_date).timestamp() * 1000)
@@ -368,10 +343,10 @@ class SeriesStream(IncrementalSearchableStream, ABC):
                         {
                             "data_source": self.data_source,
                             "name": self.name,
-                        }
+                        },
                     ],
                 },
-            }
+            },
         }
 
         if self.data_source in ["metrics", "cloud_cost"]:
@@ -383,13 +358,12 @@ class SeriesStream(IncrementalSearchableStream, ABC):
         return payload
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        local_json_schema = {
+        return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": {},
             "additionalProperties": True,
         }
-        return local_json_schema
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()

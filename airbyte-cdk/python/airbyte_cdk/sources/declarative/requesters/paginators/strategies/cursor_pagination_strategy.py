@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class CursorPaginationStrategy(PaginationStrategy):
-    """
-    Pagination strategy that evaluates an interpolated string to define the next page token
+    """Pagination strategy that evaluates an interpolated string to define the next page token.
 
     Attributes:
         page_size (Optional[int]): the number of records to request

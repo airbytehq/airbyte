@@ -4,10 +4,11 @@
 
 from unittest.mock import MagicMock, call
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import ChromaLocalIndexingModel
 from destination_langchain.indexer import ChromaLocalIndexer
 from langchain.document_loaders.base import Document
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 def create_chroma_local_indexer():
@@ -37,7 +38,7 @@ def test_chroma_local_index_upsert_and_delete():
         [
             call(where={"_record_id": {"$eq": "delete_id1"}}),
             call(where={"_record_id": {"$eq": "delete_id2"}}),
-        ]
+        ],
     )
     indexer.vectorstore.add_documents.assert_called_with(docs)
 
@@ -97,9 +98,9 @@ def test_chroma_local_pre_sync():
                         "sync_mode": "full_refresh",
                         "destination_sync_mode": "overwrite",
                     },
-                ]
-            }
-        )
+                ],
+            },
+        ),
     )
     indexer._init_vectorstore.assert_called()
     indexer.vectorstore._collection.delete.assert_called_with(where={"_airbyte_stream": {"$eq": "example_stream2"}})

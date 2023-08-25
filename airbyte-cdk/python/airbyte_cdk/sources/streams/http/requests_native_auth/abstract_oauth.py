@@ -9,20 +9,19 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 import backoff
 import pendulum
 import requests
+from requests.auth import AuthBase
+
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
-from requests.auth import AuthBase
-
-from ..exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
 _NOOP_MESSAGE_REPOSITORY = NoopMessageRepository()
 
 
 class AbstractOauth2Authenticator(AuthBase):
-    """
-    Abstract class for an OAuth authenticators that implements the OAuth token refresh flow. The authenticator
+    """Abstract class for an OAuth authenticators that implements the OAuth token refresh flow. The authenticator
     is designed to generically perform the refresh flow without regard to how config fields are get/set by
     delegating that behavior to the classes implementing the interface.
     """
@@ -30,16 +29,16 @@ class AbstractOauth2Authenticator(AuthBase):
     _NO_STREAM_NAME = None
 
     def __call__(self, request: requests.Request) -> requests.Request:
-        """Attach the HTTP headers required to authenticate on the HTTP request"""
+        """Attach the HTTP headers required to authenticate on the HTTP request."""
         request.headers.update(self.get_auth_header())
         return request
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        """HTTP header to set on the requests"""
+        """HTTP header to set on the requests."""
         return {"Authorization": f"Bearer {self.get_access_token()}"}
 
     def get_access_token(self) -> str:
-        """Returns the access token"""
+        """Returns the access token."""
         if self.token_has_expired():
             token, expires_in = self.refresh_access_token()
             self.access_token = token
@@ -48,12 +47,11 @@ class AbstractOauth2Authenticator(AuthBase):
         return self.access_token
 
     def token_has_expired(self) -> bool:
-        """Returns True if the token is expired"""
+        """Returns True if the token is expired."""
         return pendulum.now() > self.get_token_expiry_date()
 
     def build_refresh_request_body(self) -> Mapping[str, Any]:
-        """
-        Returns the request body to set on the refresh request
+        """Returns the request body to set on the refresh request.
 
         Override to define additional parameters
         """
@@ -79,7 +77,7 @@ class AbstractOauth2Authenticator(AuthBase):
         backoff.expo,
         DefaultBackoffException,
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_time=300,
     )
@@ -94,11 +92,11 @@ class AbstractOauth2Authenticator(AuthBase):
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
             raise
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Returns the refresh token and its lifespan in seconds
+        """Returns the refresh token and its lifespan in seconds.
 
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
@@ -107,63 +105,61 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
-        """Returns the endpoint to refresh the access token"""
+        """Returns the endpoint to refresh the access token."""
 
     @abstractmethod
     def get_client_id(self) -> str:
-        """The client id to authenticate"""
+        """The client id to authenticate."""
 
     @abstractmethod
     def get_client_secret(self) -> str:
-        """The client secret to authenticate"""
+        """The client secret to authenticate."""
 
     @abstractmethod
     def get_refresh_token(self) -> Optional[str]:
-        """The token used to refresh the access token when it expires"""
+        """The token used to refresh the access token when it expires."""
 
     @abstractmethod
     def get_scopes(self) -> List[str]:
-        """List of requested scopes"""
+        """List of requested scopes."""
 
     @abstractmethod
     def get_token_expiry_date(self) -> pendulum.DateTime:
-        """Expiration date of the access token"""
+        """Expiration date of the access token."""
 
     @abstractmethod
     def set_token_expiry_date(self, value: Union[str, int]):
-        """Setter for access token expiration date"""
+        """Setter for access token expiration date."""
 
     @abstractmethod
     def get_access_token_name(self) -> str:
-        """Field to extract access token from in the response"""
+        """Field to extract access token from in the response."""
 
     @abstractmethod
     def get_expires_in_name(self) -> str:
-        """Returns the expires_in field name"""
+        """Returns the expires_in field name."""
 
     @abstractmethod
     def get_refresh_request_body(self) -> Mapping[str, Any]:
-        """Returns the request body to set on the refresh request"""
+        """Returns the request body to set on the refresh request."""
 
     @abstractmethod
     def get_grant_type(self) -> str:
-        """Returns grant_type specified for requesting access_token"""
+        """Returns grant_type specified for requesting access_token."""
 
     @property
     @abstractmethod
     def access_token(self) -> str:
-        """Returns the access token"""
+        """Returns the access token."""
 
     @access_token.setter
     @abstractmethod
     def access_token(self, value: str) -> str:
-        """Setter for the access token"""
+        """Setter for the access token."""
 
     @property
     def _message_repository(self) -> Optional[MessageRepository]:
-        """
-        The implementation can define a message_repository if it wants debugging logs for HTTP requests
-        """
+        """The implementation can define a message_repository if it wants debugging logs for HTTP requests."""
         return _NOOP_MESSAGE_REPOSITORY
 
     def _log_response(self, response: requests.Response):

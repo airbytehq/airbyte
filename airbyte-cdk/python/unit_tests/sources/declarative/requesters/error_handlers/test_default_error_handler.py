@@ -5,8 +5,9 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
+
+from airbyte_cdk.sources.declarative.requesters.error_handlers import response_status
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
     DefaultErrorHandler,
@@ -19,7 +20,7 @@ SOME_BACKOFF_TIME = 60
 
 
 @pytest.mark.parametrize(
-    "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy",
+    ("test_name", "http_code", "retry_response_filter", "ignore_response_filter", "response_headers", "should_retry", "backoff_strategy"),
     [
         ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         ("test_too_many_requests", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, ResponseStatus.retry(10), None),
@@ -134,7 +135,7 @@ SOME_BACKOFF_TIME = 60
     ],
 )
 def test_default_error_handler(
-    test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy
+    test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy,
 ):
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400

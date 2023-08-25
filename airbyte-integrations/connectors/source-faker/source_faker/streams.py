@@ -93,11 +93,9 @@ class Users(Stream, IncrementalMixin):
         self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON.
         """
-        This is a multi-process implementation of read_records.
-        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
-        """
-
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 
@@ -153,11 +151,9 @@ class Purchases(Stream, IncrementalMixin):
         self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON.
         """
-        This is a multi-process implementation of read_records.
-        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
-        """
-
         if "updated_at" in self.state and not self.always_updated:
             return iter([])
 

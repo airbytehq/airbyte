@@ -20,9 +20,9 @@ _base_success_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -33,8 +33,8 @@ _base_success_scenario = (
                     ("val21", "val22"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
-            }
-        }
+            },
+        },
     )
     .set_file_type("csv")
     .set_expected_check_status("SUCCEEDED")
@@ -64,9 +64,9 @@ success_multi_stream_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv", "*.gz"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
 ).build()
 
@@ -82,9 +82,9 @@ success_extensionless_scenario = (
                     "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -95,8 +95,8 @@ success_extensionless_scenario = (
                     ("val21", "val22"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
-            }
-        }
+            },
+        },
     )
 ).build()
 
@@ -113,9 +113,9 @@ success_user_provided_schema_scenario = (
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
-                }
+                },
             ],
-        }
+        },
     )
 ).build()
 
@@ -162,9 +162,9 @@ error_record_validation_user_provided_schema_scenario = (
                     "globs": ["*.csv"],
                     "validation_policy": "always_fail",
                     "input_schema": '{"col1": "number", "col2": "string"}',
-                }
+                },
             ],
-        }
+        },
     )
     .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL:  FailingSchemaValidationPolicy()})
     .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD.value)
@@ -188,9 +188,9 @@ error_multi_stream_scenario = (
                     "file_type": "jsonl",
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
-                }
+                },
             ],
-        }
+        },
     )
     .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE.value)
 ).build()

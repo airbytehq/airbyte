@@ -10,6 +10,7 @@ from urllib.parse import parse_qs
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -24,7 +25,7 @@ class OpsgenieStream(HttpStream, ABC):
     flatten_list_keys = []
 
     def __init__(self, endpoint: str, **kwargs):
-        super(OpsgenieStream, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._endpoint = endpoint
 
     @property
@@ -41,7 +42,7 @@ class OpsgenieStream(HttpStream, ABC):
         return params
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params: Dict[str, str] = {}
 
@@ -64,7 +65,7 @@ class OpsgenieStream(HttpStream, ABC):
         else:
             Exception(f"Unsupported type of response data for stream {self.name}")
 
-    def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
+    def transform(self, record: Dict[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs):
         for key in self.flatten_id_keys:
             self._flatten_id(record, key)
 
@@ -81,8 +82,7 @@ class OpsgenieStream(HttpStream, ABC):
         record[target] = [target_data.get("id") for target_data in record.get(target, [])]
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        This method is called if we run into the rate limit.
+        """This method is called if we run into the rate limit.
         Opsgenie applies rate limits in both requests-per-minute and
         requests-per-second buckets. The response will inform which
         of these thresholds has been breached by returning a X-RateLimit-Period-In-Sec
@@ -91,7 +91,6 @@ class OpsgenieStream(HttpStream, ABC):
 
         Rate Limits Docs: https://docs.opsgenie.com/docs/api-rate-limiting
         """
-
         if "X-RateLimit-Period-In-Sec" in response.headers:
             return int(response.headers["X-RateLimit-Period-In-Sec"])
         else:
@@ -101,21 +100,21 @@ class OpsgenieStream(HttpStream, ABC):
 
 class Teams(OpsgenieStream):
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "teams"
 
 
 class Integrations(OpsgenieStream):
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "integrations"
 
 
 class Users(OpsgenieStream):
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "users"
 
@@ -125,7 +124,7 @@ class Services(OpsgenieStream):
     api_version = "v1"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "services"
 
@@ -141,7 +140,7 @@ class OpsgenieChildStream(OpsgenieStream):
     @property
     def path_template(self) -> str:
         template = [self.parent_stream.name] + ["{" + path_key + "}" for path_key in self.path_list]
-        return "/".join(template + [self.name])
+        return "/".join([*template, self.name])
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -151,7 +150,7 @@ class OpsgenieChildStream(OpsgenieStream):
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return self.path_template.format(**{path_key: stream_slice[path_key] for path_key in self.path_list})
 
-    def transform(self, record: Dict[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs):
+    def transform(self, record: Dict[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, **kwargs):
         record = super().transform(record, stream_slice, **kwargs)
         if self.flatten_parent_id:
             record[f"{self.parent_stream.name[:-1]}_id"] = stream_slice["id"]
@@ -165,7 +164,7 @@ class UserTeams(OpsgenieChildStream):
 
 # Basic incremental stream
 class IncrementalOpsgenieStream(OpsgenieStream, ABC):
-    def __init__(self, start_date, **kwargs):
+    def __init__(self, start_date, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = start_date
 
@@ -184,7 +183,7 @@ class IncrementalOpsgenieStream(OpsgenieStream, ABC):
             return {cursor_field: str(latest_record_date)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         start_point = self.start_date
@@ -242,7 +241,7 @@ class AlertLogs(OpsgenieChildStream):
         return current_stream_state
 
     def request_params(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         stream_state = stream_state or {}
         params = super().request_params(stream_state, stream_slice, next_page_token)

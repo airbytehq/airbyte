@@ -4,7 +4,8 @@
 
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
-import pytest as pytest
+import pytest
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -23,7 +24,7 @@ second_parent_stream_slice = [{"slice": "second_parent"}]
 
 
 class MockStream(Stream):
-    def __init__(self, slices, records, name):
+    def __init__(self, slices, records, name) -> None:
         self._slices = slices
         self._records = records
         self._name = name
@@ -37,16 +38,16 @@ class MockStream(Stream):
         return "id"
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self._slices
 
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         # The parent stream's records should always be read as full refresh
         assert sync_mode == SyncMode.full_refresh
@@ -57,15 +58,15 @@ class MockStream(Stream):
 
 
 @pytest.mark.parametrize(
-    "test_name, parent_stream_configs, expected_slices",
+    ("test_name", "parent_stream_configs", "expected_slices"),
     [
         ("test_no_parents", [], None),
         (
             "test_single_parent_slices_no_records",
             [
                 ParentStreamConfig(
-                    stream=MockStream([{}], [], "first_stream"), parent_key="id", partition_field="first_stream_id", parameters={}, config={}
-                )
+                    stream=MockStream([{}], [], "first_stream"), parent_key="id", partition_field="first_stream_id", parameters={}, config={},
+                ),
             ],
             [],
         ),
@@ -78,7 +79,7 @@ class MockStream(Stream):
                     partition_field="first_stream_id",
                     parameters={},
                     config={},
-                )
+                ),
             ],
             [{"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 2, "parent_slice": {}}],
         ),
@@ -91,7 +92,7 @@ class MockStream(Stream):
                     partition_field="first_stream_id",
                     parameters={},
                     config={},
-                )
+                ),
             ],
             [
                 {"parent_slice": {"slice": "first"}, "first_stream_id": 0},
@@ -134,7 +135,7 @@ class MockStream(Stream):
                     partition_field="first_stream_id",
                     parameters={},
                     config={},
-                )
+                ),
             ],
             [{"first_stream_id": 0, "parent_slice": {}}, {"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 3, "parent_slice": {}}],
         ),
@@ -147,7 +148,7 @@ class MockStream(Stream):
                     partition_field="first_stream_id",
                     parameters={},
                     config={},
-                )
+                ),
             ],
             [{"first_stream_id": 0, "parent_slice": {}}, {"first_stream_id": 1, "parent_slice": {}}, {"first_stream_id": 3, "parent_slice": {}}],
         ),
@@ -157,16 +158,16 @@ def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
     if expected_slices is None:
         try:
             SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
-            assert False
+            raise AssertionError
         except ValueError:
             return
     partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
-    slices = [s for s in partition_router.stream_slices()]
+    slices = list(partition_router.stream_slices())
     assert slices == expected_slices
 
 
 @pytest.mark.parametrize(
-    "test_name, parent_stream_request_parameters, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    ("test_name", "parent_stream_request_parameters", "expected_req_params", "expected_headers", "expected_body_json", "expected_body_data"),
     [
         (
             "test_request_option_in_request_param",
@@ -272,11 +273,11 @@ def test_given_record_is_airbyte_message_when_stream_slices_then_use_record_data
                 parent_key="id",
                 partition_field="partition_field",
                 parameters={},
-                config={}
-            )
+                config={},
+            ),
         ],
         parameters={},
-        config={}
+        config={},
     )
 
     slices = list(partition_router.stream_slices())
@@ -292,11 +293,11 @@ def test_given_record_is_record_object_when_stream_slices_then_use_record_data()
                 parent_key="id",
                 partition_field="partition_field",
                 parameters={},
-                config={}
-            )
+                config={},
+            ),
         ],
         parameters={},
-        config={}
+        config={},
     )
 
     slices = list(partition_router.stream_slices())

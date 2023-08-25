@@ -9,7 +9,7 @@ import pytest
 from source_rd_station_marketing.streams import RDStationMarketingStream, Segmentations
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(RDStationMarketingStream, "primary_key", "test_primary_key")
@@ -52,9 +52,9 @@ def test_parse_response(patch_base_class):
                     "href": "https://api.rd.services/platform/segmentations/71625167165/contacts",
                     "media": "application/json",
                     "type": "GET",
-                }
+                },
             ],
-        }
+        },
     ]
     inputs = {"response": response, "stream_state": None}
     expected_parsed_object = {
@@ -70,7 +70,7 @@ def test_parse_response(patch_base_class):
                 "href": "https://api.rd.services/platform/segmentations/71625167165/contacts",
                 "media": "application/json",
                 "type": "GET",
-            }
+            },
         ],
     }
     assert next(stream.parse_response(**inputs)) == expected_parsed_object

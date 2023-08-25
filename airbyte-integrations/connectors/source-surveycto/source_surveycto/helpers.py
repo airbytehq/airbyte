@@ -11,7 +11,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
-class Helpers(object):
+class Helpers:
     @staticmethod
     def _base64_encode(string: str) -> str:
         return base64.b64encode(string.encode("ascii")).decode("ascii")
@@ -53,14 +53,12 @@ class Helpers(object):
         schema_map, error_logs = generator.deduce_schema(input_data=data)
         schema = generator.flatten_schema(schema_map)
         schema_json = converter(schema)
-        schema = schema_json["definitions"]["element"]["properties"]
-        return schema
+        return schema_json["definitions"]["element"]["properties"]
 
     @staticmethod
     def get_json_schema(schema):
-        json_schema = {
+        return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             "properties": schema,
         }
-        return json_schema

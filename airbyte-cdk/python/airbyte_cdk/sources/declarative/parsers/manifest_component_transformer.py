@@ -77,10 +77,9 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
 
 class ManifestComponentTransformer:
     def propagate_types_and_parameters(
-        self, parent_field_identifier: str, declarative_component: Mapping[str, Any], parent_parameters: Mapping[str, Any]
+        self, parent_field_identifier: str, declarative_component: Mapping[str, Any], parent_parameters: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        """
-        Recursively transforms the specified declarative component and subcomponents to propagate parameters and insert the
+        """Recursively transforms the specified declarative component and subcomponents to propagate parameters and insert the
         default component type if it was not already present. The resulting transformed components are a deep copy of the input
         components, not an in-place transformation.
 
@@ -123,7 +122,7 @@ class ManifestComponentTransformer:
                 excluded_parameter = current_parameters.pop(field_name, None)
                 parent_type_field_identifier = f"{propagated_component.get('type')}.{field_name}"
                 propagated_component[field_name] = self.propagate_types_and_parameters(
-                    parent_type_field_identifier, field_value, current_parameters
+                    parent_type_field_identifier, field_value, current_parameters,
                 )
                 if excluded_parameter:
                     current_parameters[field_name] = excluded_parameter

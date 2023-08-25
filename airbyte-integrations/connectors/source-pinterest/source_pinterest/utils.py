@@ -127,8 +127,7 @@ def get_analytics_columns() -> str:
 
 
 def to_datetime_str(date: datetime) -> str:
-    """
-    Returns the formated datetime string.
-    :: Output example: '2021-07-15' FORMAT : "%Y-%m-%d"
+    """Returns the formated datetime string.
+    :: Output example: '2021-07-15' FORMAT : "%Y-%m-%d".
     """
     return date.strftime("%Y-%m-%d")

@@ -47,7 +47,7 @@ def test_pytest_generate_tests(mocker, parametrize_skip_or_fail_return):
 
 
 @pytest.mark.parametrize(
-    "TestClass, test_class_MANDATORY_FOR_TEST_STRICTNESS_LEVELS, global_test_mode, test_configuration, expected_action, expected_reason",
+    ("TestClass", "test_class_MANDATORY_FOR_TEST_STRICTNESS_LEVELS", "global_test_mode", "test_configuration", "expected_action", "expected_reason"),
     [
         pytest.param(
             MyTestClass,
@@ -115,7 +115,7 @@ def test_pytest_generate_tests(mocker, parametrize_skip_or_fail_return):
     ],
 )
 def test_parametrize_skip_or_fail(
-    TestClass, test_class_MANDATORY_FOR_TEST_STRICTNESS_LEVELS, global_test_mode, test_configuration, expected_action, expected_reason
+    TestClass, test_class_MANDATORY_FOR_TEST_STRICTNESS_LEVELS, global_test_mode, test_configuration, expected_action, expected_reason,
 ):
     TestClass.MANDATORY_FOR_TEST_STRICTNESS_LEVELS = test_class_MANDATORY_FOR_TEST_STRICTNESS_LEVELS
     test_action, reason = plugin.parametrize_skip_or_fail(TestClass, TestClass.dumb_test_function, global_test_mode, test_configuration)

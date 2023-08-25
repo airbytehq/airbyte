@@ -9,6 +9,9 @@ from typing import Any, Dict, List, Mapping
 
 import docker
 import pytest
+from destination_sftp_json import DestinationSftpJson
+from destination_sftp_json.client import SftpClient
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -22,8 +25,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_sftp_json import DestinationSftpJson
-from destination_sftp_json.client import SftpClient
 
 
 @pytest.fixture(scope="module")
@@ -111,7 +112,7 @@ def _sort(messages: List[AirbyteRecordMessage]) -> List[AirbyteRecordMessage]:
 
 
 def retrieve_all_records(client: SftpClient, streams: List[str]) -> List[AirbyteRecordMessage]:
-    """retrieves and formats all records on the SFTP server as Airbyte messages"""
+    """Retrieves and formats all records on the SFTP server as Airbyte messages."""
     all_records = []
     for stream in streams:
         for data in client.read_data(stream):
@@ -123,11 +124,10 @@ def retrieve_all_records(client: SftpClient, streams: List[str]) -> List[Airbyte
 
 
 def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: SftpClient):
-    """
-    This test verifies that:
-        1. writing a stream in "overwrite" mode overwrites any existing data for that stream
-        2. writing a stream in "append" mode appends new records without deleting the old ones
-        3. The correct state message is output by the connector at the end of the sync
+    """This test verifies that:
+    1. writing a stream in "overwrite" mode overwrites any existing data for that stream
+    2. writing a stream in "append" mode appends new records without deleting the old ones
+    3. The correct state message is output by the connector at the end of the sync.
     """
     append_stream, overwrite_stream = (
         configured_catalog.streams[0].stream.name,
@@ -155,7 +155,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
                 *second_record_chunk,
                 second_state_message,
             ],
-        )
+        ),
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 

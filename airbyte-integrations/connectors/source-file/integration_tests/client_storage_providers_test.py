@@ -20,7 +20,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
 
 
 @pytest.mark.parametrize(
-    "provider_name,file_path,file_format",
+    ("provider_name", "file_path", "file_format"),
     [
         ("ssh", "files/test.csv", "csv"),
         ("scp", "files/test.csv", "csv"),
@@ -37,7 +37,7 @@ def test__read_from_private_ssh(provider_config, provider_name, file_path, file_
 
 
 @pytest.mark.parametrize(
-    "provider_name,file_path,file_format",
+    ("provider_name", "file_path", "file_format"),
     [
         ("ssh", "files/file_does_not_exist.csv", "csv"),
         ("gcs", "gs://gcp-public-data-landsat/file_does_not_exist.csv", "csv"),
@@ -50,7 +50,7 @@ def test__read_file_not_found(provider_config, provider_name, file_path, file_fo
 
 
 @pytest.mark.parametrize(
-    "provider_name, file_path, file_format",
+    ("provider_name", "file_path", "file_format"),
     [
         ("ssh", "files/test.csv", "csv"),
         ("ssh", "files/test.pkl", "pickle"),
@@ -70,7 +70,7 @@ def test__streams_from_ssh_providers(provider_config, provider_name, file_path, 
 
 
 @pytest.mark.parametrize(
-    "storage_provider, url, columns_nb, separator, has_header",
+    ("storage_provider", "url", "columns_nb", "separator", "has_header"),
     [
         # epidemiology csv
         ("HTTPS", "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", 10, ",", True),

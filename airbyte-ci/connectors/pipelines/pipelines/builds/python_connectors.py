@@ -3,6 +3,7 @@
 #
 
 from dagger import QueryError
+
 from pipelines.actions.environments import with_airbyte_python_connector
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
@@ -10,8 +11,7 @@ from pipelines.contexts import ConnectorContext
 
 
 class BuildConnectorImage(BuildConnectorImageBase):
-    """
-    A step to build a Python connector image.
+    """A step to build a Python connector image.
     A spec command is run on the container to validate it was built successfully.
     """
 

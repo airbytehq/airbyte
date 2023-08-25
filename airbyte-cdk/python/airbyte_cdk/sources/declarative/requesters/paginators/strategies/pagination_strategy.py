@@ -11,27 +11,19 @@ import requests
 
 @dataclass
 class PaginationStrategy:
-    """
-    Defines how to get the next page token
-    """
+    """Defines how to get the next page token."""
 
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        """
-        :param response: response to process
+        """:param response: response to process
         :param last_records: records extracted from the response
         :return: next page token. Returns None if there are no more pages to fetch
         """
-        pass
 
     @abstractmethod
     def reset(self):
-        """
-        Reset the pagination's inner state
-        """
+        """Reset the pagination's inner state."""
 
     @abstractmethod
     def get_page_size(self) -> Optional[int]:
-        """
-        :return: page size: The number of records to fetch in a page. Returns None if unspecified
-        """
+        """:return: page size: The number of records to fetch in a page. Returns None if unspecified"""

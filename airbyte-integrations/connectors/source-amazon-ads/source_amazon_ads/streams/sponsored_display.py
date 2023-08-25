@@ -2,19 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 from source_amazon_ads.schemas import DisplayAdGroup, DisplayBudgetRules, DisplayCampaign, DisplayProductAds, DisplayTargeting
 from source_amazon_ads.streams.common import SubProfilesStream
 
 
 class SponsoredDisplayCampaigns(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Campaigns
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Campaigns
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.state_filter = kwargs.get("config", {}).get("state_filter")
 
@@ -33,9 +32,8 @@ class SponsoredDisplayCampaigns(SubProfilesStream):
 
 
 class SponsoredDisplayAdGroups(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Ad groups
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Ad groups
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups.
     """
 
     primary_key = "adGroupId"
@@ -46,9 +44,8 @@ class SponsoredDisplayAdGroups(SubProfilesStream):
 
 
 class SponsoredDisplayProductAds(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Product Ads
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Product Ads
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Product%20ads.
     """
 
     primary_key = "adId"
@@ -59,9 +56,8 @@ class SponsoredDisplayProductAds(SubProfilesStream):
 
 
 class SponsoredDisplayTargetings(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays Targetings
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays Targetings
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Targeting.
     """
 
     primary_key = "targetId"
@@ -72,9 +68,8 @@ class SponsoredDisplayTargetings(SubProfilesStream):
 
 
 class SponsoredDisplayBudgetRules(SubProfilesStream):
-    """
-    This stream corresponds to Amazon Advertising API - Sponsored Displays BudgetRules
-    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi/prod#/BudgetRules/GetSDBudgetRulesForAdvertiser
+    """This stream corresponds to Amazon Advertising API - Sponsored Displays BudgetRules
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi/prod#/BudgetRules/GetSDBudgetRulesForAdvertiser.
 
     Important: API docs contains incorrect endpoint path:
         sd/budgetRules - endpoint from API docs which always returns empty results
@@ -89,7 +84,7 @@ class SponsoredDisplayBudgetRules(SubProfilesStream):
     def path(self, **kwargs) -> str:
         return "sp/budgetRules"
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+    def request_params(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
         params["pageSize"] = params.pop("count")
         return params

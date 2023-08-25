@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -23,7 +24,7 @@ STREAM_NAME = "my_stream"
 
 
 @pytest.mark.parametrize(
-    "test_name, data, expected_message",
+    ("test_name", "data", "expected_message"),
     [
         (
             "test_data_to_airbyte_record",
@@ -49,7 +50,7 @@ def test_data_or_record_to_airbyte_record(test_name, data, expected_message):
 
 
 @pytest.mark.parametrize(
-    "test_name, data, expected_message",
+    ("test_name", "data", "expected_message"),
     [
         (
             "test_log_message_to_airbyte_record",
@@ -73,7 +74,7 @@ def test_log_or_trace_to_message(test_name, data, expected_message):
 
 
 @pytest.mark.parametrize(
-    "test_name, data",
+    ("test_name", "data"),
     [
         ("test_log_message_to_airbyte_record", AirbyteStateMessage(type=AirbyteStateType.STREAM)),
     ],

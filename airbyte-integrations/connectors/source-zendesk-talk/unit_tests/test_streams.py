@@ -35,7 +35,7 @@ class SingleRecordStream(ZendeskTalkSingleRecordStream):
 
 def is_url(url: str) -> bool:
     """Checking if provided string is a correct URL, i.e. good enough for urlparse
-    https://stackoverflow.com/a/52455972/656671
+    https://stackoverflow.com/a/52455972/656671.
     """
     try:
         result = urlparse(url)
@@ -46,7 +46,7 @@ def is_url(url: str) -> bool:
 
 @pytest.fixture(name="now")
 def now_fixture(mocker):
-    """Fixture to freeze the time"""
+    """Fixture to freeze the time."""
     return mocker.patch("source_zendesk_talk.streams.pendulum.now", return_value=pendulum.now())
 
 
@@ -240,10 +240,10 @@ class TestIVRMenusStream:
     def test_ivr_menus_parse_response(self, mocker):
         stream = IVRMenus(subdomain="test-domain", authenticator=mocker.MagicMock())
         ivrs = [
-            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
-            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
-            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
-            {"id": random.randint(10000, 99999), "menus": [dict(key="value")]},
+            {"id": random.randint(10000, 99999), "menus": [{"key": "value"}]},
+            {"id": random.randint(10000, 99999), "menus": [{"key": "value"}]},
+            {"id": random.randint(10000, 99999), "menus": [{"key": "value"}]},
+            {"id": random.randint(10000, 99999), "menus": [{"key": "value"}]},
         ]
         response_data = {"ivrs": ivrs}
         response = mocker.MagicMock()
@@ -268,7 +268,7 @@ class TestIVRRoutesStream:
         response = mocker.MagicMock()
         response.json.side_effect = [{"ivrs": ivr_routes}]
 
-        assert [record for record in stream.parse_response(response)] == [
+        assert list(stream.parse_response(response)) == [
             {"ivr_id": 1, "ivr_menu_id": 1.1, "id": 1.1, "routes": [{"route": "1.1.1 route"}, {"route": "1.1.2 route"}]},
             {"ivr_id": 1, "ivr_menu_id": 1.1, "id": 1.2, "routes": [{"route": "1.2 route"}]},
             {"ivr_id": 1, "ivr_menu_id": 1.2, "id": 1.1, "routes": [{"route": "1.1.1 route"}, {"route": "1.1.2 route"}]},

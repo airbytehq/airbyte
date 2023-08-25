@@ -39,10 +39,9 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         self._stream.validation_policy = PropertyMock(validate_schema_before_sync=False)
 
     def test_given_file_extension_does_not_match_when_check_availability_and_parsability_then_stream_is_still_available(self) -> None:
-        """
-        Before, we had a validation on the file extension but it turns out that in production, users sometimes have mismatch there. The
+        """Before, we had a validation on the file extension but it turns out that in production, users sometimes have mismatch there. The
         example we've seen was for JSONL parser but the file extension was just `.json`. Note that there we more than one record extracted
-        from this stream so it's not just that the file is one JSON object
+        from this stream so it's not just that the file is one JSON object.
         """
         self._stream.list_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
         self._parser.parse_records.return_value = [{"a record": 1}]

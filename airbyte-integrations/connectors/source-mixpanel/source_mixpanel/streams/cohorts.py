@@ -12,7 +12,7 @@ from .base import IncrementalMixpanelStream
 class Cohorts(IncrementalMixpanelStream):
     """Returns all of the cohorts in a given project.
     API Docs: https://developer.mixpanel.com/reference/cohorts
-    Endpoint: https://mixpanel.com/api/2.0/cohorts/list
+    Endpoint: https://mixpanel.com/api/2.0/cohorts/list.
 
     [{
         "count": 150

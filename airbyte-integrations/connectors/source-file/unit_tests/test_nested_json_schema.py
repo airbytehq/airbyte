@@ -21,7 +21,7 @@ json_obj = {
             {"id": "1002", "type": "Chocolate"},
             {"id": "1003", "type": "Blueberry"},
             {"id": "1004", "type": "Devil's Food"},
-        ]
+        ],
     },
     "topping": [
         {"id": "5001", "type": "None"},
@@ -47,7 +47,7 @@ json_array = [
                 {"id": "1002", "type": "Chocolate"},
                 {"id": "1003", "type": "Blueberry"},
                 {"id": "1004", "type": "Devil's Food"},
-            ]
+            ],
         },
         "topping": [
             {"id": "5001", "type": "None"},
@@ -101,7 +101,7 @@ expected_obj_schema = {
                         "type": "object",
                     },
                     "type": "array",
-                }
+                },
             },
             "required": ["batter"],
             "type": "object",
@@ -132,7 +132,7 @@ expected_array_schema = {
                         "type": "object",
                     },
                     "type": "array",
-                }
+                },
             },
             "required": ["batter"],
             "type": "object",
@@ -155,7 +155,7 @@ expected_array_schema = {
 }
 
 
-@pytest.mark.parametrize("input_json, expected_schema", ((json_obj, expected_obj_schema), (json_array, expected_array_schema)))
+@pytest.mark.parametrize(("input_json", "expected_schema"), ((json_obj, expected_obj_schema), (json_array, expected_array_schema)))
 def test_json_schema(mocker, config, input_json, expected_schema):
     source = SourceFile()
     mocker.patch("source_file.client.URLFile._open", Mock(return_value=io.StringIO(json.dumps(input_json))))

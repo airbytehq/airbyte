@@ -4,15 +4,16 @@
 
 
 import pendulum
-from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from pytest import fixture
 from source_insightly.source import IncrementalInsightlyStream
+
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
 start_date = "2021-01-01T00:00:00Z"
 authenticator = BasicHttpAuthenticator(username="test", password="")
 
 
-@fixture
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalInsightlyStream, "path", "v0/example_endpoint")
@@ -27,8 +28,7 @@ def test_cursor_field(patch_incremental_base_class):
 
 
 def test_incremental_params(patch_incremental_base_class):
-    """
-    After talking to the insightly team we learned that the DATE_UPDATED_UTC
+    """After talking to the insightly team we learned that the DATE_UPDATED_UTC
     cursor is exclusive. Subtracting 1 second from the previous state makes it inclusive.
     """
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)

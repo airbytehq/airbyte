@@ -4,9 +4,12 @@
 
 import importlib.metadata
 import os
+from typing import TYPE_CHECKING
 
 import sentry_sdk
-from connector_ops.utils import Connector
+
+if TYPE_CHECKING:
+    from connector_ops.utils import Connector
 
 
 def initialize():

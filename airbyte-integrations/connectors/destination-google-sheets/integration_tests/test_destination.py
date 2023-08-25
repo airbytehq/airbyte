@@ -7,20 +7,19 @@ import sys
 from io import StringIO
 
 import pytest
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_google_sheets.destination import DestinationGoogleSheets
 from integration_tests.test_buffer import read_input_messages
 from integration_tests.test_helpers import TEST_CONFIG
 from integration_tests.test_writer import TEST_CATALOG, TEST_SPREADSHEET, TEST_STREAM
 
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
+
 # ----- PREPARE ENV -----
 
 
 class CaptureStdOut(list):
-    """
-    Captures the stdout messages into the variable list, that could be validated later.
-    """
+    """Captures the stdout messages into the variable list, that could be validated later."""
 
     def __enter__(self):
         self._stdout = sys.stdout
@@ -48,7 +47,7 @@ def test_check():
 
 
 @pytest.mark.parametrize(
-    "expected, raised",
+    ("expected", "raised"),
     [
         ('{"type": "LOG", "log": {"level": "INFO", "message": "Auth session is expired. Refreshing..."}}', False),
         ('{"type": "LOG", "log": {"level": "INFO", "message": "Successfully refreshed auth session"}}', False),
@@ -71,8 +70,8 @@ def test_write(expected, raised):
     with CaptureStdOut() as output:
         list(
             TEST_DESTINATION.write(
-                config=TEST_CONFIG, configured_catalog=TEST_CATALOG, input_messages=read_input_messages(TEST_RECORDS_PATH)
-            )
+                config=TEST_CONFIG, configured_catalog=TEST_CATALOG, input_messages=read_input_messages(TEST_RECORDS_PATH),
+            ),
         )
 
     assert True if not raised else any(msg == expected for msg in output)

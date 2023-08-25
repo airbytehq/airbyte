@@ -24,7 +24,8 @@ class URLFileSecure(source_file.client.URLFile):
     def __init__(self, url: str, provider: dict, binary=None, encoding=None):
         storage_name = provider["storage"].lower()
         if url.startswith("file://") or storage_name == LOCAL_STORAGE_NAME:
-            raise RuntimeError("the local file storage is not supported by this connector.")
+            msg = "the local file storage is not supported by this connector."
+            raise RuntimeError(msg)
         super().__init__(url, provider, binary, encoding)
 
 
@@ -43,11 +44,10 @@ class SourceFileSecure(source_file.SourceFile):
         return ClientSecure
 
     def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
-        """Tries to find and remove a spec data about local storage settings"""
-
+        """Tries to find and remove a spec data about local storage settings."""
         parent_code_dir = os.path.dirname(source_file.source.__file__)
         parent_spec_file = os.path.join(parent_code_dir, "spec.json")
-        with open(parent_spec_file, "r") as f:
+        with open(parent_spec_file) as f:
             spec = ConnectorSpecification.parse_obj(json.load(f))
 
         # correction of  the "storage" property to const type

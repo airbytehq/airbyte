@@ -42,15 +42,12 @@ def add_allow_community_param(parser: argparse.ArgumentParser):
 
 def add_connectors_param(parser: argparse.ArgumentParser):
     parser.add_argument(
-        "--connectors", nargs="*", help="A list of connectors (separated by spaces) to run a script on. (default: all connectors)"
+        "--connectors", nargs="*", help="A list of connectors (separated by spaces) to run a script on. (default: all connectors)",
     )
 
 
 def get_valid_definitions_from_args(args):
-    if not args.connectors:
-        requested_defintions = definitions.ALL_DEFINITIONS
-    else:
-        requested_defintions = definitions.find_by_name(args.connectors)
+    requested_defintions = definitions.ALL_DEFINITIONS if not args.connectors else definitions.find_by_name(args.connectors)
 
     valid_definitions = []
     for definition in requested_defintions:
@@ -59,7 +56,7 @@ def get_valid_definitions_from_args(args):
             logging.warning(f"Skipping {connector_technical_name} since it's not an airbyte connector.")
         elif not args.allow_community and definition in definitions.COMMUNITY_DEFINITIONS:
             logging.warning(
-                f"Skipping {connector_technical_name} since it's a community connector. This is configurable via `--allow_community`"
+                f"Skipping {connector_technical_name} since it's a community connector. This is configurable via `--allow_community`",
             )
         elif definition in definitions.OTHER_DEFINITIONS:
             logging.warning(f"Skipping {connector_technical_name} since it doesn't have a support level.")

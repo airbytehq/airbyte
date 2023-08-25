@@ -7,6 +7,8 @@ import json
 import os
 
 import pytest
+from connector_acceptance_test.utils import connector_runner
+
 from airbyte_protocol.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
@@ -15,17 +17,16 @@ from airbyte_protocol.models import (
     OrchestratorType,
 )
 from airbyte_protocol.models import Type as AirbyteMessageType
-from connector_acceptance_test.utils import connector_runner
 
 pytestmark = pytest.mark.anyio
 
 
 class TestContainerRunner:
-    @pytest.fixture
+    @pytest.fixture()
     def dev_image_name(self):
         return "airbyte/source-faker:dev"
 
-    @pytest.fixture
+    @pytest.fixture()
     def released_image_name(self):
         return "airbyte/source-faker:latest"
 
@@ -60,7 +61,7 @@ class TestContainerRunner:
         raw_command_output = "\n".join(
             [
                 AirbyteMessage(
-                    type=AirbyteMessageType.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"foo": "bar"}, emitted_at=1.0)
+                    type=AirbyteMessageType.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"foo": "bar"}, emitted_at=1.0),
                 ).json(exclude_unset=False),
                 AirbyteMessage(
                     type=AirbyteMessageType.CONTROL,
@@ -71,7 +72,7 @@ class TestContainerRunner:
                     ),
                 ).json(exclude_unset=False),
                 "invalid message",
-            ]
+            ],
         )
 
         mocker.patch.object(connector_runner.ConnectorRunner, "_persist_new_configuration")
@@ -86,7 +87,7 @@ class TestContainerRunner:
         mock_logging.warning.assert_called_once()
 
     @pytest.mark.parametrize(
-        "pass_configuration_path, old_configuration, new_configuration, new_configuration_emitted_at, expect_new_configuration",
+        ("pass_configuration_path", "old_configuration", "new_configuration", "new_configuration_emitted_at", "expect_new_configuration"),
         [
             pytest.param(
                 True,
@@ -97,7 +98,7 @@ class TestContainerRunner:
                 id="Config unchanged: No new configuration persisted",
             ),
             pytest.param(
-                True, {"field_a": "value_a"}, {"field_a": "new_value_a"}, 1, True, id="Config changed: New configuration persisted"
+                True, {"field_a": "value_a"}, {"field_a": "new_value_a"}, 1, True, id="Config changed: New configuration persisted",
             ),
             pytest.param(
                 False,

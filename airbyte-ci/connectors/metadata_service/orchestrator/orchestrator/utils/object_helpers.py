@@ -3,7 +3,6 @@
 #
 
 import copy
-import json
 from typing import TypeVar
 
 import mergedeep

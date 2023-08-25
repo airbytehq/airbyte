@@ -9,9 +9,7 @@ from pydantic import BaseModel
 
 
 class RemoteFile(BaseModel):
-    """
-    A file in a file-based stream.
-    """
+    """A file in a file-based stream."""
 
     uri: str
     last_modified: datetime

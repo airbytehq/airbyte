@@ -8,7 +8,7 @@ from source_persistiq.source import PersistiqStream
 
 def mocked_requests_get(*args, **kwargs):
     class MockResponse:
-        def __init__(self, json_data, status_code):
+        def __init__(self, json_data, status_code) -> None:
             self.json_data = json_data
             self.status_code = status_code
 
@@ -18,7 +18,7 @@ def mocked_requests_get(*args, **kwargs):
     return MockResponse(json_data=kwargs["json_data"], status_code=kwargs["status_code"])
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(PersistiqStream, "path", "v0/example_endpoint")

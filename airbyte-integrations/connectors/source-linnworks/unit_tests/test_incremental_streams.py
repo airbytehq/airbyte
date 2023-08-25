@@ -11,12 +11,13 @@ import pendulum
 import pytest
 import requests
 import vcr
-from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.streams.http.http import HttpSubStream
 from source_linnworks.streams import IncrementalLinnworksStream, ProcessedOrderDetails, ProcessedOrders
 
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.sources.streams.http.http import HttpSubStream
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalLinnworksStream, "path", "v0/example_endpoint")
     mocker.patch.object(IncrementalLinnworksStream, "primary_key", "test_primary_key")

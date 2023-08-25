@@ -6,7 +6,7 @@ import pytest
 from source_rki_covid.source import Germany
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_germany_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(Germany, "primary_key", None)

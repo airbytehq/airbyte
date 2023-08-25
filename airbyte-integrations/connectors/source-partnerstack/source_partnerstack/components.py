@@ -23,11 +23,10 @@ class PartnerstackSlicer(StreamSlicer):
         yield {self.request_cursor_field: stream_state.get(self.cursor_field, 0)}
 
     def _max_dt_str(self, *args: str) -> Optional[str]:
-        new_state_candidates = list(map(lambda x: int(x), filter(None, args)))
+        new_state_candidates = [int(x) for x in filter(None, args)]
         if not new_state_candidates:
-            return
-        max_dt = max(new_state_candidates)
-        return max_dt
+            return None
+        return max(new_state_candidates)
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         slice_state = stream_slice.get(self.cursor_field)

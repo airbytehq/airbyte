@@ -4,22 +4,23 @@
 
 from typing import Any, Mapping, Type
 
-import pytest as pytest
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig
+import pytest
 from pydantic import ValidationError
+
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import CsvFormat, FileBasedStreamConfig
 
 
 @pytest.mark.parametrize(
-    "file_type, input_format, expected_format, expected_error",
+    ("file_type", "input_format", "expected_format", "expected_error"),
     [
         pytest.param("csv", {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True}, {"filetype": "csv", "delimiter": "d", "quote_char": "q", "escape_char": "e", "encoding": "ascii", "double_quote": True}, None, id="test_valid_format"),
-        pytest.param("csv", {"filetype": "csv", "double_quote": False}, {"delimiter": ",", "quote_char": "\"", "encoding": "utf8", "double_quote": False}, None, id="test_default_format_values"),
+        pytest.param("csv", {"filetype": "csv", "double_quote": False}, {"delimiter": ",", "quote_char": '"', "encoding": "utf8", "double_quote": False}, None, id="test_default_format_values"),
         pytest.param("csv", {"filetype": "csv", "delimiter": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_delimiter"),
         pytest.param("csv", {"filetype": "csv", "quote_char": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_quote_char"),
         pytest.param("csv", {"filetype": "csv", "escape_char": "nope", "double_quote": True}, None, ValidationError, id="test_invalid_escape_char"),
-        pytest.param("csv", {"filetype": "csv", "delimiter": ",", "quote_char": "\"", "encoding": "not_a_format", "double_quote": True}, {}, ValidationError, id="test_invalid_encoding_type"),
+        pytest.param("csv", {"filetype": "csv", "delimiter": ",", "quote_char": '"', "encoding": "not_a_format", "double_quote": True}, {}, ValidationError, id="test_invalid_encoding_type"),
         pytest.param("invalid", {"filetype": "invalid", "double_quote": False}, {}, ValidationError, id="test_config_format_file_type_mismatch"),
-    ]
+    ],
 )
 def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_format: Mapping[str, Any], expected_error: Type[Exception]) -> None:
     stream_config = {
@@ -27,7 +28,7 @@ def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_fo
         "file_type": file_type,
         "globs": ["*"],
         "validation_policy": "Emit Record",
-        "format": input_format
+        "format": input_format,
     }
 
     if expected_error:
@@ -40,7 +41,8 @@ def test_csv_config(file_type: str, input_format: Mapping[str, Any], expected_fo
                 assert isinstance(actual_config.format, CsvFormat)
                 assert getattr(actual_config.format, expected_format_field) == expected_format_value
         else:
-            assert False, "Expected format to be set"
+            msg = "Expected format to be set"
+            raise AssertionError(msg)
 
 
 def test_invalid_validation_policy() -> None:

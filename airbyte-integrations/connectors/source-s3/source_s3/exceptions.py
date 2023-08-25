@@ -17,7 +17,7 @@ class S3Exception(AirbyteTracedException):
         internal_message: Optional[str] = None,
         message: Optional[str] = None,
         failure_type: FailureType = FailureType.system_error,
-        exception: BaseException = None,
+        exception: Optional[BaseException] = None,
     ):
         file_info = (
             file_info

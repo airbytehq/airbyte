@@ -27,8 +27,9 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
 from source_delighted import SourceDelighted
+
+from airbyte_cdk.entrypoint import launch
 
 if __name__ == "__main__":
     source = SourceDelighted()

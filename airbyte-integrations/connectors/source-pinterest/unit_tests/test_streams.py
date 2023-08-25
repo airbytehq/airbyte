@@ -25,7 +25,7 @@ from source_pinterest.streams import (
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(PinterestStream, "path", "v0/example_endpoint")
@@ -97,7 +97,7 @@ def test_backoff_time(patch_base_class):
 
 
 @pytest.mark.parametrize(
-    "test_response, status_code, expected",
+    ("test_response", "status_code", "expected"),
     [
         ({"code": 8, "message": "You have exceeded your rate limit. Try again later."}, 429, False),
         ({"code": 7, "message": "Some other error message"}, 429, False),
@@ -113,7 +113,7 @@ def test_should_retry_on_max_rate_limit_error(requests_mock, test_response, stat
 
 
 @pytest.mark.parametrize(
-    "test_response, test_headers, status_code, expected",
+    ("test_response", "test_headers", "status_code", "expected"),
     [
         ({"code": 7, "message": "Some other error message"}, {"X-RateLimit-Reset": "2"}, 429, 2.0),
     ],
@@ -134,7 +134,7 @@ def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, 
 
 
 @pytest.mark.parametrize(
-    ("stream_cls, slice, expected"),
+    ("stream_cls", "slice", "expected"),
     [
         (Boards(MagicMock()), None, "boards"),
         (AdAccounts(MagicMock()), None, "ad_accounts"),
@@ -168,8 +168,5 @@ def test_backoff_on_rate_limit_error(requests_mock, test_response, status_code, 
 )
 def test_path(patch_base_class, stream_cls, slice, expected):
     stream = stream_cls
-    if slice:
-        result = stream.path(stream_slice=slice)
-    else:
-        result = stream.path()
+    result = stream.path(stream_slice=slice) if slice else stream.path()
     assert result == expected

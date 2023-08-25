@@ -11,6 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
+
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
@@ -32,7 +33,8 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     """Check if the required environment variables exist."""
     if is_local:
         if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
-            raise click.UsageError("You need to run this command from the airbyte repository root.")
+            msg = "You need to run this command from the airbyte repository root."
+            raise click.UsageError(msg)
     else:
         required_env_vars_for_ci = [
             "GCP_GSM_CREDENTIALS",
@@ -41,10 +43,12 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
         ]
         for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
-                raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
+                msg = f"When running in a CI context a {required_env_var} environment variable must be set."
+                raise click.UsageError(msg)
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
+        msg = "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
         raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
+            msg,
         )
 
 
@@ -67,10 +71,10 @@ def get_selected_connectors_with_modified_files(
         metadata_changes_only (bool): Whether to select only the connectors with metadata changes.
         modified_files (Set[Path]): The modified files.
         enable_dependency_scanning (bool): Whether to enable the dependency scanning.
+
     Returns:
         List[ConnectorWithModifiedFiles]: The connectors that match the selected criteria.
     """
-
     if metadata_changes_only and not modified:
         main_logger.info("--metadata-changes-only overrides --modified")
         modified = True
@@ -97,7 +101,7 @@ def get_selected_connectors_with_modified_files(
     selected_connectors_with_modified_files = []
     for connector in selected_connectors:
         connector_with_modified_files = ConnectorWithModifiedFiles(
-            technical_name=connector.technical_name, modified_files=get_connector_modified_files(connector, modified_files)
+            technical_name=connector.technical_name, modified_files=get_connector_modified_files(connector, modified_files),
         )
         if not metadata_changes_only:
             selected_connectors_with_modified_files.append(connector_with_modified_files)
@@ -168,7 +172,7 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names, support_levels, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning
+        names, support_levels, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning,
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
@@ -177,7 +181,7 @@ def connectors(
 @click.option(
     "--code-tests-only",
     is_flag=True,
-    help=("Only execute code tests. " "Metadata checks, QA, and acceptance tests will be skipped."),
+    help=("Only execute code tests. Metadata checks, QA, and acceptance tests will be skipped."),
     default=False,
     type=bool,
 )
@@ -269,7 +273,6 @@ def test(
 @click.pass_context
 def build(ctx: click.Context) -> bool:
     """Runs a build pipeline for the selected connectors."""
-
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Build connector {connector.technical_name}",
@@ -407,7 +410,7 @@ def publish(
                 pull_request=ctx.obj.get("pull_request"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
-        ]
+        ],
     )
 
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")

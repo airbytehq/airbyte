@@ -31,14 +31,14 @@ def test_main(mocker, dummy_qa_report, create_prs):
     assert main.inputs.fetch_remote_catalog.call_count == 2
     main.inputs.fetch_remote_catalog.assert_has_calls([mocker.call(main.OSS_CATALOG_URL), mocker.call(main.CLOUD_CATALOG_URL)])
     main.enrichments.get_enriched_catalog.assert_called_with(
-        mock_oss_catalog, mock_cloud_catalog, main.inputs.fetch_adoption_metrics_per_connector_version.return_value
+        mock_oss_catalog, mock_cloud_catalog, main.inputs.fetch_adoption_metrics_per_connector_version.return_value,
     )
     main.validations.get_qa_report.assert_called_with(main.enrichments.get_enriched_catalog.return_value, len(mock_oss_catalog))
     main.outputs.persist_qa_report.assert_called_with(
-        main.validations.get_qa_report.return_value, main.GCS_QA_REPORT_PATH, public_fields_only=False
+        main.validations.get_qa_report.return_value, main.GCS_QA_REPORT_PATH, public_fields_only=False,
     )
     if create_prs:
         main.validations.get_connectors_eligible_for_cloud.assert_called_with(main.validations.get_qa_report.return_value)
         main.cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo.assert_called_with(
-            main.validations.get_connectors_eligible_for_cloud.return_value
+            main.validations.get_connectors_eligible_for_cloud.return_value,
         )

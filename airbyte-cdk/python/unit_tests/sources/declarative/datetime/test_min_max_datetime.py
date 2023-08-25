@@ -5,6 +5,7 @@
 import datetime
 
 import pytest
+
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 
 date_format = "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -15,7 +16,7 @@ new_date = "2022-06-24T20:12:19.597854Z"
 
 
 @pytest.mark.parametrize(
-    "test_name, date, min_date, max_date, expected_date",
+    ("test_name", "date", "min_date", "max_date", "expected_date"),
     [
         ("test_time_is_greater_than_min", "{{ config['older'] }}", "{{ stream_state['newer'] }}", "", new_date),
         ("test_time_is_less_than_min", "{{ stream_state['newer'] }}", "{{ config['older'] }}", "", new_date),

@@ -3,6 +3,7 @@
 #
 
 import pathlib
+import sys
 
 import click
 from metadata_service.constants import METADATA_FILE_NAME
@@ -24,7 +25,7 @@ def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
         )
     if metadata_upload_info.icon_uploaded:
         click.secho(
-            f"The icon file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.", color="green"
+            f"The icon file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.", color="green",
         )
 
 
@@ -46,7 +47,7 @@ def validate(file_path: pathlib.Path):
     else:
         click.echo(f"{file_path} is not a valid ConnectorMetadataDefinitionV0 YAML file.")
         click.echo(str(error))
-        exit(1)
+        sys.exit(1)
 
 
 @metadata_service.command(help="Upload a metadata YAML file to a GCS bucket.")
@@ -60,10 +61,10 @@ def upload(metadata_file_path: pathlib.Path, bucket_name: str, prerelease: str):
         upload_info = upload_metadata_to_gcs(bucket_name, metadata_file_path, validator_opts)
         log_metadata_upload_info(upload_info)
     except (ValidationError, FileNotFoundError) as e:
-        click.secho(f"The metadata file could not be uploaded: {str(e)}", color="red")
-        exit(1)
+        click.secho(f"The metadata file could not be uploaded: {e!s}", color="red")
+        sys.exit(1)
     if upload_info.uploaded:
-        exit(0)
+        sys.exit(0)
     else:
         click.secho(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
-        exit(5)
+        sys.exit(5)

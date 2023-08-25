@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -33,8 +34,8 @@ class SearchMetricsStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "project_id": stream_slice["project_id"],
@@ -54,8 +55,7 @@ class SearchMetricsStream(HttpStream, ABC):
         elif isinstance(data, dict):
             data = [data]
 
-        for record in data:
-            yield record
+        yield from data
 
     def should_retry(self, response: requests.Response) -> bool:
         rankings_not_yet_calculated = response.status_code == 400 and "Rankings not yet calculated" in response.json()["error_message"]
@@ -90,8 +90,8 @@ class Projects(SearchMetricsStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -107,7 +107,7 @@ class IncrementalSearchMetricsStream(ProjectsChildStream, SearchMetricsStream):
     cursor_field = "date"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["date_from"] = stream_slice["date_from"]
@@ -119,12 +119,11 @@ class IncrementalSearchMetricsStream(ProjectsChildStream, SearchMetricsStream):
             self.cursor_field: max(
                 str(latest_record.get(self.cursor_field, self.start_date)),
                 str(current_stream_state.get(self.cursor_field, self.start_date)),
-            )
+            ),
         }
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
             "date_from": "20200101",
             "date_to": "20210102"
@@ -133,9 +132,8 @@ class IncrementalSearchMetricsStream(ProjectsChildStream, SearchMetricsStream):
             "date_from": "20200103",
             "date_to": "20210104"
             },
-            ...]
+            ...].
         """
-
         for stream_slice in super().stream_slices(**kwargs):
             start_date = pendulum.parse(self.start_date).date()
             end_date = pendulum.now().date()
@@ -156,6 +154,7 @@ class IncrementalSearchMetricsStream(ProjectsChildStream, SearchMetricsStream):
                 start_date = end_date_slice.add(days=1)
 
             return date_slices
+        return None
 
 
 class Tags(ProjectsChildStream, SearchMetricsStream):
@@ -276,7 +275,7 @@ class ListSerpSpreadS7(ProjectsChildStream, SearchMetricsStream):
 
 
 class SearchMetricsAuthenticator(Oauth2Authenticator):
-    def __init__(self, config):
+    def __init__(self, config) -> None:
         super().__init__(
             token_refresh_endpoint="https://api.searchmetrics.com/v4/token",
             client_id=config["api_key"],
@@ -296,9 +295,7 @@ class SearchMetricsAuthenticator(Oauth2Authenticator):
         return headers
 
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)."""
         try:
             response = requests.request(
                 method="POST",
@@ -310,15 +307,14 @@ class SearchMetricsAuthenticator(Oauth2Authenticator):
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
 
 # Source
 class SourceSearchMetrics(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the credentials.
-        """
+        """Testing connection availability for the connector by granting the credentials."""
         authenticator = SearchMetricsAuthenticator(config)
 
         try:

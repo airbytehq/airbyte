@@ -6,12 +6,13 @@ from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import pytest
+
 from connector_ops import utils
 
 
 class TestConnector:
     @pytest.mark.parametrize(
-        "technical_name, expected_type, expected_name, expected_error",
+        ("technical_name", "expected_type", "expected_name", "expected_error"),
         [
             ("source-faker", "source", "faker", does_not_raise()),
             ("source-facebook-marketing", "source", "facebook-marketing", does_not_raise()),
@@ -27,7 +28,7 @@ class TestConnector:
             assert connector.connector_type == expected_type
 
     @pytest.mark.parametrize(
-        "connector, exists",
+        ("connector", "exists"),
         [
             (utils.Connector("source-faker"), True),
             (utils.Connector("source-notpublished"), False),
@@ -75,7 +76,7 @@ def gradle_file_with_dependencies(tmpdir) -> Path:
         integrationTestJavaImplementation project(':path:to:test:dependency1')
         performanceTestJavaImplementation project(':path:to:test:dependency2')
     }
-    """
+    """,
     )
     expected_dependencies = [Path("path/to/dependency1"), Path("path/to/dependency2")]
     expected_test_dependencies = [Path("path/to/test/dependency"), Path("path/to/test/dependency1"), Path("path/to/test/dependency2")]
@@ -87,9 +88,9 @@ def test_parse_dependencies(gradle_file_with_dependencies):
     gradle_file, expected_regular_dependencies, expected_test_dependencies = gradle_file_with_dependencies
     regular_dependencies, test_dependencies = utils.parse_dependencies(gradle_file)
     assert len(regular_dependencies) == len(expected_regular_dependencies)
-    assert all([regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies])
+    assert all(regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies)
     assert len(test_dependencies) == len(expected_test_dependencies)
-    assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
+    assert all(test_dependency in expected_test_dependencies for test_dependency in test_dependencies)
 
 
 @pytest.mark.parametrize("with_test_dependencies", [True, False])
@@ -117,7 +118,7 @@ def test_get_all_gradle_dependencies(with_test_dependencies):
             Path("airbyte-integrations/bases/standard-source-test"),
         ]
         assert len(all_dependencies) == len(expected_dependencies)
-        assert all([dependency in expected_dependencies for dependency in all_dependencies])
+        assert all(dependency in expected_dependencies for dependency in all_dependencies)
     else:
         all_dependencies = utils.get_all_gradle_dependencies(build_file, with_test_dependencies=False)
         expected_dependencies = [
@@ -135,4 +136,4 @@ def test_get_all_gradle_dependencies(with_test_dependencies):
             Path("airbyte-integrations/connectors/source-relational-db"),
         ]
         assert len(all_dependencies) == len(expected_dependencies)
-        assert all([dependency in expected_dependencies for dependency in all_dependencies])
+        assert all(dependency in expected_dependencies for dependency in all_dependencies)

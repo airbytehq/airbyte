@@ -38,6 +38,7 @@ def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     Args:
         dockerRepository (str): Name of the connector docker image.
         version (str): Version of the connector.
+
     Returns:
         str: Path to the metadata file.
     """
@@ -50,6 +51,7 @@ def get_icon_remote_file_path(dockerRepository: str, version: str) -> str:
     Args:
         dockerRepository (str): Name of the connector docker image.
         version (str): Version of the connector.
+
     Returns:
         str: Path to the icon file.
     """
@@ -81,7 +83,7 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
 
 
 def upload_file_if_changed(
-    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False
+    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False,
 ) -> Tuple[bool, str]:
     local_file_md5_hash = compute_gcs_md5(local_file_path)
     remote_blob = bucket.blob(blob_path)
@@ -123,7 +125,8 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
 def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
     metadata, error = validate_and_load(metadata_file_path, [], validator_opts)
     if metadata is None:
-        raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
+        msg = f"Metadata file {metadata_file_path} is invalid for uploading: {error}"
+        raise ValueError(msg)
 
     # replace any dockerImageTag references with the actual tag
     # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
@@ -144,7 +147,7 @@ def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: Va
 
 
 def upload_metadata_to_gcs(
-    bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions = ValidatorOptions()
+    bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions = ValidatorOptions(),
 ) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
 
@@ -156,6 +159,7 @@ def upload_metadata_to_gcs(
         metadata_file_path (Path): Path to the metadata file.
         service_account_file_path (Path): Path to the JSON file with the service account allowed to read and write on the bucket.
         prerelease_tag (Optional[str]): Whether the connector is a prerelease_tag or not.
+
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
@@ -165,7 +169,8 @@ def upload_metadata_to_gcs(
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
 
     if metadata is None:
-        raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
+        msg = f"Metadata file {metadata_file_path} is invalid for uploading: {error}"
+        raise ValueError(msg)
 
     service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
     credentials = service_account.Credentials.from_service_account_info(service_account_info)

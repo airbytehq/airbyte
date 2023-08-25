@@ -5,6 +5,7 @@
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -16,10 +17,10 @@ class XkcdStream(HttpStream):
     last_comic = 0
     comic_number = 0
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
+    def path(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs: Any) -> str:
         if next_page_token:
             next_token: str = next_page_token["next_token"]
             return f"/{next_token}/info.0.json"
@@ -40,8 +41,8 @@ class XkcdStream(HttpStream):
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         record = response.json()
         yield record
@@ -62,7 +63,7 @@ class SourceXkcd(AbstractSource):
         except Exception as error:
             return (
                 False,
-                f"Unable to connect to XKCD - {repr(error)}",
+                f"Unable to connect to XKCD - {error!r}",
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

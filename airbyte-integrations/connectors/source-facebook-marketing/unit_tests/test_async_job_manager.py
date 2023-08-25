@@ -30,13 +30,13 @@ def update_job_mock_fixture(mocker):
 
 class TestInsightAsyncManager:
     def test_jobs_empty(self, api):
-        """Should work event without jobs"""
+        """Should work event without jobs."""
         manager = InsightAsyncJobManager(api=api, jobs=[])
         jobs = list(manager.completed_jobs())
         assert not jobs
 
     def test_jobs_completed_immediately(self, api, mocker, time_mock):
-        """Manager should emmit jobs without waiting if they completed"""
+        """Manager should emmit jobs without waiting if they completed."""
         jobs = [
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False),
             mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False),
@@ -47,7 +47,7 @@ class TestInsightAsyncManager:
         time_mock.sleep.assert_not_called()
 
     def test_jobs_wait(self, api, mocker, time_mock, update_job_mock):
-        """Manager should return completed jobs and wait for others"""
+        """Manager should return completed jobs and wait for others."""
 
         def update_job_behaviour():
             jobs[1].completed = True
@@ -75,7 +75,7 @@ class TestInsightAsyncManager:
         assert job is None
 
     def test_job_restarted(self, api, mocker, time_mock, update_job_mock):
-        """Manager should restart failed jobs"""
+        """Manager should restart failed jobs."""
 
         def update_job_behaviour():
             jobs[1].failed = True
@@ -102,7 +102,7 @@ class TestInsightAsyncManager:
         assert job is None
 
     def test_job_split(self, api, mocker, time_mock, update_job_mock):
-        """Manager should split failed jobs when they fail second time"""
+        """Manager should split failed jobs when they fail second time."""
 
         def update_job_behaviour():
             jobs[1].failed = True
@@ -135,7 +135,7 @@ class TestInsightAsyncManager:
         assert job is None
 
     def test_job_failed_too_many_times(self, api, mocker, time_mock, update_job_mock):
-        """Manager should fail when job failed too many times"""
+        """Manager should fail when job failed too many times."""
 
         def update_job_behaviour():
             jobs[1].failed = True
@@ -153,7 +153,7 @@ class TestInsightAsyncManager:
             next(manager.completed_jobs(), None)
 
     def test_nested_job_failed_too_many_times(self, api, mocker, time_mock, update_job_mock):
-        """Manager should fail when a nested job within a ParentAsyncJob failed too many times"""
+        """Manager should fail when a nested job within a ParentAsyncJob failed too many times."""
 
         def update_job_behaviour():
             jobs[1].failed = True

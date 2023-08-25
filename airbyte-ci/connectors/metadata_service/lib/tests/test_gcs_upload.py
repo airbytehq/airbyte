@@ -57,13 +57,13 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
 
 
 @pytest.mark.parametrize(
-    "version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash",
+    ("version_blob_md5_hash", "latest_blob_md5_hash", "local_file_md5_hash"),
     [
         pytest.param(None, "same_md5_hash", "same_md5_hash", id="Version blob does not exist: Version blob should be uploaded."),
         pytest.param("same_md5_hash", None, "same_md5_hash", id="Latest blob does not exist: Latest blob should be uploaded."),
         pytest.param(None, None, "same_md5_hash", id="Latest blob and Version blob does not exist: both should be uploaded."),
         pytest.param(
-            "different_md5_hash", "same_md5_hash", "same_md5_hash", id="Version blob does not match: Version blob should be uploaded."
+            "different_md5_hash", "same_md5_hash", "same_md5_hash", id="Version blob does not match: Version blob should be uploaded.",
         ),
         pytest.param(
             "same_md5_hash",
@@ -72,7 +72,7 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
             id="Version blob and Latest blob match: no upload should happen.",
         ),
         pytest.param(
-            "same_md5_hash", "different_md5_hash", "same_md5_hash", id="Latest blob does not match: Latest blob should be uploaded."
+            "same_md5_hash", "different_md5_hash", "same_md5_hash", id="Latest blob does not match: Latest blob should be uploaded.",
         ),
         pytest.param(
             "same_md5_hash",
@@ -83,7 +83,7 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
     ],
 )
 def test_upload_metadata_to_gcs_valid_metadata(
-    mocker, valid_metadata_upload_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash
+    mocker, valid_metadata_upload_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash,
 ):
     mocker.spy(gcs_upload, "_version_upload")
     mocker.spy(gcs_upload, "_latest_upload")

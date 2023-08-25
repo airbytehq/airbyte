@@ -10,30 +10,27 @@ from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from airbyte_cdk import AirbyteLogger
 from firebolt.db import Connection
 from pyarrow import fs
 
+from airbyte_cdk import AirbyteLogger
+
 
 class FireboltWriter:
-    """
-    Base class for shared writer logic.
-    """
+    """Base class for shared writer logic."""
 
     flush_interval = 1000
 
     def __init__(self, connection: Connection) -> None:
-        """
-        :param connection: Firebolt SDK connection class with established connection
-            to the databse.
+        """:param connection: Firebolt SDK connection class with established connection
+        to the databse.
         """
         self.connection = connection
         self._buffer = defaultdict(list)
         self._values = 0
 
     def delete_table(self, name: str) -> None:
-        """
-        Delete the resulting table.
+        """Delete the resulting table.
         Primarily used in Overwrite strategy to clean up previous data.
 
         :param name: table name to delete.
@@ -42,8 +39,7 @@ class FireboltWriter:
         cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{name}")
 
     def create_raw_table(self, name: str):
-        """
-        Create the resulting _airbyte_raw table.
+        """Create the resulting _airbyte_raw table.
 
         :param name: table name to create.
         """
@@ -59,8 +55,7 @@ class FireboltWriter:
         cursor.execute(query)
 
     def queue_write_data(self, stream_name: str, id: str, time: datetime, record: str) -> None:
-        """
-        Queue up data in a buffer in memory before writing to the database.
+        """Queue up data in a buffer in memory before writing to the database.
         When flush_interval is reached data is persisted.
 
         :param stream_name: name of the stream for which the data corresponds.
@@ -74,22 +69,18 @@ class FireboltWriter:
             self._flush()
 
     def _flush(self):
-        """
-        Stub for the intermediate data flush that's triggered during the
+        """Stub for the intermediate data flush that's triggered during the
         buffering operation.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def flush(self):
-        """
-        Stub for the data flush at the end of writing operation.
-        """
-        raise NotImplementedError()
+        """Stub for the data flush at the end of writing operation."""
+        raise NotImplementedError
 
 
 class FireboltS3Writer(FireboltWriter):
-    """
-    Data writer using the S3 strategy. Data is buffered in memory
+    """Data writer using the S3 strategy. Data is buffered in memory
     before being flushed to S3 in .parquet format. At the end of
     the operation data is written to Firebolt databse from S3, allowing
     greater ingestion speed.
@@ -98,8 +89,7 @@ class FireboltS3Writer(FireboltWriter):
     flush_interval = 100000
 
     def __init__(self, connection: Connection, s3_bucket: str, access_key: str, secret_key: str, s3_region: str) -> None:
-        """
-        :param connection: Firebolt SDK connection class with established connection
+        """:param connection: Firebolt SDK connection class with established connection
             to the databse.
         :param s3_bucket: Intermediate bucket to store the data files before writing them to Firebolt.
             Has to be created and accessible.
@@ -116,8 +106,7 @@ class FireboltS3Writer(FireboltWriter):
         self.fs = fs.S3FileSystem(access_key=access_key, secret_key=secret_key, region=s3_region)
 
     def _flush(self) -> None:
-        """
-        Intermediate data flush that's triggered during the
+        """Intermediate data flush that's triggered during the
         buffering operation. Uploads data stored in memory to the S3.
         """
         for table, data in self._buffer.items():
@@ -131,8 +120,7 @@ class FireboltS3Writer(FireboltWriter):
         self._values = 0
 
     def flush(self) -> None:
-        """
-        Flush any leftover data after ingestion and write from S3 to Firebolt.
+        """Flush any leftover data after ingestion and write from S3 to Firebolt.
         Intermediate data on S3 and External Table will be deleted after write is complete.
         """
         self._flush()
@@ -143,8 +131,7 @@ class FireboltS3Writer(FireboltWriter):
             self.cleanup(table)
 
     def create_external_table(self, name: str) -> None:
-        """
-        Create Firebolt External Table to interface with the files on S3.
+        """Create Firebolt External Table to interface with the files on S3.
 
         :param name: Stream name from which the table name is derived.
         """
@@ -163,8 +150,7 @@ class FireboltS3Writer(FireboltWriter):
         cursor.execute(query, parameters=(f"s3://{self.s3_bucket}/airbyte_output/{self.unique_dir}/{name}", self.key_id, self.secret_key))
 
     def ingest_data(self, name: str) -> None:
-        """
-        Write data from External Table to the _airbyte_raw table effectively
+        """Write data from External Table to the _airbyte_raw table effectively
         persisting data in Firebolt.
 
         :param name: Stream name from which the table name is derived.
@@ -174,8 +160,7 @@ class FireboltS3Writer(FireboltWriter):
         cursor.execute(query)
 
     def cleanup(self, name: str) -> None:
-        """
-        Clean intermediary External tables and wipe the S3 folder.
+        """Clean intermediary External tables and wipe the S3 folder.
 
         :param name: Stream name from which the table name is derived.
         """
@@ -185,8 +170,7 @@ class FireboltS3Writer(FireboltWriter):
 
 
 class FireboltSQLWriter(FireboltWriter):
-    """
-    Data writer using the SQL writing strategy. Data is buffered in memory
+    """Data writer using the SQL writing strategy. Data is buffered in memory
     and flushed using INSERT INTO SQL statement. This is less effective strategy
     better suited for testing and small data sets.
     """
@@ -194,15 +178,13 @@ class FireboltSQLWriter(FireboltWriter):
     flush_interval = 1000
 
     def __init__(self, connection: Connection) -> None:
-        """
-        :param connection: Firebolt SDK connection class with established connection
-            to the databse.
+        """:param connection: Firebolt SDK connection class with established connection
+        to the databse.
         """
         super().__init__(connection)
 
     def _flush(self) -> None:
-        """
-        Intermediate data flush that's triggered during the
+        """Intermediate data flush that's triggered during the
         buffering operation. Writes data stored in memory via SQL commands.
         """
         cursor = self.connection.cursor()
@@ -213,9 +195,7 @@ class FireboltSQLWriter(FireboltWriter):
         self._values = 0
 
     def flush(self) -> None:
-        """
-        Final data flush after all data has been written to memory.
-        """
+        """Final data flush after all data has been written to memory."""
         self._flush()
 
 

@@ -22,7 +22,7 @@
 # SOFTWARE.
 #
 import json
-import unittest.mock as mock
+from unittest import mock
 
 import pytest
 import spec_linter
@@ -49,7 +49,7 @@ def test_fetch_oneof_schemas():
 
 
 @pytest.mark.parametrize(
-    "schema,error_text",
+    ("schema", "error_text"),
     [
         ({"type": "string", "title": "Field"}, "Check failed for field"),
         ({"type": "string", "description": "Format: YYYY-MM-DDTHH:mm:ss[Z]."}, "Check failed for field"),
@@ -119,8 +119,10 @@ def test_validate_schema_failed():
 
     errors = spec_linter.validate_schema("path", schema, ["root"])
     assert len(errors) == 2
-    assert "Check failed for field" in errors[0] and "root.access_token" in errors[0]
-    assert "Check failed for field" in errors[1] and "root.store_name" in errors[1]
+    assert "Check failed for field" in errors[0]
+    assert "root.access_token" in errors[0]
+    assert "Check failed for field" in errors[1]
+    assert "root.store_name" in errors[1]
 
 
 def test_validate_schema_success():
@@ -162,7 +164,7 @@ def test_validate_schema_with_nested_oneof():
                                 {"type": "object", "properties": {"access_token": {"type": "object"}}},
                                 {"type": "string", "multipleOf": 3},
                             ],
-                        }
+                        },
                     },
                 },
                 {"type": "string", "title": "Start Date"},
@@ -173,8 +175,8 @@ def test_validate_schema_with_nested_oneof():
     errors = spec_linter.validate_schema("path", schema, [])
     assert len(errors) == 2
     # check error type
-    assert "Check failed for field" == errors[0][0]
-    assert "Check failed for field" == errors[1][0]
+    assert errors[0][0] == "Check failed for field"
+    assert errors[1][0] == "Check failed for field"
     # check failed fields
-    assert "store_name" == errors[0][1]
-    assert "nested_field.0.settings.0.access_token" == errors[1][1]
+    assert errors[0][1] == "store_name"
+    assert errors[1][1] == "nested_field.0.settings.0.access_token"

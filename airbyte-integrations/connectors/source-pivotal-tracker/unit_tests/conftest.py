@@ -12,41 +12,41 @@ def load_file(fn):
     return open(os.path.join("unit_tests", "responses", fn)).read()
 
 
-@fixture
+@fixture()
 def config_pass():
     return {"api_token": "goodtoken"}
 
 
-@fixture
+@fixture()
 def projects_response():
     return json.loads(load_file("projects.json"))
 
 
-@fixture
+@fixture()
 def project_memberships_response():
     return json.loads(load_file("project_memberships.json"))
 
 
-@fixture
+@fixture()
 def activity_response():
     return json.loads(load_file("activity.json"))
 
 
-@fixture
+@fixture()
 def labels_response():
     return json.loads(load_file("labels.json"))
 
 
-@fixture
+@fixture()
 def releases_response():
     return json.loads(load_file("releases.json"))
 
 
-@fixture
+@fixture()
 def epics_response():
     return json.loads(load_file("epics.json"))
 
 
-@fixture
+@fixture()
 def stories_response():
     return json.loads(load_file("stories.json"))

@@ -17,11 +17,9 @@ from destination_kvdb.writer import KvDbWriter
 
 class DestinationKvdb(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
+        """Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
         in the input message stream. Outputting a state message means that every AirbyteRecordMessage which came before it has been
@@ -43,7 +41,7 @@ class DestinationKvdb(Destination):
             elif message.type == Type.RECORD:
                 record = message.record
                 writer.queue_write_operation(
-                    record.stream, record.data, time.time_ns() / 1_000_000
+                    record.stream, record.data, time.time_ns() / 1_000_000,
                 )  # convert from nanoseconds to milliseconds
             else:
                 # ignore other message types for now
@@ -53,9 +51,8 @@ class DestinationKvdb(Destination):
         writer.flush()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
-            e.g: if a provided API token or password can be used to connect and write to the destination.
+        """Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
+        e.g: if a provided API token or password can be used to connect and write to the destination.
         """
         try:
             # Verify write access by attempting to write and then delete to a random key
@@ -66,7 +63,7 @@ class DestinationKvdb(Destination):
         except Exception as e:
             traceback.print_exc()
             return AirbyteConnectionStatus(
-                status=Status.FAILED, message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}"
+                status=Status.FAILED, message=f"An exception occurred: {e}. \nStacktrace: \n{traceback.format_exc()}",
             )
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

@@ -12,27 +12,28 @@ import boto3
 import botocore
 import botocore.exceptions
 import pendulum
+from botocore.config import Config
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from botocore.config import Config
 
 
 class Client:
     def __init__(self, aws_key_id: str, aws_secret_key: str, aws_region_name: str):
         config = Config(
             parameter_validation=False,
-            retries=dict(
+            retries={
                 # use similar configuration as in http source
-                max_attempts=5,
+                "max_attempts": 5,
                 # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/retries.html#adaptive-retry-mode
-                mode="adaptive",
-            ),
+                "mode": "adaptive",
+            },
         )
 
         self.session: botocore.client.CloudTrail = boto3.client(
-            "cloudtrail", aws_access_key_id=aws_key_id, aws_secret_access_key=aws_secret_key, region_name=aws_region_name, config=config
+            "cloudtrail", aws_access_key_id=aws_key_id, aws_secret_access_key=aws_secret_key, region_name=aws_region_name, config=config,
         )
 
 
@@ -54,7 +55,7 @@ class AwsCloudtrailStream(Stream, ABC):
         return response.get("NextToken")
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = {"MaxResults": self.limit}
 
@@ -70,10 +71,7 @@ class AwsCloudtrailStream(Stream, ABC):
 
     @abstractmethod
     def send_request(self, **kwargs) -> Mapping[str, Any]:
-        """
-        This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail
-        """
-        pass
+        """This method should be overridden by subclasses to send proper request with appropriate parameters to CloudTrail."""
 
     def is_read_limit_reached(self) -> bool:
         if self.records_left <= 0:
@@ -84,9 +82,9 @@ class AwsCloudtrailStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
@@ -139,7 +137,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
         return self.client.session.lookup_events(**kwargs)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
@@ -160,11 +158,9 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
             yield event
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss
-        """
+        """Slices whole time range to more granular slices (24h slices). Latest time slice should be the first to avoid data loss."""
         cursor_data = stream_state.get(self.cursor_field) if stream_state else 0
         end_time = pendulum.now()
         # API stores data for last 90 days. Adjust starting time to avoid unnecessary API requests
@@ -179,7 +175,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
                     "StartTime": last_start_time.int_timestamp,
                     # decrement second as API include records with specified StartTime and EndTime
                     "EndTime": last_start_time.add(days=1).int_timestamp - 1,
-                }
+                },
             )
             last_start_time = last_start_time.add(days=1)
 

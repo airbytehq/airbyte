@@ -6,11 +6,12 @@
 from pathlib import Path
 
 import pytest
+
 from connector_ops import qa_checks, utils
 
 
 @pytest.mark.parametrize(
-    "connector, expect_exists",
+    ("connector", "expect_exists"),
     [
         (utils.Connector("source-faker"), True),
         (utils.Connector("source-foobar"), False),
@@ -57,7 +58,7 @@ def test_check_changelog_entry_is_updated_version_in_changelog(mocker, tmp_path)
 
 
 @pytest.mark.parametrize(
-    "connector, expect_exists",
+    ("connector", "expect_exists"),
     [
         (utils.Connector("source-faker"), True),
         (utils.Connector("source-foobar"), False),
@@ -68,7 +69,7 @@ def test_check_connector_icon_is_available(connector, expect_exists):
 
 
 @pytest.mark.parametrize(
-    "user_input, expect_qa_checks_to_run",
+    ("user_input", "expect_qa_checks_to_run"),
     [
         ("not-a-connector", False),
         ("connectors/source-faker", True),
@@ -111,7 +112,7 @@ def test_run_qa_checks_error(capsys, mocker):
 
 
 @pytest.mark.parametrize(
-    "file_name, file_line, expected_in_stdout",
+    ("file_name", "file_line", "expected_in_stdout"),
     [
         ("file_with_http_url.foo", "http://foo.bar", True),
         ("file_without_https_url.foo", "", False),
@@ -151,7 +152,7 @@ def test_check_connector_https_url_only_all_connectors():
             by_ab_internal_sl.setdefault(failing_connector.ab_internal_sl, [])
             by_ab_internal_sl[failing_connector.ab_internal_sl].append(failing_connector)
         failure_message = ""
-        for ab_internal_sl in by_ab_internal_sl.keys():
+        for ab_internal_sl in by_ab_internal_sl:
             failure_message += f"\nFailing SL {ab_internal_sl} connectors:\n"
             for connector in by_ab_internal_sl[ab_internal_sl]:
                 failure_message += f"\t- {connector.technical_name}\n"
@@ -159,7 +160,7 @@ def test_check_connector_https_url_only_all_connectors():
 
 
 @pytest.mark.parametrize(
-    "file_name, line, expect_is_comment",
+    ("file_name", "line", "expect_is_comment"),
     [
         ("foo.py", "# I'm a comment", True),
         ("foo.py", "   # I'm a comment", True),
@@ -195,19 +196,19 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
                 "2.0.0": {
                     "upgradeDeadline": "2021-01-01",
                     "message": "This is a breaking change",
-                }
-            }
+                },
+            },
         },
     }
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
 
-    assert qa_checks.check_migration_guide(connector) == False
+    assert qa_checks.check_migration_guide(connector) is False
     stdout, _ = capsys.readouterr()
     assert "Migration guide file is missing for foobar. Please create a foobar-migrations.md file in the docs folder" in stdout
 
 
 @pytest.mark.parametrize(
-    "test_file, expected_stdout",
+    ("test_file", "expected_stdout"),
     [
         ("bad-header.md", "has incorrect version headings"),
         ("out-of-order.md", "has incorrect version headings"),
@@ -233,7 +234,7 @@ def test_check_invalid_migration_guides(mocker, tmp_path, capsys, test_file, exp
     mock_metadata_dict = {"name": "Foobar", "documentationUrl": tmp_path, "releases": {"breakingChanges": mock_breaking_change_dict}}
 
     test_file = Path("airbyte-ci/connectors/connector_ops/tests/test_migration_files") / test_file
-    with open(test_file, "r") as f:
+    with open(test_file) as f:
         contents = f.read()
 
     with open(mock_migration_file, "w") as f:
@@ -241,6 +242,6 @@ def test_check_invalid_migration_guides(mocker, tmp_path, capsys, test_file, exp
 
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
 
-    assert qa_checks.check_migration_guide(connector) == False
+    assert qa_checks.check_migration_guide(connector) is False
     stdout, _ = capsys.readouterr()
     assert expected_stdout in stdout

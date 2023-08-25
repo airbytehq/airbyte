@@ -6,7 +6,7 @@ import pytest
 from source_orb.source import CreditsLedgerEntries, OrbStream, SubscriptionUsage
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     mocker.patch.object(OrbStream, "path", "v0/example_endpoint")
     mocker.patch.object(OrbStream, "primary_key", "id")
@@ -24,8 +24,8 @@ def test_request_params(patch_base_class):
     ("mock_response", "expected_token"),
     [
         ({}, None),
-        (dict(pagination_metadata=dict(has_more=True, next_cursor="orb-test-cursor")), dict(cursor="orb-test-cursor")),
-        (dict(pagination_metadata=dict(has_more=False)), None),
+        ({"pagination_metadata": {"has_more": True, "next_cursor": "orb-test-cursor"}}, {"cursor": "orb-test-cursor"}),
+        ({"pagination_metadata": {"has_more": False}}, None),
     ],
 )
 def test_next_page_token(patch_base_class, mocker, mock_response, expected_token):
@@ -40,9 +40,9 @@ def test_next_page_token(patch_base_class, mocker, mock_response, expected_token
     ("mock_response", "expected_parsed_objects"),
     [
         ({}, []),
-        (dict(data=[]), []),
-        (dict(data=[{"id": "test-customer-id"}]), [{"id": "test-customer-id"}]),
-        (dict(data=[{"id": "test-customer-id"}, {"id": "test-customer-id-2"}]), [{"id": "test-customer-id"}, {"id": "test-customer-id-2"}]),
+        ({"data": []}, []),
+        ({"data": [{"id": "test-customer-id"}]}, [{"id": "test-customer-id"}]),
+        ({"data": [{"id": "test-customer-id"}, {"id": "test-customer-id-2"}]}, [{"id": "test-customer-id"}, {"id": "test-customer-id-2"}]),
     ],
 )
 def test_parse_response(patch_base_class, mocker, mock_response, expected_parsed_objects):

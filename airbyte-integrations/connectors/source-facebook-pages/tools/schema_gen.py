@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""
-Docs: https://developers.facebook.com/docs/graph-api/reference/page
+"""Docs: https://developers.facebook.com/docs/graph-api/reference/page.
 
 List of all Facebook nodes: https://github.com/facebook/facebook-business-sdk-codegen
 
@@ -170,57 +169,18 @@ FB_TYPES = {
     },
     # 'map' is not supported because it is not possible to identify field names, which are required for destinations
     # so 'map' attr will be converted and saved as string
-    # "map": {
-    #   "type": ["object", "null"],
-    #   "properties": {
-    #     "id": {
-    #       "type": ["string", "null"],
-    #     }
-    #   }
     # },
     # "map<string, unsigned int32>": {
-    #   "type": ["object", "null"],
-    #   "properties": {
-    #     "id": {
-    #       "type": ["integer", "null"],
-    #     }
-    #   }
     # },
     # "map<string, unsigned int>": {
-    #   "type": ["object", "null"],
-    #   "properties": {
-    #     "id": {
-    #       "type": ["integer", "null"],
-    #     }
-    #   }
     # },
     # "map<string, float>": {
-    #   "type": ["object", "null"],
-    #   "properties": {
-    #     "id": {
-    #       "type": ["integer", "null"],
-    #     }
-    #   }
     # },
     # "map<string, string>": {
-    #   "type": ["null", "object"],
-    #   "properties": {
-    #     "id": {
-    #       "type": ["string", "null"],
-    #     }
-    #   }
     # },
     # "map<string, bool>": {
-    #   "type": ["null", "object"],
-    #   "properties": {
-    #     "id": {
-    #       "type": ["string", "boolean"],
-    #     }
-    #   }
-    # }
 }
 
-# print(f'FB_TYPES: {len(FB_TYPES)} types')
 
 #
 
@@ -256,8 +216,6 @@ def get_fields(fields, with_refs=False):
                 schema_fields[attr_name] = FB_TYPE_DEFAULT
             else:
                 # /home/vratniuk/air/sandbox/schema_gen_fb/facebook-business-sdk-codegen/api_specs/specs/AdSet.json
-                # {
-                #     "name": "bid_strategy",
                 #     "type": "AdSet_bid_strategy"  <--- THIS IS ENUM
                 # },
                 schema_fields[attr_name] = {"type": ["array", "null"], "items": {"type": ["array", "null"], "items": FB_TYPE_DEFAULT}}
@@ -287,11 +245,6 @@ def get_edges(edges):
     attrs = {}
     for attr in edges:
         if attr["method"] == "GET":
-            # {
-            #     "method": "GET",
-            #     "endpoint": "indexed_videos",
-            #     "return": "AdVideo",
-            #     "params": []
             # },
             attr_name = attr.get("endpoint")
             attr_type = attr.get("return")

@@ -10,16 +10,17 @@ from typing import Iterable, List, Optional, Set
 import boto3.session
 import pytz
 import smart_open
+from botocore.client import BaseClient
+from botocore.client import Config as ClientConfig
+
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from botocore.client import BaseClient
-from botocore.client import Config as ClientConfig
 from source_s3.v4.config import Config
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._s3_client = None
 
@@ -29,8 +30,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
     @config.setter
     def config(self, value: Config):
-        """
-        FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
+        """FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
 
         Note: FileBasedSource only requires the keys defined in the abstract config, whereas concrete implementations of StreamReader
         will require keys that (for example) allow it to authenticate with the 3rd party.
@@ -46,7 +46,8 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
-            raise ValueError("Source config is missing; cannot create the S3 client.")
+            msg = "Source config is missing; cannot create the S3 client."
+            raise ValueError(msg)
         if self._s3_client is None:
             if self.config.endpoint:
                 client_kv_args = _get_s3_compatible_client_args(self.config)
@@ -60,9 +61,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return self._s3_client
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
-        """
-        Get all files matching the specified glob patterns.
-        """
+        """Get all files matching the specified glob patterns."""
         s3 = self.s3_client
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
@@ -102,7 +101,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
-                f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
+                f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions",
             )
         # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
         try:
@@ -115,11 +114,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return file["Key"].endswith("/")
 
     def _page(
-        self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger
+        self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        """
-        Page through lists of S3 objects.
-        """
+        """Page through lists of S3 objects."""
         total_n_keys_for_prefix = 0
         kwargs = {"Bucket": bucket}
         while True:
@@ -147,13 +144,10 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
-    """
-    Returns map of args used for creating s3 boto3 client.
-    """
-    client_kv_args = {
+    """Returns map of args used for creating s3 boto3 client."""
+    return {
         "config": ClientConfig(s3={"addressing_style": "auto"}),
         "endpoint_url": config.endpoint,
         "use_ssl": True,
         "verify": True,
     }
-    return client_kv_args

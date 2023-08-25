@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple, Union
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -14,7 +14,7 @@ from .streams import IncrementalMicrosoftDataverseStream, MicrosoftDataverseStre
 
 
 class SourceMicrosoftDataverse(AbstractSource):
-    def __init__(self):
+    def __init__(self) -> None:
         self.catalogs = None
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
@@ -37,7 +37,7 @@ class SourceMicrosoftDataverse(AbstractSource):
             if entity["CanChangeTrackingBeEnabled"]["Value"] and entity["ChangeTrackingEnabled"]:
                 schema["properties"].update({"_ab_cdc_updated_at": {"type": "string"}, "_ab_cdc_deleted_at": {"type": ["null", "string"]}})
                 stream = AirbyteStream(
-                    name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+                    name=entity["LogicalName"], json_schema=schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
                 )
                 if "modifiedon" in schema["properties"]:
                     stream.source_defined_cursor = True
@@ -50,8 +50,7 @@ class SourceMicrosoftDataverse(AbstractSource):
         return AirbyteCatalog(streams=streams)
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        :param config:  the user-input config object conforming to the connector's spec.yaml
+        """:param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
@@ -68,15 +67,13 @@ class SourceMicrosoftDataverse(AbstractSource):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         self.catalogs = catalog
         return super().read(logger, config, catalog, state)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         auth = get_auth(config)
 
         streams = []

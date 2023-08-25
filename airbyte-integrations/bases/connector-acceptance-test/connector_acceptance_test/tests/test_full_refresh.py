@@ -9,17 +9,16 @@ from logging import Logger
 from typing import List, Mapping, Optional
 
 import pytest
+
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import IgnoredFieldsConfiguration
 from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
 from connector_acceptance_test.utils.json_schema_helper import CatalogField
 
-# from airbyte_pr import ConfiguredAirbyteCatalog, Type
-
 
 def primary_keys_by_stream(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, List[CatalogField]]:
-    """Get PK fields for each stream
+    """Get PK fields for each stream.
 
     :param configured_catalog:
     :return:
@@ -53,7 +52,7 @@ class TestFullRefresh(BaseTest):
         assert max_emitted_at_first_read < min_emitted_at_second_read, "emitted_at should increase on subsequent runs"
 
     def assert_two_sequential_reads_produce_same_or_subset_records(
-        self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger
+        self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger,
     ):
         records_by_stream_1 = defaultdict(list)
         for record in records_1:
@@ -108,5 +107,5 @@ class TestFullRefresh(BaseTest):
 
         self.assert_emitted_at_increase_on_subsequent_runs(records_1, records_2)
         self.assert_two_sequential_reads_produce_same_or_subset_records(
-            records_1, records_2, configured_catalog, ignored_fields, detailed_logger
+            records_1, records_2, configured_catalog, ignored_fields, detailed_logger,
         )

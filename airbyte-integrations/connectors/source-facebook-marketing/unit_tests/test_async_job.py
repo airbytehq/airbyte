@@ -118,10 +118,10 @@ def batch_fixture(api, mocker):
 
 
 class TestUpdateInBatch:
-    """Test update_in_batch"""
+    """Test update_in_batch."""
 
     def test_less_jobs(self, api, started_job, batch):
-        """Should update all jobs when number of jobs less than max size of batch"""
+        """Should update all jobs when number of jobs less than max size of batch."""
         jobs = [started_job for _ in range(49)]
 
         update_in_batch(api=api, jobs=jobs)
@@ -131,7 +131,7 @@ class TestUpdateInBatch:
         batch.execute.assert_called_once()
 
     def test_more_jobs(self, api, started_job, batch):
-        """Should update all jobs when number of jobs greater than max size of batch"""
+        """Should update all jobs when number of jobs greater than max size of batch."""
         second_batch = copy.deepcopy(batch)
         jobs = [started_job for _ in range(55)]
         api.new_batch.return_value = None
@@ -146,7 +146,7 @@ class TestUpdateInBatch:
         second_batch.execute.assert_called_once()
 
     def test_failed_execution(self, api, started_job, batch):
-        """Should execute batch until there are no failed tasks"""
+        """Should execute batch until there are no failed tasks."""
         jobs = [started_job for _ in range(49)]
         batch.execute.side_effect = [batch, batch, None]
 
@@ -158,7 +158,7 @@ class TestUpdateInBatch:
 
 
 class TestInsightAsyncJob:
-    """Test InsightAsyncJob class"""
+    """Test InsightAsyncJob class."""
 
     def test_start(self, job):
         job.start()
@@ -329,7 +329,7 @@ class TestInsightAsyncJob:
         ],
     )
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
-        """Test that split will correctly downsize edge_object"""
+        """Test that split will correctly downsize edge_object."""
         today = pendulum.today().date()
         start, end = today - pendulum.duration(days=365 * 3 + 20), today - pendulum.duration(days=365 * 3 + 10)
         params = {"time_increment": 1, "breakdowns": []}
@@ -345,9 +345,9 @@ class TestInsightAsyncJob:
                 "level": next_edge_class.__name__.lower(),
                 "time_range": {
                     "since": (today - pendulum.duration(months=37) + pendulum.duration(days=1)).to_date_string(),
-                    "until": end.to_date_string()
+                    "until": end.to_date_string(),
                 },
-            }
+            },
         )
         assert len(small_jobs) == 3
         assert all(j.interval == job.interval for j in small_jobs)
@@ -356,7 +356,7 @@ class TestInsightAsyncJob:
             assert str(small_job) == f"InsightAsyncJob(id=<None>, {next_edge_class(i)}, time_range={job.interval}, breakdowns={[]})"
 
     def test_split_job_smallest(self, mocker, api):
-        """Test that split will correctly downsize edge_object"""
+        """Test that split will correctly downsize edge_object."""
         interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(api=api, edge_object=Ad(1), interval=interval, params=params)
@@ -449,7 +449,7 @@ class TestParentAsyncJob:
         while count < 10:
             split_jobs = parent_job.split_job()
             assert len(split_jobs) == len(
-                grouped_jobs
+                grouped_jobs,
             ), "attempted to split job at smallest size so should just restart job meaning same no. of jobs"
             grouped_jobs[0].attempt_number += 1
             count += 1

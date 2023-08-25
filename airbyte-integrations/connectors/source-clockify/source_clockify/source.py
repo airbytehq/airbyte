@@ -24,7 +24,7 @@ class SourceClockify(AbstractSource):
             next(workspace_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
-            return False, f"Please check that your API key and workspace id are entered correctly: {repr(e)}"
+            return False, f"Please check that your API key and workspace id are entered correctly: {e!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(token=config["api_key"], auth_header="X-Api-Key", auth_method="")

@@ -11,8 +11,7 @@ from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamSta
 
 @dataclass
 class RecordFilter:
-    """
-    Filter applied on a list of Records
+    """Filter applied on a list of Records.
 
     config (Config): The user-provided configuration as specified by the source's spec
     condition (str): The string representing the predicate to filter a record. Records will be removed if evaluated to False

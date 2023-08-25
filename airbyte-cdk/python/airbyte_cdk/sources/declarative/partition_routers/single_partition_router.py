@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 @dataclass
 class SinglePartitionRouter(StreamSlicer):
-    """Partition router returning only a stream slice"""
+    """Partition router returning only a stream slice."""
 
     parameters: InitVar[Mapping[str, Any]]
 
@@ -48,4 +48,4 @@ class SinglePartitionRouter(StreamSlicer):
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        yield dict()
+        yield {}

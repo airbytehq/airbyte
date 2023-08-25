@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Mapping, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
@@ -58,23 +58,21 @@ from .utils import read_full_refresh
 class SourceGithub(AbstractSource):
     @staticmethod
     def _get_and_prepare_repositories_config(config: Mapping[str, Any]) -> Set[str]:
-        """
-        _get_and_prepare_repositories_config gets set of repositories names from config and removes simple errors that user could provide
+        """_get_and_prepare_repositories_config gets set of repositories names from config and removes simple errors that user could provide
         Args:
             config: Dict representing connector's config
         Returns:
-            set of provided repositories
+            set of provided repositories.
         """
-        config_repositories = set(filter(None, config["repository"].split(" ")))
-        return config_repositories
+        return set(filter(None, config["repository"].split(" ")))
 
     @staticmethod
     def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
-        """
-        Parse config.repository and produce two lists: organizations, repositories.
+        """Parse config.repository and produce two lists: organizations, repositories.
+
         Args:
             config (dict): Dict representing connector's config
-            authenticator(MultipleTokenAuthenticator): authenticator object
+            authenticator(MultipleTokenAuthenticator): authenticator object.
         """
         config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
 
@@ -124,7 +122,8 @@ class SourceGithub(AbstractSource):
             return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
         if "personal_access_token" in credentials:
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
-        raise Exception("Invalid config format")
+        msg = "Invalid config format"
+        raise Exception(msg)
 
     def _get_authenticator(self, config: Mapping[str, Any]):
         _, token = self.get_access_token(config)
@@ -139,7 +138,7 @@ class SourceGithub(AbstractSource):
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
-    def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    def _get_branches_data(selected_branches: str, full_refresh_args: Optional[Dict[str, Any]] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
         selected_branches = set(filter(None, selected_branches.split(" ")))
 
         # Get the default branch for each repository
@@ -150,7 +149,7 @@ class SourceGithub(AbstractSource):
                 {
                     repo_stats["full_name"]: repo_stats["default_branch"]
                     for repo_stats in repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-                }
+                },
             )
 
         all_branches = []
@@ -212,7 +211,7 @@ class SourceGithub(AbstractSource):
             user_message = self.user_friendly_error_message(message)
             if user_message:
                 raise AirbyteTracedException(
-                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
+                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e,
                 )
             else:
                 raise e

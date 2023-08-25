@@ -27,7 +27,7 @@ class ParquetFormat(BaseModel):
         order=1,
         default=64 * 1024,  # 64K records
         description="Maximum number of records per batch read from the input files. "
-        "Batches may be smaller if there aren’t enough rows in the file. "
+        "Batches may be smaller if there aren`t enough rows in the file. "
         "This option can help avoid out-of-memory errors if your data is particularly wide.",
     )
     buffer_size: int = Field(

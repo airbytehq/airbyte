@@ -5,18 +5,20 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar, Tuple
+from typing import TYPE_CHECKING, ClassVar
 
 from dagger import CacheVolume, Container, Directory, QueryError
+
 from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
-from pipelines.contexts import PipelineContext
+
+if TYPE_CHECKING:
+    from pipelines.contexts import PipelineContext
 
 
 class GradleTask(Step, ABC):
-    """
-    A step to run a Gradle task.
+    """A step to run a Gradle task.
 
     Attributes:
         task_name (str): The Gradle task name to run.
@@ -26,7 +28,7 @@ class GradleTask(Step, ABC):
     DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
-    gradle_task_options: Tuple[str, ...] = ()
+    gradle_task_options: tuple[str, ...] = ()
 
     def __init__(self, context: PipelineContext, with_java_cdk_snapshot: bool = True) -> None:
         super().__init__(context)
@@ -56,22 +58,18 @@ class GradleTask(Step, ABC):
         Returns:
             Directory: The patched buildSrc directory
         """
-
         build_src_dir = self.context.get_repo_dir("buildSrc")
         cat_gradle_plugin_content = await build_src_dir.file("src/main/groovy/airbyte-connector-acceptance-test.gradle").contents()
         # When running integrationTest in Dagger we don't want to run connectorAcceptanceTest
         # connectorAcceptanceTest is run in the AcceptanceTest step
         cat_gradle_plugin_content = cat_gradle_plugin_content.replace(
-            "project.integrationTest.dependsOn(project.connectorAcceptanceTest)", ""
+            "project.integrationTest.dependsOn(project.connectorAcceptanceTest)", "",
         )
         return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", contents=cat_gradle_plugin_content)
 
-    def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
+    def _get_gradle_command(self, extra_options: tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
-            ["./gradlew"]
-            + list(extra_options)
-            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
-            + list(self.gradle_task_options)
+            ["./gradlew", *list(extra_options), f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}", *list(self.gradle_task_options)]
         )
         for task in self.DEFAULT_TASKS_TO_EXCLUDE:
             command += ["-x", task]
@@ -80,7 +78,7 @@ class GradleTask(Step, ABC):
     async def _run(self) -> StepResult:
         includes = self.build_include
         if self.with_java_cdk_snapshot:
-            includes + ["./airbyte-cdk/java/airbyte-cdk/**"]
+            [*includes, "./airbyte-cdk/java/airbyte-cdk/**"]
 
         connector_under_test = (
             environments.with_gradle(self.context, includes, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
@@ -126,7 +124,7 @@ class GradleTask(Step, ABC):
                     "gc.properties",
                     f"{consts.GRADLE_CACHE_PATH}/modules-2/",
                     f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
-                ]
+                ],
             )
             return await with_cache
         return gradle_container

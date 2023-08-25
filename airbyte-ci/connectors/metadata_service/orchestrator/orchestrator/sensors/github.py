@@ -11,9 +11,7 @@ EXPECTED_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 def github_connector_nightly_workflow_run_sensor(job, resources_def) -> SensorDefinition:
-    """
-    This sensor is responsible for polling the github connector nightly workflow for new runs.
-    """
+    """This sensor is responsible for polling the github connector nightly workflow for new runs."""
 
     @sensor(
         name=f"{job.name}_on_github_connector_nightly_workflow_success",
@@ -36,7 +34,7 @@ def github_connector_nightly_workflow_run_sensor(job, resources_def) -> SensorDe
 
             # get all latest updated at value from the latest_successful_workflow_runs
             last_successful_run_date = max(
-                [datetime.strptime(run["updated_at"], EXPECTED_DATETIME_FORMAT) for run in latest_successful_workflow_runs]
+                [datetime.strptime(run["updated_at"], EXPECTED_DATETIME_FORMAT) for run in latest_successful_workflow_runs],
             )
 
             is_new_run = not cursor_as_datetime or cursor_as_datetime < last_successful_run_date

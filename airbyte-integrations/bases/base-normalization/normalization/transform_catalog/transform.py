@@ -8,27 +8,27 @@ import os
 from typing import Any, Dict
 
 import yaml
+
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog.catalog_processor import CatalogProcessor
 
 
 class TransformCatalog:
-    """
-To run this transformation:
-```
-python3 main_dev_transform_catalog.py \
+    """To run this transformation:
+    ```
+    python3 main_dev_transform_catalog.py \
   --integration-type <postgres|bigquery|redshift|snowflake>
-  --profile-config-dir . \
+    --profile-config-dir . \
   --catalog integration_tests/catalog.json \
   --out dir \
   --json-column json_blob
-```
+    ```.
     """
 
     config: dict = {}
     DBT_PROJECT = "dbt_project.yml"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = {}
 
     def run(self, args) -> None:
@@ -72,17 +72,17 @@ python3 main_dev_transform_catalog.py \
 
 
 def read_profiles_yml(profile_dir: str) -> Any:
-    with open(os.path.join(profile_dir, "profiles.yml"), "r") as file:
+    with open(os.path.join(profile_dir, "profiles.yml")) as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
-        obj = config["normalize"]["outputs"]["prod"]
-        return obj
+        return config["normalize"]["outputs"]["prod"]
 
 
 def read_yaml_config(filename: str) -> Dict[str, Any]:
-    with open(filename, "r") as fp:
+    with open(filename) as fp:
         config = yaml.safe_load(fp)
     if not isinstance(config, dict):
-        raise RuntimeError("{} does not parse to a dictionary".format(os.path.basename(filename)))
+        msg = f"{os.path.basename(filename)} does not parse to a dictionary"
+        raise RuntimeError(msg)
     return config
 
 
@@ -97,14 +97,16 @@ def extract_schema(profiles_yml: Dict) -> str:
     elif "schema" in profiles_yml:
         return str(profiles_yml["schema"])
     else:
-        raise KeyError("No Dataset/Schema defined in profiles.yml")
+        msg = "No Dataset/Schema defined in profiles.yml"
+        raise KeyError(msg)
 
 
 def extract_path(profiles_yml: Dict) -> str:
     if "path" in profiles_yml:
         return str(profiles_yml["path"])
     else:
-        raise KeyError("No destination_path defined in profiles.yml")
+        msg = "No destination_path defined in profiles.yml"
+        raise KeyError(msg)
 
 
 def main(args=None):

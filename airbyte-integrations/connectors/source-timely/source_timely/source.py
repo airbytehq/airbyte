@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -26,7 +27,7 @@ class TimelyIntegrationStream(HttpStream, ABC):
         self.bearer_token = bearer_token
 
     def request_params(
-        self, stream_state: Mapping[str, any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
         if next_page_token is None:
@@ -36,29 +37,28 @@ class TimelyIntegrationStream(HttpStream, ABC):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         bearer_token = self.bearer_token
-        event_headers = {"Authorization": f"Bearer {bearer_token}", "Content-Type": "application/json"}
-        return event_headers
+        return {"Authorization": f"Bearer {bearer_token}", "Content-Type": "application/json"}
 
     def parse_response(
         self,
         response: requests.Response,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping]:
         return response.json()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         results = response.json()
-        if results:
-            if len(results) > 0:
-                url_query = urlparse(response.url).query
-                query_params = parse_qs(url_query)
+        if results and len(results) > 0:
+            url_query = urlparse(response.url).query
+            query_params = parse_qs(url_query)
 
-                new_params = {param_name: param_value[0] for param_name, param_value in query_params.items()}
-                if "page" in new_params:
-                    new_params["page"] = int(new_params["page"]) + 1
-                return new_params
+            new_params = {param_name: param_value[0] for param_name, param_value in query_params.items()}
+            if "page" in new_params:
+                new_params["page"] = int(new_params["page"]) + 1
+            return new_params
+        return None
 
 
 class Events(TimelyIntegrationStream):

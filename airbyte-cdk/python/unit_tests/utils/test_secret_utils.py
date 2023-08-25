@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, get_secret_paths, get_secrets, update_secrets
 
 SECRET_STRING_KEY = "secret_key1"
@@ -19,7 +20,7 @@ flat_spec_with_secret = {"properties": {SECRET_STRING_KEY: {"type": "string", "a
 flat_config_with_secret = {SECRET_STRING_KEY: SECRET_STRING_VALUE, NOT_SECRET_KEY: NOT_SECRET_VALUE}
 
 flat_spec_with_secret_int = {
-    "properties": {SECRET_INT_KEY: {"type": "integer", "airbyte_secret": True}, NOT_SECRET_KEY: {"type": "string"}}
+    "properties": {SECRET_INT_KEY: {"type": "integer", "airbyte_secret": True}, NOT_SECRET_KEY: {"type": "string"}},
 }
 flat_config_with_secret_int = {SECRET_INT_KEY: SECRET_INT_VALUE, NOT_SECRET_KEY: NOT_SECRET_VALUE}
 
@@ -43,7 +44,7 @@ spec_with_oneof_secrets = {
                 },
             ],
         },
-    }
+    },
 }
 config_with_oneof_secrets_1 = {
     SECRET_STRING_KEY: SECRET_STRING_VALUE,
@@ -68,7 +69,7 @@ spec_with_nested_secrets = {
                 SECRET_INT_KEY: {"type": "integer", "airbyte_secret": True},
             },
         },
-    }
+    },
 }
 config_with_nested_secrets = {
     SECRET_STRING_KEY: SECRET_STRING_VALUE,
@@ -78,7 +79,7 @@ config_with_nested_secrets = {
 
 
 @pytest.mark.parametrize(
-    ["spec", "expected"],
+    ("spec", "expected"),
     [
         (flat_spec_with_secret, [[SECRET_STRING_KEY]]),
         (flat_spec_without_secrets, []),
@@ -92,7 +93,7 @@ def test_get_secret_paths(spec, expected):
 
 
 @pytest.mark.parametrize(
-    ["spec", "config", "expected"],
+    ("spec", "config", "expected"),
     [
         (flat_spec_with_secret, flat_config_with_secret, [SECRET_STRING_VALUE]),
         (flat_spec_without_secrets, flat_config_without_secrets, []),

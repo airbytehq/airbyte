@@ -7,6 +7,9 @@ from typing import Any, Mapping
 from unittest.mock import Mock
 
 import pytest
+from destination_xata import DestinationXata
+from xata.client import XataClient
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -18,13 +21,11 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_xata import DestinationXata
-from xata.client import XataClient
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -73,7 +74,7 @@ def test_write(config: Mapping):
         type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={
             "str_col": "example",
             "int_col": 1,
-        }, emitted_at=0)
+        }, emitted_at=0),
     )]
 
     # setup Xata workspace
@@ -86,14 +87,14 @@ def test_write(config: Mapping):
             "columns": [
                 {"name": "str_col", "type": "string"},
                 {"name": "int_col", "type": "int"},
-            ]
+            ],
         }).status_code == 200, "failed to set table schema"
 
     dest = DestinationXata()
     list(dest.write(
         config=config,
         configured_catalog=test_stream,
-        input_messages=records
+        input_messages=records,
     ))
 
     # fetch record

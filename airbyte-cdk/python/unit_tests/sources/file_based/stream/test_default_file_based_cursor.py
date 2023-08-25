@@ -7,14 +7,15 @@ from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from freezegun import freeze_time
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from freezegun import freeze_time
 
 
 @pytest.mark.parametrize(
-    "files_to_add, expected_start_time, expected_state_dict",
+    ("files_to_add", "expected_start_time", "expected_state_dict"),
     [
         pytest.param([
             RemoteFile(uri="a.csv",
@@ -25,7 +26,7 @@ from freezegun import freeze_time
                        file_type="csv"),
             RemoteFile(uri="c.csv",
                        last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
-                       file_type="csv")
+                       file_type="csv"),
 
         ],
             [datetime(2021, 1, 1),
@@ -113,7 +114,7 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
     assert expected_state_dict == cursor.get_state()
 
 
-@pytest.mark.parametrize("files, expected_files_to_sync, max_history_size, history_is_partial", [
+@pytest.mark.parametrize(("files", "expected_files_to_sync", "max_history_size", "history_is_partial"), [
     pytest.param([
         RemoteFile(uri="a.csv",
                    last_modified=datetime.strptime("2021-01-01T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -123,7 +124,7 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
                    file_type="csv"),
         RemoteFile(uri="c.csv",
                    last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
-                   file_type="csv")
+                   file_type="csv"),
     ],
         [
             RemoteFile(uri="a.csv",
@@ -134,7 +135,7 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
                        file_type="csv"),
             RemoteFile(uri="c.csv",
                        last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
-                       file_type="csv")
+                       file_type="csv"),
         ], 3, True, id="test_all_files_should_be_synced"),
     pytest.param([
         RemoteFile(uri="a.csv",
@@ -145,7 +146,7 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
                    file_type="csv"),
         RemoteFile(uri="c.csv",
                    last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
-                   file_type="csv")
+                   file_type="csv"),
     ], [
         RemoteFile(uri="a.csv",
                    last_modified=datetime.strptime("2021-01-01T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -155,7 +156,7 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
                    file_type="csv"),
         RemoteFile(uri="c.csv",
                    last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
-                   file_type="csv")
+                   file_type="csv"),
 
     ], 2, True, id="test_sync_more_files_than_history_size"),
 ])
@@ -204,7 +205,7 @@ def test_only_recent_files_are_synced_if_history_is_full() -> None:
     logger.warning.assert_called_once()
 
 
-@pytest.mark.parametrize("modified_at_delta, should_sync_file", [
+@pytest.mark.parametrize(("modified_at_delta", "should_sync_file"), [
     pytest.param(timedelta(days=-1), False, id="test_modified_at_is_earlier"),
     pytest.param(timedelta(days=0), False, id="test_modified_at_is_equal"),
     pytest.param(timedelta(days=1), True, id="test_modified_at_is_more_recent"),
@@ -235,14 +236,14 @@ def test_sync_file_already_present_in_history(modified_at_delta: timedelta, shou
 
 @freeze_time("2023-06-06T00:00:00Z")
 @pytest.mark.parametrize(
-    "file_name, last_modified, earliest_dt_in_history, should_sync_file", [
+    ("file_name", "last_modified", "earliest_dt_in_history", "should_sync_file"), [
         pytest.param("a.csv", datetime(2023, 6, 3), datetime(2023, 6, 6), True, id="test_last_modified_is_equal_to_time_buffer"),
         pytest.param("b.csv", datetime(2023, 6, 6), datetime(2023, 6, 6), False, id="test_file_was_already_synced"),
         pytest.param("b.csv", datetime(2023, 6, 7), datetime(2023, 6, 6), True, id="test_file_was_synced_in_the_past"),
         pytest.param("b.csv", datetime(2023, 6, 3), datetime(2023, 6, 6), False, id="test_file_was_synced_in_the_past_but_last_modified_is_earlier_in_history"),
         pytest.param("a.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), False, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_smaller"),
         pytest.param("c.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), True, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_greater"),
-    ]
+    ],
 )
 def test_should_sync_file(file_name: str, last_modified: datetime, earliest_dt_in_history: datetime, should_sync_file: bool) -> None:
     logger = MagicMock()

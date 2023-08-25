@@ -6,14 +6,14 @@ import copy
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
+from pydantic import AnyUrl, BaseModel, Field
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
-from pydantic import AnyUrl, BaseModel, Field
 
 
 class AbstractFileBasedSpec(BaseModel):
-    """
-    Used during spec; allows the developer to configure the cloud provider specific options
+    """Used during spec; allows the developer to configure the cloud provider specific options
     that are needed when users configure a file-based source.
     """
 
@@ -36,15 +36,12 @@ class AbstractFileBasedSpec(BaseModel):
     @classmethod
     @abstractmethod
     def documentation_url(cls) -> AnyUrl:
-        """
-        :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
+        """:return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
     @classmethod
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        """
-        Generates the mapping comprised of the config fields
-        """
+        """Generates the mapping comprised of the config fields."""
         schema = super().schema(*args, **kwargs)
         transformed_schema = copy.deepcopy(schema)
         schema_helpers.expand_refs(transformed_schema)
@@ -54,8 +51,7 @@ class AbstractFileBasedSpec(BaseModel):
 
     @staticmethod
     def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        allOfs are not supported by the UI, but pydantic is automatically writing them for enums.
+        """AllOfs are not supported by the UI, but pydantic is automatically writing them for enums.
         Unpacks the enums under allOf and moves them up a level under the enum key
         anyOfs are also not supported by the UI, so we replace them with the similar oneOf, with the
         additional validation that an incoming config only matches exactly one of a field's types.

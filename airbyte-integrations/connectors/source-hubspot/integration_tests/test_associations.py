@@ -5,22 +5,23 @@
 import logging
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from source_hubspot.source import SourceHubspot
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 
-@pytest.fixture
+
+@pytest.fixture()
 def source():
     return SourceHubspot()
 
 
-@pytest.fixture
+@pytest.fixture()
 def associations(config, source):
     streams = source.streams(config)
     return {stream.name: getattr(stream, "associations", []) for stream in streams}
 
 
-@pytest.fixture
+@pytest.fixture()
 def configured_catalog(config, source):
     streams = source.streams(config)
     return {
@@ -33,7 +34,7 @@ def configured_catalog(config, source):
             }
             for stream in streams
             if stream.supports_incremental and getattr(stream, "associations", [])
-        ]
+        ],
     }
 
 

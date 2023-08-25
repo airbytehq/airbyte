@@ -9,6 +9,7 @@ import re
 from typing import Any, Dict, List, Set
 
 import yaml
+
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro
@@ -18,8 +19,7 @@ from normalization.transform_catalog.table_name_registry import TableNameRegistr
 
 
 class CatalogProcessor:
-    """
-    Takes as input an AirbyteCatalog file (stored as Json Schema).
+    """Takes as input an AirbyteCatalog file (stored as Json Schema).
     Associated input raw data is expected to be stored in a staging area called "raw_schema".
 
     This processor reads the catalog file, extracts streams descriptions and transforms them to final tables in their
@@ -29,9 +29,8 @@ class CatalogProcessor:
     """
 
     def __init__(self, output_directory: str, destination_type: DestinationType):
-        """
-        @param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
-        @param destination_type is the destination type of warehouse
+        """@param output_directory is the path to the directory where this processor should write the resulting SQL files (DBT models)
+        @param destination_type is the destination type of warehouse.
         """
         self.output_directory: str = output_directory
         self.destination_type: DestinationType = destination_type
@@ -39,8 +38,7 @@ class CatalogProcessor:
         self.models_to_source: Dict[str, str] = {}
 
     def process(self, catalog_file: str, json_column_name: str, default_schema: str):
-        """
-        This method first parse and build models to handle top-level streams.
+        """This method first parse and build models to handle top-level streams.
         In a second loop will go over the substreams that were nested in a breadth-first traversal manner.
 
         @param catalog_file input AirbyteCatalog file in JSON Schema describing the structure of the raw data
@@ -50,7 +48,6 @@ class CatalogProcessor:
         tables_registry: TableNameRegistry = TableNameRegistry(self.destination_type)
         schema_to_source_tables: Dict[str, Set[str]] = {}
         catalog = read_json(catalog_file)
-        # print(json.dumps(catalog, separators=(",", ":")))
         substreams = []
         stream_processors = self.build_stream_processor(
             catalog=catalog,
@@ -65,7 +62,7 @@ class CatalogProcessor:
         for conflict in tables_registry.resolve_names():
             print(
                 f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
-                f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
+                f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}",
             )
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
@@ -118,7 +115,7 @@ class CatalogProcessor:
                 if not column_inside_single_quote.findall(json_column_name):
                     json_column_name = f"'{json_column_name}'"
 
-            stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
+            stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {stream_config!s}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
             truncate = (
                 destination_type == DestinationType.MYSQL
@@ -138,7 +135,7 @@ class CatalogProcessor:
                 cursor_field = get_field(configured_stream, "cursor_field", f"Undefined cursor field for stream {stream_name}")
             if destination_sync_mode.value in [
                 # DestinationSyncMode.upsert_dedup.value,
-                DestinationSyncMode.append_dedup.value
+                DestinationSyncMode.append_dedup.value,
             ]:
                 primary_key = get_field(configured_stream, "primary_key", f"Undefined primary key for stream {stream_name}")
 
@@ -166,9 +163,7 @@ class CatalogProcessor:
         return result
 
     def process_substreams(self, substreams: List[StreamProcessor], tables_registry: TableNameRegistry):
-        """
-        Handle nested stream/substream/children
-        """
+        """Handle nested stream/substream/children."""
         while substreams:
             children = substreams
             substreams = []
@@ -182,9 +177,7 @@ class CatalogProcessor:
                     output_sql_file(os.path.join(self.output_directory, file), substream.sql_outputs[file])
 
     def write_yaml_sources_file(self, schema_to_source_tables: Dict[str, Set[str]]):
-        """
-        Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/
-        """
+        """Generate the sources.yaml file as described in https://docs.getdbt.com/docs/building-a-dbt-project/using-sources/."""
         schemas = []
         for entry in sorted(schema_to_source_tables.items(), key=lambda kv: kv[0]):
             schema = entry[0]
@@ -204,7 +197,7 @@ class CatalogProcessor:
                         "identifier": False,
                     },
                     "tables": tables,
-                }
+                },
             )
         source_config = {"version": 2, "sources": schemas}
         source_path = os.path.join(self.output_directory, "sources.yml")
@@ -219,19 +212,16 @@ class CatalogProcessor:
 
 
 def read_json(input_path: str) -> Any:
+    """Reads and load a json file
+    @param input_path is the path to the file to read.
     """
-    Reads and load a json file
-    @param input_path is the path to the file to read
-    """
-    with open(input_path, "r") as file:
+    with open(input_path) as file:
         contents = file.read()
     return json.loads(contents)
 
 
 def get_field(config: Dict, key: str, message: str):
-    """
-    Retrieve value of field in a Dict object. Throw an error if key is not found with message as reason.
-    """
+    """Retrieve value of field in a Dict object. Throw an error if key is not found with message as reason."""
     if key in config:
         return config[key]
     else:
@@ -239,13 +229,8 @@ def get_field(config: Dict, key: str, message: str):
 
 
 def get_source_sync_mode(stream_config: Dict, stream_name: str) -> SyncMode:
-    """
-    Read the source sync_mode field from config or return a default value if not found
-    """
-    if "sync_mode" in stream_config:
-        sync_mode = get_field(stream_config, "sync_mode", "")
-    else:
-        sync_mode = ""
+    """Read the source sync_mode field from config or return a default value if not found."""
+    sync_mode = get_field(stream_config, "sync_mode", "") if "sync_mode" in stream_config else ""
     try:
         result = SyncMode(sync_mode)
     except ValueError as e:
@@ -256,13 +241,8 @@ def get_source_sync_mode(stream_config: Dict, stream_name: str) -> SyncMode:
 
 
 def get_destination_sync_mode(stream_config: Dict, stream_name: str) -> DestinationSyncMode:
-    """
-    Read the destination_sync_mode field from config or return a default value if not found
-    """
-    if "destination_sync_mode" in stream_config:
-        dest_sync_mode = get_field(stream_config, "destination_sync_mode", "")
-    else:
-        dest_sync_mode = ""
+    """Read the destination_sync_mode field from config or return a default value if not found."""
+    dest_sync_mode = get_field(stream_config, "destination_sync_mode", "") if "destination_sync_mode" in stream_config else ""
     try:
         result = DestinationSyncMode(dest_sync_mode)
     except ValueError as e:
@@ -273,21 +253,19 @@ def get_destination_sync_mode(stream_config: Dict, stream_name: str) -> Destinat
 
 
 def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_name: str, table_name: str):
-    """
-    Keeps track of source tables used in this catalog to build a source.yaml file for DBT
-    """
+    """Keeps track of source tables used in this catalog to build a source.yaml file for DBT."""
     if schema_name not in schema_to_source_tables:
         schema_to_source_tables[schema_name] = set()
     if table_name not in schema_to_source_tables[schema_name]:
         schema_to_source_tables[schema_name].add(table_name)
     else:
-        raise KeyError(f"Duplicate table {table_name} in {schema_name}")
+        msg = f"Duplicate table {table_name} in {schema_name}"
+        raise KeyError(msg)
 
 
 def output_sql_file(file: str, sql: str):
-    """
-    @param file is the path to filename to be written
-    @param sql is the dbt sql content to be written in the generated model file
+    """@param file is the path to filename to be written
+    @param sql is the dbt sql content to be written in the generated model file.
     """
     output_dir = os.path.dirname(file)
     if not os.path.exists(output_dir):

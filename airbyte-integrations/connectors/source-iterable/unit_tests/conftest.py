@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 
@@ -11,7 +12,7 @@ def disable_cache(mocker):
     mocker.patch("source_iterable.streams.ListUsers.use_cache", False)
 
 
-@pytest.fixture
+@pytest.fixture()
 def catalog(request):
     return ConfiguredAirbyteCatalog(
         streams=[
@@ -19,8 +20,8 @@ def catalog(request):
                 stream=AirbyteStream(name=request.param, json_schema={}, supported_sync_modes=["full_refresh"]),
                 sync_mode="full_refresh",
                 destination_sync_mode="append",
-            )
-        ]
+            ),
+        ],
     )
 
 

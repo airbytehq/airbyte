@@ -7,18 +7,21 @@ import datetime
 import json
 from abc import ABC
 from time import sleep
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 from .utils import STRING_TYPES, clean_string, format_value, to_datetime_str
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class MarketoStream(HttpStream, ABC):
@@ -26,7 +29,7 @@ class MarketoStream(HttpStream, ABC):
     data_field = "result"
     page_size = 300
 
-    def __init__(self, config: Mapping[str, Any], stream_name: str = None, param: Mapping[str, Any] = None, export_id: int = None):
+    def __init__(self, config: Mapping[str, Any], stream_name: Optional[str] = None, param: Optional[Mapping[str, Any]] = None, export_id: Optional[int] = None):
         super().__init__(authenticator=config["authenticator"])
         self.config = config
         self.start_date = config["start_date"]
@@ -54,8 +57,9 @@ class MarketoStream(HttpStream, ABC):
 
         if next_page:
             return {"nextPageToken": next_page}
+        return None
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"batchSize": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
@@ -64,24 +68,21 @@ class MarketoStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = response.json().get(self.data_field, [])
 
-        for record in data:
-            yield record
+        yield from data
 
 
 class IncrementalMarketoStream(MarketoStream):
     cursor_field = "createdAt"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._state = {}
 
-    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
-        """
-        Endpoint does not provide query filtering params, but they provide us
+    def filter_by_state(self, stream_state: Optional[Mapping[str, Any]] = None, record: Optional[Mapping[str, Any]] = None) -> Iterable:
+        """Endpoint does not provide query filtering params, but they provide us
         cursor field in most cases, so we used that as incremental filtering
         during the parsing.
         """
-
         if record[self.cursor_field] >= (stream_state or {}).get(self.cursor_field, self.start_date):
             yield record
 
@@ -105,9 +106,8 @@ class IncrementalMarketoStream(MarketoStream):
         self._state = {self.cursor_field: max(latest_cursor_value, current_cursor_value)}
         return self._state
 
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+    def stream_slices(self, sync_mode, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+        """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
             "startDate": "2020-01-01T0:0:0Z",
             "endDate": "2021-01-02T0:0:0Z"
@@ -116,9 +116,8 @@ class IncrementalMarketoStream(MarketoStream):
             "startDate": "2020-01-03T0:0:0Z",
             "endDate": "2021-01-04T0:0:0Z"
             },
-            ...]
+            ...].
         """
-
         start_date = pendulum.parse(self.start_date)
 
         # Determine stream_state, if no stream_state we use start_date
@@ -143,14 +142,12 @@ class IncrementalMarketoStream(MarketoStream):
 
 
 class SemiIncrementalMarketoStream(IncrementalMarketoStream):
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+    def stream_slices(self, sync_mode, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         return [None]
 
 
 class MarketoExportBase(IncrementalMarketoStream):
-    """
-    Base class for all the streams which support bulk extract.
-    """
+    """Base class for all the streams which support bulk extract."""
 
     # Polling Job Status - https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     # The status is only updated once every 60 seconds
@@ -172,19 +169,19 @@ class MarketoExportBase(IncrementalMarketoStream):
 
     def start_export(self, stream_slice):
         return next(
-            MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
+            MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None),
         )
 
     def get_export_status(self, stream_slice):
         return next(
-            MarketoExportStatus(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
+            MarketoExportStatus(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None),
         )
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
     def stream_slices(
-        self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
+        self, sync_mode, stream_state: Optional[MutableMapping[str, Any]] = None, **kwargs,
     ) -> Iterable[Optional[MutableMapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
@@ -218,15 +215,13 @@ class MarketoExportBase(IncrementalMarketoStream):
             sleep(self.poll_interval)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        response.text example:
+        """response.text example:
 
         firstName,lastName,email,cookies
         Russell,Wilson,null,_mch-localhost-1536605780000-12105
 
         :return an iterable containing each record in the response
         """
-
         default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
         response.encoding = "utf-8"
@@ -250,17 +245,16 @@ class MarketoExportBase(IncrementalMarketoStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         self.sleep_till_export_completed(stream_slice)
         return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
 class MarketoExportCreate(MarketoStream):
-    """
-     Provides functionality to create Marketo export.
+    """Provides functionality to create Marketo export.
      Return list with dict, example:
     [
          {
@@ -269,7 +263,7 @@ class MarketoExportCreate(MarketoStream):
              "status": "Created",
              "createdAt": "2021-09-01T10:09:39Z"
          }
-     ]
+     ].
     """
 
     http_method = "POST"
@@ -296,8 +290,7 @@ class MarketoExportCreate(MarketoStream):
 
 
 class MarketoExportStart(MarketoStream):
-    """
-     Provides functionality to start Marketo export.
+    """Provides functionality to start Marketo export.
      Return list with dict, example:
     [
          {
@@ -307,7 +300,7 @@ class MarketoExportStart(MarketoStream):
              "createdAt": "2021-09-01T10:00:50Z",
              "queuedAt": "2021-09-01T10:01:07Z"
          }
-     ]
+     ].
     """
 
     http_method = "POST"
@@ -317,9 +310,8 @@ class MarketoExportStart(MarketoStream):
 
 
 class MarketoExportStatus(MarketoStream):
-    """
-    Provides functionality to get status of Marketo export.
-    Return string with dict, example: "Completed"
+    """Provides functionality to get status of Marketo export.
+    Return string with dict, example: "Completed".
     """
 
     def path(self, **kwargs) -> str:
@@ -330,9 +322,8 @@ class MarketoExportStatus(MarketoStream):
 
 
 class Leads(MarketoExportBase):
-    """
-    Return list of all leeds.
-    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
+    """Return list of all leeds.
+    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/.
     """
 
     cursor_field = "updatedAt"
@@ -346,10 +337,9 @@ class Leads(MarketoExportBase):
 
 
 class Activities(MarketoExportBase):
-    """
-    Base class for all the activities streams,
+    """Base class for all the activities streams,
     provides functionality for dynamically created classes as streams of data.
-    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
+    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/.
     """
 
     primary_key = "marketoGUID"
@@ -398,30 +388,27 @@ class Activities(MarketoExportBase):
 
                 properties[attr_name] = field_schema
 
-        schema = {
+        return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
             "additionalProperties": True,
             "properties": properties,
         }
 
-        return schema
 
 
 class ActivityTypes(MarketoStream):
-    """
-    Return list of all activity types.
-    API Docs: https://developers.marketo.com/rest-api/lead-database/activities/#describe
+    """Return list of all activity types.
+    API Docs: https://developers.marketo.com/rest-api/lead-database/activities/#describe.
     """
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return "rest/v1/activities/types.json"
 
 
 class Programs(IncrementalMarketoStream):
-    """
-    Return list of all programs.
-    API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range
+    """Return list of all programs.
+    API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range.
     """
 
     cursor_field = "updatedAt"
@@ -440,34 +427,31 @@ class Programs(IncrementalMarketoStream):
         if data:
             self.offset += self.page_size + 1
             return {"offset": self.offset}
+        return None
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        Programs are queryable via their updatedAt time but require and
+        """Programs are queryable via their updatedAt time but require and
         end date as well. As there is no max time range for the query,
         query from the bookmark value until current.
         """
-
         params = super().request_params(next_page_token, stream_state=stream_state, stream_slice=stream_slice)
         params.update(
             {
                 "maxReturn": self.page_size,
                 "earliestUpdatedAt": stream_slice["startAt"],
                 "latestUpdatedAt": stream_slice["endAt"],
-            }
+            },
         )
 
         return params
 
     def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
-        """
-        Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
-        """
+        """Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'."""
         try:
             res = datetime.datetime.strptime(dt, format)
         except ValueError:
@@ -484,23 +468,20 @@ class Programs(IncrementalMarketoStream):
 
 
 class Campaigns(SemiIncrementalMarketoStream):
-    """
-    Return list of all campaigns.
-    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
+    """Return list of all campaigns.
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET.
     """
 
 
 class Lists(SemiIncrementalMarketoStream):
-    """
-    Return list of all lists.
-    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
+    """Return list of all lists.
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET.
     """
 
 
 class Segmentations(MarketoStream):
-    """
-    This stream is similar to Programs but don't support to filter using created or update at parameters
-    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
+    """This stream is similar to Programs but don't support to filter using created or update at parameters
+    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET.
     """
 
     page_size = 200
@@ -518,10 +499,11 @@ class Segmentations(MarketoStream):
         if data:
             self.offset += self.page_size + 1
             return {"offset": self.offset}
+        return None
 
 
 class MarketoAuthenticator(Oauth2Authenticator):
-    def __init__(self, config):
+    def __init__(self, config) -> None:
         super().__init__(
             token_refresh_endpoint=f"{config['domain_url']}/identity/oauth/token",
             client_id=config["client_id"],
@@ -539,28 +521,22 @@ class MarketoAuthenticator(Oauth2Authenticator):
         return payload
 
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)."""
         try:
             response = requests.request(method="GET", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
 
 class SourceMarketo(AbstractSource):
-    """
-    Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers.
-    """
+    """Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers."""
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the credentials.
-        """
-
+        """Testing connection availability for the connector by granting the credentials."""
         try:
             url = f"{config['domain_url']}/rest/v1/leads/describe"
 

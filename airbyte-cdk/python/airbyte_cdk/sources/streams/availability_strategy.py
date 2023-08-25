@@ -14,14 +14,11 @@ if typing.TYPE_CHECKING:
 
 
 class AvailabilityStrategy(ABC):
-    """
-    Abstract base class for checking stream availability.
-    """
+    """Abstract base class for checking stream availability."""
 
     @abstractmethod
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
-        """
-        Checks stream availability.
+        """Checks stream availability.
 
         :param stream: stream
         :param logger: source logger

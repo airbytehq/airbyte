@@ -6,8 +6,9 @@ import copy
 import json
 
 import pytest
-from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from source_declarative_manifest.main import create_manifest
+
+from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 
 CONFIG = {
     "__injected_declarative_manifest": {
@@ -25,7 +26,7 @@ CONFIG = {
         "check": {
             "stream_names": [
                 "data",
-            ]
+            ],
         },
         "spec": {
             "type": "Spec",
@@ -38,18 +39,18 @@ CONFIG = {
                 "properties": {},
             },
         },
-    }
+    },
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def valid_config_file(tmp_path):
     config_file = tmp_path / "config.json"
     config_file.write_text(json.dumps(CONFIG))
     return config_file
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_file_without_injection(tmp_path):
     config = copy.deepcopy(CONFIG)
     del config["__injected_declarative_manifest"]

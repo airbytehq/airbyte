@@ -4,13 +4,13 @@
 
 from typing import Optional
 
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic import AnyUrl, Field, ValidationError, root_validator
+
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 
 
 class Config(AbstractFileBasedSpec):
-    """
-    NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
+    """NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
     because it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.
     """
 
@@ -39,7 +39,7 @@ class Config(AbstractFileBasedSpec):
     )
 
     endpoint: Optional[str] = Field(
-        "", title="Endpoint", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4
+        "", title="Endpoint", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4,
     )
 
     @root_validator
@@ -47,7 +47,8 @@ class Config(AbstractFileBasedSpec):
         aws_access_key_id = values.get("aws_access_key_id")
         aws_secret_access_key = values.get("aws_secret_access_key")
         if (aws_access_key_id or aws_secret_access_key) and not (aws_access_key_id and aws_secret_access_key):
+            msg = "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS."
             raise ValidationError(
-                "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
+                msg, model=Config,
             )
         return values

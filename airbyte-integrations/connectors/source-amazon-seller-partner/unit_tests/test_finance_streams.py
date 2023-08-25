@@ -23,9 +23,9 @@ list_financial_event_groups_data = {
                 "BeginningBalance": {"CurrencyCode": "CAD", "CurrencyAmount": 0.0},
                 "FinancialEventGroupStart": "2022-04-29T19:15:59Z",
                 "FinancialEventGroupEnd": "2022-05-13T19:15:59Z",
-            }
-        ]
-    }
+            },
+        ],
+    },
 }
 
 list_financial_events_data = {
@@ -38,7 +38,7 @@ list_financial_events_data = {
                     "MarketplaceName": "Amazon.com",
                     "PostedDate": "2022-05-01T01:32:42Z",
                     "ShipmentItemList": [],
-                }
+                },
             ],
             "RefundEventList": [
                 {
@@ -47,7 +47,7 @@ list_financial_events_data = {
                     "MarketplaceName": "Amazon.ca",
                     "PostedDate": "2022-05-01T03:05:36Z",
                     "ShipmentItemAdjustmentList": [],
-                }
+                },
             ],
             "GuaranteeClaimEventList": [],
             "ChargebackEventList": [],
@@ -67,7 +67,7 @@ list_financial_events_data = {
                     "PostedDate": "2022-05-01T15:08:00Z",
                     "AdjustmentAmount": {"CurrencyCode": "USD", "CurrencyAmount": 25.35},
                     "AdjustmentItemList": [],
-                }
+                },
             ],
             "SAFETReimbursementEventList": [],
             "SellerReviewEnrollmentPaymentEventList": [],
@@ -80,8 +80,8 @@ list_financial_events_data = {
             "AffordabilityExpenseReversalEventList": [],
             "RemovalShipmentAdjustmentEventList": [],
             "RemovalShipmentEventList": [],
-        }
-    }
+        },
+    },
 }
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -93,7 +93,7 @@ START_DATE_2 = "2021-01-01T00:00:00Z"
 END_DATE_2 = "2022-07-31T00:00:00Z"
 
 
-@pytest.fixture
+@pytest.fixture()
 def list_financial_event_groups_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
         aws_signature = AWSSignature(
@@ -103,7 +103,7 @@ def list_financial_event_groups_stream():
             aws_session_token="SessionToken",
             region="US",
         )
-        stream = ListFinancialEventGroups(
+        return ListFinancialEventGroups(
             url_base="https://test.url",
             aws_signature=aws_signature,
             replication_start_date=start_date,
@@ -115,12 +115,11 @@ def list_financial_event_groups_stream():
             advanced_stream_options=None,
             max_wait_seconds=500,
         )
-        return stream
 
     return _internal
 
 
-@pytest.fixture
+@pytest.fixture()
 def list_financial_events_stream():
     def _internal(start_date: str = START_DATE_1, end_date: str = END_DATE_1):
         aws_signature = AWSSignature(
@@ -130,7 +129,7 @@ def list_financial_events_stream():
             aws_session_token="SessionToken",
             region="US",
         )
-        stream = ListFinancialEvents(
+        return ListFinancialEvents(
             url_base="https://test.url",
             aws_signature=aws_signature,
             replication_start_date=start_date,
@@ -142,7 +141,6 @@ def list_financial_events_stream():
             advanced_stream_options=None,
             max_wait_seconds=500,
         )
-        return stream
 
     return _internal
 
@@ -156,7 +154,7 @@ def test_finance_stream_next_token(mocker, list_financial_event_groups_stream):
 
     mocker.patch.object(response, "json", return_value={"payload": {}})
     if list_financial_event_groups_stream().next_page_token(response) is not None:
-        assert False
+        raise AssertionError
 
 
 def test_financial_event_groups_stream_request_params(list_financial_event_groups_stream):
@@ -217,5 +215,5 @@ def test_financial_events_stream_parse_response(mocker, list_financial_events_st
         assert list_financial_events_data.get("payload").get("FinancialEvents").get("ShipmentEventList") == record.get("ShipmentEventList")
         assert list_financial_events_data.get("payload").get("FinancialEvents").get("RefundEventList") == record.get("RefundEventList")
         assert list_financial_events_data.get("payload").get("FinancialEvents").get("AdjustmentEventList") == record.get(
-            "AdjustmentEventList"
+            "AdjustmentEventList",
         )

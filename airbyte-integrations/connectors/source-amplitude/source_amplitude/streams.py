@@ -11,6 +11,7 @@ from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -32,7 +33,7 @@ HTTP_ERROR_CODES = {
 }
 
 
-def error_msg_from_status(status: int = None):
+def error_msg_from_status(status: Optional[int] = None):
     if status:
         level = HTTP_ERROR_CODES[status]["lvl"]
         message = HTTP_ERROR_CODES[status]["msg"]
@@ -53,7 +54,7 @@ class Events(HttpStream):
     primary_key = "uuid"
     state_checkpoint_interval = 1000
 
-    def __init__(self, data_region: str, start_date: str, event_time_interval: dict = None, **kwargs):
+    def __init__(self, data_region: str, start_date: str, event_time_interval: Optional[dict] = None, **kwargs):
         if event_time_interval is None:
             event_time_interval = {"size_unit": "hours", "size": 24}
         self.data_region = data_region
@@ -80,9 +81,7 @@ class Events(HttpStream):
         return {self.cursor_field: max(latest_state, current_stream_state.get(self.cursor_field, ""))}
 
     def _get_date_time_items_from_schema(self):
-        """
-        Get all properties from schema with format: 'date-time'
-        """
+        """Get all properties from schema with format: 'date-time'."""
         result = []
         schema = self.get_json_schema()
         for key, value in schema["properties"].items():
@@ -91,15 +90,13 @@ class Events(HttpStream):
         return result
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        Transform 'date-time' items to RFC3339 format
-        """
+        """Transform 'date-time' items to RFC3339 format."""
         for item in record:
             if item in self.date_time_fields and record[item]:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping]:
         state_value = stream_state[self.cursor_field] if stream_state else self._start_date.strftime(self.compare_date_template)
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
@@ -107,7 +104,7 @@ class Events(HttpStream):
             self.logger.exception(e)
             self.logger.error(
                 f"Received an invalid zip file in response to URL: {response.request.url}."
-                f"The size of the response body is: {len(response.content)}"
+                f"The size of the response body is: {len(response.content)}",
             )
             return []
 
@@ -122,7 +119,7 @@ class Events(HttpStream):
             for record in file:
                 yield json.loads(record)
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         slices = []
         start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
         end = pendulum.now()
@@ -135,7 +132,7 @@ class Events(HttpStream):
                 {
                     "start": start.strftime(self.date_template),
                     "end": start.add(**self.time_interval).subtract(hours=1).strftime(self.date_template),
-                }
+                },
             )
             start = start.add(**self.time_interval)
 
@@ -144,9 +141,9 @@ class Events(HttpStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         start = pendulum.parse(stream_slice["start"])
@@ -162,7 +159,7 @@ class Events(HttpStream):
             yield from records
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
-            if status in HTTP_ERROR_CODES.keys():
+            if status in HTTP_ERROR_CODES:
                 error_msg_from_status(status)
                 yield from []
             else:

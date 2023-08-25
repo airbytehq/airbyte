@@ -5,10 +5,11 @@
 import logging
 from typing import Any, List, Mapping
 
+from requests.auth import HTTPBasicAuth
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.streams import Stream
-from requests.auth import HTTPBasicAuth
 from source_freshdesk.streams import (
     Agents,
     BusinessHours,
@@ -43,9 +44,8 @@ from source_freshdesk.streams import (
 
 class FreshdeskAuth(HTTPBasicAuth):
     def __init__(self, api_key: str) -> None:
-        """
-        Freshdesk expects the user to provide an api_key. Any string can be used as password:
-        https://developers.freshdesk.com/api/#authentication
+        """Freshdesk expects the user to provide an api_key. Any string can be used as password:
+        https://developers.freshdesk.com/api/#authentication.
         """
         super().__init__(username=api_key, password="unused_with_api_key")
 

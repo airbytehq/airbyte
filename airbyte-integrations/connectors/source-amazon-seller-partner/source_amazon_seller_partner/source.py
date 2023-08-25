@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import boto3
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -90,7 +91,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             host=endpoint.replace("https://", ""),
             refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        stream_kwargs = {
+        return {
             "url_base": endpoint,
             "authenticator": auth,
             "aws_signature": aws_signature,
@@ -102,19 +103,17 @@ class SourceAmazonSellerPartner(AbstractSource):
             "replication_end_date": config.get("replication_end_date"),
             "advanced_stream_options": config.get("advanced_stream_options"),
         }
-        return stream_kwargs
 
     @staticmethod
     def get_sts_credentials(config: Mapping[str, Any]) -> dict:
-        """
-        We can only use a IAM User arn entity or a IAM Role entity.
+        """We can only use a IAM User arn entity or a IAM Role entity.
         If we use an IAM user arn entity in the connector configuration we need to get the credentials directly from the boto3 sts client
-        If we use an IAM role arn entity we need to invoke the assume_role from the boto3 sts client to get the credentials related to that role
+        If we use an IAM role arn entity we need to invoke the assume_role from the boto3 sts client to get the credentials related to that role.
 
         :param config:
         """
         boto3_client = boto3.client(
-            "sts", aws_access_key_id=config.get("aws_access_key"), aws_secret_access_key=config.get("aws_secret_key")
+            "sts", aws_access_key_id=config.get("aws_access_key"), aws_secret_access_key=config.get("aws_secret_key"),
         )
 
         if config.get("role_arn") is None:
@@ -126,12 +125,12 @@ class SourceAmazonSellerPartner(AbstractSource):
         elif arn_resource.startswith("role"):
             sts_credentials = boto3_client.assume_role(RoleArn=config.get("role_arn"), RoleSessionName="guid")
         else:
-            raise ValueError("Invalid ARN, your ARN is not for a user or a role")
+            msg = "Invalid ARN, your ARN is not for a user or a role"
+            raise ValueError(msg)
         return sts_credentials
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        """
-        Check connection to Amazon SP API by requesting the Orders endpoint
+        """Check connection to Amazon SP API by requesting the Orders endpoint
         This endpoint is not available for vendor-only Seller accounts,
         the Orders endpoint will then return a 403 error
         Therefore made an exception for 403 errors (when vendor-only accounts).
@@ -160,9 +159,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         stream_kwargs = self._get_stream_kwargs(config)
         return [
             FbaCustomerReturnsReports(**stream_kwargs),

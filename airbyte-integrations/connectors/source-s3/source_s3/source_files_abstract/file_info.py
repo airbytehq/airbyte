@@ -10,7 +10,7 @@ from functools import total_ordering
 @total_ordering
 @dataclass
 class FileInfo:
-    """Class for sharing of metadata"""
+    """Class for sharing of metadata."""
 
     key: str
     size: int
@@ -21,7 +21,7 @@ class FileInfo:
         return self.size / 1024**2
 
     def __str__(self) -> str:
-        return "Key: %s, LastModified: %s, Size: %.4fMb" % (self.key, self.last_modified.isoformat(), self.size_in_megabytes)
+        return f"Key: {self.key}, LastModified: {self.last_modified.isoformat()}, Size: {self.size_in_megabytes:.4f}Mb"
 
     def __repr__(self) -> str:
         return self.__str__()

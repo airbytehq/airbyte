@@ -6,8 +6,9 @@ import abc
 import json
 from typing import Optional, Union
 
-import airbyte_api_client
 import click
+
+import airbyte_api_client
 from airbyte_api_client.api import destination_api, source_api, web_backend_api
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
@@ -84,9 +85,11 @@ class BaseResource(abc.ABC):
         resource_name: Optional[str] = None,
     ):
         if resource_id is None and resource_name is None:
-            raise ValueError("resource_id and resource_name keyword arguments can't be both None.")
+            msg = "resource_id and resource_name keyword arguments can't be both None."
+            raise ValueError(msg)
         if resource_id is not None and resource_name is not None:
-            raise ValueError("resource_id and resource_name keyword arguments can't be both set.")
+            msg = "resource_id and resource_name keyword arguments can't be both set."
+            raise ValueError(msg)
         self.resource_id = resource_id
         self.resource_name = resource_name
         self.api_instance = self.api(api_client)
@@ -104,17 +107,18 @@ class BaseResource(abc.ABC):
         Returns:
             Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
         """
-
         api_response = self._list_for_workspace_fn(self.api_instance, self.list_for_workspace_payload)
         matching_resources = []
         for resource in getattr(api_response, f"{self.name}s"):
             if resource.name == self.resource_name:
                 matching_resources.append(resource)
         if not matching_resources:
-            raise ResourceNotFoundError(f"The {self.name} {self.resource_name} was not found in your current Airbyte workspace.")
+            msg = f"The {self.name} {self.resource_name} was not found in your current Airbyte workspace."
+            raise ResourceNotFoundError(msg)
         if len(matching_resources) > 1:
+            msg = f"{len(matching_resources)} {self.name}s with the name {self.resource_name} were found in your current Airbyte workspace."
             raise DuplicateResourceError(
-                f"{len(matching_resources)} {self.name}s with the name {self.resource_name} were found in your current Airbyte workspace."
+                msg,
             )
         return matching_resources[0]
 
@@ -129,7 +133,7 @@ class BaseResource(abc.ABC):
         return self._get_fn(self.api_instance, self.get_payload)
 
     def get_remote_resource(self) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
-        """Retrieve a remote resource with a resource_name or a resource_id
+        """Retrieve a remote resource with a resource_name or a resource_id.
 
         Returns:
             Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
@@ -157,6 +161,7 @@ class Source(BaseResource):
     @property
     def get_payload(self) -> Optional[SourceIdRequestBody]:
         """Defines the payload to retrieve the remote source according to its resource_id.
+
         Returns:
             SourceIdRequestBody: The SourceIdRequestBody payload.
         """
@@ -172,6 +177,7 @@ class Destination(BaseResource):
     @property
     def get_payload(self) -> Optional[DestinationIdRequestBody]:
         """Defines the payload to retrieve the remote destination according to its resource_id.
+
         Returns:
             DestinationIdRequestBody: The DestinationIdRequestBody payload.
         """
@@ -187,6 +193,7 @@ class Connection(BaseResource):
     @property
     def get_payload(self) -> Optional[WebBackendConnectionRequestBody]:
         """Defines the payload to retrieve the remote connection according to its resource_id.
+
         Returns:
             WebBackendConnectionRequestBody: The WebBackendConnectionRequestBody payload.
         """

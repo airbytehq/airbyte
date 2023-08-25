@@ -26,7 +26,7 @@ def _create_response_with_dict_of_records() -> Response:
                 "id": "id2",
                 "name": "name2",
             },
-        }
+        },
     }
     return _create_response_with_body(response_body)
 
@@ -42,7 +42,7 @@ def _create_response_with_list_of_records() -> Response:
                 "id": "id2",
                 "name": "name2",
             },
-        ]
+        ],
     }
     return _create_response_with_body(response_body)
 

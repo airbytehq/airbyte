@@ -5,13 +5,14 @@
 from unittest.mock import MagicMock
 
 import pytest
+from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionRouter
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionRouter
 
 
 @pytest.mark.parametrize(
-    ["records", "stream_slices", "expected"],
+    ("records", "stream_slices", "expected"),
     [
         pytest.param(
             [{"id": "some id", "updates_ids": ["some updates_id 1", "some updates_id 2", "some updates_id 3"]}],
@@ -33,7 +34,7 @@ from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionR
                     "parent_slice": {"page_id": "some page_id 1", "parent_slice": {}},
                 },
             ],
-        )
+        ),
     ],
 )
 def test_updates_substream_partition_router(records, stream_slices, expected):
@@ -49,7 +50,7 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
 
 
 @pytest.mark.parametrize(
-    ["input_record", "field", "kwargs", "expected"],
+    ("input_record", "field", "kwargs", "expected"),
     [
         pytest.param(
             {"id": "some id", "updates": [{"id": "some update id"}, {"id": "some update id 2"}]},
@@ -60,7 +61,7 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
                 "updates": [{"id": "some update id"}, {"id": "some update id 2"}],
                 "updates_ids": ["some update id", "some update id 2"],
             },
-        )
+        ),
     ],
 )
 def test_list_add_fields_transformer(input_record, field, kwargs, expected):

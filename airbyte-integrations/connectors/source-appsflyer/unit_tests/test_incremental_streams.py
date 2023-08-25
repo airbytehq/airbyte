@@ -4,7 +4,6 @@
 
 import pendulum
 import pytest
-from airbyte_cdk.models import SyncMode
 from pytest import fixture, raises
 from source_appsflyer import fields
 from source_appsflyer.source import (
@@ -22,8 +21,10 @@ from source_appsflyer.source import (
     UninstallEvents,
 )
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalAppsflyerStream, "path", "v0/example_endpoint")
@@ -84,11 +85,11 @@ def test_request_params(mocker, class_, cursor_field, date_only, additional_fiel
     stream = class_()
     start = pendulum.yesterday(timezone)
     end = pendulum.today(timezone)
-    inputs = dict()
+    inputs = {}
     inputs["stream_slice"] = {cursor_field: start, cursor_field + "_end": end}
     inputs["next_page_token"] = None
     inputs["stream_state"] = None
-    expected_params = dict()
+    expected_params = {}
     expected_params["api_token"] = "secret"
     expected_params["timezone"] = timezone
     expected_params["maximum_rows"] = 1_000_000
@@ -109,8 +110,8 @@ def test_request_params(mocker, class_, cursor_field, date_only, additional_fiel
 @pytest.mark.parametrize(
     ("current_stream_state", "latest_record", "expected_state"),
     [
-        (dict(event_time="2021-09-09"), dict(event_time="2021-09-09"), dict(event_time="2021-09-09")),
-        ({}, dict(event_time="2021-09-09"), dict(event_time="2021-09-09")),
+        ({"event_time": "2021-09-09"}, {"event_time": "2021-09-09"}, {"event_time": "2021-09-09"}),
+        ({}, {"event_time": "2021-09-09"}, {"event_time": "2021-09-09"}),
         ({}, {}, {}),
     ],
 )
@@ -134,7 +135,7 @@ def test_get_updated_state_exists_current_stream_and_empty_latest_record(patch_i
         mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
         mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "event_time")
         stream = IncrementalAppsflyerStream()
-        inputs = {"current_stream_state": dict(event_time="2021-09-09"), "latest_record": {"event_time": None}}
+        inputs = {"current_stream_state": {"event_time": "2021-09-09"}, "latest_record": {"event_time": None}}
         stream.get_updated_state(**inputs)
 
 
@@ -150,7 +151,7 @@ def test_stream_slices(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalAppsflyerStream, "__init__", __init__)
     mocker.patch.object(IncrementalAppsflyerStream, "cursor_field", "date")
     stream = IncrementalAppsflyerStream()
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": dict(date=pendulum.yesterday(timezone))}
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {"date": pendulum.yesterday(timezone)}}
     expected_stream_slice = [{"date": pendulum.yesterday("UTC"), "date_end": pendulum.today("UTC")}]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 

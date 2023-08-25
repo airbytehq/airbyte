@@ -5,8 +5,9 @@
 import json
 from typing import List, Type, Union
 
-import airbyte_api_client
 import click
+
+import airbyte_api_client
 from octavia_cli.apply import resources
 from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import requires_init
@@ -26,6 +27,7 @@ class MissingResourceDependencyError(click.UsageError):
 
 def build_help_message(resource_type: str) -> str:
     """Helper function to build help message consistently for all the commands in this module.
+
     Args:
         resource_type (str): source, destination or connection
     Returns:
@@ -61,7 +63,7 @@ def import_source_or_destination(
 
     new_configuration_path = renderer.import_configuration(project_path=".", configuration=remote_configuration["connection_configuration"])
     managed_resource, state = resources.factory(api_client, workspace_id, new_configuration_path).manage(
-        remote_configuration[f"{resource_type}_id"]
+        remote_configuration[f"{resource_type}_id"],
     )
     message = f"✅ - Imported {resource_type} {managed_resource.name} in {new_configuration_path}. State stored in {state.path}"
     click.echo(click.style(message, fg="green"))
@@ -89,30 +91,34 @@ def import_connection(
     remote_configuration.pop("schedule", None)
     source_name, destination_name = remote_configuration["source"]["name"], remote_configuration["destination"]["name"]
     source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
-        project_path=".", definition_type="source", resource_name=source_name
+        project_path=".", definition_type="source", resource_name=source_name,
     )
 
     destination_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
-        project_path=".", definition_type="destination", resource_name=destination_name
+        project_path=".", definition_type="destination", resource_name=destination_name,
     )
     if not source_configuration_path.is_file():
+        msg = f"The source {source_name} is not managed by octavia-cli, please import and apply it before importing your connection."
         raise MissingResourceDependencyError(
-            f"The source {source_name} is not managed by octavia-cli, please import and apply it before importing your connection."
+            msg,
         )
     elif not destination_configuration_path.is_file():
+        msg = f"The destination {destination_name} is not managed by octavia-cli, please import and apply it before importing your connection."
         raise MissingResourceDependencyError(
-            f"The destination {destination_name} is not managed by octavia-cli, please import and apply it before importing your connection."
+            msg,
         )
     else:
         source = resources.factory(api_client, workspace_id, source_configuration_path)
         destination = resources.factory(api_client, workspace_id, destination_configuration_path)
         if not source.was_created:
+            msg = f"The source defined at {source_configuration_path} does not exists. Please run octavia apply before creating this connection."
             raise resources.NonExistingResourceError(
-                f"The source defined at {source_configuration_path} does not exists. Please run octavia apply before creating this connection."
+                msg,
             )
         if not destination.was_created:
+            msg = f"The destination defined at {destination_configuration_path} does not exists. Please run octavia apply before creating this connection."
             raise resources.NonExistingResourceError(
-                f"The destination defined at {destination_configuration_path} does not exists. Please run octavia apply before creating this connection."
+                msg,
             )
 
         connection_name, connection_id = remote_configuration["name"], remote_configuration["connection_id"]

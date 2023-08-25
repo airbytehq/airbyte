@@ -10,8 +10,9 @@ from unittest.mock import ANY, Mock, patch
 
 import pendulum
 import pytest
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
+
+from airbyte_cdk.models.airbyte_protocol import SyncMode
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -27,7 +28,7 @@ def test_create_export_job(mocker, send_email_stream, caplog):
 
 
 @pytest.mark.parametrize(
-    "activity, expected_schema",
+    ("activity", "expected_schema"),
     (
         (
             {
@@ -99,7 +100,7 @@ def test_activities_schema(activity, expected_schema, config):
 
 
 @pytest.mark.parametrize(
-    "response_text, expected_records",
+    ("response_text", "expected_records"),
     (
         (
             """Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant,attributes
@@ -139,15 +140,14 @@ def test_memory_usage(send_email_stream, file_generator):
     small_file_path, _ = file_generator(min_size=1)
 
     def iter_lines(file_path="", **kwargs):
-        with open(file_path, "r") as file:
-            for line in file:
-                yield line
+        with open(file_path) as file:
+            yield from file
 
     tracemalloc.start()
     records = 0
 
     for _ in send_email_stream.parse_response(
-        Mock(iter_lines=partial(iter_lines, file_path=big_file_path), request=Mock(url="/send_email/1"))
+        Mock(iter_lines=partial(iter_lines, file_path=big_file_path), request=Mock(url="/send_email/1")),
     ):
         records += 1
     _, big_file_peak = tracemalloc.get_traced_memory()
@@ -157,7 +157,7 @@ def test_memory_usage(send_email_stream, file_generator):
     tracemalloc.clear_traces()
 
     for _ in send_email_stream.parse_response(
-        Mock(iter_lines=partial(iter_lines, file_path=small_file_path), request=Mock(url="/send_email/1"))
+        Mock(iter_lines=partial(iter_lines, file_path=small_file_path), request=Mock(url="/send_email/1")),
     ):
         pass
     _, small_file_peak = tracemalloc.get_traced_memory()
@@ -202,7 +202,7 @@ def test_export_sleep(send_email_stream, job_statuses):
 def test_programs_request_params(config):
     stream = Programs(config)
     params = stream.request_params(
-        stream_slice={"startAt": "2020-08-01", "endAt": "2020-08-02"}, next_page_token={"nextPageToken": 2}, stream_state={}
+        stream_slice={"startAt": "2020-08-01", "endAt": "2020-08-02"}, next_page_token={"nextPageToken": 2}, stream_state={},
     )
     assert params == {
         "batchSize": 200,
@@ -227,7 +227,7 @@ def test_next_page_token(mocker, config, next_page_token):
 
 
 @pytest.mark.parametrize(
-    "response, state, expected_records",
+    ("response", "state", "expected_records"),
     (
         (
             {"result": [{"id": "1", "createdAt": "2020-07-01T00:00:00Z"}, {"id": "2", "createdAt": "2020-08-02T00:00:00Z"}]},
@@ -251,7 +251,7 @@ def test_source_streams(config, activity):
 
 
 @pytest.mark.parametrize(
-    "status_code, response, is_connection_successful, error_msg",
+    ("status_code", "response", "is_connection_successful", "error_msg"),
     (
         (200, "", True, None),
         (
@@ -277,7 +277,7 @@ def test_check_connection(config, requests_mock, status_code, response, is_conne
 
 
 @pytest.mark.parametrize(
-    "input, format, expected_result",
+    ("input", "format", "expected_result"),
     (
         ("2020-08-01T20:20:21Z", "%Y-%m-%dT%H:%M:%SZ%z", "2020-08-01T20:20:21Z"),
         ("2020-08-01 20:20", "%Y-%m-%d %H:%M", "2020-08-01T20:20:00Z"),
@@ -295,7 +295,7 @@ today = today.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 @pytest.mark.parametrize(
-    "latest_record, current_state, expected_state",
+    ("latest_record", "current_state", "expected_state"),
     (
         ({}, {}, "start_date"),
         ({"updatedAt": None}, {"updatedAt": None}, "start_date"),
@@ -306,8 +306,8 @@ today = today.strftime("%Y-%m-%dT%H:%M:%SZ")
         ({"updatedAt": today}, {"updatedAt": None}, {"updatedAt": today}),
         ({"updatedAt": today}, {}, {"updatedAt": today}),
         ({"updatedAt": yesterday}, {"updatedAt": today}, {"updatedAt": today}),
-        ({"updatedAt": today}, {"updatedAt": yesterday}, {"updatedAt": today})
-    )
+        ({"updatedAt": today}, {"updatedAt": yesterday}, {"updatedAt": today}),
+    ),
 )
 def test_get_updated_state(config, latest_record, current_state, expected_state):
     stream = Leads(config)

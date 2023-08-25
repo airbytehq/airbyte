@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -22,55 +23,52 @@ class RkiCovidStream(HttpStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
+        """TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        TODO: Override this method to define how a response is parsed.
-        :return an iterable containing each record in the response
+        """TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response.
         """
         yield response.json()
 
 
 # class that contains main source germany | full-refresh
 class Germany(RkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany"""
+    """Docs: https://api.corona-zahlen.org/germany."""
 
     primary_key = None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "germany/"
 
 
 # class that contains main source states | full-refresh
 class GermanyStates(RkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/states"""
+    """Docs: https://api.corona-zahlen.org/states."""
 
     primary_key = None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.json():
-            for key, value in response.json().get("data").items():
-                yield value
+            yield from response.json().get("data").values()
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "states/"
 
 
 # class that contains source age-groups in germany. | full-refresh
 class GermanyAgeGroups(RkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/age-groups"""
+    """Docs: https://api.corona-zahlen.org/germany/age-groups."""
 
     primary_key = None
 
@@ -78,14 +76,14 @@ class GermanyAgeGroups(RkiCovidStream):
         yield response.json().get("data")
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "germany/age-groups"
 
 
 # class that contains main source states | full-refresh
 class GermanyStatesAgeGroups(RkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/states/age-groups"""
+    """Docs: https://api.corona-zahlen.org/states/age-groups."""
 
     primary_key = None
 
@@ -99,7 +97,7 @@ class GermanyStatesAgeGroups(RkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "states/age-groups"
 
@@ -111,8 +109,7 @@ class IncrementalRkiCovidStream(RkiCovidStream, ABC):
 
     @property
     def cursor_field(self) -> str:
-        """
-        TODO
+        """TODO:
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
@@ -121,8 +118,7 @@ class IncrementalRkiCovidStream(RkiCovidStream, ABC):
         return []
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        """Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         return {}
@@ -130,11 +126,11 @@ class IncrementalRkiCovidStream(RkiCovidStream, ABC):
 
 # source: germany/history/cases/:days | Incremental
 class GermanyHistoryCases(IncrementalRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/germany/history/cases/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/cases/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -157,7 +153,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -172,7 +168,7 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "germany/history/cases/" + str(self.date_to_int(self.start_date))
@@ -181,11 +177,11 @@ class GermanyHistoryCases(IncrementalRkiCovidStream):
 
 # source: germany/history/incidence/:days | Incremental
 class GermanHistoryIncidence(IncrementalRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/germany/history/incidence/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/incidence/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -208,7 +204,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -223,7 +219,7 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "germany/history/incidence/" + str(self.date_to_int(self.start_date))
@@ -232,11 +228,11 @@ class GermanHistoryIncidence(IncrementalRkiCovidStream):
 
 # source: germany/history/deaths/:days | Incremental
 class GermanHistoryDeaths(IncrementalRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/germany/history/deaths/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/deaths/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -259,7 +255,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -274,7 +270,7 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "germany/history/deaths/" + str(self.date_to_int(self.start_date))
@@ -283,11 +279,11 @@ class GermanHistoryDeaths(IncrementalRkiCovidStream):
 
 # source: germany/history/recovered/:days | Incremental
 class GermanHistoryRecovered(IncrementalRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/germany/history/recovered/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/recovered/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -310,7 +306,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -325,7 +321,7 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "germany/history/recovered/" + str(self.date_to_int(self.start_date))
@@ -334,11 +330,11 @@ class GermanHistoryRecovered(IncrementalRkiCovidStream):
 
 # source: germany/history/frozen-incidence/:days | Incremental
 class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/germany/history/frozen-incidence/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/frozen-incidence/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -361,7 +357,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -376,7 +372,7 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "germany/history/frozen-incidence/" + str(self.date_to_int(self.start_date))
@@ -385,11 +381,11 @@ class GermanHistoryFrozenIncidence(IncrementalRkiCovidStream):
 
 # source: germany/history/hospitalization/:days | Incremental
 class GermanHistoryHospitalization(IncrementalRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/germany/history/hospitalization/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/germany/history/hospitalization/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -412,7 +408,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
             current_stream_state = {self.cursor_field: self.start_date}
         return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
 
-    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = super().read_records(stream_state=stream_state, **kwargs)
         if stream_state:
             for record in records:
@@ -427,7 +423,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
         return [{}]
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "germany/history/hospitalization/" + str(self.date_to_int(self.start_date))
@@ -447,11 +443,11 @@ class ByStateRkiCovidStream(RkiCovidStream, ABC):
 
 
 class StatesHistoryCases(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/cases/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/states/history/cases/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -462,7 +458,7 @@ class StatesHistoryCases(ByStateRkiCovidStream):
         return diff.days
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "states/history/cases/" + str(self.date_to_int(self.start_date))
@@ -471,11 +467,11 @@ class StatesHistoryCases(ByStateRkiCovidStream):
 
 # source: states/history/incidence/:days | FULL-REFRESH
 class StatesHistoryIncidence(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/incidence/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/states/history/incidence/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -486,7 +482,7 @@ class StatesHistoryIncidence(ByStateRkiCovidStream):
         return diff.days
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "states/history/incidence/" + str(self.date_to_int(self.start_date))
@@ -495,11 +491,11 @@ class StatesHistoryIncidence(ByStateRkiCovidStream):
 
 # source: states/history/frozen-incidence/:days | FULL-REFRESH
 class StatesHistoryFrozenIncidence(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/frozen-incidence/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/states/history/frozen-incidence/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -510,7 +506,7 @@ class StatesHistoryFrozenIncidence(ByStateRkiCovidStream):
         return diff.days
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "states/history/frozen-incidence/" + str(self.date_to_int(self.start_date))
@@ -519,11 +515,11 @@ class StatesHistoryFrozenIncidence(ByStateRkiCovidStream):
 
 # source: states/history/deaths/:days | FULL-REFRESH
 class StatesHistoryDeaths(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/deaths/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/states/history/deaths/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -534,7 +530,7 @@ class StatesHistoryDeaths(ByStateRkiCovidStream):
         return diff.days
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "states/history/deaths/" + str(self.date_to_int(self.start_date))
@@ -543,11 +539,11 @@ class StatesHistoryDeaths(ByStateRkiCovidStream):
 
 # source: states/history/recovered/:days | FULL-REFRESH
 class StatesHistoryRecovered(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/recovered/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/states/history/recovered/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -558,7 +554,7 @@ class StatesHistoryRecovered(ByStateRkiCovidStream):
         return diff.days
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "states/history/recovered/" + str(self.date_to_int(self.start_date))
@@ -567,11 +563,11 @@ class StatesHistoryRecovered(ByStateRkiCovidStream):
 
 # source: states/history/hospitalization/:days | FULL-REFRESH
 class StatesHistoryHospitalization(ByStateRkiCovidStream):
-    """Docs: https://api.corona-zahlen.org/germany/states/history/hospitalization/:days"""
+    """Docs: https://api.corona-zahlen.org/germany/states/history/hospitalization/:days."""
 
     primary_key = None
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self.start_date = config.get("start_date")
 
@@ -582,7 +578,7 @@ class StatesHistoryHospitalization(ByStateRkiCovidStream):
         return diff.days
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         if self.start_date:
             return "states/history/hospitalization/" + str(self.date_to_int(self.start_date))
@@ -592,8 +588,7 @@ class StatesHistoryHospitalization(ByStateRkiCovidStream):
 # Source
 class SourceRkiCovid(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector.
+        """Testing connection availability for the connector.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -608,9 +603,7 @@ class SourceRkiCovid(AbstractSource):
             return False, "There is a problem in source check connection."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         # Streams For Germany
         streams = [
             Germany(),
@@ -634,7 +627,7 @@ class SourceRkiCovid(AbstractSource):
                 StatesHistoryDeaths(config=config),
                 StatesHistoryRecovered(config=config),
                 StatesHistoryHospitalization(config=config),
-            ]
+            ],
         )
 
         return streams

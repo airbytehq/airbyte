@@ -3,6 +3,7 @@
 #
 
 from dagger import ExecError, File, QueryError
+
 from pipelines.actions import environments
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
@@ -45,9 +46,7 @@ class BuildConnectorDistributionTar(GradleTask):
 
 
 class BuildConnectorImage(BuildConnectorImageBase):
-    """
-    A step to build a Java connector image using the distTar Gradle task.
-    """
+    """A step to build a Java connector image using the distTar Gradle task."""
 
     async def _run(self, distribution_tar: File) -> StepResult:
         try:
@@ -56,10 +55,10 @@ class BuildConnectorImage(BuildConnectorImageBase):
                 await java_connector.with_exec(["spec"])
             except ExecError:
                 return StepResult(
-                    self, StepStatus.FAILURE, stderr=f"Failed to run spec on the connector built for platform {self.build_platform}."
+                    self, StepStatus.FAILURE, stderr=f"Failed to run spec on the connector built for platform {self.build_platform}.",
                 )
             return StepResult(
-                self, StepStatus.SUCCESS, stdout="The connector image was successfully built.", output_artifact=java_connector
+                self, StepStatus.SUCCESS, stdout="The connector image was successfully built.", output_artifact=java_connector,
             )
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
@@ -80,7 +79,6 @@ class BuildConnectorImageForAllPlatforms(BuildConnectorImageForAllPlatformsBase)
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:
     """Create the java connector distribution tar file and build the connector image."""
-
     build_connector_tar_result = await BuildConnectorDistributionTar(context).run()
     if build_connector_tar_result.status is not StepStatus.SUCCESS:
         return build_connector_tar_result

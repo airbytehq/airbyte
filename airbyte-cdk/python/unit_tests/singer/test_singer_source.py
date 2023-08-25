@@ -22,7 +22,7 @@ USER_STREAM = {
     "type": "SCHEMA",
     "stream": "users",
     "schema": {
-        "properties": {"id": {"type": "integer"}, "name": {"type": "string"}, "updated_at": {"type": "string", "format": "date-time"}}
+        "properties": {"id": {"type": "integer"}, "name": {"type": "string"}, "updated_at": {"type": "string", "format": "date-time"}},
     },
     "key_properties": ["id"],
     "bookmark_properties": ["updated_at"],
@@ -34,7 +34,7 @@ ROLES_STREAM = {
     "schema": {
         "properties": {
             "name": {"type": "string"},
-        }
+        },
     },
     "key_properties": ["name"],
     "bookmark_properties": ["updated_at"],
@@ -48,7 +48,7 @@ ROLES_STREAM = {
                 "schema-name": "roles",
             },
             "breadcrumb": [],
-        }
+        },
     ],
 }
 

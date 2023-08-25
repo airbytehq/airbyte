@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import requests
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -30,6 +31,7 @@ class NotionAuthenticator:
         # support the old config
         if "access_token" in self.config:
             return TokenAuthenticator(self.config.get("access_token"))
+        return None
 
 
 class SourceNotion(AbstractSource):

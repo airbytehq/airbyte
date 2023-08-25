@@ -45,6 +45,7 @@ def ci_credentials(ctx, connector_name: str, gcp_gsm_credentials):
     )
     ctx.obj["secret_manager"] = secret_manager
     ctx.obj["connector_secrets"] = secret_manager.read_from_gsm()
+    return None
 
 
 @ci_credentials.command(help="Download GSM secrets locally to the connector's secrets directory.")

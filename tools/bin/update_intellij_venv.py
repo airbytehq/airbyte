@@ -21,9 +21,7 @@ def is_environment_in_jdk_table(environment_name, table):
 
 
 def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
-    """
-    Add a new entry for the virtual environment to IntelliJ's list of known interpreters
-    """
+    """Add a new entry for the virtual environment to IntelliJ's list of known interpreters."""
     path_to_lib = f"{module_full_path}/.venv/lib/"
 
     python_version = os.listdir(path_to_lib)[0]
@@ -71,8 +69,9 @@ def get_input_path(input_from_args, version, home_directory):
         elif len(intellij_versions) == 1:
             intellij_version_to_update = intellij_versions[0]
         else:
+            msg = f"Please select which version of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}"
             raise RuntimeError(
-                f"Please select which version of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}"
+                msg,
             )
         return f"{path_to_intellij_settings}{intellij_version_to_update}/options/jdk.table.xml"
 
@@ -93,7 +92,7 @@ def create_parser():
     parser = argparse.ArgumentParser(description="Prepare Python virtual environments for Python connectors")
     actions_group = parser.add_argument_group("actions")
     actions_group.add_argument(
-        "--install-venv", action="store_true", help="Create virtual environment and install the module's dependencies"
+        "--install-venv", action="store_true", help="Create virtual environment and install the module's dependencies",
     )
     actions_group.add_argument("--update-intellij", action="store_true", help="Add interpreter to IntelliJ's list of known interpreters")
 
@@ -121,7 +120,7 @@ if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     if not args.install_venv and not args.update_intellij:
         print("No action requested. Add -h for help")
-        exit(-1)
+        sys.exit(-1)
     path_to_connectors = f"{args.airbyte}/airbyte-integrations/connectors/"
 
     if args.all_modules:
@@ -151,7 +150,7 @@ if __name__ == "__main__":
         input_path = get_input_path(args.input, args.intellij_version, home_directory)
 
         output_path = get_output_path(input_path, args.output)
-        with open(input_path, "r") as f:
+        with open(input_path) as f:
             root = ET.fromstring(f.read())
 
             for module in modules:
@@ -192,7 +191,7 @@ if "pytest" in sys.argv[0]:
             input_from_args = None
             version = "IdeaIC2021.3"
             input_path = get_input_path(input_from_args, version, "{HOME}")
-            assert "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
+            assert input_path == "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml"
 
         @unittest.mock.patch("os.walk")
         def test_input_single_intellij_version(self, mock_os):
@@ -201,7 +200,7 @@ if "pytest" in sys.argv[0]:
 
             version = None
             input_path = get_input_path(input_from_args, version, "{HOME}")
-            assert "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml" == input_path
+            assert input_path == "{HOME}/Library/Application Support/JetBrains/IdeaIC2021.3/options/jdk.table.xml"
 
         @unittest.mock.patch("os.walk")
         def test_input_multiple_intellij_versions(self, mock_os):

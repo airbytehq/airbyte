@@ -29,9 +29,7 @@ class BUILD_STATUSES(str, Enum):
 
 
 def get_connector_build_output_url(connector_technical_name: str) -> str:
-    """
-    Get the connector build output url.
-    """
+    """Get the connector build output url."""
     # remove connectors/ prefix from connector_technical_name
     connector_technical_name = connector_technical_name.replace("connectors/", "")
     return f"{CONNECTOR_TEST_SUMMARY_URL}/{connector_technical_name}/index.json"
@@ -55,10 +53,10 @@ def fetch_latest_build_status_for_connector(connector_technical_name: str) -> BU
             LOGGER.error(f"Error: No outcome value for connector {connector_technical_name}")
             return BUILD_STATUSES.NOT_FOUND
 
-        if outcome == True:
+        if outcome is True:
             return BUILD_STATUSES.SUCCESS
 
-        if outcome == False:
+        if outcome is False:
             return BUILD_STATUSES.FAILURE
 
         try:

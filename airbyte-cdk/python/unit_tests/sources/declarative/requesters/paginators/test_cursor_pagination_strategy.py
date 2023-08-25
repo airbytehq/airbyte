@@ -6,13 +6,14 @@ import json
 
 import pytest
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
 
 
 @pytest.mark.parametrize(
-    "test_name, template_string, stop_condition, expected_token, page_size",
+    ("test_name", "template_string", "stop_condition", "expected_token", "page_size"),
     [
         ("test_static_token", "token", None, "token", None),
         ("test_static_token_with_page_size", "token", None, "token", 5),

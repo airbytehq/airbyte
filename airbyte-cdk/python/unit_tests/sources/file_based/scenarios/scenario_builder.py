@@ -92,7 +92,7 @@ class TestScenario:
                     "stream": stream,
                     "sync_mode": sync_mode.value,
                     "destination_sync_mode": "append",
-                }
+                },
             )
 
         return catalog
@@ -212,7 +212,8 @@ class TestScenarioBuilder:
 
     def build(self) -> TestScenario:
         if self._file_type is None:
-            raise ValueError("file_type is not set")
+            msg = "file_type is not set"
+            raise ValueError(msg)
         return TestScenario(
             self._name,
             self._config,

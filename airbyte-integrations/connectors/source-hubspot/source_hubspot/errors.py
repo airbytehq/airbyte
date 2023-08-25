@@ -3,26 +3,26 @@
 #
 
 
-from typing import Any
+from typing import Any, Optional
 
 import requests
+from requests import HTTPError
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
-from requests import HTTPError
 
 
 class HubspotError(AirbyteTracedException):
-    """
-    Base error class.
+    """Base error class.
     Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
     """
 
     def __init__(
         self,
-        internal_message: str = None,
-        message: str = None,
+        internal_message: Optional[str] = None,
+        message: Optional[str] = None,
         failure_type: FailureType = FailureType.system_error,
-        exception: BaseException = None,
+        exception: Optional[BaseException] = None,
         response: requests.Response = None,
     ):
         super().__init__(internal_message, message, failure_type, exception)
@@ -38,25 +38,25 @@ class HubspotTimeout(HTTPError):
 
 
 class HubspotInvalidAuth(HubspotError):
-    """401 Unauthorized"""
+    """401 Unauthorized."""
 
 
 class HubspotAccessDenied(HubspotError):
-    """403 Forbidden"""
+    """403 Forbidden."""
 
 
 class HubspotRateLimited(HTTPError):
-    """429 Rate Limit Reached"""
+    """429 Rate Limit Reached."""
 
 
 class HubspotBadRequest(HubspotError):
-    """400 Bad Request"""
+    """400 Bad Request."""
 
 
 class InvalidStartDateConfigError(Exception):
-    """Raises when the User inputs wrong or invalid `start_date` in inout configuration"""
+    """Raises when the User inputs wrong or invalid `start_date` in inout configuration."""
 
     def __init__(self, actual_value: Any, message: str):
         super().__init__(
-            f"The value for `start_date` entered `{actual_value}` is ivalid and could not be processed.\nPlease use the real date/time value.\nFull message: {message}"
+            f"The value for `start_date` entered `{actual_value}` is ivalid and could not be processed.\nPlease use the real date/time value.\nFull message: {message}",
         )

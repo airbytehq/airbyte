@@ -12,11 +12,10 @@ class TransformationResult(NamedTuple):
 
 
 def transform_property_names(property_names: Iterable[str]) -> Iterator[TransformationResult]:
-    """
-    Transform property names using this rules:
+    """Transform property names using this rules:
     1. Remove leading "$" from property_name
     2. Resolve naming conflicts, like `userName` and `username`,
-    that will break normalization in the future, by adding `_userName`to property name
+    that will break normalization in the future, by adding `_userName`to property name.
     """
     lowercase_collision_count = defaultdict(int)
     lowercase_properties = set()

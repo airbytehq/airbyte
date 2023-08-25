@@ -6,10 +6,11 @@
 import re
 from typing import List
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from pygsheets import Spreadsheet, Worksheet
 from pygsheets.exceptions import WorksheetNotFound
+
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 STREAMS_COUNT_LIMIT = 200
 
@@ -24,8 +25,9 @@ def get_spreadsheet_id(id_or_url: str) -> str:
             return m.group(2)
         else:
             logger.error(
-                "The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details."
+                "The provided URL doesn't match the requirements. See <a href='https://docs.airbyte.com/integrations/destinations/google-sheets#sheetlink'>this guide</a> for more details.",
             )
+            return None
     else:
         return id_or_url
 
@@ -33,15 +35,13 @@ def get_spreadsheet_id(id_or_url: str) -> str:
 def get_streams_from_catalog(catalog: ConfiguredAirbyteCatalog, limit: int = STREAMS_COUNT_LIMIT):
     streams_count = len(catalog.streams)
     if streams_count > limit:
-        logger.warn(f"Only {limit} of {streams_count} will be processed due to Google Sheets (worksheet count < {limit}) limitations.")
+        logger.warning(f"Only {limit} of {streams_count} will be processed due to Google Sheets (worksheet count < {limit}) limitations.")
         return catalog.streams[:limit]
     return catalog.streams
 
 
 class ConnectionTest:
-
-    """
-    Performs connection test write operation to ensure the target spreadsheet is available for writing.
+    """Performs connection test write operation to ensure the target spreadsheet is available for writing.
     Initiating the class itself, performs the connection test and stores the result in ConnectionTest.result property.
     """
 
@@ -64,7 +64,7 @@ class ConnectionTest:
 
     def check_values(self, wks: Worksheet) -> bool:
         value = wks.get_value("A2")
-        return True if value == self.test_data[1] else False
+        return value == self.test_data[1]
 
     def perform_connection_test(self) -> bool:
         try:

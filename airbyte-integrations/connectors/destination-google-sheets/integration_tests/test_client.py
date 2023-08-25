@@ -30,7 +30,7 @@ def test_client():
 
 
 @pytest.mark.parametrize(
-    "property, expected_retries",
+    ("property", "expected_retries"),
     [
         (TEST_CLIENT.retries, 100),
         (AUTHORIZED_CLIENT.drive.retries, 100),

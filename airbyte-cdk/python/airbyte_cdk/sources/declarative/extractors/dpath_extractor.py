@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Union
 
 import dpath.util
 import requests
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -16,8 +17,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class DpathExtractor(RecordExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
+    """Record extractor that searches a decoded response over a path defined as an array of fields.
 
     If the field path points to an array, that array is returned.
     If the field path points to an object, that object is returned wrapped as an array.
@@ -69,10 +69,7 @@ class DpathExtractor(RecordExtractor):
             extracted = response_body
         else:
             path = [path.eval(self.config) for path in self.field_path]
-            if "*" in path:
-                extracted = dpath.util.values(response_body, path)
-            else:
-                extracted = dpath.util.get(response_body, path, default=[])
+            extracted = dpath.util.values(response_body, path) if "*" in path else dpath.util.get(response_body, path, default=[])
         if isinstance(extracted, list):
             return extracted
         elif extracted:

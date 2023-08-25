@@ -9,7 +9,7 @@ import pytest
 from source_hubplanner.source import HubplannerStream
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(HubplannerStream, "path", "v0/example_endpoint")

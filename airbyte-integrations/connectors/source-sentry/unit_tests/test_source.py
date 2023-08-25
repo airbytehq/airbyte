@@ -4,9 +4,10 @@
 
 from unittest.mock import MagicMock
 
-from airbyte_cdk.logger import AirbyteLogger
 from source_sentry.source import SourceSentry
 from source_sentry.streams import ProjectDetail
+
+from airbyte_cdk.logger import AirbyteLogger
 
 
 def test_source_wrong_credentials(requests_mock):

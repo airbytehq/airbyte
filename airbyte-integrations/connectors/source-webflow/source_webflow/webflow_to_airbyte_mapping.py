@@ -4,11 +4,9 @@
 
 
 class WebflowToAirbyteMapping:
-
-    """
-    The following disctionary is used for dynamically pulling the schema from Webflow, and mapping it to an Airbyte-compatible json-schema
-        Webflow: https://developers.webflow.com/#get-collection-with-full-schema
-        Airbyte/json-schema:  https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+    """The following disctionary is used for dynamically pulling the schema from Webflow, and mapping it to an Airbyte-compatible json-schema
+    Webflow: https://developers.webflow.com/#get-collection-with-full-schema
+    Airbyte/json-schema:  https://docs.airbyte.com/understanding-airbyte/supported-data-types/.
     """
 
     webflow_to_airbyte_mapping = {

@@ -39,7 +39,7 @@ def test_hash_md5_with_salt():
     input_string = "test_input_string"
     input_salt = "test_input_salt"
 
-    s = "{{ '%s' | hash('md5', '%s' ) }}" % (input_string, input_salt)
+    s = f"{{{{ '{input_string}' | hash('md5', '{input_salt}' ) }}}}"
     filter_hash = interpolation.eval(s, config={})
 
     # compute expected value calling hashlib directly

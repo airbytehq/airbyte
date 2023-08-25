@@ -10,14 +10,11 @@ from airbyte_cdk.sources.source import Source
 
 
 class ConnectionChecker(ABC):
-    """
-    Abstract base class for checking a connection
-    """
+    """Abstract base class for checking a connection."""
 
     @abstractmethod
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
+        """Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.
 
         :param source: source
@@ -30,4 +27,3 @@ class ConnectionChecker(ABC):
           and the "error" object should describe what went wrong.
           The error object will be cast to string to display the problem to the user.
         """
-        pass

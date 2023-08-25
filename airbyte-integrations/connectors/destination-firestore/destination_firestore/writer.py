@@ -19,7 +19,8 @@ class FirestoreWriter:
             try:
                 json_account_info = json.loads(credentials_json)
             except ValueError:
-                raise ValueError("The 'credentials_json' field must contain a valid JSON document with service account access data.")
+                msg = "The 'credentials_json' field must contain a valid JSON document with service account access data."
+                raise ValueError(msg)
             credentials = service_account.Credentials.from_service_account_info(json_account_info)
             connection["credentials"] = credentials
 

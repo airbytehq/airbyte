@@ -9,6 +9,10 @@ from typing import Any, Dict, Mapping
 
 import awswrangler as wr
 import pytest
+from destination_aws_datalake import DestinationAwsDatalake
+from destination_aws_datalake.aws import AwsHandler
+from destination_aws_datalake.config_reader import ConnectorConfig
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -21,28 +25,25 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_aws_datalake import DestinationAwsDatalake
-from destination_aws_datalake.aws import AwsHandler
-from destination_aws_datalake.config_reader import ConnectorConfig
 
 logger = logging.getLogger("airbyte")
 
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
 @pytest.fixture(name="invalid_region_config")
 def invalid_region_config() -> Mapping[str, Any]:
-    with open("integration_tests/invalid_region_config.json", "r") as f:
+    with open("integration_tests/invalid_region_config.json") as f:
         return json.loads(f.read())
 
 
 @pytest.fixture(name="invalid_account_config")
 def invalid_account_config() -> Mapping[str, Any]:
-    with open("integration_tests/invalid_account_config.json", "r") as f:
+    with open("integration_tests/invalid_account_config.json") as f:
         return json.loads(f.read())
 
 
@@ -59,7 +60,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="append_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            name="append_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
@@ -67,7 +68,7 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     overwrite_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
-            name="overwrite_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+            name="overwrite_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.overwrite,
@@ -103,11 +104,10 @@ def _record(stream: str, str_value: str, int_value: int, date_value: datetime) -
 
 
 def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
-    """
-    This test verifies that:
-        1. writing a stream in "overwrite" mode overwrites any existing data for that stream
-        2. writing a stream in "append" mode appends new records without deleting the old ones
-        3. The correct state message is output by the connector at the end of the sync
+    """This test verifies that:
+    1. writing a stream in "overwrite" mode overwrites any existing data for that stream
+    2. writing a stream in "append" mode appends new records without deleting the old ones
+    3. The correct state message is output by the connector at the end of the sync.
     """
     append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
 
@@ -136,8 +136,8 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     expected_states = [first_state_message, second_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
-        )
+            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message],
+        ),
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 

@@ -5,8 +5,9 @@
 from itertools import islice
 
 import pendulum
-from airbyte_cdk.models import SyncMode
 from source_aws_cloudtrail.source import ManagementEvents
+
+from airbyte_cdk.models import SyncMode
 
 config = {
     "aws_key_id": "1",

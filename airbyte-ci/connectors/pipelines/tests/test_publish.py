@@ -8,6 +8,7 @@ from typing import List
 
 import anyio
 import pytest
+
 from pipelines import publish
 from pipelines.bases import StepStatus
 
@@ -16,7 +17,7 @@ pytestmark = [
 ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def publish_context(mocker, dagger_client, tmpdir):
     return mocker.MagicMock(
         dagger_client=dagger_client,
@@ -57,7 +58,7 @@ class TestUploadSpecToCache:
         return connectors[0]
 
     @pytest.mark.parametrize(
-        "valid_spec, successful_upload",
+        ("valid_spec", "successful_upload"),
         [
             [True, True],
             [False, True],
@@ -79,11 +80,11 @@ class TestUploadSpecToCache:
 
         upload_exit_code = 0 if successful_upload else 1
         mocker.patch.object(
-            publish, "upload_to_gcs", mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr"))
+            publish, "upload_to_gcs", mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr")),
         )
         if not valid_spec:
             mocker.patch.object(
-                publish.UploadSpecToCache, "_get_connector_spec", mocker.Mock(side_effect=publish.InvalidSpecOutputError("Invalid spec."))
+                publish.UploadSpecToCache, "_get_connector_spec", mocker.Mock(side_effect=publish.InvalidSpecOutputError("Invalid spec.")),
             )
 
         step = publish.UploadSpecToCache(publish_context)
@@ -243,7 +244,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
 
 
 @pytest.mark.parametrize(
-    "pre_release, build_step_status, push_step_status, pull_step_status, upload_to_spec_cache_step_status, metadata_upload_step_status",
+    ("pre_release", "build_step_status", "push_step_status", "pull_step_status", "upload_to_spec_cache_step_status", "metadata_upload_step_status"),
     [
         (False, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS),
         (False, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.SUCCESS, StepStatus.FAILURE),
@@ -267,10 +268,10 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
     publish.metadata.MetadataValidation.return_value.run.return_value = mocker.Mock(
-        name="metadata_validation_result", status=StepStatus.SUCCESS
+        name="metadata_validation_result", status=StepStatus.SUCCESS,
     )
     publish.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
-        name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
+        name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS,
     )
 
     # have output_artifact.values return []
@@ -278,22 +279,22 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     built_connector_platform.values.return_value = ["linux/amd64"]
 
     publish.builds.run_connector_build.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform
+        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform,
     )
 
     publish.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
-        name="push_connector_image_to_registry_result", status=push_step_status
+        name="push_connector_image_to_registry_result", status=push_step_status,
     )
 
     publish.PullConnectorImageFromRegistry.return_value.run.return_value = mocker.Mock(
-        name="pull_connector_image_from_registry_result", status=pull_step_status
+        name="pull_connector_image_from_registry_result", status=pull_step_status,
     )
 
     publish.UploadSpecToCache.return_value.run.return_value = mocker.Mock(
-        name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status
+        name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status,
     )
     publish.metadata.MetadataUpload.return_value.run.return_value = mocker.Mock(
-        name="metadata_upload_result", status=metadata_upload_step_status
+        name="metadata_upload_result", status=metadata_upload_step_status,
     )
 
     context = mocker.MagicMock(

@@ -3,6 +3,7 @@
 #
 
 
+import contextlib
 from abc import ABC
 from calendar import timegm
 from datetime import datetime
@@ -11,10 +12,11 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import feedparser
 import pytz
 import requests
+from dateutil.parser import parse
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from dateutil.parser import parse
 
 item_keys = [
     "title",
@@ -32,10 +34,9 @@ def convert_item_to_mapping(item) -> Mapping:
     mapping = {}
 
     for item_key in item_keys:
-        try:
+        with contextlib.suppress(AttributeError, KeyError):
             mapping[item_key] = item[item_key]
-        except (AttributeError, KeyError):
-            pass
+
 
     try:
         # get datetime in UTC
@@ -133,7 +134,7 @@ class Items(IncrementalRssStream):
     primary_key = None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return self.url
 

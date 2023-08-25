@@ -11,10 +11,11 @@ from uuid import uuid4
 
 import jsonschema
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 from source_s3.source_files_abstract.stream import FileStream
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE.joinpath("sample_files/")
@@ -23,7 +24,7 @@ JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "objec
 
 
 class AbstractTestIncrementalFileStream(ABC):
-    """Prefix this class with Abstract so the tests don't run here but only in the children"""
+    """Prefix this class with Abstract so the tests don't run here but only in the children."""
 
     temp_bucket_prefix = "airbytetest-"
 
@@ -39,35 +40,29 @@ class AbstractTestIncrementalFileStream(ABC):
     def airbyte_system_columns(self) -> Mapping[str, str]:
         return {
             FileStream.ab_last_mod_col: {"type": "string", "format": "date-time"},
-            FileStream.ab_file_name_col: {"type": "string"}
+            FileStream.ab_file_name_col: {"type": "string"},
         }
 
     @property
     @abstractmethod
     def stream_class(self) -> type:
-        """
-        :return: provider specific FileStream class (e.g. IncrementalFileStreamS3)
-        """
+        """:return: provider specific FileStream class (e.g. IncrementalFileStreamS3)"""
 
     @property
     @abstractmethod
     def credentials(self) -> Mapping:
-        """
-        These will be added automatically to the provider property
+        """These will be added automatically to the provider property.
 
         :return: mapping of provider specific credentials
         """
 
     @abstractmethod
     def provider(self, bucket_name: str) -> Mapping:
-        """
-        :return: provider specific provider dict as described in spec.json (leave out credentials, they will be added automatically)
-        """
+        """:return: provider specific provider dict as described in spec.json (leave out credentials, they will be added automatically)"""
 
     @abstractmethod
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
-        """
-        See S3 for example what the override of this needs to achieve.
+        """See S3 for example what the override of this needs to achieve.
 
         :param cloud_bucket_name: name of bucket (or equivalent)
         :param credentials: mapping of provider specific credentials
@@ -78,8 +73,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @abstractmethod
     def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping) -> None:
-        """
-        Provider-specific logic to tidy up any cloud resources.
+        """Provider-specific logic to tidy up any cloud resources.
         See S3 for example.
 
         :param cloud_bucket_name: bucket (or equivalent) name
@@ -102,14 +96,14 @@ class AbstractTestIncrementalFileStream(ABC):
         fails: Any,
         state: Any = None,
     ) -> Any:
-        uploaded_files = [fpath for fpath in self.cloud_files(cloud_bucket_name, self.credentials, files, private)]
+        uploaded_files = list(self.cloud_files(cloud_bucket_name, self.credentials, files, private))
         LOGGER.info(f"file(s) uploaded: {uploaded_files}")
 
         # emulate state for incremental testing
         # since we're not actually saving state out to file here, we pass schema in to our FileStream creation...
         # this isn't how it will work in Airbyte but it's a close enough emulation
         current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00Z"}
-        if (user_schema is None) and ("schema" in current_state.keys()):
+        if (user_schema is None) and ("schema" in current_state):
             user_schema = current_state["schema"]
 
         full_expected_schema = {
@@ -146,7 +140,7 @@ class AbstractTestIncrementalFileStream(ABC):
                         jsonschema.validate(record, full_expected_schema)
                         records.append(record)
 
-            assert all([len(r.keys()) == total_num_columns for r in records])
+            assert all(len(r.keys()) == total_num_columns for r in records)
             assert len(records) == num_records
 
             # returning state by simulating call to get_updated_state() with final record so we can test incremental
@@ -165,10 +159,11 @@ class AbstractTestIncrementalFileStream(ABC):
                         records.append(record)
 
                 LOGGER.info(f"Failed as expected, error: {e_info}")
+                return None
 
     @pytest.mark.parametrize(
         # make user_schema None to test auto-inference. Exclude any _airbyte system columns in expected_schema.
-        "files, path_pattern, private, num_columns, num_records, expected_schema, user_schema, incremental, fails",
+        ("files", "path_pattern", "private", "num_columns", "num_records", "expected_schema", "user_schema", "incremental", "fails"),
         [
             # single file tests
             (  # public

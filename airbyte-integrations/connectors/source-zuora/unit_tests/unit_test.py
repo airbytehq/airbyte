@@ -4,5 +4,4 @@
 
 
 def test_example():
-    """Example of unit test"""
-    pass
+    """Example of unit test."""

@@ -6,16 +6,13 @@ from datetime import datetime, timedelta
 from typing import List
 
 from dagster import InitResourceContext, StringSource, resource
-from dateutil.parser import parse
-from github import ContentFile, Github, GitTreeElement, Repository
+from github import ContentFile, Github, Repository
 from metadata_service.constants import METADATA_FILE_NAME
 from orchestrator.config import CONNECTORS_PATH
 
 
 def _valid_metadata_file_path(path: str) -> bool:
-    """
-    Ensure that the path is a metadata file and not a scaffold file.
-    """
+    """Ensure that the path is a metadata file and not a scaffold file."""
     return METADATA_FILE_NAME in path and CONNECTORS_PATH in path and "-scaffold-" not in path
 
 
@@ -56,7 +53,7 @@ def github_connectors_directory(resource_context: InitResourceContext) -> List[C
     config_schema={"connectors_path": StringSource},
 )
 def github_connectors_metadata_files(resource_context: InitResourceContext) -> List[dict]:
-    resource_context.log.info(f"retrieving github metadata files")
+    resource_context.log.info("retrieving github metadata files")
 
     github_connector_repo = resource_context.resources.github_connector_repo
     repo_file_tree = github_connector_repo.get_git_tree("master", recursive=True).tree
@@ -66,7 +63,7 @@ def github_connectors_metadata_files(resource_context: InitResourceContext) -> L
         if _valid_metadata_file_path(github_file.path)
     ]
 
-    resource_context.log.info(f"finished retrieving github metadata files")
+    resource_context.log.info("finished retrieving github metadata files")
     return metadata_file_paths
 
 
@@ -96,9 +93,8 @@ def github_workflow_runs(resource_context: InitResourceContext) -> List[ContentF
     # Note: We must do this as pygithub does not support all required
     #       parameters for this endpoint
     status, data = github_connector_repo._requester.requestJsonAndCheck(
-        "GET", f"{github_connector_repo.url}/actions/workflows/{workflow_id}/runs", parameters=params
+        "GET", f"{github_connector_repo.url}/actions/workflows/{workflow_id}/runs", parameters=params,
     )
 
-    workflow_runs = data.get("workflow_runs", [])
+    return data.get("workflow_runs", [])
 
-    return workflow_runs

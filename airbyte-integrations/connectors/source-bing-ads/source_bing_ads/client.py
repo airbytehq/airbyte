@@ -12,12 +12,13 @@ from urllib.error import URLError
 
 import backoff
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
+
+from airbyte_cdk.logger import AirbyteLogger
 
 
 class Client:
@@ -41,10 +42,10 @@ class Client:
         self,
         tenant_id: str,
         reports_start_date: str,
-        developer_token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
-        refresh_token: str = None,
+        developer_token: Optional[str] = None,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        refresh_token: Optional[str] = None,
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
@@ -58,7 +59,7 @@ class Client:
         self.oauth: OAuthTokens = self._get_access_token()
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
-    def _get_auth_client(self, client_id: str, tenant_id: str, client_secret: str = None) -> OAuthWebAuthCodeGrant:
+    def _get_auth_client(self, client_id: str, tenant_id: str, client_secret: Optional[str] = None) -> OAuthWebAuthCodeGrant:
         # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
         auth_creds = {
             "client_id": client_id,
@@ -73,7 +74,7 @@ class Client:
         return OAuthWebAuthCodeGrant(**auth_creds)
 
     @lru_cache(maxsize=4)
-    def _get_auth_data(self, customer_id: str = None, account_id: Optional[str] = None) -> AuthorizationData:
+    def _get_auth_data(self, customer_id: Optional[str] = None, account_id: Optional[str] = None) -> AuthorizationData:
         return AuthorizationData(
             account_id=account_id,
             customer_id=customer_id,
@@ -89,21 +90,16 @@ class Client:
         return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
 
     def is_token_expiring(self) -> bool:
-        """
-        Performs check if access token expiring in less than refresh_token_safe_delta seconds
-        """
+        """Performs check if access token expiring in less than refresh_token_safe_delta seconds."""
         token_total_lifetime: timedelta = datetime.utcnow() - self.oauth.access_token_received_datetime
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
-        return False if token_updated_expires_in > self.refresh_token_safe_delta else True
+        return not token_updated_expires_in > self.refresh_token_safe_delta
 
     def should_give_up(self, error: Union[WebFault, URLError]) -> bool:
-        if isinstance(error, URLError):
-            if (
-                isinstance(error.reason, socket.timeout)
-                or isinstance(error.reason, ssl.SSLError)
-                or isinstance(error.reason, socket.gaierror)  # temporary failure in name resolution
-            ):
-                return False
+        if isinstance(error, URLError) and (
+            isinstance(error.reason, (socket.gaierror, socket.timeout, ssl.SSLError))  # temporary failure in name resolution
+        ):
+            return False
 
         error_code = str(errorcode_of_exception(error))
         give_up = error_code not in self.retry_on_codes
@@ -117,7 +113,7 @@ class Client:
     def log_retry_attempt(self, details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         self.logger.info(
-            f"Caught retryable error: {self._get_error_message(exc)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error: {self._get_error_message(exc)} after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         )
 
     def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -140,9 +136,7 @@ class Client:
         params: Mapping[str, Any],
         is_report_service: bool = False,
     ) -> Mapping[str, Any]:
-        """
-        Executes appropriate Service Operation on Bing Ads API
-        """
+        """Executes appropriate Service Operation on Bing Ads API."""
         if self.is_token_expiring():
             self.oauth = self._get_access_token()
 
@@ -156,7 +150,7 @@ class Client:
     def get_service(
         self,
         service_name: str,
-        customer_id: str = None,
+        customer_id: Optional[str] = None,
         account_id: Optional[str] = None,
     ) -> ServiceClient:
         return ServiceClient(
@@ -180,8 +174,7 @@ class Client:
 
     @classmethod
     def asdict(cls, suds_object: sudsobject.Object) -> Mapping[str, Any]:
-        """
-        Converts nested Suds Object into serializable format.
+        """Converts nested Suds Object into serializable format.
         Input sample:
         {
             obj[] =
@@ -193,7 +186,7 @@ class Client:
                 },
         }
         Output sample: =>
-        {'obj': [{'value': 1}, {'value': 'str'}]}
+        {'obj': [{'value': 1}, {'value': 'str'}]}.
         """
         result: Mapping[str, Any] = {}
 

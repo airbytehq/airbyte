@@ -8,6 +8,9 @@ from logging import Logger, getLogger
 from typing import Any, Dict, Mapping
 
 import pytest
+from destination_cumulio import DestinationCumulio
+from destination_cumulio.client import CumulioClient
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -20,8 +23,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_cumulio import DestinationCumulio
-from destination_cumulio.client import CumulioClient
 
 
 @pytest.fixture(name="logger")
@@ -31,7 +32,7 @@ def logger_fixture() -> Logger:
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
-    with open("secrets/config.json", "r") as f:
+    with open("secrets/config.json") as f:
         return json.loads(f.read())
 
 
@@ -72,21 +73,21 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 @pytest.fixture(autouse=True)
 def delete_datasets(
-    config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, logger: Logger
+    config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, logger: Logger,
 ):
     cumulio_client = CumulioClient(config, logger)
     for stream in configured_catalog.streams:
         dataset = cumulio_client.get_dataset_and_columns_from_stream_name(stream.stream.name)
         if dataset:
             logger.info(
-                f"Existing integration test dataset found. Will delete Cumul.io dataset for integration test stream {stream.stream.name}."
+                f"Existing integration test dataset found. Will delete Cumul.io dataset for integration test stream {stream.stream.name}.",
             )
             try:
                 cumulio_client.client.delete("securable", dataset["id"])
             except Exception as e:
                 logger.info(
                     f"The following exception occurred when trying to delete the dataset "
-                    f"for integration test stream {stream.stream.name}: {e}"
+                    f"for integration test stream {stream.stream.name}: {e}",
                 )
 
 
@@ -117,7 +118,7 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 
 def _record(
-    stream_name: str, str_value: str, int_value: int, obj_value: dict, arr_value: list
+    stream_name: str, str_value: str, int_value: int, obj_value: dict, arr_value: list,
 ) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
@@ -136,7 +137,7 @@ def _record(
 
 def _retrieve_all_records(cumulio_client, stream_name):
     dataset_and_columns = cumulio_client.get_dataset_and_columns_from_stream_name(
-        stream_name
+        stream_name,
     )
     # Wait 5 seconds before trying to retrieve the data to ensure it can be properly retrieved
     time.sleep(5)
@@ -150,7 +151,7 @@ def _retrieve_all_records(cumulio_client, stream_name):
                 },
                 ordered_columns,
                 dataset_and_columns["columns"],
-            )
+            ),
         )
         int_col_ind = ordered_columns.index("int_col")
 
@@ -162,7 +163,7 @@ def _retrieve_all_records(cumulio_client, stream_name):
                     "dataset_id": dataset_and_columns["id"],
                     "column_id": dataset_and_columns["columns"][int_col_ind]["id"],
                     "order": "asc",
-                }
+                },
             ],
         }
         raw_data = cumulio_client.client.get("data", raw_data_query)
@@ -178,9 +179,9 @@ def _retrieve_all_records(cumulio_client, stream_name):
                 AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(
-                        stream=stream_name, data=airbyte_data_row, emitted_at=0
+                        stream=stream_name, data=airbyte_data_row, emitted_at=0,
                     ),
-                )
+                ),
             )
         return airbyte_data_to_return
     return None
@@ -191,11 +192,10 @@ def test_write_append(
     configured_catalog: ConfiguredAirbyteCatalog,
     logger: Logger,
 ):
-    """
-    This test verifies that:
-     - Writing a stream in "append" mode appends new records while preserving existing data.
-     - The correct state message is output by the connector at the end of the sync.
-     - Object and Array data is appropriately stringified in Cumul.io.
+    """This test verifies that:
+    - Writing a stream in "append" mode appends new records while preserving existing data.
+    - The correct state message is output by the connector at the end of the sync.
+    - Object and Array data is appropriately stringified in Cumul.io.
     """
     stream_name = configured_catalog.streams[0].stream.name
     destination = DestinationCumulio()
@@ -207,7 +207,7 @@ def test_write_append(
     ]
 
     output_states_1 = list(
-        destination.write(config, configured_catalog, [*record_chunk_1, state_message])
+        destination.write(config, configured_catalog, [*record_chunk_1, state_message]),
     )
     assert [state_message] == output_states_1
 
@@ -217,7 +217,7 @@ def test_write_append(
     ]
 
     output_states_2 = list(
-        destination.write(config, configured_catalog, [*record_chunk_2, state_message])
+        destination.write(config, configured_catalog, [*record_chunk_2, state_message]),
     )
     assert [state_message] == output_states_2
 
@@ -250,11 +250,10 @@ def test_write_overwrite(
     configured_catalog: ConfiguredAirbyteCatalog,
     logger: Logger,
 ):
-    """
-    This test verifies that:
-     - writing a stream in "append" mode overwrite all exiting data.
-     - the correct state message is output by the connector at the end of the sync.
-     - Object and Array data is appropriately stringified in Cumul.io.
+    """This test verifies that:
+    - writing a stream in "append" mode overwrite all exiting data.
+    - the correct state message is output by the connector at the end of the sync.
+    - Object and Array data is appropriately stringified in Cumul.io.
     """
     stream_name = configured_catalog.streams[1].stream.name
     destination = DestinationCumulio()
@@ -266,7 +265,7 @@ def test_write_overwrite(
     ]
 
     output_states_1 = list(
-        destination.write(config, configured_catalog, [*record_chunk_1, state_message])
+        destination.write(config, configured_catalog, [*record_chunk_1, state_message]),
     )
     assert [state_message] == output_states_1
 
@@ -276,7 +275,7 @@ def test_write_overwrite(
     ]
 
     output_states_2 = list(
-        destination.write(config, configured_catalog, [*record_chunk_2, state_message])
+        destination.write(config, configured_catalog, [*record_chunk_2, state_message]),
     )
     assert [state_message] == output_states_2
 

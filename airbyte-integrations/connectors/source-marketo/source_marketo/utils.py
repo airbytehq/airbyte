@@ -18,16 +18,14 @@ STRING_TYPES = [
 
 
 def to_datetime_str(date: datetime) -> str:
-    """
-    Returns the formated datetime string.
-    :: Output example: '2021-07-15T0:0:0Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ"
+    """Returns the formated datetime string.
+    :: Output example: '2021-07-15T0:0:0Z' FORMAT : "%Y-%m-%dT%H:%M:%SZ".
     """
     return date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def clean_string(string: str) -> str:
-    """
-    input -> output
+    """Input -> output
     "updatedAt" -> "updated_at"
     "UpdatedAt" -> "updated_at"
     "base URL" -> "base_url"
@@ -35,9 +33,8 @@ def clean_string(string: str) -> str:
     "updated_at" -> "updated_at"
     " updated_at " -> "updated_at"
     "updatedat" -> "updatedat"
-    "updated at" -> "updated_at"
+    "updated at" -> "updated_at".
     """
-
     fix = {
         "api method name": "Api Method Name",
         "modifying user": "Modifying User",
@@ -46,16 +43,13 @@ def clean_string(string: str) -> str:
 
     string = fix.get(string, string)
     abbreviations = ("URL", "GUID", "IP", "ID", "IDs", "API", "SFDC", "CRM", "SLA")
-    if any(map(lambda w: w in string.split(), abbreviations)):
+    if any(w in string.split() for w in abbreviations):
         return string.lower().replace(" ", "_")
     return "".join("_" + c.lower() if c.isupper() else c for c in string if c != " ").strip("_")
 
 
 def format_value(value, schema):
-    if not isinstance(schema["type"], list):
-        field_type = [schema["type"]]
-    else:
-        field_type = schema["type"]
+    field_type = [schema["type"]] if not isinstance(schema["type"], list) else schema["type"]
 
     if value in [None, "", "null"]:
         return None

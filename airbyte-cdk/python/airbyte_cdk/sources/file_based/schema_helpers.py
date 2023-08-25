@@ -80,8 +80,7 @@ def get_inferred_type(value: Any) -> Optional[ComparableType]:
 
 
 def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
-    """
-    Returns a new dictionary that contains schema1 and schema2.
+    """Returns a new dictionary that contains schema1 and schema2.
 
     Schemas are merged as follows
     - If a key is in one schema but not the other, add it to the base schema with its existing type.
@@ -137,7 +136,7 @@ def _choose_wider_type(key: str, t1: Mapping[str, Any], t2: Mapping[str, Any]) -
         if not comparable_t1 and comparable_t2:
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=key, detected_types=f"{t1},{t2}")
         return max(
-            [t1, t2], key=lambda x: ComparableType(get_comparable_type(TYPE_PYTHON_MAPPING[x["type"]][0]))
+            [t1, t2], key=lambda x: ComparableType(get_comparable_type(TYPE_PYTHON_MAPPING[x["type"]][0])),
         )  # accessing the type_mapping value
 
 
@@ -157,8 +156,7 @@ def is_equal_or_narrower_type(value: Any, expected_type: str) -> bool:
 
 
 def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
-    """
-    Return true iff the record conforms to the supplied schema.
+    """Return true iff the record conforms to the supplied schema.
 
     The record conforms to the supplied schema iff:
     - All columns in the record are in the schema.
@@ -200,7 +198,7 @@ def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[M
             schema = input_schema
         if not all(isinstance(s, str) for s in schema.values()):
             raise ConfigValidationError(
-                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details="Invalid input schema; nested schemas are not supported."
+                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details="Invalid input schema; nested schemas are not supported.",
             )
 
     except json.decoder.JSONDecodeError:
@@ -210,8 +208,7 @@ def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[M
 
 
 def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, str]]]) -> Optional[Mapping[str, Any]]:
-    """
-    Return the user input schema (type mapping), transformed to JSON Schema format.
+    """Return the user input schema (type mapping), transformed to JSON Schema format.
 
     Verify that the input schema:
         - is a key:value map
@@ -236,7 +233,7 @@ def type_mapping_to_jsonschema(input_schema: Optional[Union[str, Mapping[str, st
 
         if not _json_schema_type:
             raise ConfigValidationError(
-                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details=f"Invalid type '{type_name}' for property '{col_name}'."
+                FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details=f"Invalid type '{type_name}' for property '{col_name}'.",
             )
 
         json_schema_type = _json_schema_type[0]

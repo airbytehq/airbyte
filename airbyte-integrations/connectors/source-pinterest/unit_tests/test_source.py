@@ -6,8 +6,9 @@ from unittest.mock import MagicMock
 
 import pytest
 import responses
-from airbyte_cdk.utils import AirbyteTracedException
 from source_pinterest.source import SourcePinterest
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 def setup_responses():
@@ -36,7 +37,7 @@ def test_check_wrong_date_connection(wrong_date_config):
     logger_mock = MagicMock()
     with pytest.raises(AirbyteTracedException) as e:
         source.check_connection(logger_mock, wrong_date_config)
-    assert e.value.message == 'Entered `Start Date` does not match format YYYY-MM-DD'
+    assert e.value.message == "Entered `Start Date` does not match format YYYY-MM-DD"
 
 
 @responses.activate

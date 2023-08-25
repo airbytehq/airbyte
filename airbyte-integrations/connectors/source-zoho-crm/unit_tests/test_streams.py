@@ -10,7 +10,7 @@ from source_zoho_crm.streams import ZohoCrmStream
 from source_zoho_crm.types import FieldMeta, ModuleMeta
 
 
-@pytest.fixture
+@pytest.fixture()
 def stream_factory(mocker):
     def wrapper(stream_module=None):
         class FullRefreshZohoStream(ZohoCrmStream):

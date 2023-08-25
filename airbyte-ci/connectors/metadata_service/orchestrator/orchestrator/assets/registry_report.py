@@ -109,13 +109,11 @@ def ab_internal_ql(row: pd.DataFrame) -> str:
 
 @sentry_sdk.trace
 def augment_and_normalize_connector_dataframes(
-    cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primary_key: str, connector_type: str, github_connector_folders: List[str]
+    cloud_df: pd.DataFrame, oss_df: pd.DataFrame, primary_key: str, connector_type: str, github_connector_folders: List[str],
 ) -> pd.DataFrame:
-    """
-    Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
+    """Normalize the cloud and oss connector dataframes and merge them into a single dataframe.
     Augment the dataframe with additional columns that indicate if the connector is in the cloud registry, oss registry, and if the metadata is valid.
     """
-
     # Add a column 'is_cloud' to indicate if an image/version pair is in the cloud registry
     cloud_df["is_cloud"] = True
 
@@ -192,10 +190,7 @@ def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> Outp
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
 def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
-    """
-    Merge the cloud and oss sources registries into a single dataframe.
-    """
-
+    """Merge the cloud and oss sources registries into a single dataframe."""
     return augment_and_normalize_connector_dataframes(
         cloud_df=cloud_sources_dataframe,
         oss_df=oss_sources_dataframe,
@@ -208,10 +203,7 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github
 @asset(group_name=GROUP_NAME)
 @sentry_sdk.trace
 def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders) -> pd.DataFrame:
-    """
-    Merge the cloud and oss destinations registries into a single dataframe.
-    """
-
+    """Merge the cloud and oss destinations registries into a single dataframe."""
     return augment_and_normalize_connector_dataframes(
         cloud_df=cloud_destinations_dataframe,
         oss_df=oss_destinations_dataframe,
@@ -224,10 +216,7 @@ def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_da
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def connector_registry_report(context, all_destinations_dataframe, all_sources_dataframe):
-    """
-    Generate a report of the connector registry.
-    """
-
+    """Generate a report of the connector registry."""
     report_file_name = "connector_registry_report"
     all_connectors_dataframe = pd.concat([all_destinations_dataframe, all_sources_dataframe])
     all_connectors_dataframe.reset_index(inplace=True)

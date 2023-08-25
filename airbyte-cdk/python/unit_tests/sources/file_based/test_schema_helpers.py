@@ -5,6 +5,7 @@
 from typing import Any, Mapping, Optional
 
 import pytest
+
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.schema_helpers import (
     ComparableType,
@@ -33,7 +34,7 @@ NONCONFORMING_EXTRA_COLUMN_RECORD = {
     "string_field": "val1",
     "array_field": [1.1, 2.2],
     "object_field": {"col": "val"},
-    "column_x": "extra"
+    "column_x": "extra",
 }
 
 CONFORMING_WITH_MISSING_COLUMN_RECORD = {
@@ -162,19 +163,19 @@ SCHEMA = {
     "type": "object",
     "properties": {
         "null_field": {
-            "type": "null"
+            "type": "null",
         },
         "boolean_field": {
-            "type": "boolean"
+            "type": "boolean",
         },
         "integer_field": {
-            "type": "integer"
+            "type": "integer",
         },
         "number_field": {
-            "type": "number"
+            "type": "number",
         },
         "string_field": {
-            "type": "string"
+            "type": "string",
         },
         "array_field": {
             "type": "array",
@@ -183,14 +184,14 @@ SCHEMA = {
             },
         },
         "object_field": {
-            "type": "object"
+            "type": "object",
         },
-    }
+    },
 }
 
 
 @pytest.mark.parametrize(
-    "record,schema,expected_result",
+    ("record", "schema", "expected_result"),
     [
         pytest.param(COMPLETE_CONFORMING_RECORD, SCHEMA, True, id="record-conforms"),
         pytest.param(NONCONFORMING_EXTRA_COLUMN_RECORD, SCHEMA, False, id="nonconforming-extra-column"),
@@ -203,12 +204,12 @@ SCHEMA = {
         pytest.param(CONFORMING_NARROWER_ARRAY_RECORD, SCHEMA, True, id="conforming-array-values-narrower-than-schema"),
         pytest.param(NONCONFORMING_INVALID_ARRAY_RECORD, SCHEMA, False, id="nonconforming-array-is-not-a-string"),
         pytest.param(NONCONFORMING_INVALID_OBJECT_RECORD, SCHEMA, False, id="nonconforming-object-is-not-a-string"),
-    ]
+    ],
 )
 def test_conforms_to_schema(
     record: Mapping[str, Any],
     schema: Mapping[str, Any],
-    expected_result: bool
+    expected_result: bool,
 ) -> None:
     assert conforms_to_schema(record, schema) == expected_result
 
@@ -222,7 +223,7 @@ def test_comparable_types() -> None:
 
 
 @pytest.mark.parametrize(
-    "schema1,schema2,expected_result",
+    ("schema1", "schema2", "expected_result"),
     [
         pytest.param({}, {}, {}, id="empty-schemas"),
         pytest.param({"a": None}, {}, None, id="null-value-in-schema"),
@@ -241,7 +242,7 @@ def test_comparable_types() -> None:
         pytest.param({"a": {"type": "array", "items": {"type": "integer"}}}, {"a": {"type": "array", "items": {"type": "number"}}}, None, id="different-arrays-in-both-schemas"),
         pytest.param({"a": {"type": "integer"}, "b": {"type": "string"}}, {"c": {"type": "number"}}, {"a": {"type": "integer"}, "b": {"type": "string"}, "c": {"type": "number"}}, id=""),
         pytest.param({"a": {"type": "invalid_type"}}, {"b": {"type": "integer"}}, None, id="invalid-type"),
-    ]
+    ],
 )
 def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result: Optional[SchemaType]) -> None:
     if expected_result is not None:
@@ -252,7 +253,7 @@ def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result
 
 
 @pytest.mark.parametrize(
-    "type_mapping,expected_schema,expected_exc_msg",
+    ("type_mapping", "expected_schema", "expected_exc_msg"),
     [
         pytest.param(
             '{"col1": "null", "col2": "array", "col3": "boolean", "col4": "float", "col5": "integer", "col6": "number", "col7": "object", "col8": "string"}',
@@ -260,33 +261,33 @@ def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result
                 "type": "object",
                 "properties": {
                     "col1": {
-                        "type": "null"
+                        "type": "null",
                     },
                     "col2": {
-                        "type": "array"
+                        "type": "array",
                     },
                     "col3": {
-                        "type": "boolean"
+                        "type": "boolean",
                     },
                     "col4": {
-                        "type": "number"
+                        "type": "number",
                     },
                     "col5": {
-                        "type": "integer"
+                        "type": "integer",
                     },
                     "col6": {
-                        "type": "number"
+                        "type": "number",
                     },
                     "col7": {
-                        "type": "object"
+                        "type": "object",
                     },
                     "col8": {
-                        "type": "string"
-                    }
-                }
+                        "type": "string",
+                    },
+                },
             },
             None,
-            id="valid_all_types"
+            id="valid_all_types",
         ),
         pytest.param(
             '{"col1 ": " string", "col2":  " integer"}',
@@ -294,12 +295,12 @@ def test_merge_schemas(schema1: SchemaType, schema2: SchemaType, expected_result
                 "type": "object",
                 "properties": {
                     "col1": {
-                        "type": "string"
+                        "type": "string",
                     },
                     "col2": {
-                        "type": "integer"
-                    }
-                }
+                        "type": "integer",
+                    },
+                },
             },
             None,
             id="valid_extra_spaces",

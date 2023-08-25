@@ -39,7 +39,7 @@ from source_twilio.streams import (
 )
 
 
-@pytest.fixture
+@pytest.fixture()
 def config():
     return {
         "account_sid": "airbyte.io",
@@ -53,7 +53,7 @@ TEST_INSTANCE = SourceTwilio()
 
 
 @pytest.mark.parametrize(
-    "exception, expected_error_msg",
+    ("exception", "expected_error_msg"),
     (
         (
             ConnectionError("Connection aborted"),

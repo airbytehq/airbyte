@@ -3,9 +3,10 @@
 #
 
 import responses
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
+
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 
 from .utils import command_check, url_strip_query
 
@@ -24,7 +25,7 @@ def setup_responses():
 
 
 def ensure_additional_property_is_boolean(root):
-    for name, prop in root.get("properties", {}).items():
+    for prop in root.get("properties", {}).values():
         if prop["type"] == "array" and "items" in prop:
             ensure_additional_property_is_boolean(prop["items"])
         if prop["type"] == "object" and "properties" in prop:
@@ -69,12 +70,12 @@ def test_check(config_gen):
     assert len(responses.calls) == 6
 
     assert command_check(source, config_gen(start_date="2022-20-02")) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="'month must be in 1..12'"
+        status=Status.FAILED, message="'month must be in 1..12'",
     )
     assert len(responses.calls) == 6
 
     assert command_check(source, config_gen(start_date="no date")) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="'String does not match format YYYY-MM-DD'"
+        status=Status.FAILED, message="'String does not match format YYYY-MM-DD'",
     )
     assert len(responses.calls) == 6
 
@@ -92,8 +93,7 @@ def test_source_streams(config):
     streams = source.streams(config)
     assert len(streams) == 28
     actual_stream_names = {stream.name for stream in streams}
-    expected_stream_names = set(
-        [
+    expected_stream_names = {
             "profiles",
             "portfolios",
             "sponsored_display_campaigns",
@@ -115,7 +115,6 @@ def test_source_streams(config):
             "attribution_report_performance_campaign",
             "attribution_report_performance_creative",
             "attribution_report_products",
-            "sponsored_display_budget_rules"
-        ]
-    )
+            "sponsored_display_budget_rules",
+        }
     assert not expected_stream_names - actual_stream_names

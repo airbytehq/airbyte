@@ -4,13 +4,16 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+
 from airbyte_cdk.sources.streams.http import HttpStream
+
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class Stream(HttpStream, ABC):
@@ -28,8 +31,8 @@ class Stream(HttpStream, ABC):
     def request_kwargs(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
 
         return {"timeout": 60}
@@ -38,6 +41,7 @@ class Stream(HttpStream, ABC):
         delay_time = response.headers.get("Retry-After")
         if delay_time:
             return int(delay_time)
+        return None
 
     def path(self, **kwargs) -> str:
         return self.name
@@ -49,9 +53,10 @@ class Stream(HttpStream, ABC):
             next_url = response_data["next_url"]
             cursor = parse_qs(urlparse(next_url).query)["cursor"]
             return {"cursor": cursor}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit}
         if next_page_token:
@@ -74,7 +79,8 @@ class Stream(HttpStream, ABC):
         elif isinstance(response_data, dict):
             return [self.parse_response_obj(response_data)]
         else:
-            raise Exception(f"Unsupported type of response data for stream {self.name}")
+            msg = f"Unsupported type of response data for stream {self.name}"
+            raise Exception(msg)
 
     def parse_response_obj(self, response_obj: dict) -> dict:
         return response_obj
@@ -84,15 +90,13 @@ class BaseIncrementalStream(Stream, ABC):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
 
     @abstractmethod
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
 
@@ -103,7 +107,8 @@ class BaseIncrementalStream(Stream, ABC):
         elif isinstance(value, str):
             value = pendulum.parse(value)
         else:
-            raise ValueError(f"Unsupported type of datetime field {type(value)}")
+            msg = f"Unsupported type of datetime field {type(value)}"
+            raise ValueError(msg)
         return value
 
 
@@ -111,7 +116,7 @@ class TimeIncrementalStream(BaseIncrementalStream, ABC):
 
     state_checkpoint_interval = 1000
 
-    def __init__(self, start_date, **kwargs):
+    def __init__(self, start_date, **kwargs) -> None:
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
 
@@ -119,6 +124,7 @@ class TimeIncrementalStream(BaseIncrementalStream, ABC):
         response_data = response.json()
         if response_data["count"] == self.limit:
             return {"start_time": response_data["end_time"]}
+        return None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_benchmark = self._field_to_datetime(latest_record[self.cursor_field])
@@ -128,7 +134,7 @@ class TimeIncrementalStream(BaseIncrementalStream, ABC):
         return {self.cursor_field: latest_benchmark.strftime("%Y-%m-%dT%H:%M:%SZ")}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
         if next_page_token:
@@ -165,9 +171,10 @@ class IdIncrementalStream(BaseIncrementalStream):
         if len(stream_data) == self.limit:
             last_object_id = stream_data[-1]["id"]
             return {"since_id": last_object_id}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token)
 
@@ -180,15 +187,11 @@ class IdIncrementalStream(BaseIncrementalStream):
 
 
 class Agents(IdIncrementalStream):
-    """
-    Agents Stream: https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents
-    """
+    """Agents Stream: https://developer.zendesk.com/rest_api/docs/chat/agents#list-agents."""
 
 
 class AgentTimelines(TimeIncrementalStream):
-    """
-    Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
-    """
+    """Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export."""
 
     primary_key = None
     cursor_field = "start_time"
@@ -218,9 +221,7 @@ class AgentTimelines(TimeIncrementalStream):
 
 
 class Accounts(Stream):
-    """
-    Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account
-    """
+    """Accounts Stream: https://developer.zendesk.com/rest_api/docs/chat/accounts#show-account."""
 
     primary_key = "account_key"
 
@@ -229,9 +230,7 @@ class Accounts(Stream):
 
 
 class Chats(TimeIncrementalStream):
-    """
-    Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export
-    """
+    """Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-chat-export."""
 
     cursor_field = "update_timestamp"
     data_field = "chats"
@@ -247,59 +246,43 @@ class Chats(TimeIncrementalStream):
                 next_page.update({"start_id": start_id})
 
             return next_page
+        return None
 
 
 class Shortcuts(Stream):
-    """
-    Shortcuts Stream: https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts
-    """
+    """Shortcuts Stream: https://developer.zendesk.com/rest_api/docs/chat/shortcuts#list-shortcuts."""
 
 
 class Triggers(Stream):
-    """
-    Triggers Stream: https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers
-    """
+    """Triggers Stream: https://developer.zendesk.com/rest_api/docs/chat/triggers#list-triggers."""
 
 
 class Bans(IdIncrementalStream):
-    """
-    Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans
-    """
+    """Bans Stream: https://developer.zendesk.com/rest_api/docs/chat/bans#list-bans."""
 
     def get_stream_data(self, response_data) -> List[dict]:
         bans = response_data["ip_address"] + response_data["visitor"]
-        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
-        return bans
+        return sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
 
 
 class Departments(Stream):
-    """
-    Departments Stream: https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments
-    """
+    """Departments Stream: https://developer.zendesk.com/rest_api/docs/chat/departments#list-departments."""
 
 
 class Goals(Stream):
-    """
-    Goals Stream: https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals
-    """
+    """Goals Stream: https://developer.zendesk.com/rest_api/docs/chat/goals#list-goals."""
 
 
 class Skills(Stream):
-    """
-    Skills Stream: https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills
-    """
+    """Skills Stream: https://developer.zendesk.com/rest_api/docs/chat/skills#list-skills."""
 
 
 class Roles(Stream):
-    """
-    Roles Stream: https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles
-    """
+    """Roles Stream: https://developer.zendesk.com/rest_api/docs/chat/roles#list-roles."""
 
 
 class RoutingSettings(Stream):
-    """
-    Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings
-    """
+    """Routing Settings Stream: https://developer.zendesk.com/rest_api/docs/chat/routing_settings#show-account-routing-settings."""
 
     primary_key = ""
 
@@ -308,8 +291,8 @@ class RoutingSettings(Stream):
 
     def path(
         self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return "routing_settings/account"

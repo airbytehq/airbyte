@@ -23,12 +23,11 @@ def account_id_fixture():
 
 @fixture(name="config")
 def config_fixture():
-    config = {
+    return {
         "access_token": "TOKEN",
         "start_date": "2022-03-20T00:00:00",
     }
 
-    return config
 
 
 @fixture(scope="session", name="some_config")
@@ -51,7 +50,7 @@ def fb_account_response_fixture(account_id, some_config, requests_mock):
                 {
                     "account_id": account_id,
                     "id": f"act_{account_id}",
-                }
+                },
             ],
             "paging": {"cursors": {"before": "MjM4NDYzMDYyMTcyNTAwNzEZD", "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"}},
         },
@@ -65,7 +64,7 @@ def api_fixture(some_config, requests_mock, fb_account_response):
 
     requests_mock.register_uri(
         "GET",
-        FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?" f"access_token={some_config['access_token']}&summary=true",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/accounts?access_token={some_config['access_token']}&summary=true",
         [fb_account_response],
     )
 
@@ -115,6 +114,7 @@ def user_lifetime_insights():
         def get(cls, element):
             for insight in cls.insights:
                 return insight[element]
+            return None
 
         @classmethod
         def get_insights(cls, **kwargs) -> List[dict]:

@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.incremental import Cursor, DatetimeBasedCursor
@@ -98,7 +99,7 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever._last_response == response
     assert retriever._records_from_last_response == records
 
-    [r for r in retriever.read_records(SyncMode.full_refresh)]
+    list(retriever.read_records(SyncMode.full_refresh))
     paginator.reset.assert_called()
 
 
@@ -129,7 +130,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
         config={},
     )
 
-    actual_messages = [r for r in retriever.read_records(SyncMode.full_refresh)]
+    actual_messages = list(retriever.read_records(SyncMode.full_refresh))
     paginator.reset.assert_called()
 
     assert isinstance(actual_messages[0], AirbyteLogMessage)
@@ -174,12 +175,12 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     assert retriever._last_response == response
     assert retriever._records_from_last_response == request_response_logs
 
-    [r for r in retriever.read_records(SyncMode.full_refresh)]
+    list(retriever.read_records(SyncMode.full_refresh))
     paginator.reset.assert_called()
 
 
 @pytest.mark.parametrize(
-    "test_name, paginator_mapping, stream_slicer_mapping, expected_mapping",
+    ("test_name", "paginator_mapping", "stream_slicer_mapping", "expected_mapping"),
     [
         ("test_empty_headers", {}, {}, {}),
         ("test_header_from_pagination_and_slicer", {"offset": 1000}, {"key": "value"}, {"key": "value", "offset": 1000}),
@@ -217,20 +218,20 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
         RequestOptionType.body_json: retriever._request_body_json,
     }
 
-    for _, method in request_option_type_to_method.items():
+    for method in request_option_type_to_method.values():
         if expected_mapping is not None:
             actual_mapping = method(None, None, None)
             assert expected_mapping == actual_mapping
         else:
             try:
                 method(None, None, None)
-                assert False
+                raise AssertionError
             except ValueError:
                 pass
 
 
 @pytest.mark.parametrize(
-    "test_name, paginator_mapping, expected_mapping",
+    ("test_name", "paginator_mapping", "expected_mapping"),
     [
         ("test_only_base_headers", {}, {"key": "value"}),
         ("test_header_from_pagination", {"offset": 1000}, {"key": "value", "offset": "1000"}),
@@ -262,20 +263,20 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
         RequestOptionType.header: retriever._request_headers,
     }
 
-    for _, method in request_option_type_to_method.items():
+    for method in request_option_type_to_method.values():
         if expected_mapping:
             actual_mapping = method(None, None, None)
             assert expected_mapping == actual_mapping
         else:
             try:
                 method(None, None, None)
-                assert False
+                raise AssertionError
             except ValueError:
                 pass
 
 
 @pytest.mark.parametrize(
-    "test_name, slicer_body_data, paginator_body_data, expected_body_data",
+    ("test_name", "slicer_body_data", "paginator_body_data", "expected_body_data"),
     [
         ("test_only_slicer_mapping", {"key": "value"}, {}, {"key": "value"}),
         ("test_only_slicer_string", "key=value", {}, "key=value"),
@@ -310,13 +311,13 @@ def test_request_body_data(test_name, slicer_body_data, paginator_body_data, exp
     else:
         try:
             retriever._request_body_data(None, None, None)
-            assert False
+            raise AssertionError
         except ValueError:
             pass
 
 
 @pytest.mark.parametrize(
-    "test_name, requester_path, paginator_path, expected_path",
+    ("test_name", "requester_path", "paginator_path", "expected_path"),
     [
         ("test_path_from_requester", "/v1/path", None, None),
         ("test_path_from_paginator", "/v1/path/", "/v2/paginator", "/v2/paginator"),
@@ -366,7 +367,7 @@ def test_limit_stream_slices():
 
 
 @pytest.mark.parametrize(
-    "test_name, first_greater_than_second",
+    ("test_name", "first_greater_than_second"),
     [
         ("test_first_greater_than_second", True),
         ("test_second_greater_than_first", False),

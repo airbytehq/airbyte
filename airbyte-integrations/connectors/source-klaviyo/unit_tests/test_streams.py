@@ -44,7 +44,7 @@ def response_fixture(mocker):
 
 class TestKlaviyoStreamV1:
     @pytest.mark.parametrize(
-        ["response_json", "next_page_token"],
+        ("response_json", "next_page_token"),
         [
             ({"end": 108, "total": 110, "page": 0}, {"page": 1}),  # first page
             ({"end": 108, "total": 110, "page": 9}, {"page": 10}),  # has next page
@@ -59,7 +59,7 @@ class TestKlaviyoStreamV1:
         assert result == next_page_token
 
     @pytest.mark.parametrize(
-        ["next_page_token", "expected_params"],
+        ("next_page_token", "expected_params"),
         [
             ({"page": 10}, {"api_key": "some_key", "count": 100, "page": 10}),
             (None, {"api_key": "some_key", "count": 100}),
@@ -82,12 +82,12 @@ class TestKlaviyoStreamV1:
 class TestIncrementalKlaviyoStreamV1:
     def test_cursor_field_is_required(self):
         with pytest.raises(
-            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStreamV1 with abstract methods cursor_field, path"
+            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStreamV1 with abstract methods cursor_field, path",
         ):
             IncrementalKlaviyoStreamV1(api_key="some_key", start_date=START_DATE.isoformat())
 
     @pytest.mark.parametrize(
-        ["next_page_token", "stream_state", "expected_params"],
+        ("next_page_token", "stream_state", "expected_params"),
         [
             # start with start_date
             (None, {}, {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp}),
@@ -126,7 +126,7 @@ class TestIncrementalKlaviyoStreamV1:
         assert result == expected_params
 
     @pytest.mark.parametrize(
-        ["current_state", "latest_record", "expected_state"],
+        ("current_state", "latest_record", "expected_state"),
         [
             ({}, {"updated_at": 10, "some_field": 100}, {"updated_at": 10}),
             ({"updated_at": 11}, {"updated_at": 10, "some_field": 100}, {"updated_at": 11}),
@@ -147,7 +147,7 @@ class TestIncrementalKlaviyoStreamV1:
         assert result == (expected_state if expected_state else {stream.cursor_field: stream._start_sync})
 
     @pytest.mark.parametrize(
-        ["response_json", "next_page_token"],
+        ("response_json", "next_page_token"),
         [
             ({"next": 10, "total": 110, "page": 9}, {"since": 10}),  # has next page
             ({"total": 110, "page": 9}, None),  # last page
@@ -178,7 +178,7 @@ class TestReverseIncrementalKlaviyoStreamV1:
         assert stream.state_checkpoint_interval is None, "reversed stream should commit state only in the end"
 
     @pytest.mark.parametrize(
-        ["next_page_token", "stream_state", "expected_params"],
+        ("next_page_token", "stream_state", "expected_params"),
         [
             (None, {}, {"api_key": "some_key", "count": 100, "sort": "asc"}),
             ({"page": 10}, {}, {"api_key": "some_key", "count": 100, "sort": "asc", "page": 10}),
@@ -193,7 +193,7 @@ class TestReverseIncrementalKlaviyoStreamV1:
         assert result == expected_params
 
     @pytest.mark.parametrize(
-        ["current_state", "latest_record", "expected_state"],
+        ("current_state", "latest_record", "expected_state"),
         [
             ({}, {"updated_at": "2021-01-02T12:13:14", "some_field": 100}, {"updated_at": "2021-01-02T12:13:14+00:00"}),
             (
@@ -274,7 +274,7 @@ class TestEventsStream:
             "data": [
                 {"event_properties": {"$flow": "ordinary", "$message": "hello"}, "some_key": "some_value"},
                 {"event_properties": {"$flow": "advanced", "$message": "nice to meet you"}, "another_key": "another_value"},
-            ]
+            ],
         }
         records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
         assert records == [
@@ -301,10 +301,10 @@ class TestEmailTemplatesStream:
         json = {
             "data": [
                {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"},
-            ]
+            ],
         }
         records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
 
         assert records == [
-            {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"}
+            {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"},
         ]

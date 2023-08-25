@@ -5,8 +5,9 @@
 import abc
 from typing import Any, Callable, Union
 
-import airbyte_api_client
 import click
+
+import airbyte_api_client
 from airbyte_api_client.api import (
     destination_definition_api,
     destination_definition_specification_api,
@@ -68,7 +69,8 @@ class BaseDefinition(abc.ABC):
             return self._get_fn(self.api_instance, **self._get_fn_kwargs, **self.COMMON_GET_FUNCTION_KWARGS)
         except ApiException as e:
             if e.status in [422, 404]:
-                raise DefinitionNotFoundError(f"Definition {self.id} does not exists on your Airbyte instance.")
+                msg = f"Definition {self.id} does not exists on your Airbyte instance."
+                raise DefinitionNotFoundError(msg)
             raise e
 
     def __getattr__(self, name: str) -> Any:
@@ -85,7 +87,8 @@ class BaseDefinition(abc.ABC):
         """
         if name in self._api_data:
             return self._api_data.get(name)
-        raise AttributeError(f"{self.__class__.__name__}.{name} is invalid.")
+        msg = f"{self.__class__.__name__}.{name} is invalid."
+        raise AttributeError(msg)
 
 
 class ConnectionDefinition(BaseDefinition):
@@ -139,7 +142,7 @@ class DestinationDefinitionSpecification(DefinitionSpecification):
 
 
 def factory(
-    definition_type: str, api_client: airbyte_api_client.ApiClient, workspace_id: str, definition_id: str
+    definition_type: str, api_client: airbyte_api_client.ApiClient, workspace_id: str, definition_id: str,
 ) -> Union[SourceDefinition, DestinationDefinition]:
     if definition_type == "source":
         definition = SourceDefinition(api_client, definition_id)
@@ -148,6 +151,7 @@ def factory(
         definition = DestinationDefinition(api_client, definition_id)
         specification = DestinationDefinitionSpecification(api_client, workspace_id, definition_id)
     else:
-        raise ValueError(f"{definition_type} does not exist")
+        msg = f"{definition_type} does not exist"
+        raise ValueError(msg)
     definition.specification = specification
     return definition

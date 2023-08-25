@@ -7,6 +7,9 @@ from typing import Dict, List
 
 import pytest
 from _pytest.outcomes import Failed
+from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
+
 from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -16,8 +19,6 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
-from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
 pytestmark = pytest.mark.anyio
 
@@ -27,7 +28,7 @@ class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
         "test_stream": [
             IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test"),
             IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test"),
-        ]
+        ],
     }
 
 
@@ -55,8 +56,8 @@ def get_default_catalog(schema, **kwargs):
                     supported_sync_modes=[SyncMode.full_refresh],
                 ),
                 **configured_catalog_kwargs,
-            )
-        ]
+            ),
+        ],
     )
 
 
@@ -107,7 +108,7 @@ ignored_fields_test_cases = [
 
 
 @pytest.mark.parametrize(
-    "schema, record, expected_record, fail_context",
+    ("schema", "record", "expected_record", "fail_context"),
     ignored_fields_test_cases,
 )
 async def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_context):
@@ -128,8 +129,8 @@ async def test_read_with_ignore_fields(mocker, schema, record, expected_record, 
                 side_effect=[
                     record_message_from_record([first], emitted_at=111),
                     record_message_from_record([second], emitted_at=112),
-                ]
-            )
+                ],
+            ),
         )
 
         t = _TestFullRefresh()
@@ -210,7 +211,7 @@ recordset_comparison_test_cases = [
 
 
 @pytest.mark.parametrize(
-    "primary_key, first_read_records, second_read_records, fail_context",
+    ("primary_key", "first_read_records", "second_read_records", "fail_context"),
     recordset_comparison_test_cases,
 )
 async def test_recordset_comparison(mocker, primary_key, first_read_records, second_read_records, fail_context):
@@ -226,8 +227,8 @@ async def test_recordset_comparison(mocker, primary_key, first_read_records, sec
             side_effect=[
                 record_message_from_record(first_read_records, emitted_at=111),
                 record_message_from_record(second_read_records, emitted_at=112),
-            ]
-        )
+            ],
+        ),
     )
 
     t = _TestFullRefresh()
@@ -242,7 +243,7 @@ async def test_recordset_comparison(mocker, primary_key, first_read_records, sec
 
 
 @pytest.mark.parametrize(
-    "schema, records_1, records_2, expectation",
+    ("schema", "records_1", "records_2", "expectation"),
     [
         (
             {"type": "object"},
@@ -289,8 +290,8 @@ async def test_emitted_at_increase_on_subsequent_runs(mocker, schema, records_1,
                 stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
                 sync_mode="full_refresh",
                 destination_sync_mode="overwrite",
-            )
-        ]
+            ),
+        ],
     )
     docker_runner_mock = mocker.MagicMock(call_read=mocker.AsyncMock(side_effect=[records_1, records_2]))
     input_config = ReadTestConfigWithIgnoreFields()

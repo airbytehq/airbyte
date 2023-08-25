@@ -11,7 +11,7 @@ TODAY = pendulum.local(2023, 3, 31)
 
 
 @pytest.mark.parametrize(
-    "field_name, date, expected_date, expected_messages",
+    ("field_name", "date", "expected_date", "expected_messages"),
     [
         (
             "start_date",
@@ -25,8 +25,8 @@ TODAY = pendulum.local(2023, 3, 31)
             pendulum.local(2020, 3, 2),
             [
                 f"The start date cannot be beyond 37 months from the current date. "
-                f"Set start date to {pendulum.local(2020, 3, 2)}."
-            ]
+                f"Set start date to {pendulum.local(2020, 3, 2)}.",
+            ],
         ),
         (
             "start_date",

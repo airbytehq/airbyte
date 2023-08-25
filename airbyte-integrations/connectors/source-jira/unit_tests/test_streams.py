@@ -5,7 +5,6 @@
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
 from responses import matchers
 from source_jira.source import SourceJira
@@ -59,6 +58,8 @@ from source_jira.streams import (
 )
 from source_jira.utils import read_full_refresh
 
+from airbyte_cdk.models import SyncMode
+
 
 @responses.activate
 def test_application_roles_stream(config, application_roles_response):
@@ -72,7 +73,7 @@ def test_application_roles_stream(config, application_roles_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ApplicationRoles(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 1
     assert len(responses.calls) == 1
 
@@ -82,14 +83,14 @@ def test_application_roles_stream_http_error(config, application_roles_response)
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50",
-        json={'error': 'not found'}, status=404
+        json={"error": "not found"}, status=404,
     )
 
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ApplicationRoles(**args)
     with pytest.raises(HTTPError):
-        [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+        list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
 
 @responses.activate
@@ -104,7 +105,7 @@ def test_boards_stream(config, boards_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Boards(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -121,7 +122,7 @@ def test_dashboards_stream(config, dashboards_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Dashboards(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -138,7 +139,7 @@ def test_filters_stream(config, filters_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Filters(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 1
     assert len(responses.calls) == 1
 
@@ -155,7 +156,7 @@ def test_groups_stream(config, groups_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Groups(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 4
     assert len(responses.calls) == 1
 
@@ -172,7 +173,7 @@ def test_issues_fields_stream(config, issue_fields_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueFields(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -189,7 +190,7 @@ def test_issues_field_configurations_stream(config, issues_field_configurations_
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueFieldConfigurations(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 1
     assert len(responses.calls) == 1
 
@@ -206,7 +207,7 @@ def test_issues_link_types_stream(config, issues_link_types_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueLinkTypes(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -223,7 +224,7 @@ def test_issues_navigator_settings_stream(config, issues_navigator_settings_resp
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueNavigatorSettings(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -240,7 +241,7 @@ def test_issue_notification_schemas_stream(config, issue_notification_schemas_re
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueNotificationSchemes(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -257,7 +258,7 @@ def test_issue_properties_stream(config, issue_properties_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssuePriorities(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -274,7 +275,7 @@ def test_issue_resolutions_stream(config, issue_resolutions_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueResolutions(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -291,7 +292,7 @@ def test_issue_security_schemes_stream(config, issue_security_schemes_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueSecuritySchemes(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -308,7 +309,7 @@ def test_issue_type_schemes_stream(config, issue_type_schemes_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueTypeSchemes(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 1
 
@@ -325,7 +326,7 @@ def test_jira_settings_stream(config, jira_settings_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = JiraSettings(**args)
 
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -351,7 +352,7 @@ def test_board_issues_stream(config, board_issues_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = BoardIssues(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 1
     assert len(responses.calls) == 3
 
@@ -367,7 +368,7 @@ def test_filter_sharing_stream(config, filter_sharing_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = FilterSharing(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 1
     assert len(responses.calls) == 1
 
@@ -383,7 +384,7 @@ def test_projects_stream(config, projects_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Projects(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
 
 
@@ -398,7 +399,7 @@ def test_projects_avatars_stream(config, projects_avatars_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectAvatars(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 4
     assert len(responses.calls) == 2
 
@@ -414,7 +415,7 @@ def test_projects_categories_stream(config, projects_categories_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectCategories(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -430,7 +431,7 @@ def test_screens_stream(config, screens_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Screens(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -451,7 +452,7 @@ def test_screen_tabs_stream(config, screen_tabs_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ScreenTabs(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 2
 
@@ -477,7 +478,7 @@ def test_sprints_stream(config, sprints_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Sprints(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 3
     assert len(responses.calls) == 3
 
@@ -485,7 +486,7 @@ def test_sprints_stream(config, sprints_response):
 @responses.activate
 def test_board_does_not_support_sprints(config):
     url = f"https://{config['domain']}/rest/agile/1.0/board/4/sprint?maxResults=50"
-    error = {'errorMessages': ['The board does not support sprints'], 'errors': {}}
+    error = {"errorMessages": ["The board does not support sprints"], "errors": {}}
     responses.add(responses.GET, url, json=error, status=400)
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -506,7 +507,7 @@ def test_sprint_issues_stream(config, sprints_issues_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = SprintIssues(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 3
     assert len(responses.calls) == 3
 
@@ -522,7 +523,7 @@ def test_time_tracking_stream(config, time_tracking_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = TimeTracking(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 1
     assert len(responses.calls) == 1
 
@@ -538,7 +539,7 @@ def test_users_stream(config, users_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Users(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -559,7 +560,7 @@ def test_users_groups_detailed_stream(config, users_groups_detailed_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = UsersGroupsDetailed(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 4
     assert len(responses.calls) == 2
 
@@ -575,7 +576,7 @@ def test_workflows_stream(config, workflows_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Workflows(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -591,7 +592,7 @@ def test_workflow_schemas_stream(config, workflow_schemas_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = WorkflowSchemes(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -607,7 +608,7 @@ def test_workflow_statuses_stream(config, workflow_statuses_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = WorkflowStatuses(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -623,7 +624,7 @@ def test_workflow_status_categories_stream(config, workflow_status_categories_re
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = WorkflowStatusCategories(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.incremental)]
+    records = list(stream.read_records(sync_mode=SyncMode.incremental))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -639,8 +640,7 @@ def test_avatars_stream(config, avatars_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Avatars(**args)
-    records = [r for r in
-               stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"avatar_type": "issuetype"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"avatar_type": "issuetype"}))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -648,7 +648,7 @@ def test_avatars_stream(config, avatars_response):
 @responses.activate
 def test_issues_stream(config, projects_response, mock_issues_responses, issues_response, caplog):
     Projects.use_cache = False
-    projects_response['values'].append({"id": "3", "key": "Project1"})
+    projects_response["values"].append({"id": "3", "key": "Project1"})
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
@@ -657,9 +657,9 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (3)"})],
+        match=[matchers.query_param_matcher({"maxResults": 50, "fields": "*all", "jql": "project in (3)"})],
         json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
-        status=400
+        status=400,
     )
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
@@ -682,8 +682,7 @@ def test_issue_comments_stream(config, mock_projects_responses, mock_issues_resp
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueComments(**args)
-    records = [r for r in
-               stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 4
 
@@ -699,7 +698,7 @@ def test_issue_custom_field_contexts_stream(config, issue_custom_field_contexts_
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueCustomFieldContexts(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"field_id": "10130"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"field_id": "10130"}))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -715,8 +714,8 @@ def test_issue_property_keys_stream(config, issue_property_keys_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssuePropertyKeys(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh,
+                                              stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"}))
     assert len(records) == 2
     assert len(responses.calls) == 1
 
@@ -732,8 +731,8 @@ def test_project_permissions_stream(config, mock_projects_responses, project_per
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectPermissionSchemes(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "TESTKEY13-1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh,
+                                              stream_slice={"key": "TESTKEY13-1"}))
     assert len(records) == 4
 
 
@@ -753,8 +752,8 @@ def test_project_email_stream(config, mock_projects_responses, project_email_res
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectEmail(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "TESTKEY13-1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh,
+                                              stream_slice={"key": "TESTKEY13-1"}))
     assert len(records) == 4
     assert len(responses.calls) == 3
 
@@ -770,8 +769,8 @@ def test_project_components_stream(config, mock_projects_responses, project_comp
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectComponents(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "Project1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh,
+                                              stream_slice={"key": "Project1"}))
     assert len(records) == 4
     assert len(responses.calls) == 3
 
@@ -787,7 +786,7 @@ def test_permissions_stream(config, permissions_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Permissions(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 1
     assert len(responses.calls) == 1
 
@@ -808,7 +807,7 @@ def test_labels_stream(config, labels_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Labels(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 2
     assert len(responses.calls) == 2
 
@@ -824,7 +823,7 @@ def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_resp
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueWorklogs(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 1
     assert len(responses.calls) == 4
 
@@ -840,7 +839,7 @@ def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_resp
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueWatchers(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert len(records) == 1
     assert len(responses.calls) == 4
 
@@ -856,7 +855,7 @@ def test_issue_votes_stream(config, mock_projects_responses, mock_issues_respons
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueVotes(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"}))
 
     assert len(records) == 1
     assert len(responses.calls) == 4
@@ -873,7 +872,7 @@ def test_issue_remote_links_stream(config, mock_projects_responses, mock_issues_
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueRemoteLinks(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"}))
 
     assert len(records) == 2
     assert len(responses.calls) == 4
@@ -890,7 +889,7 @@ def test_project_versions_stream(config, mock_projects_responses, projects_versi
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectVersions(**args)
-    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"}))
 
     assert len(records) == 4
     assert len(responses.calls) == 3

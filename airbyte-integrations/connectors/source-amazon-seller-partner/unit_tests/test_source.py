@@ -5,17 +5,18 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 from source_amazon_seller_partner.source import boto3
 
+from airbyte_cdk.sources.streams import Stream
 
-@pytest.fixture
+
+@pytest.fixture()
 def connector_source():
     return SourceAmazonSellerPartner()
 
 
-@pytest.fixture
+@pytest.fixture()
 def connector_config():
     return {
         "replication_start_date": "2017-01-25T00:00:00Z",
@@ -32,18 +33,18 @@ def connector_config():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def sts_credentials():
     return {
         "Credentials": {
             "AccessKeyId": "foo",
             "SecretAccessKey": "bar",
             "SessionToken": "foobar",
-        }
+        },
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def mock_boto_client(mocker, sts_credentials):
     boto_client = MagicMock()
     mocker.patch.object(boto3, "client", return_value=boto_client)

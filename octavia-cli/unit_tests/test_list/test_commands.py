@@ -7,13 +7,13 @@ from click.testing import CliRunner
 from octavia_cli.list import commands
 
 
-@pytest.fixture
+@pytest.fixture()
 def context_object(mock_api_client, mock_telemetry_client):
     return {"API_CLIENT": mock_api_client, "WORKSPACE_ID": "my_workspace_id", "TELEMETRY_CLIENT": mock_telemetry_client}
 
 
 def test_available_commands():
-    assert commands.AVAILABLE_COMMANDS == [commands.connectors, commands.workspace]
+    assert [commands.connectors, commands.workspace] == commands.AVAILABLE_COMMANDS
 
 
 def test_commands_in_list_group():

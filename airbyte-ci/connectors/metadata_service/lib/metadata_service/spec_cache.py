@@ -27,7 +27,6 @@ def get_spec_cache_path(docker_repository: str, docker_image_tag: str) -> str:
 
 def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     """Returns the docker repository and tag from the spec cache path."""
-
     # remove the leading "specs/" from the path using CACHE_FOLDER
     without_folder = spec_cache_path.replace(f"{CACHE_FOLDER}/", "")
     without_file = without_folder.replace(f"/{SPEC_FILE_NAME}", "")

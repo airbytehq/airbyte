@@ -24,14 +24,15 @@ class Schema:
 class ZohoBaseType(Enum):
     @classmethod
     def all(cls) -> List[str]:
-        return list(map(lambda f: f.value, cls))
+        return [f.value for f in cls]
 
     def __eq__(self, other: object) -> bool:
         if type(other) is type(self):
             return super().__eq__(other)
         if type(other) == str:
             return self.value == other
-        raise NotImplementedError(f"Type Mismatch: Enum and {type(other).__name__}")
+        msg = f"Type Mismatch: Enum and {type(other).__name__}"
+        raise NotImplementedError(msg)
 
 
 class ZohoJsonType(ZohoBaseType):
@@ -219,7 +220,8 @@ class FieldMeta(FromDictMixin):
     def schema(self) -> FieldType:
         if self.json_type in ZohoJsonType.all():
             return getattr(self, f"_{self.json_type}_field")()
-        raise UnknownDataTypeException(f"JSON type: {self.json_type}, data type:{self.data_type}")
+        msg = f"JSON type: {self.json_type}, data type:{self.data_type}"
+        raise UnknownDataTypeException(msg)
 
 
 @dataclasses.dataclass
@@ -232,7 +234,8 @@ class ModuleMeta(FromDictMixin):
     @property
     def schema(self) -> Schema:
         if not self.fields:
-            raise IncompleteMetaDataException("Not enough data")
+            msg = "Not enough data"
+            raise IncompleteMetaDataException(msg)
         required = ["id", "Modified_Time"] + [field_.api_name for field_ in self.fields if field_.system_mandatory]
         field_to_properties = {field_.api_name: field_.schema for field_ in self.fields}
         properties = {"id": {"type": "string"}, "Modified_Time": {"type": "string", "format": "date-time"}, **field_to_properties}

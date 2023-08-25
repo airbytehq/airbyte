@@ -7,11 +7,12 @@ import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
+from requests import adapters as request_adapters
+from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-from requests import adapters as request_adapters
-from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
 
 from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
 from .rate_limiting import default_backoff_handler
@@ -216,12 +217,12 @@ class Salesforce:
 
     def __init__(
         self,
-        refresh_token: str = None,
-        token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
-        is_sandbox: bool = None,
-        start_date: str = None,
+        refresh_token: Optional[str] = None,
+        token: Optional[str] = None,
+        client_id: Optional[str] = None,
+        client_secret: Optional[str] = None,
+        is_sandbox: Optional[bool] = None,
+        start_date: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         self.refresh_token = refresh_token
@@ -241,7 +242,7 @@ class Salesforce:
         self.start_date = start_date
 
     def _get_standard_headers(self) -> Mapping[str, str]:
-        return {"Authorization": "Bearer {}".format(self.access_token)}
+        return {"Authorization": f"Bearer {self.access_token}"}
 
     def get_streams_black_list(self) -> List[str]:
         return QUERY_RESTRICTED_SALESFORCE_OBJECTS + QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS
@@ -256,7 +257,7 @@ class Salesforce:
         """Selects all validated streams with additional filtering:
         1) skip all sobjects with negative value of the flag "queryable"
         2) user can set search criterias of necessary streams
-        3) selection by catalog settings
+        3) selection by catalog settings.
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
@@ -280,7 +281,7 @@ class Salesforce:
             filtered_stream_list = []
             for stream_criteria in config["streams_criteria"]:
                 filtered_stream_list += filter_streams_by_criteria(
-                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"]
+                    streams_list=stream_names, search_word=stream_criteria["value"], search_criteria=stream_criteria["criteria"],
                 )
             stream_names = list(set(filtered_stream_list))
 
@@ -289,7 +290,7 @@ class Salesforce:
 
     @default_backoff_handler(max_tries=5, factor=5)
     def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
+        self, http_method: str, url: str, headers: Optional[dict] = None, body: Optional[dict] = None, stream: bool = False, params: Optional[dict] = None,
     ) -> requests.models.Response:
         try:
             if http_method == "GET":
@@ -321,8 +322,8 @@ class Salesforce:
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
 
-    def describe(self, sobject: str = None, sobject_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        """Describes all objects or a specific object"""
+    def describe(self, sobject: Optional[str] = None, sobject_options: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        """Describes all objects or a specific object."""
         headers = self._get_standard_headers()
 
         endpoint = "sobjects" if not sobject else f"sobjects/{sobject}/describe"
@@ -334,7 +335,7 @@ class Salesforce:
         resp_json: Mapping[str, Any] = resp.json()
         return resp_json
 
-    def generate_schema(self, stream_name: str = None, stream_options: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def generate_schema(self, stream_name: Optional[str] = None, stream_options: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
         response = self.describe(stream_name, stream_options)
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
@@ -356,7 +357,7 @@ class Salesforce:
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 for stream_name, schema, err in executor.map(
-                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
+                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names],
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")
@@ -430,6 +431,7 @@ class Salesforce:
                 },
             }
         else:
-            raise TypeSalesforceException("Found unsupported type: {}".format(sf_type))
+            msg = f"Found unsupported type: {sf_type}"
+            raise TypeSalesforceException(msg)
 
         return property_schema

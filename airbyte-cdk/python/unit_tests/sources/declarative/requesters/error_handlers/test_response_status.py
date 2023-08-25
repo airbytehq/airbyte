@@ -3,12 +3,13 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 
 
 @pytest.mark.parametrize(
-    "test_name, response_action, retry_in, error_message, expected_action, expected_backoff, expected_message",
+    ("test_name", "response_action", "retry_in", "error_message", "expected_action", "expected_backoff", "expected_message"),
     [
         ("test_fail_with_backoff", ResponseAction.FAIL, 10, "", None, None, ""),
         (
@@ -33,12 +34,16 @@ def test_response_status(test_name, response_action, retry_in, error_message, ex
         response_status = ResponseStatus(response_action, retry_in, error_message)
         assert (
             response_status.action == expected_action
-            and response_status.retry_in == expected_backoff
-            and response_status.error_message == expected_message
+        )
+        assert (
+            response_status.retry_in == expected_backoff
+        )
+        assert (
+            response_status.error_message == expected_message
         )
     else:
         try:
             ResponseStatus(response_action, retry_in)
-            assert False
+            raise AssertionError
         except ValueError:
             pass

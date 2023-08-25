@@ -7,14 +7,15 @@ import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
 from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import parse, today
+
+from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
@@ -83,14 +84,13 @@ class SourceGoogleAds(AbstractSource):
         end_date = config.get("end_date")
         if end_date:
             end_date = min(today(), parse(end_date)).to_date_string()
-        incremental_stream_config = dict(
-            api=google_api,
-            customers=customers,
-            conversion_window_days=config["conversion_window_days"],
-            start_date=config["start_date"],
-            end_date=end_date,
-        )
-        return incremental_stream_config
+        return {
+            "api": google_api,
+            "customers": customers,
+            "conversion_window_days": config["conversion_window_days"],
+            "start_date": config["start_date"],
+            "end_date": end_date,
+        }
 
     def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
         dummy_customers = [Customer(id=_id) for _id in config["customer_id"].split(",")]
@@ -100,10 +100,7 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
-        for field in query.fields:
-            if field.split(".")[0] == "metrics":
-                return True
-        return False
+        return any(field.split(".")[0] == "metrics" for field in query.fields)
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         config = self._validate_and_transform(config)
@@ -120,7 +117,7 @@ class SourceGoogleAds(AbstractSource):
                     if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                         logger.warning(
                             f"Metrics are not available for manager account {customer.id}. "
-                            f"Please remove metrics fields in your custom query: {query}."
+                            f"Please remove metrics fields in your custom query: {query}.",
                         )
                     if query.resource_name not in FULL_REFRESH_CUSTOM_TABLE:
                         if IncrementalCustomQuery.cursor_field in query.fields:
@@ -184,7 +181,7 @@ class SourceGoogleAds(AbstractSource):
                     AdGroupAdReport(**non_manager_incremental_config),
                     GeographicReport(**non_manager_incremental_config),
                     KeywordReport(**non_manager_incremental_config),
-                ]
+                ],
             )
         for single_query_config in config.get("custom_queries", []):
             query = single_query_config["query"]

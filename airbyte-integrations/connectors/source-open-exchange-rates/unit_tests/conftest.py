@@ -8,9 +8,8 @@ from pytest import fixture
 
 @fixture(name="config")
 def config_fixture(requests_mock):
-    config = {"start_date": "2022-11-13", "base": "USD", "app_id": "KEY"}
+    return {"start_date": "2022-11-13", "base": "USD", "app_id": "KEY"}
 
-    return config
 
 
 @fixture(name="mock_stream")

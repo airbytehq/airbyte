@@ -6,8 +6,9 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
-from airbyte_cdk.sources.streams import Stream
 from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSlicer
+
+from airbyte_cdk.sources.streams import Stream
 
 
 def test_slicer():
@@ -22,7 +23,7 @@ def test_slicer():
 
 
 @pytest.mark.parametrize(
-    "last_record, expected, records",
+    ("last_record", "expected", "records"),
     [
         (
             {"2022-09-05T10:10:10.000000Z": "2022-09-05T10:10:10.000000Z"},

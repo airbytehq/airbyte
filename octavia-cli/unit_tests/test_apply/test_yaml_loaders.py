@@ -16,7 +16,7 @@ def test_env_var_replacer(mocker):
     yaml_loaders.os.path.expandvars.assert_called_with(mock_node.value)
 
 
-@pytest.fixture
+@pytest.fixture()
 def test_env_vars():
     old_environ = dict(os.environ)
     secret_env_vars = {"MY_SECRET_PASSWORD": "🤫", "ANOTHER_SECRET_VALUE": "🔒"}

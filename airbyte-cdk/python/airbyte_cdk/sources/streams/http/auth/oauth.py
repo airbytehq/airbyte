@@ -11,7 +11,8 @@ import pendulum
 import requests
 from deprecated import deprecated
 
-from ..exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+
 from .core import HttpAuthenticator
 
 logger = logging.getLogger("airbyte")
@@ -19,8 +20,7 @@ logger = logging.getLogger("airbyte")
 
 @deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.Oauth2Authenticator instead")
 class Oauth2Authenticator(HttpAuthenticator):
-    """
-    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
+    """Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
     The generated access token is attached to each request via the Authorization header.
     """
 
@@ -30,7 +30,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         client_id: str,
         client_secret: str,
         refresh_token: str,
-        scopes: List[str] = None,
+        scopes: Optional[List[str]] = None,
         refresh_access_token_headers: Optional[Mapping[str, Any]] = None,
         refresh_access_token_authenticator: Optional[HttpAuthenticator] = None,
     ):
@@ -61,7 +61,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         return pendulum.now() > self._token_expiry_date
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
-        """Override to define additional parameters"""
+        """Override to define additional parameters."""
         payload: MutableMapping[str, Any] = {
             "grant_type": "refresh_token",
             "client_id": self.client_id,
@@ -78,14 +78,12 @@ class Oauth2Authenticator(HttpAuthenticator):
         backoff.expo,
         DefaultBackoffException,
         on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...",
         ),
         max_time=300,
     )
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)."""
         try:
             response = requests.request(
                 method="POST",
@@ -101,7 +99,8 @@ class Oauth2Authenticator(HttpAuthenticator):
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
             raise
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
     def get_refresh_access_token_headers(self):
         headers = {}

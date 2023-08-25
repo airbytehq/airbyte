@@ -5,10 +5,11 @@
 import logging
 from unittest.mock import MagicMock
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification
 from source_datadog.source import SourceDatadog
 from source_datadog.streams import AuditLogs, SeriesStream
+
+from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification
 
 logger = AirbyteLogger()
 

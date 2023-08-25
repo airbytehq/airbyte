@@ -5,10 +5,11 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from destination_langchain.config import DocArrayHnswSearchIndexingModel
 from destination_langchain.indexer import DocArrayHnswSearchIndexer
 from langchain.document_loaders.base import Document
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 
 class DocArrayIndexerTest(unittest.TestCase):
@@ -49,15 +50,16 @@ class DocArrayIndexerTest(unittest.TestCase):
                             "sync_mode": "incremental",
                             "destination_sync_mode": "append_dedup",
                         },
-                    ]
-                }
+                    ],
+                },
             ))
-            assert False, "Expected exception"
+            msg = "Expected exception"
+            raise AssertionError(msg)
         except Exception as e:
             assert str(e) == "DocArrayHnswSearchIndexer only supports overwrite mode, got DestinationSyncMode.append_dedup for stream example_stream"
 
-    @patch('os.listdir')
-    @patch('os.remove')
+    @patch("os.listdir")
+    @patch("os.remove")
     def test_docarray_pre_sync_succeed(self, remove_mock, listdir_mock):
         listdir_mock.return_value = ["file1", "file2"]
         self.indexer._init_vectorstore = MagicMock()
@@ -88,8 +90,8 @@ class DocArrayIndexerTest(unittest.TestCase):
                         "sync_mode": "full_refresh",
                         "destination_sync_mode": "overwrite",
                     },
-                ]
-            }
+                ],
+            },
         ))
         assert remove_mock.call_count == 2
         assert self.indexer._init_vectorstore.call_count == 1

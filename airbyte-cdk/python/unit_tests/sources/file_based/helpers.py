@@ -39,12 +39,14 @@ class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamRea
         globs: List[str],
         from_date: Optional[datetime] = None,
     ) -> List[RemoteFile]:
-        raise Exception("Error listing files")
+        msg = "Error listing files"
+        raise Exception(msg)
 
 
 class TestErrorOpenFileInMemoryFilesStreamReader(InMemoryFilesStreamReader):
     def open_file(self, file: RemoteFile, file_read_mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        raise Exception("Error opening file")
+        msg = "Error opening file"
+        raise Exception(msg)
 
 
 class FailingSchemaValidationPolicy(AbstractSchemaValidationPolicy):

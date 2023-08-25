@@ -127,9 +127,7 @@ METRICS_TYPE_TO_ID_MAP = {
 
 
 class SponsoredBrandsVideoReportStream(ReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports
-    """
+    """https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports."""
 
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/v2/hsa/{record_type}/report"

@@ -253,10 +253,9 @@ METRICS_TYPE_TO_ID_MAP = {
 
 
 class SponsoredProductsReportStream(ReportStream):
-    """
-    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports
+    """https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports
     https://advertising.amazon.com/API/docs/en-us/reporting/v3/migration-guide
-    https://advertising.amazon.com/API/docs/en-us/reporting/v3/report-types#sponsored-products
+    https://advertising.amazon.com/API/docs/en-us/reporting/v3/report-types#sponsored-products.
     """
 
     API_VERSION = "reporting"  # v3
@@ -270,9 +269,7 @@ class SponsoredProductsReportStream(ReportStream):
         return f"/{self.API_VERSION}/reports"
 
     def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
-        """
-        Download and parse report result
-        """
+        """Download and parse report result."""
         return super()._download_report(None, url)
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):

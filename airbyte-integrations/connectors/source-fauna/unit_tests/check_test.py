@@ -4,12 +4,13 @@
 
 from unittest.mock import MagicMock, Mock
 
-from airbyte_cdk.models import Status
 from faunadb import query as q
 from faunadb.errors import Unauthorized
 from faunadb.objects import Ref
 from source_fauna import SourceFauna
 from test_util import config, mock_logger
+
+from airbyte_cdk.models import Status
 
 
 def query_hardcoded(expr):
@@ -27,10 +28,11 @@ def query_hardcoded(expr):
                     {"field": "ref"},
                 ],
                 "terms": [],
-            }
+            },
         ]
     else:
-        raise ValueError(f"invalid query {expr}")
+        msg = f"invalid query {expr}"
+        raise ValueError(msg)
 
 
 # Asserts that the client is setup, and that the client is used to make sure the database is up.
@@ -67,7 +69,7 @@ def test_invalid_check():
         config=config(
             {
                 "secret": "some invalid secret",
-            }
+            },
         ),
     )
     assert result.status == Status.FAILED

@@ -5,10 +5,11 @@
 import logging
 from typing import Optional, Tuple
 
+from requests import HTTPError
+
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from requests import HTTPError
 
 STRIPE_ERROR_CODES = {
     "more_permissions_required": "This is most likely due to insufficient permissions on the credentials in use. "
@@ -21,7 +22,7 @@ STRIPE_ERROR_CODES = {
 
 class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
     def handle_http_error(
-        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError,
     ) -> Tuple[bool, Optional[str]]:
         status_code = error.response.status_code
         if status_code not in [400, 403]:
@@ -41,13 +42,13 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
 
 class StripeSubStreamAvailabilityStrategy(HttpAvailabilityStrategy):
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
-        """Traverse through all the parents of a given stream and run availability strategy on each of them"""
+        """Traverse through all the parents of a given stream and run availability strategy on each of them."""
         try:
-            current_stream, parent_stream = stream, getattr(stream, "parent")
+            current_stream, parent_stream = stream, stream.parent
         except AttributeError:
             return super().check_availability(stream, logger, source)
         if parent_stream:
-            parent_stream_instance = getattr(current_stream, "get_parent_stream_instance")()
+            parent_stream_instance = current_stream.get_parent_stream_instance()
             # Accessing the `availability_strategy` property will instantiate AvailabilityStrategy under the hood
             availability_strategy = parent_stream_instance.availability_strategy
             if availability_strategy:

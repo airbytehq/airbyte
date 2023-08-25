@@ -6,6 +6,8 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
+from isodate import Duration, parse_duration
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -15,13 +17,11 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
-from isodate import Duration, parse_duration
 
 
 @dataclass
 class DatetimeBasedCursor(Cursor):
-    """
-    Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
+    """Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }.
 
     Given a start time, end time, a step function, and an optional lookback window,
     the stream slicer will partition the date range from start time - lookback window to end time.
@@ -62,13 +62,13 @@ class DatetimeBasedCursor(Cursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
-    cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
+    cursor_datetime_formats: List[str] = field(default_factory=list)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):
+            msg = f"If step is defined, cursor_granularity should be as well and vice-versa. Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
             raise ValueError(
-                f"If step is defined, cursor_granularity should be as well and vice-versa. "
-                f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
+                msg,
             )
         if not isinstance(self.start_datetime, MinMaxDatetime):
             self.start_datetime = MinMaxDatetime(self.start_datetime, parameters)
@@ -103,9 +103,8 @@ class DatetimeBasedCursor(Cursor):
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
 
     def set_initial_state(self, stream_state: StreamState) -> None:
-        """
-        Cursors are not initialized with their state. As state is needed in order to function properly, this method should be called
-        before calling anything else
+        """Cursors are not initialized with their state. As state is needed in order to function properly, this method should be called
+        before calling anything else.
 
         :param stream_state: The state of the stream as returned by get_stream_state
         """
@@ -114,14 +113,7 @@ class DatetimeBasedCursor(Cursor):
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: Optional[Record]) -> None:
         last_record_cursor_value = most_recent_record.get(self.cursor_field.eval(self.config)) if most_recent_record else None
         stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
-        cursor_value_str_by_cursor_value_datetime = dict(
-            map(
-                # we need to ensure the cursor value is preserved as is in the state else the CATs might complain of something like
-                # 2023-01-04T17:30:19.000Z' <= '2023-01-04T17:30:19.000000Z'
-                lambda datetime_str: (self.parse_date(datetime_str), datetime_str),
-                filter(lambda item: item, [self._cursor, last_record_cursor_value, stream_slice_value_end]),
-            )
-        )
+        cursor_value_str_by_cursor_value_datetime = {self.parse_date(datetime_str): datetime_str for datetime_str in filter(lambda item: item, [self._cursor, last_record_cursor_value, stream_slice_value_end])}
         self._cursor = (
             cursor_value_str_by_cursor_value_datetime[max(cursor_value_str_by_cursor_value_datetime.keys())]
             if cursor_value_str_by_cursor_value_datetime
@@ -129,8 +121,7 @@ class DatetimeBasedCursor(Cursor):
         )
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        """
-        Partition the daterange into slices of size = step.
+        """Partition the daterange into slices of size = step.
 
         The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
@@ -173,8 +164,7 @@ class DatetimeBasedCursor(Cursor):
         return dates
 
     def _evaluate_next_start_date_safely(self, start, step):
-        """
-        Given that we set the default step at datetime.timedelta.max, we will generate an OverflowError when evaluating the next start_date
+        """Given that we set the default step at datetime.timedelta.max, we will generate an OverflowError when evaluating the next start_date
         This method assumes that users would never enter a step that would generate an overflow. Given that would be the case, the code
         would have broken anyway.
         """
@@ -188,18 +178,17 @@ class DatetimeBasedCursor(Cursor):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: str) -> datetime.datetime:
-        for datetime_format in self.cursor_datetime_formats + [self.datetime_format]:
+        for datetime_format in [*self.cursor_datetime_formats, self.datetime_format]:
             try:
                 return self._parser.parse(date, datetime_format)
             except ValueError:
                 pass
-        raise ValueError(f"No format in {self.cursor_datetime_formats} matching {date}")
+        msg = f"No format in {self.cursor_datetime_formats} matching {date}"
+        raise ValueError(msg)
 
     @classmethod
     def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
-        """
-        :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
-        """
+        """:return Parses an ISO 8601 durations into datetime.timedelta or Duration objects."""
         if not time_str:
             return datetime.timedelta(0)
         return parse_duration(time_str)
@@ -272,7 +261,7 @@ class DatetimeBasedCursor(Cursor):
                 AirbyteMessage(
                     type=Type.LOG,
                     log=AirbyteLogMessage(level=level, message=message),
-                )
+                ),
             )
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
@@ -281,7 +270,4 @@ class DatetimeBasedCursor(Cursor):
         second_cursor_value = second.get(cursor_field)
         if first_cursor_value and second_cursor_value:
             return self.parse_date(first_cursor_value) >= self.parse_date(second_cursor_value)
-        elif first_cursor_value:
-            return True
-        else:
-            return False
+        return bool(first_cursor_value)

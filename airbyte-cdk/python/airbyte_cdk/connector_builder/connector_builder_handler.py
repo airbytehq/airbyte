@@ -7,8 +7,7 @@ from datetime import datetime
 from typing import Any, Mapping
 
 from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.models import Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
@@ -54,7 +53,7 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
 
 
 def read_stream(
-    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, limits: TestReadLimits
+    source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, limits: TestReadLimits,
 ) -> AirbyteMessage:
     try:
         handler = MessageGrouper(limits.max_pages_per_slice, limits.max_slices)
@@ -66,7 +65,7 @@ def read_stream(
         )
     except Exception as exc:
         error = AirbyteTracedException.from_exception(
-            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}: {str(exc)}"
+            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}: {exc!s}",
         )
         return error.as_airbyte_message()
 
@@ -82,7 +81,7 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
             ),
         )
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message=f"Error resolving manifest: {str(exc)}")
+        error = AirbyteTracedException.from_exception(exc, message=f"Error resolving manifest: {exc!s}")
         return error.as_airbyte_message()
 
 

@@ -6,17 +6,17 @@ import pytest
 from source_gridly.helpers import Helpers
 
 
-@pytest.fixture
+@pytest.fixture()
 def gridly_column_type():
     return "singleLine"
 
 
-@pytest.fixture
+@pytest.fixture()
 def expected_data_type():
     return "string"
 
 
-@pytest.fixture
+@pytest.fixture()
 def view_response():
     return {
         "id": "view1",
@@ -25,7 +25,7 @@ def view_response():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def record_response():
     return [
         {"id": "record1", "cells": [{"columnId": "column1", "value": "Value 1"}, {"columnId": "column2", "value": 1}]},
@@ -33,7 +33,7 @@ def record_response():
     ]
 
 
-@pytest.fixture
+@pytest.fixture()
 def expected_json_schema():
     return {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -46,7 +46,7 @@ def expected_json_schema():
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def expected_transformed_record():
     return {"_recordId": "record1", "column1": "Value 1", "column2": 1}
 

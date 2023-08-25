@@ -7,7 +7,7 @@ from ci_credentials.models import Secret
 
 
 @pytest.mark.parametrize(
-    "connector_name,filename,expected_name, expected_directory",
+    ("connector_name", "filename", "expected_name", "expected_directory"),
     (
         ("source-default", "config.json", "SECRET_SOURCE-DEFAULT__CREDS", "airbyte-integrations/connectors/source-default/secrets"),
         (

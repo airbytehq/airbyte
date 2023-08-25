@@ -17,9 +17,9 @@ single_jsonl_scenario = (
                     "file_type": "jsonl",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -29,8 +29,8 @@ single_jsonl_scenario = (
                     {"col1": "val21", "col2": "val22"},
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
-            }
-        }
+            },
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -58,9 +58,9 @@ single_jsonl_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -68,7 +68,7 @@ single_jsonl_scenario = (
                       "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
             {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
-        ]
+        ],
     )
 ).build()
 
@@ -84,9 +84,9 @@ multi_jsonl_with_different_keys_scenario = (
                     "file_type": "jsonl",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -104,7 +104,7 @@ multi_jsonl_with_different_keys_scenario = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -130,14 +130,14 @@ multi_jsonl_with_different_keys_scenario = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -149,7 +149,7 @@ multi_jsonl_with_different_keys_scenario = (
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
             {"data": {"col1": "val21b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
-        ]
+        ],
     )
 ).build()
 
@@ -165,9 +165,9 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                     "file_type": "jsonl",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -185,7 +185,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -207,14 +207,14 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -226,7 +226,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
             {"data": {"col1": "val21b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
 ).build()
@@ -243,9 +243,9 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                     "file_type": "jsonl",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -263,7 +263,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -285,14 +285,14 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -304,7 +304,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
             {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
-        ]
+        ],
     )
     .set_parsers({"jsonl": LowInferenceBytesJsonlParser()})
 ).build()
@@ -321,9 +321,9 @@ invalid_jsonl_scenario = (
                     "file_type": "jsonl",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -333,8 +333,8 @@ invalid_jsonl_scenario = (
                     "invalid",
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
-            }
-        }
+            },
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -354,14 +354,14 @@ invalid_jsonl_scenario = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records([
         {"data": {"col1": "val1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
@@ -375,8 +375,8 @@ invalid_jsonl_scenario = (
                     "level": "ERROR",
                     "message": f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream=stream1 file=a.jsonl line_no=2 n_skipped=0",
                 },
-            ]
-        }
+            ],
+        },
     )
 ).build()
 
@@ -398,9 +398,9 @@ jsonl_multi_stream_scenario = (
                     "file_type": "jsonl",
                     "globs": ["b.jsonl"],
                     "validation_policy": "Emit Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -418,7 +418,7 @@ jsonl_multi_stream_scenario = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -429,13 +429,13 @@ jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": ["null", "integer"]
+                                "type": ["null", "integer"],
                             },
                             "col2": {
                                 "type": ["null", "string"],
                             },
                             "col3": {
-                                "type": ["null", "number"]
+                                "type": ["null", "number"],
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
@@ -455,7 +455,7 @@ jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": ["null", "number"]
+                                "type": ["null", "number"],
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
@@ -470,8 +470,8 @@ jsonl_multi_stream_scenario = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 },
-            ]
-        }
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -487,7 +487,7 @@ jsonl_multi_stream_scenario = (
              "stream": "stream2"},
             {"data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
              "stream": "stream2"},
-        ]
+        ],
     )
 ).build()
 
@@ -504,9 +504,9 @@ schemaless_jsonl_scenario = (
                     "globs": ["*"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -524,7 +524,7 @@ schemaless_jsonl_scenario = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -536,7 +536,7 @@ schemaless_jsonl_scenario = (
                         "type": "object",
                         "properties": {
                             "data": {
-                                "type": "object"
+                                "type": "object",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
@@ -544,14 +544,14 @@ schemaless_jsonl_scenario = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        }
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -563,7 +563,7 @@ schemaless_jsonl_scenario = (
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
             {"data": {"data": {"col1": 4, "col2": "record4", "col3": 1.1}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
-        ]
+        ],
     )
 ).build()
 
@@ -586,9 +586,9 @@ schemaless_jsonl_multi_stream_scenario = (
                     "file_type": "jsonl",
                     "globs": ["b.jsonl"],
                     "validation_policy": "Skip Record",
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -606,7 +606,7 @@ schemaless_jsonl_multi_stream_scenario = (
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
             },
-        }
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -617,7 +617,7 @@ schemaless_jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "data": {
-                                "type": "object"
+                                "type": "object",
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
@@ -637,7 +637,7 @@ schemaless_jsonl_multi_stream_scenario = (
                         "type": "object",
                         "properties": {
                             "col3": {
-                                "type": ["null", "number"]
+                                "type": ["null", "number"],
                             },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
@@ -652,8 +652,8 @@ schemaless_jsonl_multi_stream_scenario = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "supported_sync_modes": ["full_refresh", "incremental"],
                 },
-            ]
-        }
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -665,7 +665,7 @@ schemaless_jsonl_multi_stream_scenario = (
              "stream": "stream2"},
             {"data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
              "stream": "stream2"},
-        ]
+        ],
     )
 ).build()
 
@@ -680,10 +680,10 @@ jsonl_user_input_schema_scenario = (
                     "file_type": "jsonl",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "input_schema": '{"col1": "integer", "col2": "string"}'
-                }
-            ]
-        }
+                    "input_schema": '{"col1": "integer", "col2": "string"}',
+                },
+            ],
+        },
     )
     .set_files(
         {
@@ -693,8 +693,8 @@ jsonl_user_input_schema_scenario = (
                     {"col1": 2, "col2": "val22"},
                 ],
                 "last_modified": "2023-06-05T03:54:07.000Z",
-            }
-        }
+            },
+        },
     )
     .set_file_type("jsonl")
     .set_expected_catalog(
@@ -706,7 +706,7 @@ jsonl_user_input_schema_scenario = (
                         "type": "object",
                         "properties": {
                             "col1": {
-                                "type": "integer"
+                                "type": "integer",
                             },
                             "col2": {
                                 "type": "string",
@@ -722,9 +722,9 @@ jsonl_user_input_schema_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                }
-            ]
-        }
+                },
+            ],
+        },
     )
     .set_expected_records(
         [
@@ -732,6 +732,6 @@ jsonl_user_input_schema_scenario = (
                       "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
             {"data": {"col1": 2, "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                       "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
-        ]
+        ],
     )
 ).build()

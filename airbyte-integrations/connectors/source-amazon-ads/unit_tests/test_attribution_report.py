@@ -8,12 +8,13 @@ import pendulum
 import pytest
 import requests
 import responses
-from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from jsonschema import validate
 from source_amazon_ads import SourceAmazonAds
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
 from source_amazon_ads.streams import AttributionReportProducts
+
+from airbyte_cdk.models import SyncMode
 
 from .utils import read_full_refresh
 
@@ -45,7 +46,8 @@ def get_stream_by_name(streams, stream_name):
     for stream in streams:
         if stream.name == stream_name:
             return stream
-    raise Exception(f"Expected stream {stream_name} not found")
+    msg = f"Expected stream {stream_name} not found"
+    raise Exception(msg)
 
 
 @pytest.mark.parametrize(
@@ -138,22 +140,22 @@ def test_attribution_report_slices(config):
     slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
 
     assert slices == [
-        {'profileId': 1, 'startDate': '20220514', 'endDate': '20220515'},
-        {'profileId': 2, 'startDate': '20220514', 'endDate': '20220515'}
+        {"profileId": 1, "startDate": "20220514", "endDate": "20220515"},
+        {"profileId": 2, "startDate": "20220514", "endDate": "20220515"},
     ]
 
     config["start_date"] = pendulum.from_format("2022-05-01", "YYYY-MM-DD").date()
     stream = AttributionReportProducts(config, profiles=profiles)
     slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     assert slices == [
-        {'profileId': 1, 'startDate': '20220501', 'endDate': '20220515'},
-        {'profileId': 2, 'startDate': '20220501', 'endDate': '20220515'}
+        {"profileId": 1, "startDate": "20220501", "endDate": "20220515"},
+        {"profileId": 2, "startDate": "20220501", "endDate": "20220515"},
     ]
 
     config["start_date"] = pendulum.from_format("2022-01-01", "YYYY-MM-DD").date()
     stream = AttributionReportProducts(config, profiles=profiles)
     slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     assert slices == [
-        {'profileId': 1, 'startDate': '20220214', 'endDate': '20220515'},
-        {'profileId': 2, 'startDate': '20220214', 'endDate': '20220515'}
+        {"profileId": 1, "startDate": "20220214", "endDate": "20220515"},
+        {"profileId": 2, "startDate": "20220214", "endDate": "20220515"},
     ]

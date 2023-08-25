@@ -9,10 +9,11 @@ from typing import Any, Callable, List
 
 import click
 import yaml
-from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from jinja2 import Environment, PackageLoader, Template, select_autoescape
-from octavia_cli.apply import resources
 from slugify import slugify
+
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from octavia_cli.apply import resources
 
 from .definitions import BaseDefinition, ConnectionDefinition
 from .yaml_dumpers import CatalogDumper
@@ -26,7 +27,7 @@ class FieldToRender:
         Args:
             name (str): name of the field
             required (bool): whether it's a required field or not
-            field_metadata (dict): metadata associated with the field
+            field_metadata (dict): metadata associated with the field.
         """
         self.name = name
         self.required = required
@@ -41,30 +42,32 @@ class FieldToRender:
                 self._get_type_comment,
                 self._get_description_comment,
                 self._get_example_comment,
-            ]
+            ],
         )
         self.default = self._get_default()
 
     def __getattr__(self, name: str) -> Any:
         """Map field_metadata keys to attributes of Field.
+
         Args:
             name (str): attribute name
         Returns:
-            [Any]: attribute value
+            [Any]: attribute value.
         """
         if name in self.field_metadata:
             return self.field_metadata.get(name)
+        return None
 
     @property
     def is_array_of_objects(self) -> bool:
-        if self.type == "array" and self.items:
-            if self.items.get("type") == "object":
-                return True
+        if self.type == "array" and self.items and self.items.get("type") == "object":
+            return True
         return False
 
     def _get_one_of_values(self) -> List[List["FieldToRender"]]:
         """An object field can have multiple kind of values if it's a oneOf.
         This functions returns all the possible one of values the field can take.
+
         Returns:
             [list]: List of oneof values.
         """
@@ -78,8 +81,9 @@ class FieldToRender:
 
     def _get_array_items(self) -> List["FieldToRender"]:
         """If the field is an array of objects, retrieve fields of these objects.
+
         Returns:
-            [list]: List of fields
+            [list]: List of fields.
         """
         if self.is_array_of_objects:
             required_fields = self.items.get("required", [])
@@ -153,6 +157,7 @@ class BaseRenderer(abc.ABC):
             project_path (str): Current project path.
             definition_type (str): Current definition_type.
             resource_name (str): Current resource_name.
+
         Returns:
             Path: Full path to the output path.
         """
@@ -164,21 +169,23 @@ class BaseRenderer(abc.ABC):
     @staticmethod
     def _confirm_overwrite(output_path):
         """User input to determine if the configuration paqth should be overwritten.
+
         Args:
             output_path (str): Path of the configuration file to overwrite
         Returns:
-            bool: Boolean representing if the configuration file is to be overwritten
+            bool: Boolean representing if the configuration file is to be overwritten.
         """
         overwrite = True
         if output_path.is_file():
             overwrite = click.confirm(
-                f"The configuration octavia-cli is about to create already exists, do you want to replace it? ({output_path})"
+                f"The configuration octavia-cli is about to create already exists, do you want to replace it? ({output_path})",
             )
         return overwrite
 
     @abc.abstractmethod
     def _render(self):  # pragma: no cover
         """Runs the template rendering.
+
         Raises:
             NotImplementedError: Must be implemented on subclasses.
         """
@@ -186,8 +193,10 @@ class BaseRenderer(abc.ABC):
 
     def write_yaml(self, project_path: Path) -> str:
         """Write rendered specification to a YAML file in local project path.
+
         Args:
             project_path (str): Path to directory hosting the octavia project.
+
         Returns:
             str: Path to the rendered specification.
         """
@@ -200,9 +209,11 @@ class BaseRenderer(abc.ABC):
 
     def import_configuration(self, project_path: str, configuration: dict) -> Path:
         """Import the resource configuration. Save the yaml file to disk and return its path.
+
         Args:
             project_path (str): Current project path.
             configuration (dict): The configuration of the resource.
+
         Returns:
             Path: Path to the resource configuration.
         """
@@ -221,6 +232,7 @@ class ConnectorSpecificationRenderer(BaseRenderer):
 
     def __init__(self, resource_name: str, definition: BaseDefinition) -> None:
         """Connector specification renderer constructor.
+
         Args:
             resource_name (str): Name of the source or destination.
             definition (BaseDefinition): The definition related to a source or a destination.
@@ -246,7 +258,7 @@ class ConnectorSpecificationRenderer(BaseRenderer):
     def _render(self) -> str:
         parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
         return self.TEMPLATE.render(
-            {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
+            {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema},
         )
 
 
@@ -271,6 +283,7 @@ class ConnectionRenderer(BaseRenderer):
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
         """Connection renderer constructor.
+
         Args:
             connection_name (str): Name of the connection to render.
             source (resources.Source): Connection's source.
@@ -283,8 +296,10 @@ class ConnectionRenderer(BaseRenderer):
     @staticmethod
     def catalog_to_yaml(catalog: AirbyteCatalog) -> str:
         """Convert the source catalog to a YAML string.
+
         Args:
             catalog (AirbyteCatalog): Source's catalog.
+
         Returns:
             str: Catalog rendered as yaml.
         """
@@ -300,14 +315,16 @@ class ConnectionRenderer(BaseRenderer):
                 "catalog": yaml_catalog,
                 "supports_normalization": self.destination.definition.normalization_config.supported,
                 "supports_dbt": self.destination.definition.supports_dbt,
-            }
+            },
         )
 
     def import_configuration(self, project_path: Path, configuration: dict) -> Path:
         """Import the connection configuration. Save the yaml file to disk and return its path.
+
         Args:
             project_path (str): Current project path.
             configuration (dict): The configuration of the connection.
+
         Returns:
             Path: Path to the connection configuration.
         """

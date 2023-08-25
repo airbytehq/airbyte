@@ -9,7 +9,7 @@ import pytest
 from source_orbit.streams import Members, OrbitStream, OrbitStreamPaginated
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(OrbitStream, "path", "v0/example_endpoint")
@@ -78,7 +78,7 @@ def test_backoff_time(patch_base_class):
 
 class TestOrbitStreamPaginated:
     @pytest.mark.parametrize(
-        "json_response, expected_token", [({"links": {"next": "http://foo.bar/api?a=b&c=d"}}, {"a": "b", "c": "d"}), ({}, None)]
+        ("json_response", "expected_token"), [({"links": {"next": "http://foo.bar/api?a=b&c=d"}}, {"a": "b", "c": "d"}), ({}, None)],
     )
     def test_next_page_token(self, patch_base_class, mocker, json_response, expected_token):
         stream = OrbitStreamPaginated(workspace="workspace")
@@ -91,8 +91,5 @@ class TestMembers:
     def test_members_request_params(self, patch_base_class, start_date):
         stream = Members(workspace="workspace", start_date=start_date)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-        if start_date is not None:
-            expected_params = {"sort": "created_at", "start_date": start_date}
-        else:
-            expected_params = {"sort": "created_at"}
+        expected_params = {"sort": "created_at", "start_date": start_date} if start_date is not None else {"sort": "created_at"}
         assert stream.request_params(**inputs) == expected_params

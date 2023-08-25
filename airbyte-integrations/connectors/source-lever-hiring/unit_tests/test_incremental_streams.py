@@ -3,11 +3,12 @@
 #
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_lever_hiring.streams import IncrementalLeverHiringStream
 
+from airbyte_cdk.models import SyncMode
 
-@pytest.fixture
+
+@pytest.fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalLeverHiringStream, "path", "v0/example_endpoint")

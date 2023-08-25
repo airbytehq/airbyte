@@ -11,14 +11,14 @@ from .conftest import does_not_raise
 
 class TestConfig:
     @pytest.mark.parametrize(
-        "raw_config, expected_output_config, expected_error",
+        ("raw_config", "expected_output_config", "expected_error"),
         [
             pytest.param(
                 {"connector_image": "foo", "tests": {"spec": [{"spec_path": "my-spec-path"}]}},
                 config.Config(
                     connector_image="foo",
                     acceptance_tests=config.AcceptanceTestConfigurations(
-                        spec=config.GenericTestConfig(tests=[config.SpecTestConfig(spec_path="my-spec-path")])
+                        spec=config.GenericTestConfig(tests=[config.SpecTestConfig(spec_path="my-spec-path")]),
                     ),
                 ),
                 does_not_raise(),
@@ -60,7 +60,7 @@ class TestConfig:
                 config.Config(
                     connector_image="foo",
                     acceptance_tests=config.AcceptanceTestConfigurations(
-                        spec=config.GenericTestConfig(bypass_reason="My good reason to bypass")
+                        spec=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
                     ),
                 ),
                 does_not_raise(),
@@ -76,7 +76,7 @@ class TestConfig:
                 config.Config(
                     connector_image="foo",
                     acceptance_tests=config.AcceptanceTestConfigurations(
-                        spec=config.GenericTestConfig(bypass_reason="My good reason to bypass")
+                        spec=config.GenericTestConfig(bypass_reason="My good reason to bypass"),
                     ),
                 ),
                 does_not_raise(),
@@ -118,17 +118,17 @@ class TestConfig:
                         {
                             "config_path": "config_path.json",
                             "cursor_paths": {
-                                "stream_name": cursor_paths
-                            }
-                        }
-                    ]
-                }
+                                "stream_name": cursor_paths,
+                            },
+                        },
+                    ],
+                },
             },
-            "test_strictness_level": "low"
+            "test_strictness_level": "low",
         }
 
     @pytest.mark.parametrize(
-        "legacy_config, expected_parsed_config",
+        ("legacy_config", "expected_parsed_config"),
         [
             pytest.param(
                 {
@@ -143,7 +143,7 @@ class TestConfig:
                             {
                                 "config_path": "integration_tests/config.json",
                                 "configured_catalog_path": "integration_tests/configured_catalog.json",
-                            }
+                            },
                         ],
                     },
                 },
@@ -154,12 +154,12 @@ class TestConfig:
                         connection=config.GenericTestConfig(
                             tests=[
                                 config.ConnectionTestConfig(
-                                    config_path="integration_tests/config.json", status=config.ConnectionTestConfig.Status.Succeed
+                                    config_path="integration_tests/config.json", status=config.ConnectionTestConfig.Status.Succeed,
                                 ),
                                 config.ConnectionTestConfig(
-                                    config_path="integration_tests/bad_config.json", status=config.ConnectionTestConfig.Status.Failed
+                                    config_path="integration_tests/bad_config.json", status=config.ConnectionTestConfig.Status.Failed,
                                 ),
-                            ]
+                            ],
                         ),
                         discovery=config.GenericTestConfig(tests=[config.DiscoveryTestConfig(config_path="integration_tests/config.json")]),
                         basic_read=config.GenericTestConfig(
@@ -167,8 +167,8 @@ class TestConfig:
                                 config.BasicReadTestConfig(
                                     config_path="integration_tests/config.json",
                                     configured_catalog_path="integration_tests/configured_catalog.json",
-                                )
-                            ]
+                                ),
+                            ],
                         ),
                     ),
                 ),
@@ -188,7 +188,7 @@ class TestConfig:
                             {
                                 "config_path": "integration_tests/config.json",
                                 "configured_catalog_path": "integration_tests/configured_catalog.json",
-                            }
+                            },
                         ],
                     },
                 },
@@ -199,12 +199,12 @@ class TestConfig:
                         connection=config.GenericTestConfig(
                             tests=[
                                 config.ConnectionTestConfig(
-                                    config_path="integration_tests/config.json", status=config.ConnectionTestConfig.Status.Succeed
+                                    config_path="integration_tests/config.json", status=config.ConnectionTestConfig.Status.Succeed,
                                 ),
                                 config.ConnectionTestConfig(
-                                    config_path="integration_tests/bad_config.json", status=config.ConnectionTestConfig.Status.Failed
+                                    config_path="integration_tests/bad_config.json", status=config.ConnectionTestConfig.Status.Failed,
                                 ),
-                            ]
+                            ],
                         ),
                         discovery=config.GenericTestConfig(tests=[config.DiscoveryTestConfig(config_path="integration_tests/config.json")]),
                         basic_read=config.GenericTestConfig(
@@ -212,8 +212,8 @@ class TestConfig:
                                 config.BasicReadTestConfig(
                                     config_path="integration_tests/config.json",
                                     configured_catalog_path="integration_tests/configured_catalog.json",
-                                )
-                            ]
+                                ),
+                            ],
                         ),
                     ),
                 ),
@@ -228,7 +228,7 @@ class TestConfig:
 
 class TestExpectedRecordsConfig:
     @pytest.mark.parametrize(
-        "path, bypass_reason, expectation",
+        ("path", "bypass_reason", "expectation"),
         [
             pytest.param("my_path", None, does_not_raise()),
             pytest.param(None, "Good bypass reason", does_not_raise()),

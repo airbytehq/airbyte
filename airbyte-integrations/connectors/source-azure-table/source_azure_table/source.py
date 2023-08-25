@@ -25,7 +25,7 @@ from .streams import AzureTableStream
 
 
 class SourceAzureTable(AbstractSource):
-    """This source helps to sync data from one azure data table a time"""
+    """This source helps to sync data from one azure data table a time."""
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         pass
@@ -35,7 +35,7 @@ class SourceAzureTable(AbstractSource):
 
     @property
     def get_typed_schema(self) -> object:
-        """Static schema for tables"""
+        """Static schema for tables."""
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -53,7 +53,7 @@ class SourceAzureTable(AbstractSource):
             logger.log("No tables found, but credentials are correct.")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {e!s}")
 
     def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
         reader = AzureTableReader(logger, config)
@@ -75,12 +75,10 @@ class SourceAzureTable(AbstractSource):
         return AirbyteCatalog(streams=streams)
 
     def streams(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: The user-provided configuration as specified by the source's spec.
+        """:param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
-
         try:
             reader = AzureTableReader(logger, config)
             tables = reader.get_tables()
@@ -92,14 +90,13 @@ class SourceAzureTable(AbstractSource):
                 streams.append(stream)
             return streams
         except Exception as e:
-            raise Exception(f"An exception occurred: {str(e)}")
+            msg = f"An exception occurred: {e!s}"
+            raise Exception(msg)
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: Optional[MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
-        """
-        This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
-        """
+        """This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream."""
         stream_instances = {s.name: s for s in self.streams(logger=logger, config=config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         logger.info(f"Starting syncing {self.name}")
@@ -113,8 +110,9 @@ class SourceAzureTable(AbstractSource):
                     logger.warning("Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
                     continue
                 if not stream_instance:
+                    msg = f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
                     raise KeyError(
-                        f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
+                        msg,
                     )
 
                 try:

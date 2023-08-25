@@ -17,8 +17,7 @@ logger = logging.getLogger("airbyte")
 
 
 class InsightAsyncJobManager:
-    """
-    Class for managing Ads Insights async jobs. Before running next job it
+    """Class for managing Ads Insights async jobs. Before running next job it
     checks current insight throttle value and if it greater than THROTTLE_LIMIT variable, no new jobs added.
     To consume completed jobs use completed_job generator, jobs will be returned in the order they finished.
     """
@@ -33,7 +32,7 @@ class InsightAsyncJobManager:
     MAX_JOBS_IN_QUEUE = 100
 
     def __init__(self, api: "API", jobs: Iterator[AsyncJob]):
-        """Init
+        """Init.
 
         :param api:
         :param jobs:
@@ -44,7 +43,6 @@ class InsightAsyncJobManager:
 
     def _start_jobs(self):
         """Enqueue new jobs."""
-
         self._update_api_throttle_limit()
         self._wait_throttle_limit_down()
         prev_jobs_count = len(self._running_jobs)
@@ -59,7 +57,7 @@ class InsightAsyncJobManager:
         logger.info(
             f"Added: {len(self._running_jobs) - prev_jobs_count} jobs. "
             f"Current throttle limit is {self._api.api.ads_insights_throttle}, "
-            f"{len(self._running_jobs)}/{self.MAX_JOBS_IN_QUEUE} job(s) in queue"
+            f"{len(self._running_jobs)}/{self.MAX_JOBS_IN_QUEUE} job(s) in queue",
         )
 
     def completed_jobs(self) -> Iterator[AsyncJob]:
@@ -99,9 +97,11 @@ class InsightAsyncJobManager:
                     # we want to check that none of these nested jobs have exceeded MAX_NUMBER_OF_ATTEMPTS
                     for nested_job in job._jobs:
                         if nested_job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                            raise JobException(f"{nested_job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
+                            msg = f"{nested_job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating..."
+                            raise JobException(msg)
                 if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                    raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
+                    msg = f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating..."
+                    raise JobException(msg)
                 elif job.attempt_number == 2:
                     logger.info("%s: failed second time, trying to split job into smaller jobs.", job)
                     smaller_jobs = job.split_job()
@@ -130,8 +130,7 @@ class InsightAsyncJobManager:
             self._update_api_throttle_limit()
 
     def _get_current_throttle_value(self) -> float:
-        """
-        Get current ads insights throttle value based on app id and account id.
+        """Get current ads insights throttle value based on app id and account id.
         It evaluated as minimum of those numbers cause when account id throttle
         hit 100 it cool down very slowly (i.e. it still says 100 despite no jobs
         running and it capable serve new requests). Because of this behaviour
@@ -142,8 +141,7 @@ class InsightAsyncJobManager:
         return min(throttle.per_account, throttle.per_application)
 
     def _update_api_throttle_limit(self):
-        """
-        Sends <ACCOUNT_ID>/insights GET request with no parameters so it would
+        """Sends <ACCOUNT_ID>/insights GET request with no parameters so it would
         respond with empty list of data so api use "x-fb-ads-insights-throttle"
         header to update current insights throttle limit.
         """

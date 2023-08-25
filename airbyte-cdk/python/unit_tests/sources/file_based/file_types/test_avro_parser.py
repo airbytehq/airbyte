@@ -6,6 +6,7 @@ import datetime
 import uuid
 
 import pytest
+
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.file_types import AvroParser
 
@@ -14,7 +15,7 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
 
 
 @pytest.mark.parametrize(
-    "avro_format, avro_type, expected_json_type, expected_error",
+    ("avro_format", "avro_type", "expected_json_type", "expected_error"),
     [
         # Primitive types
         pytest.param(_default_avro_format, "null", {"type": "null"}, None, id="test_null"),
@@ -66,7 +67,7 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
                     {
                         "name": "nested_record",
                         "type": {"type": "record", "name": "SubRecord", "fields": [{"name": "question", "type": "boolean"}]},
-                    }
+                    },
                 ],
             },
             {
@@ -75,7 +76,7 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
                     "nested_record": {
                         "type": "object",
                         "properties": {"question": {"type": "boolean"}},
-                    }
+                    },
                 },
             },
             None,
@@ -113,7 +114,7 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
                      id="test_enum_missing_name"),
         pytest.param(
             _default_avro_format,
-            {"type": "map", "values": "int"}, {"type": "object", "additionalProperties": {"type": "integer"}}, None, id="test_map"
+            {"type": "map", "values": "int"}, {"type": "object", "additionalProperties": {"type": "integer"}}, None, id="test_map",
         ),
         pytest.param(
             _default_avro_format,
@@ -125,7 +126,7 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
         pytest.param(_default_avro_format, {"type": "map"}, None, ValueError, id="test_map_missing_values"),
         pytest.param(
             _default_avro_format,
-            {"type": "fixed", "name": "limit", "size": 12}, {"type": "string", "pattern": "^[0-9A-Fa-f]{24}$"}, None, id="test_fixed"
+            {"type": "fixed", "name": "limit", "size": 12}, {"type": "string", "pattern": "^[0-9A-Fa-f]{24}$"}, None, id="test_fixed",
         ),
         pytest.param(_default_avro_format, {"type": "fixed", "name": "limit"}, None, ValueError, id="test_fixed_missing_size"),
         pytest.param(_default_avro_format, {"type": "fixed", "name": "limit", "size": "50"}, None, ValueError,
@@ -150,14 +151,14 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
                      id="test_time_micros"),
         pytest.param(
             _default_avro_format,
-            {"type": "long", "logicalType": "timestamp-millis"}, {"type": ["null", "string"], "format": "date-time"}, None, id="test_timestamp_millis"
+            {"type": "long", "logicalType": "timestamp-millis"}, {"type": ["null", "string"], "format": "date-time"}, None, id="test_timestamp_millis",
         ),
         pytest.param(_default_avro_format, {"type": "long", "logicalType": "timestamp-micros"}, {"type": ["null", "string"]}, None,
                      id="test_timestamp_micros"),
         pytest.param(
             _default_avro_format,
             {"type": "long", "logicalType": "local-timestamp-millis"}, {"type": "string", "format": "date-time"}, None,
-            id="test_local_timestamp_millis"
+            id="test_local_timestamp_millis",
         ),
         pytest.param(_default_avro_format, {"type": "long", "logicalType": "local-timestamp-micros"}, {"type": "string"}, None,
                      id="test_local_timestamp_micros"),
@@ -174,7 +175,7 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
 
 
 @pytest.mark.parametrize(
-    "avro_format, record_type, record_value, expected_value", [
+    ("avro_format", "record_type", "record_value", "expected_value"), [
         pytest.param(_default_avro_format, "boolean", True, True, id="test_boolean"),
         pytest.param(_default_avro_format, "int", 123, 123, id="test_int"),
         pytest.param(_default_avro_format, "long", 123, 123, id="test_long"),
@@ -202,7 +203,7 @@ def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_js
                      datetime.datetime(2023, 8, 7, 19, 31, 7, 68000, tzinfo=datetime.timezone.utc),
                      "2023-08-07T19:31:07.068000+00:00",
                      id="test_timestamo_micros"),
-    ]
+    ],
 )
 def test_to_output_value(avro_format, record_type, record_value, expected_value):
     parser = AvroParser()

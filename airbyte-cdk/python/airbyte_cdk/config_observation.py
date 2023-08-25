@@ -29,10 +29,10 @@ class ObservedDict(dict):
                         value[i] = ObservedDict(sub_value, observer)
         super().__init__(non_observed_mapping)
 
-    def __setitem__(self, item: Any, value: Any):
+    def __setitem__(self, item: Any, value: Any) -> None:
         """Override dict.__setitem__ by:
         1. Observing the new value if it is a dict
-        2. Call observer update if the new value is different from the previous one
+        2. Call observer update if the new value is different from the previous one.
         """
         previous_value = self.get(item)
         if isinstance(value, MutableMapping):
@@ -41,7 +41,7 @@ class ObservedDict(dict):
             for i, sub_value in enumerate(value):
                 if isinstance(sub_value, MutableMapping):
                     value[i] = ObservedDict(sub_value, self.observer)
-        super(ObservedDict, self).__setitem__(item, value)
+        super().__setitem__(item, value)
         if self.update_on_unchanged_value or value != previous_value:
             self.observer.update()
 
@@ -60,7 +60,8 @@ class ConfigObserver:
 
 def observe_connector_config(non_observed_connector_config: MutableMapping[str, Any]):
     if isinstance(non_observed_connector_config, ObservedDict):
-        raise ValueError("This connector configuration is already observed")
+        msg = "This connector configuration is already observed"
+        raise ValueError(msg)
     connector_config_observer = ConfigObserver()
     observed_connector_config = ObservedDict(non_observed_connector_config, connector_config_observer)
     connector_config_observer.set_config(observed_connector_config)
@@ -68,9 +69,8 @@ def observe_connector_config(non_observed_connector_config: MutableMapping[str, 
 
 
 def emit_configuration_as_airbyte_control_message(config: MutableMapping):
-    """
-    WARNING: deprecated - emit_configuration_as_airbyte_control_message is being deprecated in favor of the MessageRepository mechanism.
-    See the airbyte_cdk.sources.message package
+    """WARNING: deprecated - emit_configuration_as_airbyte_control_message is being deprecated in favor of the MessageRepository mechanism.
+    See the airbyte_cdk.sources.message package.
     """
     airbyte_message = create_connector_config_control_message(config)
     print(airbyte_message.json(exclude_unset=True))

@@ -11,7 +11,7 @@ from source_kyriba.source import Accounts, AccountSubStream
 from .test_streams import config
 
 
-@pytest.fixture
+@pytest.fixture()
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(AccountSubStream, "path", "v0/example_endpoint")

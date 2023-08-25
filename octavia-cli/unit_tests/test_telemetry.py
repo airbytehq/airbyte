@@ -22,7 +22,7 @@ class TestTelemetryClient:
         assert telemetry_client.segment_client == telemetry.analytics.Client.return_value
         telemetry.analytics.Client.assert_called_with("my_write_key", send=send_data)
 
-    @pytest.fixture
+    @pytest.fixture()
     def telemetry_client(self, mocker):
         mocker.patch.object(telemetry.analytics, "Client")
         return telemetry.TelemetryClient(True)
@@ -54,7 +54,7 @@ class TestTelemetryClient:
             assert command_name == "child_command"
 
     @pytest.mark.parametrize(
-        "workspace_id, anonymous_data_collection, airbyte_role, project_is_initialized, octavia_version, error, expected_success, expected_error_type, is_help",
+        ("workspace_id", "anonymous_data_collection", "airbyte_role", "project_is_initialized", "octavia_version", "error", "expected_success", "expected_error_type", "is_help"),
         [
             (None, None, None, None, None, None, True, None, False),
             (None, None, None, None, None, Exception(), False, "Exception", False),
@@ -100,7 +100,7 @@ class TestTelemetryClient:
                 "PROJECT_IS_INITIALIZED": project_is_initialized,
                 "WORKSPACE_ID": workspace_id,
                 "ANONYMOUS_DATA_COLLECTION": anonymous_data_collection,
-            }
+            },
         )
         expected_segment_context = {"app": {"name": "octavia-cli", "version": octavia_version}}
         expected_properties = {

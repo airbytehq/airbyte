@@ -8,25 +8,19 @@ import pytest
 
 @pytest.fixture()
 def url_base():
-    """
-    URL base for test
-    """
+    """URL base for test."""
     return "https://test_domain.okta.com"
 
 
 @pytest.fixture()
 def api_url(url_base):
-    """
-    Just return API url based on url_base
-    """
+    """Just return API url based on url_base."""
     return f"{url_base}"
 
 
 @pytest.fixture()
 def oauth_config():
-    """
-    Credentials for oauth2.0 authorization
-    """
+    """Credentials for oauth2.0 authorization."""
     return {
         "credentials": {
             "auth_type": "oauth2.0",
@@ -40,9 +34,8 @@ def oauth_config():
 
 @pytest.fixture()
 def wrong_oauth_config_bad_credentials_record():
-    """
-    Malformed Credentials for oauth2.0 authorization
-    credentials -> credential
+    """Malformed Credentials for oauth2.0 authorization
+    credentials -> credential.
     """
     return {
         "credential": {
@@ -57,9 +50,8 @@ def wrong_oauth_config_bad_credentials_record():
 
 @pytest.fixture()
 def wrong_oauth_config_bad_auth_type():
-    """
-    Wrong Credentials format for oauth2.0 authorization
-    absent "auth_type" field
+    """Wrong Credentials format for oauth2.0 authorization
+    absent "auth_type" field.
     """
     return {
         "credentials": {
@@ -73,17 +65,13 @@ def wrong_oauth_config_bad_auth_type():
 
 @pytest.fixture()
 def token_config():
-    """
-    Just test 'token'
-    """
+    """Just test 'token'."""
     return {"token": "test_token", "start_date": "2021-03-21T20:49:13Z"}
 
 
 @pytest.fixture()
 def auth_token_config():
-    """
-    Credentials for Token Authorization connect
-    """
+    """Credentials for Token Authorization connect."""
     return {"start_date": "2021-03-21T20:49:13Z", "credentials": {"auth_type": "api_token", "api_token": "test_token"}}
 
 
@@ -95,9 +83,7 @@ def user_status_filter():
 
 @pytest.fixture()
 def users_instance(api_url):
-    """
-    Users instance object response
-    """
+    """Users instance object response."""
     return {
         "id": "test_user_id",
         "status": "ACTIVE",
@@ -127,9 +113,7 @@ def users_instance(api_url):
 
 @pytest.fixture()
 def custom_role_instance(api_url):
-    """
-    Custom Role instance object response
-    """
+    """Custom Role instance object response."""
     _id = "custom_role_id"
     return {
         "id": _id,
@@ -146,9 +130,7 @@ def custom_role_instance(api_url):
 
 @pytest.fixture()
 def permission_instance(api_url):
-    """
-    Custom Role instance object response
-    """
+    """Custom Role instance object response."""
     _role_id = "test_role_id"
     _id = "okta.users.read"
     return {
@@ -164,9 +146,7 @@ def permission_instance(api_url):
 
 @pytest.fixture()
 def groups_instance(api_url):
-    """
-    Groups instance object response
-    """
+    """Groups instance object response."""
     _id = "test_group_id"
     return {
         "id": _id,
@@ -189,9 +169,7 @@ def groups_instance(api_url):
 
 @pytest.fixture()
 def group_members_instance(api_url):
-    """
-    Group Members instance object response
-    """
+    """Group Members instance object response."""
     _id = "test_user_id"
     return {
         "groupId": "test_group_id",
@@ -223,9 +201,7 @@ def group_members_instance(api_url):
 
 @pytest.fixture()
 def group_role_assignments_instance():
-    """
-    Group Role Assignment instance object response
-    """
+    """Group Role Assignment instance object response."""
     return {
         "groupId": "test_group_id",
         "actor": {
@@ -273,9 +249,7 @@ def group_role_assignments_instance():
 
 @pytest.fixture()
 def user_role_assignments_instance(api_url):
-    """
-    User Role Assignment instance object response
-    """
+    """User Role Assignment instance object response."""
     _user_id = "test_user_id"
     return {
         "userId": _user_id,
@@ -292,9 +266,7 @@ def user_role_assignments_instance(api_url):
 
 @pytest.fixture()
 def logs_instance():
-    """
-    Logs instance object response
-    """
+    """Logs instance object response."""
     return {
         "actor": {
             "id": "test_client_app_id",
@@ -346,7 +318,7 @@ def logs_instance():
                 "threatSuspected": "False",
                 "grantType": "refresh_token",
                 "url": "/oauth2/v1/token?",
-            }
+            },
         },
         "legacyEventType": "app.oauth2.token.grant.access_token_success",
         "transaction": {"type": "WEB", "id": "test_debug_request_id", "detail": {}},
@@ -365,8 +337,8 @@ def logs_instance():
                     },
                     "version": "V4",
                     "source": None,
-                }
-            ]
+                },
+            ],
         },
         "target": [
             {"id": "test_user_id", "type": "User", "alternateId": None, "displayName": None, "detailEntry": None},
@@ -383,9 +355,7 @@ def logs_instance():
 
 @pytest.fixture()
 def resource_set_instance(api_url):
-    """
-    Resource set object instance
-    """
+    """Resource set object instance."""
     _id = "iam5xyzmibarA6Afoo7"
     return {
         "id": _id,
@@ -403,9 +373,7 @@ def resource_set_instance(api_url):
 
 @pytest.fixture()
 def latest_record_instance(url_base, api_url):
-    """
-    Last Record instance object response
-    """
+    """Last Record instance object response."""
     return {
         "id": "test_user_group_id",
         "created": "2022-07-18T07:58:11.000Z",
@@ -427,17 +395,13 @@ def latest_record_instance(url_base, api_url):
 
 @pytest.fixture()
 def error_while_refreshing_access_token():
-    """
-    Error raised when using incorrect access token
-    """
+    """Error raised when using incorrect access token."""
     return "Error while refreshing access token: 'access_token'"
 
 
 @pytest.fixture()
 def error_failed_to_authorize_with_provided_credentials():
-    """
-    Error raised when using incorrect oauth2.0 credentials
-    """
+    """Error raised when using incorrect oauth2.0 credentials."""
     return "Failed to authenticate with the provided credentials"
 
 

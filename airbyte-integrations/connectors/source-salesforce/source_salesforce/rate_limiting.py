@@ -6,8 +6,9 @@ import logging
 import sys
 
 import backoff
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
+
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,

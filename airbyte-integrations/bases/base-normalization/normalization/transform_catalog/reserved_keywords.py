@@ -2793,7 +2793,7 @@ TIDB = {
     "INT4",
     "INT8",
     "INTEGER",
-    "INTERVAL" "INTO",
+    "INTERVALINTO",
     "INVISIBLE",
     "INVOKER",
     "IO",

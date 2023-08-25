@@ -7,8 +7,6 @@ from typing import Any, MutableMapping
 from unittest.mock import PropertyMock
 
 import pytest
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from source_freshdesk.streams import (
     Agents,
     BusinessHours,
@@ -40,6 +38,9 @@ from source_freshdesk.streams import (
     TimeEntries,
 )
 
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
+
 
 @pytest.fixture(autouse=True)
 def mock_tickets_use_cache(mocker):
@@ -65,7 +66,7 @@ def _read_incremental(stream_instance: Stream, stream_state: MutableMapping[str,
 
 
 @pytest.mark.parametrize(
-    "stream, resource",
+    ("stream", "resource"),
     [
         (Agents, "agents"),
         (Companies, "companies"),
@@ -120,7 +121,7 @@ def test_full_refresh_settings(authenticator, config, requests_mock):
 
 
 @pytest.mark.parametrize(
-    "stream, resource",
+    ("stream", "resource"),
     [
         (Contacts, "contacts"),
         (Tickets, "tickets"),
@@ -147,7 +148,7 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
 
 
 @pytest.mark.parametrize(
-    "stream_class, parent_path, sub_paths",
+    ("stream_class", "parent_path", "sub_paths"),
     [
         (CannedResponses, "canned_response_folders", [f"canned_response_folders/{x}/responses" for x in range(5)]),
         (Conversations, "tickets", [f"tickets/{x}/conversations" for x in range(5)]),
@@ -167,7 +168,7 @@ def test_substream_full_refresh(requests_mock, stream_class, parent_path, sub_pa
 
 
 @pytest.mark.parametrize(
-    "stream_class, parent_path, sub_paths, sub_sub_paths",
+    ("stream_class", "parent_path", "sub_paths", "sub_sub_paths"),
     [
         (
             DiscussionTopics,

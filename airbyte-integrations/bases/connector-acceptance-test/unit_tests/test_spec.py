@@ -5,15 +5,16 @@
 from typing import Any, Callable, Dict
 
 import pytest
-from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test import conftest
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
+
+from airbyte_protocol.models import ConnectorSpecification
 
 from .conftest import does_not_raise
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     [
         (
             {
@@ -26,7 +27,7 @@ from .conftest import does_not_raise
                         "refresh_token": {"type": "string"},
                         "$ref": None,
                     },
-                }
+                },
             },
             True,
         ),
@@ -40,9 +41,9 @@ from .conftest import does_not_raise
                         "complete_oauth_output_specification": {
                             "type": "object",
                             "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
+                        },
                     },
-                }
+                },
             },
             True,
         ),
@@ -56,9 +57,9 @@ from .conftest import does_not_raise
                         "complete_oauth_server_input_specification": {
                             "type": "object",
                             "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
+                        },
                     },
-                }
+                },
             },
             True,
         ),
@@ -72,9 +73,9 @@ from .conftest import does_not_raise
                         "complete_oauth_server_output_specification": {
                             "type": "object",
                             "properties": {"refresh_token": {"type": "string"}, "$ref": None},
-                        }
+                        },
                     },
-                }
+                },
             },
             True,
         ),
@@ -88,7 +89,7 @@ from .conftest import does_not_raise
                         "access_token": {"type": "string"},
                         "refresh_token": {"type": "string"},
                     },
-                }
+                },
             },
             False,
         ),
@@ -111,7 +112,7 @@ from .conftest import does_not_raise
                         "complete_oauth_server_output_specification": {
                             "type": "object",
                             "properties": {"refresh_token": {"type": "string"}},
-                        }
+                        },
                     },
                 },
             },
@@ -355,7 +356,7 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             },
                         },
                     ],
-                }
+                },
             },
         },
         "should_fail": True,
@@ -383,7 +384,7 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             },
                         },
                     ],
-                }
+                },
             },
         },
         "should_fail": True,
@@ -411,7 +412,7 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             },
                         },
                     ],
-                }
+                },
             },
         },
         "should_fail": False,
@@ -430,9 +431,9 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                                 "common": {"type": "string", "const": "option1", "default": "optionX"},
                                 "option1": {"type": "string"},
                             },
-                        }
+                        },
                     ],
-                }
+                },
             },
         },
         "should_fail": True,
@@ -460,7 +461,7 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                             },
                         },
                     ],
-                }
+                },
             },
         },
         "should_fail": False,
@@ -479,9 +480,9 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                                 "common": {"type": "string", "const": "option1", "enum": ["option1", "option2"]},
                                 "option1": {"type": "string"},
                             },
-                        }
+                        },
                     ],
-                }
+                },
             },
         },
         "should_fail": True,
@@ -508,7 +509,7 @@ def test_oneof_usage(connector_spec, should_fail):
                     "type": "string",
                     "default": "Option 1",
                     "enum": ["Option 1", "Option 2", "Option 3"],
-                }
+                },
             },
         },
         "should_fail": False,
@@ -524,7 +525,7 @@ def test_oneof_usage(connector_spec, should_fail):
                     "type": "string",
                     "default": "Option 1",
                     "enum": ["Option 1", "Option 2", "Option 3", "Option 2"],
-                }
+                },
             },
         },
         "should_fail": True,
@@ -540,7 +541,7 @@ def test_enum_usage(connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, expected_error",
+    ("connector_spec", "expected_error"),
     [
         # SUCCESS: no advancedAuth specified
         (ConnectorSpecification(connectionSpecification={}), ""),
@@ -581,7 +582,7 @@ def test_enum_usage(connector_spec, should_fail):
                         "oauth_user_input_from_connector_config_specification": {
                             "type": "object",
                             "properties": {"api_url": {"type": "string", "path_in_connector_config": ["api_url"]}},
-                        }
+                        },
                     },
                 },
             ),
@@ -600,7 +601,7 @@ def test_enum_usage(connector_spec, should_fail):
                         "complete_oauth_output_specification": {
                             "type": "object",
                             "properties": {"client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]}},
-                        }
+                        },
                     },
                 },
             ),
@@ -619,7 +620,7 @@ def test_enum_usage(connector_spec, should_fail):
                         "complete_oauth_server_output_specification": {
                             "type": "object",
                             "properties": {"client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]}},
-                        }
+                        },
                     },
                 },
             ),
@@ -694,7 +695,7 @@ def test_validate_oauth_flow(connector_spec, expected_error):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, expectation",
+    ("connector_spec", "expectation"),
     [
         (ConnectorSpecification(connectionSpecification={}), does_not_raise()),
         (ConnectorSpecification(connectionSpecification={"type": "object", "additionalProperties": True}), does_not_raise()),
@@ -705,7 +706,7 @@ def test_validate_oauth_flow(connector_spec, expected_error):
                     "type": "object",
                     "additionalProperties": True,
                     "properties": {"my_object": {"type": "object", "additionalProperties": "foo"}},
-                }
+                },
             ),
             pytest.raises(AssertionError),
         ),
@@ -715,9 +716,9 @@ def test_validate_oauth_flow(connector_spec, expected_error):
                     "type": "object",
                     "additionalProperties": True,
                     "properties": {
-                        "my_oneOf_object": {"type": "object", "oneOf": [{"additionalProperties": True}, {"additionalProperties": False}]}
+                        "my_oneOf_object": {"type": "object", "oneOf": [{"additionalProperties": True}, {"additionalProperties": False}]},
                     },
-                }
+                },
             ),
             pytest.raises(AssertionError),
         ),
@@ -730,7 +731,7 @@ def test_additional_properties_is_true(connector_spec, expectation):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         (
             {"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}},
@@ -757,7 +758,7 @@ def test_airbyte_secret(mocker, connector_spec, should_fail):
     t = _TestSpec()
     logger = mocker.Mock()
     t.test_secret_is_properly_marked(
-        {"connectionSpecification": connector_spec}, logger, ("api_key", "api_token", "refresh_token", "jwt", "credentials")
+        {"connectionSpecification": connector_spec}, logger, ("api_key", "api_token", "refresh_token", "jwt", "credentials"),
     )
     if should_fail:
         conftest.pytest.fail.assert_called_once()
@@ -766,7 +767,7 @@ def test_airbyte_secret(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"refresh_token": {"type": ["boolean", "string"]}}}, True),
         ({"type": "object", "properties": {"refresh_token": {"type": []}}}, True),
@@ -786,7 +787,7 @@ def test_property_type_is_not_array(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {}}, False),
@@ -801,7 +802,7 @@ def test_property_type_is_not_array(mocker, connector_spec, should_fail):
                             {"type": "object", "properties": {"a": {"type": "string"}}},
                             {"type": "object", "properties": {"b": {"type": "string"}}},
                         ],
-                    }
+                    },
                 },
             },
             False,
@@ -817,7 +818,7 @@ def test_property_type_is_not_array(mocker, connector_spec, should_fail):
                             {"type": "object", "properties": {"b": {"type": "string"}}},
                             {"type": "object", "properties": {}},
                         ],
-                    }
+                    },
                 },
             },
             True,
@@ -836,7 +837,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {"jwt": {"type": "object", "order": 1}, "token": {"type": "string", "order": 2}}}, False),
@@ -877,7 +878,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
                             {"type": "object", "properties": {"a": {"type": "string", "order": 1}}},
                             {"type": "object", "properties": {"b": {"type": "string"}}},
                         ],
-                    }
+                    },
                 },
             },
             False,
@@ -892,7 +893,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
                         "oneOf": [
                             {"type": "object", "properties": {"a": {"type": "string", "order": 1}, "b": {"type": "string", "order": 1}}},
                         ],
-                    }
+                    },
                 },
             },
             True,
@@ -910,7 +911,7 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
                                 "properties": {"a": {"type": "string", "order": 1}, "b": {"type": "string", "order": 1, "group": "b"}},
                             },
                         ],
-                    }
+                    },
                 },
             },
             False,
@@ -928,7 +929,7 @@ def test_duplicate_order(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {"group": {"type": "boolean", "airbyte_secret": True}}}, False),
@@ -953,7 +954,7 @@ def test_duplicate_order(mocker, connector_spec, should_fail):
                         "oneOf": [
                             {"type": "object", "properties": {"b": {"type": "string"}}},
                         ],
-                    }
+                    },
                 },
             },
             False,
@@ -967,7 +968,7 @@ def test_duplicate_order(mocker, connector_spec, should_fail):
                         "oneOf": [
                             {"type": "object", "properties": {"group": {"type": "string"}}},
                         ],
-                    }
+                    },
                 },
             },
             False,
@@ -981,7 +982,7 @@ def test_duplicate_order(mocker, connector_spec, should_fail):
                         "oneOf": [
                             {"type": "object", "group": "x", "properties": {"b": {"type": "string"}}},
                         ],
-                    }
+                    },
                 },
             },
             True,
@@ -996,7 +997,7 @@ def test_duplicate_order(mocker, connector_spec, should_fail):
                         "oneOf": [
                             {"type": "object", "properties": {"a": {"type": "string", "group": "a"}}},
                         ],
-                    }
+                    },
                 },
             },
             True,
@@ -1014,7 +1015,7 @@ def test_nested_group(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
         ({"type": "object", "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}}}, False),
@@ -1057,7 +1058,7 @@ def test_required_always_show(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"list": {"type": "array"}}}, False),
         ({"type": "object", "properties": {"list": {"type": "array", "items": [{"type": "string"}, {"type": "boolean"}]}}}, True),
@@ -1088,7 +1089,7 @@ def test_array_type(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, should_fail",
+    ("connector_spec", "should_fail"),
     (
         ({"type": "object", "properties": {"a": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"a": {"type": "string", "allOf": [{"type": "string"}, {"maxLength": 5}]}}}, True),
@@ -1107,7 +1108,7 @@ def test_array_type(mocker, connector_spec, should_fail):
                     "list": {
                         "type": "array",
                         "prefixItems": [{"enum": ["Street", "Avenue", "Boulevard"]}, {"enum": ["NW", "NE", "SW", "SE"]}],
-                    }
+                    },
                 },
             },
             True,
@@ -1125,7 +1126,7 @@ def test_forbidden_complex_types(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, is_warning_logged",
+    ("connector_spec", "is_warning_logged"),
     (
         ({"type": "object", "properties": {"date": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"date": {"type": "string", "format": "date"}}}, True),
@@ -1142,7 +1143,7 @@ def test_forbidden_complex_types(mocker, connector_spec, should_fail):
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
-                    }
+                    },
                 },
             },
             False,
@@ -1170,7 +1171,7 @@ def test_date_pattern(mocker, connector_spec, is_warning_logged):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, is_warning_logged",
+    ("connector_spec", "is_warning_logged"),
     (
         ({"type": "object", "properties": {"date": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"format": {"type": "string"}}}, False),
@@ -1187,7 +1188,7 @@ def test_date_pattern(mocker, connector_spec, is_warning_logged):
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
-                    }
+                    },
                 },
             },
             False,
@@ -1215,7 +1216,7 @@ def test_date_format(mocker, connector_spec, is_warning_logged):
 
 
 @pytest.mark.parametrize(
-    "path, expected_name, expected_result",
+    ("path", "expected_name", "expected_result"),
     (
         ("properties/api_key/type", "api_key", True),
         ("properties/start_date/type", "start_date", False),
@@ -1233,7 +1234,7 @@ def test_is_spec_property_name_secret(path, expected_name, expected_result):
 
 
 @pytest.mark.parametrize(
-    "property_def, can_store_secret",
+    ("property_def", "can_store_secret"),
     (
         ({"type": "boolean"}, False),
         ({"type": "null"}, False),

@@ -6,15 +6,16 @@ from typing import Any, Mapping, Tuple
 
 import pyarrow as pa
 import pytest
-from airbyte_cdk import AirbyteLogger
 from source_s3.source_files_abstract.formats.abstract_file_parser import AbstractFileParser
+
+from airbyte_cdk import AirbyteLogger
 
 LOGGER = AirbyteLogger()
 
 
 class TestAbstractFileParserStatics:
     @pytest.mark.parametrize(  # testing all datatypes as laid out here: https://json-schema.org/understanding-json-schema/reference/type.html
-        "input_json_type, output_pyarrow_type",
+        ("input_json_type", "output_pyarrow_type"),
         [
             ("string", pa.large_string()),
             ("number", pa.float64()),
@@ -31,7 +32,7 @@ class TestAbstractFileParserStatics:
         assert AbstractFileParser.json_type_to_pyarrow_type(input_json_type) == output_pyarrow_type
 
     @pytest.mark.parametrize(  # testing all datatypes as laid out here: https://arrow.apache.org/docs/python/api/datatypes.html
-        "input_pyarrow_types, output_json_type",
+        ("input_pyarrow_types", "output_json_type"),
         [
             ((pa.null(),), "string"),  # null type
             ((pa.bool_(),), "boolean"),  # boolean type
@@ -54,7 +55,7 @@ class TestAbstractFileParserStatics:
             assert AbstractFileParser.json_type_to_pyarrow_type(typ, reverse=True) == output_json_type
 
     @pytest.mark.parametrize(  # if expecting fail, put pyarrow_schema as None
-        "json_schema, pyarrow_schema",
+        ("json_schema", "pyarrow_schema"),
         [
             (
                 {"a": "string", "b": "number", "c": "integer", "d": "object", "e": "array", "f": "boolean", "g": "null"},
@@ -84,7 +85,7 @@ class TestAbstractFileParserStatics:
                 LOGGER.debug(str(e_info))
 
     @pytest.mark.parametrize(  # if expecting fail, put json_schema as None
-        "pyarrow_schema, json_schema",
+        ("pyarrow_schema", "json_schema"),
         [
             (
                 {

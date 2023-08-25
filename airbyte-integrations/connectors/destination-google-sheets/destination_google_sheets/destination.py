@@ -4,10 +4,11 @@
 
 from typing import Any, Iterable, Mapping
 
+from google.auth.exceptions import RefreshError
+
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
-from google.auth.exceptions import RefreshError
 
 from .client import GoogleSheetsClient
 from .helpers import ConnectionTest, get_spreadsheet_id, get_streams_from_catalog
@@ -17,10 +18,10 @@ from .writer import GoogleSheetsWriter
 
 class DestinationGoogleSheets(Destination):
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Connection check method for Google Spreadsheets.
+        """Connection check method for Google Spreadsheets.
         Info:
             Checks whether target spreadsheet_id is available using provided credentials.
+
         Returns:
             :: Status.SUCCEEDED - if creadentials are valid, token is refreshed, target spreadsheet is available.
             :: Status.FAILED - if could not obtain new token, target spreadsheet is not available or other exception occured (with message).
@@ -35,15 +36,12 @@ class DestinationGoogleSheets(Destination):
         except RefreshError as token_err:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"{token_err}")
         except Exception as err:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(err)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {err!r}")
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
-        """
-        Reads the input stream of messages, config, and catalog to write data to the destination.
-        """
+        """Reads the input stream of messages, config, and catalog to write data to the destination."""
         spreadsheet_id = get_spreadsheet_id(config["spreadsheet_id"])
 
         client = GoogleSheetsClient(config).authorize()

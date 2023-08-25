@@ -8,28 +8,31 @@ import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+from dateutil.parser import isoparse
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from dateutil.parser import isoparse
 
 from .utils import middle_date_slices
 
+if TYPE_CHECKING:
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+
 
 class PaypalHttpException(Exception):
-    """HTTPError Exception with detailed info"""
+    """HTTPError Exception with detailed info."""
 
     def __init__(self, error: requests.exceptions.HTTPError):
         self.error = error
 
-    def __str__(self):
+    def __str__(self) -> str:
         message = repr(self.error)
 
         if self.error.response.content:
@@ -47,7 +50,7 @@ class PaypalHttpException(Exception):
 
         return details
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
@@ -92,7 +95,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         self,
         authenticator: HttpAuthenticator,
         start_date: Union[datetime, str],
-        end_date: Union[datetime, str] = None,
+        end_date: Optional[Union[datetime, str]] = None,
         is_sandbox: bool = False,
         **kwargs,
     ):
@@ -132,7 +135,8 @@ class PaypalTransactionStream(HttpStream, ABC):
     def validate_input_dates(self):
         # Validate input dates
         if self.start_date > self.end_date:
-            raise Exception(f"start_date {self.start_date.isoformat()} is greater than end_date {self.end_date.isoformat()}")
+            msg = f"start_date {self.start_date.isoformat()} is greater than end_date {self.end_date.isoformat()}"
+            raise Exception(msg)
 
     @property
     def url_base(self) -> str:
@@ -156,10 +160,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         last_refreshed_datetime = json_response.get("last_refreshed_datetime")
         self.last_refreshed_datetime = isoparse(last_refreshed_datetime) if last_refreshed_datetime else None
 
-        if self.data_field is not None:
-            data = json_response.get(self.data_field, [])
-        else:
-            data = [json_response]
+        data = json_response.get(self.data_field, []) if self.data_field is not None else [json_response]
 
         for record in data:
             # In order to support direct datetime string comparison (which is performed in incremental acceptance tests)
@@ -178,9 +179,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     @staticmethod
     def unnest_field(record: Mapping[str, Any], unnest_from: Dict, cursor_field: str):
-        """
-        Unnest cursor_field to the root level of the record.
-        """
+        """Unnest cursor_field to the root level of the record."""
         if unnest_from in record:
             record[cursor_field] = record.get(unnest_from).get(cursor_field)
 
@@ -233,7 +232,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 
     def get_last_refreshed_datetime(self, sync_mode):
         """Get last_refreshed_datetime attribute from API response by running PaypalTransactionStream().read_records()
-        with 'empty' stream_slice (range=0)
+        with 'empty' stream_slice (range=0).
 
         last_refreshed_datetime indicates the maximum available start_date for which API has data.
         If request start_date > last_refreshed_datetime then API throws an error:
@@ -253,10 +252,9 @@ class PaypalTransactionStream(HttpStream, ABC):
         return paypal_stream.last_refreshed_datetime
 
     def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        Returns a list of slices for each day (by default) between the start date and end date.
+        """Returns a list of slices for each day (by default) between the start date and end date.
         The return value is a list of dicts {'start_date': date_string, 'end_date': date_string}.
         """
         period = timedelta(**self.stream_slice_period)
@@ -281,14 +279,14 @@ class PaypalTransactionStream(HttpStream, ABC):
                 {
                     "start_date": slice_start_date.isoformat(),
                     "end_date": min(slice_start_date + period, self.end_date).isoformat(),
-                }
+                },
             )
             slice_start_date += period
 
         return slices
 
     def _prepared_request(
-        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Optional[dict] = None
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Optional[Mapping[str, Any]] = None, next_page_token: Optional[dict] = None,
     ):
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
@@ -305,16 +303,16 @@ class PaypalTransactionStream(HttpStream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
         while not pagination_complete:
             request, request_kwargs = self._prepared_request(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token,
             )
 
             try:
@@ -323,7 +321,7 @@ class PaypalTransactionStream(HttpStream, ABC):
                 if self.max_records_in_response_reached(exception) and (date_slices := middle_date_slices(stream_slice)):
                     for date_slice in date_slices:
                         yield from self.read_records(
-                            sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
+                            sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state,
                         )
                     break
                 raise exception
@@ -347,7 +345,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 class Transactions(PaypalTransactionStream):
     """List Paypal Transactions on a specific date range
     API Docs: https://developer.paypal.com/docs/integration/direct/transaction-search/#list-transactions
-    Endpoint: /v1/reporting/transactions
+    Endpoint: /v1/reporting/transactions.
     """
 
     data_field = "transaction_details"
@@ -378,7 +376,7 @@ class Transactions(PaypalTransactionStream):
             return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         page_number = 1
         if next_page_token:
@@ -404,7 +402,7 @@ class Transactions(PaypalTransactionStream):
 
 class Balances(PaypalTransactionStream):
     """Get account balance on a specific date
-    API Docs: https://developer.paypal.com/docs/integration/direct/transaction-search/#check-balancess
+    API Docs: https://developer.paypal.com/docs/integration/direct/transaction-search/#check-balancess.
     """
 
     primary_key = "as_of_time"
@@ -415,7 +413,7 @@ class Balances(PaypalTransactionStream):
         return "balances"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         return {
             "as_of_time": stream_slice["start_date"],
@@ -432,7 +430,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         -H "Accept: application/json" \
         -H "Accept-Language: en_US" \
         -u "CLIENT_ID:SECRET" \
-        -d "grant_type=client_credentials"
+        -d "grant_type=client_credentials".
     """
 
     def __init__(self, config: Dict):
@@ -447,7 +445,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
             self.old_config = True
             client_secret = config.get("client_secret", config.get("secret"))
             self.auth_args.update(
-                **{"client_id": config["client_id"], "client_secret": client_secret, "refresh_token": config.get("refresh_token")}
+                **{"client_id": config["client_id"], "client_secret": client_secret, "refresh_token": config.get("refresh_token")},
             )
         # new configs
         if "credentials" in config:
@@ -478,9 +476,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         return {"grant_type": "refresh_token", "refresh_token": self.refresh_token}
 
     def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
+        """Returns a tuple of (access_token, token_lifespan_in_seconds)."""
         request_args = {
             "url": self.token_refresh_endpoint,
             "data": self.get_refresh_request_body(),
@@ -495,13 +491,13 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+            msg = f"Error while refreshing access token: {e}"
+            raise Exception(msg) from e
 
 
 class SourcePaypalTransaction(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        :param config:  the user-input config object conforming to the connector's spec.json
+        """:param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
@@ -535,9 +531,7 @@ class SourcePaypalTransaction(AbstractSource):
                 return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         authenticator = PayPalOauth2Authenticator(config)
 
         return [

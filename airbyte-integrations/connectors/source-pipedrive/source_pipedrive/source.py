@@ -6,6 +6,7 @@
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -52,17 +53,15 @@ class SourcePipedrive(AbstractSource):
             next(records, None)
             return True, None
         except Exception as error:
-            return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
+            return False, f"Unable to connect to Pipedrive API with the provided credentials - {error!r}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
+        """:param config: A Mapping of the user input configuration as defined in the connector spec."""
         config = self._validate_and_transform(config)
         stream_kwargs = {"authenticator": self.get_authenticator(config)}
         incremental_kwargs = {**stream_kwargs, "replication_start_date": config["replication_start_date"]}
         deals_stream = Deals(**incremental_kwargs)
-        streams = [
+        return [
             Activities(**incremental_kwargs),
             ActivityFields(**stream_kwargs),
             ActivityTypes(**incremental_kwargs),
@@ -87,7 +86,6 @@ class SourcePipedrive(AbstractSource):
             Stages(**incremental_kwargs),
             Users(**incremental_kwargs),
         ]
-        return streams
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):

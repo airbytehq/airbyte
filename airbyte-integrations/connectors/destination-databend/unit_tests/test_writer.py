@@ -9,12 +9,12 @@ from destination_databend.writer import DatabendSQLWriter
 from pytest import fixture, mark
 
 
-@fixture
+@fixture()
 def client() -> MagicMock:
     return MagicMock()
 
 
-@fixture
+@fixture()
 def sql_writer(client: MagicMock) -> DatabendSQLWriter:
     return DatabendSQLWriter(client)
 

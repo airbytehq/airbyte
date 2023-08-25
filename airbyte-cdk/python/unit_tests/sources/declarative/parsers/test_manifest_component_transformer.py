@@ -3,11 +3,12 @@
 #
 
 import pytest
+
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 
 
 @pytest.mark.parametrize(
-    "component, expected_component",
+    ("component", "expected_component"),
     [
         pytest.param(
             {"type": "DeclarativeSource", "streams": [{"type": "DeclarativeStream", "retriever": {}, "schema_loader": {}}]},
@@ -18,7 +19,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                         "type": "DeclarativeStream",
                         "retriever": {"type": "SimpleRetriever"},
                         "schema_loader": {"type": "JsonFileSchemaLoader"},
-                    }
+                    },
                 ],
             },
             id="test_declarative_stream",
@@ -87,7 +88,7 @@ def test_find_default_types(component, expected_component):
 
 
 @pytest.mark.parametrize(
-    "component, expected_component",
+    ("component", "expected_component"),
     [
         pytest.param(
             {
@@ -146,7 +147,7 @@ def test_propagate_parameters_to_all_components():
                         "http_method": "GET",
                     },
                 },
-            }
+            },
         ],
     }
 
@@ -185,7 +186,7 @@ def test_propagate_parameters_to_all_components():
                 "name": "roasters",
                 "primary_key": "id",
                 "$parameters": {"name": "roasters", "primary_key": "id"},
-            }
+            },
         ],
     }
 
@@ -254,7 +255,7 @@ def test_do_not_propagate_parameters_that_have_the_same_field_name():
                     "primary_key": "id",
                     "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json'},
                 },
-            }
+            },
         ],
     }
 
@@ -280,7 +281,7 @@ def test_do_not_propagate_parameters_that_have_the_same_field_name():
                     "primary_key": "id",
                     "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json'},
                 },
-            }
+            },
         ],
     }
 

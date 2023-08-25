@@ -7,7 +7,7 @@ from source_openweather import extra_validations
 
 
 @pytest.mark.parametrize(
-    "lat_value, error_message",
+    ("lat_value", "error_message"),
     [
         ("1", None),
         (1, None),
@@ -28,7 +28,7 @@ def test_check_lat(lat_value, error_message):
 
 
 @pytest.mark.parametrize(
-    "lon_value, error_message",
+    ("lon_value", "error_message"),
     [
         ("1", None),
         (1, None),

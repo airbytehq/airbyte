@@ -4,10 +4,11 @@
 
 from typing import Any, List, Mapping, Optional, Tuple
 
+from recurly import ApiError, Client
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from recurly import ApiError, Client
 
 from .streams import (
     AccountCouponRedemptions,
@@ -31,12 +32,10 @@ from .streams import (
 
 
 class SourceRecurly(AbstractSource):
-    """
-    Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/
-    """
+    """Recurly API Reference: https://developers.recurly.com/api/v2021-02-25/."""
 
-    def __init__(self):
-        super(SourceRecurly, self).__init__()
+    def __init__(self) -> None:
+        super().__init__()
 
         self.__client = None
 

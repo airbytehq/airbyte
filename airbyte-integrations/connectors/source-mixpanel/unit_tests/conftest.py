@@ -6,12 +6,12 @@ import pendulum
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture()
 def start_date():
     return pendulum.parse("2017-01-25").date()
 
 
-@pytest.fixture
+@pytest.fixture()
 def config(start_date):
     return {
         "api_secret": "unexisting-secret",
@@ -24,7 +24,7 @@ def config(start_date):
     }
 
 
-@pytest.fixture
+@pytest.fixture()
 def config_raw(config):
     return {
         **config,
@@ -44,5 +44,5 @@ def disable_cache(mocker):
     mocker.patch(
         "source_mixpanel.streams.cohorts.Cohorts.use_cache",
         new_callable=mocker.PropertyMock,
-        return_value=False
+        return_value=False,
     )

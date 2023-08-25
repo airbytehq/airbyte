@@ -12,7 +12,7 @@ list_order_items_payload_data = {
         "OrderItems": [
             {
                 "ProductInfo": {
-                    "NumberOfItems": "1"
+                    "NumberOfItems": "1",
                 },
                 "IsGift": "false",
                 "BuyerInfo": {},
@@ -22,15 +22,15 @@ list_order_items_payload_data = {
                 "ASIN": "AKDDKDKD",
                 "SellerSKU": "AAA-VPx3-AMZ",
                 "Title": "Example product",
-                "OrderItemId": "88888888888"
-            }
+                "OrderItemId": "88888888888",
+            },
         ],
-        "AmazonOrderId": "111-0000000-2222222"
-    }
+        "AmazonOrderId": "111-0000000-2222222",
+    },
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def order_items_stream():
     def _internal():
         aws_signature = AWSSignature(
@@ -40,7 +40,7 @@ def order_items_stream():
             aws_session_token="SessionToken",
             region="US",
         )
-        stream = OrderItems(
+        return OrderItems(
             url_base="https://test.url",
             aws_signature=aws_signature,
             replication_start_date="2023-08-08T00:00:00Z",
@@ -52,7 +52,6 @@ def order_items_stream():
             advanced_stream_options=None,
             max_wait_seconds=500,
         )
-        return stream
 
     return _internal
 
@@ -73,7 +72,7 @@ def test_order_items_stream_next_token(mocker, order_items_stream):
 
     mocker.patch.object(response, "json", return_value={"payload": {}})
     if order_items_stream().next_page_token(response) is not None:
-        assert False
+        raise AssertionError
 
 
 def test_order_items_stream_parse_response(mocker, order_items_stream):

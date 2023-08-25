@@ -29,7 +29,7 @@ File = Dict[str, Any]
 class SFTPClient:
     _connection = None
 
-    def __init__(self, host, username, password=None, private_key=None, port=None, timeout=REQUEST_TIMEOUT):
+    def __init__(self, host, username, password=None, private_key=None, port=None, timeout=REQUEST_TIMEOUT) -> None:
         self.host = host
         self.username = username
         self.password = password
@@ -39,7 +39,8 @@ class SFTPClient:
         self.timeout = float(timeout) if timeout else REQUEST_TIMEOUT
 
         if not self.password and not self.key:
-            raise Exception("Either password or private key must be provided")
+            msg = "Either password or private key must be provided"
+            raise Exception(msg)
 
         self._connect()
 
@@ -111,7 +112,8 @@ class SFTPClient:
         try:
             result = self._connection.listdir_attr(prefix)
         except FileNotFoundError as e:
-            raise Exception("Directory '{}' does not exist".format(prefix)) from e
+            msg = f"Directory '{prefix}' does not exist"
+            raise Exception(msg) from e
 
         for file_attr in result:
             # NB: This only looks at the immediate level beneath the prefix directory
@@ -125,7 +127,7 @@ class SFTPClient:
                 last_modified = file_attr.st_mtime
                 if last_modified is None:
                     logger.warning(
-                        "Cannot read m_time for file %s, defaulting to current epoch time", os.path.join(prefix, file_attr.filename)
+                        "Cannot read m_time for file %s, defaulting to current epoch time", os.path.join(prefix, file_attr.filename),
                     )
                     last_modified = datetime.utcnow().timestamp()
 
@@ -133,7 +135,7 @@ class SFTPClient:
                     {
                         "filepath": prefix + "/" + file_attr.filename,
                         "last_modified": datetime.utcfromtimestamp(last_modified).replace(tzinfo=None),
-                    }
+                    },
                 )
 
         return files

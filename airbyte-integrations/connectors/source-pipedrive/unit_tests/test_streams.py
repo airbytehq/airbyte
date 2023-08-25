@@ -3,7 +3,6 @@
 #
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from source_pipedrive.streams import (
     Activities,
     ActivityFields,
@@ -18,6 +17,8 @@ from source_pipedrive.streams import (
     Pipelines,
     Stages,
 )
+
+from airbyte_cdk.models import SyncMode
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
 
@@ -47,7 +48,7 @@ def test_path_refresh(stream_kwargs):
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint",
+    ("stream", "endpoint"),
     [
         (ActivityFields, "activityFields"),
         (DealFields, "dealFields"),

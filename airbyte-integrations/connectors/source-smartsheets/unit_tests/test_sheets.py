@@ -21,7 +21,7 @@ def test_fetch_sheet(config, get_sheet_mocker):
         spreadsheet_id,
         rows_modified_since=None,
         page_size=1,
-        include=["rowPermalink", "writerInfo"]
+        include=["rowPermalink", "writerInfo"],
         )
     assert sheet.data == resp
 
@@ -29,7 +29,7 @@ def test_fetch_sheet(config, get_sheet_mocker):
     mock.assert_called_with(
         spreadsheet_id,
         rows_modified_since="2022-03-04T00:00:00Z",
-        include=["rowPermalink", "writerInfo"]
+        include=["rowPermalink", "writerInfo"],
         )
     assert sheet.data == resp
 

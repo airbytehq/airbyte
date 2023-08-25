@@ -6,6 +6,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
@@ -15,7 +16,7 @@ REGEX = "[-+]?\\d+"
 
 
 @pytest.mark.parametrize(
-    "test_name, header, wait_until, min_wait, regex, expected_backoff_time",
+    ("test_name", "header", "wait_until", "min_wait", "regex", "expected_backoff_time"),
     [
         ("test_wait_until_time_from_header", "wait_until", 1600000060.0, None, None, 60),
         ("test_wait_until_time_from_header_parameters", "{{parameters['wait_until']}}", 1600000060.0, None, None, 60),
@@ -27,8 +28,7 @@ REGEX = "[-+]?\\d+"
         ("test_wait_until_time_from_header_is_numeric", "wait_until", "1600000060", None, None, 60),
         ("test_wait_until_time_from_header_with_regex", "wait_until", "1600000060,60", None, "[-+]?\d+", 60),  # noqa
         ("test_wait_until_time_from_header_with_regex_from_parameters", "wait_until", "1600000060,60", None, "{{parameters['regex']}}", 60),
-        # noqa
-        ("test_wait_until_time_from_header_with_regex_from_config", "wait_until", "1600000060,60", None, "{{config['regex']}}", 60),  # noqa
+        ("test_wait_until_time_from_header_with_regex_from_config", "wait_until", "1600000060,60", None, "{{config['regex']}}", 60),
         ("test_wait_until_time_from_header_with_regex_no_match", "wait_time", "...", None, "[-+]?\d+", None),  # noqa
         ("test_wait_until_no_header_with_min", "absent_header", "1600000000.0", SOME_BACKOFF_TIME, None, SOME_BACKOFF_TIME),
         (

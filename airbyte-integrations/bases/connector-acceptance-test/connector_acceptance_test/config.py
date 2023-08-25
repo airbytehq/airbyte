@@ -15,7 +15,7 @@ from pydantic.generics import GenericModel
 config_path: str = Field(default="secrets/config.json", description="Path to a JSON object representing a valid connector configuration")
 invalid_config_path: str = Field(description="Path to a JSON object representing an invalid connector configuration")
 spec_path: str = Field(
-    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector"
+    default="secrets/spec.json", description="Path to a JSON object representing the spec expected to be output by this connector",
 )
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
@@ -34,10 +34,10 @@ TestConfigT = TypeVar("TestConfigT")
 
 class BackwardCompatibilityTestsConfig(BaseConfig):
     previous_connector_version: str = Field(
-        regex=SEMVER_REGEX, default="latest", description="Previous connector version to use for backward compatibility tests."
+        regex=SEMVER_REGEX, default="latest", description="Previous connector version to use for backward compatibility tests.",
     )
     disable_for_version: Optional[str] = Field(
-        regex=SEMVER_REGEX, default=None, description="Disable backward compatibility tests for a specific connector version."
+        regex=SEMVER_REGEX, default=None, description="Disable backward compatibility tests for a specific connector version.",
     )
 
 
@@ -46,7 +46,7 @@ class SpecTestConfig(BaseConfig):
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
-        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig(),
     )
 
 
@@ -65,7 +65,7 @@ class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
-        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig(),
     )
 
 
@@ -78,27 +78,31 @@ class ExpectedRecordsConfig(BaseModel):
     extra_fields: bool = Field(False, description="Allow records to have other fields")
     exact_order: bool = Field(False, description="Ensure that records produced in exact same order")
     extra_records: bool = Field(
-        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced"
+        True, description="Allow connector to produce extra records, but still enforce all records from the expected file to be produced",
     )
 
     @validator("exact_order", always=True)
     def validate_exact_order(cls, exact_order, values):
         if "extra_fields" in values and values["extra_fields"] and not exact_order:
-            raise ValueError("exact_order must be on if extra_fields enabled")
+            msg = "exact_order must be on if extra_fields enabled"
+            raise ValueError(msg)
         return exact_order
 
     @validator("extra_records", always=True)
     def validate_extra_records(cls, extra_records, values):
         if "extra_fields" in values and values["extra_fields"] and extra_records:
-            raise ValueError("extra_records must be off if extra_fields enabled")
+            msg = "extra_records must be off if extra_fields enabled"
+            raise ValueError(msg)
         return extra_records
 
     @validator("path", always=True)
     def no_bypass_reason_when_path_is_set(cls, path, values):
         if path and values.get("bypass_reason"):
-            raise ValueError("You can't set a bypass_reason if a path is set")
+            msg = "You can't set a bypass_reason if a path is set"
+            raise ValueError(msg)
         if not path and not values.get("bypass_reason"):
-            raise ValueError("A path or a bypass_reason must be set")
+            msg = "A path or a bypass_reason must be set"
+            raise ValueError(msg)
         return path
 
 
@@ -107,7 +111,7 @@ class EmptyStreamConfiguration(BaseConfig):
     bypass_reason: Optional[str] = Field(default=None, description="Reason why this stream is considered empty.")
 
     def __hash__(self):  # make it hashable
-        return hash((type(self),) + tuple(self.__dict__.values()))
+        return hash((type(self), *tuple(self.__dict__.values())))
 
 
 class IgnoredFieldsConfiguration(BaseConfig):
@@ -116,7 +120,7 @@ class IgnoredFieldsConfiguration(BaseConfig):
 
 
 ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
-    description="For each stream, list of fields path ignoring in sequential reads test"
+    description="For each stream, list of fields path ignoring in sequential reads test",
 )
 
 
@@ -124,14 +128,14 @@ class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     empty_streams: Set[EmptyStreamConfiguration] = Field(
-        default_factory=set, description="We validate that all streams has records. These are exceptions"
+        default_factory=set, description="We validate that all streams has records. These are exceptions",
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
     fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
-        False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
+        False, description="Set whether we need to validate that all fields in all streams contained at least one data point",
     )
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
@@ -139,7 +143,7 @@ class BasicReadTestConfig(BaseConfig):
 
 
 class FullRefreshConfig(BaseConfig):
-    """Full refresh test config
+    """Full refresh test config.
 
     Attributes:
         ignored_fields for each stream, list of fields path. Path should be in format "object_key/object_key2"
@@ -161,7 +165,7 @@ class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     cursor_paths: Optional[Mapping[str, List[Union[int, str]]]] = Field(
-        description="For each stream, the path of its cursor field in the output state messages."
+        description="For each stream, the path of its cursor field in the output state messages.",
     )
     future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
     timeout_seconds: int = timeout_seconds
@@ -171,7 +175,7 @@ class IncrementalConfig(BaseConfig):
         ge=0,
     )
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
-        description="Determines whether to skip more granular testing for incremental syncs", default=False
+        description="Determines whether to skip more granular testing for incremental syncs", default=False,
     )
 
     class Config:
@@ -185,7 +189,8 @@ class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     @validator("tests", always=True)
     def no_bypass_reason_when_tests_is_set(cls, tests, values):
         if tests and values.get("bypass_reason"):
-            raise ValueError("You can't set a bypass_reason if tests are set.")
+            msg = "You can't set a bypass_reason if tests are set."
+            raise ValueError(msg)
         return tests
 
 
@@ -211,7 +216,7 @@ class Config(BaseConfig):
         description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
     custom_environment_variables: Optional[Mapping] = Field(
-        default={}, description="Mapping of custom environment variables to pass to the connector under test."
+        default={}, description="Mapping of custom environment variables to pass to the connector under test.",
     )
 
     @staticmethod
@@ -234,7 +239,7 @@ class Config(BaseConfig):
         This structure:
             {"connector_image": "my-connector-image", "tests": {"spec": [{"spec_path": "my/spec/path.json"}]}
         Gets converted to:
-            {"connector_image": "my-connector-image", "acceptance_tests": {"spec": {"tests": [{"spec_path": "my/spec/path.json"}]}}
+            {"connector_image": "my-connector-image", "acceptance_tests": {"spec": {"tests": [{"spec_path": "my/spec/path.json"}]}}.
 
         Args:
             legacy_config (dict): A legacy configuration
@@ -279,7 +284,7 @@ class Config(BaseConfig):
             dict: The migrated configuration if needed.
         """
         if ALLOW_LEGACY_CONFIG and cls.is_legacy(values):
-            logging.warn("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
+            logging.warning("The acceptance-test-config.yml file is in a legacy format. Please migrate to the latest format.")
             return cls.migrate_legacy_to_current_config(values)
         else:
             return values

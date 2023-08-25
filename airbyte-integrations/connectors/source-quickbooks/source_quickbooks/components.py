@@ -8,22 +8,23 @@ from collections import abc
 from dataclasses import dataclass
 
 import dpath.util
+
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 
 class LastRecordDictProxy(abc.MutableMapping):
-    """
-    Patch a dict object to be able to get/set/delete/etc... values by path.
+    """Patch a dict object to be able to get/set/delete/etc... values by path.
+
     Example:
         >>> record = LastRecordDictProxy({"root": {"nested": "value"}})
         >>> record["root/nested"]
         <<< "value"
         >>> record.get("root/nested")
-        <<< "value"
+        <<< "value".
     """
 
-    def __init__(self, record: Record, field_mapping: typing.Mapping = None):
+    def __init__(self, record: Record, field_mapping: typing.Optional[typing.Mapping] = None):
         self._record: Record = record
         self._field_mapping = field_mapping if field_mapping is not None else {}
 
@@ -47,14 +48,13 @@ class LastRecordDictProxy(abc.MutableMapping):
     def __iter__(self) -> typing.Iterator:
         return self._record
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return bool(self._record)
 
 
 @dataclass
 class CustomDatetimeBasedCursor(DatetimeBasedCursor):
-    """
-    This class is used to override the default DatetimeBasedCursor behavior in the way the cursor values from the `last_record` are
+    """This class is used to override the default DatetimeBasedCursor behavior in the way the cursor values from the `last_record` are
     retrieved, specifically the nested values. In case the last_record looks like follows, there is no way we can get the nested cursor
     value for now by means of the base class.
     {
@@ -67,7 +67,7 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
     """
 
     def close_slice(self, stream_slice: StreamSlice, most_recent_record: typing.Optional[Record]) -> None:
-        super(CustomDatetimeBasedCursor, self).close_slice(
+        super().close_slice(
             stream_slice=stream_slice,
             last_record=LastRecordDictProxy(most_recent_record, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
         )
@@ -79,14 +79,13 @@ class CustomDatetimeBasedCursor(DatetimeBasedCursor):
         return datetime.datetime.strptime(date, self.datetime_format).astimezone(self._timezone)
 
     def should_be_synced(self, record: Record) -> bool:
-        """
-        As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
-        implementation is irrelevant for quickbooks
+        """As of 2023-06-28, the expectation is that this method will only be used for semi-incremental and data feed and therefore the
+        implementation is irrelevant for quickbooks.
         """
         return True
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        return super(CustomDatetimeBasedCursor, self).close_slice(
+        return super().close_slice(
             LastRecordDictProxy(first, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
             LastRecordDictProxy(second, {self.cursor_field.eval(self.config): "MetaData/LastUpdatedTime"}),
         )

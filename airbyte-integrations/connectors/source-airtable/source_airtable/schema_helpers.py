@@ -98,7 +98,7 @@ class SchemaHelpers:
             exec_type: str = options_result.get("type") if options_result else None
 
             # choose the JsonSchema Type for known Airtable Types
-            if original_type in COMPLEX_AIRTABLE_TYPES.keys():
+            if original_type in COMPLEX_AIRTABLE_TYPES:
                 complex_type = deepcopy(COMPLEX_AIRTABLE_TYPES.get(original_type))
                 # process arrays with values
                 field_type: str = exec_type if exec_type else "simpleText"
@@ -112,7 +112,7 @@ class SchemaHelpers:
                         complex_type["items"] = SchemaTypes.string
                         logger.warning(f"Unknown field type: {field_type}, falling back to `simpleText` type")
                 properties.update(**{name: complex_type})
-            elif original_type in SIMPLE_AIRTABLE_TYPES.keys():
+            elif original_type in SIMPLE_AIRTABLE_TYPES:
                 field_type: str = exec_type if exec_type else original_type
                 properties.update(**{name: deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))})
             else:

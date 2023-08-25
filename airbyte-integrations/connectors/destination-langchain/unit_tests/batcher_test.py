@@ -19,7 +19,7 @@ class BatcherTestCase(unittest.TestCase):
         batcher.add(1)
 
         # Assert
-        self.assertFalse(flush_handler_mock.called)
+        assert not flush_handler_mock.called
 
     def test_add_flushes_batch(self):
         # Arrange
@@ -45,7 +45,7 @@ class BatcherTestCase(unittest.TestCase):
         batcher.flush()
 
         # Assert
-        self.assertFalse(flush_handler_mock.called)
+        assert not flush_handler_mock.called
 
     def test_flush_non_empty_buffer(self):
         # Arrange
@@ -60,7 +60,7 @@ class BatcherTestCase(unittest.TestCase):
 
         # Assert
         flush_handler_mock.assert_called_once_with([1, 2])
-        self.assertEqual(len(batcher.buffer), 0)
+        assert len(batcher.buffer) == 0
 
     def test_flush_if_necessary_flushes_batch(self):
         # Arrange
@@ -77,7 +77,7 @@ class BatcherTestCase(unittest.TestCase):
 
         # Assert
         flush_handler_mock.assert_called_once_with([1, 2, 3])
-        self.assertEqual(len(batcher.buffer), 2)
+        assert len(batcher.buffer) == 2
 
     def test_flush_if_necessary_does_not_flush_incomplete_batch(self):
         # Arrange
@@ -90,5 +90,5 @@ class BatcherTestCase(unittest.TestCase):
         batcher.add(2)
 
         # Assert
-        self.assertFalse(flush_handler_mock.called)
-        self.assertEqual(len(batcher.buffer), 2)
+        assert not flush_handler_mock.called
+        assert len(batcher.buffer) == 2

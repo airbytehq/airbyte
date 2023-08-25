@@ -45,15 +45,13 @@ DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-market
 
 
 def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:
-    """Fabric method to generate final class with name like: AdsReports + Hourly"""
+    """Fabric method to generate final class with name like: AdsReports + Hourly."""
     report_class_name = f"{report.__name__}{granularity.__name__}"
     return type(report_class_name, (granularity, report), {})
 
 
 class TiktokTokenAuthenticator(TokenAuthenticator):
-    """
-    Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994
-    """
+    """Docs: https://business-api.tiktok.com/marketing_api/docs?rid=sta6fe2yww&id=1701890922708994."""
 
     def __init__(self, token: str, **kwargs):
         super().__init__(token, **kwargs)
@@ -66,8 +64,7 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """Converts an input configure to stream arguments"""
-
+        """Converts an input configure to stream arguments."""
         credentials = config.get("credentials")
 
         if credentials:
@@ -104,9 +101,7 @@ class SourceTiktokMarketing(AbstractSource):
         return stream_args
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration
-        """
+        """Tests if the input configuration can be used to successfully connect to the integration."""
         try:
             advertisers = Advertisers(**self._prepare_stream_args(config))
             for slice_ in advertisers.stream_slices():
@@ -135,11 +130,7 @@ class SourceTiktokMarketing(AbstractSource):
 
         # Report streams in different connector version:
         # for < 0.1.13 - expose report streams initialized with 'report_granularity' argument, like:
-        #     AdsReports(report_granularity='DAILY')
-        #     AdsReports(report_granularity='LIFETIME')
         # for >= 0.1.13 - expose report streams in format: <report_type>_<granularity>, like:
-        #     AdsReportsDaily(Daily, AdsReports)
-        #     AdsReportsLifetime(Lifetime, AdsReports)
 
         if report_granularity:
             # for version < 0.1.13 - compatibility with old config with 'report_granularity' option
@@ -151,11 +142,11 @@ class SourceTiktokMarketing(AbstractSource):
                     AdsReports(**report_args),
                     AdGroupsReports(**report_args),
                     CampaignsReports(**report_args),
-                ]
+                ],
             )
 
             # 3. Audience report streams:
-            if not report_granularity == ReportGranularity.LIFETIME:
+            if report_granularity != ReportGranularity.LIFETIME:
                 # https://ads.tiktok.com/marketing_api/docs?id=1707957217727489
                 # Audience report only supports lifetime metrics at the ADVERTISER level.
                 streams.extend(
@@ -163,7 +154,7 @@ class SourceTiktokMarketing(AbstractSource):
                         AdsAudienceReports(**report_args),
                         AdGroupAudienceReports(**report_args),
                         CampaignsAudienceReportsByCountry(**report_args),
-                    ]
+                    ],
                 )
 
             # 4. streams work only in prod env
@@ -172,7 +163,7 @@ class SourceTiktokMarketing(AbstractSource):
                     [
                         AdvertisersReports(**report_args),
                         AdvertisersAudienceReports(**report_args),
-                    ]
+                    ],
                 )
 
         else:
@@ -199,7 +190,7 @@ class SourceTiktokMarketing(AbstractSource):
                         AdvertisersAudienceReports,
                         AdvertisersAudienceReportsByCountry,
                         AdvertisersAudienceReportsByPlatform,
-                    ]
+                    ],
                 )
 
             for Report in reports:

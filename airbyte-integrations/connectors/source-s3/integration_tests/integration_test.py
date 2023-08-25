@@ -8,9 +8,10 @@ import time
 from typing import Iterator, List, Mapping
 
 import boto3
-from airbyte_cdk import AirbyteLogger
 from botocore.errorfactory import ClientError
 from source_s3.stream import IncrementalFileStreamS3
+
+from airbyte_cdk import AirbyteLogger
 
 from .integration_test_abstract import HERE, SAMPLE_DIR, AbstractTestIncrementalFileStream
 
@@ -45,7 +46,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
             region_name=self.region,
         )
         self.s3_resource = boto3.resource(
-            "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"]
+            "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"],
         )
 
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
@@ -76,7 +77,8 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
             except ClientError:
                 attempts += 1
                 if attempts >= max_attempts:
-                    raise RuntimeError(f"Couldn't get a successful ping on bucket after ~{max_attempts} seconds")
+                    msg = f"Couldn't get a successful ping on bucket after ~{max_attempts} seconds"
+                    raise RuntimeError(msg)
             else:
                 ready = True
                 LOGGER.info(f"bucket {bucket_name} initialised")

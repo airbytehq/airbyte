@@ -9,6 +9,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
+
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -29,15 +30,12 @@ class BambooHrStream(HttpStream, ABC):
         return f"https://api.bamboohr.com/api/gateway.php/{self.config['subdomain']}/v1/"
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"Accept": "application/json"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        BambooHR does not support pagination.
-        """
-        pass
+        """BambooHR does not support pagination."""
 
 
 class MetaFieldsStream(BambooHrStream):
@@ -63,7 +61,7 @@ class EmployeesDirectoryStream(BambooHrStream):
 class CustomReportsStream(BambooHrStream):
     primary_key = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         self._schema = None
         super().__init__(*args, **kwargs)
 
@@ -96,8 +94,7 @@ class CustomReportsStream(BambooHrStream):
         return schema1
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        Returns the JSON schema.
+        """Returns the JSON schema.
 
         The final schema is constructed by first generating a schema for the fields
         in the config and, if default fields should be included, adding these to the
@@ -126,26 +123,21 @@ class CustomReportsStream(BambooHrStream):
 class SourceBambooHr(AbstractSource):
     @staticmethod
     def _get_authenticator(api_key):
-        """
-        Returns a TokenAuthenticator.
+        """Returns a TokenAuthenticator.
 
         The API token is concatenated with `:x` and the resulting string is base-64 encoded.
         See https://documentation.bamboohr.com/docs#authentication
         """
-        return TokenAuthenticator(token=base64.b64encode(f"{api_key}:x".encode("utf-8")).decode("utf-8"), auth_method="Basic")
+        return TokenAuthenticator(token=base64.b64encode(f"{api_key}:x".encode()).decode("utf-8"), auth_method="Basic")
 
     @staticmethod
     def add_authenticator_to_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Adds an authenticator entry to the config and returns the config.
-        """
+        """Adds an authenticator entry to the config and returns the config."""
         config["authenticator"] = SourceBambooHr._get_authenticator(config["api_key"])
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        """
-        Verifies the config and attempts to fetch the fields from the meta/fields endpoint.
-        """
+        """Verifies the config and attempts to fetch the fields from the meta/fields endpoint."""
         config = SourceBambooHr.add_authenticator_to_config(config)
 
         if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):

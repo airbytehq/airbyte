@@ -17,10 +17,7 @@ def getter(D: dict, key_or_keys, strict=True):
     if not isinstance(key_or_keys, list):
         key_or_keys = [key_or_keys]
     for k in key_or_keys:
-        if strict:
-            D = D[k]
-        else:
-            D = D.get(k, {})
+        D = D[k] if strict else D.get(k, {})
     return D
 
 
@@ -33,8 +30,7 @@ def read_full_refresh(stream_instance: Stream):
 
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
-    """
-    Each token in the cycle is checked against the rate limiter.
+    """Each token in the cycle is checked against the rate limiter.
     If a token exceeds the capacity limit, the system switches to another token.
     If all tokens are exhausted, the system will enter a sleep state until
     the first token becomes available again.
@@ -62,27 +58,29 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
                 return f"{self._auth_method} {token}"
 
     def _check_token(self, token: str):
-        """check that token is not limited"""
+        """Check that token is not limited."""
         self._refill()
         if self._sleep():
             self._refill()
         if self._tokens[token].count > 0:
             self._tokens[token].count -= 1
             return True
+        return None
 
     def _refill(self):
-        """refill all needed tokens"""
+        """Refill all needed tokens."""
         now = time.time()
-        for token, ns in self._tokens.items():
+        for ns in self._tokens.values():
             if now - ns.update_at >= self.DURATION:
                 ns.update_at = now
                 ns.count = self._requests_per_hour
 
     def _sleep(self):
-        """sleep only if all tokens is exhausted"""
+        """Sleep only if all tokens is exhausted."""
         now = time.time()
         if sum([ns.count for ns in self._tokens.values()]) == 0:
             sleep_time = self.DURATION - (now - min([ns.update_at for ns in self._tokens.values()]))
             logging.warning("Sleeping for %.1f seconds to enforce the limit of %d requests per hour.", sleep_time, self._requests_per_hour)
             time.sleep(sleep_time)
             return True
+        return None

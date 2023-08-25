@@ -8,7 +8,7 @@ import gzip
 import os
 import shutil
 from pathlib import Path
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 import pandas as pd
 import pyarrow as pa
@@ -40,9 +40,9 @@ class TestParquetParser(AbstractTestParser):
 
     @classmethod
     def generate_parquet_file(
-        cls, name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Mapping[int, List[str]] = None
+        cls, name: str, columns: Mapping[str, str], num_rows: int, custom_rows: Optional[Mapping[int, List[str]]] = None,
     ) -> str:
-        """Generates  a random data and save it to a tmp file"""
+        """Generates  a random data and save it to a tmp file."""
         filename = os.path.join(TMP_FOLDER, name + "." + cls.filetype)
 
         pq_writer = None
@@ -143,7 +143,7 @@ class TestParquetParser(AbstractTestParser):
             {
                 "extra_id": "integer",
                 "extra_name": "string",
-            }
+            },
         )
         cases["extra_columns_in_master_schema"] = {
             "filepath": cls.generate_parquet_file("normal_test", schema, num_records),

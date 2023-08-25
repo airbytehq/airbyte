@@ -17,7 +17,7 @@ class WriteBufferMixin:
     flush_interval = 500  # records count
     flush_interval_size_in_kb = 10 ^ 8  # memory allocation ~ 97656 Kb or 95 Mb
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Buffer for input records
         self.records_buffer = {}
         # Placeholder for streams metadata
@@ -25,15 +25,13 @@ class WriteBufferMixin:
 
     @property
     def default_missing(self) -> str:
-        """
-        Default value for missing keys in record stream, compared to configured_stream catalog.
+        """Default value for missing keys in record stream, compared to configured_stream catalog.
         Overwrite if needed.
         """
         return ""
 
     def init_buffer_stream(self, configured_stream: AirbyteStream):
-        """
-        Saves important stream's information for later use.
+        """Saves important stream's information for later use.
 
         Particulary, creates the data structure for `records_stream`.
         Populates `stream_info` placeholder with stream metadata information.
@@ -41,32 +39,27 @@ class WriteBufferMixin:
         stream = configured_stream.stream
         self.records_buffer[stream.name] = []
         self.stream_info[stream.name] = {
-            "headers": sorted(list(stream.json_schema.get("properties").keys())),
+            "headers": sorted(stream.json_schema.get("properties").keys()),
             "is_set": False,
         }
 
     def add_to_buffer(self, stream_name: str, record: Mapping):
-        """
-        Populates input records to `records_buffer`.
+        """Populates input records to `records_buffer`.
 
         1) normalizes input record
         2) coerces normalized record to str
         3) gets values as list of record values from record mapping.
         """
-
         norm_record = self._normalize_record(stream_name, record)
         norm_values = list(map(str, norm_record.values()))
         self.records_buffer[stream_name].append(norm_values)
 
     def clear_buffer(self, stream_name: str):
-        """
-        Cleans up the `records_buffer` values, belonging to input stream.
-        """
+        """Cleans up the `records_buffer` values, belonging to input stream."""
         self.records_buffer[stream_name].clear()
 
     def _normalize_record(self, stream_name: str, record: Mapping) -> Mapping[str, Any]:
-        """
-        Updates the record keys up to the input configured_stream catalog keys.
+        """Updates the record keys up to the input configured_stream catalog keys.
 
         Handles two scenarios:
         1) when record has less keys than catalog declares (undersetting)
@@ -74,7 +67,7 @@ class WriteBufferMixin:
 
         Returns: alphabetically sorted, catalog-normalized Mapping[str, Any].
 
-        EXAMPLE:
+        Example:
         - UnderSetting:
             * Catalog:
                 - has 3 entities:
@@ -107,8 +100,8 @@ class WriteBufferMixin:
         """
         headers = self.stream_info[stream_name]["headers"]
         # undersetting scenario
-        [record.update({key: self.default_missing}) for key in headers if key not in record.keys()]
+        [record.update({key: self.default_missing}) for key in headers if key not in record]
         # oversetting scenario
-        [record.pop(key) for key in record.copy().keys() if key not in headers]
+        [record.pop(key) for key in record.copy() if key not in headers]
 
         return dict(sorted(record.items(), key=lambda x: x[0]))

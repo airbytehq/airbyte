@@ -26,9 +26,7 @@ generate_registry_entry = define_asset_job(
 
 @op(required_resource_keys={"slack", "all_metadata_file_blobs"})
 def add_new_metadata_partitions_op(context):
-    """
-    This op is responsible for polling for new metadata files and adding their etag to the dynamic partition.
-    """
+    """This op is responsible for polling for new metadata files and adding their etag to the dynamic partition."""
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
     partition_name = registry_entry.metadata_partitions_def.name
 
@@ -40,7 +38,7 @@ def add_new_metadata_partitions_op(context):
     context.log.info(f"New etags found: {new_etags_found}")
 
     if not new_etags_found:
-        return SkipReason(f"No new metadata files to process in GCS bucket")
+        return SkipReason("No new metadata files to process in GCS bucket")
 
     # if there are more than the MAX_METADATA_PARTITION_RUN_REQUEST, we need to split them into multiple runs
     etags_to_process = new_etags_found
@@ -59,11 +57,10 @@ def add_new_metadata_partitions_op(context):
         StageStatus.SUCCESS,
         f"*Queued {len(etags_to_process)}/{len(new_etags_found)} new metadata files for processing:*\n\n {new_metadata_log_string}",
     )
+    return None
 
 
 @job(tags={"dagster/priority": HIGH_QUEUE_PRIORITY})
 def add_new_metadata_partitions():
-    """
-    This job is responsible for polling for new metadata files and adding their etag to the dynamic partition.
-    """
+    """This job is responsible for polling for new metadata files and adding their etag to the dynamic partition."""
     add_new_metadata_partitions_op()

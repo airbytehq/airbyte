@@ -104,7 +104,7 @@ class TestAirtableStream:
         assert self.stream_instance(prepared_stream).primary_key == "id"
 
     def test_streams_name(self, prepared_stream):
-        assert self.stream_instance(prepared_stream).name == 'test_base/test_table'
+        assert self.stream_instance(prepared_stream).name == "test_base/test_table"
 
     def test_streams_path(self, prepared_stream):
         assert self.stream_instance(prepared_stream).path() == "some_base_id/some_table_id"
@@ -137,7 +137,7 @@ class TestAirtableStream:
         assert self.stream_instance(prepared_stream).backoff_time(response) == expected_backoff_time
 
     def test_streams_get_json_schema(self, prepared_stream):
-        assert self.stream_instance(prepared_stream).get_json_schema() == prepared_stream['stream'].json_schema
+        assert self.stream_instance(prepared_stream).get_json_schema() == prepared_stream["stream"].json_schema
 
     def test_streams_next_page(self, prepared_stream, requests_mock):
         url = "https://api.airtable.com/v0/meta/bases/"

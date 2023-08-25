@@ -3,25 +3,23 @@
 #
 
 from functools import lru_cache
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, Optional
 
 from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
 
 
 class CustomQueryMixin:
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         self.config = config
         super().__init__(**kwargs)
 
     @property
     def primary_key(self) -> str:
-        """
-        The primary_key option is disabled. Config should not provide the primary key.
+        """The primary_key option is disabled. Config should not provide the primary key.
         It will be ignored if provided.
-        If you need to enable it, uncomment the next line instead of `return None` and modify your config
+        If you need to enable it, uncomment the next line instead of `return None` and modify your config.
         """
-        # return self.config.get("primary_key") or None
         return None
 
     @property
@@ -30,13 +28,11 @@ class CustomQueryMixin:
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
     # responses, caching playing crucial role for performance here.
-    @lru_cache()
+    @lru_cache
     def get_json_schema(self) -> Dict[str, Any]:
+        """Compose json schema based on user defined query.
+        :return Dict object representing jsonschema.
         """
-        Compose json schema based on user defined query.
-        :return Dict object representing jsonschema
-        """
-
         local_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
@@ -71,10 +67,7 @@ class CustomQueryMixin:
                 # attribute "protobuf_message" to convert it to a string (or
                 # array of strings) later.
                 # https://developers.google.com/google-ads/api/reference/rpc/v11/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
-                if node.is_repeated:
-                    output_type = ["array", "null"]
-                else:
-                    output_type = ["string", "null"]
+                output_type = ["array", "null"] if node.is_repeated else ["string", "null"]
                 field_value = {"type": output_type, "protobuf_message": True}
             else:
                 output_type = [google_datatype_mapping.get(google_data_type, "string"), "null"]
@@ -88,19 +81,18 @@ class CustomQueryMixin:
 
 
 class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
-    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+    def get_query(self, stream_slice: Optional[Mapping[str, Any]] = None) -> str:
         start_date, end_date = stream_slice["start_date"], stream_slice["end_date"]
         query = self.insert_segments_date_expr(self.config["query"], start_date, end_date)
         return str(query)
 
     @staticmethod
     def insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
-        """
-        Insert segments.date condition to break query into slices for incremental stream.
+        """Insert segments.date condition to break query into slices for incremental stream.
         :param query Origin user defined query
         :param start_date start date for metric (inclusive)
         :param end_date end date for metric (inclusive)
-        :return Modified query with date window condition included
+        :return Modified query with date window condition included.
         """
         if "segments.date" not in query.fields:
             query = query.append_field("segments.date")
@@ -111,5 +103,5 @@ class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
 
 
 class CustomQuery(CustomQueryMixin, GoogleAdsStream):
-    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+    def get_query(self, stream_slice: Optional[Mapping[str, Any]] = None) -> str:
         return str(self.config["query"])

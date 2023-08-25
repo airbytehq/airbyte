@@ -6,11 +6,12 @@ import os
 
 import pytest
 import yaml
-from airbyte_api_client.api import connection_api
-from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 from octavia_cli.apply.resources import Connection, Destination, Source
 from octavia_cli.entrypoint import get_api_client, get_workspace_id
 from octavia_cli.init.commands import DIRECTORIES_TO_CREATE as OCTAVIA_PROJECT_DIRECTORIES
+
+from airbyte_api_client.api import connection_api
+from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 
 
 def silent_remove(path):
@@ -21,7 +22,7 @@ def silent_remove(path):
         return False
 
 
-@pytest.fixture
+@pytest.fixture()
 def octavia_tmp_project_directory(tmpdir):
     for directory in OCTAVIA_PROJECT_DIRECTORIES:
         tmpdir.mkdir(directory)
@@ -44,7 +45,7 @@ def workspace_id(api_client):
 
 
 def open_yaml_configuration(path: str):
-    with open(path, "r") as f:
+    with open(path) as f:
         local_configuration = yaml.safe_load(f)
     return local_configuration, path
 
@@ -96,7 +97,7 @@ def destination(api_client, workspace_id, destination_configuration_and_path, de
 @pytest.fixture(scope="session")
 def connection_configuration_and_path(octavia_test_project_directory):
     path = f"{octavia_test_project_directory}/connections/poke_to_pg/configuration.yaml"
-    with open(path, "r") as f:
+    with open(path) as f:
         local_configuration = yaml.safe_load(f)
     return local_configuration, path
 
@@ -124,7 +125,7 @@ def updated_connection_configuration_and_path(octavia_test_project_directory, so
     else:
         path = f"{octavia_test_project_directory}/connections/poke_to_pg/configuration.yaml"
         edited_path = f"{octavia_test_project_directory}/connections/poke_to_pg/updated_configuration.yaml"
-    with open(path, "r") as dumb_local_configuration_file:
+    with open(path) as dumb_local_configuration_file:
         local_configuration = yaml.safe_load(dumb_local_configuration_file)
     local_configuration["source_configuration_path"] = source.configuration_path
     local_configuration["destination_configuration_path"] = destination.configuration_path
@@ -144,10 +145,10 @@ def connection(api_client, workspace_id, octavia_test_project_directory, source,
 
 @pytest.fixture(scope="session")
 def connection_with_normalization(
-    api_client, workspace_id, octavia_test_project_directory, source, destination, connection_with_normalization_state_path
+    api_client, workspace_id, octavia_test_project_directory, source, destination, connection_with_normalization_state_path,
 ):
     configuration, configuration_path = updated_connection_configuration_and_path(
-        octavia_test_project_directory, source, destination, with_normalization=True
+        octavia_test_project_directory, source, destination, with_normalization=True,
     )
     connection = Connection(api_client, workspace_id, configuration, configuration_path)
     yield connection

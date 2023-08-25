@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -27,7 +28,7 @@ class RechargeStream(HttpStream, ABC):
     # registering the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config, **kwargs) -> None:
         super().__init__(**kwargs)
         self._start_date = config["start_date"]
 
@@ -36,12 +37,12 @@ class RechargeStream(HttpStream, ABC):
         return self.name
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"x-recharge-version": API_VERSION}
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
         return self.name
 
@@ -49,9 +50,10 @@ class RechargeStream(HttpStream, ABC):
         cursor = response.json().get("next_cursor")
         if cursor:
             return {"cursor": cursor}
+        return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.limit,
@@ -86,7 +88,7 @@ class RechargeStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = (stream_state or {}).get(self.cursor_field, self._start_date) if self.cursor_field else self._start_date
 
@@ -115,42 +117,30 @@ class IncrementalRechargeStream(RechargeStream, ABC):
 
 
 class Addresses(IncrementalRechargeStream):
-    """
-    Addresses Stream: https://developer.rechargepayments.com/v1-shopify?python#list-addresses
-    """
+    """Addresses Stream: https://developer.rechargepayments.com/v1-shopify?python#list-addresses."""
 
 
 class Charges(IncrementalRechargeStream):
-    """
-    Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges
-    """
+    """Charges Stream: https://developer.rechargepayments.com/v1-shopify?python#list-charges."""
 
 
 class Collections(RechargeStream):
-    """
-    Collections Stream
-    """
+    """Collections Stream."""
 
 
 class Customers(IncrementalRechargeStream):
-    """
-    Customers Stream: https://developer.rechargepayments.com/v1-shopify?python#list-customers
-    """
+    """Customers Stream: https://developer.rechargepayments.com/v1-shopify?python#list-customers."""
 
 
 class Discounts(IncrementalRechargeStream):
-    """
-    Discounts Stream: https://developer.rechargepayments.com/v1-shopify?python#list-discounts
-    """
+    """Discounts Stream: https://developer.rechargepayments.com/v1-shopify?python#list-discounts."""
 
 
 class Metafields(RechargeStream):
-    """
-    Metafields Stream: https://developer.rechargepayments.com/v1-shopify?python#list-metafields
-    """
+    """Metafields Stream: https://developer.rechargepayments.com/v1-shopify?python#list-metafields."""
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None, **kwargs,
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit, "owner_resource": (stream_slice or {}).get("owner_resource")}
         if next_page_token:
@@ -159,52 +149,44 @@ class Metafields(RechargeStream):
         return params
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         owner_resources = ["customer", "store", "subscription"]
         yield from [{"owner_resource": owner} for owner in owner_resources]
 
 
 class Onetimes(IncrementalRechargeStream):
-    """
-    Onetimes Stream: https://developer.rechargepayments.com/v1-shopify?python#list-onetimes
-    """
+    """Onetimes Stream: https://developer.rechargepayments.com/v1-shopify?python#list-onetimes."""
 
 
 class Orders(IncrementalRechargeStream):
-    """
-    Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
-    """
+    """Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders."""
 
 
 class Products(RechargeStream):
-    """
-    Products Stream: https://developer.rechargepayments.com/v1-shopify?python#list-products
-    Products endpoint has 422 error with 2021-11 API version
+    """Products Stream: https://developer.rechargepayments.com/v1-shopify?python#list-products
+    Products endpoint has 422 error with 2021-11 API version.
     """
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"x-recharge-version": OLD_API_VERSION}
 
 
 class Shop(RechargeStream):
-    """
-    Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
-    Shop endpoint is not available in 2021-11 API version
+    """Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
+    Shop endpoint is not available in 2021-11 API version.
     """
 
     primary_key = ["shop", "store"]
     data_path = None
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"x-recharge-version": OLD_API_VERSION}
 
 
 class Subscriptions(IncrementalRechargeStream):
-    """
-    Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions
-    """
+    """Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions."""

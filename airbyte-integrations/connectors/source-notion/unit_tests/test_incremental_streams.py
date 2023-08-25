@@ -4,12 +4,13 @@
 
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_notion.streams import Blocks, IncrementalNotionStream, Pages
 
+from airbyte_cdk.models import SyncMode
 
-@fixture
+
+@fixture()
 def patch_incremental_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(IncrementalNotionStream, "path", "v0/example_endpoint")
@@ -17,22 +18,22 @@ def patch_incremental_base_class(mocker):
     mocker.patch.object(IncrementalNotionStream, "__abstractmethods__", set())
 
 
-@fixture
+@fixture()
 def args():
     return {"authenticator": None, "config": {"access_token": "", "start_date": "2021-01-01T00:00:00.000Z"}}
 
 
-@fixture
+@fixture()
 def parent(args):
     return Pages(**args)
 
 
-@fixture
+@fixture()
 def stream(patch_incremental_base_class, args):
     return IncrementalNotionStream(**args)
 
 
-@fixture
+@fixture()
 def blocks(parent, args):
     return Blocks(parent=parent, **args)
 
@@ -76,7 +77,7 @@ def test_stream_slices(blocks, requests_mock):
 def test_end_of_stream_state(blocks, requests_mock):
     stream = blocks
     requests_mock.post(
-        "https://api.notion.com/v1/search", json={"results": [{"id": "aaa"}, {"id": "bbb"}, {"id": "ccc"}], "next_cursor": None}
+        "https://api.notion.com/v1/search", json={"results": [{"id": "aaa"}, {"id": "bbb"}, {"id": "ccc"}], "next_cursor": None},
     )
     requests_mock.get(
         "https://api.notion.com/v1/blocks/aaa/children",

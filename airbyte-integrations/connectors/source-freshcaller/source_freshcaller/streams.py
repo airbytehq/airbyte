@@ -7,11 +7,12 @@ from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class FreshcallerStream(HttpStream, ABC):
-    """Abstract class curated for Freshcaller"""
+    """Abstract class curated for Freshcaller."""
 
     primary_key = "id"
     data_field = ""
@@ -31,8 +32,8 @@ class FreshcallerStream(HttpStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
 
         params = {"per_page": self.page_limit, self.curr_page_param: self.start}
@@ -67,9 +68,8 @@ class FreshcallerStream(HttpStream, ABC):
 
 
 class APIIncrementalFreshcallerStream(FreshcallerStream):
-    """
-    Base abstract class for a "true" incremental stream, i.e., for an endpoint that supports
-    filtering by date or time
+    """Base abstract class for a "true" incremental stream, i.e., for an endpoint that supports
+    filtering by date or time.
     """
 
     start_param = "by_time[from]"
@@ -85,8 +85,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        """Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
         and define a cursor field.
         """
 
@@ -95,8 +94,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        """
-        Override default get_updated_state CDK method to return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        """Override default get_updated_state CDK method to return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
         last_synced_at = current_stream_state.get(self.cursor_field, self.start_date)
@@ -104,7 +102,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
         return {self.cursor_field: max(pendulum.parse(latest_record.get(self.cursor_field)).in_tz("UTC"), last_synced_at)}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params[self.start_param] = stream_slice[self.start_param]
@@ -112,9 +110,8 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
         self.logger.info(f"Endpoint[{self.path()}] - Request params: {params}")
         return params
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
+    def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
             "by_time[from]": "2022-03-07 15:00:01",
             "by_time[to]": "2022-03-07 18:00:00"
@@ -123,7 +120,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
             "by_time[from]": "2022-03-07 18:00:01",
             "by_time[to]": "2022-03-07 21:00:00"
             },
-            ...]
+            ...].
         """
         start_date = pendulum.parse(self.start_date).in_timezone("UTC")
         end_date = pendulum.now("UTC").subtract(minutes=self.sync_lag_minutes)  # have a safe lag
@@ -151,9 +148,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
 
 
 class Users(FreshcallerStream):
-    """
-    API docs: https://developers.freshcaller.com/api/#users
-    """
+    """API docs: https://developers.freshcaller.com/api/#users."""
 
     data_field = "users"
 
@@ -162,9 +157,7 @@ class Users(FreshcallerStream):
 
 
 class Teams(FreshcallerStream):
-    """
-    API docs: https://developers.freshcaller.com/api/#teams
-    """
+    """API docs: https://developers.freshcaller.com/api/#teams."""
 
     data_field = "teams"
 
@@ -173,9 +166,7 @@ class Teams(FreshcallerStream):
 
 
 class Calls(APIIncrementalFreshcallerStream):
-    """
-    API docs: https://developers.freshcaller.com/api/#calls
-    """
+    """API docs: https://developers.freshcaller.com/api/#calls."""
 
     data_field = "calls"
     cursor_field = "created_time"
@@ -184,16 +175,13 @@ class Calls(APIIncrementalFreshcallerStream):
         return "calls"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params = {**super().request_params(stream_state, stream_slice, next_page_token), "has_ancestry": "true"}
-        return params
+        return {**super().request_params(stream_state, stream_slice, next_page_token), "has_ancestry": "true"}
 
 
 class CallMetrics(APIIncrementalFreshcallerStream):
-    """
-    API docs: https://developers.freshcaller.com/api/#call-metrics
-    """
+    """API docs: https://developers.freshcaller.com/api/#call-metrics."""
 
     data_field = "call_metrics"
     cursor_field = "created_time"
