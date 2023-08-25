@@ -16,6 +16,8 @@
         }
     },
 
+    "workspaceFolder": "/workspace/airbyte-integrations/connectors/destination-duckdb",
+
     // Configure tool-specific properties.
     "customizations": {
         "vscode": {
