@@ -9,6 +9,7 @@ from unittest.mock import Mock, call
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
+from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 
 
 class QueueConsumerTestCase(TestCase):
@@ -30,7 +31,7 @@ class QueueConsumerTestCase(TestCase):
 
         stream = self._mock_stream([])
 
-        queue.put((partition, stream))
+        queue.put(StreamPartition(stream, partition))
         queue.put(_SENTINEL)
 
         actual_records = list(self._queue_consumer.consume_from_queue(queue))
@@ -49,7 +50,7 @@ class QueueConsumerTestCase(TestCase):
         ]
         stream = self._mock_stream(records)
 
-        self._queue.put((partition, stream))
+        self._queue.put(StreamPartition(stream, partition))
         self._queue.put(_SENTINEL)
 
         stream.read_records.return_value = iter(records)

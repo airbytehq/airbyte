@@ -3,7 +3,9 @@
 #
 import concurrent
 import concurrent.futures
+import logging
 from queue import Queue
+from typing import List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
@@ -21,9 +23,9 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
         self._queue = queue
         self._max_workers = max_workers
 
-    def read_stream(self, stream: Stream, cursor_field, logger, internal_config: InternalConfig = InternalConfig()):
-        # FIXME do something with the cursor field
-        # FIXME do something with the internal config
+    def read_stream(
+        self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
+    ):
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         partition_generation_futures = []
         queue_consumer_futures = []
@@ -42,9 +44,11 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
 
             # Wait for all partitions to be generated
             for future in concurrent.futures.as_completed(partition_generation_futures):
-                for partition in future.result():
+                for stream_partition in future.result():
                     if should_log_slice_message(logger):
-                        yield create_slice_log_message(partition)
+                        # FIXME: This is creating slice log messages for parity with the synchronous implementation
+                        # but these cannot be used by the connector builder to build slices because they can be unordered
+                        yield create_slice_log_message(stream_partition.slice)
 
             # Then put the sentinel on the queue
             for _ in range(self._get_num_dedicated_consumer_worker()):
@@ -52,7 +56,6 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                 self._queue.put(_SENTINEL)
             # Wait for the consumers to finish
             # FIXME: We should start yielding as soon as the first ones are done...
-            # FIXME handle done and unfinished
             for future in concurrent.futures.as_completed(queue_consumer_futures):
                 # Each result is an iterable of record
                 result = future.result()

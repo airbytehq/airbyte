@@ -7,6 +7,7 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 
 
 @pytest.mark.parametrize(
@@ -26,11 +27,11 @@ def test_partition_generator(partitions):
 
     actual_partitions = list(partition_generator.generate_partitions_for_stream(stream, sync_mode, cursor_field))
 
-    assert actual_partitions == partitions
+    expected_partitions = [StreamPartition(stream, p) for p in partitions]
+    assert actual_partitions == expected_partitions
 
     partitions_from_queue = []
     while queue.qsize() > 0:
         partitions_from_queue.append(queue.get())
 
-    expected_partitions_on_queue = [(p, stream) for p in partitions]
-    assert partitions_from_queue == expected_partitions_on_queue
+    assert partitions_from_queue == expected_partitions
