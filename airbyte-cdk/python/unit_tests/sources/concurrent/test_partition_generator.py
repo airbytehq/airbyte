@@ -21,13 +21,13 @@ def test_partition_generator(partitions):
     stream.generate_partitions.return_value = iter(partitions)
 
     sync_mode = SyncMode.full_refresh
-    cursor_field = None  # FIXME need to pass it!
+    cursor_field = ["A_NESTED", "CURSOR_FIELD"]
 
     assert queue.empty()
 
     actual_partitions = list(partition_generator.generate_partitions_for_stream(stream, sync_mode, cursor_field))
 
-    expected_partitions = [StreamPartition(stream, p) for p in partitions]
+    expected_partitions = [StreamPartition(stream, p, cursor_field) for p in partitions]
     assert actual_partitions == expected_partitions
 
     partitions_from_queue = []
