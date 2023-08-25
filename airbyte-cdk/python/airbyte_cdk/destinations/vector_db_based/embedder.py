@@ -7,13 +7,19 @@ from typing import List, Optional
 
 from airbyte_cdk.destinations.vector_db_based.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from langchain.embeddings.base import Embeddings
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 
 
 class Embedder(ABC):
+    """
+    Embedder is an abstract class that defines the interface for embedding text.
+    The Indexer class uses the Embedder class to internally embed text - each indexer is responsible to pass the text of all documents to the embedder and store the resulting embeddings in the destination.
+    The destination connector is responsible to create an embedder instance and pass it to the indexer.
+    The CDK defines basic embedders that should be supported in each destination. It is possible to implement custom embedders for special destinations if needed.
+    """
+
     def __init__(self) -> None:
         pass
 
@@ -93,9 +99,8 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    @property
-    def langchain_embeddings(self) -> Embeddings:
-        return self.embeddings
+    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+        return self.embeddings.embed_documents(texts)
 
     @property
     def embedding_dimensions(self) -> int:

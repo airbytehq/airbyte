@@ -26,6 +26,19 @@ class Chunk:
 
 
 class DocumentProcessor:
+    """
+    DocumentProcessor is a helper class that generates documents from Airbyte records.
+    It is used to generate documents from records before writing them to the destination:
+    * The text fields are extracted from the record and concatenated to a single string.
+    * The metadata fields are extracted from the record and added to the document metadata.
+    * The document is split into chunks of a given size using a langchain text splitter.
+
+    The Writer class uses the DocumentProcessor class to internally generate documents from records - in most cases you don't need to use it directly,
+    except if you want to implement a custom writer.
+
+    The config parameters specified by the ProcessingConfigModel has to be made part of the connector spec to allow the user to configure the document processor.
+    """
+
     streams: Mapping[str, ConfiguredAirbyteStream]
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
