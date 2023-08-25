@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2
+Add tests for display_type property
+
 ## 1.0.1
 Pin airbyte-protocol-model to <1.0.0.
 
