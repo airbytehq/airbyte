@@ -11,7 +11,6 @@ _SENTINEL = ("SENTINEL", "SENTINEL")
 
 class QueueConsumer:
     def __init__(self, name: str):
-        self._iterations = 0
         self._name = name
 
     def consume_from_queue(self, queue: Queue):
@@ -20,7 +19,6 @@ class QueueConsumer:
         cursor_field = None  # FIXME!
         records_and_streams = []
         while True:
-            self._iterations += 1
             try:
                 partition_and_stream = queue.get(timeout=2)
                 if partition_and_stream == _SENTINEL:
