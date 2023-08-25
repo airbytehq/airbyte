@@ -55,5 +55,4 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Lo
   private Long getCdcDefaultCursor() {
     return this.emittedAtConverted + this.recordCounter.getAndIncrement();
   }
-
 }
