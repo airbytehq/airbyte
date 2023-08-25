@@ -63,6 +63,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -281,14 +283,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         BigQueryUtils.getDatasetId(config));
   }
 
-  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
+  protected ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
                                                                                             final BigQuery bigquery,
                                                                                             final JsonNode config,
                                                                                             final ConfiguredAirbyteCatalog catalog,
                                                                                             final ParsedCatalog parsedCatalog,
                                                                                             final boolean use1s1t)
       throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
       final StreamConfig parsedStream;
@@ -359,7 +361,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final TyperDeduper typerDeduper)
       throws Exception {
     typerDeduper.prepareTables();
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,

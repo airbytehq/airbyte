@@ -12,15 +12,16 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 @Slf4j
 public class BigQueryAsyncStandardFlush  implements DestinationFlushFunction {
 
     private final BigQuery bigQuery;
-    private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
+    private final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
 
-    public BigQueryAsyncStandardFlush(BigQuery bigQuery, Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
+    public BigQueryAsyncStandardFlush(BigQuery bigQuery, ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
         this.bigQuery = bigQuery;
         this.uploaderMap = uploaderMap;
     }

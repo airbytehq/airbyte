@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -22,7 +23,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
                                           BigQuery bigQuery,
                                           ConfiguredAirbyteCatalog catalog,
                                           String defaultNamespace,
-                                          Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
+                                          ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
         super(outputRecordCollector,
                 onStart,
                 onClose,
