@@ -10,6 +10,7 @@ from airbyte_cdk.sources.streams import Stream
 from source_intercom.components import IncrementalSingleSliceCursor, IncrementalSubstreamSlicerCursor
 
 
+
 def test_slicer():
     date_time_dict = {"updated_at": 1662459010}
     slicer = IncrementalSingleSliceCursor(config={}, parameters={}, cursor_field="updated_at")
