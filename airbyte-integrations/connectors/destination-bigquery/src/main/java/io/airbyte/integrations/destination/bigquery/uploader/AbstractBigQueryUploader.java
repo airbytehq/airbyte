@@ -9,7 +9,6 @@ import static io.airbyte.integrations.destination.bigquery.helpers.LoggerHelper.
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.CopyJobConfiguration;
 import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
@@ -29,19 +28,14 @@ import io.airbyte.integrations.destination.s3.writer.DestinationWriter;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
@@ -105,14 +99,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
-  }
-
-  public void uploadAll(AirbyteStreamNameNamespacePair key, List<String> value) {
-
-      InsertAllRequest insertAllRequest = InsertAllRequest.of(
-              TableId.of(key.getNamespace(), key.getName()),
-              value.stream().map(message -> InsertAllRequest.RowToInsert.of(Jsons.deserializeToMap(message))).toList());
-      bigQuery.insertAll(insertAllRequest);
   }
 
   public void close(final boolean hasFailed, final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) {

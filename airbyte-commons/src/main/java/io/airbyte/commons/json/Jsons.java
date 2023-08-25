@@ -105,14 +105,6 @@ public class Jsons {
     }
   }
 
-  public static Map<String, Object> deserializeToMap(final String jsonString) {
-    try {
-      return OBJECT_MAPPER.convertValue(OBJECT_MAPPER.readTree(jsonString), Map.class);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static JsonNode deserializeExact(final String jsonString) {
     try {
       return OBJECT_MAPPER_EXACT.readTree(jsonString);
