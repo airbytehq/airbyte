@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
@@ -25,11 +24,7 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
             )
             for record_data_or_message in record_data_or_messages:
                 yield record_data_or_message
-                if (
-                    isinstance(record_data_or_message, AirbyteMessage)
-                    and record_data_or_message.type == MessageType.RECORD
-                    or isinstance(record_data_or_message, dict)
-                ):
+                if FullRefreshStreamReader.is_record(record_data_or_message):
                     total_records_counter += 1
                     if internal_config and internal_config.limit_reached(total_records_counter):
                         return

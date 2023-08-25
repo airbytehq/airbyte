@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import StreamData
 
 
 class FullRefreshStreamReader(ABC):
@@ -18,10 +19,10 @@ class FullRefreshStreamReader(ABC):
         """
 
     @staticmethod
-    def is_record(partition_record):
-        if isinstance(partition_record, dict):
+    def is_record(record_data_or_message: StreamData):
+        if isinstance(record_data_or_message, dict):
             return True
-        elif isinstance(partition_record, AirbyteMessage):
-            return partition_record.type == MessageType.RECORD
+        elif isinstance(record_data_or_message, AirbyteMessage):
+            return record_data_or_message.type == MessageType.RECORD
         else:
             return False

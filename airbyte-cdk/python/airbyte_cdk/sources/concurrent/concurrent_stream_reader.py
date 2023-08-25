@@ -5,8 +5,7 @@ import concurrent
 import concurrent.futures
 from queue import Queue
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.concurrent.queue_consumer import _SENTINEL, QueueConsumer
@@ -60,12 +59,7 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                 for partition_record_and_stream in result:
                     partition_record, stream = partition_record_and_stream
                     yield partition_record
-                    # FIXME share this condition with synchronous
-                    if (
-                        isinstance(partition_record, AirbyteMessage)
-                        and partition_record.type == MessageType.RECORD
-                        or isinstance(partition_record, dict)
-                    ):
+                    if FullRefreshStreamReader.is_record(partition_record):
                         total_records_counter += 1
                         if internal_config and internal_config.limit_reached(total_records_counter):
                             return
