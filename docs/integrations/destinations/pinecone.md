@@ -2,12 +2,47 @@
 
 ## Overview
 
-This destination prepares data to be used by [Pinecone](https://pinecone.io/).
+This page guides you through the process of setting up the [Pinecone](https://pinecone.io/) destination connector.
 
 There are three parts to this:
 * Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
 * Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported.)
 * Indexing - store the vectors in a vector database for similarity search
+
+## Prerequisites
+
+To use the Pinecone destination, you'll need:
+
+- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
+- A Pinecone project with a pre-created index with the correct dimensionality based on your embedding method
+
+You'll need the following information to configure the destination:
+
+- **Embedding service API Key** - The API key for your OpenAI or Cohere account
+- **Pinecone API Key** - The API key for your Pinecone account
+- **Pinecone Environment** - The name of the Pinecone environment to use
+- **Pinecone Index name** - The name of the Pinecone index to load data into
+
+## Features
+
+| Feature                        | Supported?           | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | No                   |       |
+
+## Data type mapping
+
+All fields specified as metadata fields will be stored in the metadata object of the document and can be used for filtering. The following data types are allowed for metadata fields:
+* String
+* Number (integer or floating point, gets converted to a 64 bit floating point)
+* Booleans (true, false)
+* List of String
+
+All other fields are ignored.
+
+## Configuration
 
 ### Processing
 
@@ -17,7 +52,7 @@ When specifying text fields, you can access nested fields in the record by using
 
 The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
 
-The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_natural_id` metadata field.
+The stream name gets added as a metadata field `_airbyte_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_record_id` metadata field.
 
 ### Embedding
 
@@ -25,13 +60,13 @@ The connector can use one of the following embedding methods:
 
 1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
 
-2. Cohere - using the Cohere API, the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**. 
+2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**. 
 
 For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
 
 ### Indexing
 
-To get started, use the Pinecone web UI or API to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document. 
+To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/quickstart) to create a project and an index before running the destination. All streams will be indexed into the same index, the `_airbyte_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document. 
 
 OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
 
