@@ -47,6 +47,18 @@ public class BigQueryTableWriter implements DestinationWriter {
   }
 
   @Override
+  public void write(String formattedData) throws IOException {
+
+    try {
+      writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
+    } catch (Exception e) {
+      LOGGER.error("BigQueryTableWriter");
+      LOGGER.error(formattedData);
+      throw e;
+    }
+  }
+
+  @Override
   public void close(boolean hasFailed) throws IOException {
     this.writeChannel.close();
   }

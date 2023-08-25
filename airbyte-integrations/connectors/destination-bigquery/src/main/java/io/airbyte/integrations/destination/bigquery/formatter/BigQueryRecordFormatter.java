@@ -50,7 +50,7 @@ public abstract class BigQueryRecordFormatter {
 
   public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
-  public abstract JsonNode formatRecord(PartialAirbyteMessage recordMessage);
+  public abstract String formatRecord(PartialAirbyteMessage recordMessage);
 
   public Schema getBigQuerySchema() {
     if (bigQuerySchema == null) {

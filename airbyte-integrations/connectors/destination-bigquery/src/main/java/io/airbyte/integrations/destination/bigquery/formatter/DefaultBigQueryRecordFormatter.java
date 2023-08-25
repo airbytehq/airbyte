@@ -61,7 +61,7 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
   }
 
   @Override
-  public JsonNode formatRecord(PartialAirbyteMessage message) {
+  public String formatRecord(PartialAirbyteMessage message) {
     if (TypingAndDedupingFlag.isDestinationV2()) {
       // Map.of has a @NonNull requirement, so creating a new Hash map
       final HashMap<String, Object> destinationV2record = new HashMap<>();
@@ -69,9 +69,9 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(message.getRecord()));
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, message.getSerialized());
-      return Jsons.jsonNode(destinationV2record);
+      return Jsons.serialize(destinationV2record);
     } else {
-      return Jsons.jsonNode(Map.of(
+      return Jsons.serialize(Map.of(
               JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
               JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(message.getRecord()),
               JavaBaseConstants.COLUMN_NAME_DATA, message.getSerialized()));
