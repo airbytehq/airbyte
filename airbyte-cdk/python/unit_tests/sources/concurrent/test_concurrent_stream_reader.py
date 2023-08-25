@@ -1,28 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import logging
 from queue import Queue
-from typing import Any, List, Mapping, Optional, Tuple
 from unittest import TestCase
 from unittest.mock import Mock
 
-from airbyte_cdk.sources.concurrent.concurrent_abstract_source import ConcurrentAbstractSource, Partition, PartitionGenerator, QueueConsumer
 from airbyte_cdk.sources.concurrent.concurrent_stream_reader import ConcurrentStreamReader
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.concurrent.queue_consumer import QueueConsumer
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
-
-
-class MockConcurrentAbstractSource(ConcurrentAbstractSource):
-    def __init__(self, partition_generator, queue_consumer: QueueConsumer, queue: Queue, streams: List[Stream]):
-        super().__init__(partition_generator, queue_consumer, queue, max_workers=1)
-        self._streams = streams
-
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        pass
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return self._streams
 
 
 class ConcurrentFullRefreshReadTestCase(TestCase):
@@ -67,13 +53,15 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
         return all_messages
 
     def _verify_output_messages(self, actual_messages, expected_messages):
+        actual_messages = list(actual_messages)
+        expected_messages = list(expected_messages)
         for expected_message in expected_messages:
             assert expected_message in actual_messages
         assert len(actual_messages) == len(expected_messages)
 
     def test_read_a_single_stream_with_a_single_partition(self):
 
-        partition = Partition()
+        partition = {"partition": 1}
         partitions = [partition]
 
         records = [
@@ -97,8 +85,8 @@ class ConcurrentFullRefreshReadTestCase(TestCase):
 
     def test_read_a_single_stream_with_two_partitions(self):
         # FIXME what are these partitions?
-        partition1 = Partition()
-        partition2 = Partition()
+        partition1 = {"partition": 1}
+        partition2 = {"partition": 2}
         partitions = [partition1, partition2]
 
         records_partition_1 = [
