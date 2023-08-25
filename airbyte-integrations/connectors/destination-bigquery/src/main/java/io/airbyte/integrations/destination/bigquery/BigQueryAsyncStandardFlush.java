@@ -28,11 +28,15 @@ public class BigQueryAsyncStandardFlush  implements DestinationFlushFunction {
     @Override
     public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
         stream.forEach(aibyteMessage -> {
-            log.error("BQ async standard flush");
-            log.error(aibyteMessage.toString());
-            uploaderMap.get(
-                    new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
-                            aibyteMessage.getRecord().getNamespace())).upload(aibyteMessage);
+            try {
+                uploaderMap.get(
+                        new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
+                                aibyteMessage.getRecord().getNamespace())).upload(aibyteMessage);
+            } catch (Exception e) {
+                log.error("BQ async standard flush");
+                log.error(aibyteMessage.toString());
+                throw e;
+            }
         });
     }
 
