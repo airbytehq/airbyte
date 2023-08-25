@@ -70,10 +70,10 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
-            config.get("user").asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            config.get("instance_type").get("cluster_url").asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText());
+        config.get("user").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("instance_type").get("cluster_url").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
