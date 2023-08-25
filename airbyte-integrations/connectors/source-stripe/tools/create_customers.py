@@ -4,6 +4,7 @@
 
 import concurrent.futures
 import json
+import traceback
 from copy import deepcopy
 from enum import Enum
 from typing import Any, Dict, Optional
@@ -63,9 +64,15 @@ class HttpRequest(BaseModel):
 
 class Requester:
     def submit(self, request: HttpRequest):
-        method = requests.post if request.method == "POST" else requests.get
+        if request.method == HttpMethod.POST:
+            method = requests.post
+        elif request.method == HttpMethod.GET:
+            method = requests.get
+        else:
+            raise ValueError(f"Unexpected HTTP method: {request.method}")
         if request.body:
             payload = recursive_url_encode(request.body)
+            print(f"payload: {payload}")
             response = method(request.url, headers=request.headers, data=payload)
         else:
             response = method(request.url, headers=request.headers)
@@ -79,15 +86,14 @@ class StripeAPI:
 
     def create_customer(self, customer: CustomerCreateConfig) -> Customer:
         request = self.prepare_create_customer(customer)
-        return Customer.parse_obj(self._requester.submit(request))
+        response = self._requester.submit(request)
+        return Customer.parse_obj(response)
 
     def create_bank_account(self, customer: Customer, bank_account_create_config: BankAccountCreateConfig) -> BankAccount:
         request = self.prepare_create_bank_account(customer, bank_account_create_config)
         return BankAccount.parse_obj(self._requester.submit(request))
 
     def prepare_create_customer(self, customer: CustomerCreateConfig):
-        if customer.bank_account is None:
-            raise ValueError(f"Cannot create bank account for customer without bank account information: {customer}")
         url = "https://api.stripe.com/v1/customers"
         customer_data = customer.dict(exclude_none=True)
         customer_data.pop("bank_account", {})
@@ -164,12 +170,15 @@ def _load_json_file(path_to_config):
 
 
 def populate_customer(customer: CustomerCreateConfig, stripe_api: StripeAPI):
-    customer_exists = is_customer_already_created(customer.name, stripe_api)
-    if customer_exists:
-        print(f"Customer {customer.name} already exists. Skipping...")
-        return None
-    else:
-        return create_customer_and_bank_account(customer, stripe_api)
+    try:
+        customer_exists = is_customer_already_created(customer.name, stripe_api)
+        if customer_exists:
+            print(f"Customer {customer.name} already exists. Skipping...")
+            return None
+        else:
+            return create_customer_and_bank_account(customer, stripe_api)
+    except Exception as e:
+        print(f"Caught exception: {traceback.TracebackException.from_exception(e).format()}")
 
 
 @_main.command()
@@ -186,9 +195,21 @@ def populate_customers(config_path, data_path, concurrency):
         for record in records:
             customer_data = record
             customer = CustomerCreateConfig.parse_obj(customer_data)
+            print(f"populating customer with config: {customer}")
             f = executor.submit(populate_customer, customer, stripe_api)
             futures.append(f)
         concurrent.futures.wait(futures)
+
+
+@_main.command()
+@click.option("--config-path")
+@click.option("--name")
+def search_customers(config_path, name):
+    config = _load_json_file(config_path)
+    requester = Requester()
+    stripe_api = StripeAPI(config["client_secret"], requester)
+    response = stripe_api.search_customer(name)
+    print(json.dumps(response, indent=4))
 
 
 @_main.command()
