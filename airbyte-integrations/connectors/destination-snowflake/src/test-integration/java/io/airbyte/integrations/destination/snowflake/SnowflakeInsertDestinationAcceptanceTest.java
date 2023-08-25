@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -104,8 +103,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   public JsonNode getStaticConfig() {
     final JsonNode insertConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/insert_config.json")));
-    Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(insertConfig));
-    Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(insertConfig));
     return insertConfig;
   }
 
@@ -187,12 +184,15 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
-    String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
-    database.execute(dropSchemaQuery);
-
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    TEST_SCHEMAS.add(config.get("schema").asText());
     for (final String schema : TEST_SCHEMAS) {
-      dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", schema);
+      // we need to wrap namespaces in quotes, but that means we have to manually upcase them.
+      // thanks, v1 destinations!
+      // this probably doesn't actually work, because v1 destinations are mangling namespaces and names
+      // but it's approximately correct and maybe works for some things.
+      final String mangledSchema = schema.toUpperCase();
+      final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS \"%s\"", mangledSchema);
       database.execute(dropSchemaQuery);
     }
 

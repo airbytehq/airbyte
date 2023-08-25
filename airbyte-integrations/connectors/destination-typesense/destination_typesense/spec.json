@@ -35,7 +35,7 @@
       },
       "batch_size": {
         "title": "Batch size",
-        "type": "string",
+        "type": "integer",
         "description": "How many documents should be imported together. Default 1000",
         "order": 4
       }

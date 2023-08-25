@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -39,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
@@ -61,7 +59,6 @@ public class PostgresCtidHandler {
   private static final int QUERY_TARGET_SIZE_GB = 1;
   public static final double MEGABYTE = Math.pow(1024, 2);
   public static final double GIGABYTE = MEGABYTE * 1024;
-
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
@@ -123,8 +120,8 @@ public class PostgresCtidHandler {
   }
 
   /**
-   * Builds a plan for subqueries. Each query returning an approximate amount of data.
-   * Using information about a table size and block (page) size.
+   * Builds a plan for subqueries. Each query returning an approximate amount of data. Using
+   * information about a table size and block (page) size.
    *
    * @param startCtid starting point
    * @param relationSize table size
@@ -138,7 +135,7 @@ public class PostgresCtidHandler {
     long lowerBound = startCtid.page;
     long upperBound;
     final double oneGigaPages = GIGABYTE / blockSize;
-    final long eachStep = (long)oneGigaPages * chunkSizeGB;
+    final long eachStep = (long) oneGigaPages * chunkSizeGB;
     LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
     final long theoreticalLastPage = relationSize / blockSize;
     LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
@@ -175,13 +172,16 @@ public class PostgresCtidHandler {
     // Rather than trying to read an entire table with a "WHERE ctid > (0,0)" query,
     // We are creating a list of lazy iterators each holding a subquery according to the plan.
     // All subqueries are then composed in a single composite iterator.
-    // Because list consists of lazy iterators, the query is only executing when needed one after the other.
-    final List<Pair<Ctid, Ctid>> subQueriesPlan = ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0,0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
+    // Because list consists of lazy iterators, the query is only executing when needed one after the
+    // other.
+    final List<Pair<Ctid, Ctid>> subQueriesPlan =
+        ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0, 0) : Ctid.of(currentCtidStatus.getCtid()), tableSize, blockSize, QUERY_TARGET_SIZE_GB);
     final List<AutoCloseableIterator<RowDataWithCtid>> subQueriesIterators = new ArrayList<>();
     subQueriesPlan.forEach(p -> subQueriesIterators.add(AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<RowDataWithCtid> stream = database.unsafeQuery(
-            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),sourceOperations::recordWithCtid);
+            connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, p.getLeft(), p.getRight()),
+            sourceOperations::recordWithCtid);
 
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
@@ -196,7 +196,8 @@ public class PostgresCtidHandler {
                                                      final List<String> columnNames,
                                                      final String schemaName,
                                                      final String tableName,
-                                                     final Ctid lowerBound, final Ctid upperBound) {
+                                                     final Ctid lowerBound,
+                                                     final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,

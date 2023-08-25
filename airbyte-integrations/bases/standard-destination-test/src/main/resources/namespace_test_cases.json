@@ -1,5 +1,6 @@
 [
   {
+    "_comment": "todo: normalized in this context means how the namespace is transformed in the destination. it does not refer to the Airbyte Normalization step. We should change it, but out of scope for this PR.",
     "id": "S1-1",
     "description": "namespace are converted to lowercase",
     "namespace": "NAMESPACE",
