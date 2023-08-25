@@ -1,31 +1,31 @@
-import yaml
-import json
-import pandas as pd
-import os
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import copy
-import sentry_sdk
-
-from pydantic import ValidationError
-from google.cloud import storage
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue, AutoMaterializePolicy
-from pydash.objects import get
-
-from metadata_service.spec_cache import get_cached_spec, list_cached_specs
-from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
-from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
-
-from orchestrator.utils.object_helpers import deep_copy_params
-from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
-from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
-from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
-from orchestrator.logging import sentry
+import json
+import os
+from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
-
-from typing import List, Optional, Tuple, Union
+import pandas as pd
+import sentry_sdk
+import yaml
+from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from google.cloud import storage
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.spec_cache import get_cached_spec, list_cached_specs
+from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
+from orchestrator.logging import sentry
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.dagster_helpers import OutputDataFrame
+from orchestrator.utils.object_helpers import deep_copy_params
+from pydantic import ValidationError
+from pydash.objects import get
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]

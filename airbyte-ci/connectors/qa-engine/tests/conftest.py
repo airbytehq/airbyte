@@ -4,10 +4,10 @@
 
 
 from datetime import datetime
+
 import pandas as pd
 import pytest
-
-from qa_engine.constants import OSS_CATALOG_URL, CLOUD_CATALOG_URL
+from qa_engine.constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
 from qa_engine.inputs import fetch_remote_catalog
 
 
