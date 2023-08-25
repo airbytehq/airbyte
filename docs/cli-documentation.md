@@ -2,7 +2,7 @@
 
 :::caution
 
-• The Octavia CLI is an alpha, unofficial CLI that won't be maintained.<br>
+• The Octavia CLI is an alpha, unofficial CLI that won't be maintained.<br />
 👉 We advise all users to leverage the official [Airbyte Terraform Provider](https://reference.airbyte.com/reference/using-the-terraform-provider), instead of this CLI.
 
 :::
