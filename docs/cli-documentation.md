@@ -2,7 +2,7 @@
 
 :::caution
 
-The Octavia CLI is an alpha, unofficial CLI that won't be maintained.<br />
+The Octavia CLI is an alpha, unofficial CLI that won't be maintained.
 
 :::
 
