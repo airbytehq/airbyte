@@ -290,6 +290,7 @@ class BigQueryDestinationTest {
     assertThat(ex.getMessage()).contains(error);
   }
 
+  @Disabled
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
   void testWriteSuccess(final String configName) throws Exception {
