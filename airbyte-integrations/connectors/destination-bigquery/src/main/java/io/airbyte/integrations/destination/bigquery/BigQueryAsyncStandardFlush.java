@@ -11,8 +11,10 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -28,16 +30,19 @@ public class BigQueryAsyncStandardFlush  implements DestinationFlushFunction {
 
     @Override
     public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
-        stream.forEach(aibyteMessage -> {
-            try {
-                uploaderMap.get(
-                        new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
-                                aibyteMessage.getRecord().getNamespace())).upload(aibyteMessage);
-            } catch (Exception e) {
-                log.error("BQ async standard flush");
-                log.error(aibyteMessage.toString());
-                throw e;
-            }
+        Map<AirbyteStreamNameNamespacePair, List<String>> messageByStreamDescriptor = stream.collect(Collectors.toMap(
+                partialAirbyteMessage -> new AirbyteStreamNameNamespacePair(partialAirbyteMessage.getRecord().getStream(),
+                        partialAirbyteMessage.getRecord().getNamespace()),
+                partialAirbyteMessage -> List.of(partialAirbyteMessage.getSerialized()),
+                (left, right) -> {
+                    left.addAll(right);
+                    return left;
+                }
+        ));
+
+        messageByStreamDescriptor.forEach((key, value) -> {
+
+            uploaderMap.get(key).uploadAll(key, value);
         });
     }
 
