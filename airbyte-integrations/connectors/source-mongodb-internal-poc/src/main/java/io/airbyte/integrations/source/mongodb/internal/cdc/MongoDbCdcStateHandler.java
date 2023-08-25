@@ -8,6 +8,7 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -32,10 +33,7 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
 
   @Override
   public AirbyteMessage saveState(final Map<String, String> offset, String dbHistory) {
-    final MongoDbCdcState cdcState = new MongoDbCdcState(
-        Integer.valueOf(offset.getOrDefault(SOURCE_SECONDS, "0")),
-        Integer.valueOf(offset.getOrDefault(SOURCE_ORDER, "0")),
-        offset.get(SOURCE_RESUME_TOKEN));
+    final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
 
     LOGGER.info("Saving Debezium state {}...", cdcState);
     stateManager.updateCdcState(cdcState);

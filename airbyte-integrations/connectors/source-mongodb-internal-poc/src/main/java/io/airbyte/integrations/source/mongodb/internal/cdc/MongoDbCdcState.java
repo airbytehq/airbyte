@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * Represents the global CDC state that is used by Debezium as an offset.
  *
- * @param seconds The seconds component of a timestamp.
- * @param order The order component of a timestamp.
- * @param resumeToken The resume token of the most recently processed change event.
+ * @param state The Debezium offset state as a {@link JsonNode}.
  */
-public record MongoDbCdcState(int seconds, int order, String resumeToken) {}
+public record MongoDbCdcState(JsonNode state) {}
