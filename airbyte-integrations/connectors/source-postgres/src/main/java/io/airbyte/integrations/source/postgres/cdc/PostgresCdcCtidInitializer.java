@@ -14,9 +14,6 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
@@ -157,24 +154,15 @@ public class PostgresCdcCtidInitializer {
         LOGGER.info("No streams will be synced via ctid");
       }
 
-      final boolean trackSchemaHistory = false;
       final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database), trackSchemaHistory, firstRecordWaitTime, queueSize);
+          PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
-      final PostgresCdcSavedInfoFetcher cdcSavedInfoFetcher = new PostgresCdcSavedInfoFetcher(stateToBeUsed);
-      final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
-          PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          sourceConfig,
-          catalog,
-          AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
-          AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
-              new AirbyteDebeziumHandler.EmptySavedInfo()));
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-          cdcSavedInfoFetcher,
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+          new PostgresCdcSavedInfoFetcher(stateToBeUsed),
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
-          debeziumPropertiesManager,
+          PostgresCdcProperties.getDebeziumDefaultProperties(database),
           emittedAt,
           false);
 

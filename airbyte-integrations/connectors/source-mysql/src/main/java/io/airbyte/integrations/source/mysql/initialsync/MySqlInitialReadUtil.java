@@ -18,10 +18,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil;
@@ -148,25 +145,14 @@ public class MySqlInitialReadUtil {
     }
 
     // Build the incremental CDC iterators.
-    final boolean trackSchemaHistory = true;
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
-        new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database),
-            trackSchemaHistory, firstRecordWaitTime, OptionalInt.empty());
-    final MySqlCdcSavedInfoFetcher cdcSavedInfoFetcher = new MySqlCdcSavedInfoFetcher(stateToBeUsed);
+        new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
 
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(
-        MySqlCdcProperties.getDebeziumProperties(database),
-        sourceConfig,
-        catalog,
-        AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(), Optional.empty()),
-        AirbyteDebeziumHandler.schemaHistoryManager(trackSchemaHistory,
-            new AirbyteDebeziumHandler.EmptySavedInfo()));
-
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-        cdcSavedInfoFetcher,
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+        new MySqlCdcSavedInfoFetcher(stateToBeUsed),
         new MySqlCdcStateHandler(stateManager),
         metadataInjector,
-        debeziumPropertiesManager,
+        MySqlCdcProperties.getDebeziumProperties(database),
         emittedAt,
         false);
 
