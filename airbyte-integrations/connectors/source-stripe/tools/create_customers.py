@@ -166,7 +166,6 @@ def populate_customer(customer: Customer, stripe_api: StripeAPI):
         print(f"Customer {customer.name} already exists. Skipping...")
         return None
     else:
-        exit()
         return create_customer_and_bank_account(customer, stripe_api)
 
 
