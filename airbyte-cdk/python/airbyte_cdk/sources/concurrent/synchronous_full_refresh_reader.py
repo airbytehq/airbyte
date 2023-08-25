@@ -18,6 +18,8 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
     SLICE_LOG_PREFIX = "slice:"
 
     def read_stream(self, stream: Stream, cursor_field, internal_config, logger):
+        #FIXME should use stream's loggger!
+        #FIXME: should internal_config be null?
         slices = stream.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
@@ -30,11 +32,10 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
                 cursor_field=cursor_field,
             )
             for record_data_or_message in record_data_or_messages:
-                message = self._get_message(record_data_or_message, stream)
-                yield message
-                if message.type == MessageType.RECORD:
+                yield record_data_or_message
+                if isinstance(record_data_or_message, AirbyteMessage) and record_data_or_message.type == MessageType.RECORD or isinstance(record_data_or_message, dict):
                     total_records_counter += 1
-                    if internal_config.limit_reached(total_records_counter):
+                    if internal_config and internal_config.limit_reached(total_records_counter):
                         return
 
     # FIXME duplicate
@@ -48,16 +49,6 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
             type=MessageType.LOG,
             log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
         )
-
-    # FIXME Duplicate from AbstractSource
-    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream):
-        """
-        Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
-        """
-        if isinstance(record_data_or_message, AirbyteMessage):
-            return record_data_or_message
-        else:
-            return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
 
     # Duplicate from AbstractSource
     def should_log_slice_message(self, logger: logging.Logger):

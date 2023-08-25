@@ -18,7 +18,7 @@ class ConcurrentStreamReader:
         self._queue = queue
         self._max_workers = max_workers
 
-    def read_stream(self, stream: Stream):
+    def read_stream(self, stream: Stream, cursor_field, internal_config, logger):
         all_records = []
         partition_generation_futures = []
         queue_consumer_futures = []
@@ -60,7 +60,8 @@ class ConcurrentStreamReader:
                 for partition_record_and_stream in result:
                     partition_record, stream = partition_record_and_stream
                     # FIXME we should wrap the output in a dataclass!
-                    all_records.append((partition_record, stream))
+                    #all_records.append((partition_record, stream))
+                    all_records.append(partition_record)
         return all_records
 
     def _get_num_dedicated_consumer_worker(self) -> int:
