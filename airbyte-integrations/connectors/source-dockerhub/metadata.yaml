@@ -1,22 +1,28 @@
 data:
+  allowedHosts:
+    hosts:
+      - hub.docker.com
+      - auth.docker.io
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 72d405a3-56d8-499f-a571-667c03406e43
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-dockerhub
   githubIssueLabel: source-dockerhub
   icon: dockerhub.svg
   license: MIT
   name: Dockerhub
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: 2022-05-20
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   tags:
-    - language:python
+    - language:lowcode
   ab_internal:
     sl: 100
     ql: 100
