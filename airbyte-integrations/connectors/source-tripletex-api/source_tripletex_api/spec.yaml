@@ -12,7 +12,10 @@ connectionSpecification:
       type: string
       description: "Starting date"
       default: "2023-02-10"
-
+    lookback_monthly_status:
+      type: integer
+      description: "Lookback window for monthly status stream"
+      default: 1
     consumer_token:
       type: string
       description: Consumer token
