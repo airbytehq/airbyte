@@ -368,6 +368,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getSnapshotProperties(database),
           mySqlCdcStateHandler,
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt);
 
       return Collections.singletonList(
