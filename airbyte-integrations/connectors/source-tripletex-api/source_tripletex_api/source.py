@@ -219,6 +219,55 @@ class BalanceSheet(DateRequiredStream):
         return "balanceSheet"
 
 
+class TimesheetEntries(TripletexPaginationStream):
+    primary_key = "id"
+
+    def __init__(self, parent: Employee, config: Mapping[str, Any]):
+        super().__init__(config=config)
+        self.parent = parent
+        self.lookback = config.get("lookback_timesheet_entries", 0)
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "timesheet/entry"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"dateFrom": stream_slice.get("dateFrom"),
+                       "dateTo": stream_slice.get("dateTo"),
+                       "employeeId": stream_slice.get("parent", {}).get("id")})
+        return params
+
+    def _get_slices(self):
+        current_month = pendulum.today().start_of("month")
+        return [(current_month.subtract(months=i).format("YYYY-MM-DD"),
+                 current_month.subtract(months=i-1).format("YYYY-MM-DD"),) for i in range(self.lookback+1)]
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            # iterate over all parent records with current stream_slice
+            slices = self._get_slices()
+            for record in parent_records:
+                for date_from, date_to in slices:
+                    yield {"parent": record,
+                           "dateFrom": date_from,
+                           "dateTo": date_to}
+
+
 class MonthlyStatus(TripletexPaginationStream):
     primary_key = "id"
 
@@ -282,4 +331,5 @@ class SourceTripletexApi(AbstractSource):
         return [Postings(config=config), Departments(config=config), Accounts(config=config), BalanceSheet(config=config),
                 employee_stream, Invoice(config=config), Payslip(
                     config=config), SalaryType(config=config),
-                MonthlyStatus(parent=employee_stream, config=config)]
+                MonthlyStatus(parent=employee_stream, config=config),
+                TimesheetEntries(parent=employee_stream, config=config)]

@@ -16,6 +16,10 @@ connectionSpecification:
       type: integer
       description: "Lookback window for monthly status stream"
       default: 1
+    lookback_timesheet_entries:
+      type: integer
+      description: "Lookback window for monthly timesheet entries stream"
+      default: 1
     consumer_token:
       type: string
       description: Consumer token
