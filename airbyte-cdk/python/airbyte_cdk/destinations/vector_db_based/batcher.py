@@ -6,6 +6,13 @@ from typing import Any, Callable, List
 
 
 class Batcher:
+    """
+    Batcher is a helper class that batches items and flushes them when the batch size is reached.
+    It is used to batch records before writing them to the destination to make the embedding and loading process more efficient.
+    The Writer class uses the Batcher class to internally batch records before writing them to the destination - in most cases you don't need to use it directly,
+    except if you want to implement a custom writer.
+    """
+
     def __init__(self, batch_size: int, flush_handler: Callable[[List[Any]], None]):
         self.batch_size = batch_size
         self.buffer: List[Any] = []

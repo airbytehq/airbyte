@@ -13,6 +13,16 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredA
 
 
 class Writer:
+    """
+    The Writer class is orchestrating the document processor, the batcher and the indexer:
+    * Incoming records are collected using the batcher
+    * The document processor generates documents from all records in the batch
+    * The indexer indexes the resulting documents in the destination
+
+    The destination connector is responsible to create a writer instance and pass the input messages iterable to the write method.
+    The batch size can be configured by the destination connector to give the freedom of either letting the user configure it or hardcoding it to a sensible value depending on the destination.
+    """
+
     def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, batch_size: int) -> None:
         self.processing_config = processing_config
         self.indexer = indexer
