@@ -6,147 +6,95 @@ check:
   stream_names:
     - boards
 
-streams:
-  - type: DeclarativeStream
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: https://api.trello.com/1/
+    http_method: GET
+    request_headers: {}
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config[''api_key''] }}'
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+    request_body_json: {}
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: before
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 500
+      cursor_value: '{{ last_records[-1][''id''] }}'
+  board_id_partition_router:
+    - type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: id
+          partition_field: id
+          stream:
+            $ref: "#/definitions/boards_stream"
+    - type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: idBoards
+          partition_field: id
+          stream:
+            $ref: "#/definitions/organizations_stream"
+  boards_stream:
+    type: DeclarativeStream
     name: boards
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
+        $ref: "#/definitions/requester"
         path: members/me/boards
-        http_method: GET
         request_parameters:
           since: '{{ config[''start_date''] }}'
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-  - type: DeclarativeStream
-    name: actions
-    primary_key:
-      - id
+        $ref: "#/definitions/selector"
+  organizations_stream:
+    type: DeclarativeStream
+    name: organizations
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
-        path: boards/{{ stream_partition.id }}/actions
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
+        $ref: "#/definitions/requester"
+        path: members/me/organizations
+        request_parameters:
+          since: '{{ config[''start_date''] }}'
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
+        $ref: "#/definitions/selector"
+  actions_stream:
+    type: DeclarativeStream
+    name: actions
+    primary_key: id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: boards/{{ stream_partition.id }}/actions
+      record_selector:
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: before
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 1000
-          cursor_value: '{{ last_records[-1][''id''] }}'
+        $ref: "#/definitions/paginator"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: boards
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/boards
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: idBoards
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: organizations
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/organizations
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
+        $ref: "#/definitions/board_id_partition_router"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date
@@ -165,48 +113,15 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
-    name: organizations
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
-        path: members/me/organizations
-        http_method: GET
-        request_parameters:
-          since: '{{ config[''start_date''] }}'
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-  - type: DeclarativeStream
+  cards_stream:
+    type: DeclarativeStream
     name: cards
-    primary_key:
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
+        $ref: "#/definitions/requester"
         path: boards/{{ stream_partition.id }}/cards/all
-        http_method: GET
         request_parameters:
           list: 'true'
           sort: '-id'
@@ -215,407 +130,68 @@ streams:
           pluginData: 'true'
           actions_display: 'true'
           customFieldItems: 'true'
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: before
-        page_size_option:
-          type: RequestOption
-          field_name: limit
-          inject_into: request_parameter
-        pagination_strategy:
-          type: CursorPagination
-          page_size: 500
-          cursor_value: '{{ last_records[-1][''id''] }}'
+        $ref: "#/definitions/paginator"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: boards
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/boards
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: idBoards
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: organizations
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/organizations
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-  - type: DeclarativeStream
+        $ref: "#/definitions/board_id_partition_router"
+  checklists_stream:
+    type: DeclarativeStream
     name: checklists
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
+        $ref: "#/definitions/requester"
         path: boards/{{ stream_partition.id }}/checklists
-        http_method: GET
         request_parameters:
           since: '{{ config[''start_date''] }}'
           fields: all
           checkItem_fields: all
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
+        $ref: "#/definitions/selector"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: boards
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/boards
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: idBoards
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: organizations
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/organizations
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-  - type: DeclarativeStream
+        $ref: "#/definitions/board_id_partition_router"
+  lists_stream:
+    type: DeclarativeStream
     name: lists
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
+        $ref: "#/definitions/requester"
         path: boards/{{ stream_partition.id }}/lists
-        http_method: GET
         request_parameters:
           since: '{{ config[''start_date''] }}'
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
+        $ref: "#/definitions/selector"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: boards
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/boards
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: idBoards
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: organizations
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/organizations
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-  - type: DeclarativeStream
+        $ref: "#/definitions/board_id_partition_router"
+  users_stream:
+    type: DeclarativeStream
     name: users
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.trello.com/1/
+        $ref: "#/definitions/requester"
         path: boards/{{ stream_partition.id }}/members
-        http_method: GET
         request_parameters:
           since: '{{ config[''start_date''] }}'
-        request_headers: {}
-        authenticator:
-          type: ApiKeyAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-          inject_into:
-            type: RequestOption
-            field_name: Authorization
-            inject_into: header
-        request_body_json: {}
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
+        $ref: "#/definitions/selector"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: boards
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/boards
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: idBoards
-              partition_field: id
-              stream:
-                type: DeclarativeStream
-                name: organizations
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.trello.com/1/
-                    path: members/me/organizations
-                    http_method: GET
-                    request_parameters:
-                      since: '{{ config[''start_date''] }}'
-                    request_headers: {}
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                      inject_into:
-                        type: RequestOption
-                        field_name: Authorization
-                        inject_into: header
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
+        $ref: "#/definitions/board_id_partition_router"
+
+streams:
+  - "#/definitions/boards_stream"
+  - "#/definitions/organizations_stream"
+  - "#/definitions/actions_stream"
+  - "#/definitions/cards_stream"
+  - "#/definitions/checklists_stream"
+  - "#/definitions/lists_stream"
+  - "#/definitions/users_stream"
 
 spec:
   type: Spec
