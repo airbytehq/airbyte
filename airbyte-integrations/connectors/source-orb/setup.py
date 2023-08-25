@@ -5,9 +5,16 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "pendulum==2.1.2"]
+MAIN_REQUIREMENTS = [
+    "airbyte-cdk~=0.1",
+]
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock~=3.6.1", "responses~=0.13.3", "pendulum==2.1.2"]
+TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest~=6.2",
+    "pytest-mock~=3.6.1",
+    "connector-acceptance-test",
+]
 
 setup(
     name="source_orb",
@@ -16,7 +23,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
