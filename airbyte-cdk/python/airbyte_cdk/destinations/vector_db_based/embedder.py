@@ -7,7 +7,6 @@ from typing import List, Optional
 
 from airbyte_cdk.destinations.vector_db_based.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from langchain.embeddings.base import Embeddings
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -100,9 +99,8 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    @property
-    def langchain_embeddings(self) -> Embeddings:
-        return self.embeddings
+    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+        return self.embeddings.embed_documents(texts)
 
     @property
     def embedding_dimensions(self) -> int:
