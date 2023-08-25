@@ -26,7 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A state-emitting iterator that emits a state message every checkpointInterval messages when iterating over a MongoCursor.
+ * A state-emitting iterator that emits a state message every checkpointInterval messages when
+ * iterating over a MongoCursor.
  *
  * Will also output a state message as the last message after the wrapper iterator has completed.
  */
@@ -66,10 +67,10 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * @param checkpointInterval how often a state message should be emitted.
    */
   MongoDbStateIterator(final MongoCursor<Document> iter,
-      final ConfiguredAirbyteStream stream,
-      Optional<MongodbStreamState> state,
-      final Instant emittedAt,
-      final int checkpointInterval) {
+                       final ConfiguredAirbyteStream stream,
+                       Optional<MongodbStreamState> state,
+                       final Instant emittedAt,
+                       final int checkpointInterval) {
     this.iter = iter;
     this.stream = stream;
     this.checkpointInterval = checkpointInterval;

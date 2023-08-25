@@ -80,7 +80,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty() , Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty(), Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -138,7 +138,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty() , Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stream, Optional.empty(), Instant.now(), CHECKPOINT_INTERVAL);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:

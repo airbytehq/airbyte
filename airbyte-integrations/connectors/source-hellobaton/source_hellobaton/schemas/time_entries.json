@@ -3,58 +3,25 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "_self": {
-      "type": "string"
-    },
-    "user": {
-      "type": "string"
-    },
-    "created_by": {
-      "type": "string"
-    },
-    "project": {
-      "type": "string"
-    },
-    "task": {
-      "type": ["string", "null"]
-    },
+    "id": {"type": ["integer", "null"]},
+    "_self": {"type": ["string", "null"]},
+    "user": {"type": ["string", "null"]},
+    "created_by": {"type": ["string", "null"]},
+    "project": {"type": ["string", "null"]},
+    "task": {"type": ["string", "null"]},
     "rate": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "hourly_rate": {
-          "type": "string"
-        }
+        "id": {"type": ["integer", "null"]},
+        "hourly_rate": {"type": ["string", "null"]}
       }
     },
-    "started_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "ended_at": {
-      "type": ["string", "null"],
-      "format": "date-time"
-    },
-    "reference_date": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "billable": {
-      "type": "boolean"
-    },
-    "calculated_duration": {
-      "type": ["integer", "null"]
-    },
-    "inputted_duration": {
-      "type": ["integer", "null"]
-    },
-    "notes": {
-      "type": "string"
-    }
+    "started_at": {"type": ["string", "null"], "format": "date-time"},
+    "ended_at": {"type": ["string", "null"], "format": "date-time"},
+    "reference_date": {"type": ["string", "null"], "format": "date-time"},
+    "billable": {"type": ["boolean", "null"]},
+    "calculated_duration": {"type": ["integer", "null"]},
+    "inputted_duration": {"type": ["integer", "null"]},
+    "notes": {"type": ["string", "null"]}
   }
 }
