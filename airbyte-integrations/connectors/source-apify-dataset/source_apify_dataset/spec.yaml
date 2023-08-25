@@ -1,0 +1,29 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Apify Dataset Spec
+  type: object
+  required:
+  - token
+  additionalProperties: true
+  properties:
+    token:
+      title: Personal API tokens
+      description: >-
+        Your application's Client Secret. You can find this value on the <a
+        href="https://console.apify.com/account/integrations">console integrations tab</a>
+        after you login.
+      type: string
+      examples:
+        - "Personal API tokens"
+      airbyte_secret: true
+    start_date:
+      type: string
+      title: Start Date
+      description:
+        UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+        before this date will not be replicated.
+      examples:
+        - "2023-08-05T00:43:59.244Z"
+      default: "2023-08-25T00:43:59.244Z"
+      airbyte_secret: false

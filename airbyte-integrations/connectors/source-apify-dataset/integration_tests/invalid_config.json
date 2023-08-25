@@ -1,4 +1,5 @@
 {
+  "token": "abc",
   "datasetId": "non_existent_dataset_id",
-  "clean": false
+  "start_date": "2099-08-25T00:00:59.244Z"
 }
