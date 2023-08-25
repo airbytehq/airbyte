@@ -101,7 +101,7 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           include: followers
-          confidentiality: all
+          confidentiality: non-confidential
         path: opportunities
       record_selector:
         $ref: "#/definitions/selector"
