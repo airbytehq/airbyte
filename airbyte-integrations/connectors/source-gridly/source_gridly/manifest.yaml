@@ -28,7 +28,7 @@ definitions:
         field_name: "limit"
       pagination_strategy:
         type: "OffsetIncrement"
-        page_size: 5
+        page_size: 100
       page_token_option:
         type: "RequestOption"
         field_name: "offset"
