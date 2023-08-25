@@ -2,26 +2,26 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mongodb.internal.cdc;
+package io.airbyte.integrations.debezium.internals.mongodb;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager.NAME_KEY;
 import static io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager.TOPIC_PREFIX_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.COLLECTION_INCLUDE_LIST_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_AUTHSOURCE_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_MODE_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_MODE_VALUE;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_STRING_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_PASSWORD_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_SSL_ENABLED_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_SSL_ENABLED_VALUE;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbDebeziumPropertiesManager.MONGODB_USER_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.COLLECTION_INCLUDE_LIST_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_AUTHSOURCE_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_MODE_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_MODE_VALUE;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_CONNECTION_STRING_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_PASSWORD_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_SSL_ENABLED_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_SSL_ENABLED_VALUE;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_USER_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
@@ -60,7 +60,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     when(schemaHistoryManager.getPath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
-    final Properties cdcProperties = MongoDbCdcProperties.getDebeziumProperties();
+    final Properties cdcProperties = new Properties();
+    cdcProperties.put("test", "value");
 
     final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
         cdcProperties,
@@ -95,7 +96,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     when(schemaHistoryManager.getPath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
-    final Properties cdcProperties = MongoDbCdcProperties.getDebeziumProperties();
+    final Properties cdcProperties = new Properties();
+    cdcProperties.put("test", "value");
 
     final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
         cdcProperties,

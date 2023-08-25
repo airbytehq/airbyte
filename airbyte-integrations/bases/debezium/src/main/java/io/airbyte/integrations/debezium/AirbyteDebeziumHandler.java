@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,7 @@ public class AirbyteDebeziumHandler<T> {
                                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                                     final Properties snapshotProperties,
                                                                     final CdcStateHandler cdcStateHandler,
+                                                                    final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
                                                                     final Instant emittedAt) {
 
     LOGGER.info("Running snapshot for " + catalogContainingStreamsToSnapshot.getStreams().size() + " new tables");
@@ -70,7 +72,8 @@ public class AirbyteDebeziumHandler<T> {
         config,
         catalogContainingStreamsToSnapshot,
         offsetManager,
-        schemaHistoryManager(new EmptySavedInfo()));
+        schemaHistoryManager(new EmptySavedInfo()),
+        debeziumConnectorType);
     tableSnapshotPublisher.start(queue);
 
     final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
@@ -93,6 +96,7 @@ public class AirbyteDebeziumHandler<T> {
                                                                        final CdcStateHandler cdcStateHandler,
                                                                        final CdcMetadataInjector cdcMetadataInjector,
                                                                        final Properties connectorProperties,
+                                                                       final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
                                                                        final Instant emittedAt,
                                                                        final boolean addDbNameToState) {
     LOGGER.info("Using CDC: {}", true);
@@ -101,7 +105,7 @@ public class AirbyteDebeziumHandler<T> {
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
-        schemaHistoryManager);
+        schemaHistoryManager, debeziumConnectorType);
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.
