@@ -13,6 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.HashMap;
@@ -60,20 +61,20 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
   }
 
   @Override
-  public JsonNode formatRecord(PartialAirbyteRecordMessage recordMessage) {
+  public JsonNode formatRecord(PartialAirbyteMessage message) {
     if (TypingAndDedupingFlag.isDestinationV2()) {
       // Map.of has a @NonNull requirement, so creating a new Hash map
       final HashMap<String, Object> destinationV2record = new HashMap<>();
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(message.getRecord()));
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, message.getSerialized());
       return Jsons.jsonNode(destinationV2record);
     } else {
       return Jsons.jsonNode(Map.of(
               JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-              JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(recordMessage),
-              JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage)));
+              JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(message.getRecord()),
+              JavaBaseConstants.COLUMN_NAME_DATA, message.getSerialized()));
     }
   }
 
@@ -96,10 +97,10 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
     return Jsons.serialize(formattedData);
   }
 
-  protected Object getData(final PartialAirbyteRecordMessage recordMessage) {
+  /*protected Object getData(final PartialAirbyteRecordMessage recordMessage) {
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     return Jsons.serialize(formattedData);
-  }
+  }*/
 
   @Override
   public Schema getBigQuerySchema(final JsonNode jsonSchema) {

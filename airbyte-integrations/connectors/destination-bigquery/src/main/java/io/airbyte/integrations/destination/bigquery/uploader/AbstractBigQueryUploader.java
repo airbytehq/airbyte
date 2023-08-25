@@ -88,7 +88,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   public void upload(final PartialAirbyteMessage airbyteMessage) {
     try {
-      writer.write(recordFormatter.formatRecord(airbyteMessage.getRecord()));
+      writer.write(recordFormatter.formatRecord(airbyteMessage));
     } catch (final IOException | RuntimeException e) {
       LOGGER.error(airbyteMessage.toString());
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
