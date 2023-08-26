@@ -2,7 +2,7 @@
 
 set -e
 
-# GCS resources for the following tests are located in the dataline-integration-testing GCP project.
+# GCS resources for the following tests are located in the ab-connector-integration-test GCP project.
 # GCS testing creds can be found in the "google cloud storage ( gcs ) test creds" secret in the `Shared-integration-tests`
 # folder in Lastpass.
 
