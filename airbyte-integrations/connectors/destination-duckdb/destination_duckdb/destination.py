@@ -67,7 +67,6 @@ class DestinationDuckdb(Destination):
         if api_key:
             os.environ["motherduck_token"] = api_key
 
-        logger.info(f"Opening DuckDB database at {path}")
         con = duckdb.connect(database=path, read_only=False)
 
         # create the tables if needed
