@@ -160,6 +160,7 @@ class DestinationDuckdb(Destination):
             api_key = config.get("api_key")
 
             if path.startswith("/local"):
+                logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
             
             if "api_key" in config:
