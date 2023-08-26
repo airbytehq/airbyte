@@ -93,7 +93,8 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Troubleshooting tips
 
-Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+* If you faced with `access` errors while using the `OAuth2.0`, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the Client's store first, once the access is granted, you should be able to proceed with `OAuth2.0` authentication method.
+* Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 ## Supported Streams
 
@@ -173,7 +174,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| 0.7.0   | 2023-08-11 | [29361](https://github.com/airbytehq/airbyte/pull/29361) | Migrate to the `2023-07` Shopify API Version  |
+| 1.0.0   | 2023-08-11 | [29361](https://github.com/airbytehq/airbyte/pull/29361) | Migrate to the `2023-07` Shopify API Version  |
 | 0.6.2   | 2023-08-09 | [29302](https://github.com/airbytehq/airbyte/pull/29302) | Handle the `Internal Server Error` when entity could be fetched                 |
 | 0.6.1   | 2023-08-08 | [28291](https://github.com/airbytehq/airbyte/pull/28291) | Allow `shop` field to accept `*.myshopify.com` shop names, updated `OAuth Spec`                  |
 | 0.6.0   | 2023-08-02 | [28770](https://github.com/airbytehq/airbyte/pull/28770) | Added `Disputes` stream  |

@@ -1,6 +1,7 @@
 ## Prerequisites
 
 * An Active [Shopify store](https://www.shopify.com)
+* Granted permissions to [Access Client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners and mandatory for partners)
 
 ::: note
 

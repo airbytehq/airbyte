@@ -22,26 +22,6 @@
         "order": 2,
         "oneOf": [
           {
-            "title": "API Password",
-            "description": "API Password Auth",
-            "type": "object",
-            "required": ["auth_method", "api_password"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "api_password",
-                "order": 0
-              },
-              "api_password": {
-                "type": "string",
-                "title": "API Password",
-                "description": "The API Password for your private application in the `Shopify` store.",
-                "airbyte_secret": true,
-                "order": 1
-              }
-            }
-          },
-          {
             "type": "object",
             "title": "OAuth2.0",
             "description": "OAuth2.0",
@@ -72,6 +52,26 @@
                 "description": "The Access Token for making authenticated requests.",
                 "airbyte_secret": true,
                 "order": 3
+              }
+            }
+          },
+          {
+            "title": "API Password",
+            "description": "API Password Auth",
+            "type": "object",
+            "required": ["auth_method", "api_password"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "api_password",
+                "order": 0
+              },
+              "api_password": {
+                "type": "string",
+                "title": "API Password",
+                "description": "The API Password for your private application in the `Shopify` store.",
+                "airbyte_secret": true,
+                "order": 1
               }
             }
           }

@@ -4,6 +4,10 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_shopify/spec.json"
+        backward_compatibility_tests_config:
+          # re-order the authentication options,
+          # to have the `OAuth2.0` go first.
+          disable_for_version: "0.6.2"
   connection:
     tests:
       - config_path: "secrets/config.json"
