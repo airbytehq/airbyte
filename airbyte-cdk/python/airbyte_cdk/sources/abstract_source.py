@@ -4,7 +4,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -276,7 +276,7 @@ class AbstractSource(Source, ABC):
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
 
-    def _emit_queued_messages(self):
+    def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
             yield from self.message_repository.consume_queue()
         return
@@ -308,7 +308,7 @@ class AbstractSource(Source, ABC):
         return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @staticmethod
-    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream):
+    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream) -> None:
         """
         Necessary because we use different loggers at the source and stream levels. We must
         apply the source's log level to each stream's logger.
@@ -316,7 +316,7 @@ class AbstractSource(Source, ABC):
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
 
-    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream):
+    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
