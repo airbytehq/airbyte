@@ -59,13 +59,16 @@ class DestinationDuckdb(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
-        path = config.get("destination_path")
-        api_key = config.get("api_key")
+        path = str(config.get("destination_path"))
         path = self._get_destination_path(path)
-        # check if file exists
+
+        # Get and register auth token if applicable
+        api_key = str(config.get("api_key"))
+        if api_key:
+            os.environ["motherduck_token"] = api_key
 
         logger.info(f"Opening DuckDB database at {path}")
-        con = duckdb.connect(database=path, read_only=False, api_key=api_key)
+        con = duckdb.connect(database=path, read_only=False)
 
         # create the tables if needed
         # con.execute("BEGIN TRANSACTION")
@@ -161,8 +164,11 @@ class DestinationDuckdb(Destination):
 
             if path.startswith("/local"):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
+            
+            if "api_key" in config:
+                os.environ["api_key"] = config["api_key"]
 
-            con = duckdb.connect(database=path, read_only=False, api_key=api_key)
+            con = duckdb.connect(database=path, read_only=False)
             con.execute("SELECT 1;")
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
