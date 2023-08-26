@@ -40,7 +40,7 @@ def disable_destination_modification(monkeypatch, request):
 def local_file_config() -> Dict[str, str]:
     # create a file "myfile" in "mydir" in temp directory
     tmp_dir = tempfile.TemporaryDirectory()
-    test = os.path.join(str(tmp_dir), "test.duckdb")
+    test = os.path.join(str(tmp_dir.name), "test.duckdb")
 
     # f1.write_text("text to myfile")
     yield {"destination_path": test}
