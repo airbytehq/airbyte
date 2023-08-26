@@ -23,14 +23,13 @@
 				"charliermarsh.ruff"
 			],
             "settings": {
-                // Disable nagging to recommend extensions not listed here.
                 "extensions.ignoreRecommendations": true,
                 "python.defaultInterpreterPath": ".venv/bin/python",
                 "python.interpreter.infoVisibility": "always",
                 "git.openRepositoryInParentFolders": "always",
                 "python.terminal.activateEnvironment": true,
                 "python.testing.cwd": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
-                "python.testing.pytestArgs": ["--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb"]
+                "python.testing.pytestArgs": ["--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb", "."]
             }
         }
     },
