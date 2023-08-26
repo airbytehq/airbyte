@@ -89,7 +89,7 @@ class DestinationDuckdb(Destination):
             query = f"""
             CREATE TABLE IF NOT EXISTS {table_name} (
                 _airbyte_ab_id TEXT PRIMARY KEY,
-                _airbyte_emitted_at JSON,
+                _airbyte_emitted_at DATETIME,
                 _airbyte_data JSON
             )
             """
@@ -106,13 +106,11 @@ class DestinationDuckdb(Destination):
 
                     logger.info(f"flushing buffer for state: {message}")
                     query = """
-                    INSERT INTO {table_name}
+                    INSERT INTO {table_name} (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
                     VALUES (?,?,?)
                     """.format(
                         table_name=f"_airbyte_raw_{stream_name}"
                     )
-                    logger.info(f"query: {query}")
-
                     con.executemany(query, buffer[stream_name])
 
                 con.commit()
