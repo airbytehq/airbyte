@@ -12,6 +12,10 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: []
+  boards_selector:
+    $ref: "#/definitions/selector"
+    record_filter:
+      condition: "{{ record.id in config.board_ids or not config.board_ids }}"
   requester:
     type: HttpRequester
     url_base: https://api.trello.com/1/
@@ -66,7 +70,7 @@ definitions:
         request_parameters:
           since: '{{ config[''start_date''] }}'
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "#/definitions/boards_selector"
   organizations_stream:
     type: DeclarativeStream
     name: organizations
