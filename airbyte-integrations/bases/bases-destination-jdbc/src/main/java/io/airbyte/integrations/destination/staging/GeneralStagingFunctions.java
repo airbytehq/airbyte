@@ -80,15 +80,6 @@ public class GeneralStagingFunctions {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
-
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
-      if (!typerDeduperValve.containsKey(streamId)) {
-        typerDeduperValve.addStream(streamId);
-      }
-      if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
-      }
     } catch (final Exception e) {
       stagingOperations.cleanUpStage(database, stageName, stagedFiles);
       log.info("Cleaning stage path {}", stagingPath);
