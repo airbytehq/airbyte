@@ -42,17 +42,18 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       page_size: 500
-      cursor_value: '{{ last_records[-1][''id''] }}'
+      cursor_value: '{{ (last_records|last)[''id''] }}'
+      stop_condition: '{{ not last_records }}'
   board_id_partition_router:
-    - type: SubstreamPartitionRouter
+    - type: CustomPartitionRouter
+      class_name:
+        source_trello.components.OrdersIdPartitionRouter
       parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: id
           partition_field: id
           stream:
             $ref: "#/definitions/boards_stream"
-    - type: SubstreamPartitionRouter
-      parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: idBoards
           partition_field: id
@@ -103,8 +104,8 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date
       cursor_datetime_formats:
-        - '%Y-%m-%d %H:%M:%S'
-      datetime_format: '%Y-%m-%d %H:%M:%S'
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
       start_datetime:
         type: MinMaxDatetime
         datetime: '{{ config[''start_date''] }}'
