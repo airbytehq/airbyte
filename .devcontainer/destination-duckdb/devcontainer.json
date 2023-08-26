@@ -9,11 +9,7 @@
     // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-        "ghcr.io/devcontainers-contrib/features/poetry:2": {},
-        "ghcr.io/devcontainers/features/python:1": {
-            "version": "3.9",
-            "installTools": true
-        }
+        "ghcr.io/devcontainers-contrib/features/poetry:2": {}
     },
 
     "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
@@ -43,7 +39,7 @@
     // 2. Map the devcontainer.json file to it.
     // 3. Mark the root directory as 'safe' for git.
     // 4. Install the Python/Poetry dependencies.
-    "postCreateCommand": "mkdir -p ./.symlinks && ln -s /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && git config --add safe.directory /workspaces/airbyte && poetry install"
+    "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && git config --add safe.directory /workspaces/airbyte && poetry install"
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
