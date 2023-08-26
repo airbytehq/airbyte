@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.concurrent.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
@@ -89,7 +90,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -224,7 +225,7 @@ class AbstractSource(Source, ABC):
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
         if stream_state and "state" in dir(stream_instance):
-            stream_instance.state = stream_state
+            stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
 
         slices = stream_instance.stream_slices(
@@ -281,7 +282,7 @@ class AbstractSource(Source, ABC):
             yield from self.message_repository.consume_queue()
         return
 
-    def get_full_refresh_stream_reader(self):
+    def get_full_refresh_stream_reader(self) -> FullRefreshStreamReader:
         return SyncrhonousFullRefreshReader()
 
     def _read_full_refresh(
@@ -296,12 +297,12 @@ class AbstractSource(Source, ABC):
         ):
             yield self._get_message(data_or_message, stream_instance)
 
-    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
+    def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
         # instance's deprecated get_updated_state() method.
         try:
-            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)  # type: ignore # we know the field might not exist...
 
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
