@@ -1,2 +1,2 @@
 # Ignore symlinks created within the dev container
-*-symlink
+.symlinks
