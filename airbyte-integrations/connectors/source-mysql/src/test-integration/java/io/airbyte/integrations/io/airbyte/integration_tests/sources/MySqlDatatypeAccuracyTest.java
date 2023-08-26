@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
@@ -39,7 +40,11 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
   @Override
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
+    container.withDatabaseName(container.getDatabaseName() + random.nextInt(10000));
     container.start();
+
+    LOGGER.info("with database name {}", container.getDatabaseName());
+
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")
         .build());

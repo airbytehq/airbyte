@@ -31,6 +31,7 @@ public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSour
   @Override
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
+    container.withDatabaseName(container.getDatabaseName() + random.nextInt(10000));
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
