@@ -164,7 +164,7 @@ class DestinationDuckdb(Destination):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
             
             if "api_key" in config:
-                os.environ["api_key"] = config["api_key"]
+                os.environ["motherduck_token"] = config["api_key"]
 
             con = duckdb.connect(database=path, read_only=False)
             con.execute("SELECT 1;")
