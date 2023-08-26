@@ -251,10 +251,12 @@ class TestIncremental(BaseTest):
         records_by_stream_2 = group_records_by_stream(records_2)
 
         assert records_2, "Second Read should produce at least one record"
+        assert records_by_stream_1.keys() == records_by_stream_2.keys(), "Second Read should produce records for the same streams as the first read"
 
         # for each stream assert some properties
         for stream_name, stream_records_1 in records_by_stream_1.items():
             stream_records_2 = records_by_stream_2[stream_name]
+
             stream_config = stream_mapping[stream_name]
             example_record = stream_records_1[0]
 
