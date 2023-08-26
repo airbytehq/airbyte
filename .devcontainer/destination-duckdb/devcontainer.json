@@ -31,6 +31,9 @@
             }
         }
     },
+    "containerEnv": {
+        "POETRY_VIRTUALENVS_IN_PROJECT": "true"
+    },
 
     // Use 'postCreateCommand' to run commands after the container is created.
     // Post-create tasks:
