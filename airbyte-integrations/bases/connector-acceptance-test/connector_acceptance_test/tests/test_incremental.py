@@ -222,9 +222,9 @@ class TestIncremental(BaseTest):
         threshold_days = getattr(inputs, "threshold_days") or 0
         stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
 
-        output = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
-        records_1 = filter_output(output, type_=Type.RECORD)
-        states_1 = filter_output(output, type_=Type.STATE)
+        output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
+        records_1 = filter_output(output_1, type_=Type.RECORD)
+        states_1 = filter_output(output_1, type_=Type.STATE)
         records_by_stream_1 = group_records_by_stream(records_1)
 
         assert states_1, "First Read should produce at least one state"
@@ -246,8 +246,8 @@ class TestIncremental(BaseTest):
         # READ #2
         # group records by their record.stream value
 
-        output = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
-        records_2 = filter_output(output, type_=Type.RECORD)
+        output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
+        records_2 = filter_output(output_2, type_=Type.RECORD)
         records_by_stream_2 = group_records_by_stream(records_2)
 
         assert records_2, "Second Read should produce at least one record"
@@ -260,7 +260,7 @@ class TestIncremental(BaseTest):
 
             # assert that new records were produced
             diff = naive_diff_records(stream_records_1, stream_records_2)
-            assert diff, f"Records for stream {stream_name} should have changed between reads given state: {state_input}"
+            assert diff, f"Records for stream {stream_name} should change between reads but did not.\n\n stream_records_1: {stream_records_1} \n\n state: {state_input} \n\n stream_records_2: {stream_records_2} \n\n diff: {diff}"
 
             if is_cursor_testable(stream_config, example_record):
                 cursor_field_parser = create_cursor_field_parser(stream_config)
