@@ -19,7 +19,7 @@ definitions:
     request_headers: {}
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: 'OAuth oauth_consumer_key="{{ config[''key''] }}", oauth_token="{{ config[''token''] }}"'
       inject_into:
         type: RequestOption
         field_name: Authorization
