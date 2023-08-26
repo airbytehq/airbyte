@@ -38,7 +38,12 @@
     },
 
     // Use 'postCreateCommand' to run commands after the container is created.
-    "postCreateCommand": "ln -s /workspaces/airbyte/.devcontainer/destination-duckdb ./.devcontainer-symlink && poetry install"
+    // Post-create tasks:
+    // 1. Create a symlink directory.
+    // 2. Map the devcontainer.json file to it.
+    // 3. Mark the root directory as 'safe' for git.
+    // 4. Install the Python/Poetry dependencies.
+    "postCreateCommand": "mkdir -p ./.symlinks && ln -s /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && git config --add safe.directory /workspaces/airbyte && poetry install"
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
