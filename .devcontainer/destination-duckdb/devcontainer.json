@@ -8,7 +8,6 @@
 
     // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
         "ghcr.io/devcontainers-contrib/features/poetry:2": {}
     },
 
