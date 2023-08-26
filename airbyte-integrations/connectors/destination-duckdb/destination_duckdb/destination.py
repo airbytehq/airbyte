@@ -157,7 +157,7 @@ class DestinationDuckdb(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            param_path = config.get("destination_path")
+            path = config.get("destination_path")
             path = self._get_destination_path(path)
 
             api_key = config.get("api_key")
