@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from typing import Any
+
 from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 from airbyte_cdk.sources.streams.core import StreamData
 
@@ -10,7 +12,7 @@ class Record:
         self.stream_data = stream_data
         self.stream_partition = stream_partition
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Record):
             return False
         return self.stream_partition == other.stream_partition and self.stream_data == other.stream_data

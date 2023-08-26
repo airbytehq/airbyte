@@ -3,27 +3,27 @@
 #
 import threading
 from queue import Empty, Queue
-from typing import List
+from typing import List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.concurrent.record import Record
 from airbyte_cdk.sources.concurrent.stream_partition import StreamPartition
 
-_SENTINEL = ("SENTINEL", "SENTINEL")
+_SENTINEL = None
 
 
 class QueueConsumer:
     def __init__(self, name: str):
         self._name = name
 
-    def consume_from_queue(self, queue: Queue[StreamPartition]) -> List[Record]:
+    def consume_from_queue(self, queue: Queue[Optional[StreamPartition]]) -> List[Record]:
         current_thread = threading.current_thread().ident
         print(f"consume from queue {self._name} from {current_thread}")
         records_and_streams: List[Record] = []
         while True:
             try:
                 stream_partition = queue.get(timeout=2)
-                if stream_partition == _SENTINEL:
+                if stream_partition is None:
                     print(f"found sentinel for {self._name} from {current_thread}")
                     return records_and_streams
                 else:

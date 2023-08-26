@@ -11,7 +11,7 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class PartitionGenerator:
-    def __init__(self, queue: Queue[StreamPartition], name: str):
+    def __init__(self, queue: Queue[Optional[StreamPartition]], name: str):
         self._queue = queue
         self._name = name
 
