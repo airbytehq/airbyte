@@ -51,7 +51,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
-  base_paginator:  # For incidents, incident teams, users, timeseries
+  base_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
@@ -61,7 +61,7 @@ definitions:
       field_name: "page_token"
       inject_into: "request_parameter"
 
-  base_after_paginator:  # For Audit_Logs and Logs
+  base_after_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
@@ -131,9 +131,9 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_v2"
       paginator:
-        type: NoPagination
-    # incremental_sync:
-    #   $ref: "#/definitions/incremental_sync_base" 
+        $ref: "#/definitions/base_after_paginator"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base" 
 
   logs_stream:
     $ref: "#/definitions/base_stream"
@@ -147,11 +147,11 @@ definitions:
       requester:
         $ref: "#/definitions/requester_v2"
         request_parameters:
-          filter[query]: "service:payment"
+          filter[query]: "{{ config['query'] }}"
       paginator:
-        type: NoPagination
-    # incremental_sync:
-    #   $ref: "#/definitions/incremental_sync_base" 
+        $ref: "#/definitions/base_after_paginator"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base" 
 
   metrics_stream:
     $ref: "#/definitions/base_stream"
@@ -173,7 +173,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_v2"
       paginator:
-        type: NoPagination
+        $ref: "#/definitions/base_paginator"
 
   incident_teams_stream:
     $ref: "#/definitions/base_stream"
@@ -184,7 +184,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_v2"
       paginator:
-        type: NoPagination
+        $ref: "#/definitions/base_paginator"
 
   users_stream:
     $ref: "#/definitions/base_stream"
@@ -195,7 +195,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_v2"
       paginator:
-        type: NoPagination
+        $ref: "#/definitions/base_paginator"
 
 streams:
   - "#/definitions/dashboards_stream"
