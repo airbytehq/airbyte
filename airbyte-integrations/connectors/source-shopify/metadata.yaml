@@ -1,7 +1,4 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
