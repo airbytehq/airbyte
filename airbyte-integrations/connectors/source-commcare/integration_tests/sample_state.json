@@ -2,10 +2,8 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "profileUpdatedAt": "2121-04-14T17:00:41+00:00"
-      },
-      "stream_descriptor": { "name": "form" }
+      "stream_state": { "date_modified": "2023-04-12T18:13:36Z" },
+      "stream_descriptor": { "name": "case" }
     }
   }
 ]
