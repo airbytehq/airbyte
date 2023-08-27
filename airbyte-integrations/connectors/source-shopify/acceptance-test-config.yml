@@ -7,6 +7,7 @@ acceptance_tests:
         backward_compatibility_tests_config:
           # re-order the authentication options,
           # to have the `OAuth2.0` go first.
+          # made `start_date` non-required
           disable_for_version: "0.6.2"
   connection:
     tests:
