@@ -232,69 +232,23 @@ definitions:
         request_parameters:
           group_by: '{{ config[''subscription_usage_grouping_key''] }}'
           granularity: day
-          billable_metric_id: '{{ stream_partition.metric_id }}'
+          billable_metric_id: '{{ stream_partition.billable_metric_id }}'
       record_selector:
         $ref: "#/definitions/selector"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: subscription_id
-              stream:
-                $ref: "#/definitions/subscriptions_stream"
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: metric_ids
-              partition_field: metric_id
-              stream:
-                $ref: "#/definitions/plans_stream"
+        - type: CustomPartitionRouter
+          class_name: source_orb.components.SubscriptionUsagePartitionRouter
+          plans_stream:
+            $ref: "#/definitions/plans_stream"
+          subscriptions_stream:
+            $ref: "#/definitions/subscriptions_stream"
     transformations:
       - type: RemoveFields
         field_pointers:
           - - usage
-      - type: AddFields
-        fields:
-          - path:
-              - quantity
-            value: '{{ record[''usage''][''quantity''] }}'
-      - type: AddFields
-        fields:
-          - path:
-              - timeframe_start
-            value: '{{ record[''usage''][''timeframe_start''] }}'
-      - type: AddFields
-        fields:
-          - path:
-              - timeframe_end
-            value: '{{ record[''usage''][''timeframe_end''] }}'
-      - type: AddFields
-        fields:
-          - path:
-              - subscription_id
-            value: '{{ stream_partition[''subscription_id''] }}'
-      - type: RemoveFields
-        field_pointers:
-          - - billable_metric
-      - type: AddFields
-        fields:
-          - path:
-              - billable_metric_name
-            value: '{{ record[''billable_metric''][''name''] }}'
-      - type: AddFields
-        fields:
-          - path:
-              - billable_metric_id
-            value: '{{ record[''billable_metric''][''id''] }}'
-      - type: RemoveFields
-        field_pointers:
-          - - metric_group
-      - type: AddFields
-        fields:
-          - path:
-              - '{{ record[''metric_group''][''property_key''] }}'
-            value: '{{ record[''metric_group''][''property_value''] }}'
+      - type: CustomTransformation
+        class_name: source_orb.components.SubscriptionUsageTransformation
+        subscription_id: '{{ stream_partition.subscription_id }}'
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timeframe_start
