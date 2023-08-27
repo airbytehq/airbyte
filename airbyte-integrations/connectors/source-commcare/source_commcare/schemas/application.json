@@ -1,17 +1,113 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "title": "Application Schema",
   "additionalProperties": true,
+  "type": ["null", "object"],
   "properties": {
     "id": {
+      "type": ["null", "string"]
+    },
+    "build_on": {
+      "type": ["null", "string"]
+    },
+    "build_comment": {
+      "type": ["null", "string"]
+    },
+    "is_released": {
+      "type": ["null", "boolean"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "built_from_app_id": {
       "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]
     },
-    "signup_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "case_types": {
+      "type": ["null", "object"],
+      "properties": {
+        "type_of_case_from_app_builder": {
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "case_type": {
+            "type": ["null", "string"]
+          },
+          "forms": {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "en": {
+                      "type": ["null", "string"]
+                    },
+                    "es": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "label": {
+                        "type": ["null", "string"]
+                      },
+                      "repeat": {
+                        "type": ["null", "string"]
+                      },
+                      "tag": {
+                        "type": ["null", "string"]
+                      },
+                      "value": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "versions": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "build_on": {
+            "type": ["null", "string"]
+          },
+          "build_comment": {
+            "type": ["null", "string"]
+          },
+          "is_released": {
+            "type": ["null", "boolean"]
+          },
+          "version": {
+            "type": ["null", "number"]
+          }
+        }
+      }
     }
   }
 }

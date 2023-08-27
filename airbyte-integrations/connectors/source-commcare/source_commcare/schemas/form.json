@@ -1,20 +1,241 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "title": "Forms Schema",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
+    "app_id": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "attachments": {
+      "type": ["null", "object"],
+      "properties": {
+        "form.xml": {
+          "type": ["null", "object"],
+          "properties": {
+            "content_type": {
+              "type": ["null", "string"]
+            },
+            "length": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      }
+    },
+    "build_id": {
+      "type": ["null", "string"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "form": {
+      "type": ["null", "object"],
+      "properties": {
+        "#type": {
+          "type": ["null", "string"]
+        },
+        "@name": {
+          "type": ["null", "string"]
+        },
+        "@uiVersion": {
+          "type": ["null", "string"]
+        },
+        "@version": {
+          "type": ["null", "string"]
+        },
+        "@xmlns": {
+          "type": ["null", "string"]
+        },
+        "case": {
+          "type": ["null", "object"],
+          "properties": {
+            "@case_id": {
+              "type": ["null", "string"]
+            },
+            "@date_modified": {
+              "type": ["null", "string"]
+            },
+            "@user_id": {
+              "type": ["null", "string"]
+            },
+            "@xmlns": {
+              "type": ["null", "string"]
+            },
+            "update": {
+              "type": ["null", "object"],
+              "properties": {
+                "data_node": {
+                  "type": ["null", "string"]
+                },
+                "dateval": {
+                  "type": ["null", "string"]
+                },
+                "geodata": {
+                  "type": ["null", "string"]
+                },
+                "intval": {
+                  "type": ["null", "string"]
+                },
+                "multiselect": {
+                  "type": ["null", "string"]
+                },
+                "singleselect": {
+                  "type": ["null", "string"]
+                },
+                "text": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "data_node": {
+          "type": ["null", "string"]
+        },
+        "geodata": {
+          "type": ["null", "string"]
+        },
+        "meta": {
+          "type": ["null", "object"],
+          "properties": {
+            "@xmlns": {
+              "type": ["null", "string"]
+            },
+            "appVersion": {
+              "type": ["null", "string"]
+            },
+            "app_build_version": {
+              "type": ["null", "number"]
+            },
+            "commcare_version": {
+              "type": ["null", "string"]
+            },
+            "deviceID": {
+              "type": ["null", "string"]
+            },
+            "geo_point": {
+              "type": ["null", "string"]
+            },
+            "instanceID": {
+              "type": ["null", "string"]
+            },
+            "timeEnd": {
+              "type": ["null", "string"]
+            },
+            "timeStart": {
+              "type": ["null", "string"]
+            },
+            "userID": {
+              "type": ["null", "string"]
+            },
+            "username": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "old_data_node": {
+          "type": ["null", "string"]
+        },
+        "question1": {
+          "type": ["null", "string"]
+        },
+        "question11": {
+          "type": ["null", "string"]
+        },
+        "question12": {
+          "type": ["null", "string"]
+        },
+        "question14": {
+          "type": ["null", "string"]
+        },
+        "question3": {
+          "type": ["null", "string"]
+        },
+        "question7": {
+          "type": ["null", "string"]
+        },
+        "text": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "initial_processing_complete": {
+      "type": ["null", "boolean"]
+    },
+    "is_phone_submission": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
+    "metadata": {
+      "type": ["null", "object"],
+      "properties": {
+        "appVersion": {
+          "type": ["null", "string"]
+        },
+        "app_build_version": {
+          "type": ["null", "number"]
+        },
+        "commcare_version": {
+          "type": ["null", "string"]
+        },
+        "deprecatedID": {
+          "type": ["null", "string"]
+        },
+        "deviceID": {
+          "type": ["null", "string"]
+        },
+        "doc_type": {
+          "type": ["null", "string"]
+        },
+        "geo_point": {
+          "type": ["null", "string"]
+        },
+        "instanceID": {
+          "type": ["null", "string"]
+        },
+        "location": {
+          "type": ["null", "string"]
+        },
+        "timeEnd": {
+          "type": ["null", "string"]
+        },
+        "timeStart": {
+          "type": ["null", "string"]
+        },
+        "userID": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        }
+      }
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "problem": {
+      "type": ["null", "string"]
+    },
+    "received_on": {
+      "type": ["null", "string"]
+    },
+    "resource_uri": {
+      "type": ["null", "string"]
+    },
+    "server_modified_on": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "uiversion": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
     }
   }
 }

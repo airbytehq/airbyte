@@ -1,20 +1,78 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "title": "Case Schema",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "id": {
+    "case_id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "closed": {
+      "type": ["null", "boolean"]
+    },
+    "date_closed": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
+    "date_modified": {
+      "type": ["null", "string"]
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "indices": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "properties": {
+      "type": ["null", "object"],
+      "properties": {
+        "case_name": {
+          "type": ["null", "string"]
+        },
+        "case_type": {
+          "type": ["null", "string"]
+        },
+        "date_opened": {
+          "type": ["null", "string"]
+        },
+        "external_id": {
+          "type": ["null", "string"]
+        },
+        "gender": {
+          "type": ["null", "string"]
+        },
+        "languages": {
+          "type": ["null", "string"]
+        },
+        "owner_id": {
+          "type": ["null", "string"]
+        },
+        "role": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "server_date_modified": {
+      "type": ["null", "string"]
+    },
+    "server_date_opened": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    },
+    "xform_ids": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

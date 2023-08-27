@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_path: ["objects"]
   requester:
     type: HttpRequester
     url_base: "https://www.commcarehq.org/a/{{ config['project_space'] }}/api/v0.5/"
@@ -42,7 +42,7 @@ definitions:
   incremental_sync_base:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters.incremental_cursor }}"
-    datetime_format: "%s"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_granularity: "PT0.000001S"
     lookback_window: "P31D"
     start_datetime:
@@ -58,23 +58,21 @@ definitions:
     $parameters:
       name: "application"
       primary_key: "id"
-      path: "application/{{ config['app_id'] }}/"
-      incremental_cursor: "timestamp"
+      path: "application/{{ config['app_id'] }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
 
   case_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "case"
-      primary_key: "id"
+      primary_key: "case_id"
       path: "case"
-      incremental_cursor: "indexed_on"
+      incremental_cursor: "date_modified"
     retriever:
       $ref: "#/definitions/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
-        extractor:
-          type: DpathExtractor
-          field_path: ["objects"]
       paginator:
         $ref: "#/definitions/base_paginator"
     incremental_sync:
@@ -86,18 +84,20 @@ definitions:
       name: "form"
       primary_key: "id"
       path: "form"
-      incremental_cursor: "indexed_on"
+      incremental_cursor: "server_modified_on"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/base_paginator"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"  
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/application_stream"
+  - "#/definitions/case_stream"
+  - "#/definitions/form_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
+    - "application"
+    - "case"
+    - "form"
