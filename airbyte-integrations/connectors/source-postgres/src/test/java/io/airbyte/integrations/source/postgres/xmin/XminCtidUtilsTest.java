@@ -35,23 +35,23 @@ import org.junit.jupiter.api.Test;
 public class XminCtidUtilsTest {
 
   private static final ConfiguredAirbyteStream MODELS_STREAM = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-              "MODELS_STREAM_NAME",
-              "MODELS_SCHEMA",
-              Field.of("COL_ID", JsonSchemaType.INTEGER),
-              Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-              Field.of("COL_MODEL", JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))))
+      "MODELS_STREAM_NAME",
+      "MODELS_SCHEMA",
+      Field.of("COL_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MODEL", JsonSchemaType.STRING))
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))))
       .withSyncMode(SyncMode.INCREMENTAL);
 
   private static final ConfiguredAirbyteStream MODELS_STREAM_2 = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-              "MODELS_STREAM_NAME_2",
-              "MODELS_SCHEMA",
-              Field.of("COL_ID", JsonSchemaType.INTEGER),
-              Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-              Field.of("COL_MODEL", JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))))
+      "MODELS_STREAM_NAME_2",
+      "MODELS_SCHEMA",
+      Field.of("COL_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MODEL", JsonSchemaType.STRING))
+      .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+      .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))))
       .withSyncMode(SyncMode.INCREMENTAL);
 
   @Test
@@ -102,15 +102,16 @@ public class XminCtidUtilsTest {
   @Test
   public void fullRefreshStreamCategorisationTest() {
     final ConfiguredAirbyteStream MODELS_STREAM_3_FULL_REFRESH = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-                "MODELS_STREAM_NAME_3",
-                "MODELS_SCHEMA",
-                Field.of("COL_ID", JsonSchemaType.INTEGER),
-                Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-                Field.of("COL_MODEL", JsonSchemaType.STRING))
-            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
+        "MODELS_STREAM_NAME_3",
+        "MODELS_SCHEMA",
+        Field.of("COL_ID", JsonSchemaType.INTEGER),
+        Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+        Field.of("COL_MODEL", JsonSchemaType.STRING))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
 
-    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(MODELS_STREAM, MODELS_STREAM_2, MODELS_STREAM_3_FULL_REFRESH));
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        new ConfiguredAirbyteCatalog().withStreams(Arrays.asList(MODELS_STREAM, MODELS_STREAM_2, MODELS_STREAM_3_FULL_REFRESH));
     final XminStatus xminStatus = new XminStatus().withStateType(StateType.XMIN).withVersion(2L).withXminXidValue(9L).withXminRawValue(9L)
         .withNumWraparound(1L);
     final JsonNode xminStatusAsJson = Jsons.jsonNode(xminStatus);

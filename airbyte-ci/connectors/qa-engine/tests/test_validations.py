@@ -3,11 +3,11 @@
 #
 
 
+from unittest.mock import MagicMock, call
+
 import pandas as pd
 import pytest
-from unittest.mock import MagicMock, call
 import requests
-
 from qa_engine import enrichments, inputs, models, validations
 
 
