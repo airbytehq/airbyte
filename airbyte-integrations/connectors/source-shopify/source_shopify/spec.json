@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
     "type": "object",
     "required": ["shop"],
@@ -11,7 +11,7 @@
         "type": "string",
         "title": "Shopify Store",
         "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME' or 'NAME.myshopify.com'.",
-        "pattern": "^(?!https://)(?!http://).*",
+        "pattern": "^(?!https://)(?!https://).*",
         "examples": ["my-store", "my-store.myshopify.com"],
         "order": 1
       },
