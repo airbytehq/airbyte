@@ -29,7 +29,8 @@ class OrdersIdPartitionRouter(SubstreamPartitionRouter):
         - parent_record: mapping representing the parent record
         - parent_stream_name: string representing the parent stream name
         """
-        board_ids = set() # to track the board ids
+        yielded_board_ids = set() # to track the board ids
+        config_board_ids = set(self.config.get("board_ids", [])) # board ids specified in config
         for parent_stream_config in self.parent_stream_configs:
             parent_stream = parent_stream_config.stream
             parent_stream_name = parent_stream.name
@@ -53,25 +54,28 @@ class OrdersIdPartitionRouter(SubstreamPartitionRouter):
                     elif isinstance(parent_record, Record):
                         parent_record = parent_record.data
                     try:
-                        parent_field_value = dpath.util.get(parent_record, parent_field)
+                        board_id_value_or_list = dpath.util.get(parent_record, parent_field)
                     except KeyError:
                         pass
                     else:
                         empty_parent_slice = False
                         # iterate idBoards list for organizations stream
                         if parent_stream_name == 'organizations':
-                            stream_state_value_list = parent_field_value
-                            for stream_state_value in stream_state_value_list:
+                            for board_id in board_id_value_or_list:
                                 # skip seen board id
-                                if stream_state_value not in board_ids:
-                                    board_ids.add(stream_state_value)
-                                    yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                                if board_id not in yielded_board_ids:
+                                    # yield id only if specified in config or no ids are specified
+                                    if not config_board_ids or board_id in config_board_ids:
+                                        yielded_board_ids.add(board_id)
+                                        yield {stream_state_field: board_id, "parent_slice": parent_slice}
+                        # skip seen board id
                         else:
-                            stream_state_value = parent_field_value
-                            # skip seen board id
-                            if stream_state_value not in board_ids:
-                                board_ids.add(stream_state_value)
-                                yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                            board_id = board_id_value_or_list
+                            if board_id not in yielded_board_ids:
+                                # yield id only if specified in config or no ids are specified
+                                if not config_board_ids or board_id in config_board_ids:
+                                    yielded_board_ids.add(board_id)
+                                    yield {stream_state_field: board_id, "parent_slice": parent_slice}
                 # If the parent slice contains no records,
                 if empty_parent_slice:
                     yield from []
