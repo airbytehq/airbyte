@@ -177,9 +177,6 @@ definitions:
               stream:
                 $ref: "#/definitions/customers_stream"
     transformations:
-      - type: RemoveFields
-        field_pointers:
-          - - customer
       - type: AddFields
         fields:
           - path:
@@ -187,7 +184,7 @@ definitions:
             value: '{{ record[''customer''][''id''] }}'
       - type: RemoveFields
         field_pointers:
-          - - credit_block
+          - - customer
       - type: AddFields
         fields:
           - path:
@@ -205,13 +202,18 @@ definitions:
             value: '{{ record[''credit_block''][''per_unit_cost_basis''] }}'
       - type: RemoveFields
         field_pointers:
-          - - event_id
+          - - credit_block
       - type: AddFields
         fields:
           - path:
               - event
               - id
             value: '{{ record[''event_id''] }}'
+      - type: RemoveFields
+        field_pointers:
+          - - event_id
+      - type: CustomTransformation
+        class_name: source_orb.components.EventPropertiesTransformation
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
   subscription_usage_stream:
