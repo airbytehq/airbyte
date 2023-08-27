@@ -55,10 +55,10 @@ definitions:
     type: "DefaultPaginator"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ last_records['meta', 'next'] }}"
+      cursor_value: "{{ last_records['meta', 'pagination', 'next_offset'] }}"
     page_token_option:
       type: "RequestPath"
-      field_name: "page_token"
+      field_name: "page[offset]"
       inject_into: "request_parameter"
 
   base_after_paginator:
@@ -68,7 +68,7 @@ definitions:
       cursor_value: "{{ last_records['meta', 'page', 'after'] }}"
     page_token_option:
       type: "RequestPath"
-      field_name: "page"
+      field_name: "page[cursor]"
       inject_into: "request_parameter"
 
   incremental_sync_base:
@@ -81,8 +81,8 @@ definitions:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ config['end_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     step: "P1M"
 
   dashboards_stream:
