@@ -49,7 +49,6 @@ data:
       - metafield_product_images
       - metafield_draft_orders
       - metafield_locations
-  supportLevel: community
   tags:
     - language:python
   ab_internal:
