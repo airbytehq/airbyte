@@ -28,6 +28,13 @@ definitions:
         type: RequestOption
         field_name: Authorization
         inject_into: header
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 10
     request_body_json: {}
   paginator:
     type: DefaultPaginator
