@@ -41,34 +41,6 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
-  base_paginator:
-    type: "DefaultPaginator"
-    page_size_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "page_size"
-    pagination_strategy:
-      type: "PageIncrement"
-      page_size: 50
-    page_token_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "page"
-
-  incremental_sync_base:
-    type: DatetimeBasedCursor
-    cursor_field: "{{ parameters.incremental_cursor }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    cursor_granularity: "PT0.000001S"
-    lookback_window: "P31D"
-    start_datetime:
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
-    step: "P1M"
-
   users_stream:
     $ref: "#/definitions/base_stream"
     name: "users"
