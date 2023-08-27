@@ -13,7 +13,7 @@
     "properties": {
       "api_key": {
         "type": "string",
-        "description": "API key to use if authentication to a MotherDuck database.",
+        "description": "API key to use for authentication to a MotherDuck database.",
         "writeOnly": true
       },
       "destination_path": {
