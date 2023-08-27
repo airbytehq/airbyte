@@ -132,8 +132,6 @@ definitions:
       $ref: "#/definitions/retriever_v2"
       paginator:
         $ref: "#/definitions/base_after_paginator"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base" 
 
   logs_stream:
     $ref: "#/definitions/base_stream"
