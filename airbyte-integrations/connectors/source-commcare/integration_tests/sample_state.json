@@ -1,5 +1,11 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "profileUpdatedAt": "2121-04-14T17:00:41+00:00"
+      },
+      "stream_descriptor": { "name": "form" }
+    }
   }
-}
+]

@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "form",
+        "name": "application",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,7 +11,7 @@
     },
     {
       "stream": {
-        "name": "application",
+        "name": "form",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
