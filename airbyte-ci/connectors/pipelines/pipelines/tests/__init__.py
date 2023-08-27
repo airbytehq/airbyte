@@ -9,16 +9,11 @@ from typing import List
 import anyio
 import asyncer
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-
 from pipelines.bases import ConnectorReport, StepResult
 from pipelines.contexts import ConnectorContext
 from pipelines.pipelines.metadata import MetadataValidation
 from pipelines.tests import java_connectors, python_connectors
-from pipelines.tests.common import (
-    QaChecks,
-    VersionFollowsSemverCheck,
-    VersionIncrementCheck,
-)
+from pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 
 LANGUAGE_MAPPING = {
     "run_all_tests": {

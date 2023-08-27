@@ -139,7 +139,7 @@
       "type": ["null", "array"]
     },
     "workspace_info": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "additionalProperties": true
       }
