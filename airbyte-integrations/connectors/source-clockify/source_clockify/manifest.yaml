@@ -25,7 +25,7 @@ definitions:
       page_size_option:
         type: "RequestOption"
         inject_into: "request_parameter"
-        field_name: "page_size"
+        field_name: "page-size"
       pagination_strategy:
         type: "PageIncrement"
         page_size: 50
@@ -91,8 +91,6 @@ definitions:
       path: "workspaces/{{ config['workspace_id'] }}/user/{{ stream_partition.user_id }}/time-entries"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
       partition_router:
         $ref: "#/definitions/users_partition_router"
 
@@ -111,8 +109,6 @@ definitions:
       path: "workspaces/{{ config['workspace_id'] }}/projects/{{ stream_partition.project_id }}/tasks"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
       partition_router:
         $ref: "#/definitions/projects_partition_router"
 
