@@ -21,7 +21,18 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page_size"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 50
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
     requester:
       $ref: "#/definitions/requester"
 
@@ -32,13 +43,17 @@ definitions:
 
   base_paginator:
     type: "DefaultPaginator"
-    pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ last_records['meta', 'next'] }}"
-    page_token_option:
-      type: "RequestPath"
-      field_name: "page_token"
+    page_size_option:
+      type: "RequestOption"
       inject_into: "request_parameter"
+      field_name: "page_size"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 50
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page"
 
   incremental_sync_base:
     type: DatetimeBasedCursor
@@ -54,17 +69,97 @@ definitions:
       datetime_format: "%Y-%m-%d"
     step: "P1M"
 
-  customers_stream:
+  users_stream:
     $ref: "#/definitions/base_stream"
-    name: "customers"
+    name: "users"
     primary_key: "id"
     $parameters:
-      path: "/example"
+      path: "workspaces/{{ config['workspace_id'] }}/users"
+  
+  projects_stream:
+    $ref: "#/definitions/base_stream"
+    name: "projects"
+    primary_key: "id"
+    $parameters:
+      path: "workspaces/{{ config['workspace_id'] }}/projects"
+      
+  clients_stream:
+    $ref: "#/definitions/base_stream"
+    name: "clients"
+    primary_key: "id"
+    $parameters:
+      path: "workspaces/{{ config['workspace_id'] }}/clients"
+
+  tags_stream:
+    $ref: "#/definitions/base_stream"
+    name: "tags"
+    primary_key: "id"
+    $parameters:
+      path: "workspaces/{{ config['workspace_id'] }}/tags"
+
+  user_groups_stream:
+    $ref: "#/definitions/base_stream"
+    name: "user_groups"
+    primary_key: "id"
+    $parameters:
+      path: "workspaces/{{ config['workspace_id'] }}/user-groups"
+
+  users_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/users_stream"
+        parent_key: "id"
+        partition_field: "user_id"
+
+  time_entries_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "time_entries"
+      primary_key: "id"
+      path: "workspaces/{{ config['workspace_id'] }}/user/{{ stream_partition.user_id }}/time-entries"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      partition_router:
+        $ref: "#/definitions/users_partition_router"
+
+  projects_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/projects_stream"
+        parent_key: "id"
+        partition_field: "project_id"
+
+  tasks_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "tasks"
+      primary_key: "id"
+      path: "workspaces/{{ config['workspace_id'] }}/projects/{{ stream_partition.project_id }}/tasks"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      partition_router:
+        $ref: "#/definitions/projects_partition_router"
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/users_stream"
+  - "#/definitions/projects_stream"
+  - "#/definitions/clients_stream"
+  - "#/definitions/tags_stream"
+  - "#/definitions/user_groups_stream"
+  - "#/definitions/time_entries_stream"
+  - "#/definitions/tasks_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
+    - "users"
+    - "projects"
+    - "clients"
+    - "tags"
+    - "user_groups"
+    - "time_entries"
+    - "tasks"
