@@ -6,6 +6,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["objects"]
+
   requester:
     type: HttpRequester
     url_base: "https://www.commcarehq.org/a/{{ config['project_space'] }}/api/v0.5/"
@@ -84,7 +85,6 @@ definitions:
       name: "form"
       primary_key: "id"
       path: "form"
-      incremental_cursor: "server_modified_on"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
