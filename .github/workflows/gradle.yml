@@ -89,9 +89,70 @@ jobs:
   #      - run: |
   #          echo '${{ toJSON(needs) }}'
 
+  format:
+    needs: changes
+    runs-on: ubuntu-latest
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.any_change == 'true' || (always() && github.ref == 'refs/heads/master')
+    name: "Apply All Formatting Rules"
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}-format
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Format
+        uses: Wandalen/wretry.action@v1.0.42
+        with:
+          command: ./gradlew format --scan --info --stacktrace
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+      # This is helpful in the case that we change a previously committed generated file to be ignored by git.
+      - name: Remove any files that have been gitignored
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+
+      - name: Commit Formatting Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Commit - Formatting Changes
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
   ## BUILDS
   octavia-cli-build:
-    needs: changes
+    needs:
+      - changes
+      - format
     runs-on: ubuntu-latest
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
@@ -133,16 +194,6 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      - name: Format
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: SUB_BUILD=OCTAVIA_CLI ./gradlew format --scan --info --stacktrace
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Ensure no file change
-        run: ./tools/bin/check_for_file_changes
-
       - name: Build
         uses: Wandalen/wretry.action@v1.0.42
         with:
@@ -158,7 +209,9 @@ jobs:
           attempt_delay: 5000 # in ms
 
   python-cdk-build:
-    needs: changes
+    needs:
+      - changes
+      - format
     runs-on: ubuntu-latest
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.python_cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
@@ -203,20 +256,6 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      - name: Format
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Commit Formatting Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Automated Commit - Formatting Changes
-          commit_user_name: Octavia Squidington III
-          commit_user_email: octavia-squidington-iii@users.noreply.github.com
-
       - name: Build
         uses: Wandalen/wretry.action@v1.0.42
         with:
@@ -225,7 +264,9 @@ jobs:
           attempt_delay: 5000 # in ms
 
   java-cdk-build:
-    needs: changes
+    needs:
+      - changes
+      - format
     runs-on: ubuntu-latest
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: needs.changes.outputs.java_cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
@@ -272,6 +313,7 @@ jobs:
     name: "Connectors Base: Start Build EC2 Runner"
     needs:
       - changes
+      - format
     # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
     if: |
       needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors_base == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')

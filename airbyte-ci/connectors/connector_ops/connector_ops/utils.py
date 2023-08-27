@@ -11,12 +11,12 @@ from enum import Enum
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Set, Tuple, Union
-from pydash.objects import get
 
 import git
 import requests
 import yaml
 from ci_credentials import SecretsManager
+from pydash.objects import get
 from rich.console import Console
 
 console = Console()
