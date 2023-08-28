@@ -4,17 +4,13 @@
 
 package io.airbyte.integrations.destination.redshift.operations;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,4 +57,5 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
     final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
+
 }

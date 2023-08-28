@@ -26,31 +26,31 @@ streams:
                               close:
                                 items:
                                   type:
-                                    - 'null'
+                                    - "null"
                                     - number
                                 type: array
                               high:
                                 items:
                                   type:
-                                    - 'null'
+                                    - "null"
                                     - number
                                 type: array
                               low:
                                 items:
                                   type:
-                                    - 'null'
+                                    - "null"
                                     - number
                                 type: array
                               open:
                                 items:
                                   type:
-                                    - 'null'
+                                    - "null"
                                     - number
                                 type: array
                               volume:
                                 items:
                                   type:
-                                    - 'null'
+                                    - "null"
                                     - number
                                 type: array
                             type: object
@@ -62,7 +62,7 @@ streams:
                           type: number
                         currency:
                           type:
-                            - 'null'
+                            - "null"
                             - string
                         currentTradingPeriod:
                           properties:
@@ -108,7 +108,7 @@ streams:
                           type: string
                         firstTradeDate:
                           type:
-                            - 'null'
+                            - "null"
                             - number
                         gmtoffset:
                           type: number
@@ -172,13 +172,13 @@ streams:
           0].strip() }}{% endif %}
         http_method: GET
         request_parameters:
-          range: '{{ config[''range''] }}'
+          range: "{{ config['range'] }}"
           symbol: >-
             {% if (next_page_token['next_page_token'] or 0) <
             config['tickers'].split(',')|length %}{{
             config['tickers'].split(',')[next_page_token['next_page_token'] or
             0].strip() }}{% else %} finish {% endif %}
-          interval: '{{ config[''interval''] }}'
+          interval: "{{ config['interval'] }}"
         request_headers:
           Accept: application/json
           User-Agent: Mozilla/5.0 (X11; Linux x86_64)
