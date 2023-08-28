@@ -16,7 +16,7 @@
         "type": ["null", "string"]
       },
       "created": {
-         "type": ["null", "integer"]
+        "type": ["null", "integer"]
       },
       "description": {
         "type": ["null", "string"]

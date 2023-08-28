@@ -1,121 +1,106 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
-  "type" : "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
   "additionalProperties": true,
-  "properties" : {
-    "block_id" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "hash" : {
-          "type" : ["null", "string"]
+  "properties": {
+    "block_id": {
+      "type": ["null", "object"],
+      "properties": {
+        "hash": {
+          "type": ["null", "string"]
         },
-        "part_set_header" : {
-          "type" : ["null", "object"],
-          "properties" : {
-            "total" : {
-              "type" : ["null", "integer"]
+        "part_set_header": {
+          "type": ["null", "object"],
+          "properties": {
+            "total": {
+              "type": ["null", "integer"]
             },
-            "hash" : {
-              "type" : ["null", "string"]
+            "hash": {
+              "type": ["null", "string"]
             }
           },
-          "required" : [
-            "total",
-            "hash"
-          ]
+          "required": ["total", "hash"]
         }
       },
-      "required" : [
-        "hash",
-        "part_set_header"
-      ]
+      "required": ["hash", "part_set_header"]
     },
-    "block" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "header" : {
-          "type" : ["null", "object"],
-          "properties" : {
-            "version" : {
-              "type" : ["null", "object"],
-              "properties" : {
-                "block" : {
-                  "type" : ["null", "string"]
+    "block": {
+      "type": ["null", "object"],
+      "properties": {
+        "header": {
+          "type": ["null", "object"],
+          "properties": {
+            "version": {
+              "type": ["null", "object"],
+              "properties": {
+                "block": {
+                  "type": ["null", "string"]
                 },
-                "app" : {
-                  "type" : ["null", "string"]
+                "app": {
+                  "type": ["null", "string"]
                 }
               },
-              "required" : [
-                "block",
-                "app"
-              ]
+              "required": ["block", "app"]
             },
-            "chain_id" : {
-              "type" : ["null", "string"]
+            "chain_id": {
+              "type": ["null", "string"]
             },
-            "height" : {
-              "type" : ["null", "string"]
+            "height": {
+              "type": ["null", "string"]
             },
-            "time" : {
-              "type" : ["null", "string"]
+            "time": {
+              "type": ["null", "string"]
             },
-            "last_block_id" : {
-              "type" : ["null", "object"],
-              "properties" : {
-                "hash" : {
-                  "type" : ["null", "string"]
+            "last_block_id": {
+              "type": ["null", "object"],
+              "properties": {
+                "hash": {
+                  "type": ["null", "string"]
                 },
-                "part_set_header" : {
-                  "type" : ["null", "object"],
-                  "properties" : {
-                    "total" : {
-                      "type" : ["null", "integer"]
+                "part_set_header": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "total": {
+                      "type": ["null", "integer"]
                     },
-                    "hash" : {
-                      "type" : ["null", "string"]
+                    "hash": {
+                      "type": ["null", "string"]
                     }
                   },
-                  "required" : [
-                    "total",
-                    "hash"
-                  ]
+                  "required": ["total", "hash"]
                 }
               },
-              "required" : [
-                "hash",
-                "part_set_header"
-              ]
+              "required": ["hash", "part_set_header"]
             },
-            "last_commit_hash" : {
-              "type" : ["null", "string"]
+            "last_commit_hash": {
+              "type": ["null", "string"]
             },
-            "data_hash" : {
-              "type" : ["null", "string"]
+            "data_hash": {
+              "type": ["null", "string"]
             },
-            "validators_hash" : {
-              "type" : ["null", "string"]
+            "validators_hash": {
+              "type": ["null", "string"]
             },
-            "next_validators_hash" : {
-              "type" : ["null", "string"]
+            "next_validators_hash": {
+              "type": ["null", "string"]
             },
-            "consensus_hash" : {
-              "type" : ["null", "string"]
+            "consensus_hash": {
+              "type": ["null", "string"]
             },
-            "app_hash" : {
-              "type" : ["null", "string"]
+            "app_hash": {
+              "type": ["null", "string"]
             },
-            "last_results_hash" : {
-              "type" : ["null", "string"]
+            "last_results_hash": {
+              "type": ["null", "string"]
             },
-            "evidence_hash" : {
-              "type" : ["null", "string"]
+            "evidence_hash": {
+              "type": ["null", "string"]
             },
-            "proposer_address" : {
-              "type" : ["null", "string"]
+            "proposer_address": {
+              "type": ["null", "string"]
             }
           },
-          "required" : [
+          "required": [
             "version",
             "chain_id",
             "height",
@@ -132,89 +117,79 @@
             "proposer_address"
           ]
         },
-        "data" : {
-          "type" : ["null", "object"],
-          "properties" : {
-            "txs" : {
-              "type" : ["null", "array"],
-              "items" : {
-                "type" : ["null", "string"]
+        "data": {
+          "type": ["null", "object"],
+          "properties": {
+            "txs": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
               }
             }
           },
-          "required" : [
-            "txs"
-          ]
+          "required": ["txs"]
         },
-        "evidence" : {
-          "type" : ["null", "object"],
-          "properties" : {
-            "evidence" : {
-              "type" : ["null", "array"],
-              "items" : {
-                "items" : {}
+        "evidence": {
+          "type": ["null", "object"],
+          "properties": {
+            "evidence": {
+              "type": ["null", "array"],
+              "items": {
+                "items": {}
               }
             }
           },
-          "required" : [
-            "evidence"
-          ]
+          "required": ["evidence"]
         },
-        "last_commit" : {
-          "type" : ["null", "object"],
-          "properties" : {
-            "height" : {
-              "type" : ["null", "string"]
+        "last_commit": {
+          "type": ["null", "object"],
+          "properties": {
+            "height": {
+              "type": ["null", "string"]
             },
-            "round" : {
-              "type" : ["null", "integer"]
+            "round": {
+              "type": ["null", "integer"]
             },
-            "block_id" : {
-              "type" : ["null", "object"],
-              "properties" : {
-                "hash" : {
-                  "type" : ["null", "string"]
+            "block_id": {
+              "type": ["null", "object"],
+              "properties": {
+                "hash": {
+                  "type": ["null", "string"]
                 },
-                "part_set_header" : {
-                  "type" : ["null", "object"],
-                  "properties" : {
-                    "total" : {
-                      "type" : ["null", "integer"]
+                "part_set_header": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "total": {
+                      "type": ["null", "integer"]
                     },
-                    "hash" : {
-                      "type" : ["null", "string"]
+                    "hash": {
+                      "type": ["null", "string"]
                     }
                   },
-                  "required" : [
-                    "total",
-                    "hash"
-                  ]
+                  "required": ["total", "hash"]
                 }
               },
-              "required" : [
-                "hash",
-                "part_set_header"
-              ]
+              "required": ["hash", "part_set_header"]
             },
-            "signatures" : {
-              "type" : ["null", "array"],
-              "items" : {
-                "type" : ["null", "object"],
-                "properties" : {
-                  "block_id_flag" : {
-                    "type" : ["null", "string"]
+            "signatures": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "block_id_flag": {
+                    "type": ["null", "string"]
                   },
-                  "validator_address" : {
-                    "type" : ["null", "string"]
+                  "validator_address": {
+                    "type": ["null", "string"]
                   },
-                  "timestamp" : {
-                    "type" : ["null", "string"]
+                  "timestamp": {
+                    "type": ["null", "string"]
                   },
-                  "signature" : {
-                    "type" : ["null", "string"]
+                  "signature": {
+                    "type": ["null", "string"]
                   }
                 },
-                "required" : [
+                "required": [
                   "block_id_flag",
                   "validator_address",
                   "timestamp",
@@ -223,55 +198,35 @@
               }
             }
           },
-          "required" : [
-            "height",
-            "round",
-            "block_id",
-            "signatures"
-          ]
+          "required": ["height", "round", "block_id", "signatures"]
         }
       },
-      "required" : [
-        "header",
-        "data",
-        "evidence",
-        "last_commit"
-      ]
+      "required": ["header", "data", "evidence", "last_commit"]
     },
-    "__kyve" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "block" : {
-          "type" : ["null", "object"],
-          "properties" : {
-            "data" : {
-              "type" : ["null", "object"],
-              "properties" : {
-                "parsed_txs" : {
-                  "type" : ["null", "array"],
-                  "items" : {
-                    "$ref" : "cosmos/parsedtxs.json"
+    "__kyve": {
+      "type": ["null", "object"],
+      "properties": {
+        "block": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": ["null", "object"],
+              "properties": {
+                "parsed_txs": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "$ref": "cosmos/parsedtxs.json"
                   }
                 }
               },
-              "required" : [
-                "parsed_txs"
-              ]
+              "required": ["parsed_txs"]
             }
           },
-          "required" : [
-            "data"
-          ]
+          "required": ["data"]
         }
       },
-      "required" : [
-        "block"
-      ]
+      "required": ["block"]
     }
   },
-  "required" : [
-    "block_id",
-    "block",
-    "__kyve"
-  ]
+  "required": ["block_id", "block", "__kyve"]
 }
