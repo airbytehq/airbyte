@@ -60,8 +60,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private boolean finalStateNext = false;
 
   /**
-   * Tracks if the underlying iterator threw an exception.
-   * This helps to determine the final state status emitted from the final next call.
+   * Tracks if the underlying iterator threw an exception. This helps to determine the final state
+   * status emitted from the final next call.
    */
   private boolean iterThrewException = false;
 
