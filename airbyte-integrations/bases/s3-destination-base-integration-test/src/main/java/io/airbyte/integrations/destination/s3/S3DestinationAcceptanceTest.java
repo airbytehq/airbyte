@@ -22,6 +22,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestD
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -125,7 +126,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * <li>Construct the S3 client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

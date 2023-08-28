@@ -20,7 +20,6 @@ If your goal is to maintain a snapshot of your table in the destination but the 
 
 If your dataset is small and you just want a snapshot of your table in the destination, consider using [Full Refresh replication](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite) for your table instead of CDC.
 
-
 ### Step 1: (Optional) Create a dedicated read-only user
 
 We recommend creating a dedicated read-only user for better permission control and auditing. Alternatively, you can use an existing AlloyDB user in your database.
@@ -71,6 +70,7 @@ The workaround for partial table syncing is to create a view on the specific col
 ```
 CREATE VIEW <view_name> as SELECT <columns> FROM <table>;
 ```
+
 ```
 GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
 ```
@@ -123,16 +123,17 @@ When using an SSH tunnel, you are configuring Airbyte to connect to an intermedi
 To connect to a AlloyDB instance via an SSH tunnel:
 
 1. While [setting up](#setup-guide) the AlloyDB source connector, from the SSH tunnel dropdown, select:
-    - SSH Key Authentication to use an RSA Private as your secret for establishing the SSH tunnel
-    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
+   - SSH Key Authentication to use an RSA Private as your secret for establishing the SSH tunnel
+   - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
 4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the AlloyDB username.
 5. For authentication:
-    - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [RSA Private Key](#generating-an-rsa-private-key​) that you are using to create the SSH connection.
-    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the AlloyDB password.
+   - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [RSA Private Key](#generating-an-rsa-private-key​) that you are using to create the SSH connection.
+   - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the AlloyDB password.
 
 #### Generating an RSA Private Key​
+
 The connector expects an RSA key in PEM format. To generate this key, run:
 
 ```
@@ -154,8 +155,8 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
 - Log-based replication only works for master instances of AlloyDB.
 - Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
-    - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
-    - If you stop syncing a CDC-configured AlloyDB instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.
+  - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
+  - If you stop syncing a CDC-configured AlloyDB instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.
 
 ### Setting up CDC for AlloyDB
 
@@ -232,7 +233,7 @@ The AlloyDB source connector supports the following [sync modes](https://docs.ai
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported cursors
 
@@ -253,74 +254,75 @@ The AlloyDB source connector supports the following [sync modes](https://docs.ai
 - `BINARY/BLOB`
 
 ## Data type mapping
+
 The AlloyDb is a fully managed PostgreSQL-compatible database service.
 
 According to Postgres [documentation](https://www.postgresql.org/docs/14/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/PostgresSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| Postgres Type                         | Resulting Type | Notes                                                                                                                                                                                           |
-|:--------------------------------------|:---------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `bigint`                              | number         |                                                                                                                                                                                                 |
-| `bigserial`, `serial8`                | number         |                                                                                                                                                                                                 |
-| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                                                                          |
-| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                                                                       |
-| `boolean`, `bool`                     | boolean        |                                                                                                                                                                                                 |
-| `box`                                 | string         |                                                                                                                                                                                                 |
-| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                                                                      |
-| `character`, `char`                   | string         |                                                                                                                                                                                                 |
-| `character varying`, `varchar`        | string         |                                                                                                                                                                                                 |
-| `cidr`                                | string         |                                                                                                                                                                                                 |
-| `circle`                              | string         |                                                                                                                                                                                                 |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590)                                            |
-| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).                                                 |
-| `hstore`                              | string         |                                                                                                                                                                                                 |
-| `inet`                                | string         |                                                                                                                                                                                                 |
-| `integer`, `int`, `int4`              | number         |                                                                                                                                                                                                 |
-| `interval`                            | string         |                                                                                                                                                                                                 |
-| `json`                                | string         |                                                                                                                                                                                                 |
-| `jsonb`                               | string         |                                                                                                                                                                                                 |
-| `line`                                | string         |                                                                                                                                                                                                 |
-| `lseg`                                | string         |                                                                                                                                                                                                 |
-| `macaddr`                             | string         |                                                                                                                                                                                                 |
-| `macaddr8`                            | string         |                                                                                                                                                                                                 |
-| `money`                               | number         |                                                                                                                                                                                                 |
-| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).                                                 |
-| `path`                                | string         |                                                                                                                                                                                                 |
-| `pg_lsn`                              | string         |                                                                                                                                                                                                 |
-| `point`                               | string         |                                                                                                                                                                                                 |
-| `polygon`                             | string         |                                                                                                                                                                                                 |
-| `real`, `float4`                      | number         |                                                                                                                                                                                                 |
-| `smallint`, `int2`                    | number         |                                                                                                                                                                                                 |
-| `smallserial`, `serial2`              | number         |                                                                                                                                                                                                 |
-| `serial`, `serial4`                   | number         |                                                                                                                                                                                                 |
-| `text`                                | string         |                                                                                                                                                                                                 |
-| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                                                                    |
-| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                                                                         |
-| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                                                                               |
-| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                                                                    |
-| `tsquery`                             | string         |                                                                                                                                                                                                 |
-| `tsvector`                            | string         |                                                                                                                                                                                                 |
-| `uuid`                                | string         |                                                                                                                                                                                                 |
-| `xml`                                 | string         |                                                                                                                                                                                                 |
-| `enum`                                | string         |                                                                                                                                                                                                 |
-| `tsrange`                             | string         |                                                                                                                                                                                                 |
-| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                                                               |
-| composite type                        | string         |                                                                                                                                                                                                 |
+| Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
+| :------------------------------------ | :------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bigint`                              | number         |                                                                                                                                                      |
+| `bigserial`, `serial8`                | number         |                                                                                                                                                      |
+| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                               |
+| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                            |
+| `boolean`, `bool`                     | boolean        |                                                                                                                                                      |
+| `box`                                 | string         |                                                                                                                                                      |
+| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                           |
+| `character`, `char`                   | string         |                                                                                                                                                      |
+| `character varying`, `varchar`        | string         |                                                                                                                                                      |
+| `cidr`                                | string         |                                                                                                                                                      |
+| `circle`                              | string         |                                                                                                                                                      |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590) |
+| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
+| `hstore`                              | string         |                                                                                                                                                      |
+| `inet`                                | string         |                                                                                                                                                      |
+| `integer`, `int`, `int4`              | number         |                                                                                                                                                      |
+| `interval`                            | string         |                                                                                                                                                      |
+| `json`                                | string         |                                                                                                                                                      |
+| `jsonb`                               | string         |                                                                                                                                                      |
+| `line`                                | string         |                                                                                                                                                      |
+| `lseg`                                | string         |                                                                                                                                                      |
+| `macaddr`                             | string         |                                                                                                                                                      |
+| `macaddr8`                            | string         |                                                                                                                                                      |
+| `money`                               | number         |                                                                                                                                                      |
+| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
+| `path`                                | string         |                                                                                                                                                      |
+| `pg_lsn`                              | string         |                                                                                                                                                      |
+| `point`                               | string         |                                                                                                                                                      |
+| `polygon`                             | string         |                                                                                                                                                      |
+| `real`, `float4`                      | number         |                                                                                                                                                      |
+| `smallint`, `int2`                    | number         |                                                                                                                                                      |
+| `smallserial`, `serial2`              | number         |                                                                                                                                                      |
+| `serial`, `serial4`                   | number         |                                                                                                                                                      |
+| `text`                                | string         |                                                                                                                                                      |
+| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                         |
+| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                              |
+| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                                    |
+| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                         |
+| `tsquery`                             | string         |                                                                                                                                                      |
+| `tsvector`                            | string         |                                                                                                                                                      |
+| `uuid`                                | string         |                                                                                                                                                      |
+| `xml`                                 | string         |                                                                                                                                                      |
+| `enum`                                | string         |                                                                                                                                                      |
+| `tsrange`                             | string         |                                                                                                                                                      |
+| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                    |
+| composite type                        | string         |                                                                                                                                                      |
 
 ## Limitations
 
 - The AlloyDB source connector currently does not handle schemas larger than 4MB.
 - The AlloyDB source connector does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 - The following two schema evolution actions are currently supported:
-    - Adding/removing tables without resetting the entire connection at the destination
-      Caveat: In the CDC mode, adding a new table to a connection may become a temporary bottleneck. When a new table is added, the next sync job takes a full snapshot of the new table before it proceeds to handle any changes.
-    - Resetting a single table within the connection without resetting the rest of the destination tables in that connection
+  - Adding/removing tables without resetting the entire connection at the destination
+    Caveat: In the CDC mode, adding a new table to a connection may become a temporary bottleneck. When a new table is added, the next sync job takes a full snapshot of the new table before it proceeds to handle any changes.
+  - Resetting a single table within the connection without resetting the rest of the destination tables in that connection
 - Changing a column data type or removing a column might break connections.
-
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.5   | 2023-08-22 | [29534](https://github.com/airbytehq/airbyte/pull/29534) | Support "options" JDBC URL parameter                                                                                                      |
 | 3.1.3   | 2023-08-03 | [28708](https://github.com/airbytehq/airbyte/pull/28708) | Enable checkpointing snapshots in CDC connections                                                                                         |
 | 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                         |
 | 3.1.1   | 2023-07-31 | [28892](https://github.com/airbytehq/airbyte/pull/28892) | Fix an issue that prevented use of cursor columns with names containing uppercase letters                                                 |

@@ -21,21 +21,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
-
 public class MongoUtil {
 
   /**
-   * The maximum number of documents to retrieve when attempting to discover the unique keys/types for
-   * a collection.
+   * The maximum number of documents to sample when attempting to discover the unique keys/types for a
+   * collection. Inspired by the
+   * <a href="https://www.mongodb.com/docs/compass/current/sampling/#sampling-method">sampling method
+   * utilized by the MongoDB Compass client</a>.
    */
-  private static final Integer DISCOVERY_LIMIT = 100;
+  private static final Integer DISCOVERY_SAMPLE_SIZE = 1000;
 
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
@@ -89,28 +88,24 @@ public class MongoUtil {
    *         database.
    */
   public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName) {
-    final List<AirbyteStream> streams = new ArrayList<>();
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
-    authorizedCollections.parallelStream().forEach(collectionName -> {
+    return authorizedCollections.parallelStream().map(collectionName -> {
       /*
        * Fetch the keys/types from the first N documents and the last N documents from the collection.
        * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
        */
-      final Set<Field> fields1 = getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName), Optional.empty());
-      final Set<Field> fields2 =
-          getFieldsInCollection(mongoClient.getDatabase(databaseName).getCollection(collectionName), Optional.of(DEFAULT_CURSOR_FIELD));
-      fields1.addAll(fields2);
-
-      streams.add(createAirbyteStream(collectionName, databaseName, new ArrayList<>(fields1)));
-    });
-    return streams;
+      final Set<Field> discoveredFields = new HashSet<>();
+      final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
+      discoveredFields.addAll(getFieldsInCollection(mongoCollection));
+      return createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields));
+    }).collect(Collectors.toList());
   }
 
   private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
     return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection collection, final Optional<String> sortField) {
+  private static Set<Field> getFieldsInCollection(final MongoCollection collection) {
     final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
@@ -124,8 +119,7 @@ public class MongoUtil {
     groupMap.put("fields", Map.of("$addToSet", "$fields"));
 
     final List<Bson> aggregateList = new ArrayList<>();
-    aggregateList.add(Aggregates.limit(DISCOVERY_LIMIT));
-    sortField.ifPresent(s -> aggregateList.add(Aggregates.sort(new Document(s, -1))));
+    aggregateList.add(Aggregates.sample(DISCOVERY_SAMPLE_SIZE));
     aggregateList.add(Aggregates.project(new Document("fields", arrayToObjectAggregation)));
     aggregateList.add(Aggregates.unwind("$fields"));
     aggregateList.add(new Document("$group", groupMap));
@@ -136,7 +130,7 @@ public class MongoUtil {
       while (cursor.hasNext()) {
         final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
         discoveredFields.addAll(fields.entrySet().stream()
-            .map(e -> new Field(e.getKey(), convertToSchemaType(e.getValue())))
+            .map(e -> new MongoField(e.getKey(), convertToSchemaType(e.getValue())))
             .collect(Collectors.toSet()));
       }
     }

@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
@@ -177,9 +177,32 @@ class Issues(SentryIncremental):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update({"statsPeriod": "", "query": ""})
-
+        filter_date = self._get_filter_date(stream_state)
+        params.update(self._build_query_params(filter_date))
         return params
+
+    def _get_filter_date(self, stream_state: Optional[Mapping[str, Any]]) -> str:
+        """Retrieve the filter date from the stream state or use the start_date."""
+        return stream_state.get(self.cursor_field) or self.start_date if stream_state else self.start_date
+
+    def _build_query_params(self, filter_date: str) -> Dict[str, str]:
+        """Generate query parameters for the request."""
+        filter_date_iso = pendulum.parse(filter_date).to_iso8601_string()
+        return {"statsPeriod": "", "query": f"lastSeen:>{filter_date_iso}"}
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[MutableMapping]:
+        json_response = response.json() or []
+
+        for record in json_response:
+            cursor_value = self._get_cursor_value(record, stream_state)
+            self.state = {self.cursor_field: cursor_value}
+            yield record
+
+    def _get_cursor_value(self, record: Dict[str, Any], stream_state: Mapping[str, Any]) -> pendulum.datetime:
+        """Compute the maximum cursor value based on the record and stream state."""
+        record_time = record[self.cursor_field]
+        state_time = str(self.get_state_value(stream_state))
+        return max(record_time, state_time)
 
 
 class Projects(SentryIncremental):

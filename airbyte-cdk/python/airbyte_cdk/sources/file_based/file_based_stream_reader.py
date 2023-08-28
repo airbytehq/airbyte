@@ -44,7 +44,7 @@ class AbstractFileBasedStreamReader(ABC):
         ...
 
     @abstractmethod
-    def open_file(self, file: RemoteFile, mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Return a file handle for reading.
 
@@ -60,6 +60,7 @@ class AbstractFileBasedStreamReader(ABC):
     def get_matching_files(
         self,
         globs: List[str],
+        prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
         """

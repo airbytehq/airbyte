@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import importlib.metadata
 import os
 
@@ -51,7 +52,7 @@ def with_step_context(func):
                         "technical_name": connector.technical_name,
                         "language": connector.language,
                         "version": connector.version,
-                        "release_stage": connector.release_stage,
+                        "support_level": connector.support_level,
                     },
                 )
 

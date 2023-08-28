@@ -105,7 +105,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

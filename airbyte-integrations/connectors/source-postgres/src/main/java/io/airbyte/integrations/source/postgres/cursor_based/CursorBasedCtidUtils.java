@@ -31,9 +31,8 @@ import org.slf4j.LoggerFactory;
 /**
  * The class mainly categorises the streams based on the state type into two categories : 1. Streams
  * that need to be synced via ctid iterator: These are streams that are either newly added or did
- * not complete their initial sync. 2. Streams that need to be synced via cursor-based
- * iterator: These are streams that have completed their initial sync and are not syncing data
- * incrementally.
+ * not complete their initial sync. 2. Streams that need to be synced via cursor-based iterator:
+ * These are streams that have completed their initial sync and are not syncing data incrementally.
  */
 public class CursorBasedCtidUtils {
 
@@ -79,9 +78,11 @@ public class CursorBasedCtidUtils {
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams =
+        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreamPairs, SyncMode.INCREMENTAL);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = getStreamsFromStreamPairs(fullCatalog, stillInCtidStreamPairs, SyncMode.INCREMENTAL);
-    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync = getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> streamsForCursorBasedSync =
+        getStreamsFromStreamPairs(fullCatalog, cursorBasedSyncStreamPairs, SyncMode.INCREMENTAL);
     streamsForCtidSync.addAll(newlyAddedIncrementalStreams);
 
     return new StreamsCategorised<>(new CtidStreams(streamsForCtidSync, statesFromCtidSync),
@@ -92,12 +93,14 @@ public class CursorBasedCtidUtils {
                                    List<AirbyteStateMessage> statesFromCursorBasedSync) {}
 
   /**
-   * Reclassifies previously categorised ctid stream into standard category.
-   * Used in case we identify ctid is not possible such as a View
+   * Reclassifies previously categorised ctid stream into standard category. Used in case we identify
+   * ctid is not possible such as a View
+   *
    * @param categorisedStreams categorised streams
    * @param streamPair stream to reclassify
    */
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<CursorBasedStreams> categorisedStreams,
+                                                     AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -124,7 +127,9 @@ public class CursorBasedCtidUtils {
     });
   }
 
-  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<CursorBasedStreams> categorisedStreams,
+                                                      List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
+
 }
