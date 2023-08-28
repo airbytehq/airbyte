@@ -481,7 +481,6 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 "data": {
                     "col1": "val11b",
                     "col2": "val12b",
-                    "col3": "val13b",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },
@@ -491,7 +490,6 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 "data": {
                     "col1": "val21b",
                     "col2": "val22b",
-                    "col3": "val23b",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
                 },

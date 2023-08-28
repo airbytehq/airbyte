@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
-from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo, SupportLevelEnum
+from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -22,8 +22,6 @@ from pipelines.pipelines.connectors import run_connectors_pipelines
 from pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from pipelines.tests import run_connector_test_pipeline
 from pipelines.utils import DaggerPipelineCommand, get_connector_modified_files, get_modified_connectors
-from rich.table import Table
-from rich.text import Text
 
 # HELPERS
 
@@ -176,9 +174,33 @@ def connectors(
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
+@click.option(
+    "--code-tests-only",
+    is_flag=True,
+    help=("Only execute code tests. " "Metadata checks, QA, and acceptance tests will be skipped."),
+    default=False,
+    type=bool,
+)
+@click.option(
+    "--fail-fast",
+    help="When enabled, tests will fail fast.",
+    default=False,
+    type=bool,
+    is_flag=True,
+)
+@click.option(
+    "--fast-tests-only",
+    help="When enabled, slow tests are skipped.",
+    default=False,
+    type=bool,
+    is_flag=True,
+)
 @click.pass_context
 def test(
     ctx: click.Context,
+    code_tests_only: bool,
+    fail_fast: bool,
+    fast_tests_only: bool,
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
 
@@ -212,6 +234,9 @@ def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            fail_fast=fail_fast,
+            fast_tests_only=fast_tests_only,
+            code_tests_only=code_tests_only,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
