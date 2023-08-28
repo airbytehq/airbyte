@@ -13,9 +13,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
-
-
-# Basic full refresh stream
 class StripeExampleStream(HttpStream, ABC):
 
     url_base = "https://api.stripe.com/v1/"
@@ -56,7 +53,6 @@ class StripeExampleStream(HttpStream, ABC):
 
 class Customers(StripeExampleStream):
 
-
     primary_key = "id"
 
     def path(
@@ -65,7 +61,6 @@ class Customers(StripeExampleStream):
         return "customers"
 
 
-# Source
 class SourceStripeExample(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         return True, None
