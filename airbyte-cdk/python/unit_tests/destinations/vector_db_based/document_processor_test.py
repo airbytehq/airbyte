@@ -35,11 +35,11 @@ def initialize_processor():
 @pytest.mark.parametrize(
     "metadata_fields, expected_metadata",
     [
-        (None, {"_airbyte_stream": "namespace1_stream1", "id": 1, "text": "This is the text", "complex": {"test": "abc"}, "arr": [{"test": "abc"}, {"test": "def"}]}),
-        (["id"], {"_airbyte_stream": "namespace1_stream1", "id": 1}),
-        (["id", "non_existing"], {"_airbyte_stream": "namespace1_stream1", "id": 1}),
-        (["id", "complex.test"], {"_airbyte_stream": "namespace1_stream1", "id": 1, "complex.test": "abc"}),
-        (["id", "arr.*.test"], {"_airbyte_stream": "namespace1_stream1", "id": 1, "arr.*.test": ["abc", "def"]}),
+        (None, {"_ab_stream": "namespace1_stream1", "id": 1, "text": "This is the text", "complex": {"test": "abc"}, "arr": [{"test": "abc"}, {"test": "def"}]}),
+        (["id"], {"_ab_stream": "namespace1_stream1", "id": 1}),
+        (["id", "non_existing"], {"_ab_stream": "namespace1_stream1", "id": 1}),
+        (["id", "complex.test"], {"_ab_stream": "namespace1_stream1", "id": 1, "complex.test": "abc"}),
+        (["id", "arr.*.test"], {"_ab_stream": "namespace1_stream1", "id": 1, "arr.*.test": ["abc", "def"]}),
     ]
 )
 def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
@@ -62,7 +62,7 @@ def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
 
     assert len(chunks) == 1
     # natural id is only set for dedup mode
-    assert "_record_id" not in chunks[0].metadata
+    assert "_ab_record_id" not in chunks[0].metadata
     assert chunks[0].metadata == expected_metadata
     assert id_to_delete is None
 
@@ -84,8 +84,8 @@ def test_process_single_chunk_limit4ed_metadata():
 
     assert len(chunks) == 1
     # natural id is only set for dedup mode
-    assert "_record_id" not in chunks[0].metadata
-    assert chunks[0].metadata["_airbyte_stream"] == "namespace1_stream1"
+    assert "_ab_record_id" not in chunks[0].metadata
+    assert chunks[0].metadata["_ab_stream"] == "namespace1_stream1"
     assert chunks[0].metadata["id"] == 1
     assert chunks[0].metadata["text"] == "This is the text"
     assert chunks[0].page_content == "id: 1\ntext: This is the text"
@@ -115,7 +115,7 @@ def test_process_single_chunk_without_namespace():
     )
 
     chunks, _ = processor.process(record)
-    assert chunks[0].metadata["_airbyte_stream"] == "stream1"
+    assert chunks[0].metadata["_ab_stream"] == "stream1"
 
 
 def test_complex_text_fields():
@@ -160,7 +160,7 @@ b: abc"""
         "id": 1,
         "non_text": "a",
         "non_text_2": 1,
-        "_airbyte_stream": "namespace1_stream1"
+        "_ab_stream": "namespace1_stream1"
     }
 
 
@@ -244,5 +244,5 @@ def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str
 
     assert len(chunks) > 1
     for chunk in chunks:
-        assert chunk.metadata["_record_id"] == stringified_primary_key
+        assert chunk.metadata["_ab_record_id"] == stringified_primary_key
     assert id_to_delete == stringified_primary_key
