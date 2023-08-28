@@ -104,7 +104,7 @@ public class MongoDbCdcInitializer {
         final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
                 MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
         final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
-        final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector = new MongoDbCdcConnectorMetadataInjector();
+        final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
         final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
         final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
