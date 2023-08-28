@@ -24,6 +24,7 @@ public class NoopTyperDeduper implements TyperDeduper {
   public Lock getRawTableInsertLock(final String originalNamespace, final String originalName) {
     // Return a fake lock that does nothing.
     return new Lock() {
+
       @Override
       public void lock() {
 
@@ -53,6 +54,7 @@ public class NoopTyperDeduper implements TyperDeduper {
       public Condition newCondition() {
         return null;
       }
+
     };
   }
 

@@ -47,9 +47,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
   private final Set<StreamId> streamsWithSuccesfulSetup;
-  // We only want to run a single instance of T+D per stream at a time. These objects are used for synchronization per stream.
+  // We only want to run a single instance of T+D per stream at a time. These objects are used for
+  // synchronization per stream.
   // Use a read-write lock because we need the same semantics:
-  // * any number of threads can insert to the raw tables at the same time, as long as T+D isn't running (i.e. "read lock")
+  // * any number of threads can insert to the raw tables at the same time, as long as T+D isn't
+  // running (i.e. "read lock")
   // * T+D must run in complete isolation (i.e. "write lock")
   private final Map<StreamId, ReadWriteLock> tdLocks;
   // These locks are used to prevent multiple simultaneous attempts to T+D the same stream.
@@ -122,7 +124,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       }
 
       // Use fair locking. This slows down lock operations, but that performance hit is by far dwarfed
-      // by our IO costs. This lock needs to be fair because the raw table writers are running almost constantly,
+      // by our IO costs. This lock needs to be fair because the raw table writers are running almost
+      // constantly,
       // and we don't want them to starve T+D.
       tdLocks.put(stream.id(), new ReentrantReadWriteLock(true));
       // This lock doesn't need to be fair; any T+D instance is equivalent and we'll skip T+D if we can't

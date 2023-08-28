@@ -260,8 +260,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>
-  getUploaderMap(
+  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
                                                                                             final BigQuery bigquery,
                                                                                             final JsonNode config,
                                                                                             final ConfiguredAirbyteCatalog catalog,
@@ -333,8 +332,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         bigquery,
         config,
         catalog,
-        parsedCatalog
-    );
+        parsedCatalog);
 
     return new BigQueryRecordConsumer(
         bigquery,

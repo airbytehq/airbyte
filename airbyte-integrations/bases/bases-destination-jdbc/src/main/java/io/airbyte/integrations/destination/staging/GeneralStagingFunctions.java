@@ -131,7 +131,8 @@ public class GeneralStagingFunctions {
         }
 
         // Force run here. This is the final invocation of the sync, so we need to get all the data.
-        // TODO future enhancement: track whether any new raw records were written for this stream after the last T+D run
+        // TODO future enhancement: track whether any new raw records were written for this stream after the
+        // last T+D run
         // and skip this T+D run if there were no new records.
         typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName(), true);
       }

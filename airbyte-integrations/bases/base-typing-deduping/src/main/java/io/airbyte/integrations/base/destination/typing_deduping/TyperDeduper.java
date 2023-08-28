@@ -28,8 +28,8 @@ public interface TyperDeduper {
    * This is most easily accomplished using {@link #getRawTableInsertLock(String, String)}, if the
    * caller guards all raw table writes using {@code getRawTableInsertLock().lock()} and
    * {@code getRawTableInsertLock().unlock()}. While {@code typeAndDedupe} is executing, that lock
-   * will be unavailable. However, callers are free to enforce this in other ways (for example, single-
-   * threaded callers do not need to use the lock).
+   * will be unavailable. However, callers are free to enforce this in other ways (for example,
+   * single- threaded callers do not need to use the lock).
    *
    * @param originalNamespace The stream's namespace, as declared in the configured catalog
    * @param originalName The stream's name, as declared in the configured catalog
@@ -37,8 +37,8 @@ public interface TyperDeduper {
   void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) throws Exception;
 
   /**
-   * Get the lock that should be used to synchronize inserts to the raw table for a given stream.
-   * This lock permits any number of threads to hold the lock, but
+   * Get the lock that should be used to synchronize inserts to the raw table for a given stream. This
+   * lock permits any number of threads to hold the lock, but
    * {@link #typeAndDedupe(String, String, boolean)} will not proceed while this lock is held.
    * <p>
    * This lock provides fairness guarantees, i.e. typeAndDedupe will not starve while waiting for the
