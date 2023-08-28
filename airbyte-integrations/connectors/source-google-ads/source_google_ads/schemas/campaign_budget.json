@@ -78,7 +78,7 @@
     "segments.budget_campaign_association_status.status": {
       "type": ["null", "array"],
       "items": {
-      "type": ["null", "string"]
+        "type": ["null", "string"]
       }
     },
     "metrics.all_conversions": {

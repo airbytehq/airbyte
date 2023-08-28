@@ -9,6 +9,7 @@ from urllib.parse import quote_plus
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest_lazyfixture import lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
@@ -170,12 +171,17 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     )
 
     # test start_date
-    with pytest.raises(Exception):
-        assert command_check(source, config_gen(start_date=...))
-    with pytest.raises(Exception):
-        assert command_check(source, config_gen(start_date=""))
-    with pytest.raises(Exception):
-        assert command_check(source, config_gen(start_date="start_date"))
+    assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(
+            status=Status.FAILED,
+            message="'' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
+        )
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config_gen(start_date="start_date")) == AirbyteConnectionStatus(
+            status=Status.FAILED,
+            message="'start_date' does not match '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'",
+        )
     assert command_check(source, config_gen(start_date="2022-99-99")) == AirbyteConnectionStatus(
         status=Status.FAILED,
         message="\"Unable to check connectivity to Google Search Console API - ParserError('Unable to parse string [2022-99-99]')\"",
@@ -222,9 +228,9 @@ def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):
 def test_streams(config_gen):
     source = SourceGoogleSearchConsole()
     streams = source.streams(config_gen())
-    assert len(streams) == 14
+    assert len(streams) == 15
     streams = source.streams(config_gen(custom_reports=...))
-    assert len(streams) == 13
+    assert len(streams) == 14
 
 
 def test_get_start_date():
