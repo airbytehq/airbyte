@@ -16,7 +16,7 @@ public class NoopTyperDeduper implements TyperDeduper {
   }
 
   @Override
-  public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) throws Exception {
 
   }
 
@@ -40,7 +40,7 @@ public class NoopTyperDeduper implements TyperDeduper {
       }
 
       @Override
-      public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+      public boolean tryLock(final long time, final TimeUnit unit) throws InterruptedException {
         return false;
       }
 

@@ -21,22 +21,22 @@ public interface TyperDeduper {
    * the final table, etc.).
    * <p>
    * This method is thread-safe; multiple threads can call it concurrently. If T+D is already running
-   * for the given stream, this method may choose to do nothing.
+   * for the given stream, this method may choose to do nothing. If a caller wishes to force T+D to
+   * run (for example, at the end of a sync), they may set {@code mustRun} to true.
    * <p>
    * This method relies on callers to prevent concurrent modification to the underlying raw tables
-   * using {@link #getRawTableInsertLock(String, String)}. Raw table writes should be guarded by
+   * using {@link #getRawTableInsertLock(String, String)}. Caller must guard raw table writes using
    * {@code getRawTableInsertLock().lock()} and {@code getRawTableInsertLock().unlock()}. While
-   * {@code typeAndDedupe} is executing, that lock will be unavailable. This is typically implemented
-   * using a {@link java.util.concurrent.locks.ReentrantReadWriteLock} with fairness enabled.
+   * {@code typeAndDedupe} is executing, that lock will be unavailable.
    *
    * @param originalNamespace The stream's namespace, as declared in the configured catalog
    * @param originalName The stream's name, as declared in the configured catalog
    */
-  void typeAndDedupe(String originalNamespace, String originalName) throws Exception;
+  void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) throws Exception;
 
   /**
    * Get the lock that should be used to synchronize inserts to the raw table for a given stream.
-   * {@link #typeAndDedupe(String, String)} will not run while this lock is held.
+   * {@link #typeAndDedupe(String, String, boolean)} will not run while this lock is held.
    */
   Lock getRawTableInsertLock(final String originalNamespace, final String originalName);
 

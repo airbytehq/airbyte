@@ -132,7 +132,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }
   }
 
-  public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) throws Exception {
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     if (!streamsWithSuccesfulSetup.contains(streamConfig.id())) {
       // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
@@ -141,8 +141,18 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       return;
     }
 
+    final boolean run;
     final Lock internalLock = internalTdLocks.get(streamConfig.id());
-    if (internalLock.tryLock()) {
+    if (mustRun) {
+      // If we must run T+D, then wait until we acquire the lock.
+      internalLock.lock();
+      run = true;
+    } else {
+      // Otherwise, try and get the lock. If another thread already has it, then we should noop here.
+      run = internalLock.tryLock();
+    }
+
+    if (run) {
       LOGGER.info("Waiting for raw table writes to pause for {}.{}", originalNamespace, originalName);
       final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
       externalLock.lock();

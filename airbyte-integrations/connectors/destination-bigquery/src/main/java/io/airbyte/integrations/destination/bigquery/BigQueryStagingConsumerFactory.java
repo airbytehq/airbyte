@@ -64,7 +64,7 @@ public class BigQueryStagingConsumerFactory {
         recordFormatterCreator,
         tmpTableNameTransformer);
 
-    CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
+    final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
         incrementalTypingAndDedupingStreamConsumer(typerDeduper);
 
     return new BufferedStreamConsumer(
@@ -87,7 +87,7 @@ public class BigQueryStagingConsumerFactory {
         valve.addStream(streamId);
       }
       if (valve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), false);
         valve.updateTimeAndIncreaseInterval(streamId);
       }
     };
@@ -230,7 +230,7 @@ public class BigQueryStagingConsumerFactory {
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName());
+        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName(), true);
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
       typerDeduper.commitFinalTables();

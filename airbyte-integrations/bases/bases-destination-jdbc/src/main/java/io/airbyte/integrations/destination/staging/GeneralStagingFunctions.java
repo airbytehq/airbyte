@@ -93,7 +93,7 @@ public class GeneralStagingFunctions {
         typerDeduperValve.addStream(streamId);
       }
       if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), false);
         typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
       }
     } catch (final Exception e) {
@@ -130,7 +130,10 @@ public class GeneralStagingFunctions {
           stagingOperations.dropStageIfExists(database, stageName);
         }
 
-        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
+        // Force run here. This is the final invocation of the sync, so we need to get all the data.
+        // TODO future enhancement: track whether any new raw records were written for this stream after the last T+D run
+        // and skip this T+D run if there were no new records.
+        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName(), true);
       }
 
       typerDeduper.commitFinalTables();
