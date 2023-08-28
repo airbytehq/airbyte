@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -78,10 +79,16 @@ public class GeneralStagingFunctions {
                                             final TyperDeduper typerDeduper)
       throws Exception {
     try {
-      stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
-          tableName, schemaName);
+      final Lock rawTableInsertLock = typerDeduper.getRawTableInsertLock(streamNamespace, streamName);
+      rawTableInsertLock.lock();
+      try {
+        stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
+            tableName, schemaName);
+      } finally {
+        rawTableInsertLock.unlock();
+      }
 
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
+      final AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
       if (!typerDeduperValve.containsKey(streamId)) {
         typerDeduperValve.addStream(streamId);
       }
