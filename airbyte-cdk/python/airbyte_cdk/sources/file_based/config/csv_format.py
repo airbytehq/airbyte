@@ -6,7 +6,6 @@ import codecs
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from airbyte_cdk.sources.file_based.config.config_helper import replace_enum_allOf_and_anyOf
 from pydantic import BaseModel, Field, ValidationError, root_validator, validator
 from typing_extensions import Literal
 
