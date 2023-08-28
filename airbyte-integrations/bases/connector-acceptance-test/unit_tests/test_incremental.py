@@ -94,50 +94,49 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
 
 @pytest.mark.parametrize("cursor_type", ["date", "string"])
 @pytest.mark.parametrize(
-    "records1, records2, latest_state, threshold_days, expected_error",
+    "records1, records2, latest_state, expected_error",
     [
-        ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-02", 0, does_not_raise()),
+        (
+            [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
+            [],
+            "2020-01-02",
+            pytest.raises(AssertionError, match="Second Read should produce at least one record")
+        ),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-02",
-            0,
-            pytest.raises(AssertionError, match="First incremental sync should produce records younger"),
+            pytest.raises(AssertionError, match="Second Read should produce at least one record"),
         ),
         (
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             "2020-01-02",
-            0,
             does_not_raise(),
         ),
         (
             [{"date": "2020-01-01"}],
             [{"date": "2020-01-01"}],
             "2020-01-02",
-            0,
-            pytest.raises(AssertionError, match="Second incremental sync should produce records older"),
+            pytest.raises(AssertionError, match="Records for stream test_stream should change between reads but did not"),
         ),
         (
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             "2020-01-03",
-            2,
-            does_not_raise(),
+            pytest.raises(AssertionError, match="Records for stream test_stream should change between reads but did not"),
         ),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-02",
-            2,
-            pytest.raises(AssertionError, match="First incremental sync should produce records younger"),
+            pytest.raises(AssertionError, match="Second Read should produce at least one record"),
         ),
         (
             [{"date": "2020-01-01"}],
             [{"date": "2020-01-02"}],
             "2020-01-06",
-            3,
-            pytest.raises(AssertionError, match="Second incremental sync should produce records older"),
+            does_not_raise(),
         ),
     ],
 )
@@ -149,10 +148,8 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
     ],
 )
 async def test_incremental_two_sequential_reads(
-    mocker, records1, records2, latest_state, threshold_days, cursor_type, expected_error, run_per_stream_test
+    mocker, records1, records2, latest_state, cursor_type, expected_error, run_per_stream_test
 ):
-    input_config = IncrementalConfig(threshold_days=threshold_days)
-    cursor_paths = {"test_stream": ["date"]}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -188,34 +185,30 @@ async def test_incremental_two_sequential_reads(
     t = _TestIncremental()
     with expected_error:
         await t.test_two_sequential_reads(
-            inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
-            cursor_paths=cursor_paths,
             docker_runner=docker_runner_mock,
         )
 
 
 @pytest.mark.parametrize(
-    "stream_name, cursor_type, cursor_paths, records1, records2, latest_state, expected_error",
+    "stream_name, cursor_type, records1, records2, latest_state, expected_error",
     [
         (
             "test_stream",
             {"dateCreated": {"type": "string", "format": "date-time"}},
-            {"test_stream": ["dateCreated"]},
             [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
             [],
             {"dateCreated": "2020-01-02T01:01:01.000000Z"},
-            does_not_raise(),
+            pytest.raises(AssertionError, match="Second Read should produce at least one record"),
         ),
         (
             "test_stream",
             {"dateCreated": {"type": "string", "format": "date-time"}},
-            {"test_stream": ["dateCreated"]},
             [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
             [],
             {},
-            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path"),
+            pytest.raises(AssertionError, match="Second Read should produce at least one record"),
         ),
     ],
 )
@@ -227,9 +220,8 @@ async def test_incremental_two_sequential_reads(
     ],
 )
 async def test_incremental_two_sequential_reads_state_invalid(
-    mocker, stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test
+    mocker, stream_name, records1, records2, latest_state, cursor_type, expected_error, run_per_stream_test
 ):
-    input_config = IncrementalConfig()
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -268,10 +260,8 @@ async def test_incremental_two_sequential_reads_state_invalid(
     t = _TestIncremental()
     with expected_error:
         await t.test_two_sequential_reads(
-            inputs=input_config,
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
-            cursor_paths=cursor_paths,
             docker_runner=docker_runner_mock,
         )
 
