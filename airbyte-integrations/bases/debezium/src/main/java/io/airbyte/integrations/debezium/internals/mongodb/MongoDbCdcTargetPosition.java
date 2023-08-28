@@ -90,6 +90,18 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
   }
 
   @Override
+  public boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+    return MongoDbResumeTokenHelper.extractTimestampFromEvent(event.eventValueAsJson()).getValue() > ResumeTokens
+        .getTimestamp(ResumeTokens.fromData(offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN))).getValue();
+  }
+
+  @Override
+  public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+    return offsetA.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN)
+        .equals(offsetB.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN));
+  }
+
+  @Override
   public boolean equals(final Object o) {
     if (this == o)
       return true;
