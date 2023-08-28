@@ -45,6 +45,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_DURATION;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
@@ -165,7 +166,7 @@ public class MongoDbCdcInitializer {
                             .sort(Sorts.ascending(ID_FIELD))
                             .cursor();
 
-                    final var stateIterator = new MongoDbStateIterator(cursor, stateManager, airbyteStream, emittedAt, CHECKPOINT_INTERVAL);
+                    final var stateIterator = new MongoDbStateIterator(cursor, stateManager, airbyteStream, emittedAt, CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
                     return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
                 })
                 .toList();

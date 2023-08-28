@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_DURATION;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -21,7 +23,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -74,7 +78,7 @@ class MongoDbStateIteratorTest {
       private int offset = 0;
 
       @Override
-      public Document answer(InvocationOnMock invocation) throws Throwable {
+      public Document answer(final InvocationOnMock invocation) throws Throwable {
         final var doc = docs.get(offset);
         offset++;
         return doc;
@@ -84,7 +88,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -112,6 +116,10 @@ class MongoDbStateIteratorTest {
         docs.get(1).get("_id").toString(),
         message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match last record id");
+    assertEquals(
+        InitialSnapshotStatus.IN_PROGRESS.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be in_progress");
 
     assertTrue(iter.hasNext(), "alizarin crimson should be next");
     message = iter.next();
@@ -125,6 +133,10 @@ class MongoDbStateIteratorTest {
         docs.get(2).get("_id").toString(),
         message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match last record id");
+    assertEquals(
+        InitialSnapshotStatus.COMPLETE.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be complete");
 
     assertFalse(iter.hasNext(), "should have no more records");
   }
@@ -142,7 +154,7 @@ class MongoDbStateIteratorTest {
 
     final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
 
     // with a batch size of 2, the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -162,14 +174,16 @@ class MongoDbStateIteratorTest {
         docs.get(0).get("_id").toString(),
         message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match last record id");
+    assertEquals(
+        InitialSnapshotStatus.IN_PROGRESS.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be in_progress");
 
     assertFalse(iter.hasNext(), "should have no more records");
   }
 
   @Test
   void initialStateIsReturnedIfUnderlyingIteratorIsEmpty() {
-    final var docs = docs();
-
     // on the second hasNext call, throw an exception
     when(mongoCursor.hasNext()).thenReturn(false);
 
@@ -179,7 +193,7 @@ class MongoDbStateIteratorTest {
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
         new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS));
 
-    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
 
     // the MongoDbStateIterator should return the following after each
     // `hasNext`/`next` call:
@@ -193,6 +207,89 @@ class MongoDbStateIteratorTest {
         objectId,
         message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
         "state id should match initial state ");
+    assertEquals(
+        InitialSnapshotStatus.COMPLETE.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be in_progress");
+
+    assertFalse(iter.hasNext(), "should have no more records");
+  }
+
+  @Test
+  void stateEmittedAfterDuration() throws InterruptedException {
+    // force a 1.5s wait between messages
+    when(mongoCursor.hasNext())
+        .thenReturn(true, true, true, true, false);
+
+    final var docs = docs();
+    when(mongoCursor.next()).thenReturn(docs.get(0), docs.get(1));
+
+    final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
+    final var objectId = "64dfb6a7bb3c3458c30801f4";
+
+    stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
+        new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS));
+
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), 1000000, Duration.of(1, SECONDS));
+
+    // with a batch size of 1,000,000 and a 1.5s sleep between hasNext calls, the expected results should be
+    // `hasNext`/`next` call:
+    // true, record Air Force Blue
+    // true, state (with Air Force Blue)
+    // true, record Alice Blue
+    // true, state (with Alice Blue as the state)
+    // true, state (final state)
+    // false
+    AirbyteMessage message;
+    assertTrue(iter.hasNext(), "air force blue should be next");
+    message = iter.next();
+    assertEquals(Type.RECORD, message.getType());
+    assertEquals(docs.get(0).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+
+    Thread.sleep(1500);
+
+    assertTrue(iter.hasNext(), "state should be next");
+    message = iter.next();
+    assertEquals(Type.STATE, message.getType());
+    assertEquals(
+        docs.get(0).get("_id").toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
+        "state id should match last record id");
+    assertEquals(
+        InitialSnapshotStatus.IN_PROGRESS.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be in_progress");
+
+    assertTrue(iter.hasNext(), "alice blue should be next");
+    message = iter.next();
+    assertEquals(Type.RECORD, message.getType());
+    assertEquals(docs.get(1).get("_id").toString(), message.getRecord().getData().get("_id").asText());
+
+    Thread.sleep(1500);
+
+    assertTrue(iter.hasNext(), "state should be next");
+    message = iter.next();
+    assertEquals(Type.STATE, message.getType());
+    assertEquals(
+        docs.get(1).get("_id").toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
+        "state id should match last record id");
+    assertEquals(
+        InitialSnapshotStatus.IN_PROGRESS.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be in_progress");
+
+    assertTrue(iter.hasNext(), "final state should be next");
+    message = iter.next();
+    assertEquals(Type.STATE, message.getType());
+    assertEquals(
+        docs.get(1).get("_id").toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
+        "state id should match last record id");
+    assertEquals(
+        InitialSnapshotStatus.COMPLETE.toString(),
+        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
+        "state status should be final");
 
     assertFalse(iter.hasNext(), "should have no more records");
   }
