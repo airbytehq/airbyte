@@ -82,7 +82,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                         raise Exception(f"dimension: '{dimension}' not found")
 
         # start date checks
-        pendulum.parse(config.get("start_date") or "2021-01-01")  # `2021-01-01` is the default value
+        pendulum.parse(config.get("start_date", "2021-01-01")) # `2021-01-01` is the default value
 
         # the `end_date` checks
         end_date = config.get("end_date")
@@ -187,7 +187,7 @@ class SourceGoogleSearchConsole(AbstractSource):
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             "site_urls": config["site_urls"],
-            "start_date": config.get("start_date") or "2021-01-01",  # `2021-01-01` is the default value
+            "start_date": config.get("start_date", "2021-01-01"),  # `2021-01-01` is the default value
             "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
             "data_state": config["data_state"],

@@ -75,7 +75,7 @@ For more information on this topic, please refer to [this Google article](https:
 3. Find and select **Google Search Console** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-6. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 
    <!-- env:cloud -->
