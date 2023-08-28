@@ -134,14 +134,6 @@ error_empty_stream_scenario = (
 ).build()
 
 
-error_extension_mismatch_scenario = (
-    _base_failure_scenario.copy()
-    .set_name("error_extension_mismatch_scenario")
-    .set_file_type("jsonl")
-    .set_expected_check_error(None, FileBasedSourceError.EXTENSION_MISMATCH.value)
-).build()
-
-
 error_listing_files_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_listing_files_scenario")

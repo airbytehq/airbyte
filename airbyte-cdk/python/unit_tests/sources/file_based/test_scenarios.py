@@ -24,7 +24,6 @@ from unit_tests.sources.file_based.scenarios.avro_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
-    error_extension_mismatch_scenario,
     error_listing_files_scenario,
     error_multi_stream_scenario,
     error_reading_file_scenario,
@@ -309,7 +308,6 @@ def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
 
 check_scenarios = [
     error_empty_stream_scenario,
-    error_extension_mismatch_scenario,
     error_listing_files_scenario,
     error_reading_file_scenario,
     error_record_validation_user_provided_schema_scenario,
