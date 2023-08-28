@@ -33,7 +33,7 @@ class StripeExampleStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         return None
-
+        
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -41,7 +41,8 @@ class StripeExampleStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        params = {"limit":10, "created[gte]": 1693214249}
+        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
