@@ -794,6 +794,7 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
             return resp
         raise SourceZendeskException("not found settings")
 
+
 class UserFields(SourceZendeskSupportFullRefreshStream):
     """User Fields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields"""
 

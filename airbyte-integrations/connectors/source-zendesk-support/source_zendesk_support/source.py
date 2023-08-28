@@ -41,8 +41,8 @@ from .streams import (
     Tickets,
     TicketSkips,
     Topics,
-    Users,
     UserFields,
+    Users,
     UserSettingsStream,
 )
 
@@ -147,7 +147,7 @@ class SourceZendeskSupport(AbstractSource):
             Brands(**args),
             CustomRoles(**args),
             Schedules(**args),
-            UserFields(*args)
+            UserFields(*args),
         ]
         ticket_forms_stream = TicketForms(**args)
         account_attributes = AccountAttributes(**args)

@@ -47,8 +47,8 @@ from source_zendesk_support.streams import (
     Tickets,
     TicketSkips,
     Topics,
-    Users,
     UserFields,
+    Users,
     UserSettingsStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
