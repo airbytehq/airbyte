@@ -7,11 +7,14 @@ import os
 import random
 import shutil
 import string
+from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 from typing import Any, List, Mapping, Tuple
+from unittest.mock import Mock
 
 import pendulum
 import pytest
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from smart_open import open as smart_open
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
@@ -412,3 +415,16 @@ class TestCsvParser(AbstractTestParser):
                     read_count += 1
             assert read_count == expected_count
             expected_file.close()
+
+    @pytest.mark.parametrize(
+        "encoding, expectation",
+        (
+            ("UTF8", does_not_raise()),
+            ("", does_not_raise()),
+            ("R2D2", pytest.raises(AirbyteTracedException)),
+        )
+    )
+    def test_encoding_validation(self, encoding, expectation) -> None:
+        parser = CsvParser(format=Mock(), master_schema=Mock())
+        with expectation:
+            parser._validate_encoding(encoding)

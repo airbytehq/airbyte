@@ -3,6 +3,7 @@
 #
 
 import json
+from unittest.mock import Mock, call
 
 import pytest
 import requests
@@ -10,6 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Record
 
 
@@ -66,6 +68,9 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     stream_state = {"created_at": "06-06-21"}
     stream_slice = {"last_seen": "06-10-21"}
     next_page_token = {"last_seen_id": 14}
+    first_transformation = Mock(spec=RecordTransformation)
+    second_transformation = Mock(spec=RecordTransformation)
+    transformations = [first_transformation, second_transformation]
 
     response = create_response(body)
     decoder = JsonDecoder(parameters={})
@@ -74,12 +79,24 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
         record_filter = None
     else:
         record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
-    record_selector = RecordSelector(extractor=extractor, record_filter=record_filter, parameters=parameters)
+    record_selector = RecordSelector(
+        extractor=extractor,
+        record_filter=record_filter,
+        transformations=transformations,
+        config=config,
+        parameters=parameters
+    )
 
     actual_records = record_selector.select_records(
         response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
     )
     assert actual_records == [Record(data, stream_slice) for data in expected_data]
+    calls = []
+    for record in expected_data:
+        calls.append(call(record, config=config, stream_state=stream_state, stream_slice=stream_slice))
+    for transformation in transformations:
+        assert transformation.transform.call_count == len(expected_data)
+        transformation.transform.assert_has_calls(calls)
 
 
 def create_response(body):

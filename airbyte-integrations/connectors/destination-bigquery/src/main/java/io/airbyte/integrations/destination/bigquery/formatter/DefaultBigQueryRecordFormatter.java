@@ -11,8 +11,10 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -23,38 +25,58 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
 
-  private static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
+  public static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
       Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
-  public DefaultBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public static final com.google.cloud.bigquery.Schema SCHEMA_V2 = com.google.cloud.bigquery.Schema.of(
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+  public DefaultBigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
   @Override
-  public JsonNode formatRecord(AirbyteRecordMessage recordMessage) {
-    return Jsons.jsonNode(Map.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(recordMessage),
-        JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage)));
+  public JsonNode formatRecord(final AirbyteRecordMessage recordMessage) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      // Map.of has a @NonNull requirement, so creating a new Hash map
+      final HashMap<String, Object> destinationV2record = new HashMap<>();
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
+      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
+      return Jsons.jsonNode(destinationV2record);
+    } else {
+      return Jsons.jsonNode(Map.of(
+          JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
+          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(recordMessage),
+          JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage)));
+    }
   }
 
-  protected Object getEmittedAtField(AirbyteRecordMessage recordMessage) {
+  protected Object getEmittedAtField(final AirbyteRecordMessage recordMessage) {
     // Bigquery represents TIMESTAMP to the microsecond precision, so we convert to microseconds then
     // use BQ helpers to string-format correctly.
     final long emittedAtMicroseconds = TimeUnit.MICROSECONDS.convert(recordMessage.getEmittedAt(), TimeUnit.MILLISECONDS);
     return QueryParameterValue.timestamp(emittedAtMicroseconds).getValue();
   }
 
-  protected Object getData(AirbyteRecordMessage recordMessage) {
+  protected Object getData(final AirbyteRecordMessage recordMessage) {
     final JsonNode formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData());
     return Jsons.serialize(formattedData);
   }
 
   @Override
-  public Schema getBigQuerySchema(JsonNode jsonSchema) {
-    return SCHEMA;
+  public Schema getBigQuerySchema(final JsonNode jsonSchema) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return SCHEMA_V2;
+    } else {
+      return SCHEMA;
+    }
   }
 
 }

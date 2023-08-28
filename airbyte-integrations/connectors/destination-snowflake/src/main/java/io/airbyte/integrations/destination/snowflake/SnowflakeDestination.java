@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 
+// TODO: Remove the Switching Destination from this class as part of code cleanup.
 @Slf4j
 public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestination.DestinationType> {
 
@@ -21,8 +22,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   private final String airbyteEnvironment;
 
   enum DestinationType {
-    COPY_S3,
-    COPY_GCS,
     INTERNAL_STAGING
   }
 
@@ -35,22 +34,8 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
-                                                                       final Consumer<AirbyteMessage> outputRecordCollector)
-      throws Exception {
-    log.info("destination class: {}", getClass());
-    // this is how we toggle async snowflake on.
-    final boolean useAsyncSnowflake = false;
-    // final boolean useAsyncSnowflake = config.has("loading_method")
-    // && config.get("loading_method").has("method")
-    // && config.get("loading_method").get("method").asText().equals("Internal Staging");
-
-    log.info("using async snowflake: {}", useAsyncSnowflake);
-    if (useAsyncSnowflake) {
-      return new SnowflakeInternalStagingDestination(airbyteEnvironment).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
-    } else {
-      return new ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector));
-    }
-
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new SnowflakeInternalStagingDestination(airbyteEnvironment).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
   }
 
 }

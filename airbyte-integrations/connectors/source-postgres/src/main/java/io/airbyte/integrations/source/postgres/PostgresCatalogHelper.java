@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -122,15 +125,13 @@ public final class PostgresCatalogHelper {
     return publicizedTables;
   }
 
-  /**
-   * This method is used for xmin synsc in order to overwrite sync modes for cursor fields. For xmin, we want streams to only have incremental mode
-   * enabled.
-   *
-   * @param stream - airbyte stream
-   * @return will return list of sync modes
+  /*
+   * To prepare for Destination v2, cdc streams must have a default cursor field this defaults to lsn
+   * as a cursor as it is monotonically increasing and unique
    */
-  public static AirbyteStream overrideSyncModesForXmin(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL));
+  public static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
+    stream.setDefaultCursorField(ImmutableList.of(CDC_LSN));
+    return stream;
   }
 
 }

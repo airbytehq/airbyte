@@ -211,6 +211,12 @@
     },
     "usage": {
       "type": ["null", "string"]
+    },
+    "flow_directions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

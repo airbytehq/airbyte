@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.buffered_stream_consumer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -92,7 +93,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private Instant nextFlushDeadline;
   private final Duration bufferFlushFrequency;
+  private final String defaultNamespace;
 
+  /**
+   * Feel free to continue using this in non-1s1t destinations - it may be easier to use. However,
+   * 1s1t destinations should prefer the version which accepts a {@code defaultNamespace}.
+   */
+  @Deprecated
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final OnStartFunction onStart,
                                 final BufferingStrategy bufferingStrategy,
@@ -105,7 +112,27 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose,
         catalog,
         isValidRecord,
-        Duration.ofMinutes(15));
+        Duration.ofMinutes(15),
+        // This is purely for backwards compatibility. Many older destinations handle this internally.
+        // Starting with Destinations V2, we recommend passing in an explicit namespace.
+        null);
+  }
+
+  public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                                final OnStartFunction onStart,
+                                final BufferingStrategy bufferingStrategy,
+                                final OnCloseFunction onClose,
+                                final ConfiguredAirbyteCatalog catalog,
+                                final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                                final String defaultNamespace) {
+    this(outputRecordCollector,
+        onStart,
+        bufferingStrategy,
+        onClose,
+        catalog,
+        isValidRecord,
+        Duration.ofMinutes(15),
+        defaultNamespace);
   }
 
   /*
@@ -119,7 +146,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
                          final OnCloseFunction onClose,
                          final ConfiguredAirbyteCatalog catalog,
                          final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
-                         final Duration flushFrequency) {
+                         final Duration flushFrequency,
+                         final String defaultNamespace) {
     this.outputRecordCollector = outputRecordCollector;
     this.hasStarted = false;
     this.hasClosed = false;
@@ -130,8 +158,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
-    this.stateManager = new DefaultDestStateLifecycleManager();
+    this.stateManager = new DefaultDestStateLifecycleManager(defaultNamespace);
     this.bufferFlushFrequency = flushFrequency;
+    this.defaultNamespace = defaultNamespace;
   }
 
   @Override
@@ -157,7 +186,11 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage record = message.getRecord();
-      final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
+      if (Strings.isNullOrEmpty(record.getNamespace())) {
+        record.setNamespace(defaultNamespace);
+      }
+      final AirbyteStreamNameNamespacePair stream;
+      stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
 
       // if stream is not part of list of streams to sync to then throw invalid stream exception
       if (!streamNames.contains(stream)) {
@@ -177,7 +210,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         } else if (BufferFlushType.FLUSH_SINGLE_STREAM.equals(flushType.get())) {
           if (stateManager.supportsPerStreamFlush()) {
             // per-stream instance can handle flush of just a single stream
-            markStatesAsFlushedToDestination();
+            markStatesAsFlushedToDestination(stream);
           }
           /*
            * We don't mark {@link AirbyteStateMessage} as committed in the case with GLOBAL/LEGACY because
@@ -202,6 +235,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
+    stateManager.listCommitted().forEach(outputRecordCollector);
+    stateManager.clearCommitted();
+    nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);
+  }
+
+  private void markStatesAsFlushedToDestination(final AirbyteStreamNameNamespacePair stream) {
+    stateManager.markPendingAsCommitted(stream);
     stateManager.listCommitted().forEach(outputRecordCollector);
     stateManager.clearCommitted();
     nextFlushDeadline = Instant.now().plus(bufferFlushFrequency);

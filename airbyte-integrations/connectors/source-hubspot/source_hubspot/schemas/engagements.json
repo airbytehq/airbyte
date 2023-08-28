@@ -14,6 +14,12 @@
     "portalId": {
       "type": ["null", "integer"]
     },
+    "queueMembershipIds": {
+      "type": ["null", "array"]
+    },
+    "scheduledTasks": {
+      "type": ["null", "array"]
+    },
     "active": {
       "type": ["null", "boolean"]
     },
@@ -257,7 +263,7 @@
           }
         },
         "threadId": {
-          "type": ["null", "string", "integer"]
+          "type": ["null", "string"]
         },
         "messageId": {
           "type": ["null", "string"]

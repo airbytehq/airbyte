@@ -230,13 +230,13 @@
         "group": "advanced",
         "oneOf": [
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "title": "Standard (Xmin)",
+            "description": "Xmin replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
-                "const": "Standard",
+                "const": "Xmin",
                 "order": 0
               }
             }
@@ -302,6 +302,18 @@
                 "order": 7
               }
             }
+          },
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard",
+                "order": 8
+              }
+            }
           }
         ]
       },
@@ -309,6 +321,7 @@
         "type": "object",
         "title": "SSH Tunnel Method",
         "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "group": "security",
         "oneOf": [
           {
             "title": "No Tunnel",

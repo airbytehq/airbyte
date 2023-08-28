@@ -944,7 +944,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-  private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+  protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
     for (final JsonNode stream : airbyteMessage.getState().getData().get("streams")) {
       if (stream.get("stream_name").asText().equals(streamName)) {
         return stream;
@@ -965,13 +965,13 @@ public abstract class JdbcSourceAcceptanceTest {
         getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
   }
 
-  private void incrementalCursorCheck(
-                                      final String initialCursorField,
-                                      final String cursorField,
-                                      final String initialCursorValue,
-                                      final String endCursorValue,
-                                      final List<AirbyteMessage> expectedRecordMessages,
-                                      final ConfiguredAirbyteStream airbyteStream)
+  protected void incrementalCursorCheck(
+                                        final String initialCursorField,
+                                        final String cursorField,
+                                        final String initialCursorValue,
+                                        final String endCursorValue,
+                                        final List<AirbyteMessage> expectedRecordMessages,
+                                        final ConfiguredAirbyteStream airbyteStream)
       throws Exception {
     airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
     airbyteStream.setCursorField(List.of(cursorField));
@@ -980,31 +980,32 @@ public abstract class JdbcSourceAcceptanceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(airbyteStream));
 
-    final DbStreamState dbStreamState = new DbStreamState()
-        .withStreamName(airbyteStream.getStream().getName())
-        .withStreamNamespace(airbyteStream.getStream().getNamespace())
-        .withCursorField(List.of(initialCursorField))
-        .withCursor(initialCursorValue)
-        .withCursorRecordCount(1L);
+    final DbStreamState dbStreamState = buildStreamState(airbyteStream, initialCursorField, initialCursorValue);
 
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, configuredCatalog, Jsons.jsonNode(createState(List.of(dbStreamState)))));
 
     setEmittedAtToNull(actualMessages);
 
-    final List<DbStreamState> expectedStreams = List.of(
-        new DbStreamState()
-            .withStreamName(airbyteStream.getStream().getName())
-            .withStreamNamespace(airbyteStream.getStream().getNamespace())
-            .withCursorField(List.of(cursorField))
-            .withCursor(endCursorValue)
-            .withCursorRecordCount(1L));
+    final List<DbStreamState> expectedStreams = List.of(buildStreamState(airbyteStream, cursorField, endCursorValue));
+
     final List<AirbyteMessage> expectedMessages = new ArrayList<>(expectedRecordMessages);
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
     assertTrue(expectedMessages.containsAll(actualMessages));
     assertTrue(actualMessages.containsAll(expectedMessages));
+  }
+
+  protected DbStreamState buildStreamState(final ConfiguredAirbyteStream configuredAirbyteStream,
+                                           final String cursorField,
+                                           final String cursorValue) {
+    return new DbStreamState()
+        .withStreamName(configuredAirbyteStream.getStream().getName())
+        .withStreamNamespace(configuredAirbyteStream.getStream().getNamespace())
+        .withCursorField(List.of(cursorField))
+        .withCursor(cursorValue)
+        .withCursorRecordCount(1L);
   }
 
   // get catalog and perform a defensive copy.
