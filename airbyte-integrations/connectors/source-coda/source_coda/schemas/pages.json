@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string"
@@ -20,8 +21,54 @@
     "subtitle": {
       "type": "string"
     },
+    "createdBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "@context": {
+          "type": "string"
+        },
+        "@type": {
+          "type": "string"
+        },
+        "additionalType": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "updatedBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "@context": {
+          "type": "string"
+        },
+        "@type": {
+          "type": "string"
+        },
+        "additionalType": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "updatedAt": {
+      "type": "string"
+    },
     "icon": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "name": {
           "type": "string"
@@ -35,7 +82,7 @@
       }
     },
     "image": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "width": {
           "type": "number"
@@ -52,7 +99,7 @@
       }
     },
     "parent": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": "string"
@@ -74,7 +121,7 @@
     "children": {
       "type": "array",
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
             "type": "string"
@@ -96,7 +143,7 @@
       "authors": {
         "type": "array",
         "items": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "@context": {
               "type": "string"
@@ -119,7 +166,7 @@
           "type": "string"
         },
         "updatedBy": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "@context": {
               "type": "string"
@@ -139,7 +186,7 @@
           }
         },
         "createdBy": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "@context": {
               "type": "string"
