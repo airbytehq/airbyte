@@ -52,10 +52,6 @@ public class BigQueryTableWriter implements DestinationWriter {
 
     try {
       Job job = writeChannel.getJob();
-      LOGGER.error("_______________ Writing to BQ ____________________");
-      LOGGER.error(formattedData);
-      LOGGER.error("_______________ Job Information ____________________");
-      LOGGER.error("" + job);
       writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
     } catch (Exception e) {
       LOGGER.error("BigQueryTableWriter", e);
