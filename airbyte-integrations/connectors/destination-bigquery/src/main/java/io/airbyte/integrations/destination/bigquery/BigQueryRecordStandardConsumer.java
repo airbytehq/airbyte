@@ -24,11 +24,11 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
                                           BigQuery bigQuery,
                                           ConfiguredAirbyteCatalog catalog,
                                           String defaultNamespace,
-                                          Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
+                                          ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
         super(outputRecordCollector,
                 onStart,
                 onClose,
-                new BigQueryAsyncStandardFlush(bigQuery, uploaderMap),
+                new BigQueryAsyncStandardFlush(bigQuery, () -> uploaderMap),
                 catalog,
                 new BufferManager(),
                 defaultNamespace);

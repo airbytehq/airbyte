@@ -374,12 +374,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final TyperDeduper typerDeduper)
       throws Exception {
     typerDeduper.prepareTables();
-    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,
         parsedCatalog,
-        TypingAndDedupingFlag.isDestinationV2());
+        TypingAndDedupingFlag.isDestinationV2()).get();
 
     return new BigQueryRecordStandardConsumer(
             outputRecordCollector,
@@ -388,7 +388,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               LOGGER.error("Is use1s1t in the on start: " + use1s1t);
               if (use1s1t) {
               // Set up our raw tables
-                writeConfigs.get().forEach((streamId, uploader) -> {
+                writeConfigs.forEach((streamId, uploader) -> {
                 final StreamConfig stream = parsedCatalog.getStream(streamId);
                 if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
                   // For streams in overwrite mode, truncate the raw table.
@@ -407,7 +407,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             (hasFailed) -> {
               LOGGER.info("Started closing all connections");
               final List<Exception> exceptionsThrown = new ArrayList<>();
-              writeConfigs.get().forEach((streamId, uploader) -> {
+              writeConfigs.forEach((streamId, uploader) -> {
                 try {
                   typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
                   uploader.close(hasFailed, outputRecordCollector, null);
