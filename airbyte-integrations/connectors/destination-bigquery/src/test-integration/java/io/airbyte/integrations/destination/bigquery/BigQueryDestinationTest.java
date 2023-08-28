@@ -423,7 +423,8 @@ class BigQueryDestinationTest {
   void testWritePartitionOverUnpartitioned(final String configName) throws Exception {
     final JsonNode testConfig = configs.get(configName);
     initBigQuery(config);
-    final StreamId streamId = new BigQuerySqlGenerator(null).buildStreamId(datasetId, USERS_STREAM_NAME, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
+    final StreamId streamId =
+        new BigQuerySqlGenerator(null).buildStreamId(datasetId, USERS_STREAM_NAME, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
     final Dataset dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, streamId.rawNamespace());
     createUnpartitionedTable(bigquery, dataset, streamId.rawName());
     assertFalse(isTablePartitioned(bigquery, dataset, streamId.rawName()));

@@ -166,7 +166,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
             assertEquals("TABLE", tableInfo.getString("kind"));
             connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
             return connection.createStatement()
-                .executeQuery(String.format("SELECT * FROM \"%s\".\"%s\" ORDER BY \"%s\" ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT));
+                .executeQuery(String.format("SELECT * FROM \"%s\".\"%s\" ORDER BY \"%s\" ASC;", schema, tableName,
+                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT));
           }
         },
         new SnowflakeTestSourceOperations()::rowToJson);
