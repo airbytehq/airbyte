@@ -52,16 +52,16 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
     indexer._pod_type = "p1"
     indexer.index(
         [
-            Document(page_content="test", metadata={"_airbyte_stream": "abc"}),
-            Document(page_content="test2", metadata={"_airbyte_stream": "abc"}),
+            Document(page_content="test", metadata={"_ab_stream": "abc"}),
+            Document(page_content="test2", metadata={"_ab_stream": "abc"}),
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.delete.assert_called_with(filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}})
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
-            (ANY, [1, 2, 3], {"_airbyte_stream": "abc", "text": "test"}),
-            (ANY, [4, 5, 6], {"_airbyte_stream": "abc", "text": "test2"}),
+            (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
+            (ANY, [4, 5, 6], {"_ab_stream": "abc", "text": "test2"}),
         ),
         async_req=True,
         show_progress=False,
@@ -74,17 +74,17 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
     indexer.pinecone_index.query.return_value = MagicMock(matches=[MagicMock(id="doc_id1"), MagicMock(id="doc_id2")])
     indexer.index(
         [
-            Document(page_content="test", metadata={"_airbyte_stream": "abc"}),
-            Document(page_content="test2", metadata={"_airbyte_stream": "abc"}),
+            Document(page_content="test", metadata={"_ab_stream": "abc"}),
+            Document(page_content="test2", metadata={"_ab_stream": "abc"}),
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000)
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
-            (ANY, [1, 2, 3], {"_airbyte_stream": "abc", "text": "test"}),
-            (ANY, [4, 5, 6], {"_airbyte_stream": "abc", "text": "test2"}),
+            (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
+            (ANY, [4, 5, 6], {"_ab_stream": "abc", "text": "test2"}),
         ),
         async_req=True,
         show_progress=False,
@@ -105,7 +105,7 @@ def test_pinecone_index_upsert_batching():
     indexer = create_pinecone_indexer()
     indexer.embed_fn = MagicMock(return_value=[[i, i, i] for i in range(50)])
     indexer.index(
-        [Document(page_content=f"test {i}", metadata={"_airbyte_stream": "abc"}) for i in range(50)],
+        [Document(page_content=f"test {i}", metadata={"_ab_stream": "abc"}) for i in range(50)],
         [],
     )
     assert indexer.pinecone_index.upsert.call_count == 2
@@ -113,13 +113,13 @@ def test_pinecone_index_upsert_batching():
         assert indexer.pinecone_index.upsert.call_args_list[0].kwargs["vectors"][i] == (
             ANY,
             [i, i, i],
-            {"_airbyte_stream": "abc", "text": f"test {i}"},
+            {"_ab_stream": "abc", "text": f"test {i}"},
         )
     for i in range(40, 50):
         assert indexer.pinecone_index.upsert.call_args_list[1].kwargs["vectors"][i - 40] == (
             ANY,
             [i, i, i],
-            {"_airbyte_stream": "abc", "text": f"test {i}"},
+            {"_ab_stream": "abc", "text": f"test {i}"},
         )
 
 
@@ -159,7 +159,7 @@ def generate_catalog():
 def test_pinecone_pre_sync(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.delete.assert_called_with(filter={"_airbyte_stream": "example_stream2"})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "example_stream2"})
 
 
 def test_pinecone_pre_sync_starter(mock_describe_index):
@@ -167,7 +167,7 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer.pinecone_index.query.return_value = MagicMock(matches=[MagicMock(id="doc_id1"), MagicMock(id="doc_id2")])
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_airbyte_stream": "example_stream2"}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_ab_stream": "example_stream2"}, top_k=10_000)
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
 
 
