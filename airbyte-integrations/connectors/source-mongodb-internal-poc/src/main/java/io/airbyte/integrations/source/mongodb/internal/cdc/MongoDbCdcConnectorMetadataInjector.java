@@ -13,7 +13,6 @@ import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
-import org.bson.BsonTimestamp;
 
 /**
  * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores cursor information
