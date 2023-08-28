@@ -214,6 +214,6 @@
       }
     },
     "url": { "type": ["null", "string"] },
-    "updated": { "type":  ["null", "integer"] }
+    "updated": { "type": ["null", "integer"] }
   }
 }

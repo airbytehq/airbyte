@@ -19,10 +19,7 @@
       "type": ["null", "integer"]
     },
     "updated": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "currency": {
       "type": ["null", "string"]
