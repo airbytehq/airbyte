@@ -63,6 +63,12 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private boolean finalStateNext = false;
 
   /**
+   * Tracks if the underlying iterator threw an exception.
+   * This helps to determine the final state status emitted from the final next call.
+   */
+  private boolean iterThrewException = false;
+
+  /**
    * Constructor.
    *
    * @param iter {@link MongoCursor} that iterates over Mongo documents
@@ -98,6 +104,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       }
     } catch (final MongoException e) {
       // If hasNext throws an exception, log it and then treat it as if hasNext returned false.
+      iterThrewException = true;
       LOGGER.info("hasNext threw an exception: {}", e.getMessage(), e);
     }
 
@@ -130,8 +137,10 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
           .withType(Type.STATE)
           .withState(stateManager.toState());
     } else if (finalStateNext) {
+      final var finalStateStatus = iterThrewException ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
+
       stateManager.updateStreamState(stream.getStream().getName(),
-              stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
+              stream.getStream().getNamespace(), new MongoDbStreamState(lastId, finalStateStatus));
 
       return new AirbyteMessage()
               .withType(Type.STATE)
