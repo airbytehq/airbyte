@@ -245,7 +245,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     return MODELS_SCHEMA;
   }
 
-//  @Test
+  @Test
   protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     revokeReplicationClientPermission();
     final AirbyteConnectionStatus status = getSource().check(getConfig());
@@ -255,7 +255,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertTrue(status.getMessage().contains(expectedErrorMessage));
   }
 
-//  @Test
+  @Test
   protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
 
     final int recordsToCreate = 20;
@@ -320,7 +320,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
    *
    * @throws Exception Exception happening in the test.
    */
-//  @Test
+  @Test
   protected void verifyCheckpointStatesByRecords() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
     final int recordsToCreate = 20000;
