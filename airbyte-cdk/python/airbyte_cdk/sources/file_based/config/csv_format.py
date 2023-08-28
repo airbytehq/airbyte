@@ -135,9 +135,7 @@ class CsvFormat(BaseModel):
         definition_type = values.get("header_definition_type")
         column_names = values.get("user_provided_column_names")
         if definition_type == CsvHeaderDefinitionType.USER_PROVIDED and not column_names:
-            raise ValidationError(
-                "`user_provided_column_names` should be defined if the definition 'User Provided'.", model=CsvFormat
-            )
+            raise ValidationError("`user_provided_column_names` should be defined if the definition 'User Provided'.", model=CsvFormat)
         if definition_type != CsvHeaderDefinitionType.USER_PROVIDED and column_names:
             raise ValidationError(
                 "`user_provided_column_names` should not be defined if the definition is not 'User Provided'.", model=CsvFormat
