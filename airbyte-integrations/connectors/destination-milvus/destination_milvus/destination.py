@@ -35,7 +35,7 @@ from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-from pymilvus import MilvusClient, connections, Collection
+from pymilvus import DataType, MilvusClient, connections, Collection
 from pymilvus.exceptions import DescribeCollectionException
 
 
@@ -133,7 +133,16 @@ class MilvusIndexer(Indexer):
     def check(self) -> Optional[str]:
         try:
             self._create_client()
-            self._collection.describe()
+            description = self._collection.describe()
+            if description["auto_id"] != True:
+                return "Only collections with auto_id are supported"
+            vector_field = next((field for field in description["fields"] if field["name"] == self.config.vector_field), None)
+            if vector_field is None:
+                return f"Vector field {self.config.vector_field} not found"
+            if vector_field["type"] != DataType.FLOAT_VECTOR:
+                return f"Vector field {self.config.vector_field} is not a vector"
+            if vector_field["params"]["dim"] != self.embedder.embedding_dimensions:
+                return f"Vector field {self.config.vector_field} is not a {self.embedder.embedding_dimensions}-dimensional vector"
         except DescribeCollectionException as e:
             return f"Collection {self.config.collection} does not exist"
         except Exception as e:
