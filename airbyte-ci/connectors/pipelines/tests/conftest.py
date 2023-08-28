@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import os
 import sys
 from pathlib import Path

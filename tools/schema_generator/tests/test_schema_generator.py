@@ -1,17 +1,17 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import io
+import json
+import os
 import sys
 import tempfile
-import os
-import json
 
 import pytest
-
-from schema_generator.configure_catalog import configure_catalog
-from schema_generator.infer_schemas import infer_schemas
-
 from airbyte_cdk.models import (
-    AirbyteMessage,
     AirbyteCatalog,
+    AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -20,6 +20,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from schema_generator.configure_catalog import configure_catalog
+from schema_generator.infer_schemas import infer_schemas
 
 
 def test_configure_catalog():

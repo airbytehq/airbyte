@@ -44,6 +44,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
     // use secrets file with GCS staging config
     secretsFile = Path.of("secrets/credentials-gcs-staging.json");
     setUpBigQuery();
+    removeOldNamespaces();
 
     DestinationConfig.initialize(config);
 

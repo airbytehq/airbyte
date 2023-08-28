@@ -33,6 +33,7 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     secretsFile = Path.of("secrets/credentials-standard.json");
     setUpBigQuery();
+    removeOldNamespaces();
   }
 
   /**

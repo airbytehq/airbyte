@@ -8,13 +8,13 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING
 
+from dagger import Secret
 from pipelines.actions import environments
 from pipelines.utils import get_file_contents, get_secret_host_variable
-from dagger import Secret
 
 if TYPE_CHECKING:
-    from pipelines.contexts import ConnectorContext
     from dagger import Container
+    from pipelines.contexts import ConnectorContext
 
 
 async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container) -> list[str]:

@@ -1,6 +1,7 @@
-import pytest
 import os
-from typing import List, Callable
+from typing import Callable, List
+
+import pytest
 
 
 def list_all_paths_in_fixture_directory(folder_name: str) -> List[str]:
