@@ -172,4 +172,52 @@ class MongoDbCdcTargetPositionTest {
     assertEquals(resumeTokenTimestamp, timestamp);
   }
 
+  @Test
+  void testIsEventAheadOfOffset() throws IOException {
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
+    final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
+
+    when(changeEvent.value()).thenReturn(changeEventJson);
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
+    final Map<String, String> offset = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, RESUME_TOKEN);
+
+    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final boolean result = targetPosition.isEventAheadOffset(offset, changeEventWithMetadata);
+    assertTrue(result);
+  }
+
+  @Test
+  void testIsSameOffset() {
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
+    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    final Map<String, String> offsetA = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, RESUME_TOKEN);
+    final Map<String, String> offsetB = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, RESUME_TOKEN);
+    final Map<String, String> offsetC = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, "other resume token");
+
+    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+
+    assertTrue(targetPosition.isSameOffset(offsetA, offsetA));
+    assertTrue(targetPosition.isSameOffset(offsetA, offsetB));
+    assertTrue(targetPosition.isSameOffset(offsetB, offsetA));
+    assertFalse(targetPosition.isSameOffset(offsetA, offsetC));
+    assertFalse(targetPosition.isSameOffset(offsetB, offsetC));
+  }
+
 }
