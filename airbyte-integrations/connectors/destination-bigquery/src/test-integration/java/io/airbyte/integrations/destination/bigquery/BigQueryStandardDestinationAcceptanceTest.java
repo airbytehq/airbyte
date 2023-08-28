@@ -19,9 +19,10 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStandardDestinationAcceptanceTest.class);
 
   /**
-   * Sets up secretsFile path and BigQuery instance for verification and cleanup This function will be called before EACH test.
+   * Sets up secretsFile path and BigQuery instance for verification and cleanup This function will be
+   * called before EACH test.
    *
-   * @param testEnv      - information about the test environment.
+   * @param testEnv - information about the test environment.
    * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    * @see DestinationAcceptanceTest#setUpInternal()
@@ -30,6 +31,7 @@ public class BigQueryStandardDestinationAcceptanceTest extends AbstractBigQueryD
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     secretsFile = Path.of("secrets/credentials-standard.json");
     setUpBigQuery();
+    removeOldNamespaces();
   }
 
   /**

@@ -1,6 +1,12 @@
-from dagster import StringSource, InitResourceContext, resource, Field
-from .file_managers.local_file_manager import SimpleLocalFileManager
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import os
+
+from dagster import Field, InitResourceContext, StringSource, resource
+
+from .file_managers.local_file_manager import SimpleLocalFileManager
 
 
 @resource(

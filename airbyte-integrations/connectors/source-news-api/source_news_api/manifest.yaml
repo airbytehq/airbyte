@@ -62,32 +62,32 @@ definitions:
         properties:
           title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           author:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           publishedAt:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
           source:
             type: object
             properties:
               Name:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Id:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
   top_headlines_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -104,32 +104,32 @@ definitions:
         properties:
           title:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           author:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           publishedAt:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
             format: date-time
           source:
             type: object
             properties:
               Name:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
               Id:
                 type:
-                - 'null'
-                - string
+                  - "null"
+                  - string
           url:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
 streams:
   - "#/definitions/everything_stream"
