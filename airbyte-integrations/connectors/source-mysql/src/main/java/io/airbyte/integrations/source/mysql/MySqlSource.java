@@ -258,7 +258,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // When using this approach MySql creates a temporary table which may have some effect on db
     // performance.
     jdbcUrl.append("?useCursorFetch=true");
-    // What should happen when the driver encounters DATETIME values that are composed entirely of zeros https://dev.mysql.com/doc/connector-j/8.1/en/connector-j-connp-props-datetime-types-processing.html#cj-conn-prop_zeroDateTimeBehavior
+    // What should happen when the driver encounters DATETIME values that are composed entirely of zeros
+    // https://dev.mysql.com/doc/connector-j/8.1/en/connector-j-connp-props-datetime-types-processing.html#cj-conn-prop_zeroDateTimeBehavior
     jdbcUrl.append("&zeroDateTimeBehavior=CONVERT_TO_NULL");
     // ensure the return tinyint(1) is boolean
     jdbcUrl.append("&tinyInt1isBit=true");
