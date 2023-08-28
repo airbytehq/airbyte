@@ -1,5 +1,6 @@
 *
 !Dockerfile
 !main.py
-!destination_langchain
+!destination_milvus
+!airbyte-cdk
 !setup.py

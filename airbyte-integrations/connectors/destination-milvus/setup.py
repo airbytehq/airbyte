@@ -8,6 +8,9 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk[vector-db-based]",
     "pymilvus==2.3.0",
+    "openai",
+    "cohere",
+    "tiktoken",
     "langchain"
 ]
 
