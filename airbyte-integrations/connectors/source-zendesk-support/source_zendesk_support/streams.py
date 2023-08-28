@@ -794,6 +794,14 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
             return resp
         raise SourceZendeskException("not found settings")
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
 
 class UserFields(FullRefreshZendeskSupportStream):
     """User Fields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields"""

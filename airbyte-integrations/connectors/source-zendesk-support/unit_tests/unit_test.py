@@ -574,7 +574,7 @@ class TestSourceZendeskSupportFullRefreshStream:
             (Brands, {"page[size]": 100}),
             (CustomRoles, {}),
             (Schedules, {"page[size]": 100}),
-            (UserSettingsStream, {"page[size]": 100}),
+            (UserSettingsStream, {}),
             (AccountAttributes, {}),
             (AttributeDefinitions, {}),
         ],
