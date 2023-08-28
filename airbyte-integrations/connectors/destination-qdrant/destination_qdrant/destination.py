@@ -165,7 +165,13 @@ class QdrantIndexer(Indexer):
             chunk = document_chunks[i]
             metadata = chunk.metadata
             metadata["text"] = chunk.page_content
-            entities.append(models.Record(id=str(uuid.uuid4()), payload={**chunk.metadata, self.config.text_field: chunk.page_content}, vector=embedding_vectors[i]))
+            entities.append(
+                models.Record(
+                    id=str(uuid.uuid4()),
+                    payload={**chunk.metadata, self.config.text_field: chunk.page_content},
+                    vector=embedding_vectors[i],
+                )
+            )
         self._client.upload_records(collection_name=self.config.collection, records=entities)
 
 
