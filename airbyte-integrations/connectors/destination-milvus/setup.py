@@ -5,11 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk[vector-db-based]",
-    "pymilvus==2.3.0",
-    "langchain"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]", "pymilvus==2.3.0", "langchain"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 

@@ -4,13 +4,30 @@
 
 
 import json
-import uuid
-import dpath.util
 import re
+import uuid
 from typing import Any, Iterable, List, Literal, Mapping, Optional, Union
 
+import dpath.util
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.destinations.vector_db_based.batcher import Batcher
+from airbyte_cdk.destinations.vector_db_based.config import (
+    CohereEmbeddingConfigModel,
+    FakeEmbeddingConfigModel,
+    OpenAIEmbeddingConfigModel,
+    ProcessingConfigModel,
+)
+from airbyte_cdk.destinations.vector_db_based.document_processor import (
+    METADATA_RECORD_ID_FIELD,
+    METADATA_STREAM_FIELD,
+    Chunk,
+    DocumentProcessor,
+)
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -21,23 +38,10 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from airbyte_cdk.destinations.vector_db_based.batcher import Batcher
-from airbyte_cdk.destinations.vector_db_based.config import (
-    CohereEmbeddingConfigModel,
-    FakeEmbeddingConfigModel,
-    OpenAIEmbeddingConfigModel,
-    ProcessingConfigModel,
-)
-from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor, METADATA_STREAM_FIELD, METADATA_RECORD_ID_FIELD
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, FakeEmbedder, OpenAIEmbedder, CohereEmbedder
-from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-from pymilvus import MilvusClient, connections, Collection
+from pymilvus import Collection, MilvusClient, connections
 from pymilvus.exceptions import DescribeCollectionException
-
 
 BATCH_SIZE = 128
 
@@ -65,7 +69,7 @@ class MilvusIndexingConfigModel(BaseModel):
 
     class Config:
         title = "Indexing"
-        schema_extra =  {
+        schema_extra = {
             "group": "Indexing",
             "description": "Indexing configuration",
         }
@@ -145,7 +149,7 @@ class MilvusIndexer(Indexer):
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{stream.stream.name}"')
-    
+
     def _delete_for_filter(self, expr: str) -> None:
         iterator = self._collection.query_iterator(expr=expr)
         page = iterator.next()
@@ -156,11 +160,10 @@ class MilvusIndexer(Indexer):
             self._collection.delete(expr=f"{id_field} in [{id_list_expr}]")
             page = iterator.next()
 
-    
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
             id_list_expr = ", ".join([f'"{id}"' for id in delete_ids])
-            id_expr = f'{METADATA_RECORD_ID_FIELD} in [{id_list_expr}]'
+            id_expr = f"{METADATA_RECORD_ID_FIELD} in [{id_list_expr}]"
             self._delete_for_filter(id_expr)
         embedding_vectors = self.embedder.embed_texts([chunk.page_content for chunk in document_chunks])
         entities = []
@@ -170,6 +173,7 @@ class MilvusIndexer(Indexer):
             metadata["text"] = chunk.page_content
             entities.append({**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content})
         self._collection.insert(entities)
+
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
 
