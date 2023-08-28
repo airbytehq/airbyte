@@ -35,7 +35,7 @@ definitions:
   requester:
     type: HttpRequester
     url_base: https://{{ config['company'] }}.hellobaton.com/api/
-    path: '{{ parameters.path }}'
+    path: "{{ parameters.path }}"
     http_method: GET
     request_parameters: {}
     request_headers: {}

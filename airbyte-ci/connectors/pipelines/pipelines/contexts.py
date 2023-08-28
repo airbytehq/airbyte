@@ -17,7 +17,6 @@ from anyio import Path
 from asyncer import asyncify
 from dagger import Client, Directory, Secret
 from github import PullRequest
-
 from pipelines import hacks
 from pipelines.actions import secrets
 from pipelines.bases import CIContext, ConnectorReport, ConnectorWithModifiedFiles, Report

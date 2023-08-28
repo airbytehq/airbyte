@@ -27,6 +27,21 @@ public class MongoDbDebeziumConstants {
   }
 
   /**
+   * Constants for the configuration of the MongoDB connector. These constants represent the
+   * configuration values that are to be mapped to the Debezium configuration.
+   */
+  public static class Configuration {
+
+    public static final String AUTH_SOURCE_CONFIGURATION_KEY = "auth_source";
+    public static final String CONNECTION_STRING_CONFIGURATION_KEY = "connection_string";
+    public static final String DATABASE_CONFIGURATION_KEY = "database";
+    public static final String PASSWORD_CONFIGURATION_KEY = "password";
+    public static final String REPLICA_SET_CONFIGURATION_KEY = "replica_set";
+    public static final String USER_CONFIGURATION_KEY = "user";
+
+  }
+
+  /**
    * Constants for Debezium Offset State storage.
    */
   public static class OffsetState {
@@ -39,5 +54,7 @@ public class MongoDbDebeziumConstants {
     public static final String VALUE_TRANSACTION_ID = "transaction_id";
 
   }
+
+  private MongoDbDebeziumConstants() {}
 
 }
