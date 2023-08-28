@@ -13,6 +13,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
 import io.airbyte.integrations.debezium.CdcStateHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
@@ -67,7 +68,7 @@ public class MongoDbCdcInitializer {
             final JsonNode config
             ) {
 
-        final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumDefaultProperties();
+        final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
         final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
         final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
         final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
@@ -111,6 +112,7 @@ public class MongoDbCdcInitializer {
                 mongoDbCdcStateHandler,
                 cdcMetadataInjector,
                 defaultDebeziumProperties,
+                DebeziumPropertiesManager.DebeziumConnectorType.MONGODB,
                 emittedAt,
                 false);
 

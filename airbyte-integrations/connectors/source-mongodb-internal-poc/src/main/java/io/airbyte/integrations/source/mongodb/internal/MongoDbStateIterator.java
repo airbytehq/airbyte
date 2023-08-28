@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  *
  * Will also output a state message as the last message after the wrapper iterator has completed.
  */
-class MongoDbStateIterator implements Iterator<AirbyteMessage> {
+public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
 
@@ -64,7 +64,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * @param emittedAt when this iterator was started
    * @param checkpointInterval how often a state message should be emitted.
    */
-  MongoDbStateIterator(final MongoCursor<Document> iter,
+  public MongoDbStateIterator(final MongoCursor<Document> iter,
                        final MongoDbStateManager stateManager,
                        final ConfiguredAirbyteStream stream,
                        final Instant emittedAt,
