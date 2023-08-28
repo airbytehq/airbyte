@@ -70,9 +70,9 @@ class MongoDbDebeziumStateUtilTest {
     baseProperties.put(REPLICA_SETS.name(), "mongodb://host:12345/?replicaSet=" + replicaSet);
 
     final JsonNode config = Jsons.jsonNode(Map.of(
-            MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-            MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database,
-            MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, replicaSet));
+        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database,
+        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, replicaSet));
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
