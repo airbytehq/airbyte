@@ -91,21 +91,21 @@ class MongoDbSourceTest {
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-              COLLECTION1,
-              "database",
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION1,
+          "database",
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-              COLLECTION2,
-              "database",
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
+          COLLECTION2,
+          "database",
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-              COLLECTION3,
-              "database",
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION3,
+          "database",
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))));
 
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = toConfiguredCatalog(CATALOG);
@@ -120,7 +120,7 @@ class MongoDbSourceTest {
 
     @BeforeEach
     void setup() {
-      airbyteSourceConfig = createConfiguration("mongodb://localhost:27017/", Optional.of("replica-set"), Optional.empty(), Optional.empty());
+      airbyteSourceConfig = createConfiguration("mongodb://localhost:27017/", Optional.empty(), Optional.empty());
       mongoClient = mock(MongoClient.class);
       source = spy(new MongoDbSource());
       doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
@@ -286,6 +286,7 @@ class MongoDbSourceTest {
       assertThrows(RuntimeException.class, () -> source.read(airbyteSourceConfig, CONFIGURED_CATALOG, null));
       verify(mongoClient, times(1)).close();
     }
+
   }
 
   @Nested
@@ -295,6 +296,7 @@ class MongoDbSourceTest {
     private MongoDbSource source;
     private JsonNode airbyteSourceConfig;
     private static MongoDBContainer MONGO_DB;
+    private MongoClient mongoClient;
 
     @BeforeAll
     static void init() {
@@ -304,10 +306,16 @@ class MongoDbSourceTest {
 
     @BeforeEach
     void setup() {
-      final MongoClient mongoClient = MongoClients.create(MONGO_DB.getConnectionString());
+      mongoClient = MongoClients.create(MONGO_DB.getConnectionString());
       mongoClient.getDatabase(DB_NAME).drop();
-      airbyteSourceConfig = createConfiguration(MONGO_DB.getConnectionString() + "/", Optional.empty(), Optional.empty(), Optional.empty());
-      source = new MongoDbSource();
+      airbyteSourceConfig = createConfiguration(MONGO_DB.getConnectionString() + "/", Optional.empty(), Optional.empty());
+      source = spy(new MongoDbSource());
+      doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
+    }
+
+    @AfterEach
+    void tearDown() {
+      mongoClient.close();
     }
 
     @AfterAll
@@ -347,7 +355,7 @@ class MongoDbSourceTest {
               CONFIGURED_CATALOG,
               Jsons.deserialize(Jsons.serialize(Map.of("id", OBJECT_ID4.toString()))));
 
-      //collection1
+      // collection1
       final AirbyteMessage collection1StreamMessage1 = airbyteMessagesIterator.next();
       assertEquals(Type.RECORD, collection1StreamMessage1.getType());
       assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
@@ -369,7 +377,7 @@ class MongoDbSourceTest {
       assertEquals(COLLECTION1, collection1SateMessage.getState().getStream().getStreamDescriptor().getName());
       assertEquals(OBJECT_ID3.toString(), collection1SateMessage.getState().getStream().getStreamState().get("id").asText());
 
-      //collection2
+      // collection2
       final AirbyteMessage collection2StreamMessage1 = airbyteMessagesIterator.next();
       assertEquals(Type.RECORD, collection2StreamMessage1.getType());
       assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
@@ -409,7 +417,7 @@ class MongoDbSourceTest {
           CONFIGURED_CATALOG,
           null);
 
-      //collection1
+      // collection1
       final AirbyteMessage collection1StreamMessage1 = airbyteMessagesIteratorNoState.next();
       assertEquals(Type.RECORD, collection1StreamMessage1.getType());
       assertEquals(COLLECTION1, collection1StreamMessage1.getRecord().getStream());
@@ -426,7 +434,7 @@ class MongoDbSourceTest {
       assertEquals(COLLECTION1, collection1SateMessage.getState().getStream().getStreamDescriptor().getName());
       assertEquals(OBJECT_ID2.toString(), collection1SateMessage.getState().getStream().getStreamState().get("id").asText());
 
-      //collection2
+      // collection2
       final AirbyteMessage collection2StreamMessage1 = airbyteMessagesIteratorNoState.next();
       assertEquals(Type.RECORD, collection2StreamMessage1.getType());
       assertEquals(COLLECTION2, collection2StreamMessage1.getRecord().getStream());
@@ -450,13 +458,13 @@ class MongoDbSourceTest {
           CONFIGURED_CATALOG,
           Jsons.jsonNode(List.of(collection1SateMessage.getState(), collection2SateMessage.getState())));
 
-      //collection1 only sends state message containig the last object id
+      // collection1 only sends state message containig the last object id
       final AirbyteMessage collection1SateMessage2 = airbyteMessagesIteratorWithState.next();
       assertEquals(Type.STATE, collection1SateMessage2.getType());
       assertEquals(COLLECTION1, collection1SateMessage2.getState().getStream().getStreamDescriptor().getName());
       assertEquals(OBJECT_ID2.toString(), collection1SateMessage2.getState().getStream().getStreamState().get("id").asText());
 
-      //collection2 skips first record
+      // collection2 skips first record
       final AirbyteMessage collection2StreamMessage2 = airbyteMessagesIteratorWithState.next();
       assertEquals(Type.RECORD, collection2StreamMessage2.getType());
       assertEquals(COLLECTION2, collection2StreamMessage2.getRecord().getStream());
@@ -498,10 +506,9 @@ class MongoDbSourceTest {
   }
 
   private static JsonNode createConfiguration(
-      final String connectionString,
-      final Optional<String> replicaSet,
-      final Optional<String> username,
-      final Optional<String> password) {
+                                              final String connectionString,
+                                              final Optional<String> username,
+                                              final Optional<String> password) {
     final Map<String, Object> config = new HashMap<>();
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
@@ -509,7 +516,6 @@ class MongoDbSourceTest {
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
 
     config.putAll(baseConfig);
-    replicaSet.ifPresent( r -> config.put(MongoConstants.REPLICA_SET_CONFIGURATION_KEY, r));
     username.ifPresent(u -> config.put(MongoConstants.USER_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(config));
