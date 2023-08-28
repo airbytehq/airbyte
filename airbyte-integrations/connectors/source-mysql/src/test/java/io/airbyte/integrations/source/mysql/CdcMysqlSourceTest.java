@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -34,21 +35,30 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
@@ -343,6 +353,53 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+  }
+
+  @Disabled("Known issue with Debezium versions < 2.4.0. Enable after Debezium version upgrade")
+  // https://github.com/airbytehq/airbyte/issues/28968")
+  @Test
+  protected void verifyNullableColumnWithDefaultValues() throws Exception {
+    final String tableWithNullableColumn = "tableWithNullableColumn";
+    final String nullableColumn = "nullable_column";
+    final String createTable = String.format("CREATE TABLE `%s`.`%s` (\n"
+        + "  `%s` bigint NOT NULL AUTO_INCREMENT,\n"
+        + "  `%s` varchar(30) COLLATE utf8mb4_bin DEFAULT 'FOO',\n"
+        + "  PRIMARY KEY (`%s`)\n"
+        + ")", MODELS_SCHEMA, tableWithNullableColumn, COL_ID, nullableColumn, COL_ID);
+
+    final String insertQuery = String.format("insert into `%s`.`%s`(`%s`, %s) values(1, null), (2, 'FOO'), (3, null);\n", MODELS_SCHEMA,
+        tableWithNullableColumn, COL_ID, nullableColumn);
+    executeQuery(createTable);
+    executeQuery(insertQuery);
+
+    final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
+        tableWithNullableColumn,
+        MODELS_SCHEMA,
+        Field.of(COL_ID, JsonSchemaType.INTEGER),
+        Field.of(nullableColumn, JsonSchemaType.STRING))
+        .withSupportedSyncModes(
+            Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)));
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(airbyteStream));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+
+    final AutoCloseableIterator<AirbyteMessage> read = getSource().read(getConfig(), configuredCatalog, null);
+    final List<AirbyteMessage> actualRecords =
+        AutoCloseableIterators.toListAndClose(read).stream().filter(message -> message.getType() == Type.RECORD).toList();
+    final Map<String, String> expectedValues1 = new HashMap<>();
+    expectedValues1.put(nullableColumn, null);
+    final Map<String, String> expectedValues2 = new HashMap<>();
+    expectedValues2.put(nullableColumn, "FOO");
+    final Map<String, String> expectedValues3 = new HashMap<>();
+    expectedValues3.put(nullableColumn, null);
+    final List<Map<String, String>> expectedValues = ImmutableList.of(expectedValues1, expectedValues2, expectedValues3);
+
+    for (int i = 0; i < actualRecords.size(); i++) {
+      final HashMap<String, String> actualRecord = new HashMap<>();
+      actualRecord.put(nullableColumn, Jsons.deserializeToStringMap(actualRecords.get(i).getRecord().getData()).getOrDefault(nullableColumn, null));
+      assertEquals(expectedValues.get(i), actualRecord);
+    }
   }
 
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
