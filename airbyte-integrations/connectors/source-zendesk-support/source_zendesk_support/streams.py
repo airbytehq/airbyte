@@ -507,6 +507,7 @@ class Organizations(SourceZendeskIncrementalExportStream):
             params.update(next_page_token)
         return params
 
+
 class Posts(CursorPaginationZendeskSupportStream):
     """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
 
