@@ -37,7 +37,6 @@ public interface DestinationWriter {
    */
   void close(boolean hasFailed) throws IOException;
 
-
   default void closeAfterPush() throws IOException {
     close(false);
   }
