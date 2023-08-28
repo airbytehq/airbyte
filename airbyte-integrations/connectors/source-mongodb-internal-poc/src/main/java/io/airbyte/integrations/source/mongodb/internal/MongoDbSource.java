@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.connection.ClusterType;
@@ -18,10 +16,13 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcInitializer;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
-import java.time.Instant;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
+import java.util.List;
+
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
 public class MongoDbSource extends BaseConnector implements Source {
 
@@ -86,9 +87,9 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config);
       return AutoCloseableIterators
-          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList,
-              AirbyteTraceMessageUtility::emitStreamStatusTrace),
-              mongoClient::close);
+              .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList,
+                      AirbyteTraceMessageUtility::emitStreamStatusTrace),
+                      mongoClient::close);
     } catch (final Exception e) {
       mongoClient.close();
       throw e;

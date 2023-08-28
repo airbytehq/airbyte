@@ -32,7 +32,7 @@ class MongoDbResumeTokenHelperTest {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
+            mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
@@ -49,7 +49,6 @@ class MongoDbResumeTokenHelperTest {
     final BsonTimestamp expectedTimestamp = new BsonTimestamp(timestampSec, 2);
     final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
     final JsonNode changeEvent = Jsons.deserialize(changeEventJson);
-
     final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEvent);
     assertNotNull(timestamp);
     assertEquals(expectedTimestamp, timestamp);

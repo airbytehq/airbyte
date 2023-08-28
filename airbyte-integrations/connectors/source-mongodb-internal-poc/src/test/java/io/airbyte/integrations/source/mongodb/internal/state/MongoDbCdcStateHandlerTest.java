@@ -47,7 +47,7 @@ class MongoDbCdcStateHandlerTest {
     assertEquals(AirbyteMessage.Type.STATE, airbyteMessage.getType());
     assertNotNull(airbyteMessage.getState());
     assertEquals(GLOBAL, airbyteMessage.getState().getType());
-    assertEquals(new MongoDbCdcState(seconds, order, RESUME_TOKEN),
+    assertEquals(new MongoDbCdcState(Jsons.jsonNode(offset)),
         Jsons.object(airbyteMessage.getState().getGlobal().getSharedState(), MongoDbCdcState.class));
   }
 

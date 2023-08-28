@@ -65,18 +65,18 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * @param checkpointInterval how often a state message should be emitted.
    */
   public MongoDbStateIterator(final MongoCursor<Document> iter,
-                              final MongoDbStateManager stateManager,
-                              final ConfiguredAirbyteStream stream,
-                              final Instant emittedAt,
-                              final int checkpointInterval) {
+                       final MongoDbStateManager stateManager,
+                       final ConfiguredAirbyteStream stream,
+                       final Instant emittedAt,
+                       final int checkpointInterval) {
     this.iter = iter;
     this.stateManager = stateManager;
     this.stream = stream;
     this.checkpointInterval = checkpointInterval;
     this.emittedAt = emittedAt;
-    fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
-    lastId = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace())
-        .map(MongoDbStreamState::id).orElse(null);
+    this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
+    this.lastId =
+        stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
   }
 
   @Override
@@ -114,11 +114,11 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
           .withState(stateManager.toState());
     } else if (finalStateNext) {
       stateManager.updateStreamState(stream.getStream().getName(),
-          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
+              stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
 
       return new AirbyteMessage()
-          .withType(Type.STATE)
-          .withState(stateManager.toState());
+              .withType(Type.STATE)
+              .withState(stateManager.toState());
     }
 
     count++;

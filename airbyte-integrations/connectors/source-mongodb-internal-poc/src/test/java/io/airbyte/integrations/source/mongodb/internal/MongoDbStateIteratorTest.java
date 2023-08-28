@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -176,7 +177,7 @@ class MongoDbStateIteratorTest {
     final var objectId = "64dfb6a7bb3c3458c30801f4";
 
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-        new MongoDbStreamState(objectId));
+        new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS));
 
     final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL);
 
