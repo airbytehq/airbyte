@@ -15,15 +15,14 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
+from dagger import Client, Directory, Secret
+from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
-from pipelines.bases import CIContext, ConnectorReport, Report
+from pipelines.bases import CIContext, ConnectorReport, ConnectorWithModifiedFiles, Report
 from pipelines.github import update_commit_status_check
 from pipelines.slack import send_message_to_webhook
 from pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, format_duration, sanitize_gcs_credentials
-from connector_ops.utils import Connector
-from dagger import Client, Directory, Secret
-from github import PullRequest
 
 
 class ContextState(Enum):
@@ -172,6 +171,18 @@ class PipelineContext:
     def should_send_slack_message(self) -> bool:
         return self.slack_webhook is not None and self.reporting_slack_channel is not None
 
+    @property
+    def has_dagger_cloud_token(self) -> bool:
+        return "_EXPERIMENTAL_DAGGER_CLOUD_TOKEN" in os.environ
+
+    @property
+    def dagger_cloud_url(self) -> str:
+        """Gets the link to the Dagger Cloud runs page for the current commit."""
+        if self.is_local or not self.has_dagger_cloud_token:
+            return None
+
+        return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
+
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
@@ -281,16 +292,15 @@ class PipelineContext:
 class ConnectorContext(PipelineContext):
     """The connector context is used to store configuration for a specific connector pipeline run."""
 
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:dev"
 
     def __init__(
         self,
         pipeline_name: str,
-        connector: Connector,
+        connector: ConnectorWithModifiedFiles,
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
-        modified_files: List[str],
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
@@ -306,6 +316,9 @@ class ConnectorContext(PipelineContext):
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
         should_save_report: bool = True,
+        fail_fast: bool = False,
+        fast_tests_only: bool = False,
+        code_tests_only: bool = False,
     ):
         """Initialize a connector context.
 
@@ -314,7 +327,6 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
-            modified_files (List[str]): The list of modified files in the current git branch.
             report_output_prefix (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
@@ -325,18 +337,23 @@ class ConnectorContext(PipelineContext):
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
+            fail_fast (bool, optional): Whether to fail fast. Defaults to False.
+            fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
+            code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
         """
 
         self.pipeline_name = pipeline_name
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-        self.modified_files = modified_files
         self.report_output_prefix = report_output_prefix
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self.cdk_version = None
         self.should_save_report = should_save_report
+        self.fail_fast = fail_fast
+        self.fast_tests_only = fast_tests_only
+        self.code_tests_only = code_tests_only
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -355,6 +372,10 @@ class ConnectorContext(PipelineContext):
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
         )
+
+    @property
+    def modified_files(self):
+        return self.connector.modified_files
 
     @property
     def secrets_dir(self) -> Directory:  # noqa D102
@@ -468,9 +489,8 @@ class ConnectorContext(PipelineContext):
 class PublishConnectorContext(ConnectorContext):
     def __init__(
         self,
-        connector: Connector,
+        connector: ConnectorWithModifiedFiles,
         pre_release: bool,
-        modified_files: List[str],
         spec_cache_gcs_credentials: str,
         spec_cache_bucket_name: str,
         metadata_service_gcs_credentials: str,
@@ -505,7 +525,6 @@ class PublishConnectorContext(ConnectorContext):
         super().__init__(
             pipeline_name=pipeline_name,
             connector=connector,
-            modified_files=modified_files,
             report_output_prefix=report_output_prefix,
             ci_report_bucket=ci_report_bucket,
             is_local=is_local,

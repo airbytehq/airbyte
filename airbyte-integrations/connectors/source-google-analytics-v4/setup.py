@@ -12,7 +12,6 @@ TEST_REQUIREMENTS = [
     "requests-mock",
     "pytest-mock",
     "freezegun",
-    "connector-acceptance-test",
 ]
 
 setup(

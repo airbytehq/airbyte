@@ -37,7 +37,8 @@ import org.slf4j.LoggerFactory;
 public class PostgresQueryUtils {
 
   public record TableBlockSize(Long tableSize, Long blockSize) {}
-  public record ResultWithFailed<T>(T result, List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failed) {}
+
+  public record ResultWithFailed<T> (T result, List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failed) {}
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresQueryUtils.class);
 
@@ -137,13 +138,17 @@ public class PostgresQueryUtils {
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
-                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
+                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager,
+                                                                                                          final String quoteString) {
 
     final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
         final String name = stream.getStream().getName();
         final String namespace = stream.getStream().getNamespace();
+        final String fullTableName =
+            getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+
         final Optional<CursorInfo> cursorInfoOptional =
             stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
         if (cursorInfoOptional.isEmpty()) {
@@ -154,10 +159,11 @@ public class PostgresQueryUtils {
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
-            name,
+            fullTableName,
             cursorField,
             cursorField,
-            name);
+            fullTableName);
+        LOGGER.debug("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
@@ -172,7 +178,7 @@ public class PostgresQueryUtils {
           cursorBasedStatus.setCursor(result.get(cursorField).asText());
           cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
         }
-        
+
         cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
@@ -183,8 +189,8 @@ public class PostgresQueryUtils {
   }
 
   public static ResultWithFailed<Map<AirbyteStreamNameNamespacePair, Long>> fileNodeForStreams(final JdbcDatabase database,
-                                                                             final List<ConfiguredAirbyteStream> streams,
-                                                                             final String quoteString) {
+                                                                                               final List<ConfiguredAirbyteStream> streams,
+                                                                                               final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
     final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery = new ArrayList<>();
     streams.forEach(stream -> {
@@ -224,8 +230,8 @@ public class PostgresQueryUtils {
   }
 
   public static ResultWithFailed<List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair>> streamsUnderVacuum(final JdbcDatabase database,
-                                                                                                      final List<ConfiguredAirbyteStream> streams,
-                                                                                                      final String quoteString) {
+                                                                                                                        final List<ConfiguredAirbyteStream> streams,
+                                                                                                                        final String quoteString) {
     final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuuming = new ArrayList<>();
     final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery = new ArrayList<>();
     streams.forEach(stream -> {
@@ -253,8 +259,8 @@ public class PostgresQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, TableBlockSize> getTableBlockSizeForStreams(final JdbcDatabase database,
-                                                                                               final List<ConfiguredAirbyteStream> streams,
-                                                                                               final String quoteString) {
+                                                                                                final List<ConfiguredAirbyteStream> streams,
+                                                                                                final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =

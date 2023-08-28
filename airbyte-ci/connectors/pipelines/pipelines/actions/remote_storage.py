@@ -1,14 +1,15 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 """This module groups functions to interact with remote storage services like S3 or GCS."""
 
 import uuid
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from pipelines.utils import get_exec_result, secret_host_variable, with_exit_code
 from dagger import Client, File, Secret
+from pipelines.utils import get_exec_result, secret_host_variable, with_exit_code
 
 GOOGLE_CLOUD_SDK_TAG = "425.0.0-slim"
 
@@ -68,7 +69,7 @@ async def upload_to_gcs(
         dagger_client.container()
         .from_(f"google/cloud-sdk:{GOOGLE_CLOUD_SDK_TAG}")
         .with_workdir("/upload")
-        .with_new_file("credentials.json", await gcs_credentials.plaintext())
+        .with_new_file("credentials.json", contents=await gcs_credentials.plaintext())
         .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/upload/credentials.json")
         .with_file("to_upload", file_to_upload)
     )

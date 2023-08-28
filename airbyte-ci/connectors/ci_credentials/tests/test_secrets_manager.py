@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import base64
 import json
 import re
@@ -20,6 +21,7 @@ def matchers():
         "addVersion": re.compile("https://secretmanager.googleapis.com/v1/.+:addVersion"),
         "access": re.compile("https://secretmanager.googleapis.com/v1/.+/1:access"),
         "disable": re.compile("https://secretmanager.googleapis.com/v1/.+:disable"),
+        "spec_secret_mask": re.compile("https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"),
     }
 
 
@@ -92,6 +94,7 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
         m.post(matchers["secrets"], json={"name": "<fake_name>"})
         m.get(matchers["versions"], versions_response_list)
         m.get(matchers["access"], secrets_response_list)
+        m.get(matchers["spec_secret_mask"], json={"spec_secret_mask": "test"})
 
         secrets = manager.read_from_gsm()
         assert secrets == expected_secrets
