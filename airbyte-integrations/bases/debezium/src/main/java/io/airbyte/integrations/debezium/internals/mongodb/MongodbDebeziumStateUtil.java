@@ -15,7 +15,6 @@ import io.debezium.connector.mongodb.MongoDbConnectorConfig;
 import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
-
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.json.JsonConverterConfig;
 import org.apache.kafka.connect.runtime.WorkerConfig;
@@ -59,7 +57,8 @@ public class MongoDbDebeziumStateUtil {
     final String resumeTokenData = ((BsonString) ResumeTokens.getData(resumeToken)).getValue();
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeToken);
 
-    final List<Map<String, Object>> key = List.of(
+    final List<Object> key = List.of(
+            database,
         Map.of(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet,
             MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
 
@@ -69,7 +68,7 @@ public class MongoDbDebeziumStateUtil {
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
 
-    final JsonNode state = Jsons.jsonNode(Map.of(key, value));
+    final JsonNode state = Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
   }
@@ -89,9 +88,9 @@ public class MongoDbDebeziumStateUtil {
                                   final ConfiguredAirbyteCatalog catalog,
                                   final JsonNode cdcState,
                                   final JsonNode config) {
-    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
-            AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()),
-            Optional.empty());
+    final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
+            config, catalog,
+            AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     return parseSavedOffset(debeziumProperties);
   }
@@ -133,7 +132,8 @@ public class MongoDbDebeziumStateUtil {
       if (offsets != null && offsets.values().stream().anyMatch(Objects::nonNull)) {
         final MongoDbOffsetContext offsetContext = loader.loadOffsets(offsets);
         final Map<String, ?> offset = offsetContext.getReplicaSetOffsetContext(replicaSets.all().get(0)).getOffset();
-        final BsonTimestamp timestamp = MongoDbResumeTokenHelper.extractTimestampFromSource(Jsons.jsonNode(offset));
+        final BsonTimestamp timestamp = new BsonTimestamp((Integer) offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS),
+                (Integer) offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT));
         return OptionalLong.of(timestamp.getValue());
       } else {
         return OptionalLong.empty();
