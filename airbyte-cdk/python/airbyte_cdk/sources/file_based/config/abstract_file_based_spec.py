@@ -84,7 +84,7 @@ class AbstractFileBasedSpec(BaseModel):
         )
         if len(csv_format_schemas) != 1:
             raise ValueError(f"Expecting only one CSV format but got {csv_format_schemas}")
-        AbstractFileBasedSpec.move_enum_to_root(csv_format_schemas[0]["properties"]["header_definition_type"])
+        csv_format_schemas[0]["properties"]["header_definition"]["oneOf"] = csv_format_schemas[0]["properties"]["header_definition"].pop("anyOf", [])
         return schema
 
     @staticmethod
