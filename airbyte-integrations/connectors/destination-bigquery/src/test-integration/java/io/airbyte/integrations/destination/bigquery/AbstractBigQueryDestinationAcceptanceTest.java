@@ -175,7 +175,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   protected void setUpBigQuery() throws IOException {
     // secrets file should be set by the inhereting class
     Assertions.assertNotNull(secretsFile);
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    final String datasetId = Strings.addRandomSuffix("benoit_airbyte_tests", "_", 8);
     final String stagingPathSuffix = Strings.addRandomSuffix("test_path", "_", 8);
     config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId, stagingPathSuffix);
 

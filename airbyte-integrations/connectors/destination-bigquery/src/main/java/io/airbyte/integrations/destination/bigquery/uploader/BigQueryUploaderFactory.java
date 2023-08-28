@@ -97,6 +97,8 @@ public class BigQueryUploaderFactory {
                                                                   final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
     final TableId tableToWriteRawData = TypingAndDedupingFlag.isDestinationV2() ? targetTable : tmpTable;
+    LOGGER.info("is v2: {}", TypingAndDedupingFlag.isDestinationV2());
+    LOGGER.info("Will write to dataset " + tableToWriteRawData.getDataset() + " in table " + tableToWriteRawData.getTable() + " in project " + tableToWriteRawData.getProject());
     LOGGER.info("Will write raw data to {} with schema {}", tableToWriteRawData, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tableToWriteRawData)

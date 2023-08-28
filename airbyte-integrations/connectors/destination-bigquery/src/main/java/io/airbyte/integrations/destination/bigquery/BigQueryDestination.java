@@ -295,6 +295,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
     return () -> {
       final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
+      LOGGER.error("Use 1s1t in the uploader map supplier" + use1s1t);
       for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
@@ -384,7 +385,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             outputRecordCollector,
             () -> {
               final boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
-
+              LOGGER.error("Is use1s1t in the on start: " + use1s1t);
               if (use1s1t) {
               // Set up our raw tables
                 writeConfigs.get().forEach((streamId, uploader) -> {

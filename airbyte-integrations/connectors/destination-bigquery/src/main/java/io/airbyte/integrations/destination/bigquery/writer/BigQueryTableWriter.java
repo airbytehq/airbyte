@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.writer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
@@ -50,11 +51,17 @@ public class BigQueryTableWriter implements DestinationWriter {
   public void write(String formattedData) throws IOException {
 
     try {
+      Job job = writeChannel.getJob();
       LOGGER.error("_______________ Writing to BQ ____________________");
       LOGGER.error(formattedData);
+      LOGGER.error("_______________ Job Information ____________________");
+      LOGGER.error("" + job);
+      LOGGER.error(job.getJobId().getJob());
+      LOGGER.error(job.getJobId().getLocation());
+      LOGGER.error(job.getJobId().getProject());
       writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
     } catch (Exception e) {
-      LOGGER.error("BigQueryTableWriter");
+      LOGGER.error("BigQueryTableWriter", e);
       LOGGER.error(formattedData);
       throw e;
     }
@@ -62,6 +69,9 @@ public class BigQueryTableWriter implements DestinationWriter {
 
   @Override
   public void close(boolean hasFailed) throws IOException {
+    LOGGER.error("Closing table writer, has failed: " + hasFailed);
+
+
     this.writeChannel.close();
   }
 
