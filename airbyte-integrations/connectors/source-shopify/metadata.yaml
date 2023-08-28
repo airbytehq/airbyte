@@ -1,11 +1,8 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 0.6.2
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
@@ -18,7 +15,53 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportLevel: community
+  suggestedStreams:
+    streams:
+      - customers
+      - order_refunds
+      - transactions
+      - product_variants
+      - abandoned_checkouts
+      - discount_codes
+      - inventory_items
+      - locations
+      - shop
+      - price_rules
+      - inventory_levels
+      - custom_collections
+      - fulfillments
+      - order_risks
+      - products_graph_ql
+      - product_images
+      - collects
+      - tender_transactions
+      - smart_collections
+      - draft_orders
+      - metafield_customers
+      - metafield_products
+      - metafield_orders
+      - customer_address
+      - fulfillment_orders
+      - metafield_shops
+      - countries
+      - metafield_product_variants
+      - metafield_smart_collections
+      - metafield_product_images
+      - metafield_draft_orders
+      - metafield_locations
   tags:
     - language:python
+  ab_internal:
+    sl: 300
+    ql: 200
+  supportLevel: certified
+  allowedHosts:
+    hosts:
+      - ${shop}.myshopify.com
+      - shopify.com
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
+        upgradeDeadline: "2024-07-01" # the full year after the api version was introduced
 metadataSpecVersion: "1.0"
