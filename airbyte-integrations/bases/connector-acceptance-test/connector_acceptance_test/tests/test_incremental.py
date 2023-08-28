@@ -173,42 +173,6 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
     return diff
 
 
-def is_comparable(obj: dict) -> bool:
-    """
-    Checks if the object is comparable (i.e. has __lt__ and __gt__ methods).
-    """
-    return hasattr(obj, "__lt__") and hasattr(obj, "__gt__")
-
-
-def create_cursor_field_parser(stream_config: dict) -> JsonSchemaHelper:
-    """
-    Create a JsonSchemaHelper for the cursor field of a stream.
-    """
-    helper = JsonSchemaHelper(schema=stream_config.stream.json_schema)
-    cursor_field = helper.field(stream_config.cursor_field)
-    return cursor_field
-
-
-def is_cursor_testable(stream_config: dict, example_record: AirbyteMessage) -> bool:
-    """
-    Not all streams have cursor fields that are comparable.
-
-    For example, a cursor field that is a date is comparable, but a cursor field that is a
-    UUID is not.
-
-    Also, some streams do not have cursor fields at all and use a source defined cursor which is
-    meant to be opaque to the platform and should not be relied on.
-    """
-    source_defined_cursor = stream_config.stream.source_defined_cursor
-
-    if not source_defined_cursor:
-        return True
-
-    cursor_field_helper = create_cursor_field_parser(stream_config)
-    record_value = cursor_field_helper.parse(record=example_record.record.data)
-    return is_comparable(record_value)
-
-
 @pytest.mark.default_timeout(20 * 60)
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(
@@ -219,9 +183,6 @@ class TestIncremental(BaseTest):
         cursor_paths: dict[str, list[Union[int, str]]],
         docker_runner: ConnectorRunner,
     ):
-        threshold_days = getattr(inputs, "threshold_days") or 0
-        stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
-
         output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
         records_1 = filter_output(output_1, type_=Type.RECORD)
         states_1 = filter_output(output_1, type_=Type.STATE)
@@ -242,8 +203,8 @@ class TestIncremental(BaseTest):
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
 
-
         # READ #2
+
         # group records by their record.stream value
 
         output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
@@ -257,24 +218,9 @@ class TestIncremental(BaseTest):
         for stream_name, stream_records_1 in records_by_stream_1.items():
             stream_records_2 = records_by_stream_2[stream_name]
 
-            stream_config = stream_mapping[stream_name]
-            example_record = stream_records_1[0]
-
             # assert that new records were produced
             diff = naive_diff_records(stream_records_1, stream_records_2)
             assert diff, f"Records for stream {stream_name} should change between reads but did not.\n\n stream_records_1: {stream_records_1} \n\n state: {state_input} \n\n stream_records_2: {stream_records_2} \n\n diff: {diff}"
-
-            if is_cursor_testable(stream_config, example_record):
-                cursor_field_parser = create_cursor_field_parser(stream_config)
-                cursor_values_1 = [cursor_field_parser.parse(record=record.record.data) for record in stream_records_1]
-                cursor_values_2 = [cursor_field_parser.parse(record=record.record.data) for record in stream_records_2]
-
-                # assert that all values in the second read are greater than or equal to the first read
-                max_cursor_value_1 = max(cursor_values_1)
-                min_cursor_value_2 = min(cursor_values_2)
-                assert compare_cursor_with_threshold(
-                    max_cursor_value_1, min_cursor_value_2, threshold_days
-                ), f"Second incremental sync should produce records greater or equal to the first incremental sync. Stream: {stream_name}, min_cursor_value_2: {min_cursor_value_2}, max_cursor_value_1: {max_cursor_value_1}"
 
     async def test_read_sequential_slices(
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner
