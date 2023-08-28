@@ -6,7 +6,7 @@ from abc import abstractmethod
 from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
@@ -38,7 +38,7 @@ class AbstractFileBasedStream(Stream):
     def __init__(
         self,
         config: FileBasedStreamConfig,
-        catalog_schema: Optional[ConfiguredAirbyteCatalog],
+        catalog_schema: Optional[Mapping[str, Any]],
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,

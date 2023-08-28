@@ -1,5 +1,6 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.github.spotbugs.snom.SpotBugsTask
+import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 // The buildscript block defines dependencies in order for .gradle file evaluation.
 // This is separate from application dependencies.
@@ -38,6 +39,7 @@ plugins {
     id 'distribution'
     id 'version-catalog'
     id 'maven-publish'
+    id 'ru.vyarus.use-python'
 }
 
 apply from: "$rootDir/publish-repositories.gradle"
@@ -555,16 +557,6 @@ subprojects { subproj ->
     check.dependsOn 'jacocoTestCoverageVerification'
 }
 
-task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
-    dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
-}
-
-task('format') {
-    dependsOn generate
-    dependsOn spotlessApply
-    dependsOn subprojects.collect { it.getTasksByName('airbytePythonFormat', true) }
-}
 
 // add licenses for python projects.
 subprojects {
@@ -600,6 +592,78 @@ subprojects {
             licenseTask.dependsOn generateManifestFilesTask
         }
     }
+}
+
+python {
+    envPath = '.venv'
+    minPythonVersion = '3.9'
+    scope = 'VIRTUALENV'
+    installVirtualenv = true
+    pip 'pip:21.3.1'
+    // https://github.com/csachs/pyproject-flake8/issues/13
+    pip 'flake8:4.0.1'
+    // flake8 doesn't support pyproject.toml files
+    // and thus there is the wrapper "pyproject-flake8" for this
+    pip 'pyproject-flake8:0.0.1a2'
+    pip 'black:22.3.0'
+    pip 'mypy:1.4.1'
+    pip 'isort:5.6.4'
+    pip 'coverage[toml]:6.3.1'
+}
+
+task('generate') {
+    dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
+    dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
+}
+
+license {
+    header rootProject.file("LICENSE_SHORT")
+}
+
+task licensePythonGlobalFormat(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
+    header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
+    source = fileTree(dir: rootProject.rootDir)
+            .include("**/*.py")
+            .exclude("**/.venv/**")
+            .exclude("**/build/**")
+            .exclude("**/node_modules/**")
+            .exclude("**/airbyte_api_client/**")
+            .exclude("**/__init__.py")
+            .exclude("airbyte-cdk/python/airbyte_cdk/sources/declarative/models/declarative_component_schema.py")
+            .exclude("airbyte-integrations/connectors/source-stock-ticker-api-tutorial/source.py")
+            .exclude("resources/examples/airflow/superset/docker/pythonpath_dev/superset_config.py")
+            .exclude("tools/git_hooks/tests/test_spec_linter.py")
+            .exclude("tools/schema_generator/schema_generator/infer_schemas.py")
+    strictCheck = true
+    dependsOn generate
+}
+
+task isortGlobalFormat(type: PythonTask) {
+    module = "isort"
+    command = "--settings-file=${rootProject.file('pyproject.toml').absolutePath} ./"
+    dependsOn generate
+}
+
+task blackGlobalFormat(type: PythonTask) {
+    module = "black"
+    // the line length should match .isort.cfg
+    command = "--config ${rootProject.file('pyproject.toml').absolutePath} ./"
+    dependsOn generate
+}
+
+task('format') {
+    dependsOn generate
+    dependsOn spotlessApply
+    dependsOn licensePythonGlobalFormat
+    dependsOn isortGlobalFormat
+    dependsOn blackGlobalFormat
+    tasks.findByName('spotlessApply').mustRunAfter 'generate'
+    tasks.findByName('licensePythonGlobalFormat').mustRunAfter 'generate'
+    tasks.findByName('isortGlobalFormat').mustRunAfter 'licensePythonGlobalFormat'
+    tasks.findByName('blackGlobalFormat').mustRunAfter 'isortGlobalFormat'
+}
+
+subprojects {
     task listAllDependencies(type: DependencyReportTask) {}
 }
 
