@@ -40,7 +40,7 @@ class MongoDbStateManagerTest {
         SOURCE_ORDER, String.valueOf(order),
         SOURCE_RESUME_TOKEN, RESUME_TOKEN);
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
-    final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID);
+    final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID, InitialSnapshotStatus.IN_PROGRESS);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
     final JsonNode streamState = Jsons.jsonNode(mongoDbStreamState);
     final AirbyteStreamState airbyteStreamState = new AirbyteStreamState().withStreamDescriptor(streamDescriptor).withStreamState(streamState);
@@ -109,7 +109,7 @@ class MongoDbStateManagerTest {
         SOURCE_ORDER, String.valueOf(order),
         SOURCE_RESUME_TOKEN, RESUME_TOKEN);
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
-    final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID);
+    final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID, InitialSnapshotStatus.IN_PROGRESS);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
     final JsonNode streamState = Jsons.jsonNode(mongoDbStreamState);
     final AirbyteStreamState airbyteStreamState = new AirbyteStreamState().withStreamDescriptor(streamDescriptor).withStreamState(streamState);
@@ -134,7 +134,7 @@ class MongoDbStateManagerTest {
     assertNotNull(generated2);
     assertEquals(updatedCdcState, Jsons.object(generated2.getGlobal().getSharedState(), MongoDbCdcState.class));
 
-    final MongoDbStreamState updatedStreamState = new MongoDbStreamState("updated");
+    final MongoDbStreamState updatedStreamState = new MongoDbStreamState("updated", InitialSnapshotStatus.COMPLETE);
     stateManager.updateStreamState(STREAM_NAME, STREAM_NAMESPACE, updatedStreamState);
     final AirbyteStateMessage generated3 = stateManager.toState();
 
