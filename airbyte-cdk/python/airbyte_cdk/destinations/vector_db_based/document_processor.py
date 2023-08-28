@@ -13,8 +13,8 @@ from langchain.document_loaders.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 
-METADATA_STREAM_FIELD = "_airbyte_stream"
-METADATA_RECORD_ID_FIELD = "_record_id"
+METADATA_STREAM_FIELD = "_ab_stream"
+METADATA_RECORD_ID_FIELD = "_ab_record_id"
 
 
 @dataclass
