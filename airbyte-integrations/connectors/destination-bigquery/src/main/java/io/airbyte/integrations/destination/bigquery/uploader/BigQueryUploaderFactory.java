@@ -26,12 +26,19 @@ import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import org.checkerframework.checker.units.qual.N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
+  private static final ConcurrentMap<AirbyteStreamNameNamespacePair, String> airbyteStreamNameNamespacePairToJob = new ConcurrentHashMap<>();
 
   private static final String CONFIG_ERROR_MSG = """
                                                     Failed to write to destination schema.
@@ -47,7 +54,7 @@ public class BigQueryUploaderFactory {
                                                  More details:
                                                    """;
 
-  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
+  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig, final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair)
       throws IOException {
     final String dataset;
     if (TypingAndDedupingFlag.isDestinationV2()) {
@@ -84,7 +91,8 @@ public class BigQueryUploaderFactory {
         uploaderConfig.getBigQuery(),
         syncMode,
         datasetLocation,
-        recordFormatter);
+        recordFormatter,
+            airbyteStreamNameNamespacePair);
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
@@ -94,7 +102,8 @@ public class BigQueryUploaderFactory {
                                                                   final BigQuery bigQuery,
                                                                   final JobInfo.WriteDisposition syncMode,
                                                                   final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter) {
+                                                                  final BigQueryRecordFormatter formatter,
+                                                                  final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
     final TableId tableToWriteRawData = TypingAndDedupingFlag.isDestinationV2() ? targetTable : tmpTable;
     LOGGER.info("is v2: {}", TypingAndDedupingFlag.isDestinationV2());
@@ -107,8 +116,10 @@ public class BigQueryUploaderFactory {
             .setFormatOptions(FormatOptions.json())
             .build(); // new-line delimited json.
 
+    airbyteStreamNameNamespacePairToJob.putIfAbsent(airbyteStreamNameNamespacePair, UUID.randomUUID().toString());
+
     final JobId job = JobId.newBuilder()
-        .setRandomJob()
+        .setJob(airbyteStreamNameNamespacePairToJob.get(airbyteStreamNameNamespacePair))
         .setLocation(datasetLocation)
         .setProject(bigQuery.getOptions().getProjectId())
         .build();
@@ -131,6 +142,8 @@ public class BigQueryUploaderFactory {
     if (bigQueryClientChunkSizeFomConfig != null) {
       writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
     }
+
+    LOGGER.error("----------------- " + writer.toString());
 
     return new BigQueryDirectUploader(
         targetTable,

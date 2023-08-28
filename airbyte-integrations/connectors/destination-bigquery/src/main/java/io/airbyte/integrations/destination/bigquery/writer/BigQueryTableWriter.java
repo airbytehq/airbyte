@@ -51,7 +51,8 @@ public class BigQueryTableWriter implements DestinationWriter {
   public void write(String formattedData) throws IOException {
 
     try {
-      Job job = writeChannel.getJob();
+      LOGGER.error("________________________ Writing to BigQuery ________________________");
+      LOGGER.error(formattedData);
       writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
     } catch (Exception e) {
       LOGGER.error("BigQueryTableWriter", e);
@@ -65,6 +66,11 @@ public class BigQueryTableWriter implements DestinationWriter {
     LOGGER.error("Closing table writer, has failed: " + hasFailed);
 
 
+    this.writeChannel.close();
+  }
+
+  @Override
+  public void closeAfterPush() throws IOException {
     this.writeChannel.close();
   }
 

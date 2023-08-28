@@ -90,6 +90,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       "storage.objects.delete",
       "storage.objects.get",
       "storage.objects.list");
+  private static final ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
   protected final BigQuerySQLNameTransformer namingResolver;
 
   public BigQueryDestination() {
@@ -292,13 +293,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                                             final ParsedCatalog parsedCatalog,
                                                                                             final boolean use1s1t)
       throws IOException {
-    ConcurrentMap<AirbyteStreamNameNamespacePair, String> randomSuffixMap = new ConcurrentHashMap<>();
     return () -> {
       final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
       LOGGER.error("Use 1s1t in the uploader map supplier" + use1s1t);
       for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
+
+        if (randomSuffixMap.containsKey(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream))) {
+          LOGGER.error("======================== Found random suffix: " + randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream)));
+        } else {
+          LOGGER.error("======================== Not found random suffix!");
+        }
 
         randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
@@ -342,7 +348,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throws IOException {
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
-        BigQueryUploaderFactory.getUploader(uploaderConfig));
+        BigQueryUploaderFactory.getUploader(uploaderConfig, AirbyteStreamNameNamespacePair.fromAirbyteStream(stream)));
   }
 
   /**
@@ -374,12 +380,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final TyperDeduper typerDeduper)
       throws Exception {
     typerDeduper.prepareTables();
-    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
+    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,
         parsedCatalog,
-        TypingAndDedupingFlag.isDestinationV2()).get();
+        TypingAndDedupingFlag.isDestinationV2());
 
     return new BigQueryRecordStandardConsumer(
             outputRecordCollector,
@@ -388,7 +394,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               LOGGER.error("Is use1s1t in the on start: " + use1s1t);
               if (use1s1t) {
               // Set up our raw tables
-                writeConfigs.forEach((streamId, uploader) -> {
+                writeConfigs.get().forEach((streamId, uploader) -> {
                 final StreamConfig stream = parsedCatalog.getStream(streamId);
                 if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
                   // For streams in overwrite mode, truncate the raw table.
@@ -407,7 +413,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             (hasFailed) -> {
               LOGGER.info("Started closing all connections");
               final List<Exception> exceptionsThrown = new ArrayList<>();
-              writeConfigs.forEach((streamId, uploader) -> {
+              writeConfigs.get().forEach((streamId, uploader) -> {
                 try {
                   typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
                   uploader.close(hasFailed, outputRecordCollector, null);

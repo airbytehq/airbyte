@@ -11,6 +11,9 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
@@ -32,15 +35,16 @@ public class BigQueryAsyncStandardFlush  implements DestinationFlushFunction {
         ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
         stream.forEach(aibyteMessage -> {
             try {
-                uploaderMapSupplied.get(
-                        new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
-                                aibyteMessage.getRecord().getNamespace())).upload(aibyteMessage);
+                AirbyteStreamNameNamespacePair sd = new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
+                        aibyteMessage.getRecord().getNamespace());
+                uploaderMapSupplied.get(sd).upload(aibyteMessage);
             } catch (Exception e) {
                 log.error("BQ async standard flush");
                 log.error(aibyteMessage.toString());
                 throw e;
             }
         });
+        uploaderMapSupplied.values().forEach(test -> test.closeAfterPush());
     }
 
     @Override
