@@ -33,19 +33,18 @@ import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 class MongoDbDebeziumStateUtilTest {
 
   private static final String DATABASE = "test-database";
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-          CatalogHelpers.createAirbyteStream(
-                          "test-collection",
-                          DATABASE,
-                          Field.of("id", JsonSchemaType.INTEGER),
-                          Field.of("string", JsonSchemaType.STRING))
-                  .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
-                  .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
+      CatalogHelpers.createAirbyteStream(
+          "test-collection",
+          DATABASE,
+          Field.of("id", JsonSchemaType.INTEGER),
+          Field.of("string", JsonSchemaType.STRING))
+          .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
 
   private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
@@ -91,11 +90,11 @@ class MongoDbDebeziumStateUtilTest {
     assertEquals("null", Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID).asText());
 
     final OptionalLong parsedOffset =
-            mongoDbDebeziumStateUtil.savedOffset(
-                    baseProperties,
-                    CONFIGURED_CATALOG,
-                    initialState,
-                    config);
+        mongoDbDebeziumStateUtil.savedOffset(
+            baseProperties,
+            CONFIGURED_CATALOG,
+            initialState,
+            config);
     assertTrue(parsedOffset.isPresent());
     assertNotNull(parsedOffset.getAsLong());
     assertEquals(timestamp.getValue(), parsedOffset.getAsLong());

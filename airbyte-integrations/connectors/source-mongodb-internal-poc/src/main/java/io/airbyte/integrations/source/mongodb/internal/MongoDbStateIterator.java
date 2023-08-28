@@ -17,11 +17,8 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,16 +66,16 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * @param stateManager {@link MongoDbStateManager} that manages global and per-stream state
    * @param stream the stream that this iterator represents
    * @param emittedAt when this iterator was started
-   * @param checkpointInterval how often a state message should be emitted based on number of messages.
+   * @param checkpointInterval how often a state message should be emitted based on number of
+   *        messages.
    * @param checkpointDuration how often a state message should be emitted based on time.
    */
   public MongoDbStateIterator(final MongoCursor<Document> iter,
-                       final MongoDbStateManager stateManager,
-                       final ConfiguredAirbyteStream stream,
-                       final Instant emittedAt,
-                       final int checkpointInterval,
-                       final Duration checkpointDuration
-  ) {
+                              final MongoDbStateManager stateManager,
+                              final ConfiguredAirbyteStream stream,
+                              final Instant emittedAt,
+                              final int checkpointInterval,
+                              final Duration checkpointDuration) {
     this.iter = iter;
     this.stateManager = stateManager;
     this.stream = stream;
@@ -131,11 +128,11 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
           .withState(stateManager.toState());
     } else if (finalStateNext) {
       stateManager.updateStreamState(stream.getStream().getName(),
-              stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
+          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
 
       return new AirbyteMessage()
-              .withType(Type.STATE)
-              .withState(stateManager.toState());
+          .withType(Type.STATE)
+          .withState(stateManager.toState());
     }
 
     count++;

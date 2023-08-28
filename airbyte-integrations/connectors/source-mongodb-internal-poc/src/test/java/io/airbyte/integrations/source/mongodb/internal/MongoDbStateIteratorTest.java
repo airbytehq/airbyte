@@ -25,7 +25,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -232,7 +231,8 @@ class MongoDbStateIteratorTest {
 
     final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), 1000000, Duration.of(1, SECONDS));
 
-    // with a batch size of 1,000,000 and a 1.5s sleep between hasNext calls, the expected results should be
+    // with a batch size of 1,000,000 and a 1.5s sleep between hasNext calls, the expected results
+    // should be
     // `hasNext`/`next` call:
     // true, record Air Force Blue
     // true, state (with Air Force Blue)
