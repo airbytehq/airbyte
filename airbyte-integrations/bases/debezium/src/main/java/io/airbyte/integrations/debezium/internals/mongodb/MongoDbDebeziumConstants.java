@@ -17,6 +17,8 @@ public class MongoDbDebeziumConstants {
   public static class ChangeEvent {
 
     public static final String SOURCE = "source";
+    public static final String SOURCE_COLLECTION = SourceInfo.COLLECTION;
+    public static final String SOURCE_DB = "db";
     public static final String SOURCE_ORDER = SourceInfo.ORDER;
     public static final String SOURCE_RESUME_TOKEN = "resume_token";
     public static final String SOURCE_SECONDS = SourceInfo.TIMESTAMP;
