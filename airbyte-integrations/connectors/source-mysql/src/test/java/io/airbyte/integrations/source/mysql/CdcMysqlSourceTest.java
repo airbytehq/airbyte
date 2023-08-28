@@ -354,7 +354,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
-//  @Disabled("Known issue with Debezium versions < 2.4.0. Enable after Debezium version upgrade")
+  // @Disabled("Known issue with Debezium versions < 2.4.0. Enable after Debezium version upgrade")
   // https://github.com/airbytehq/airbyte/issues/28968")
   @Test
   protected void verifyNullableColumnWithDefaultValues() throws Exception {
