@@ -104,6 +104,10 @@ public class MongoDbStateManager {
     return Optional.ofNullable(pairToStreamState.get(airbyteStreamNameNamespacePair));
   }
 
+  public Map<AirbyteStreamNameNamespacePair, MongoDbStreamState> getStreamStates() {
+    return Map.copyOf(pairToStreamState);
+  }
+
   /**
    * Updates the global, CDC state tracked by the manager.
    *

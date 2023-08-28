@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.db.mongodb.MongoUtils;
+import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -74,7 +75,8 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     this.checkpointInterval = checkpointInterval;
     this.emittedAt = emittedAt;
     fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
-    lastId = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
+    lastId = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace())
+            .map(MongoDbStreamState::id).orElse(null);
   }
 
   @Override
@@ -98,18 +100,25 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public AirbyteMessage next() {
-    if ((count > 0 && count % checkpointInterval == 0) || finalStateNext) {
+    if ((count > 0 && count % checkpointInterval == 0)) {
       count = 0;
 
       if (lastId != null) {
         // TODO add type support in here once more than ObjectId fields are supported
         stateManager.updateStreamState(stream.getStream().getName(),
-            stream.getStream().getNamespace(), new MongoDbStreamState(lastId));
+            stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.IN_PROGRESS));
       }
 
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
+    } else if (finalStateNext) {
+      stateManager.updateStreamState(stream.getStream().getName(),
+              stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
+
+      return new AirbyteMessage()
+              .withType(Type.STATE)
+              .withState(stateManager.toState());
     }
 
     count++;
