@@ -114,7 +114,14 @@ their associated breaking changes. Each entry must contain the following paramet
 * `upgradeDeadline`: (`YYYY-MM-DD`) The date by which the user should upgrade to the new version.
 
 Note that the `message` should be brief no matter how involved the fix is - the user will be redirected to the migration documentation for the
-full upgrade/migration instructions.
+full upgrade/migration instructions.  That said, the message should at least include:
+1. What was changed
+2. Why the change is better for the user (fixed a bug, something got faster, etc)
+3. What the user needs to do in order to sync again (e.g. a full reset, run a SQL query in the destinaton, etc)
+
+When considering what the `upgradeDeadline` should be, target the amount of time whcih would be reasonable for the user to make the required changes described in the `message` and upgrade giude.  If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended.  Note that you do *not* want to link the duration of `upgradeDeadline` to an upstream API's deprication date.  While it is true that the older version of a connector will continue to work for that period of time, it means that users who are pinned to the older version of the connector will not beneift from future updates and fixes.
+
+Without all 3 of these points, the breaking change message is not helpful to users. 
 
 Here is an example:
 ```yaml
