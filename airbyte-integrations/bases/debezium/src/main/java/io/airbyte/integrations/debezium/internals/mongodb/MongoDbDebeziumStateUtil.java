@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
@@ -66,7 +63,7 @@ public class MongoDbDebeziumStateUtil {
             MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
 
     final Map<String, Object> value = new HashMap<>();
-    value.put(VALUE_SECONDS, timestamp.getTime());
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
@@ -135,7 +132,8 @@ public class MongoDbDebeziumStateUtil {
       if (offsets != null && offsets.values().stream().anyMatch(Objects::nonNull)) {
         final MongoDbOffsetContext offsetContext = loader.loadOffsets(offsets);
         final Map<String, ?> offset = offsetContext.getReplicaSetOffsetContext(replicaSets.all().get(0)).getOffset();
-        final BsonTimestamp timestamp = new BsonTimestamp((Integer) offset.get(VALUE_SECONDS), (Integer) offset.get(VALUE_INCREMENT));
+        final BsonTimestamp timestamp = new BsonTimestamp((Integer) offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS),
+            (Integer) offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT));
         return OptionalLong.of(timestamp.getValue());
       } else {
         return OptionalLong.empty();
