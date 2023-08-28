@@ -24,12 +24,20 @@
 			],
             "settings": {
                 "extensions.ignoreRecommendations": true,
+                "git.openRepositoryInParentFolders": "always",
                 "python.defaultInterpreterPath": ".venv/bin/python",
                 "python.interpreter.infoVisibility": "always",
-                "git.openRepositoryInParentFolders": "always",
                 "python.terminal.activateEnvironment": true,
+                "python.testing.pytestEnabled": true,
                 "python.testing.cwd": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
                 "python.testing.pytestArgs": ["--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb", "."]
+            }
+        },
+        "codespaces": {
+            "repositories": {
+                "airbytehq/airbyte": {
+                    "python.testing.pytestEnabled": true
+                }
             }
         }
     },
@@ -43,7 +51,7 @@
     // 2. Map the devcontainer.json file to it.
     // 3. Mark the root directory as 'safe' for git.
     // 4. Install the Python/Poetry dependencies.
-    "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && git config --add safe.directory /workspaces/airbyte && poetry install"
+    "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/docs/destinations/duckdb/devcontainer.json ./.symlinks/devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/duckdb.md ./.symlinks/duckdb-docs.md && git config --add safe.directory /workspaces/airbyte && poetry install"
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],

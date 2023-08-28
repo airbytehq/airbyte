@@ -63,9 +63,9 @@ class DestinationDuckdb(Destination):
         path = self._get_destination_path(path)
 
         # Get and register auth token if applicable
-        api_key = str(config.get("api_key"))
-        if api_key:
-            os.environ["motherduck_token"] = api_key
+        motherduck_api_key = str(config.get("motherduck_api_key"))
+        if motherduck_api_key:
+            os.environ["motherduck_token"] = motherduck_api_key
 
         con = duckdb.connect(database=path, read_only=False)
 
@@ -157,14 +157,12 @@ class DestinationDuckdb(Destination):
             path = config.get("destination_path")
             path = self._get_destination_path(path)
 
-            api_key = config.get("api_key")
-
             if path.startswith("/local"):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
             
-            if "api_key" in config:
-                os.environ["motherduck_token"] = config["api_key"]
+            if "motherduck_api_key" in config:
+                os.environ["motherduck_token"] = config["motherduck_api_key"]
 
             con = duckdb.connect(database=path, read_only=False)
             con.execute("SELECT 1;")

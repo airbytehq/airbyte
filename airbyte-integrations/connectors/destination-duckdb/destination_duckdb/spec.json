@@ -11,7 +11,7 @@
     "required": ["destination_path"],
     "additionalProperties": true,
     "properties": {
-      "api_key": {
+      "motherduck_api_key": {
         "type": "string",
         "description": "API key to use for authentication to a MotherDuck database.",
         "writeOnly": true
