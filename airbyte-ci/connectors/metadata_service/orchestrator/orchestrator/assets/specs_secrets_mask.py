@@ -1,14 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Set
 
 import dpath.util
-import yaml
 import sentry_sdk
-
-from dagster import MetadataValue, Output, asset, OpExecutionContext
-
+import yaml
+from dagster import MetadataValue, OpExecutionContext, Output, asset
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from orchestrator.logging import sentry
 
