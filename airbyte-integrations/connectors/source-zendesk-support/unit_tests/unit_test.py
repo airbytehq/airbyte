@@ -306,7 +306,7 @@ class TestAllStreams:
             (GroupMemberships, "group_memberships"),
             (Groups, "groups"),
             (Macros, "macros"),
-            (Organizations, "organizations"),
+            (Organizations, "incremental/organizations.json"),
             (Posts, "community/posts"),
             (OrganizationMemberships, "organization_memberships"),
             (SatisfactionRatings, "satisfaction_ratings"),
@@ -367,7 +367,6 @@ class TestSourceZendeskSupportStream:
         "stream_cls",
         [
             (Macros),
-            (Organizations),
             (Posts),
             (Groups),
             (SatisfactionRatings),
@@ -377,7 +376,6 @@ class TestSourceZendeskSupportStream:
         ],
         ids=[
             "Macros",
-            "Organizations",
             "Posts",
             "Groups",
             "SatisfactionRatings",
