@@ -55,7 +55,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -292,18 +294,24 @@ class MongoDbSourceTest {
 
     private MongoDbSource source;
     private JsonNode airbyteSourceConfig;
-    private MongoDBContainer MONGO_DB;
+    private static MongoDBContainer MONGO_DB;
+
+    @BeforeAll
+    static void init() {
+      MONGO_DB = new MongoDBContainer("mongo:6.0.8");
+      MONGO_DB.start();
+    }
 
     @BeforeEach
     void setup() {
-      MONGO_DB = new MongoDBContainer("mongo:6.0.8");
-      MONGO_DB.start();
+      final MongoClient mongoClient = MongoClients.create(MONGO_DB.getConnectionString());
+      mongoClient.getDatabase(DB_NAME).drop();
       airbyteSourceConfig = createConfiguration(MONGO_DB.getConnectionString() + "/", Optional.empty(), Optional.empty(), Optional.empty());
       source = new MongoDbSource();
     }
 
-    @AfterEach
-    void cleanup() {
+    @AfterAll
+    static void cleanup() {
       MONGO_DB.stop();
     }
 
