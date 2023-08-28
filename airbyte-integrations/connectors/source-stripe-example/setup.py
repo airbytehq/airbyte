@@ -6,17 +6,18 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk~=0.2",
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
     "pytest~=6.2",
     "pytest-mock~=3.6.1"
 ]
 
 setup(
-    name="source_auth0",
-    description="Source implementation for Auth0.",
+    name="source_stripe_example",
+    description="Source implementation for Stripe Example.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

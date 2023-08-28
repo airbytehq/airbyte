@@ -1,0 +1,65 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "cus_OV79No8gagMXS8",
+      "object": "customer",
+      "address": null,
+      "balance": 0,
+      "created": 1692758165,
+      "currency": null,
+      "default_source": null,
+      "delinquent": false,
+      "description": "Customer 0",
+      "discount": null,
+      "email": "customer000@example.com",
+      "invoice_prefix": "CA2A4023",
+      "invoice_settings": {
+        "custom_fields": null,
+        "default_payment_method": null,
+        "footer": null,
+        "rendering_options": null
+      },
+      "livemode": false,
+      "metadata": {},
+      "name": null,
+      "next_invoice_sequence": 1,
+      "phone": null,
+      "preferred_locales": [],
+      "shipping": null,
+      "tax_exempt": "none",
+      "test_clock": null
+    },
+    {
+      "id": "cus_OV70et76zQh5ra",
+      "object": "customer",
+      "address": null,
+      "balance": 0,
+      "created": 1692757635,
+      "currency": null,
+      "default_source": null,
+      "delinquent": false,
+      "description": "Customer 999",
+      "discount": null,
+      "email": "customer99900@example.com",
+      "invoice_prefix": "ADF834E3",
+      "invoice_settings": {
+        "custom_fields": null,
+        "default_payment_method": null,
+        "footer": null,
+        "rendering_options": null
+      },
+      "livemode": false,
+      "metadata": {},
+      "name": null,
+      "next_invoice_sequence": 1,
+      "phone": null,
+      "preferred_locales": [],
+      "shipping": null,
+      "tax_exempt": "none",
+      "test_clock": null
+    }
+  ],
+  "has_more": true,
+  "url": "/v1/customers"
+}

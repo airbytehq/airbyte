@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a1fbc708-ae26-4b45-8511-7375dadc7f9e
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-stripe-example
+  githubIssueLabel: source-stripe-example
+  icon: stripe-example.svg
+  license: MIT
+  name: Stripe Example
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stripe-example
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
