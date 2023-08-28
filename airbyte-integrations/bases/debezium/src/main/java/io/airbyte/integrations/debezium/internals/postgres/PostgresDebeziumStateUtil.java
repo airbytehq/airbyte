@@ -163,7 +163,8 @@ public class PostgresDebeziumStateUtil {
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
     try {
-      fileOffsetBackingStore = new FileOffsetBackingStore();
+      final JsonConverter keyConverter = new JsonConverter();
+      fileOffsetBackingStore = new FileOffsetBackingStore(keyConverter);
       final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
       propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
       propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
@@ -171,7 +172,6 @@ public class PostgresDebeziumStateUtil {
       fileOffsetBackingStore.start();
 
       final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
-      final JsonConverter keyConverter = new JsonConverter();
       keyConverter.configure(internalConverterConfig, true);
       final JsonConverter valueConverter = new JsonConverter();
       valueConverter.configure(internalConverterConfig, false);

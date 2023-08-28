@@ -69,6 +69,8 @@ public abstract class DebeziumPropertiesManager {
     // https://debezium.io/documentation/reference/2.2/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
     props.setProperty("value.converter.schemas.enable", "false");
+    props.setProperty("value.converter.schemas.enable", "false");
+    props.setProperty("value.converter.replace.null.with.default", "false");
 
     // debezium names
     props.setProperty(NAME_KEY, getName(config));
