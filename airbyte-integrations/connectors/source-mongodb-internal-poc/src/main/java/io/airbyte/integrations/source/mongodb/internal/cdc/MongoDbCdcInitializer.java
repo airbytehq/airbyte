@@ -2,8 +2,13 @@ package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
@@ -11,23 +16,37 @@ import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.integrations.source.mongodb.internal.MongoDbStateIterator;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
+import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
 public class MongoDbCdcInitializer {
@@ -75,7 +94,9 @@ public class MongoDbCdcInitializer {
 
         final MongoDbCdcState stateToBeUsed = (!savedOffsetAfterResumeToken || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? new MongoDbCdcState(initialDebeziumState) : stateManager.getCdcState();
 
-        // TODO get iterators for streams
+        final List<ConfiguredAirbyteStream> initialSnapshotStreams = MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(stateManager, catalog, savedOffsetAfterResumeToken);
+        final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators = convertCatalogToIterators(new ConfiguredAirbyteCatalog().withStreams(initialSnapshotStreams),
+                stateManager, mongoClient.getDatabase(databaseName), emittedAt);
 
         final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
         final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
@@ -94,15 +115,57 @@ public class MongoDbCdcInitializer {
                 false);
 
 
-        return null;
+        return Stream
+                .of(initialSnapshotIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
-    private MongoDbCdcState getCdcState(final MongoClient mongoClient, final MongoDbStateManager stateManager, final String databaseName, final String replicaSet) {
-        if (stateManager.getCdcState() != null) {
-            return stateManager.getCdcState();
-        } else {
-            final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
-            return Jsons.object(initialDebeziumState, MongoDbCdcState.class);
-        }
+    /**
+     * Converts the streams in the catalog into a list of AutoCloseableIterators.
+     */
+    private List<AutoCloseableIterator<AirbyteMessage>> convertCatalogToIterators(
+            final ConfiguredAirbyteCatalog catalog,
+            final MongoDbStateManager stateManager,
+            final MongoDatabase database,
+            final Instant emittedAt) {
+        return catalog.getStreams()
+                .stream()
+                .peek(airbyteStream -> {
+                    if (!airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+                        LOGGER.warn("Stream {} configured with unsupported sync mode: {}", airbyteStream.getStream().getName(), airbyteStream.getSyncMode());
+                })
+                .filter(airbyteStream -> airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL))
+                .map(airbyteStream -> {
+                    final var collectionName = airbyteStream.getStream().getName();
+                    final var collection = database.getCollection(collectionName);
+                    // TODO verify that if all fields are selected that all fields are returned here
+                    // (or should this check and ignore them if all fields are selected)
+                    final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
+
+                    // find the existing state, if there is one, for this steam
+                    final Optional<MongoDbStreamState> existingState =
+                            stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+
+                    // The filter determines the starting point of this iterator based on the state of this collection.
+                    // If a state exists, it will use that state to create a query akin to
+                    // "where _id > [last saved state] order by _id ASC".
+                    // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
+                    final Bson filter = existingState
+                            // TODO add type support here when we add support for _id fields that are not ObjectId types
+                            .map(state -> Filters.gt(ID_FIELD, new ObjectId(state.id())))
+                            // if nothing was found, return a new BsonDocument
+                            .orElseGet(BsonDocument::new);
+
+                    final var cursor = collection.find()
+                            .filter(filter)
+                            .projection(fields)
+                            .sort(Sorts.ascending(ID_FIELD))
+                            .cursor();
+
+                    final var stateIterator = new MongoDbStateIterator(cursor, stateManager, airbyteStream, emittedAt, CHECKPOINT_INTERVAL);
+                    return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
+                })
+                .toList();
     }
 }
