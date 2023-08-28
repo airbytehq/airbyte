@@ -4,9 +4,10 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.*;
 import static io.debezium.connector.mongodb.MongoDbConnectorConfig.REPLICA_SETS;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,9 +69,9 @@ class MongoDbDebeziumStateUtilTest {
     baseProperties.put(REPLICA_SETS.name(), "mongodb://host:12345/?replicaSet=" + replicaSet);
 
     final JsonNode config = Jsons.jsonNode(Map.of(
-        CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-        DATABASE_CONFIGURATION_KEY, database,
-        REPLICA_SET_CONFIGURATION_KEY, replicaSet));
+        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database,
+        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, replicaSet));
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
