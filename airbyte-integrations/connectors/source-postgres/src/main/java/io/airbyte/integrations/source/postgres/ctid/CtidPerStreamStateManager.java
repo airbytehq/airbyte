@@ -34,7 +34,7 @@ public class CtidPerStreamStateManager extends CtidStateManager {
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+                                                                                           final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -82,4 +82,5 @@ public class CtidPerStreamStateManager extends CtidStateManager {
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     return XminStateManager.getAirbyteStateMessage(pair, Jsons.object(streamStateForIncrementalRun, XminStatus.class));
   }
+
 }

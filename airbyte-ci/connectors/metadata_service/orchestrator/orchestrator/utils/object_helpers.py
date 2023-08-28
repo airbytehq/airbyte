@@ -1,8 +1,13 @@
-import mergedeep
-import json
-from deepdiff import DeepDiff
-from typing import TypeVar
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import copy
+import json
+from typing import TypeVar
+
+import mergedeep
+from deepdiff import DeepDiff
 
 T = TypeVar("T")
 

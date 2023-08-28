@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
@@ -65,7 +69,8 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
     if (syncNumber == 1) {
       assertExpectedStateMessagesForRecordsProducedDuringAndAfterSync(stateMessages);
     } else if (syncNumber == 2) {
-      // Sync number 2 uses the state from sync number 1 but before we trigger the sync 2 we purge the binary logs and as a result the validation of
+      // Sync number 2 uses the state from sync number 1 but before we trigger the sync 2 we purge the
+      // binary logs and as a result the validation of
       // logs present on the server fails, and we trigger a sync from scratch
       assertEquals(47, stateMessages.size());
       assertStateTypes(stateMessages, 44);
@@ -111,7 +116,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
-      final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+                                                            final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -191,7 +196,8 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     // Re-run the sync with state associated with record w/ id = 15 (second to last record).
     // We expect to read 2 records, since in the case of a composite PK we issue a >= query.
-    // We also expect 3 state records. One associated with the pk state, one to signify end of initial load, and
+    // We also expect 3 state records. One associated with the pk state, one to signify end of initial
+    // load, and
     // the last one indicating the cdc position we have synced until.
     final JsonNode state = Jsons.jsonNode(Collections.singletonList(stateMessages1.get(4)));
     final AutoCloseableIterator<AirbyteMessage> read2 = getSource()
@@ -229,11 +235,11 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
-                MODELS_STREAM_NAME + "_2",
-                MODELS_SCHEMA,
-                Field.of(COL_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_MODEL, JsonSchemaType.STRING))
+            MODELS_STREAM_NAME + "_2",
+            MODELS_SCHEMA,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MODEL, JsonSchemaType.STRING))
             .withSupportedSyncModes(
                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
@@ -280,7 +286,8 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
         final AirbyteStreamState streamState = global.getStreamStates().get(0);
         assertFalse(streamState.getStreamState().has(STATE_TYPE_KEY));
       } else if (i <= 10) {
-        // 6th to 10th is the primary_key state message for the 2nd stream but final state message for 1st stream
+        // 6th to 10th is the primary_key state message for the 2nd stream but final state message for 1st
+        // stream
         assertEquals(2, global.getStreamStates().size());
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
@@ -301,7 +308,7 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
     final Set<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
-            .collect(Collectors.toSet()),
+        .collect(Collectors.toSet()),
         recordMessages1,
         names,
         names,
@@ -327,7 +334,8 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
       if (i <= 3) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are primary_key state for the stream that didn't complete primary_key sync the first time
+          // First 4 state messages are primary_key state for the stream that didn't complete primary_key sync
+          // the first time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
@@ -349,4 +357,5 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
         names,
         MODELS_SCHEMA);
   }
+
 }
