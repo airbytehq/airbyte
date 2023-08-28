@@ -158,6 +158,8 @@ For each destination connector, Destinations V2 is effective as of the following
 | DuckDB                | 0.1.0                 | 2.0.0+                     |
 | Clickhouse            | 0.2.3                 | 2.0.0+                     |
 
+Note: If you encounter errors while upgrading from a V1 to a V2 destination, please reach out to support.  It may be advantagous to only drop probematic V2 tables rather than to do a full reset, depending on tye type of error.
+
 ## Destinations V2 Implementation Differences 
 
 In addition to the changes which apply for all destinations described above, there are some per-destination fixes and updates included in Destinations V2:
