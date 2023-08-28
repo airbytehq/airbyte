@@ -24,10 +24,12 @@ public interface TyperDeduper {
    * for the given stream, this method may choose to do nothing. If a caller wishes to force T+D to
    * run (for example, at the end of a sync), they may set {@code mustRun} to true.
    * <p>
-   * This method relies on callers to prevent concurrent modification to the underlying raw tables
-   * using {@link #getRawTableInsertLock(String, String)}. Caller must guard raw table writes using
-   * {@code getRawTableInsertLock().lock()} and {@code getRawTableInsertLock().unlock()}. While
-   * {@code typeAndDedupe} is executing, that lock will be unavailable.
+   * This method relies on callers to prevent concurrent modification to the underlying raw tables.
+   * This is most easily accomplished using {@link #getRawTableInsertLock(String, String)}, if the
+   * caller guards all raw table writes using {@code getRawTableInsertLock().lock()} and
+   * {@code getRawTableInsertLock().unlock()}. While {@code typeAndDedupe} is executing, that lock
+   * will be unavailable. However, callers are free to enforce this in other ways (for example, single-
+   * threaded callers do not need to use the lock).
    *
    * @param originalNamespace The stream's namespace, as declared in the configured catalog
    * @param originalName The stream's name, as declared in the configured catalog
@@ -36,7 +38,11 @@ public interface TyperDeduper {
 
   /**
    * Get the lock that should be used to synchronize inserts to the raw table for a given stream.
-   * {@link #typeAndDedupe(String, String, boolean)} will not run while this lock is held.
+   * This lock permits any number of threads to hold the lock, but
+   * {@link #typeAndDedupe(String, String, boolean)} will not proceed while this lock is held.
+   * <p>
+   * This lock provides fairness guarantees, i.e. typeAndDedupe will not starve while waiting for the
+   * lock (and similarly, raw table writers will not starve if many typeAndDedupe calls are queued).
    */
   Lock getRawTableInsertLock(final String originalNamespace, final String originalName);
 
