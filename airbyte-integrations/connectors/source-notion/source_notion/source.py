@@ -42,17 +42,17 @@ class SourceNotion(AbstractSource):
             return True, None
         except requests.exceptions.RequestException as e:
             # The most likely user error will be incorrectly configured credentials. We can provide a specific error message for those cases. Otherwise, the stock Notion API message should suffice.
-            if e.response.json()["code"] == "unauthorized":
+            if e.response.json().get("code") == "unauthorized":
                 return (
                     False,
                     "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration.",
                 )
-            if e.response.json()["code"] == "restricted_resource":
+            if e.response.json().get("code") == "restricted_resource":
                 return (
                     False,
                     "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration.",
                 )
-            return False, f"{e.response.json()['message']}"
+            return False, f"{e.response.json().get('message', 'An unknown error occured while connecting to Notion. Please check your credentials and try again.')}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
