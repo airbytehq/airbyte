@@ -186,7 +186,11 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
     testDifferentTypes("sample_stream_3", "datatypeV1.json", "dataV1.json", "expected-datatypeV1.json", "expected-dataV1.json");
   }
 
-  private void testDifferentTypes(final String streamName, final String dataTypeFile, final String dataFile, final String expectedDataTypeFile, final String expectedDataFile)
+  private void testDifferentTypes(final String streamName,
+                                  final String dataTypeFile,
+                                  final String dataFile,
+                                  final String expectedDataTypeFile,
+                                  final String expectedDataFile)
       throws Exception {
 
     final JsonNode datatypeSchema = getTestDataFromResourceJson(dataTypeFile);
@@ -225,7 +229,8 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
         .withSyncMode(FULL_REFRESH).withDestinationSyncMode(destinationSyncMode)));
   }
 
-  private static void runDestinationWrite(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final AirbyteMessage... messages) throws Exception {
+  private static void runDestinationWrite(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final AirbyteMessage... messages)
+      throws Exception {
     final StarburstGalaxyDestination destination = new StarburstGalaxyDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
     consumer.start();

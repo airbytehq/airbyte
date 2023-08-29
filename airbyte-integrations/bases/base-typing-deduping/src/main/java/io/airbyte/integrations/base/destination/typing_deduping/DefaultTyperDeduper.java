@@ -86,19 +86,27 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
       final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
       if (existingTable.isPresent()) {
+        LOGGER.info("Final Table exists for stream {}", stream.id().finalName());
         // The table already exists. Decide whether we're writing to it directly, or using a tmp table.
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && !destinationHandler.isFinalTableEmpty(stream.id())) {
-          // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the table at the
-          // end of the sync.
-          overwriteStreamsWithTmpTable.add(stream.id());
-          // overwrite an existing tmp table if needed.
-          destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX, true));
+        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+          if (!destinationHandler.isFinalTableEmpty(stream.id()) || !sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
+            // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the table at the
+            // end of the sync.
+            overwriteStreamsWithTmpTable.add(stream.id());
+            // overwrite an existing tmp table if needed.
+            destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX, true));
+            LOGGER.info("Using temp final table for stream {}, will overwrite existing table at end of sync", stream.id().finalName());
+          } else {
+            LOGGER.info("Final Table for stream {} is empty and matches the expected v2 format, writing to table directly", stream.id().finalName());
+          }
+
         } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
           // We're loading data directly into the existing table. Make sure it has the right schema.
           LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
           destinationHandler.execute(sqlGenerator.softReset(stream));
         }
       } else {
+        LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
         // The table doesn't exist. Create it. Don't force.
         destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
       }

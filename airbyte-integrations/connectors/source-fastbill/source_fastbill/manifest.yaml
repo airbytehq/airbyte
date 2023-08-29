@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["RESPONSE","{{ parameters.record_extractor }}"]
+      field_path: ["RESPONSE", "{{ parameters.record_extractor }}"]
   requester:
     type: HttpRequester
     url_base: "https://my.fastbill.com/api/1.0"

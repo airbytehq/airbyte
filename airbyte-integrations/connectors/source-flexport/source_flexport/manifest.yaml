@@ -38,7 +38,7 @@ definitions:
     request_headers: {}
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      api_token: "{{ config['api_key'] }}"
     request_body_json: {}
 
   retriever:
@@ -103,11 +103,11 @@ definitions:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: "{{ config['api_key'] }}"
         request_body_json: {}
     incremental_sync:
       type: DatetimeBasedCursor
-      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_field: updated_at
       start_time_option:
         inject_into: request_parameter
@@ -119,12 +119,12 @@ definitions:
         type: RequestOption
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
 streams:
   - "#/definitions/companies_stream"
@@ -154,4 +154,4 @@ spec:
         title: Start date
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        order: 1    
+        order: 1

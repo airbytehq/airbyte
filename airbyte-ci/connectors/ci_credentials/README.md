@@ -83,3 +83,6 @@ To upload to GSM newly updated configurations from `airbyte-integrations/connect
 VERSION=dev ci_credentials source-bing-ads update-secrets
 ```
 
+## FAQ
+### What is `VERSION=dev`?
+This is a way to tell the tool to write secrets using your local current working directory and not the Github Action runner one.

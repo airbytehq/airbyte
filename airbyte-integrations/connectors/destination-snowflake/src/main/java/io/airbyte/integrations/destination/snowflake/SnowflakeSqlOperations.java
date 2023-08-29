@@ -60,12 +60,12 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     if (use1s1t) {
       return String.format(
           """
-              CREATE TABLE IF NOT EXISTS "%s"."%s" (
-                "%s" VARCHAR PRIMARY KEY,
-                "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
-                "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-                "%s" VARIANT
-              ) data_retention_time_in_days = 0;""",
+          CREATE TABLE IF NOT EXISTS "%s"."%s" (
+            "%s" VARCHAR PRIMARY KEY,
+            "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+            "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+            "%s" VARIANT
+          ) data_retention_time_in_days = 0;""",
           schemaName,
           tableName,
           JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
@@ -75,11 +75,11 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     } else {
       return String.format(
           """
-              CREATE TABLE IF NOT EXISTS %s.%s (
-                %s VARCHAR PRIMARY KEY,
-                %s VARIANT,
-                %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
-              ) data_retention_time_in_days = 0;""",
+          CREATE TABLE IF NOT EXISTS %s.%s (
+            %s VARCHAR PRIMARY KEY,
+            %s VARIANT,
+            %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
+          ) data_retention_time_in_days = 0;""",
           schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     }
   }
@@ -135,7 +135,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
       // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
       insertQuery = String.format(
           "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
+          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     } else {
       insertQuery = String.format(
           "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
