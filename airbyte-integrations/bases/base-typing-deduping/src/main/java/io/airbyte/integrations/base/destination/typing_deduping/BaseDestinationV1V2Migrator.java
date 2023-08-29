@@ -64,12 +64,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
-    final var migrateAndReset = String.join("\n\n",
-        sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(),
-            namespacedTableName.tableName()),
-        sqlGenerator.softReset(streamConfig));
     try {
-      destinationHandler.execute(migrateAndReset);
+      destinationHandler.execute(sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(), namespacedTableName.tableName()));
     } catch (Exception e) {
       final var message = "Attempted and failed to migrate stream %s".formatted(streamConfig.id().finalName());
       throw new TableNotMigratedException(message, e);
