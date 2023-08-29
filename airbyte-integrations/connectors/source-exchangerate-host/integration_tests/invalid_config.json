@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "currency_codes": "GBP,NOK",
+  "start_date": "2022-07-21",
+  "base": "GBPP"
 }
