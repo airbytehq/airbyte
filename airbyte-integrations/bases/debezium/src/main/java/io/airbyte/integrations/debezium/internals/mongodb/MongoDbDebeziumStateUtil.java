@@ -85,6 +85,15 @@ public class MongoDbDebeziumStateUtil {
     return Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
   }
 
+  /**
+   * Test whether the retrieved saved offset value is after the resume token.
+   *
+   * @param mongoClient The {@link MongoClient} used to retrieve the current resume token value.
+   * @param savedOffset The saved offset value.
+   * @return {@code true} if the saved offset value is after the retrieved resume token value or if
+   *         the provided saved offset value is not present. Otherwise, {@code false} is returned if
+   *         the saved offset value precedes the resume token value.
+   */
   public boolean isSavedOffsetAfterResumeToken(final MongoClient mongoClient, final OptionalLong savedOffset) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
@@ -96,6 +105,18 @@ public class MongoDbDebeziumStateUtil {
     return savedOffset.getAsLong() >= currentTimestamp.getValue();
   }
 
+  /**
+   * Saves and retrieves the Debezium offset data. This method writes the provided CDC state to the
+   * offset file and then uses Debezium's code to retrieve the state from the offset file in order to
+   * verify that Debezium will be able to read the offset data itself when invoked.
+   *
+   * @param baseProperties The base Debezium properties.
+   * @param catalog The configured Airbyte catalog.
+   * @param cdcState The current CDC state that contains the offset data.
+   * @param config The source configuration.
+   * @return The offset value (the timestamp extracted from the resume token) retrieved from the CDC
+   *         state/offset data.
+   */
   public OptionalLong savedOffset(final Properties baseProperties,
                                   final ConfiguredAirbyteCatalog catalog,
                                   final JsonNode cdcState,
@@ -108,11 +129,13 @@ public class MongoDbDebeziumStateUtil {
   }
 
   /**
+   * Loads the offset data from the saved Debezium offset file.
    *
-   * @param properties Properties should contain the relevant properties like path to the debezium
+   * @param properties Properties should contain the relevant properties like path to the Debezium
    *        state file, etc. It's assumed that the state file is already initialised with the saved
    *        state
-   * @return Returns the LSN that Airbyte has acknowledged in the source database server
+   * @return Returns the timestamp extracted from a resume token that Airbyte has acknowledged in the
+   *         source database server.
    */
   private OptionalLong parseSavedOffset(final Properties properties) {
 

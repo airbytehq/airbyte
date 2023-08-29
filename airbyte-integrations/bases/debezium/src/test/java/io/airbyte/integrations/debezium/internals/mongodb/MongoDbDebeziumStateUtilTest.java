@@ -36,6 +36,8 @@ import org.junit.jupiter.api.Test;
 class MongoDbDebeziumStateUtilTest {
 
   private static final String DATABASE = "test-database";
+  private static final String REPLICA_SET = "test-replica-set";
+  private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -57,8 +59,8 @@ class MongoDbDebeziumStateUtilTest {
   @Test
   void testConstructInitialDebeziumState() {
     final String database = DATABASE;
-    final String replicaSet = "test_rs";
-    final String resumeToken = "8264BEB9F3000000012B0229296E04";
+    final String replicaSet = REPLICA_SET;
+    final String resumeToken = RESUME_TOKEN;
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
     final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
@@ -98,6 +100,15 @@ class MongoDbDebeziumStateUtilTest {
     assertTrue(parsedOffset.isPresent());
     assertNotNull(parsedOffset.getAsLong());
     assertEquals(timestamp.getValue(), parsedOffset.getAsLong());
+  }
+
+  @Test
+  void testOffsetDataFormat() {
+    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN);
+
+    assertNotNull(offsetState);
+    assertEquals("[\"" + DATABASE + "\",{\"" + MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET + "\":\"" + REPLICA_SET + "\",\""
+        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + DATABASE + "\"}]", offsetState.fieldNames().next());
   }
 
 }
