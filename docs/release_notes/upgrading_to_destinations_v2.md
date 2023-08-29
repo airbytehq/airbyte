@@ -6,7 +6,7 @@ import {SnowflakeMigrationGenerator, BigQueryMigrationGenerator} from './destina
 
 ## What is Destinations V2?
 
-Starting today, Airbyte Destinations V2 provides you with:
+Airbyte Destinations V2 provides you with:
 
 - One-to-one table mapping: Data in one stream will always be mapped to one table in your data warehouse. No more sub-tables.
 - Improved error handling with `_airbyte_meta`: Airbyte will now populate typing errors in the `_airbyte_meta` column instead of failing your sync. You can query these results to audit misformatted or unexpected data.
@@ -15,13 +15,15 @@ Starting today, Airbyte Destinations V2 provides you with:
 
 To see more details and examples on the contents of the Destinations V2 release, see this [guide](understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
+Destinations V2 were in preview for Snowflake and Bigquery during August 2023, and lauched August 29th, 2023.  Other destinations will be on or before November 1st, 2023.
+
 ## Deprecating Legacy Normalization
 
 The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` will be unsupported starting **Nov 1, 2023**.
 
 ![Legacy Normalization](./assets/airbyte_legacy_normalization.png)
 
-As a Cloud user, existing connections using legacy normalization will be paused on **Oct 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Nov 1, 2023**.
+As a Cloud user, existing connections using legacy normalization will be paused on **November 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Nov 1, 2023**.
 
 ### Breakdown of Breaking Changes
 
