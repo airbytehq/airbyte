@@ -10,10 +10,13 @@ from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRef
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
-from airbyte_cdk.sources.utils.slice_logging import create_slice_log_message, should_log_slice_message
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
+    def __init__(self, slice_logger: SliceLogger):
+        self._slice_logger = slice_logger
+
     def read_stream(
         self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
     ) -> Iterable[StreamData]:
@@ -21,8 +24,8 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         for _slice in slices:
-            if should_log_slice_message(logger):
-                yield create_slice_log_message(_slice)
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
             record_data_or_messages = stream.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,

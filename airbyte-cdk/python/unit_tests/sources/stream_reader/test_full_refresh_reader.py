@@ -25,16 +25,21 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
 _A_CURSOR_FIELD = ["NESTED", "CURSOR"]
 _DEFAULT_INTERNAL_CONFIG = InternalConfig()
 _STREAM_NAME = "STREAM"
 
 
+def _syncrhonous_reader():
+    return SyncrhonousFullRefreshReader(DebugSliceLogger())
+
+
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(SyncrhonousFullRefreshReader(), id="synchronous_reader"),
+        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice_with_debug(reader):
@@ -70,7 +75,7 @@ def test_full_refresh_read_a_single_slice_with_debug(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(SyncrhonousFullRefreshReader(), id="synchronous_reader"),
+        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice(reader):
@@ -101,7 +106,7 @@ def test_full_refresh_read_a_single_slice(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(SyncrhonousFullRefreshReader(), id="synchronous_reader"),
+        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_two_slices(reader):
@@ -143,12 +148,11 @@ def test_full_refresh_read_a_two_slices(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(SyncrhonousFullRefreshReader(), id="synchronous_reader"),
+        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
     ],
 )
 def test_only_read_up_to_limit(reader):
     logger = _mock_logger()
-    reader = SyncrhonousFullRefreshReader()
 
     internal_config = InternalConfig(_limit=1)
 
@@ -177,7 +181,7 @@ def test_only_read_up_to_limit(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(SyncrhonousFullRefreshReader(), id="synchronous_reader"),
+        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
     ],
 )
 def test_limit_only_considers_data(reader):

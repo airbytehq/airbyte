@@ -39,7 +39,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
           AND table_name = ?
         ORDER BY ordinal_position;
         """,
-        databaseName,
+        databaseName.toUpperCase(),
         id.finalNamespace(),
         id.finalName()).stream()
         .collect(LinkedHashMap::new,
