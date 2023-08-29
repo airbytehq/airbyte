@@ -1,0 +1,18 @@
+ {
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+     "base": {
+       "type": "string"
+     },
+     "date": {
+       "type": "string"
+     },
+     "eur": {
+       "type": "number"
+     },
+     "nok": {
+       "type": "number"
+     }
+   },
+   "type": "object"
+ }
