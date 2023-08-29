@@ -105,6 +105,7 @@ The Zendesk Support source connector supports the following streams:
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ## Performance considerations
 
@@ -116,6 +117,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.1.0`  | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields`                                                                                                                                                                                                            |
 | `1.0.0`  | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
 | `0.11.0` | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics`                                                                                                                                                                                                                |
 | `0.10.7` | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec                                                                                                                                                                                                |
