@@ -465,7 +465,6 @@ async def test_incremental_two_sequential_reads(
     ],
 )
 async def test_per_stream_read_with_multiple_states(mocker, first_records, subsequent_records, expected_error, run_per_stream_test):
-    input_config = IncrementalConfig()
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -533,21 +532,22 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
     docker_runner_mock.call_read_with_state = mocker.AsyncMock(side_effect=call_read_with_state_output_messages)
 
     t = _TestIncremental()
+    # test if skipped
     with expected_error:
         await t.test_read_sequential_slices(
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
             docker_runner=docker_runner_mock,
-            inputs=input_config,
+            inputs=IncrementalConfig(),
         )
 
 
-def test_config_skip_test():
+async def test_config_skip_test(mocker):
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = []
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=[])
     t = _TestIncremental()
     with patch.object(pytest, "skip", return_value=None):
-        t.test_read_sequential_slices(
+        await t.test_read_sequential_slices(
             inputs=IncrementalConfig(skip_comprehensive_incremental_tests=True),
             connector_config=MagicMock(),
             configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
@@ -564,12 +564,63 @@ def test_config_skip_test():
                     )
                 ]
             ),
-            cursor_paths={},
             docker_runner=docker_runner_mock,
         )
 
     # This is guaranteed to fail when the test gets executed
     docker_runner_mock.call_read.assert_not_called()
+
+async def test_state_skip_test(mocker):
+    docker_runner_mock = MagicMock()
+
+    first_records = [
+        {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
+        {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+        {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+        {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
+        {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
+        {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+        {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+        {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+    ]
+
+    call_read_output_messages = [
+        build_per_stream_state_message(
+            descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None)
+        )
+        if record["type"] == Type.STATE
+        else build_record_message(record["name"], record["data"])
+        for record in list(first_records)
+    ]
+
+    # There needs to be at least 3 state messages for the test to run
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
+
+    t = _TestIncremental()
+    with patch.object(pytest, "skip", return_value=None):
+        await t.test_read_sequential_slices(
+            inputs=IncrementalConfig(),
+            connector_config=MagicMock(),
+            configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
+                streams=[
+                    ConfiguredAirbyteStream(
+                        stream=AirbyteStream(
+                            name="test_stream",
+                            json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
+                            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                        ),
+                        sync_mode=SyncMode.incremental,
+                        destination_sync_mode=DestinationSyncMode.overwrite,
+                        cursor_field=["date"],
+                    )
+                ]
+            ),
+            docker_runner=docker_runner_mock,
+        )
+
+    # This is guaranteed to fail when the test gets executed
+    docker_runner_mock.call_read.assert_called()
+    docker_runner_mock.call_read_with_state.assert_not_called()
 
 
 @pytest.mark.parametrize(

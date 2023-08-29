@@ -155,17 +155,16 @@ class TestIncremental(BaseTest):
         records_1 = filter_output(output_1, type_=Type.RECORD)
         states_1 = filter_output(output_1, type_=Type.STATE)
 
-        assert states_1, "First Read should produce at least one state"
-        assert records_1, "First Read should produce at least one record"
-
         # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
         unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
 
         # NOTE: We cannot assert anything further is we do not have more than 2 state messages
         # TODO ben
-        if len(unique_state_messages) < 2:
+        if len(unique_state_messages) < 3:
             pytest.skip("Skipping test because there are not enough state messages to test with")
             return
+
+        assert records_1, "First Read should produce at least one record"
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
@@ -178,6 +177,13 @@ class TestIncremental(BaseTest):
         mutating_stream_name_to_per_stream_state = dict()
         for idx, state_message in enumerate(unique_state_messages):
             assert state_message.type == Type.STATE
+
+            # if first state message, skip
+            # this is because we cannot assert if the first state message will result in new records
+            # as in this case it is possible for a connector to return an empty state message when it first starts.
+            # e.g. if the connector decides it wants to let the caller know that it has started with an empty state.
+            if idx == 0:
+                continue
 
             # if last state message, skip
             # this is because we cannot assert if the last state message will result in new records
@@ -194,6 +200,8 @@ class TestIncremental(BaseTest):
 
             output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
             records_N = filter_output(output_N, type_=Type.RECORD)
+            assert records_N, f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
+
             diff = naive_diff_records(records_1, records_N)
             assert diff, f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
