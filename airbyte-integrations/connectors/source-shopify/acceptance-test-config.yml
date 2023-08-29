@@ -4,6 +4,11 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_shopify/spec.json"
+        backward_compatibility_tests_config:
+          # re-order the authentication options,
+          # to have the `OAuth2.0` go first.
+          # made `start_date` non-required
+          disable_for_version: "0.6.2"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -24,6 +29,11 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          # migrated to the 2023-07 api version, 
+          # schemas for orders, transactions, fulfillment_orders, order_refunds have changed.
+          # see PR: https://github.com/airbytehq/airbyte/issues/28127 for more.
+          disable_for_version: "0.6.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
