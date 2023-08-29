@@ -58,13 +58,18 @@ connectionSpecification:
       type: string
     profiles:
       title: Profile IDs
-      description:
-        Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
-        for more details.
+      description: 'Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.'
       order: 6
       type: array
       items:
         type: integer
+    marketplace_ids:
+      title: Marketplace IDs
+      description: "Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID."
+      order: 7
+      type: array
+      items:
+        type: string
     state_filter:
       title: State Filter
       description: Reflects the state of the Display, Product, and Brand Campaign streams as enabled, paused, or archived. If you do not populate this field, it will be ignored completely.
@@ -76,7 +81,7 @@ connectionSpecification:
           - archived
       type: array
       uniqueItems: true
-      order: 7
+      order: 8
     look_back_window:
       title: "Look Back Window"
       description: "The amount of days to go back in time to get the updated data from Amazon Ads"
@@ -85,7 +90,7 @@ connectionSpecification:
         - 10
       type: "integer"
       default: 3
-      order: 8
+      order: 9
     report_record_types:
       title: Report Record Types
       description:
@@ -107,7 +112,7 @@ connectionSpecification:
           - targets
       type: array
       uniqueItems: true
-      order: 9
+      order: 10
   required:
     - client_id
     - client_secret

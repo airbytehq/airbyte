@@ -17,6 +17,13 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - conversations
+      - contacts
+      - conversation_parts
+      - teams
+      - companies
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   tags:
     - language:low-code
