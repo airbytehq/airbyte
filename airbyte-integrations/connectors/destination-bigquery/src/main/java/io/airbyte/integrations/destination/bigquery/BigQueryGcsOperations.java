@@ -152,13 +152,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
             tableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
-        LOGGER.error(e.getMessage());
-        final var job = this.bigQuery.getJob(loadJob.getJobId());
-        LOGGER.info("JOB: {}", job.toString());
-        LOGGER.info("STATUS: {}", job.getStatus().toString());
-        LOGGER.info("STATISTICS: {}", job.getStatistics().toString());
-        LOGGER.info("CONFIG: {}", configuration);
-
         throw new RuntimeException(
             String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
                 tableId, datasetId),
