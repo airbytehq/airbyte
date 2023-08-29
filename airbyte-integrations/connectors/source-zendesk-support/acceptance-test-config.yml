@@ -31,7 +31,6 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
-        fail_on_extra_columns: false
         empty_streams:
           - name: "post_comments"
             bypass_reason: "not available in current subscription plan"

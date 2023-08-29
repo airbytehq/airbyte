@@ -6,21 +6,17 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoUtils;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +32,7 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
 
   private final MongoCursor<Document> iter;
+  private final MongoDbStateManager stateManager;
   private final ConfiguredAirbyteStream stream;
   private final List<String> fields;
   private final Instant emittedAt;
@@ -60,23 +57,25 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   /**
    * Constructor.
    *
-   * @param iter MongoCursor that iterates over Mongo documents
+   * @param iter {@link MongoCursor} that iterates over Mongo documents
+   * @param stateManager {@link MongoDbStateManager} that manages global and per-stream state
    * @param stream the stream that this iterator represents
-   * @param state the initial state of this stream
    * @param emittedAt when this iterator was started
    * @param checkpointInterval how often a state message should be emitted.
    */
   MongoDbStateIterator(final MongoCursor<Document> iter,
+                       final MongoDbStateManager stateManager,
                        final ConfiguredAirbyteStream stream,
-                       Optional<MongodbStreamState> state,
                        final Instant emittedAt,
                        final int checkpointInterval) {
     this.iter = iter;
+    this.stateManager = stateManager;
     this.stream = stream;
     this.checkpointInterval = checkpointInterval;
     this.emittedAt = emittedAt;
-    fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
-    lastId = state.map(MongodbStreamState::id).orElse(null);
+    this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
+    this.lastId =
+        stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
   }
 
   @Override
@@ -103,20 +102,15 @@ class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     if ((count > 0 && count % checkpointInterval == 0) || finalStateNext) {
       count = 0;
 
-      final var streamState = new AirbyteStreamState()
-          .withStreamDescriptor(new StreamDescriptor()
-              .withName(stream.getStream().getName())
-              .withNamespace(stream.getStream().getNamespace()));
       if (lastId != null) {
         // TODO add type support in here once more than ObjectId fields are supported
-        streamState.withStreamState(Jsons.jsonNode(new MongodbStreamState(lastId)));
+        stateManager.updateStreamState(stream.getStream().getName(),
+            stream.getStream().getNamespace(), new MongoDbStreamState(lastId));
       }
 
-      final var stateMessage = new AirbyteStateMessage()
-          .withType(AirbyteStateType.STREAM)
-          .withStream(streamState);
-
-      return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+      return new AirbyteMessage()
+          .withType(Type.STATE)
+          .withState(stateManager.toState());
     }
 
     count++;
