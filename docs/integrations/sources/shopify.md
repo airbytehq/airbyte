@@ -3,27 +3,50 @@ description: >-
   Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
 ---
 
-# Shopify
+::: note
 
-:::note
-
-Our Shopify Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Shopify is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
+If you are already a Cloud user but still use the `API PASSWORD` authentication method (option), please make sure you've switched to the `OAuth2.0`, as far as the `API PASSWORD` is going to be deprecated soon for Cloud Users, but this option remains for `OSS` users.
 
 :::
 
-## Getting started
+# Shopify
 
-This connector supports the `API PASSWORD` (for private applications) athentication methods.
+This page contains the setup guide and reference information for the Shopify source connector.
 
-### Connect using `API PASSWORD` option
+## Setup guide
 
-1. Go to `https://YOURSTORE.myshopify.com/admin/apps/private`
-2. Enable private development if it isn't enabled.
-3. Create a private application.
-4. Select the resources you want to allow access to. Airbyte only needs read-level access.
-   - Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
-5. The password under the `Admin API` section is what you'll use as the `API PASSWORD` for the integration.
-6. You're ready to set up Shopify in Airbyte!
+This connector supports the `OAuth2.0` and `API PASSWORD` (for private applications) athentication methods.
+
+### Connect using OAuth2.0 (for Cloud users only)
+1. Click `Authenticate your Shopify account` to start the autentication.
+2. Click `Install` to install the Airbyte application.
+3. Log in to your account, if you are not already logged in.
+4. Select the store you want to sync and review the consent.
+5. Click on `Install` to finish the Installation.
+6. Reveiew the `Shop Name` field for the chosen store for a sync.
+7. Set the `Start Date` as the starting point for your data replication. Any data created before this date will not be synced.
+8. Click `Test and Save` to finish the source set up.
+
+### Connect using `API PASSWORD` option (for OSS users)
+
+## Setup guide
+
+1. Name your source.
+2. Enter your Store name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
+3. Enter your Admin API access token. To set up the access token, you will need to set up a custom application. See instructions below on creating a custom app.
+4. Click Set up source
+
+## Creating a Custom App
+Authentication to the Shopify API requies a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
+
+1. Navigate to Settings > App and sales channels > Develop apps > Create an app
+2. Name your new app
+3. Select **Configure Admin API scopes**
+4. Tick all the scopes prefixed with `read_` (e.g. `read_locations`,`read_price_rules`, etc ) and save. See below for the full list of scopes to allow.
+5. Click **Install app** to give this app access to your data.
+6. Once installed, go to **API Credentials** to copy the **Admin API Access Token**.
+
+You're ready to set up Shopify in Airbyte!
 
 ### Scopes Required for Custom App
 
@@ -70,7 +93,8 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Troubleshooting tips
 
-Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+* If you faced with `access` errors while using the `OAuth2.0`, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the Client's store first, once the access is granted, you should be able to proceed with `OAuth2.0` authentication method.
+* Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 ## Supported Streams
 
@@ -150,6 +174,7 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.0   | 2023-08-11 | [29361](https://github.com/airbytehq/airbyte/pull/29361) | Migrate to the `2023-07` Shopify API Version  |
 | 0.6.2   | 2023-08-09 | [29302](https://github.com/airbytehq/airbyte/pull/29302) | Handle the `Internal Server Error` when entity could be fetched                 |
 | 0.6.1   | 2023-08-08 | [28291](https://github.com/airbytehq/airbyte/pull/28291) | Allow `shop` field to accept `*.myshopify.com` shop names, updated `OAuth Spec`                  |
 | 0.6.0   | 2023-08-02 | [28770](https://github.com/airbytehq/airbyte/pull/28770) | Added `Disputes` stream  |

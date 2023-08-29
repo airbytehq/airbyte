@@ -54,7 +54,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
       "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
 
-  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "is not allowed to access Snowflake. Contact your account administrator.";
+  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "is not allowed to access Snowflake. Contact your local security administrator";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
