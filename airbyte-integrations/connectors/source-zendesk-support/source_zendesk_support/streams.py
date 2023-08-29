@@ -803,6 +803,13 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
         return {}
 
 
+class UserFields(FullRefreshZendeskSupportStream):
+    """User Fields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "user_fields"
+
+
 class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):
     response_list_name = "comments"
 
