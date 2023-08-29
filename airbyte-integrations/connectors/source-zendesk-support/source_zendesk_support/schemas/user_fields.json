@@ -34,6 +34,9 @@
     "system": {
       "type": ["null", "boolean"]
     },
+    "tag": {
+      "type": ["null", "string"]
+    },
     "title": {
       "type": ["null", "string"]
     },
