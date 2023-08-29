@@ -7,6 +7,7 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
@@ -56,8 +57,23 @@ public class MongoDbDebeziumStateUtil {
    */
   public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String database, final String replicaSet) {
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
-    final String resumeTokenData = ((BsonString) ResumeTokens.getData(resumeToken)).getValue();
-    final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeToken);
+
+    final JsonNode state = formatState(database, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
+    LOGGER.info("Initial Debezium state constructed: {}", state);
+    return state;
+  }
+
+  /**
+   * Formats the Debezium initial state into a format suitable for storage in the offset data file.
+   *
+   * @param database The name of the target MongoDB database.
+   * @param replicaSet The name of the target MongoDB replica set.
+   * @param resumeTokenData The MongoDB resume token that represents the offset state.
+   * @return The offset state as a {@link JsonNode}.
+   */
+  @VisibleForTesting
+  public static JsonNode formatState(final String database, final String replicaSet, final String resumeTokenData) {
+    final BsonTimestamp timestamp = ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeTokenData));
 
     final List<Object> key = List.of(
         database,
@@ -70,9 +86,7 @@ public class MongoDbDebeziumStateUtil {
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
 
-    final JsonNode state = Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
-    LOGGER.info("Initial Debezium state constructed: {}", state);
-    return state;
+    return Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
   }
 
   public boolean isSavedOffsetAfterResumeToken(final MongoClient mongoClient, final OptionalLong savedOffset) {

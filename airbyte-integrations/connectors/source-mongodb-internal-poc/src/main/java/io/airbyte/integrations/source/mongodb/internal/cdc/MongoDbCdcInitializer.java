@@ -11,6 +11,7 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -67,7 +68,9 @@ public class MongoDbCdcInitializer {
                                                                         final Instant emittedAt,
                                                                         final JsonNode config) {
 
-    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
+    final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
+    final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
+    final Properties defaultDebeziumProperties = getDebeziumProperties();
     final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
@@ -102,8 +105,6 @@ public class MongoDbCdcInitializer {
         convertCatalogToIterators(new ConfiguredAirbyteCatalog().withStreams(initialSnapshotStreams),
             stateManager, mongoClient.getDatabase(databaseName), emittedAt);
 
-    final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
-    final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
         MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
@@ -172,6 +173,11 @@ public class MongoDbCdcInitializer {
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
+  }
+
+  @VisibleForTesting
+  Properties getDebeziumProperties() {
+    return MongoDbCdcProperties.getDebeziumProperties();
   }
 
 }
