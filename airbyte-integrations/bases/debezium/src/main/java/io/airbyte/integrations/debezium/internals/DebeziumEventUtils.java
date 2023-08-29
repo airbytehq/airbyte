@@ -28,7 +28,7 @@ public class DebeziumEventUtils {
 
     final JsonNode data = formatDebeziumData(before, after, source, cdcMetadataInjector);
     final String schemaName = cdcMetadataInjector.namespace(source);
-    final String streamName = source.get("table").asText();
+    final String streamName = cdcMetadataInjector.name(source);
 
     final AirbyteRecordMessage airbyteRecordMessage = new AirbyteRecordMessage()
         .withStream(streamName)
