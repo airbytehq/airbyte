@@ -5,7 +5,7 @@
 import json
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
@@ -92,7 +92,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -240,7 +240,7 @@ class AbstractSource(Source, ABC):
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
         if stream_state and "state" in dir(stream_instance):
-            stream_instance.state = stream_state
+            stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
 
         slices = stream_instance.stream_slices(
@@ -292,7 +292,7 @@ class AbstractSource(Source, ABC):
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
 
-    def should_log_slice_message(self, logger: logging.Logger):
+    def should_log_slice_message(self, logger: logging.Logger) -> bool:
         """
 
         :param logger:
@@ -300,7 +300,7 @@ class AbstractSource(Source, ABC):
         """
         return logger.isEnabledFor(logging.DEBUG)
 
-    def _emit_queued_messages(self):
+    def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
             yield from self.message_repository.consume_queue()
         return
@@ -344,19 +344,19 @@ class AbstractSource(Source, ABC):
             log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
         )
 
-    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
+    def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
         # instance's deprecated get_updated_state() method.
         try:
-            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)  # type: ignore # we know the field might not exist...
 
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
         return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @staticmethod
-    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream):
+    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream) -> None:
         """
         Necessary because we use different loggers at the source and stream levels. We must
         apply the source's log level to each stream's logger.
@@ -364,7 +364,7 @@ class AbstractSource(Source, ABC):
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
 
-    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream):
+    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
