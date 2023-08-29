@@ -25,7 +25,6 @@ class QueryAggregationType(Enum):
 
 class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
-    primary_key = None
     data_field = ""
     raise_on_http_errors = True
 
@@ -82,6 +81,8 @@ class Sites(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
 
+    primary_key = ["siteUrl"]
+
     def path(
         self,
         stream_state: Mapping[str, Any] = None,
@@ -96,6 +97,7 @@ class Sitemaps(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
+    primary_key = ["type", "path", "lastSubmitted", "lastDownloaded"]
     data_field = "sitemap"
 
     def path(
@@ -300,30 +302,36 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
+    primary_key = ["site_url", "date", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date"]
 
 
 class SearchAnalyticsByCountry(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "country"]
 
 
 class SearchAnalyticsByDevice(SearchAnalytics):
+    primary_key = ["site_url", "date", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "device"]
 
 
 class SearchAnalyticsByPage(SearchAnalytics):
+    primary_key = ["site_url", "date", "page", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "page"]
 
 
 class SearchAnalyticsByQuery(SearchAnalytics):
+    primary_key = ["site_url", "date", "query", "search_type"]
     dimensions = ["date", "query"]
 
 
 class SearchAnalyticsAllFields(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "page", "query"]
 
 
@@ -365,33 +373,39 @@ class SearchByKeyword(SearchAnalytics):
 
 
 class SearchAnalyticsKeywordPageReport(SearchByKeyword):
-    dimensions = ["date", "country", "device", "query", "page"]
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
+    dimensions = ["date", "country", "device", "query", "page", "search_type"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
-    dimensions = ["date", "country", "device", "query"]
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "country", "device", "query", "search_type"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
-    dimensions = ["date", "country", "device", "query"]
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "country", "device", "query", "search_type"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
-    dimensions = ["date", "country", "device"]
+    primary_key = ["site_url", "date", "country", "device", "search_type"]
+    dimensions = ["date", "country", "device", "search_type"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportByPage(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device"]
+    dimensions = ["date", "country", "device", "search_type"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsPageReport(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type", "page"]
     search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device", "page"]
+    dimensions = ["date", "country", "device", "page", "search_type"]
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
@@ -401,11 +415,16 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
         "device": [{"device": {"type": ["null", "string"]}}],
         "page": [{"page": {"type": ["null", "string"]}}],
         "query": [{"query": {"type": ["null", "string"]}}],
+        "search_type": [{"search_type": {"type": ["null", "string"]}}],
     }
+
+    primary_key = None
 
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions
+        # assign the dimensions as PK for the custom report stream
+        self.primary_key = dimensions
 
     def get_json_schema(self) -> Mapping[str, Any]:
         try:
