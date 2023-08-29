@@ -10,7 +10,7 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: true
+      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
@@ -25,7 +25,7 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
   tags:
-    - language:lowcode
+    - language:low-code
   ab_internal:
     sl: 100
     ql: 100
