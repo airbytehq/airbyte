@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
@@ -190,7 +191,7 @@ class MongoDbStateIteratorTest {
     final var objectId = "64dfb6a7bb3c3458c30801f4";
 
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-        new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS));
+        new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
 
     final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
 
@@ -227,7 +228,7 @@ class MongoDbStateIteratorTest {
     final var objectId = "64dfb6a7bb3c3458c30801f4";
 
     stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(),
-        new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS));
+        new MongoDbStreamState(objectId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
 
     final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), 1000000, Duration.of(1, SECONDS));
 

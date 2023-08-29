@@ -13,10 +13,14 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REP
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -25,8 +29,10 @@ import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.MongoDbStateIterator;
+import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -34,6 +40,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -167,6 +175,16 @@ public class MongoDbCdcInitializer {
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
+          final var idTypes = aggregateIdField(collection);
+
+          if (idTypes.size() != 1) {
+            throw new ConfigErrorException("The _id fields in a collection must be consistently typed.");
+          }
+
+          if (IdType.findByMongoDbType(idTypes.get(0)).isEmpty()) {
+            throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED);
+          }
+
           // TODO verify that if all fields are selected that all fields are returned here
           // (or should this check and ignore them if all fields are selected)
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
@@ -180,8 +198,7 @@ public class MongoDbCdcInitializer {
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
-              // TODO add type support here when we add support for _id fields that are not ObjectId types
-              .map(state -> Filters.gt(ID_FIELD, new ObjectId(state.id())))
+              .map(state -> Filters.gt(ID_FIELD, state.idType().convert(state.id())))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 
@@ -203,4 +220,36 @@ public class MongoDbCdcInitializer {
     return MongoDbCdcProperties.getDebeziumProperties();
   }
 
+
+  /**
+   * Returns a list of types (as strings) that the _id field has for the provided collection.
+   * @param collection Collection to aggregate the _id types of.
+   * @return List of bson types (as strings) that the _id field contains.
+   */
+  private List<String> aggregateIdField(final MongoCollection<Document> collection) {
+    final List<String> idTypes = new ArrayList<>();
+    // Sanity check that all ID_FIELD values are of the same type for this collection.
+    // db.collection.aggregate([
+    //   {
+    //     $group : {
+    //       _id : { $type : "$_id" },
+    //       count : { $sum : 1 }
+    //     }
+    //   }
+    // ])
+    collection.aggregate(List.of(
+        Aggregates.group(
+            new Document("_id", new Document("$type", "$_id")),
+            Accumulators.sum("count", 1)
+        )
+    )).forEach(document -> {
+      // the document will be in the structure of
+      // {"_id": {"_id": "[TYPE]"}, "count": [COUNT]}
+      // where [TYPE] is the bson type (objectId, string, etc.) and [COUNT] is the number of documents of that type
+      final Document innerDocument = document.get("_id", Document.class);
+      idTypes.add(innerDocument.get("_id").toString());
+    });
+
+    return idTypes;
+  }
 }

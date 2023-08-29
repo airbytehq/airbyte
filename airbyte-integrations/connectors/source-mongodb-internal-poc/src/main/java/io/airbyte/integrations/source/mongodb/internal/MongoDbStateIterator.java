@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.db.mongodb.MongoUtils;
+import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
@@ -127,7 +128,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       if (lastId != null) {
         // TODO add type support in here once more than ObjectId fields are supported
         stateManager.updateStreamState(stream.getStream().getName(),
-            stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.IN_PROGRESS));
+            stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
       }
 
       return new AirbyteMessage()
@@ -137,7 +138,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       final var finalStateStatus = iterThrewException ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
 
       stateManager.updateStreamState(stream.getStream().getName(),
-          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, finalStateStatus));
+          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, finalStateStatus, IdType.OBJECT_ID));
 
       return new AirbyteMessage()
           .withType(Type.STATE)

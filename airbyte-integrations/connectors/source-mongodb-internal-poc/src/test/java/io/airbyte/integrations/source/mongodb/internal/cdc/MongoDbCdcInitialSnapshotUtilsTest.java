@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
@@ -39,8 +40,9 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     final boolean savedOffsetAfterResumeToken = true;
 
     when(stateManager.getStreamStates()).thenReturn(Map.of(
-        new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE),
-        new AirbyteStreamNameNamespacePair(IN_PROGRESS_NAME, NAMESPACE), new MongoDbStreamState("2", InitialSnapshotStatus.IN_PROGRESS)));
+        new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE, IdType.OBJECT_ID),
+        new AirbyteStreamNameNamespacePair(IN_PROGRESS_NAME, NAMESPACE), new MongoDbStreamState("2", InitialSnapshotStatus.IN_PROGRESS,
+            IdType.OBJECT_ID)));
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(stateManager, catalog, savedOffsetAfterResumeToken);
