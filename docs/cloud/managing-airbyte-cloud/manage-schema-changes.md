@@ -29,7 +29,7 @@ To review non-breaking schema changes:
 
 2. Click **Review changes**.
 
-3. The **Refreshed source schema** dialog displays the changes. 
+3. The **Refreshed source schema** dialog displays the changes detected. 
 
 4. Review the changes and click **OK** to close the dialog.
 
@@ -41,30 +41,32 @@ To review non-breaking schema changes:
     
 :::
 
-## Fix breaking schema changes
+## Resolve breaking changes
 
-Breaking schema changes occur when:
-* An existing primary key is removed from the source
-* An existing cursor is removed from the source
+Breaking changes require your attention to resolve. They may immediately cause the connection to be disabled, or you can upgrade the connector manually within a time period once reviewing the changes.
+
+A connection will automatically be disabled if: 
+* An existing primary key is removed
+* An existing cursor field is removed
+
+If the breaking change is due to a new version, the connection will alert you of a breaking change but continue to sync until the cutoff date. On the cutoff date, the connection will automatically be disabled on that date to prevent failure or unexpected behavior. These breaking changes  include: 
+
+* **Spec Change** The configuration required by users of this connector has been changed and syncs will fail until users reconfigure or re-authenticate. 
+* Schema Change** The type of property previously present within a record has changed
+* **Stream or Property Removal** Data that was previously being synced is no longer going to be synced.  
+* **Destination Format / Normalization Change** The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full refresh.
+* **State Changes** The format of the source’s state has changed, and the full dataset will need to be re-synced
 
 To review and fix breaking schema changes:
 1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
 
-2. Click **Review changes**.
+2. Review the description of what has changed. The breaking change will require you to upgrade your source or destination to a new version. 
 
-3. The **Refreshed source schema** dialog displays the changes.
-
-4. Review the changes and click **OK** to close the dialog.
-
-5. In the streams table, the stream with a breaking change is highlighted.
-
-6. Fix the breaking change by selecting a new **Cursor** or **Primary key**.
-
-7. Scroll to the bottom of the page and click **Save changes**.
+3. Update the source or destination to the new version to continue syncing. 
 
 :::note 
     
-If a connection’s source schema has breaking changes, it will stop syncing. You must review and fix the changes before editing the connection or resuming syncs.
+If a connection’s source schema has breaking changes (an existing cursor or primary key is removed), it will stop syncing immediately. You must review and fix the changes before editing the connection or resuming syncs.
     
 :::
 
