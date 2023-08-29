@@ -27,14 +27,12 @@ class ProcessingConfigModel(BaseModel):
         ...,
         title="Text fields to embed",
         description="List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
-        always_show=True,
         examples=["text", "user.name", "users.*.name"],
     )
     metadata_fields: Optional[List[str]] = Field(
         ...,
         title="Metadata fields",
         description="List of fields in the record that should be stored as metadata. ",
-        always_show=True,
         examples=["text", "user.name", "users.*.name"],
     )
 
@@ -95,7 +93,7 @@ class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
 
     class Config:
-        title = "Langchain Destination Config"
+        title = "Pinecone Destination Config"
         schema_extra = {
             "groups": [
                 {"id": "processing", "title": "Processing"},

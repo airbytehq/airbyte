@@ -1,4 +1,7 @@
 data:
+  allowedHosts:
+    hosts:
+      - "*.${indexing.pinecone_environment}.pinecone.io"
   registries:
     cloud:
       enabled: true
@@ -10,7 +13,7 @@ data:
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/destination-pinecone
   githubIssueLabel: destination-pinecone
-  icon: icon.svg
+  icon: pinecone.svg
   license: MIT
   name: Pinecone
   releaseDate: 2023-08-15
