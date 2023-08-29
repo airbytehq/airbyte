@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - client_secret
     - account_id
-    - start_date
   properties:
     account_id:
       type: string
@@ -30,6 +29,7 @@ connectionSpecification:
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Only data generated
         after this date will be replicated.
+      default: "2017-01-25T00:00:00Z"
       examples:
         - "2017-01-25T00:00:00Z"
       format: date-time

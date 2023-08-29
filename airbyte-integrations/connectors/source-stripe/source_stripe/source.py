@@ -3,14 +3,16 @@
 #
 
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -29,24 +31,65 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+    @staticmethod
+    def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
+        start_date, lookback_window_days, slice_range = (
+            config.get("start_date"),
+            config.get("lookback_window_days"),
+            config.get("slice_range"),
+        )
+        if lookback_window_days is None:
+            config["lookback_window_days"] = 0
+        elif not isinstance(lookback_window_days, int) or lookback_window_days < 0:
+            message = f"Invalid lookback window {lookback_window_days}. Please use only positive integer values or 0."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            )
+        if start_date:
+            try:
+                start_date = pendulum.parse(start_date).int_timestamp
+            except pendulum.parsing.exceptions.ParserError as e:
+                message = f"Invalid start date {start_date}. Please use YYYY-MM-DDTHH:MM:SSZ format."
+                raise AirbyteTracedException(
+                    message=message,
+                    internal_message=message,
+                    failure_type=FailureType.config_error,
+                ) from e
+        else:
+            start_date = pendulum.datetime(2017, 1, 25).int_timestamp
+        config["start_date"] = start_date
+        if slice_range is None:
+            config["slice_range"] = 365
+        elif not isinstance(slice_range, int) or slice_range < 1:
+            message = f"Invalid slice range value {slice_range}. Please use positive integer values only."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            )
+        return config
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
+            self.validate_and_fill_with_defaults(config)
             stripe.api_key = config["client_secret"]
             stripe.Account.retrieve(config["account_id"])
             return True, None
         except Exception as e:
-            return False, e
+            return False, str(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
-        start_date = pendulum.parse(config["start_date"]).int_timestamp
         args = {
             "authenticator": authenticator,
             "account_id": config["account_id"],
-            "start_date": start_date,
-            "slice_range": config.get("slice_range"),
+            "start_date": config["start_date"],
+            "slice_range": config["slice_range"],
         }
-        incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days", 0)}
+        incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
             path="subscriptions",
@@ -60,6 +103,7 @@ class SourceStripe(AbstractSource):
                 "customer.subscription.resumed",
                 "customer.subscription.trial_will_end",
                 "customer.subscription.updated",
+                "customer.subscription.deleted",
             ],
             **incremental_args,
         )
@@ -91,7 +135,7 @@ class SourceStripe(AbstractSource):
             name="customers",
             path="customers",
             use_cache=True,
-            event_types=["customer.created", "customer.updated"],
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
             **incremental_args,
         )
         invoices = IncrementalStripeStream(
@@ -111,6 +155,7 @@ class SourceStripe(AbstractSource):
                 "invoice.upcoming",
                 "invoice.updated",
                 "invoice.voided",
+                "invoice.deleted",
             ],
             **args,
         )
@@ -121,7 +166,7 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_cards",
                 path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated"],
+                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 extra_request_params={"object": "card"},
                 record_extractor=FilteringRecordExtractor("updated", "created", "card"),
                 **incremental_args,
@@ -129,7 +174,7 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_bank_accounts",
                 path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
-                event_types=["account.external_account.created", "account.external_account.updated"],
+                event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 extra_request_params={"object": "bank_account"},
                 record_extractor=FilteringRecordExtractor("updated", "created", "bank_account"),
                 **incremental_args,
@@ -152,7 +197,7 @@ class SourceStripe(AbstractSource):
                     "checkout.session.completed",
                     "checkout.session.expired",
                 ],
-                lookback_window_days=config.get("lookback_window_days", 0) + 1,
+                lookback_window_days=config["lookback_window_days"] + 1,
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
@@ -206,7 +251,9 @@ class SourceStripe(AbstractSource):
                 ],
                 **incremental_args,
             ),
-            IncrementalStripeStream(name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated"], **incremental_args),
+            IncrementalStripeStream(
+                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **incremental_args
+            ),
             IncrementalStripeStream(
                 name="disputes",
                 path="disputes",
@@ -225,7 +272,7 @@ class SourceStripe(AbstractSource):
                 name="invoice_items",
                 path="invoiceitems",
                 legacy_cursor_field="date",
-                event_types=["invoiceitem.created", "invoiceitem.updated"],
+                event_types=["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"],
                 **incremental_args,
             ),
             IncrementalStripeStream(
@@ -245,12 +292,14 @@ class SourceStripe(AbstractSource):
                 name="plans",
                 path="plans",
                 expand_items=["data.tiers"],
-                event_types=["plan.created", "plan.updated"],
+                event_types=["plan.created", "plan.updated", "plan.deleted"],
                 **incremental_args,
             ),
-            IncrementalStripeStream(name="prices", path="prices", event_types=["price.created", "price.updated"], **incremental_args),
             IncrementalStripeStream(
-                name="products", path="products", event_types=["product.created", "product.updated"], **incremental_args
+                name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **incremental_args
+            ),
+            IncrementalStripeStream(
+                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **incremental_args
             ),
             IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **incremental_args),
             subscriptions,
@@ -334,7 +383,7 @@ class SourceStripe(AbstractSource):
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
                 parent=customers,
-                event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated"],
+                event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 parent_id="customer_id",
                 sub_items_attr="sources",
                 response_filter={"attr": "object", "value": "bank_account"},

@@ -93,8 +93,7 @@
           "properties": {}
         },
         "updated": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         }
       }
     },
@@ -171,6 +170,9 @@
     },
     "unit_amount_decimal": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

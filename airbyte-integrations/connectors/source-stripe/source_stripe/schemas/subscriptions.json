@@ -445,6 +445,9 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

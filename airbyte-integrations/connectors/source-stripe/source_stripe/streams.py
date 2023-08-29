@@ -41,6 +41,8 @@ class EventRecordExtractor(DefaultRecordExtractor):
         for record in records:
             item = record["data"]["object"]
             item[self.cursor_field] = record["created"]
+            if record["type"].endswith(".deleted"):
+                item["is_deleted"] = True
             yield item
 
 
@@ -559,7 +561,7 @@ class CustomerBalanceTransactions(StripeStream):
             name="customers",
             path="customers",
             use_cache=True,
-            event_types=["customer.created", "customer.updated"],
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
             authenticator=self.authenticator,
             account_id=self.account_id,
             start_date=self.start_date,
@@ -636,7 +638,7 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
     API docs: https://stripe.com/docs/api/persons/list
     """
 
-    event_types = ["person.created", "person.updated"]
+    event_types = ["person.created", "person.updated", "person.deleted"]
 
     def __init__(self, *args, lookback_window_days: int = 0, **kwargs):
         parent = StripeStream(*args, name="accounts", path="accounts", use_cache=True, **kwargs)

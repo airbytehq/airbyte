@@ -597,6 +597,9 @@
     },
     "account_country": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }
