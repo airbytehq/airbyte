@@ -29,6 +29,10 @@
     "originBoardId": {
       "type": "integer"
     },
+    "boardId": {
+      "type": "integer",
+      "description": "Used to determine which board the sprint is a part of. (Not always the same as originBoardId)"
+    },
     "goal": {
       "type": "string"
     }
