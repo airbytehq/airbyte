@@ -13,9 +13,9 @@ Airbyte Destinations V2 provides you with:
 - Internal Airbyte tables in the `airbyte_internal` schema: Airbyte will now generate all raw tables in the `airbyte_internal` schema. We no longer clutter your destination schema with raw data tables.
 - Incremental delivery for large syncs: Data will be incrementally delivered to your final tables. No more waiting hours to see the first rows in your destination table.
 
-To see more details and examples on the contents of the Destinations V2 release, see this [guide](understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2. 
+To see more details and examples on the contents of the Destinations V2 release, see this [guide](understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
-Destinations V2 were in preview for Snowflake and Bigquery during August 2023, and lauched August 29th, 2023.  Other destinations will be on or before November 1st, 2023.  
+Destinations V2 were in preview for Snowflake and Bigquery during August 2023, and lauched August 29th, 2023.  Other destinations will be on or before November 1st, 2023.
 
 ## Deprecating Legacy Normalization
 
@@ -61,8 +61,6 @@ Due to the amount of operations to be completed, this first sync after upgrading
 
 Pre-existing raw tables, SCD tables and "unnested" tables will always be left untouched. You can delete these at your convenience, but these tables will no longer be kept up-to-date by Airbyte syncs.
 Each destination version is managed separately, so if you have multiple destinations, they all need to be upgraded one by one.
-
-
 
 Versions are tied to the destination. When you update the destination, **all connections tied to that destination will be sending data in the Destinations V2 format**. For upgrade paths that will minimize disruption to existing dashboards, see:
 
@@ -151,7 +149,7 @@ For each destination connector, Destinations V2 is effective as of the following
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible |
 | --------------------- | --------------------- | -------------------------- |
 | BigQuery              | 1.4.4                 | 2.0.0+                     |
-| Snowflake             | 0.4.1                 | 2.0.0+                     |
+| Snowflake             | 2.0.0                 | 3.0.0+                     |
 | Redshift              | 0.4.8                 | 2.0.0+                     |
 | MSSQL                 | 0.1.24                | 2.0.0+                     |
 | MySQL                 | 0.1.20                | 2.0.0+                     |
@@ -162,14 +160,14 @@ For each destination connector, Destinations V2 is effective as of the following
 
 Note: If you encounter errors while upgrading from a V1 to a V2 destination, please reach out to support.  It may be advantagous to only drop probematic V2 tables rather than to do a full reset, depending on tye type of error.
 
-## Destinations V2 Implementation Differences 
+## Destinations V2 Implementation Differences
 
 In addition to the changes which apply for all destinations described above, there are some per-destination fixes and updates included in Destinations V2:
 
 ### BigQuery
 
-1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns.  Previously, we had used TEXT, which made querying sub-properties more difficult.
-     * In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a *quirk* of Bigquery.  Learn more [here](https://github.com/airbytehq/airbyte/issues/29594). 
+1. [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns. Previously, we had used TEXT, which made querying sub-properties more difficult.
+   - In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
 
 ### Snowflake
 
