@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -293,6 +294,13 @@ class MongoDbSourceTest {
     @AfterAll
     static void cleanup() {
       MONGO_DB.stop();
+    }
+
+    @Test
+    void testReadKeepsMongoClientOpen() {
+      insertDocuments(COLLECTION1, List.of(new Document(Map.of(CURSOR_FIELD, OBJECT_ID1))));
+      source.read(airbyteSourceConfig, CONFIGURED_CATALOG, null);
+      verify(mongoClient, never()).close();
     }
 
     @Test
