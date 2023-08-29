@@ -40,7 +40,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-from pymilvus import DataType, connections, Collection
+from pymilvus import Collection, DataType, connections
 from pymilvus.exceptions import DescribeCollectionException
 
 BATCH_SIZE = 128
@@ -186,7 +186,9 @@ class MilvusIndexer(Indexer):
             metadata["text"] = chunk.page_content
             if stream_name not in entities_by_stream:
                 entities_by_stream[stream_name] = []
-            entities_by_stream[stream_name].append({**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content})
+            entities_by_stream[stream_name].append(
+                {**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content}
+            )
 
         # for each stream name, insert entitites using the stream name as partition
         for stream_name, stream_entities in entities_by_stream.items():
