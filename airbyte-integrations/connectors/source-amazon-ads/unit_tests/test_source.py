@@ -2,10 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
+from source_amazon_ads.schemas import Profile
 
 from .utils import command_check, url_strip_query
 
@@ -19,7 +21,7 @@ def setup_responses():
     responses.add(
         responses.GET,
         "https://advertising-api.amazon.com/v2/profiles",
-        json=[],
+        json=[{"profileId": 111, "timezone": "gtm", "accountInfo": {"marketplaceStringId": "mkt_id_1", "id": "111", "type": "vendor"}}],
     )
 
 
@@ -119,3 +121,68 @@ def test_source_streams(config):
         ]
     )
     assert not expected_stream_names - actual_stream_names
+
+
+def test_filter_profiles_exist():
+    source = SourceAmazonAds()
+    mock_objs = [
+        {
+            "profileId": 111,
+            "timezone": "gtm",
+            "accountInfo": {
+                "marketplaceStringId": "mkt_id_1",
+                "id": "111",
+                "type": "vendor"
+            }
+        },
+        {
+            "profileId": 222,
+            "timezone": "gtm",
+            "accountInfo": {
+                "marketplaceStringId": "mkt_id_2",
+                "id": "222",
+                "type": "vendor"
+            }
+        },
+        {
+            "profileId": 333,
+            "timezone": "gtm",
+            "accountInfo": {
+                "marketplaceStringId": "mkt_id_3",
+                "id": "333",
+                "type": "vendor"
+            }
+        }
+    ]
+
+    mock_profiles = [Profile.parse_obj(profile) for profile in mock_objs]
+
+    filtered_profiles = source._choose_profiles({}, mock_profiles)
+    assert len(filtered_profiles) == 3
+
+    filtered_profiles = source._choose_profiles({"profiles": [111]}, mock_profiles)
+    assert len(filtered_profiles) == 1
+    assert filtered_profiles[0].profileId == 111
+
+    filtered_profiles = source._choose_profiles({"profiles": [111, 333]}, mock_profiles)
+    assert len(filtered_profiles) == 2
+
+    filtered_profiles = source._choose_profiles({"profiles": [444]}, mock_profiles)
+    assert len(filtered_profiles) == 0
+
+    filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_4"]}, mock_profiles)
+    assert len(filtered_profiles) == 0
+
+    filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1"]}, mock_profiles)
+    assert len(filtered_profiles) == 1
+    assert filtered_profiles[0].accountInfo.marketplaceStringId == "mkt_id_1"
+
+    filtered_profiles = source._choose_profiles({"marketplace_ids": ["mkt_id_1", "mkt_id_3"]}, mock_profiles)
+    assert len(filtered_profiles) == 2
+
+    filtered_profiles = source._choose_profiles({"profiles": [111], "marketplace_ids": ["mkt_id_2"]}, mock_profiles)
+    assert len(filtered_profiles) == 2
+
+    filtered_profiles = source._choose_profiles({"profiles": [111], "marketplace_ids": ["mkt_id_1"]}, mock_profiles)
+    assert len(filtered_profiles) == 1
+    assert filtered_profiles[0].profileId == 111
