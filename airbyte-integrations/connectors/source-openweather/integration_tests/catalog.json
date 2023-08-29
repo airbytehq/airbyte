@@ -5,7 +5,7 @@
       {
         "name": "one_call",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh","incremental"]
       }
     ]
   }

@@ -13,6 +13,7 @@ definitions:
     url_base: "https://api.openweathermap.org/data/2.5/"
     http_method: "GET"
     request_parameters:
+      dt: "{{ config.get('dt')}}"
       lat: "{% if -90.00 <= config['lat']|float <= 90.00 %}{{ config['lat'] }}{% else %} WRONG LATITUDE{% endif %}"
       lon: "{% if -180.00 <= config['lon']|float <= 180.00 %}{{ config['lon'] }}{% else %}WRONG LONGITUDE{% endif %}"
       appid: "{{ config['appid'] }}"
@@ -37,13 +38,30 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    cursor_field: "date"
+    datetime_format: "%s"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P5D"
+    start_datetime:
+      datetime: "{{ config['dt'] }}"
+      datetime_format: "%s"
+    end_datetime:
+      datetime: "{{ format_datetime(now_utc(), '%s') }}"
+      datetime_format: "%s"
+    step: "P1M"
+       
   onecall_stream:
     $ref: "#/definitions/base_stream"
     name: "onecall"
     retriever:
       $ref: "#/definitions/retriever"
     $parameters:
-      path: "onecall"
+      path: "{% if config['dt']%}onecall/timemachine{% else %}onecall{% endif %}"
+      incremental_cursor: ["current","dt"]
+    incremental_sync:
+          $ref: "#/definitions/incremental_sync_base" 
 
 streams:
   - "#/definitions/onecall_stream"
@@ -94,6 +112,16 @@ spec:
           - "standard"
           - "metric"
           - "imperial"
+      dt:
+        type: string
+        description : "Date in UNIX format"
+        example:
+          - '1693023447'
+      only_current:
+        type: boolean
+        description : "True for particular day"
+        example:
+          - 'true'
       lang:
         type: string
         description: You can use lang parameter to get the output in your language.
