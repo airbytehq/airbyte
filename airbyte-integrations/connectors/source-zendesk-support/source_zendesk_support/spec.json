@@ -13,17 +13,20 @@
         "description": "The UTC date and time from which you'd like to replicate data, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "examples": ["2020-10-15T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "format": "date-time"
+        "format": "date-time",
+        "order": 2
       },
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "This is your unique Zendesk subdomain that can be found in your account URL. For example, in https://MY_SUBDOMAIN.zendesk.com/, MY_SUBDOMAIN is the value of your subdomain."
+        "description": "This is your unique Zendesk subdomain that can be found in your account URL. For example, in https://MY_SUBDOMAIN.zendesk.com/, MY_SUBDOMAIN is the value of your subdomain.",
+        "order": 0
       },
       "credentials": {
         "title": "Authentication",
         "type": "object",
         "description": "Zendesk allows two authentication methods. We recommend using `OAuth2.0` for Airbyte Cloud users and `API token` for Airbyte Open Source users.",
+        "order": 1,
         "oneOf": [
           {
             "title": "OAuth2.0",

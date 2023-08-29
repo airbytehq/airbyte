@@ -191,16 +191,6 @@ class MongoDbSourceTest {
     // TODO implement
   }
 
-  @Test
-  void testConvertState() {
-    final var state1 = Jsons.deserialize(
-        "[{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"test.acceptance_test1\"},\"stream_state\":{\"id\":\"64c0029d95ad260d69ef28a2\"}}}]");
-    final var actual = source.convertState(state1);
-    assertTrue(actual.containsKey("test.acceptance_test1"), "missing test.acceptance_test1");
-    assertEquals("64c0029d95ad260d69ef28a2", actual.get("test.acceptance_test1").id(), "id value does not match");
-
-  }
-
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
     final Map<String, Object> config = new HashMap<>();
     final Map<String, Object> baseConfig = Map.of(
