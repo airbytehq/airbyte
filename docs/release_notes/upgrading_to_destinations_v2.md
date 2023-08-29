@@ -15,7 +15,7 @@ Airbyte Destinations V2 provides you with:
 
 To see more details and examples on the contents of the Destinations V2 release, see this [guide](understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
-Destinations V2 were in preview for Snowflake and Bigquery during August 2023, and lauched August 29th, 2023. Other destinations will be on or before November 1st, 2023.
+Destinations V2 were in preview for Snowflake and BigQuery during August 2023, and launched on August 29th, 2023. Other destinations will be transitioned to Destinations V2 on or before November 1st, 2023.
 
 ## Deprecating Legacy Normalization
 
