@@ -91,21 +91,21 @@ class MongoDbSourceTest {
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-              COLLECTION1,
-              "database",
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION1,
+          "database",
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-              COLLECTION2,
-              "database",
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
+          COLLECTION2,
+          "database",
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
-              COLLECTION3,
-              "database",
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION3,
+          "database",
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))));
 
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = toConfiguredCatalog(CATALOG);
@@ -465,6 +465,7 @@ class MongoDbSourceTest {
         collection.insertMany(documents);
       }
     }
+
   }
 
   private static ConfiguredAirbyteCatalog toConfiguredCatalog(final AirbyteCatalog catalog) {
@@ -486,9 +487,9 @@ class MongoDbSourceTest {
   }
 
   private static JsonNode createConfiguration(
-      final String connectionString,
-      final Optional<String> username,
-      final Optional<String> password) {
+                                              final String connectionString,
+                                              final Optional<String> username,
+                                              final Optional<String> password) {
     final Map<String, Object> config = new HashMap<>();
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
@@ -501,4 +502,5 @@ class MongoDbSourceTest {
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(config));
   }
+
 }
