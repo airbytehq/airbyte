@@ -15,7 +15,7 @@ Airbyte Destinations V2 provides you with:
 
 To see more details and examples on the contents of the Destinations V2 release, see this [guide](understanding-airbyte/typing-deduping.md). The remainder of this page will walk you through upgrading connectors from legacy normalization to Destinations V2.
 
-Destinations V2 were in preview for Snowflake and Bigquery during August 2023, and lauched August 29th, 2023.  Other destinations will be on or before November 1st, 2023.
+Destinations V2 were in preview for Snowflake and BigQuery during August 2023, and launched on August 29th, 2023. Other destinations will be transitioned to Destinations V2 on or before November 1st, 2023.
 
 ## Deprecating Legacy Normalization
 
@@ -71,7 +71,7 @@ Versions are tied to the destination. When you update the destination, **all con
 - [Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
 
 :::info
-If you were a Destinations V2 "Early Access" user, you will still need to opt-into the latest connector version.  However, you will not experince the data migration and syncs will contuie to work as they have been since the "early access" period began. 
+If you were a Destinations V2 "Early Access" user, you will still need to opt-into the latest connector version. However, you will not experience the data migration and syncs will continue to work as they have been since the "early access" period began.
 :::
 
 ## Advanced Upgrade Paths
@@ -162,7 +162,7 @@ For each destination connector, Destinations V2 is effective as of the following
 | DuckDB                | 0.1.0                 | 2.0.0+                     |
 | Clickhouse            | 0.2.3                 | 2.0.0+                     |
 
-Note: If you encounter errors while upgrading from a V1 to a V2 destination, please reach out to support.  It may be advantagous to only drop probematic V2 tables rather than to do a full reset, depending on tye type of error.
+Note: If you encounter errors while upgrading from a V1 to a V2 destination, please reach out to support. It may be advantagous to only drop probematic V2 tables rather than to do a full reset, depending on tye type of error.
 
 ## Destinations V2 Implementation Differences
 
@@ -175,9 +175,9 @@ In addition to the changes which apply for all destinations described above, the
 
 ### Snowflake
 
-1. `destination-snowflake` is now case-sensitive, and was not previously.  This means that if you have a source stream "users", `destination-snowflake` would have previously created a "USERS" table in your data warehouse.  We now correctly create a "users" table.
-    * Note that to properly query case-sensitive tables and columns in Snowflake, you will need to quote your table and column names, e.g. `select "first_name" from "users";`
-    * If you are migrating from Destinations v1 to Destinations V2, we will leave your old "USERS" table, and create a new "users" table - please note the case sensitivity.
+1. `destination-snowflake` is now case-sensitive, and was not previously. This means that if you have a source stream "users", `destination-snowflake` would have previously created a "USERS" table in your data warehouse. We now correctly create a "users" table.
+   - Note that to properly query case-sensitive tables and columns in Snowflake, you will need to quote your table and column names, e.g. `select "first_name" from "users";`
+   - If you are migrating from Destinations v1 to Destinations V2, we will leave your old "USERS" table, and create a new "users" table - please note the case sensitivity.
 
 ## Updating Downstream Transformations
 
