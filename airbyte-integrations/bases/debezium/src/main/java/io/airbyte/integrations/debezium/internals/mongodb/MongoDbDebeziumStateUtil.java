@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
@@ -63,7 +65,7 @@ public class MongoDbDebeziumStateUtil {
             MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
 
     final Map<String, Object> value = new HashMap<>();
-    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
+    value.put(VALUE_SECONDS, timestamp.getTime());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);

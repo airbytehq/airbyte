@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +38,10 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private final ConfiguredAirbyteStream stream;
   private final List<String> fields;
   private final Instant emittedAt;
+
+  private Instant lastCheckpoint = Instant.now();
   private final Integer checkpointInterval;
+  private final Duration checkpointDuration;
 
   /**
    * Counts the number of records seen in this batch, resets when a state-message has been generated.
@@ -47,7 +51,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   /**
    * Pointer to the last document _id seen by this iterator, necessary to track for state messages.
    */
-  private String lastId = null;
+  private String lastId;
 
   /**
    * This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the
@@ -56,23 +60,33 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private boolean finalStateNext = false;
 
   /**
+   * Tracks if the underlying iterator threw an exception. This helps to determine the final state
+   * status emitted from the final next call.
+   */
+  private boolean iterThrewException = false;
+
+  /**
    * Constructor.
    *
    * @param iter {@link MongoCursor} that iterates over Mongo documents
    * @param stateManager {@link MongoDbStateManager} that manages global and per-stream state
    * @param stream the stream that this iterator represents
    * @param emittedAt when this iterator was started
-   * @param checkpointInterval how often a state message should be emitted.
+   * @param checkpointInterval how often a state message should be emitted based on number of
+   *        messages.
+   * @param checkpointDuration how often a state message should be emitted based on time.
    */
   public MongoDbStateIterator(final MongoCursor<Document> iter,
                               final MongoDbStateManager stateManager,
                               final ConfiguredAirbyteStream stream,
                               final Instant emittedAt,
-                              final int checkpointInterval) {
+                              final int checkpointInterval,
+                              final Duration checkpointDuration) {
     this.iter = iter;
     this.stateManager = stateManager;
     this.stream = stream;
     this.checkpointInterval = checkpointInterval;
+    this.checkpointDuration = checkpointDuration;
     this.emittedAt = emittedAt;
     this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
     this.lastId =
@@ -85,8 +99,9 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       if (iter.hasNext()) {
         return true;
       }
-    } catch (MongoException e) {
+    } catch (final MongoException e) {
       // If hasNext throws an exception, log it and then treat it as if hasNext returned false.
+      iterThrewException = true;
       LOGGER.info("hasNext threw an exception: {}", e.getMessage(), e);
     }
 
@@ -100,8 +115,14 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public AirbyteMessage next() {
-    if ((count > 0 && count % checkpointInterval == 0)) {
+    // Should a state message be emitted based on the number of messages we've seen?
+    final var emitStateDueToMessageCount = count > 0 && count % checkpointInterval == 0;
+    // Should a state message be emitted based on then last time a state message was emitted?
+    final var emitStateDueToDuration = count > 0 && Duration.between(lastCheckpoint, Instant.now()).compareTo(checkpointDuration) > 0;
+
+    if (emitStateDueToMessageCount || emitStateDueToDuration) {
       count = 0;
+      lastCheckpoint = Instant.now();
 
       if (lastId != null) {
         // TODO add type support in here once more than ObjectId fields are supported
@@ -113,8 +134,10 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
           .withType(Type.STATE)
           .withState(stateManager.toState());
     } else if (finalStateNext) {
+      final var finalStateStatus = iterThrewException ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
+
       stateManager.updateStreamState(stream.getStream().getName(),
-          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.COMPLETE));
+          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, finalStateStatus));
 
       return new AirbyteMessage()
           .withType(Type.STATE)

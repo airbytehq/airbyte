@@ -39,10 +39,10 @@ class MongoDbDebeziumStateUtilTest {
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
-          "test-collection",
-          DATABASE,
-          Field.of("id", JsonSchemaType.INTEGER),
-          Field.of("string", JsonSchemaType.STRING))
+              "test-collection",
+              DATABASE,
+              Field.of("id", JsonSchemaType.INTEGER),
+              Field.of("string", JsonSchemaType.STRING))
           .withSupportedSyncModes(List.of(SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
