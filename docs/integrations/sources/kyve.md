@@ -1,4 +1,4 @@
-# KYVE Source
+# KYVE
 
 This page contains the setup guide and reference information for the **KYVE** source connector.
 
