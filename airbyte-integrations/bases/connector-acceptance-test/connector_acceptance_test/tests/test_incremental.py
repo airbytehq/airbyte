@@ -111,6 +111,18 @@ class TestIncremental(BaseTest):
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
         docker_runner: ConnectorRunner,
     ):
+        """
+        This test makes two calls to the read method and verifies that the records returned are different.
+
+        Important!
+
+        Assert only that the reads are different. Nothing else.
+        This is because there is only a small subset of assertions we can make
+        in the absense of enforcing that all connectors return 3 or more state messages
+        during the first read.
+
+        To learn more: https://github.com/airbytehq/airbyte/issues/29926
+        """
         output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
         records_1 = filter_output(output_1, type_=Type.RECORD)
         states_1 = filter_output(output_1, type_=Type.STATE)
@@ -135,7 +147,6 @@ class TestIncremental(BaseTest):
         output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
         records_2 = filter_output(output_2, type_=Type.RECORD)
 
-        # LEAVE A NOTE HERE FOR FUTURE DEBUGGING
         diff = naive_diff_records(records_1, records_2)
         assert (
             diff
@@ -161,8 +172,13 @@ class TestIncremental(BaseTest):
         # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
         unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
 
-        # NOTE: We cannot assert anything further is we do not have more than 2 state messages
-        # TODO ben
+        # Important!
+
+        # There is only a small subset of assertions we can make
+        # in the absense of enforcing that all connectors return 3 or more state messages
+        # during the first read.
+
+        # To learn more: https://github.com/airbytehq/airbyte/issues/29926
         if len(unique_state_messages) < 3:
             pytest.skip("Skipping test because there are not enough state messages to test with")
             return
