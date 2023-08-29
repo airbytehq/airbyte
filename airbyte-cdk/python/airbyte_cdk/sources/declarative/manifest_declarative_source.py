@@ -28,7 +28,7 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.utils.slice_logging import AlwaysLogSliceLogger, SliceLogger
+from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, SliceLogger
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
 
