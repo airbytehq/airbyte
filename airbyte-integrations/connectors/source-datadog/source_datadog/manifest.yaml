@@ -149,7 +149,7 @@ definitions:
       paginator:
         $ref: "#/definitions/base_after_paginator"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync_base" 
+      $ref: "#/definitions/incremental_sync_base"
 
   metrics_stream:
     $ref: "#/definitions/base_stream"
@@ -218,4 +218,3 @@ check:
     - "incidents"
     - "incident_teams"
     - "users"
-
