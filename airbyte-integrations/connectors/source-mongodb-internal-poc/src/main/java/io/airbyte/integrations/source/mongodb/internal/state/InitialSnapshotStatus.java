@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb.internal.state;
 
+/**
+ * Enumerates the potential status values for the initial snapshot of streams. This information is
+ * used to determine if a stream has successfully completed its initial snapshot when building the
+ * list of stream iterators for a sync.
+ */
 public enum InitialSnapshotStatus {
 
   IN_PROGRESS,
