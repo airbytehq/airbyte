@@ -11,12 +11,10 @@ MAIN_REQUIREMENTS = [
     "openai",
     "requests",
     "tiktoken",
-    "docarray[hnswlib]>=0.32.0",
     "pinecone-client",
     "typing-inspect==0.8.0",
     "typing_extensions==4.5.0",
     "pydantic==1.10.8",
-    "pandas==1.4.2",
     "cohere",
 ]
 
