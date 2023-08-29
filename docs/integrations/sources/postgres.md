@@ -50,25 +50,14 @@ To fill out the required information:
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
+<!-- env:cloud -->
 #### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
-If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. These are:
-
-```roomsql
-34.106.109.131
-34.106.196.165
-34.106.60.246
-34.106.229.69
-34.106.127.139
-34.106.218.58
-34.106.115.240
-34.106.225.141
-13.37.4.46
-13.37.142.60
-35.181.124.238
-```
+If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
+our [Airbyte Security docs](../../../operator-guides/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
+<!-- /env:cloud -->
 
 ## Advanced Configuration
 
