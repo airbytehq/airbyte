@@ -7,7 +7,7 @@ import logging
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.utils.slice_logging import create_slice_log_message, should_log_slice_message
+from airbyte_cdk.sources.utils.slice_logging import DebugSliceLogger
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,7 @@ from airbyte_cdk.sources.utils.slice_logging import create_slice_log_message, sh
 )
 def test_should_log_slice_message(level, should_log):
     logger = logging.Logger(name="name", level=level)
-    assert should_log_slice_message(logger) == should_log
+    assert DebugSliceLogger().should_log_slice_message(logger) == should_log
 
 
 @pytest.mark.parametrize(
@@ -36,5 +36,5 @@ def test_should_log_slice_message(level, should_log):
 )
 def test_create_slice_log_message(_slice, expected_message):
     expected_log_message = AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=expected_message))
-    log_message = create_slice_log_message(_slice)
+    log_message = DebugSliceLogger().create_slice_log_message(_slice)
     assert log_message == expected_log_message

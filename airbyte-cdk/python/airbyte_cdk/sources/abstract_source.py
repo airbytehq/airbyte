@@ -26,7 +26,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
-from airbyte_cdk.sources.utils.slice_logging import create_slice_log_message, should_log_slice_message
+from airbyte_cdk.sources.utils.slice_logging import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -239,8 +239,8 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            if should_log_slice_message(logger):
-                yield create_slice_log_message(_slice)
+            if self.get_slice_logger().should_log_slice_message(logger):
+                yield self.get_slice_logger().create_slice_log_message(_slice)
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -295,8 +295,8 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            if should_log_slice_message(logger):
-                yield create_slice_log_message(_slice)
+            if self.get_slice_logger().should_log_slice_message(logger):
+                yield self.get_slice_logger().create_slice_log_message(_slice)
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
@@ -342,3 +342,6 @@ class AbstractSource(Source, ABC):
     @property
     def message_repository(self) -> Union[None, MessageRepository]:
         return None
+
+    def get_slice_logger(self) -> SliceLogger:
+        return DebugSliceLogger()
