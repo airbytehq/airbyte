@@ -34,7 +34,7 @@ stream_json_schema = {
 # Basic full refresh stream
 class GlificStream(HttpStream, ABC):
 
-    primary_key = None
+    primary_key = "id"
     cursor_value = None
     latest_updated_date = None
 
