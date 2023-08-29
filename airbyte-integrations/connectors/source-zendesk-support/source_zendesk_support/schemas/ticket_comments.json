@@ -52,7 +52,7 @@
     "attachments": {
       "$ref": "attachments.json"
     },
-    "uploads" : {
+    "uploads": {
       "type": ["null", "array"]
     }
   }
