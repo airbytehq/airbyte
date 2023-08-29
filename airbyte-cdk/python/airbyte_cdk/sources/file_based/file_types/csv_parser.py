@@ -146,7 +146,7 @@ class CsvParser(FileTypeParser):
         if not type_inferrer_by_field:
             raise AirbyteTracedException(
                 message=f"Could not infer schema as there are no rows in {file.uri}. If having an empty CSV file is expected, ignore this. "
-                        f"Else, please contact Airbyte.",
+                f"Else, please contact Airbyte.",
                 failure_type=FailureType.config_error,
             )
         schema = {header.strip(): {"type": type_inferred.infer()} for header, type_inferred in type_inferrer_by_field.items()}
