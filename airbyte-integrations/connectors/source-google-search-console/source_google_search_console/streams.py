@@ -81,7 +81,7 @@ class Sites(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
 
-    primary_key = ["siteUrl"]
+    primary_key = None
 
     def path(
         self,
@@ -97,7 +97,7 @@ class Sitemaps(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
-    primary_key = ["type", "path", "lastSubmitted", "lastDownloaded"]
+    primary_key = None
     data_field = "sitemap"
 
     def path(
