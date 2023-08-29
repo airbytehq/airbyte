@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -64,7 +63,6 @@ class SnowflakeSqlOperationsThrowConfigExceptionTest {
 
     snowflakeStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(new SnowflakeSQLNameTransformer());
     snowflakeSqlOperations = new SnowflakeSqlOperations();
-
 
     createStageIfNotExists = () -> snowflakeStagingSqlOperations.createStageIfNotExists(dbForExecuteQuery, STAGE_NAME);
     dropStageIfExists = () -> snowflakeStagingSqlOperations.dropStageIfExists(dbForExecuteQuery, STAGE_NAME);

@@ -9,7 +9,7 @@
 
 1. For **Source name**, enter a name to help you identify this source.
 2. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-3. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+3. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 4. To authenticate the connection:
 
    <!-- env:cloud -->

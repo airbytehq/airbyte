@@ -24,15 +24,15 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import org.jooq.impl.DSL;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jooq.impl.DSL;
 
 public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
@@ -145,12 +145,12 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
 
   private Database createDatabaseFromConfig(final JsonNode config) {
     connection = ConnectionFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
-            String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                    config.get(JdbcUtils.HOST_KEY).asText(),
-                    config.get(JdbcUtils.PORT_KEY).asInt(),
-                    config.get(JdbcUtils.DATABASE_KEY).asText()));
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        RedshiftInsertDestination.SSL_JDBC_PARAMETERS,
+        String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     return new Database(DSL.using(connection));
   }
@@ -168,7 +168,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     baseConfig = getStaticConfig();
     final JsonNode configForSchema = Jsons.clone(baseConfig);
-    schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
+    schemaName = TestingNamespaces.generate();
     TEST_SCHEMAS.add(schemaName);
     ((ObjectNode) configForSchema).put("schema", schemaName);
     config = configForSchema;

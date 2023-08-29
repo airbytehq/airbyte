@@ -9,37 +9,30 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DAT
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
 import com.mongodb.connection.ClusterType;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
+import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -49,9 +42,6 @@ import org.slf4j.LoggerFactory;
 public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
-
-  /** Helper class for holding a collection-name and stream state together */
-  private record CollectionNameState(Optional<String> name, Optional<MongodbStreamState> state) {}
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -106,15 +96,14 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final JsonNode state) {
     final var databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
     final var emittedAt = Instant.now();
-
-    final var states = convertState(state);
+    final var stateManager = MongoDbStateManager.createStateManager(state);
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
     try {
       final var database = mongoClient.getDatabase(databaseName);
       // TODO treat INCREMENTAL and FULL_REFRESH differently?
       return AutoCloseableIterators.appendOnClose(AutoCloseableIterators.concatWithEagerClose(
-          convertCatalogToIterators(catalog, states, database, emittedAt),
+          convertCatalogToIterators(catalog, stateManager, database, emittedAt),
           AirbyteTraceMessageUtility::emitStreamStatusTrace),
           mongoClient::close);
     } catch (final Exception e) {
@@ -124,40 +113,11 @@ public class MongoDbSource extends BaseConnector implements Source {
   }
 
   /**
-   * Converts the JsonNode into a map of mongodb collection names to stream states.
-   */
-  @VisibleForTesting
-  protected Map<String, MongodbStreamState> convertState(final JsonNode state) {
-    // I'm unsure if the JsonNode data is going to be a singular AirbyteStateMessage or an array of
-    // AirbyteStateMessages.
-    // So this currently handles both cases, converting the singular message into a list of messages,
-    // leaving the list of messages
-    // as a list of messages, or returning an empty list.
-    final List<AirbyteStateMessage> states = Jsons.tryObject(state, AirbyteStateMessage.class)
-        .map(List::of)
-        .orElseGet(() -> Jsons.tryObject(state, AirbyteStateMessage[].class)
-            .map(Arrays::asList)
-            .orElse(List.of()));
-
-    // TODO add namespace support?
-    return states.stream()
-        .filter(s -> s.getType() == AirbyteStateType.STREAM)
-        .map(s -> new CollectionNameState(
-            Optional.ofNullable(s.getStream().getStreamDescriptor()).map(StreamDescriptor::getName),
-            Jsons.tryObject(s.getStream().getStreamState(), MongodbStreamState.class)))
-        // only keep states that could be parsed
-        .filter(p -> p.name.isPresent() && p.state.isPresent())
-        .collect(Collectors.toMap(
-            p -> p.name.orElseThrow(),
-            p -> p.state.orElseThrow()));
-  }
-
-  /**
    * Converts the streams in the catalog into a list of AutoCloseableIterators.
    */
   private List<AutoCloseableIterator<AirbyteMessage>> convertCatalogToIterators(
                                                                                 final ConfiguredAirbyteCatalog catalog,
-                                                                                final Map<String, MongodbStreamState> states,
+                                                                                final MongoDbStateManager stateManager,
                                                                                 final MongoDatabase database,
                                                                                 final Instant emittedAt) {
     return catalog.getStreams()
@@ -175,12 +135,8 @@ public class MongoDbSource extends BaseConnector implements Source {
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           // find the existing state, if there is one, for this steam
-          final Optional<MongodbStreamState> existingState = states.entrySet().stream()
-              // look only for states that match this stream's name
-              // TODO add namespace support
-              .filter(state -> state.getKey().equals(airbyteStream.getStream().getName()))
-              .map(Entry::getValue)
-              .findFirst();
+          final Optional<MongoDbStreamState> existingState =
+              stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
           // The filter determines the starting point of this iterator based on the state of this collection.
           // If a state exists, it will use that state to create a query akin to
@@ -198,7 +154,7 @@ public class MongoDbSource extends BaseConnector implements Source {
               .sort(Sorts.ascending(ID_FIELD))
               .cursor();
 
-          final var stateIterator = new MongoDbStateIterator(cursor, airbyteStream, existingState, emittedAt, CHECKPOINT_INTERVAL);
+          final var stateIterator = new MongoDbStateIterator(cursor, stateManager, airbyteStream, emittedAt, CHECKPOINT_INTERVAL);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
