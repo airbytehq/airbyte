@@ -155,6 +155,9 @@ class TestIncremental(BaseTest):
         records_1 = filter_output(output_1, type_=Type.RECORD)
         states_1 = filter_output(output_1, type_=Type.STATE)
 
+        assert states_1, "First Read should produce at least one state"
+        assert records_1, "First Read should produce at least one record"
+
         # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
         unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
 
@@ -163,9 +166,6 @@ class TestIncremental(BaseTest):
         if len(unique_state_messages) < 2:
             pytest.skip("Skipping test because there are not enough state messages to test with")
             return
-
-        assert states_1, "First Read should produce at least one state"
-        assert records_1, "First Read should produce at least one record"
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
@@ -195,7 +195,7 @@ class TestIncremental(BaseTest):
             output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
             records_N = filter_output(output_N, type_=Type.RECORD)
             diff = naive_diff_records(records_1, records_N)
-            assert diff, f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx}: {records_N} \n\n diff: {diff}"
+            assert diff, f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
 
     async def test_state_with_abnormally_large_values(
