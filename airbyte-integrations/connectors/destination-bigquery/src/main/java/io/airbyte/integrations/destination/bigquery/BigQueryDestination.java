@@ -414,11 +414,15 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
 
     final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
+    final BigQueryV2RawTableMigrator v2RawTableMigrator = new BigQueryV2RawTableMigrator(bigquery);
     return new DefaultTyperDeduper<>(
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery, datasetLocation),
         parsedCatalog,
-        migrator);
+        migrator,
+        v2RawTableMigrator);
+
+
   }
 
   /**
