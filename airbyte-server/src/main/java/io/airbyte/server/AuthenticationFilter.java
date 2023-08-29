@@ -23,8 +23,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        LOGGER.error(" path is " + requestContext.getUriInfo().getPath());
-        LOGGER.info(" path is " + requestContext.getUriInfo().getPath());
         if (!"v1/health".equalsIgnoreCase(requestContext.getUriInfo().getPath())) {
             // Get the Authorization header from the request
             String authorizationHeader =
