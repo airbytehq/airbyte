@@ -12,10 +12,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -26,17 +29,25 @@ import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,6 +56,38 @@ import org.junit.jupiter.api.Test;
 class MongoDbSourceTest {
 
   private static final String DB_NAME = "airbyte_test";
+
+  private static final String CURSOR_FIELD = "_id";
+  private static final String NAME_FIELD = "name";
+
+  private static final String COLLECTION1 = "collection1";
+  private static final String COLLECTION2 = "collection2";
+  private static final String COLLECTION3 = "collection3";
+
+  private static final ObjectId OBJECT_ID1 = new ObjectId("64c0029d95ad260d69ef28a1");
+
+  private static final String NAME1 = "name1";
+
+  private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
+      CatalogHelpers.createAirbyteStream(
+              COLLECTION1,
+              "database",
+              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL)),
+      CatalogHelpers.createAirbyteStream(
+              COLLECTION2,
+              "database",
+              Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL)),
+      CatalogHelpers.createAirbyteStream(
+              COLLECTION3,
+              "database",
+              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))));
+
+  private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = toConfiguredCatalog(CATALOG);
 
   @Nested
   @DisplayName("Tests with mocked database")
@@ -186,6 +229,15 @@ class MongoDbSourceTest {
 
       assertThrows(IllegalArgumentException.class, () -> source.discover(airbyteSourceConfig));
     }
+
+    @Test
+    void testReadClosesMongoClient() {
+      final MongoClient mongoClient = mock(MongoClient.class);
+      doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
+      when(mongoClient.getDatabase(any())).thenThrow(new RuntimeException());
+      assertThrows(RuntimeException.class, () -> source.read(airbyteSourceConfig, CONFIGURED_CATALOG, null));
+      verify(mongoClient, times(1)).close();
+    }
   }
 
   private static JsonNode createConfiguration(
@@ -204,5 +256,23 @@ class MongoDbSourceTest {
     username.ifPresent(u -> config.put(MongoConstants.USER_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(config));
+  }
+
+  private static ConfiguredAirbyteCatalog toConfiguredCatalog(final AirbyteCatalog catalog) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(catalog.getStreams()
+            .stream()
+            .map(MongoDbSourceTest::toConfiguredStreams)
+            .flatMap(List::stream)
+            .toList());
+  }
+
+  private static List<ConfiguredAirbyteStream> toConfiguredStreams(final AirbyteStream stream) {
+    return stream.getSupportedSyncModes().stream().map(syncMode -> new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withSyncMode(syncMode)
+        .withCursorField(List.of(CURSOR_FIELD))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withPrimaryKey(new ArrayList<>())).collect(Collectors.toList());
   }
 }
