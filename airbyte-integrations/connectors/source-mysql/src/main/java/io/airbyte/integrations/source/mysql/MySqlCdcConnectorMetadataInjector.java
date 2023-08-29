@@ -61,6 +61,11 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
     return source.get("db").asText();
   }
 
+  @Override
+  public String name(JsonNode source) {
+    return source.get("table").asText();
+  }
+
   private Long getCdcDefaultCursor() {
     return this.emittedAtConverted + this.recordCounter.getAndIncrement();
   }

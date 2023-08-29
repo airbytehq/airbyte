@@ -67,7 +67,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
       return true;
     } else {
       final BsonTimestamp eventResumeTokenTimestamp =
-          MongoDbResumeTokenHelper.extractTimestamp(changeEventWithMetadata.eventValueAsJson());
+          MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEventWithMetadata.eventValueAsJson());
       boolean isEventResumeTokenAfter = resumeTokenTimestamp.compareTo(eventResumeTokenTimestamp) <= 0;
       if (isEventResumeTokenAfter) {
         LOGGER.info("Signalling close because record's event timestamp {} is after target event timestamp {}.",
