@@ -12,7 +12,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.1.1
+            disable_for_version: "0.1.6"
   basic_read:
     tests:
       - config_path: "secrets/config.json"

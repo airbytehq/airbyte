@@ -13,7 +13,7 @@ This source currently has a single stream, `openweather_one_call`. An example of
 | Feature | Supported? |
 | :--- | :--- |
 | Full Refresh Sync - (append only) | Yes |
-| Incremental - Append Sync | Yes |
+| Incremental - Append Sync | No |
 | Namespaces | No |
 
 ## Getting started
