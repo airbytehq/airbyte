@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlInitialLoadHandler {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadHandler.class);
 
   private static final long RECORD_LOGGING_SAMPLE_RATE = 1_000_000;
@@ -48,12 +53,12 @@ public class MySqlInitialLoadHandler {
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MySqlInitialLoadHandler(final JsonNode config,
-      final JdbcDatabase database,
-      final MySqlInitialLoadSourceOperations sourceOperations,
-      final String quoteString,
-      final MySqlInitialLoadStateManager initialLoadStateManager,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-      final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
+                                 final JdbcDatabase database,
+                                 final MySqlInitialLoadSourceOperations sourceOperations,
+                                 final String quoteString,
+                                 final MySqlInitialLoadStateManager initialLoadStateManager,
+                                 final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+                                 final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
@@ -64,9 +69,9 @@ public class MySqlInitialLoadHandler {
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
-      final Instant emittedAt) {
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
+                                                                             final Instant emittedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -89,7 +94,7 @@ public class MySqlInitialLoadHandler {
             .collect(Collectors.toList());
         final AutoCloseableIterator<JsonNode> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-                calculateChunkSize(tableSizeInfoMap.get(pair), pair));
+                calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
         final AutoCloseableIterator<AirbyteMessage> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -99,6 +104,10 @@ public class MySqlInitialLoadHandler {
       }
     }
     return iteratorList;
+  }
+
+  private static boolean isCompositePrimaryKey(final ConfiguredAirbyteStream stream) {
+    return stream.getStream().getSourceDefinedPrimaryKey().size() > 1;
   }
 
   // Calculates the number of rows to fetch per query.
@@ -117,10 +126,10 @@ public class MySqlInitialLoadHandler {
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
   private AutoCloseableIterator<AirbyteMessage> getRecordIterator(
-      final AutoCloseableIterator<JsonNode> recordIterator,
-      final String streamName,
-      final String namespace,
-      final long emittedAt) {
+                                                                  final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                  final String streamName,
+                                                                  final String namespace,
+                                                                  final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -132,8 +141,8 @@ public class MySqlInitialLoadHandler {
 
   // Augments the given iterator with record count logs.
   private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
-      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
-      final String streamName) {
+                                                                final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
+                                                                final String streamName) {
     final AtomicLong recordCount = new AtomicLong();
     return AutoCloseableIterators.transform(iterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
@@ -147,7 +156,7 @@ public class MySqlInitialLoadHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
-      final AirbyteStreamNameNamespacePair pair) {
+                                                                 final AirbyteStreamNameNamespacePair pair) {
 
     final PrimaryKeyLoadStatus currentPkLoadStatus = initialLoadStateManager.getPrimaryKeyLoadStatus(pair);
     final JsonNode incrementalState =
@@ -165,4 +174,5 @@ public class MySqlInitialLoadHandler {
             syncCheckpointDuration, syncCheckpointRecords),
         recordIterator, pair);
   }
+
 }
