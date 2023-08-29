@@ -132,13 +132,11 @@ class TestIncremental(BaseTest):
         # READ #2
 
         output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
-        states_2 = filter_output(output_2, type_=Type.STATE)
-
-        assert states_2, "Second Read should produce at least one state"
+        records_2 = filter_output(output_2, type_=Type.RECORD)
 
         # LEAVE A NOTE HERE FOR FUTURE DEBUGGING
-            # diff = naive_diff_records(stream_records_1, stream_records_2)
-            # assert diff, f"Records for stream {stream_name} should change between reads but did not.\n\n stream_records_1: {stream_records_1} \n\n state: {state_input} \n\n stream_records_2: {stream_records_2} \n\n diff: {diff}"
+        diff = naive_diff_records(records_1, records_2)
+        assert diff, f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
@@ -152,7 +150,6 @@ class TestIncremental(BaseTest):
         if inputs.skip_comprehensive_incremental_tests:
             pytest.skip("Skipping new incremental test based on acceptance-test-config.yml")
             return
-
 
         output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
         records_1 = filter_output(output_1, type_=Type.RECORD)
