@@ -8,10 +8,6 @@ data:
   icon: teradata.svg
   license: MIT
   name: Teradata Vantage
-  normalizationConfig:
-    normalizationIntegrationType: null
-    normalizationRepository: null
-    normalizationTag: null
   registries:
     cloud:
       enabled: false
