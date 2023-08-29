@@ -11,6 +11,7 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -50,6 +51,15 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Provides methods to initialize the stream iterators based on the state of each stream in the
+ * configured catalog.
+ * <p />
+ * <p />
+ * For more information on the iterator selection logic, see
+ * {@link MongoDbCdcInitialSnapshotUtils#getStreamsForInitialSnapshot(MongoDbStateManager, ConfiguredAirbyteCatalog, boolean)}
+ * and {@link AirbyteDebeziumHandler#getIncrementalIterators}
+ */
 public class MongoDbCdcInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitializer.class);
@@ -60,6 +70,20 @@ public class MongoDbCdcInitializer {
     mongoDbDebeziumStateUtil = new MongoDbDebeziumStateUtil();
   }
 
+  /**
+   * Generates the list of stream iterators based on the configured catalog and stream state. This
+   * list will include any initial snapshot iterators, followed by incremental iterators, where
+   * applicable.
+   *
+   * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
+   * @param catalog The configured Airbyte catalog of streams for the source.
+   * @param stateManager The {@link MongoDbStateManager} that provides state information used for
+   *        iterator selection.
+   * @param emittedAt The timestamp of the sync.
+   * @param config The configuration of the source.
+   * @return The list of stream iterators with initial snapshot iterators before any incremental
+   *         iterators.
+   */
   public List<AutoCloseableIterator<AirbyteMessage>> createCdcIterators(
                                                                         final MongoClient mongoClient,
                                                                         final ConfiguredAirbyteCatalog catalog,
@@ -67,7 +91,9 @@ public class MongoDbCdcInitializer {
                                                                         final Instant emittedAt,
                                                                         final JsonNode config) {
 
-    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
+    final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
+    final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
+    final Properties defaultDebeziumProperties = getDebeziumProperties();
     final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
@@ -102,8 +128,6 @@ public class MongoDbCdcInitializer {
         convertCatalogToIterators(new ConfiguredAirbyteCatalog().withStreams(initialSnapshotStreams),
             stateManager, mongoClient.getDatabase(databaseName), emittedAt);
 
-    final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
-    final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
         MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
@@ -172,6 +196,11 @@ public class MongoDbCdcInitializer {
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
+  }
+
+  @VisibleForTesting
+  Properties getDebeziumProperties() {
+    return MongoDbCdcProperties.getDebeziumProperties();
   }
 
 }

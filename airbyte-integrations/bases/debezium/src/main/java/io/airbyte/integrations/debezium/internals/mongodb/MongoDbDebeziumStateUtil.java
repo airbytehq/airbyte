@@ -4,9 +4,8 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
@@ -20,6 +19,7 @@ import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,23 +56,33 @@ public class MongoDbDebeziumStateUtil {
    */
   public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String database, final String replicaSet) {
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
-    final String resumeTokenData = ((BsonString) ResumeTokens.getData(resumeToken)).getValue();
-    final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeToken);
 
-    final List<Object> key = List.of(
-        database,
-        Map.of(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet,
-            MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
+    final JsonNode state = formatState(database, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
+    LOGGER.info("Initial Debezium state constructed: {}", state);
+    return state;
+  }
+
+  /**
+   * Formats the Debezium initial state into a format suitable for storage in the offset data file.
+   *
+   * @param database The name of the target MongoDB database.
+   * @param replicaSet The name of the target MongoDB replica set.
+   * @param resumeTokenData The MongoDB resume token that represents the offset state.
+   * @return The offset state as a {@link JsonNode}.
+   */
+  @VisibleForTesting
+  public static JsonNode formatState(final String database, final String replicaSet, final String resumeTokenData) {
+    final BsonTimestamp timestamp = ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeTokenData));
+
+    final List<Object> key = generateOffsetKey(database, replicaSet);
 
     final Map<String, Object> value = new HashMap<>();
-    value.put(VALUE_SECONDS, timestamp.getTime());
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
 
-    final JsonNode state = Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
-    LOGGER.info("Initial Debezium state constructed: {}", state);
-    return state;
+    return Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
   }
 
   public boolean isSavedOffsetAfterResumeToken(final MongoClient mongoClient, final OptionalLong savedOffset) {
@@ -151,6 +161,23 @@ public class MongoDbDebeziumStateUtil {
         fileOffsetBackingStore.stop();
       }
     }
+  }
+
+  private static List<Object> generateOffsetKey(final String database, final String replicaSet) {
+    /*
+     * N.B. The order of the keys in the sourceInfoMap and key list matters! DO NOT CHANGE the order
+     * unless you have verified that Debezium has changed its order of the key it builds when retrieving
+     * data from the offset file. See the "partition(String replicaSetName)" method of the
+     * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
+     */
+    final Map<String, String> sourceInfoMap = new HashMap<>();
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database);
+
+    final List<Object> key = new LinkedList();
+    key.add(database);
+    key.add(sourceInfoMap);
+    return key;
   }
 
 }

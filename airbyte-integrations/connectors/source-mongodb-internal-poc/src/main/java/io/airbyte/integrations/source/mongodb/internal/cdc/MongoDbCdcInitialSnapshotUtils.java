@@ -49,10 +49,10 @@ public class MongoDbCdcInitialSnapshotUtils {
 
     if (!savedOffsetAfterResumeToken) {
       /*
-       * If the saved offset is not after the most recent resume token retrieved from the server, re-sync
-       * everything via initial snapshot as we have lost track of the changes. This occurs when the oplog
-       * cycles faster than a sync interval, resulting in the stored offset in our state being removed
-       * from the oplog.
+       * If the saved offset is not after the resume token retrieved from the server, re-sync everything
+       * via initial snapshot as we have lost track of the changes. This occurs when the oplog cycles
+       * faster than a sync interval, resulting in the stored offset in our state being removed from the
+       * oplog.
        */
       return fullCatalog.getStreams()
           .stream()
