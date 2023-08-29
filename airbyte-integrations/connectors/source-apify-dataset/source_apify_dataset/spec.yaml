@@ -17,13 +17,13 @@ connectionSpecification:
       examples:
         - "Personal API tokens"
       airbyte_secret: true
-    start_date:
+    datasetId:
       type: string
-      title: Start Date
-      description:
-        UTC date and time in the format 2017-01-25T00:00:00Z. Any data
-        before this date will not be replicated.
-      examples:
-        - "2023-08-05T00:43:59.244Z"
-      default: "2023-08-25T00:43:59.244Z"
-      airbyte_secret: false
+      title: Dataset ID
+      description: ID of the dataset you would like to load to Airbyte.
+    clean:
+      type: boolean
+      title: Clean
+      description: If set to true, only clean items will be downloaded from the dataset.
+        See description of what clean means in <a href="https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items">Apify
+        API docs</a>. If not sure, set clean to false.
