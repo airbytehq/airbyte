@@ -8,11 +8,12 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.models import SyncMode
+
 from .helpers import Helpers
 
 
@@ -109,12 +110,10 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
 # Source
 class SourceSurveycto(AbstractSource):
-
-    
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        
+
         form_ids = config["form_id"]
-        
+
         try:
             for form_id in form_ids:
                 schema = Helpers.call_survey_cto(config, form_id)
@@ -122,13 +121,12 @@ class SourceSurveycto(AbstractSource):
                 schema_res = Helpers.get_json_schema(filter_data)
                 stream = SurveyctoStream(config=config, form_id=form_id, schema=schema_res)
                 next(stream.read_records(sync_mode=SyncMode.full_refresh))
-                
+
             return True, None
-        
+
         except Exception as error:
             return False, f"Unable to connect - {(error)}"
-        
-        
+
     def generate_streams(self, config: str) -> List[Stream]:
         forms = config.get("form_id", [])
         streams = []

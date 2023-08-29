@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 """This module groups the functions to run full pipelines for connector testing."""
 
 import sys
@@ -9,12 +10,12 @@ from typing import Callable, List, Optional
 
 import anyio
 import dagger
+from connector_ops.utils import ConnectorLanguage
+from dagger import Config
 from pipelines.actions import environments
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext, ContextState
 from pipelines.utils import create_and_open_file
-from connector_ops.utils import ConnectorLanguage
-from dagger import Config
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"

@@ -48,16 +48,16 @@ public class BigQueryStagingConsumerFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
 
   public AirbyteMessageConsumer create(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final BigQueryStagingOperations bigQueryGcsOperations,
-      final BufferCreateFunction onCreateBuffer,
-      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-      final Function<String, String> tmpTableNameTransformer,
-      final Function<String, String> targetTableNameTransformer,
-      final TyperDeduper typerDeduper,
-      final ParsedCatalog parsedCatalog,
-      final String defaultNamespace)
+                                       final ConfiguredAirbyteCatalog catalog,
+                                       final Consumer<AirbyteMessage> outputRecordCollector,
+                                       final BigQueryStagingOperations bigQueryGcsOperations,
+                                       final BufferCreateFunction onCreateBuffer,
+                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                       final Function<String, String> tmpTableNameTransformer,
+                                       final Function<String, String> targetTableNameTransformer,
+                                       final TyperDeduper typerDeduper,
+                                       final ParsedCatalog parsedCatalog,
+                                       final String defaultNamespace)
       throws Exception {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
@@ -109,14 +109,15 @@ public class BigQueryStagingConsumerFactory {
           final AirbyteStream stream = configuredStream.getStream();
           final StreamConfig streamConfig;
           if (TypingAndDedupingFlag.isDestinationV2()) {
-             streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+            streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
           } else {
             streamConfig = null;
           }
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : BigQueryUtils.sanitizeDatasetId(stream.getNamespace());
+          final var internalTableNamespace =
+              TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : BigQueryUtils.sanitizeDatasetId(stream.getNamespace());
           final var targetTableName =
               TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
 
@@ -159,8 +160,7 @@ public class BigQueryStagingConsumerFactory {
       }
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
-                    writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName()
-        );
+            writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
         final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
         // Regardless, ensure the schema the customer wants to write to exists
@@ -229,7 +229,7 @@ public class BigQueryStagingConsumerFactory {
    * Tear down process, will attempt to clean out any staging area
    *
    * @param bigQueryGcsOperations collection of staging operations
-   * @param writeConfigs          configuration settings used to describe how to write data and where it exists
+   * @param writeConfigs configuration settings used to describe how to write data and where it exists
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
