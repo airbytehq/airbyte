@@ -30,7 +30,7 @@ definitions:
         field_name: "page_size"
       pagination_strategy:
         type: "PageIncrement"
-        page_size: 50
+        page_size: 200
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"

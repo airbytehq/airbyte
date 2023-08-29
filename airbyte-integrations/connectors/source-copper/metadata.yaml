@@ -16,7 +16,6 @@ data:
   icon: copper.svg
   license: MIT
   name: Copper
-  releaseDate: TODO
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/copper
