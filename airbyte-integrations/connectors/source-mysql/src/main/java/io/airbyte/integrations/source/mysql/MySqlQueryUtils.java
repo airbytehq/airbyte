@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -16,26 +20,61 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlQueryUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlQueryUtils.class);
-  public record TableSizeInfo(Long tableSize, Long avgRowLength) { }
+
+  public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
 
   public static final String TABLE_ESTIMATE_QUERY =
       """
-      SELECT
-        (data_length + index_length) as %s,
-        AVG_ROW_LENGTH as %s
-     FROM
-        information_schema.tables
-     WHERE
-        table_schema = '%s' AND table_name = '%s'; 
+       SELECT
+         (data_length + index_length) as %s,
+         AVG_ROW_LENGTH as %s
+      FROM
+         information_schema.tables
+      WHERE
+         table_schema = '%s' AND table_name = '%s';
+       """;
+
+  public static final String MAX_PK_VALUE_QUERY =
+      """
+        SELECT MAX(%s) as %s FROM %s;
       """;
 
+  public static final String MAX_PK_COL = "max_pk";
   public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
   public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
 
+  public static String getMaxPkValueForStream(final JdbcDatabase database,
+                                              final ConfiguredAirbyteStream stream,
+                                              final String pkFieldName,
+                                              final String quoteString) {
+    final String name = stream.getStream().getName();
+    final String namespace = stream.getStream().getNamespace();
+    final String fullTableName =
+        getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+    final String maxPkQuery = String.format(MAX_PK_VALUE_QUERY,
+        pkFieldName,
+        MAX_PK_COL,
+        fullTableName);
+    LOGGER.info("Querying for max pk value: {}", maxPkQuery);
+    try {
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(maxPkQuery).executeQuery(),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      Preconditions.checkState(jsonNodes.size() == 1);
+      if (jsonNodes.get(0).get(MAX_PK_COL) == null) {
+        LOGGER.info("Max PK is null for table {} - this could indicate an empty table", fullTableName);
+        return null;
+      }
+      return jsonNodes.get(0).get(MAX_PK_COL).asText();
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final String quoteString) {
+                                                                                              final List<ConfiguredAirbyteStream> streams,
+                                                                                              final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
@@ -70,4 +109,5 @@ public class MySqlQueryUtils {
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }
+
 }

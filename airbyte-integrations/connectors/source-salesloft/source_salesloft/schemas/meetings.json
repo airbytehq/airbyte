@@ -10,11 +10,11 @@
       "type": ["null", "string"]
     },
     "start_time": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "end_time": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "calendar_id": {
@@ -48,11 +48,11 @@
       "type": ["null", "integer"]
     },
     "created_at": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "guests": {
@@ -83,7 +83,7 @@
             "type": ["null", "boolean"]
           },
           "deleted_at": {
-            "type":  ["null", "string"],
+            "type": ["null", "string"],
             "format": "date-time"
           }
         }
@@ -145,7 +145,7 @@
       "type": ["null", "string"]
     },
     "canceled_at": {
-      "type":  ["null", "string"],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "all_day": {

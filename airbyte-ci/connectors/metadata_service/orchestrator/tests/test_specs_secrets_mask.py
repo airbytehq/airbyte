@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from orchestrator.assets.specs_secrets_mask import get_secrets_properties_from_registry_entry
 
