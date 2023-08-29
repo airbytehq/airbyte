@@ -66,7 +66,7 @@
     "react-use-intercom": "^1.5.2",
     "react-widgets": "^4.6.1",
     "recharts": "^2.1.13",
-    "rehype-slug": "^5.0.1",
+    "rehype-slug": "^5.1.0",
     "rehype-urls": "^1.1.1",
     "remark-directive": "^2.0.1",
     "remark-frontmatter": "^4.0.1",
