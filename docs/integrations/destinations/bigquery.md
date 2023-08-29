@@ -134,7 +134,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ### bigquery
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.1   | 2023-08-29 | [29972](https://github.com/airbytehq/airbyte/pull/29972)   | Publish a new version to supersede old v2.0.0                                                                                                                   |
 | 2.0.0   | 2023-08-27 | [29783](https://github.com/airbytehq/airbyte/pull/29783)   | Destinations V2                                                                                                                                                 |
 | 1.10.2  | 2023-08-24 | [\#29805](https://github.com/airbytehq/airbyte/pull/29805) | Destinations v2: Don't soft reset in migration                                                                                                                  |
 | 1.10.1  | 2023-08-23 | [\#29774](https://github.com/airbytehq/airbyte/pull/29774) | Destinations v2: Don't soft reset overwrite syncs                                                                                                               |
