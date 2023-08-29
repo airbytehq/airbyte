@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcState;
-import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcStateHandler;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
