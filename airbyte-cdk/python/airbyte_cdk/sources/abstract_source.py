@@ -38,8 +38,6 @@ class AbstractSource(Source, ABC):
     in this class to create an Airbyte Specification compliant Source.
     """
 
-    SLICE_LOG_PREFIX = "slice:"
-
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """

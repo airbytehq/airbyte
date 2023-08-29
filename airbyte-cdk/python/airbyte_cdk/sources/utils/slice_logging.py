@@ -10,10 +10,10 @@ from typing import Any, Mapping, Optional
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
 
-SLICE_LOG_PREFIX = "slice:"
-
 
 class SliceLogger(ABC):
+    SLICE_LOG_PREFIX = "slice:"
+
     def create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
         """
         Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
@@ -22,7 +22,7 @@ class SliceLogger(ABC):
         printable_slice = dict(_slice) if _slice else _slice
         return AirbyteMessage(
             type=MessageType.LOG,
-            log=AirbyteLogMessage(level=Level.INFO, message=f"{SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
+            log=AirbyteLogMessage(level=Level.INFO, message=f"{SliceLogger.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
         )
 
     @abstractmethod
