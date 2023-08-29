@@ -15,6 +15,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 class Embedder(ABC):
     """
     Embedder is an abstract class that defines the interface for embedding text.
+
     The Indexer class uses the Embedder class to internally embed text - each indexer is responsible to pass the text of all documents to the embedder and store the resulting embeddings in the destination.
     The destination connector is responsible to create an embedder instance and pass it to the indexer.
     The CDK defines basic embedders that should be supported in each destination. It is possible to implement custom embedders for special destinations if needed.
