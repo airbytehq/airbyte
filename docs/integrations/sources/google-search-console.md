@@ -186,6 +186,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 | :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
+| `1.3.3`  | 2023-08-29 | [29941](https://github.com/airbytehq/airbyte/pull/29941)                                                      | Added `primary key` to each stream                      |
 | `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                     |
 | `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                     |
 | `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream |
