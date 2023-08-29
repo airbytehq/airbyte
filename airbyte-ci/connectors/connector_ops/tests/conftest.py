@@ -4,6 +4,7 @@
 
 
 from datetime import datetime
+
 import pandas as pd
 import pytest
 
@@ -36,7 +37,7 @@ def dummy_qa_report() -> pd.DataFrame:
                 "connector_technical_name": "source-test",
                 "connector_definition_id": "foobar",
                 "connector_version": "0.0.0",
-                "release_stage": "alpha",
+                "support_level": "community",
                 "is_on_cloud": False,
                 "is_appropriate_for_cloud_use": True,
                 "latest_build_is_successful": True,

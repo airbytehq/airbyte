@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "targetingStatus": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "impressions": {
+          "type": ["number", "null"]
+        },
+        "clicks": {
+          "type": ["number", "null"]
+        },
+        "totalConversions": {
+          "type": ["number", "null"]
+        },
+        "conversions": {
+          "type": ["number", "null"]
+        },
+        "viewConversions": {
+          "type": ["integer", "null"]
+        },
+        "spend": {
+          "type": ["number", "null"]
+        },
+        "ecpc": {
+          "type": ["number", "null"]
+        },
+        "ctr": {
+          "type": ["number", "null"]
+        },
+        "conversionRate": {
+          "type": ["number", "null"]
+        },
+        "viewConversionRate": {
+          "type": ["number", "null"]
+        },
+        "cpa": {
+          "type": ["number", "null"]
+        },
+        "totalCpa": {
+          "type": ["number", "null"]
+        },
+        "totalSumValue": {
+          "type": ["number", "null"]
+        },
+        "sumValue": {
+          "type": ["number", "null"]
+        },
+        "viewSumValue": {
+          "type": ["integer", "null"]
+        },
+        "totalAverageValue": {
+          "type": ["number", "null"]
+        },
+        "averageValue": {
+          "type": ["number", "null"]
+        },
+        "viewAverageValue": {
+          "type": ["integer", "null"]
+        },
+        "totalRoas": {
+          "type": ["number", "null"]
+        },
+        "roas": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "marketer_id": {
+      "type": ["string", "null"]
+    }
+  }
+}

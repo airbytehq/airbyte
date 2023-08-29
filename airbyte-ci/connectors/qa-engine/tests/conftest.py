@@ -4,10 +4,10 @@
 
 
 from datetime import datetime
+
 import pandas as pd
 import pytest
-
-from qa_engine.constants import OSS_CATALOG_URL, CLOUD_CATALOG_URL
+from qa_engine.constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
 from qa_engine.inputs import fetch_remote_catalog
 
 
@@ -49,7 +49,7 @@ def dummy_qa_report() -> pd.DataFrame:
                 "connector_technical_name": "source-test",
                 "connector_definition_id": "foobar",
                 "connector_version": "0.0.0",
-                "release_stage": "alpha",
+                "support_level": "community",
                 "is_on_cloud": False,
                 "is_appropriate_for_cloud_use": True,
                 "latest_build_is_successful": True,
