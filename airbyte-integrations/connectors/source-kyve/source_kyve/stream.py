@@ -126,7 +126,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
             storage_id = bundle.get("storage_id")
             storage_provider_id = bundle.get("storage_provider_id")
 
-            if storage_provider_id != "3":
+            if storage_provider_id is not 3:
                 # retrieve file from Arweave
                 response_from_storage_provider = requests.get(f"https://arweave.net/{storage_id}")
             else:
