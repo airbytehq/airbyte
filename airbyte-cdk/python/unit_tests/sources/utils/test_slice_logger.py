@@ -7,23 +7,29 @@ import logging
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
+from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, DebugSliceLogger
 
 
 @pytest.mark.parametrize(
-    "level, should_log",
+    "slice_logger, level, should_log",
     [
-        pytest.param(logging.DEBUG, True, id="should_log_if_level_is_debug"),
-        pytest.param(logging.INFO, False, id="should_log_if_level_is_debug"),
-        pytest.param(logging.WARN, False, id="should_log_if_level_is_debug"),
-        pytest.param(logging.WARNING, False, id="should_log_if_level_is_debug"),
-        pytest.param(logging.ERROR, False, id="should_log_if_level_is_debug"),
-        pytest.param(logging.CRITICAL, False, id="should_log_if_level_is_debug"),
+        pytest.param(DebugSliceLogger(), logging.DEBUG, True, id="debug_logger_should_log_if_level_is_debug"),
+        pytest.param(DebugSliceLogger(), logging.INFO, False, id="debug_logger_should_not_log_if_level_is_info"),
+        pytest.param(DebugSliceLogger(), logging.WARN, False, id="debug_logger_should_not_log_if_level_is_warn"),
+        pytest.param(DebugSliceLogger(), logging.WARNING, False, id="debug_logger_should_not_log_if_level_is_warning"),
+        pytest.param(DebugSliceLogger(), logging.ERROR, False, id="debug_logger_should_not_log_if_level_is_error"),
+        pytest.param(DebugSliceLogger(), logging.CRITICAL, False, id="always_log_logger_should_not_log_if_level_is_critical"),
+        pytest.param(AlwaysLogSliceLogger(), logging.DEBUG, True, id="always_log_logger_should_log_if_level_is_debug"),
+        pytest.param(AlwaysLogSliceLogger(), logging.INFO, True, id="always_log_logger_should_log_if_level_is_info"),
+        pytest.param(AlwaysLogSliceLogger(), logging.WARN, True, id="always_log_logger_should_log_if_level_is_warn"),
+        pytest.param(AlwaysLogSliceLogger(), logging.WARNING, True, id="always_log_logger_should_log_if_level_is_warning"),
+        pytest.param(AlwaysLogSliceLogger(), logging.ERROR, True, id="always_log_logger_should_log_if_level_is_error"),
+        pytest.param(AlwaysLogSliceLogger(), logging.CRITICAL, True, id="always_log_logger_should_log_if_level_is_critical"),
     ],
 )
-def test_should_log_slice_message(level, should_log):
+def test_should_log_slice_message(slice_logger, level, should_log):
     logger = logging.Logger(name="name", level=level)
-    assert DebugSliceLogger().should_log_slice_message(logger) == should_log
+    assert slice_logger.should_log_slice_message(logger) == should_log
 
 
 @pytest.mark.parametrize(
