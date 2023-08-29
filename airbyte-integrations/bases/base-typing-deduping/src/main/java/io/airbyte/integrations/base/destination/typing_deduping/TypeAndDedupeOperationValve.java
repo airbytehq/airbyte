@@ -70,6 +70,10 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
     put(key, nowness.get());
   }
 
+  public void addStreamIfAbsent(final AirbyteStreamNameNamespacePair key) {
+    putIfAbsent(key, nowness.get());
+  }
+
   /**
    * Whether we should type and dedupe at this point in time for this particular stream.
    *
