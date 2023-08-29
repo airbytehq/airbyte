@@ -29,30 +29,13 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
-  incremental_sync_base:
-    type: DatetimeBasedCursor
-    cursor_field: "{{ parameters.incremental_cursor }}"
-    datetime_format: "%s"
-    cursor_granularity: "PT0.000001S"
-    lookback_window: "P31D"
-    start_datetime:
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
-    step: "P1M"
-
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
-      incremental_cursor: "updated"
       extractor_path: "campaigns"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
 
   campaigns_actions_partition_router:
     type: SubstreamPartitionRouter
@@ -67,10 +50,7 @@ definitions:
       name: "campaigns_actions"
       primary_key: "id"
       path: "/campaigns/{{ stream_partition.parent_id }}/actions"
-      incremental_cursor: "updated"
       extractor_path: "actions"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -82,10 +62,7 @@ definitions:
       name: "newsletters"
       primary_key: "id"
       path: "/newsletters"
-      incremental_cursor: "updated"
       extractor_path: "newsletters"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"
 
 streams:
   - "#/definitions/campaigns_stream"
@@ -98,4 +75,3 @@ check:
     - "campaigns"
     - "campaigns_actions"
     - "newsletters"
-
