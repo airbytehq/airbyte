@@ -14,7 +14,7 @@
       "motherduck_api_key": {
         "type": "string",
         "description": "API key to use for authentication to a MotherDuck database.",
-        "writeOnly": true
+        "airbyte_secret": true
       },
       "destination_path": {
         "type": "string",
