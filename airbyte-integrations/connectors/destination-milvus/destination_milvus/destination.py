@@ -6,7 +6,7 @@
 import json
 import re
 import uuid
-from typing import Any, Iterable, List, Literal, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Literal, Mapping, Optional, Union
 
 import dpath.util
 from airbyte_cdk import AirbyteLogger
@@ -157,7 +157,10 @@ class MilvusIndexer(Indexer):
         self._create_client()
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{stream.stream.name}"')
+                if self._collection.has_partition(stream.stream.name):
+                    self._collection.drop_partition(stream.stream.name)
+            if not self._collection.has_partition(stream.stream.name):
+                self._collection.create_partition(stream.stream.name, "Partition for stream " + stream.stream.name)
 
     def _delete_for_filter(self, expr: str) -> None:
         iterator = self._collection.query_iterator(expr=expr)
@@ -175,13 +178,19 @@ class MilvusIndexer(Indexer):
             id_expr = f"{METADATA_RECORD_ID_FIELD} in [{id_list_expr}]"
             self._delete_for_filter(id_expr)
         embedding_vectors = self.embedder.embed_texts([chunk.page_content for chunk in document_chunks])
-        entities = []
+        entities_by_stream: Dict[str, List[Dict[str, Any]]] = {}
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
+            stream_name = chunk.stream
             metadata = chunk.metadata
             metadata["text"] = chunk.page_content
-            entities.append({**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content})
-        self._collection.insert(entities)
+            if stream_name not in entities_by_stream:
+                entities_by_stream[stream_name] = []
+            entities_by_stream[stream_name].append({**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content})
+
+        # for each stream name, insert entitites using the stream name as partition
+        for stream_name, stream_entities in entities_by_stream.items():
+            self._collection.insert(stream_entities, partition_name=stream_name)
 
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
