@@ -3,11 +3,10 @@
 #
 
 import json
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
-from collections import defaultdict
-from deepdiff import DeepDiff
 
 import pendulum
 import pytest
@@ -15,6 +14,7 @@ from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, Airbyte
 from connector_acceptance_test import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
+from deepdiff import DeepDiff
 
 
 @pytest.fixture(name="future_state_configuration")

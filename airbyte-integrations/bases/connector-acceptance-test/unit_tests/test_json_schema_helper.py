@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Any, List, Text, Union, Iterable, Tuple
+from typing import Any, Iterable, List, Text, Tuple, Union
 
 import pendulum
 import pytest
