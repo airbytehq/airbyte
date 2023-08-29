@@ -49,7 +49,7 @@ RUN tar xf ${APPLICATION}.tar --strip-components=1
 ENV ENABLE_SENTRY true
 
 
-LABEL io.airbyte.version=2.1.5
+LABEL io.airbyte.version=2.1.6
 LABEL io.airbyte.name=airbyte/destination-snowflake
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
