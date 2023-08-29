@@ -12,7 +12,6 @@ import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,8 +29,6 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
 
   protected MySQLContainer<?> container;
   protected JsonNode config;
-
-  protected static final Random random = new Random();
 
   @Override
   protected JsonNode getConfig() {

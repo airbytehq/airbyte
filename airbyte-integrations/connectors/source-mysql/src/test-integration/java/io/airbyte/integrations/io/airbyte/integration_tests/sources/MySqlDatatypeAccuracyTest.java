@@ -39,11 +39,7 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
   @Override
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
-    container.withDatabaseName(container.getDatabaseName() + random.nextInt(10000));
     container.start();
-
-    LOGGER.info("with database name {}", container.getDatabaseName());
-
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")
         .build());

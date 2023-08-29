@@ -27,7 +27,6 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
 
     container = new MySQLContainer<>("mysql:8.0");
-    container.withDatabaseName(container.getDatabaseName() + random.nextInt(10000));
     container.start();
     addTestData(container);
     certs = getCertificates();

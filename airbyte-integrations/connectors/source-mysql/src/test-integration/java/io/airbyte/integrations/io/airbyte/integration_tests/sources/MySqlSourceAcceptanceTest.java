@@ -25,7 +25,6 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
-import java.util.Random;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,12 +45,9 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected MySQLContainer<?> container;
   protected JsonNode config;
 
-  protected final Random random = new Random();
-
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
-    container.withDatabaseName(container.getDatabaseName() + random.nextInt(10000));
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")

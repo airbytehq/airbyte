@@ -34,7 +34,6 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -48,8 +47,6 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
   private MySQLContainer<?> container;
   private JsonNode config;
   private static MySqlUtils.Certificate certs;
-
-  protected final Random random = new Random();
 
   @Override
   protected String getImageName() {
@@ -103,7 +100,6 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
-    container.withDatabaseName(container.getDatabaseName() + random.nextInt(10000));
     container.start();
     certs = MySqlUtils.getCertificate(container, true);
 
