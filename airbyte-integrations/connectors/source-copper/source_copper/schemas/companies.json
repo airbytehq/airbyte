@@ -14,7 +14,7 @@
         },
         "number": {
           "type": ["null", "string"]
-        }   
+        }
       }
     },
     "custom_fields": {
@@ -22,7 +22,7 @@
       "properties": {
         "mpc": {
           "type": ["null", "string"]
-        }   
+        }
       }
     },
     "name": {

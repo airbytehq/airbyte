@@ -9,7 +9,7 @@
     "name": {
       "type": ["null", "string"]
     },
-    "tags":{
+    "tags": {
       "type": ["null", "array"],
       "properties": {
         "sticker": {
@@ -17,7 +17,7 @@
         }
       }
     },
-    "custom_fields":{
+    "custom_fields": {
       "type": ["null", "array"],
       "properties": {
         "mprc": {

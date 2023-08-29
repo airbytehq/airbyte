@@ -9,7 +9,7 @@
     "name": {
       "type": ["null", "string"]
     },
-    "socials":{
+    "socials": {
       "type": ["null", "array"],
       "properties": {
         "note": {
@@ -17,7 +17,7 @@
         }
       }
     },
-    "leads_converted_from":{
+    "leads_converted_from": {
       "type": ["null", "array"],
       "properties": {
         "leads": {
@@ -25,7 +25,7 @@
         }
       }
     },
-    "tags":{
+    "tags": {
       "type": ["null", "array"],
       "properties": {
         "sticker": {
@@ -33,7 +33,7 @@
         }
       }
     },
-    "custom_fields":{
+    "custom_fields": {
       "type": ["null", "array"],
       "properties": {
         "mprc": {
