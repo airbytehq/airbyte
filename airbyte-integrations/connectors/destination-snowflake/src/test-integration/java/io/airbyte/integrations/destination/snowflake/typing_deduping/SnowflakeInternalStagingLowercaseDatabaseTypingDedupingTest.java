@@ -16,9 +16,9 @@ public class SnowflakeInternalStagingLowercaseDatabaseTypingDedupingTest extends
   }
 
   /**
-   * Verify that even if the config has a lowercase database name, we're able to
-   * run syncs successfully. This is a regression test for a bug where we were
-   * not upcasing the database name when checking for an existing final table.
+   * Verify that even if the config has a lowercase database name, we're able to run syncs
+   * successfully. This is a regression test for a bug where we were not upcasing the database name
+   * when checking for an existing final table.
    */
   @Override
   protected JsonNode generateConfig() {
