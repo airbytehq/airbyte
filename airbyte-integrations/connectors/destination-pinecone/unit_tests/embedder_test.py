@@ -1,9 +1,15 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import unittest
-import pytest
-from unittest.mock import patch, MagicMock
 from typing import Optional
-from destination_pinecone.embedder import OpenAIEmbedder, CohereEmbedder, FakeEmbedder, OPEN_AI_VECTOR_SIZE, COHERE_VECTOR_SIZE
-from destination_pinecone.config import OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel
+from unittest.mock import MagicMock, patch
+
+import pytest
+from destination_pinecone.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
+from destination_pinecone.embedder import COHERE_VECTOR_SIZE, OPEN_AI_VECTOR_SIZE, CohereEmbedder, FakeEmbedder, OpenAIEmbedder
+
 
 @pytest.mark.parametrize(
     "embedder_class, config_model, config_data, dimensions",
