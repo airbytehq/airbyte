@@ -227,7 +227,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
   }
 
-
   @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
@@ -421,7 +420,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         migrator,
         v2RawTableMigrator);
-
 
   }
 
