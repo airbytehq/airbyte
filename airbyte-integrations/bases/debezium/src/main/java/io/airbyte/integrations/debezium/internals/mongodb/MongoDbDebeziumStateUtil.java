@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
@@ -21,6 +19,7 @@ import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,13 +74,10 @@ public class MongoDbDebeziumStateUtil {
   public static JsonNode formatState(final String database, final String replicaSet, final String resumeTokenData) {
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeTokenData));
 
-    final List<Object> key = List.of(
-        database,
-        Map.of(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet,
-            MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database));
+    final List<Object> key = generateOffsetKey(database, replicaSet);
 
     final Map<String, Object> value = new HashMap<>();
-    value.put(VALUE_SECONDS, timestamp.getTime());
+    value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
@@ -165,6 +161,23 @@ public class MongoDbDebeziumStateUtil {
         fileOffsetBackingStore.stop();
       }
     }
+  }
+
+  private static List<Object> generateOffsetKey(final String database, final String replicaSet) {
+    /*
+     * N.B. The order of the keys in the sourceInfoMap and key list matters! DO NOT CHANGE the order
+     * unless you have verified that Debezium has changed its order of the key it builds when retrieving
+     * data from the offset file. See the "partition(String replicaSetName)" method of the
+     * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
+     */
+    final Map<String, String> sourceInfoMap = new HashMap<>();
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database);
+
+    final List<Object> key = new LinkedList();
+    key.add(database);
+    key.add(sourceInfoMap);
+    return key;
   }
 
 }
