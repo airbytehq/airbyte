@@ -1,4 +1,4 @@
-name: Connectors weekly build
+name: Connector Ops CI - Connectors Weekly Tests
 
 on:
   schedule:

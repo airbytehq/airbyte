@@ -1,4 +1,4 @@
-name: Publish connectors on merge to master
+name: Connector Ops CI - Publish Connectors
 
 on:
   push:

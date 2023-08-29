@@ -1,4 +1,4 @@
-name: Airbyte CI pipeline tests
+name: Connector Ops CI - Pipeline Unit Test
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

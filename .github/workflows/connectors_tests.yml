@@ -1,4 +1,4 @@
-name: Connectors tests
+name: Connector Ops CI - Connectors Acceptance Tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -1,4 +1,4 @@
-name: Connector metadata service CI
+name: Connector Ops CI -  Metadata Service Tests
 
 on:
   workflow_dispatch:

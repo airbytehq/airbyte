@@ -1,4 +1,4 @@
-name: CAT unit tests
+name: Connector Ops CI - CAT Unit Tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
