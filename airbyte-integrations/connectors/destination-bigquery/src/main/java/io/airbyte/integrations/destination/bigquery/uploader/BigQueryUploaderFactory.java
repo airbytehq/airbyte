@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 public class BigQueryUploaderFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
-  private static final ConcurrentMap<AirbyteStreamNameNamespacePair, String> airbyteStreamNameNamespacePairToJob = new ConcurrentHashMap<>();
 
   private static final String CONFIG_ERROR_MSG = """
                                                     Failed to write to destination schema.
@@ -116,10 +115,9 @@ public class BigQueryUploaderFactory {
             .setFormatOptions(FormatOptions.json())
             .build(); // new-line delimited json.
 
-    airbyteStreamNameNamespacePairToJob.putIfAbsent(airbyteStreamNameNamespacePair, UUID.randomUUID().toString());
 
     final JobId job = JobId.newBuilder()
-        .setJob(airbyteStreamNameNamespacePairToJob.get(airbyteStreamNameNamespacePair))
+            .setRandomJob()
         .setLocation(datasetLocation)
         .setProject(bigQuery.getOptions().getProjectId())
         .build();
