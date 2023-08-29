@@ -19,11 +19,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
-  incremental: 
+  incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        threshold_days: 31
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:

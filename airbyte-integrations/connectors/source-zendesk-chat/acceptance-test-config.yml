@@ -35,11 +35,6 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state:
         bypass_reason: "Unable to use 'future_state_path' because Zendesk Chat API returns an error when specifying a date in the future."
-      cursor_paths:
-        agents: ["id"]
-        bans: ["id"]
-        agent_timeline: ["start_time"]
-        chats: ["update_timestamp"]
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

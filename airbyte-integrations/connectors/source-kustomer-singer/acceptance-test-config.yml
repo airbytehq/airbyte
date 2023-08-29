@@ -19,16 +19,6 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        conversations: ["bookmarks", "conversations"]
-        customers: ["bookmarks", "customers"]
-        kobjects: ["bookmarks", "kobjects"]
-        messages: ["bookmarks", "messages"]       
-        notes: ["bookmarks", "notes"]       
-        shortcuts: ["bookmarks", "shortcuts"]       
-        tags: ["bookmarks", "tags"] 
-        teams: ["bookmarks", "teams"]             
-        users: ["bookmarks", "users"]       
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

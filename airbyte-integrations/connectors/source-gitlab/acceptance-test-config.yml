@@ -55,11 +55,6 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/incremental_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        commits: ["25157276", "created_at"]
-        issues: ["25157276", "updated_at"]
-        merge_requests: ["25157276", "updated_at"]
-        pipelines: ["25157276", "updated_at"]
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

@@ -72,8 +72,6 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        cursor_paths:
-          user_insights: ["17841408147298757", "date"]
         # because state is complex and stores values for different accounts on one hand
         # and there's no way we can set multiple cursor paths for a single stream on the other,
         # this test should be skipped as it is false negative.

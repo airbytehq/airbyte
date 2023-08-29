@@ -29,9 +29,6 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/incremental_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        contacts: ["updated_at"]
-        expenses_clients: ["to"]
       timeout_seconds: 2400
   full_refresh:
     tests:

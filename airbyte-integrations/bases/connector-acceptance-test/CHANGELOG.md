@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0
+## 2.0.0
 Update test_incremental.test_two_sequential_reads to be unaware of the contents of the state message. This is to support connectors that have a custom implementation of a cursor.
 
 ## 1.0.1
