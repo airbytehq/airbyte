@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - "*" 
+      - "*"
   registries:
     cloud:
       enabled: false
@@ -22,7 +22,6 @@ data:
   name: Public Apis
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
   tags:
     - language:lowcode
 metadataSpecVersion: "1.0"
