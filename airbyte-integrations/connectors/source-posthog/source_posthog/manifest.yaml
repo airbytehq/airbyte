@@ -118,7 +118,7 @@ definitions:
             datetime_format: "%Y-%m-%dT%H:%M:%S%z"
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
           cursor_granularity: "PT0.000001S"
-          step: "P30D"
+          step: "P{{ config.get('events_time_step', 30) }}D"
           cursor_field: timestamp
           start_time_option:
             field_name: after
