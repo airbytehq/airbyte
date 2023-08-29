@@ -124,15 +124,20 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
         for bundle in bundles:
             storage_id = bundle.get("storage_id")
-            # retrieve file from Arweave
-            response_from_arweave = requests.get(f"https://arweave.net/{storage_id}")
+            storage_provider_id = bundle.get("storage_provider_id")
+
+            if storage_provider_id is not 3:
+                # retrieve file from Arweave
+                response_from_storage_provider = requests.get(f"https://arweave.net/{storage_id}")
+            else:
+                response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
 
             if not response.ok:
                 logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
                 # todo future: this is a temporary fix until the bugs with Arweave are solved
                 continue
             try:
-                decompressed = gzip.decompress(response_from_arweave.content)
+                decompressed = gzip.decompress(response_from_storage_provider.content)
             except gzip.BadGzipFile as e:
                 logger.error(f"Decompressing bundle {storage_id} failed with '{e}'")
                 # todo future: this is a temporary fix until the bugs with Arweave are solved
