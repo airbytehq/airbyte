@@ -42,10 +42,16 @@ class SourceNotion(AbstractSource):
             return True, None
         except requests.exceptions.RequestException as e:
             # The most likely user error will be incorrectly configured credentials. We can provide a specific error message for those cases. Otherwise, the stock Notion API message should suffice.
-            if e.response.json()['code'] == "unauthorized":
-                return False, "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration."
-            if e.response.json()['code'] == "restricted_resource":
-                return False, "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration."
+            if e.response.json()["code"] == "unauthorized":
+                return (
+                    False,
+                    "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration.",
+                )
+            if e.response.json()["code"] == "restricted_resource":
+                return (
+                    False,
+                    "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration.",
+                )
             return False, f"{e.response.json()['message']}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
