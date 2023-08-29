@@ -10,13 +10,16 @@ definitions:
   selector_categories:
     type: RecordSelector
     extractor:
+      type: CustomRecordExtractor
       class_name: source_public_apis.components.CustomExtractor
+
   requester:
     type: HttpRequester
     url_base: "https://api.publicapis.org/"
     http_method: "GET"
     authenticator:
       type: NoAuth
+
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -25,6 +28,7 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
+
   base_stream:
     type: DeclarativeStream
     retriever:
@@ -32,20 +36,18 @@ definitions:
 
   categories_stream:
     $ref: "#/definitions/base_stream"
-    name: "categories"
-    primary_key: "name"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
         $ref: "#/definitions/selector_categories"
     $parameters:
+      name: "categories"
       path: "/categories"
 
   services_stream:
     $ref: "#/definitions/base_stream"
-    name: "services"
-    primary_key: "API"
     $parameters:
+      name: "services"
       path: "/entries"
 
 streams:
