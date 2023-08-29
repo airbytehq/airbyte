@@ -22,8 +22,8 @@ from airbyte_cdk.models import (
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
-from airbyte_cdk.sources.concurrent.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
+from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
+from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
 _A_CURSOR_FIELD = ["NESTED", "CURSOR"]

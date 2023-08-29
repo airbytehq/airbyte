@@ -5,7 +5,7 @@ import logging
 from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
+from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
