@@ -70,6 +70,10 @@ Versions are tied to the destination. When you update the destination, **all con
 - [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
 - [Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
 
+:::info
+If you were a Destinations V2 "Early Access" user, you will still need to opt-into the latest connector version.  However, you will not experince the data migration and syncs will contuie to work as they have been since the "early access" period began. 
+:::
+
 ## Advanced Upgrade Paths
 
 ### Upgrading Connections One by One with Dual-Writing
