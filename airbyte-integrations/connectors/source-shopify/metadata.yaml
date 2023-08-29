@@ -63,5 +63,5 @@ data:
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
-        upgradeDeadline: "2024-07-01" # the full year after the api version was introduced
+        upgradeDeadline: "2023-09-17"
 metadataSpecVersion: "1.0"
