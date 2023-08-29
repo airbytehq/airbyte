@@ -18,6 +18,8 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.concurrent.full_refresh_stream_reader import FullRefreshStreamReader
+from airbyte_cdk.sources.concurrent.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
@@ -37,8 +39,6 @@ class AbstractSource(Source, ABC):
     Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source.
     """
-
-    SLICE_LOG_PREFIX = "slice:"
 
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -282,6 +282,9 @@ class AbstractSource(Source, ABC):
             yield from self.message_repository.consume_queue()
         return
 
+    def get_full_refresh_stream_reader(self) -> FullRefreshStreamReader:
+        return SyncrhonousFullRefreshReader()
+
     def _read_full_refresh(
         self,
         logger: logging.Logger,
@@ -289,26 +292,10 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        logger.debug(
-            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
-        )
-        total_records_counter = 0
-        for _slice in slices:
-            if should_log_slice_message(logger):
-                yield create_slice_log_message(_slice)
-            record_data_or_messages = stream_instance.read_records(
-                stream_slice=_slice,
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=configured_stream.cursor_field,
-            )
-            for record_data_or_message in record_data_or_messages:
-                message = self._get_message(record_data_or_message, stream_instance)
-                yield message
-                if message.type == MessageType.RECORD:
-                    total_records_counter += 1
-                    if internal_config.is_limit_reached(total_records_counter):
-                        return
+        for data_or_message in self.get_full_refresh_stream_reader().read_stream(
+            stream_instance, configured_stream.cursor_field, logger, internal_config
+        ):
+            yield self._get_message(data_or_message, stream_instance)
 
     def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
