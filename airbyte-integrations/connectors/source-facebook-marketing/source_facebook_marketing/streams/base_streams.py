@@ -60,61 +60,6 @@ class FBMarketingStream(Stream, ABC):
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
-    def _execute_batch(self, batch: FacebookAdsApiBatch) -> None:
-        """Execute batch, retry in case of failures"""
-        while batch:
-            batch = batch.execute()
-            if batch:
-                logger.info("Retry failed requests in batch")
-
-    def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
-        """Execute list of requests in batches"""
-        requests_q = Queue()
-        records = []
-        for r in pending_requests:
-            requests_q.put(r)
-
-        def success(response: FacebookResponse):
-            self.max_batch_size = self._initial_max_batch_size
-            records.append(response.json())
-
-        def reduce_batch_size(request: FacebookRequest):
-            if self.max_batch_size == 1 and set(self.fields_exceptions) & set(request._fields):
-                logger.warning(
-                    f"Removing fields from object {self.name} with id={request._node_id} : {set(self.fields_exceptions) & set(request._fields)}"
-                )
-                request._fields = [x for x in request._fields if x not in self.fields_exceptions]
-            elif self.max_batch_size == 1:
-                raise RuntimeError("Batch request failed with only 1 request in it")
-            self.max_batch_size = ceil(self.max_batch_size / 2)
-            logger.warning(f"Caught retryable error: Too much data was requested in batch. Reducing batch size to {self.max_batch_size}")
-
-        def failure(response: FacebookResponse, request: Optional[FacebookRequest] = None):
-            # although it is Optional in the signature for compatibility, we need it always
-            assert request, "Missing a request object"
-            resp_body = response.json()
-            if not isinstance(resp_body, dict):
-                raise RuntimeError(f"Batch request failed with response: {resp_body}")
-            elif resp_body.get("error", {}).get("message") == "Please reduce the amount of data you're asking for, then retry your request":
-                reduce_batch_size(request)
-            elif resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
-                raise RuntimeError(f"Batch request failed with response: {resp_body}; unknown error code")
-            requests_q.put(request)
-
-        api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-
-        while not requests_q.empty():
-            request = requests_q.get()
-            api_batch.add_request(request, success=success, failure=partial(failure, request=request))
-            if len(api_batch) == self.max_batch_size or requests_q.empty():
-                # make a call for every max_batch_size items or less if it is the last call
-                self._execute_batch(api_batch)
-                yield from records
-                records = []
-                api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-
-        yield from records
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -123,12 +68,8 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
-        loaded_records_iter = (record.api_get(fields=self.fields, pending=self.use_batch) for record in records_iter)
-        if self.use_batch:
-            loaded_records_iter = self.execute_in_batch(loaded_records_iter)
 
-        for record in loaded_records_iter:
+        for record in self.list_objects(params=self.request_params(stream_state=stream_state)):
             if isinstance(record, AbstractObject):
                 yield record.export_all_data()  # convert FB object to dict
             else:
