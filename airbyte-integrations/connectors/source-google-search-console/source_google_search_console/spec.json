@@ -133,7 +133,14 @@
               "items": {
                 "title": "ValidEnums",
                 "description": "An enumeration of dimensions.",
-                "enum": ["country", "date", "device", "page", "query", "search_type"]
+                "enum": [
+                  "country",
+                  "date",
+                  "device",
+                  "page",
+                  "query",
+                  "search_type"
+                ]
               },
               "minItems": 1
             }
