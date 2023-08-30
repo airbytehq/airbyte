@@ -1,4 +1,7 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Macros",
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -36,12 +39,18 @@
     "description": {
       "type": ["null", "string"]
     },
+    "default": {
+      "type": ["null", "boolean"]
+    },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "active": {
       "type": ["null", "boolean"]
+    },
+    "raw_title": {
+      "type": ["null", "string"]
     },
     "actions": {
       "items": {
@@ -57,6 +66,5 @@
       },
       "type": ["null", "array"]
     }
-  },
-  "type": ["null", "object"]
+  }
 }

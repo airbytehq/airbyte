@@ -55,7 +55,7 @@ class SnowflakeInternalStagingSqlOperationsTest {
   void copyIntoTmpTableFromStage() {
     final String expectedQuery =
         """
-        COPY INTO schemaName.tableName FROM '@stageName/stagePath/2022/'
+        COPY INTO "schemaName"."tableName" FROM '@stageName/stagePath/2022/'
         file_format = (
           type = csv
           compression = auto
