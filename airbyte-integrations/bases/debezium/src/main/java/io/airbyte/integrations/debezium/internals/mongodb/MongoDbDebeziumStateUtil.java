@@ -14,6 +14,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
 import io.debezium.connector.mongodb.MongoDbOffsetContext;
+import io.debezium.connector.mongodb.MongoDbTaskContext;
+import io.debezium.connector.mongodb.ReplicaSetDiscovery;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collection;
@@ -120,12 +122,13 @@ public class MongoDbDebeziumStateUtil {
   public OptionalLong savedOffset(final Properties baseProperties,
                                   final ConfiguredAirbyteCatalog catalog,
                                   final JsonNode cdcState,
-                                  final JsonNode config) {
+                                  final JsonNode config,
+                                  final MongoClient mongoClient) {
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
         config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    return parseSavedOffset(debeziumProperties);
+    return parseSavedOffset(debeziumProperties, mongoClient);
   }
 
   /**
@@ -137,8 +140,7 @@ public class MongoDbDebeziumStateUtil {
    * @return Returns the timestamp extracted from a resume token that Airbyte has acknowledged in the
    *         source database server.
    */
-  private OptionalLong parseSavedOffset(final Properties properties) {
-
+  private OptionalLong parseSavedOffset(final Properties properties, final MongoClient mongoClient) {
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
     try {
@@ -155,8 +157,10 @@ public class MongoDbDebeziumStateUtil {
       final JsonConverter valueConverter = new JsonConverter();
       valueConverter.configure(internalConverterConfig, false);
 
-      final MongoDbConnectorConfig mongoDbConnectorConfig = new MongoDbConnectorConfig(Configuration.from(properties));
-      final ReplicaSets replicaSets = mongoDbConnectorConfig.getReplicaSets();
+      final Configuration config = Configuration.from(properties);
+      final MongoDbTaskContext taskContext = new MongoDbTaskContext(config);
+      final MongoDbConnectorConfig mongoDbConnectorConfig = new MongoDbConnectorConfig(config);
+      final ReplicaSets replicaSets = new ReplicaSetDiscovery(taskContext).getReplicaSets(mongoClient);
 
       offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter, valueConverter);
 
@@ -173,7 +177,6 @@ public class MongoDbDebeziumStateUtil {
       } else {
         return OptionalLong.empty();
       }
-
     } finally {
       LOGGER.info("Closing offsetStorageReader and fileOffsetBackingStore");
       if (offsetStorageReader != null) {

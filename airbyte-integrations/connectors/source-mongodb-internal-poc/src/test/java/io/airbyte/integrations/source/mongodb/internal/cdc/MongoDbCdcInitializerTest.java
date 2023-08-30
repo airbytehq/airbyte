@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +19,9 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.connection.ClusterDescription;
+import com.mongodb.connection.ClusterType;
+import com.mongodb.connection.ServerDescription;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
@@ -74,7 +76,7 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsEmptyInitialState() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
     final Instant emittedAt = Instant.now();
-    final Properties debeziumProperties = createDebeziumPropertiesForTest();
+    final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
 
     final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
@@ -85,14 +87,20 @@ class MongoDbCdcInitializerTest {
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
     final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
     when(mongoCollection.find()).thenReturn(findIterable);
     when(findIterable.filter(any())).thenReturn(findIterable);
@@ -105,8 +113,7 @@ class MongoDbCdcInitializerTest {
         MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
         MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
 
-    final MongoDbCdcInitializer cdcInitializer = spy(new MongoDbCdcInitializer());
-    when(cdcInitializer.getDebeziumProperties()).thenReturn(debeziumProperties);
+    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
 
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
@@ -118,7 +125,6 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsFromInitialStateWithInProgressInitialSnapshot() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
     final Instant emittedAt = Instant.now();
-    final Properties debeziumProperties = createDebeziumPropertiesForTest();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS));
 
     final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
@@ -129,11 +135,17 @@ class MongoDbCdcInitializerTest {
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
     final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
     when(mongoCollection.find()).thenReturn(findIterable);
     when(findIterable.filter(any())).thenReturn(findIterable);
@@ -146,8 +158,7 @@ class MongoDbCdcInitializerTest {
         MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
         MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
 
-    final MongoDbCdcInitializer cdcInitializer = spy(new MongoDbCdcInitializer());
-    when(cdcInitializer.getDebeziumProperties()).thenReturn(debeziumProperties);
+    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
 
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
@@ -159,7 +170,6 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsFromInitialStateWithCompletedInitialSnapshot() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
     final Instant emittedAt = Instant.now();
-    final Properties debeziumProperties = createDebeziumPropertiesForTest();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
 
     final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
@@ -170,11 +180,17 @@ class MongoDbCdcInitializerTest {
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
     final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
     when(mongoCollection.find()).thenReturn(findIterable);
     when(findIterable.filter(any())).thenReturn(findIterable);
@@ -187,20 +203,12 @@ class MongoDbCdcInitializerTest {
         MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
         MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
 
-    final MongoDbCdcInitializer cdcInitializer = spy(new MongoDbCdcInitializer());
-    when(cdcInitializer.getDebeziumProperties()).thenReturn(debeziumProperties);
+    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
 
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
     assertNotNull(iterators);
     assertEquals(1, iterators.size());
-  }
-
-  private static Properties createDebeziumPropertiesForTest() {
-    final Properties debeziumProperties = new Properties();
-    debeziumProperties.putAll(MongoDbCdcProperties.getDebeziumProperties());
-    debeziumProperties.put("internal.mongodb.replica.sets", "mongodb://host:12345/?replicaSet=" + REPLICA_SET);
-    return debeziumProperties;
   }
 
   private static JsonNode createInitialDebeziumState(final InitialSnapshotStatus initialSnapshotStatus) {
