@@ -10,7 +10,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -80,15 +79,6 @@ public class GeneralStagingFunctions {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
-
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
-      if (!typerDeduperValve.containsKey(streamId)) {
-        typerDeduperValve.addStream(streamId);
-      }
-      if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
-      }
     } catch (final Exception e) {
       stagingOperations.cleanUpStage(database, stageName, stagedFiles);
       log.info("Cleaning stage path {}", stagingPath);

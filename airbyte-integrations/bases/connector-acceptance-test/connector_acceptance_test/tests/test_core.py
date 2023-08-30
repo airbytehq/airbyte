@@ -1068,7 +1068,7 @@ class TestBasicRead(BaseTest):
 
             cleaned_actual = cleaned_actual or actual
             complete_diff = "\n".join(
-                diff_dicts(cleaned_actual if not extra_records else cleaned_actual[:len(expected)], expected, use_markup=False)
+                diff_dicts(cleaned_actual if not extra_records else cleaned_actual[: len(expected)], expected, use_markup=False)
             )
             for r1, r2 in zip(expected, cleaned_actual):
                 if r1 is None:

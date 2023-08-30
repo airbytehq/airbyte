@@ -60,8 +60,14 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "company": {
+      "type": ["null", "string"]
+    },
     "confirmed": {
       "type": ["null", "boolean"]
+    },
+    "confirmation_number": {
+      "type": ["null", "string"]
     },
     "contact_email": {
       "type": ["null", "string"]
@@ -196,6 +202,33 @@
         }
       }
     },
+    "current_total_additional_fees_set": {
+      "type": ["null", "object"],
+      "properties": {
+        "shop_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "presentment_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
     "customer_locale": {
       "type": ["null", "string"]
     },
@@ -263,9 +296,6 @@
     "fulfillment_status": {
       "type": ["null", "string"]
     },
-    "gateway": {
-      "type": ["null", "string"]
-    },
     "landing_site": {
       "type": ["null", "string"]
     },
@@ -310,6 +340,33 @@
     "original_total_duties_set": {
       "type": ["null", "string"]
     },
+    "original_total_additional_fees_set": {
+      "type": ["null", "object"],
+      "properties": {
+        "shop_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "presentment_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
     "payment_gateway_names": {
       "type": ["null", "array"],
       "items": {
@@ -328,7 +385,7 @@
     "processed_at": {
       "type": ["null", "string"]
     },
-    "processing_method": {
+    "po_number": {
       "type": ["null", "string"]
     },
     "reference": {
@@ -381,6 +438,9 @@
     },
     "tags": {
       "type": ["null", "string"]
+    },
+    "tax_exempt": {
+      "type": ["null", "boolean"]
     },
     "tax_lines": {
       "type": ["null", "array"],
@@ -1672,26 +1732,6 @@
         }
       }
     },
-    "payment_details": {
-      "type": ["null", "object"],
-      "properties": {
-        "credit_card_bin": {
-          "type": ["null", "string"]
-        },
-        "avs_result_code": {
-          "type": ["null", "string"]
-        },
-        "cvv_result_code": {
-          "type": ["null", "string"]
-        },
-        "credit_card_number": {
-          "type": ["null", "string"]
-        },
-        "credit_card_company": {
-          "type": ["null", "string"]
-        }
-      }
-    },
     "refunds": {
       "type": ["null", "array"],
       "items": {
@@ -2240,9 +2280,6 @@
             "type": ["null", "string"]
           },
           "code": {
-            "type": ["null", "string"]
-          },
-          "delivery_category": {
             "type": ["null", "string"]
           },
           "discounted_price": {

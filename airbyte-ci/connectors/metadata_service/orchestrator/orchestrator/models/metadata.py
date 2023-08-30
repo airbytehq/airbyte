@@ -1,7 +1,12 @@
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from pydantic import ValidationError, BaseModel
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from dataclasses import dataclass
-from typing import Tuple, Any, Optional
+from typing import Any, Optional, Tuple
+
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from pydantic import BaseModel, ValidationError
 
 
 class PydanticDelayValidationMixin:
