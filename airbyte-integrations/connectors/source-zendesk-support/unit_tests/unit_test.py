@@ -399,6 +399,35 @@ class TestSourceZendeskSupportStream:
         output = list(stream.parse_response(test_response, None))
         assert expected == output
 
+    def test_attribute_definition_parse_response(self, requests_mock):
+        stream = AttributeDefinitions(**STREAM_ARGS)
+        conditions_all = {
+                        "subject": "number_of_incidents",
+                        "title": "Number of incidents"
+                    }
+        conditions_any = {
+                        "subject": "brand",
+                        "title": "Brand"
+                    }
+        response_json = {
+            "definitions": {
+                "conditions_all": [
+                    conditions_all
+                ],
+                "conditions_any": [
+                    conditions_any
+                ]
+            }
+        }
+        requests_mock.get(STREAM_URL, json=response_json)
+        test_response = requests.get(STREAM_URL)
+        output = list(stream.parse_response(test_response, None))
+        expected_records = [
+            {'condition': 'all', 'subject': 'number_of_incidents', 'title': 'Number of incidents'},
+            {'condition': 'any', 'subject': 'brand', 'title': 'Brand'}
+        ]
+        assert expected_records == output
+
     @pytest.mark.parametrize(
         "stream_cls",
         [

@@ -740,7 +740,7 @@ class AttributeDefinitions(FullRefreshZendeskSupportStream):
             definition["condition"] = "all"
             yield definition
         for definition in response.json()["definitions"]["conditions_any"]:
-            definition["confition"] = "any"
+            definition["condition"] = "any"
             yield definition
 
     def path(self, *args, **kwargs) -> str:
