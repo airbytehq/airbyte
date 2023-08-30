@@ -140,6 +140,22 @@ class MongoDbCdcInitializerTest {
     assertEquals(1, iterators.size(), "Should only have 1 iterator for the cdc stream since initial snapshot has been completed");
   }
 
+  @Test
+  void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetBeforeResumeToken() {
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(new BsonDocument("_data", new BsonString(RESUME_TOKEN_AFTER_RESUME_TOKEN1)));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+    assertNotNull(iterators);
+    assertEquals(2, iterators.size(), "Should have two iterators since a full refresh is required due to saved offset being before most recent resume token");
+  }
+
+  @Test
+  void testUnableToExtractOffsetFromStateException() {
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    when(cdcInitializer.getDebeziumProperties()).thenReturn(new Properties());
+    assertThrows(RuntimeException.class, () -> cdcInitializer.createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
+  }
 
   private static Properties createDebeziumPropertiesForTest() {
     final Properties debeziumProperties = new Properties();
