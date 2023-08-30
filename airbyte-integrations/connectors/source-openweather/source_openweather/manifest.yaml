@@ -10,7 +10,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "https://api.openweathermap.org/data/2.5/"
+    url_base: "https://api.openweathermap.org/data/3.0/"
     http_method: "GET"
     request_parameters:
       lat: "{% if -90.00 <= config['lat']|float <= 90.00 %}{{ config['lat'] }}{% else %} WRONG LATITUDE{% endif %}"
