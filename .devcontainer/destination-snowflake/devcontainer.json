@@ -3,7 +3,7 @@
 {
     "name": "Snowflake Destination Connector DevContainer (Java)",
 
-	"image": "mcr.microsoft.com/devcontainers/universal:2-linux",
+	"image": "mcr.microsoft.com/devcontainers/java:0-17",
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
 			"installGradle": true,
