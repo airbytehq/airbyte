@@ -14,13 +14,10 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_zendesk_support.ZendeskSupportAvailabilityStrategy import ZendeskSupportAvailabilityStrategy
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -51,10 +48,6 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -147,10 +140,6 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
     @property
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return ZendeskSupportAvailabilityStrategy()
 
     def path(self, **kwargs):
         return self.name
