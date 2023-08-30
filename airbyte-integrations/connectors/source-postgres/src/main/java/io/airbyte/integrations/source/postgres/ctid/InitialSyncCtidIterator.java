@@ -51,6 +51,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
 
   private Long lastKnownFileNode;
   private int numberOfTimesReSynced = 0;
+  private boolean subQueriesInitialized = false;
 
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
       final JdbcDatabase database,
@@ -80,48 +81,46 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   @Override
   protected RowDataWithCtid computeNext() {
     try {
-      if (subQueriesPlan.isEmpty() && currentIterator == null) {
+      if (!subQueriesInitialized) {
         initSubQueries();
+        subQueriesInitialized = true;
       }
 
       if (currentIterator == null || !currentIterator.hasNext()) {
-        final Optional<Long> mayBeLatestFileNode = PostgresQueryUtils.fileNodeForIndividualStream(database, airbyteStream, quoteString);
-        if (mayBeLatestFileNode.isPresent()) {
-          final Long latestFileNode = mayBeLatestFileNode.get();
-          if (lastKnownFileNode != null) {
-            if (!latestFileNode.equals(lastKnownFileNode)) {
-              resetSubQueries(latestFileNode);
-            } else {
-              LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
-                  latestFileNode,
-                  lastKnownFileNode,
-                  airbyteStream);
+        do {
+          final Optional<Long> mayBeLatestFileNode = PostgresQueryUtils.fileNodeForIndividualStream(database, airbyteStream, quoteString);
+          if (mayBeLatestFileNode.isPresent()) {
+            final Long latestFileNode = mayBeLatestFileNode.get();
+            if (lastKnownFileNode != null) {
+              if (!latestFileNode.equals(lastKnownFileNode)) {
+                resetSubQueries(latestFileNode);
+              } else {
+                LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
+                    latestFileNode,
+                    lastKnownFileNode,
+                    airbyteStream);
+              }
             }
+            lastKnownFileNode = latestFileNode;
+            fileNodeHandler.updateFileNode(airbyteStream, latestFileNode);
+          } else {
+            LOGGER.warn("Airbyte could not query the latest file node for stream {}. Continuing sync as usual.", airbyteStream);
           }
-          lastKnownFileNode = latestFileNode;
-          fileNodeHandler.updateFileNode(airbyteStream, latestFileNode);
-        } else {
-          LOGGER.warn("Airbyte could not query the latest file node for stream {}. Continuing sync as usual.", airbyteStream);
-        }
 
-        if (currentIterator != null) {
-          currentIterator.close();
-        }
+          if (currentIterator != null) {
+            currentIterator.close();
+          }
 
-        if (subQueriesPlan.isEmpty()) {
-          return endOfData();
-        }
+          if (subQueriesPlan.isEmpty()) {
+            return endOfData();
+          }
 
-        final Pair<Ctid, Ctid> p = subQueriesPlan.remove();
-        currentIterator = AutoCloseableIterators.fromStream(getStream(p), airbyteStream);
+          final Pair<Ctid, Ctid> p = subQueriesPlan.remove();
+          currentIterator = AutoCloseableIterators.fromStream(getStream(p), airbyteStream);
+        } while (!currentIterator.hasNext());
       }
 
-      if (currentIterator.hasNext()) {
-        return currentIterator.next();
-      }
-
-      assert subQueriesPlan.isEmpty();
-      return endOfData();
+      return currentIterator.next();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
