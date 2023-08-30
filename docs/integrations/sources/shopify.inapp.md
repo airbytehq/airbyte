@@ -1,33 +1,30 @@
 ## Prerequisites
 
-* An Active [Shopify store](https://www.shopify.com) 
-* The Admin API access token of your [Custom App](https://help.shopify.com/en/manual/apps/app-types/custom-apps).
+* An Active [Shopify store](https://www.shopify.com)
+* Granted permissions to [Access Client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners and mandatory for partners)
 
-:::note
+::: note
 
-Our Shopify Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Shopify is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
- 
+If you previously used the `API Password` authentication method, please switch to the `OAuth2.0`, as the API Password will be deprecated shortly. If you prefer to continue using `API Password`, the option will remain available in `Airbyte Open-Source`.
+
 :::
 
 ## Setup guide
 
-1. Name your source.
-2. Enter your Store name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
-3. Enter your Admin API access token. To set up the access token, you will need to set up a custom application. See instructions below on creating a custom app.
-4. Click Set up source
+### Connect using OAuth2.0
+1. Click `Authenticate your Shopify account` to start the autentication.
+2. Click `Install` to install the Airbyte application.
+3. Log in to your account, if you are not already logged in.
+4. Select the store you want to sync and review the consent.
+5. Click on `Install` to finish the Installation.
+6. Reveiew the `Shop Name` field for the chosen store for a sync.
+7. Set the `Start Date` as the starting point for your data replication. Any data created before this date will not be synced.
+8. Click `Test and Save` to finish the source set up.
 
-## Creating a Custom App
-Authentication to the Shopify API requies a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
 
-1. Navigate to Settings > App and sales channels > Develop apps > Create an app
-2. Name your new app
-3. Select **Configure Admin API scopes**
-4. Tick all the scopes prefixed with `read_` (e.g. `read_locations`,`read_price_rules`, etc ) and save. See below for the full list of scopes to allow.
-5. Click **Install app** to give this app access to your data. 
-6. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. 
+### Scopes Required
+The Airbyte requires the following data scopes to fetch the data from your Shopify store:
 
-### Scopes Required for Custom App
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. To see a list of streams this source supports, see our full [Shopify documentation](https://docs.airbyte.com/integrations/sources/shopify/).
 * `read_analytics`
 * `read_assigned_fulfillment_orders`
 * `read_gdpr_data_request`

@@ -239,12 +239,23 @@ class CsvParser(AbstractFileParser):
         schema = self._get_schema_dict_without_inference(file)
         schema.update(self._master_schema)
 
-        streaming_reader = pa_csv.open_csv(
-            file,
-            pa.csv.ReadOptions(**self._read_options()),
-            pa.csv.ParseOptions(**self._parse_options()),
-            pa.csv.ConvertOptions(**self._convert_options(schema)),
-        )
+        try:
+            streaming_reader = pa_csv.open_csv(
+                file,
+                pa.csv.ReadOptions(**self._read_options()),
+                pa.csv.ParseOptions(**self._parse_options()),
+                pa.csv.ConvertOptions(**self._convert_options(schema)),
+            )
+        except ArrowInvalid as e:
+            error_message = str(e)
+            user_message = "Unable to parse the csv file. Please check your format options."
+            if "CSV parse error: Expected" in error_message:
+                user_message = (
+                    f"{user_message} Please validate delimiter option, "
+                    f"looks like some rows have delimiter symbol in its data so we receive more columns than expected."
+                )
+            raise AirbyteTracedException(message=user_message, internal_message=error_message, failure_type=FailureType.config_error) from e
+
         still_reading = True
         while still_reading:
             try:

@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Google Sear
 
 ## Prerequisites
 
-- A verified property in Google Search Console
+- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Properties))
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -75,7 +75,7 @@ For more information on this topic, please refer to [this Google article](https:
 3. Find and select **Google Search Console** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-6. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 
    <!-- env:cloud -->
@@ -117,6 +117,7 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
@@ -185,6 +186,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 | :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
+| `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                     |
 | `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                     |
 | `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream |
 | `1.2.2`  | 2023-08-23 | [29741](https://github.com/airbytehq/airbyte/pull/29741)                                                      | Handle `HTTP-401`, `HTTP-403` errors |
