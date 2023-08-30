@@ -14,4 +14,4 @@ Understanding the following limitations will help you more effectively manage Ai
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-*Limits on workspaces, sources, destinations and connections do not apply to customers of [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api). To learn more [contact us](https://airbyte.com/talk-to-sales)!
+*Limits on workspaces, sources, destinations and connections do not apply to customers of [Powered by Airbyte](https://airbyte.com/solutions/powered-by-airbyte). To learn more [contact us](https://airbyte.com/talk-to-sales)!

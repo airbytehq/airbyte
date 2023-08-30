@@ -20,8 +20,8 @@ streams:
         http_method: GET
         request_parameters: {}
         request_headers:
-          X-Auth-Access-ID: '{{ config[''access_key_id''] }}'
-          X-Auth-Access-Token: '{{ config[''access_token''] }}'
+          X-Auth-Access-ID: "{{ config['access_key_id'] }}"
+          X-Auth-Access-Token: "{{ config['access_token'] }}"
         authenticator:
           type: NoAuth
         request_body_json: {}
@@ -44,18 +44,18 @@ streams:
         pagination_strategy:
           type: CursorPagination
           page_size: 100
-          cursor_value: '{{ response[''pagination''][''current''] + 1 }}'
-          stop_condition: '{{ ''current'' not in response[''pagination''] }}'
+          cursor_value: "{{ response['pagination']['current'] + 1 }}"
+          stop_condition: "{{ 'current' not in response['pagination'] }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: dateCreated
       cursor_datetime_formats:
-        - '%s'
-      datetime_format: '%s'
+        - "%s"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''date_created_from''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['date_created_from'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
         field_name: filters.dateCreated.from
@@ -66,8 +66,8 @@ streams:
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''date_created_to''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['date_created_to'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
 spec:
   documentation_url: https://example.org

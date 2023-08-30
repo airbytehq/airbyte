@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -463,6 +464,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           new MssqlCdcStateHandler(stateManager),
           mssqlCdcConnectorMetadataInjector,
           MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());

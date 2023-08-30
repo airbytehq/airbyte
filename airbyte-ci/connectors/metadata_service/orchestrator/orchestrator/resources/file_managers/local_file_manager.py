@@ -1,13 +1,16 @@
-import os
-import uuid
-import shutil
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import io
-
-from dagster._core.storage.file_manager import LocalFileManager, LocalFileHandle, check_file_like_obj
-import dagster._check as check
-from dagster._utils import mkdir_p
-
+import os
+import shutil
+import uuid
 from typing import BinaryIO, Optional, TextIO, Union
+
+import dagster._check as check
+from dagster._core.storage.file_manager import LocalFileHandle, LocalFileManager, check_file_like_obj
+from dagster._utils import mkdir_p
 from typing_extensions import TypeAlias
 
 IOStream: TypeAlias = Union[TextIO, BinaryIO]
