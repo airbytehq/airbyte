@@ -16,7 +16,7 @@ data:
   icon: recharge.svg
   license: MIT
   name: Recharge
-  releaseDate: TODO
+  releaseDate: 2023-08-30
   releaseStage: generally_available
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
