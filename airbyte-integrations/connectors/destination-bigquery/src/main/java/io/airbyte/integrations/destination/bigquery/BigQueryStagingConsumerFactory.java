@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.destination.typing_deduping.FutureUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -28,8 +29,14 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -212,6 +219,24 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
+  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(AirbyteStreamNameNamespacePair streamId, final ExecutorService executorService, TyperDeduper typerDeduper) {
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        return Optional.empty();
+      } catch (Exception e) {
+        return Optional.of(e);
+      }
+    }, executorService);
+  }
+
+  private CompletableFuture<Optional<Exception>> stageDroppingFuture(final BigQueryWriteConfig writeConfig, final BigQueryStagingOperations bigQueryStagingOperations, final ExecutorService executorService) {
+    return CompletableFuture.supplyAsync(() -> {
+      bigQueryStagingOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
+      return Optional.empty();
+    }, executorService);
+  }
+
   /**
    * Tear down process, will attempt to clean out any staging area
    *
@@ -229,10 +254,14 @@ public class BigQueryStagingConsumerFactory {
        */
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
+      final ExecutorService executorService = Executors.newCachedThreadPool();
+      final Set<CompletableFuture<Optional<Exception>>> closingTasks = new HashSet<>();
       for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName());
-        bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
+        closingTasks.add(typeAndDedupeFuture(entry.getKey(), executorService, typerDeduper));
+        closingTasks.add(stageDroppingFuture(entry.getValue(), bigQueryGcsOperations, executorService));
       }
+      CompletableFuture.allOf(closingTasks.toArray(CompletableFuture[]::new)).join();
+      FutureUtils.reduceExceptions(closingTasks, "Exceptions thrown while closing streams: ");
       typerDeduper.commitFinalTables();
       LOGGER.info("Cleaning up destination completed.");
     };

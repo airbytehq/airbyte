@@ -4,10 +4,15 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
+
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,43 +81,58 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     overwriteStreamsWithTmpTable = new HashSet<>();
     LOGGER.info("Preparing final tables");
 
+    ExecutorService executorService = Executors.newCachedThreadPool();
+    Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
+    for (final StreamConfig stream : parsedCatalog.streams()) {
+      prepareTablesTasks.add(prepareTablesFuture(stream, executorService));
+    }
+    CompletableFuture.allOf(prepareTablesTasks.toArray(CompletableFuture[]::new)).join();
+    reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
+  }
+
+  private CompletableFuture<Optional<Exception>> prepareTablesFuture(final StreamConfig stream, ExecutorService executorService) {
     // For each stream, make sure that its corresponding final table exists.
     // Also, for OVERWRITE streams, decide if we're writing directly to the final table, or into an
     // _airbyte_tmp table.
-    for (final StreamConfig stream : parsedCatalog.streams()) {
-      // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
-      v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
-      v2RawTableMigrator.migrateIfNecessary(stream);
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
+        v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
+        v2RawTableMigrator.migrateIfNecessary(stream);
 
-      final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
-      if (existingTable.isPresent()) {
-        LOGGER.info("Final Table exists for stream {}", stream.id().finalName());
-        // The table already exists. Decide whether we're writing to it directly, or using a tmp table.
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          if (!destinationHandler.isFinalTableEmpty(stream.id()) || !sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
-            // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the table at the
-            // end of the sync.
-            overwriteStreamsWithTmpTable.add(stream.id());
-            // overwrite an existing tmp table if needed.
-            destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX, true));
-            LOGGER.info("Using temp final table for stream {}, will overwrite existing table at end of sync", stream.id().finalName());
-          } else {
-            LOGGER.info("Final Table for stream {} is empty and matches the expected v2 format, writing to table directly", stream.id().finalName());
+        final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
+        if (existingTable.isPresent()) {
+          LOGGER.info("Final Table exists for stream {}", stream.id().finalName());
+          // The table already exists. Decide whether we're writing to it directly, or using a tmp table.
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            if (!destinationHandler.isFinalTableEmpty(stream.id()) || !sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
+              // We want to overwrite an existing table. Write into a tmp table. We'll overwrite the table at the
+              // end of the sync.
+              overwriteStreamsWithTmpTable.add(stream.id());
+              // overwrite an existing tmp table if needed.
+              destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX, true));
+              LOGGER.info("Using temp final table for stream {}, will overwrite existing table at end of sync", stream.id().finalName());
+            } else {
+              LOGGER.info("Final Table for stream {} is empty and matches the expected v2 format, writing to table directly", stream.id().finalName());
+            }
+
+          } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
+            // We're loading data directly into the existing table. Make sure it has the right schema.
+            LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
+            destinationHandler.execute(sqlGenerator.softReset(stream));
           }
-
-        } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
-          // We're loading data directly into the existing table. Make sure it has the right schema.
-          LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
-          destinationHandler.execute(sqlGenerator.softReset(stream));
+          return Optional.empty();
+        } else {
+          LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
+          // The table doesn't exist. Create it. Don't force.
+          destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
         }
-      } else {
-        LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
-        // The table doesn't exist. Create it. Don't force.
-        destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
+        streamsWithSuccesfulSetup.add(stream.id());
+        return Optional.empty();
+      } catch (Exception e) {
+        return Optional.of(e);
       }
-
-      streamsWithSuccesfulSetup.add(stream.id());
-    }
+    }, executorService);
   }
 
   /**
@@ -147,22 +167,37 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
    */
   public void commitFinalTables() throws Exception {
     LOGGER.info("Committing final tables");
+    Set<CompletableFuture<Optional<Exception>>> tableCommitTasks = new HashSet<>();
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
       if (!streamsWithSuccesfulSetup.contains(streamConfig.id())) {
         LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
             streamConfig.id().originalNamespace(), streamConfig.id().originalName());
         continue;
       }
+      ExecutorService executorService = Executors.newCachedThreadPool();
       if (DestinationSyncMode.OVERWRITE.equals(streamConfig.destinationSyncMode())) {
-        final StreamId streamId = streamConfig.id();
-        final String finalSuffix = getFinalTableSuffix(streamId);
-        if (!StringUtils.isEmpty(finalSuffix)) {
-          final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(streamId, finalSuffix);
-          LOGGER.info("Overwriting final table with tmp table for stream {}.{}", streamId.originalNamespace(), streamId.originalName());
-          destinationHandler.execute(overwriteFinalTable);
-        }
+        tableCommitTasks.add(commitFinalTableTask(streamConfig, executorService));
       }
     }
+    CompletableFuture.allOf(tableCommitTasks.toArray(CompletableFuture[]::new)).join();
+    reduceExceptions(tableCommitTasks, "The Following Exceptions were thrown while committing final tables:\n");
+  }
+
+  private CompletableFuture<Optional<Exception>> commitFinalTableTask(StreamConfig streamConfig, ExecutorService executorService) {
+    return CompletableFuture.supplyAsync(() -> {
+      final StreamId streamId = streamConfig.id();
+      final String finalSuffix = getFinalTableSuffix(streamId);
+      if (!StringUtils.isEmpty(finalSuffix)) {
+        final String overwriteFinalTable = sqlGenerator.overwriteFinalTable(streamId, finalSuffix);
+        LOGGER.info("Overwriting final table with tmp table for stream {}.{}", streamId.originalNamespace(), streamId.originalName());
+        try {
+          destinationHandler.execute(overwriteFinalTable);
+        } catch (Exception e) {
+          return Optional.of(e);
+        }
+      }
+      return Optional.empty();
+    }, executorService);
   }
 
   private String getFinalTableSuffix(final StreamId streamId) {
