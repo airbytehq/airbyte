@@ -2,11 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import requests
-
 from dataclasses import dataclass
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
@@ -14,10 +13,8 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 from airbyte_cdk.sources.streams.core import Stream
 
 
-
 @dataclass
 class EventPropertiesTransformation(RecordTransformation):
-
     def transform(
         self,
         record: Record,
@@ -34,35 +31,23 @@ class EventPropertiesTransformation(RecordTransformation):
         # The events endpoint is a `POST` endpoint which expects a list of event_ids to filter on
         event_id = record.id
         request_filter_json = {"event_ids": [event_id]}
-        headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': f'Bearer {config.api_key}'
-        }
+        headers = {"Content-Type": "application/json", "Accept": "application/json", "Authorization": f"Bearer {config.api_key}"}
 
-        args = {
-            "method": "POST", 
-            "url": "https://api.billwithorb.com/v1/events", 
-            "json": request_filter_json,
-            "headers": headers
-        }
+        args = {"method": "POST", "url": "https://api.billwithorb.com/v1/events", "json": request_filter_json, "headers": headers}
 
         events_response = requests.request(**args)
-        events_response.raise_for_status() # Error for invalid responses
+        events_response.raise_for_status()  # Error for invalid responses
         events_response_body = events_response.json()
 
         for event in events_response_body["data"]:
             if event_id == event["id"]:
-                desired_properties_subset = {
-                    key: value 
-                    for key, value in event["properties"].items() 
-                    if key in merged_properties_keys
-                }
+                desired_properties_subset = {key: value for key, value in event["properties"].items() if key in merged_properties_keys}
 
                 # Replace ledger_entry.event_id with ledger_entry.event
                 record["event"]["properties"] = desired_properties_subset
 
         return record
+
 
 @dataclass
 class SubscriptionUsageTransformation(RecordTransformation):
@@ -80,7 +65,7 @@ class SubscriptionUsageTransformation(RecordTransformation):
         # for each top level response record, there can be multiple sub-records depending
         # on granularity and other input params. This function yields one transformed record
         # for each subrecord in the response.
-        
+
         subrecords = record.get("usage", [])
         del record["usage"]
         for subrecord in subrecords:
@@ -107,6 +92,7 @@ class SubscriptionUsageTransformation(RecordTransformation):
                     output[nested_key] = nested_value
                 yield output
         yield from []
+
 
 @dataclass
 class SubscriptionUsagePartitionRouter(StreamSlicer):
