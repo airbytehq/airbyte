@@ -53,7 +53,7 @@ public class MongoDbCdcInitializer {
   private final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
   @VisibleForTesting
-  MongoDbCdcInitializer(MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil){
+  MongoDbCdcInitializer(MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil) {
     this.mongoDbDebeziumStateUtil = mongoDbDebeziumStateUtil;
   }
 
@@ -140,4 +140,5 @@ public class MongoDbCdcInitializer {
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
+
 }

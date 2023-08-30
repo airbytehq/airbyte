@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.ChangeStreamIterable;
@@ -157,7 +157,8 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size(), "Should have two iterators since a full refresh is required due to saved offset being before most recent resume token");
+    assertEquals(2, iterators.size(),
+        "Should have two iterators since a full refresh is required due to saved offset being before most recent resume token");
   }
 
   @Test
@@ -192,4 +193,5 @@ class MongoDbCdcInitializerTest {
         .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
         .withPrimaryKey(new ArrayList<>());
   }
+
 }

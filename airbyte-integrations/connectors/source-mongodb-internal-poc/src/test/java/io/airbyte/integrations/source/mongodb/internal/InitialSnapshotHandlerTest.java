@@ -1,5 +1,8 @@
-package io.airbyte.integrations.source.mongodb.internal;
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
 
+package io.airbyte.integrations.source.mongodb.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,12 +17,12 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.List;
@@ -65,21 +68,21 @@ class InitialSnapshotHandlerTest {
 
   private static final List<ConfiguredAirbyteStream> STREAMS = List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
-              COLLECTION1,
-              NAMESPACE,
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION1,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.INCREMENTAL),
       CatalogHelpers.createConfiguredAirbyteStream(
-              COLLECTION2,
-              NAMESPACE,
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
+          COLLECTION2,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.INCREMENTAL),
       CatalogHelpers.createConfiguredAirbyteStream(
-              COLLECTION3,
-              NAMESPACE,
-              Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
-              Field.of(NAME_FIELD, JsonSchemaType.STRING))
+          COLLECTION3,
+          NAMESPACE,
+          Field.of(CURSOR_FIELD, JsonSchemaType.STRING),
+          Field.of(NAME_FIELD, JsonSchemaType.STRING))
           .withSyncMode(SyncMode.FULL_REFRESH));
 
   private static MongoDBContainer MONGO_DB;
@@ -135,7 +138,8 @@ class InitialSnapshotHandlerTest {
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
-    final List<AutoCloseableIterator<AirbyteMessage>> iterators = initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now());
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators =
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now());
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
 
@@ -206,7 +210,8 @@ class InitialSnapshotHandlerTest {
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
     when(stateManager.getStreamState(COLLECTION1, NAMESPACE)).thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null)));
-    final List<AutoCloseableIterator<AirbyteMessage>> iterators = initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now());
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators =
+        initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now());
 
     assertEquals(iterators.size(), 2, "Only two streams are configured as incremental, full refresh streams should be ignored");
 
@@ -241,11 +246,13 @@ class InitialSnapshotHandlerTest {
 
   private void assertConfiguredFieldsEqualsRecordDataFields(final Set<String> configuredStreamFields, final JsonNode recordMessageData) {
     final Set<String> recordDataFields = ImmutableSet.copyOf(recordMessageData.fieldNames());
-    assertEquals(configuredStreamFields, recordDataFields, "Fields in record message should be the same as fields in their corresponding stream configuration");
+    assertEquals(configuredStreamFields, recordDataFields,
+        "Fields in record message should be the same as fields in their corresponding stream configuration");
   }
 
   private void insertDocuments(final String collectionName, final List<Document> documents) {
-      final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(collectionName);
-      collection.insertMany(documents);
+    final MongoCollection<Document> collection = mongoClient.getDatabase(DB_NAME).getCollection(collectionName);
+    collection.insertMany(documents);
   }
+
 }

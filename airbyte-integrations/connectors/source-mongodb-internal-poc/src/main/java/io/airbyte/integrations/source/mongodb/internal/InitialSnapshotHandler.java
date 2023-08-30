@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_DURATION;
@@ -31,16 +35,17 @@ import org.slf4j.LoggerFactory;
 public class InitialSnapshotHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSnapshotHandler.class);
+
   /**
    * For each given stream configured as incremental sync it will output an iterator that will
    * retrieve documents from the given database. Each iterator will start after the last checkpointed
    * document, if any, or from the beginning of the stream otherwise.
    */
   public List<AutoCloseableIterator<AirbyteMessage>> getIterators(
-      final List<ConfiguredAirbyteStream> streams,
-      final MongoDbStateManager stateManager,
-      final MongoDatabase database,
-      final Instant emittedAt) {
+                                                                  final List<ConfiguredAirbyteStream> streams,
+                                                                  final MongoDbStateManager stateManager,
+                                                                  final MongoDatabase database,
+                                                                  final Instant emittedAt) {
     return streams
         .stream()
         .peek(airbyteStream -> {
