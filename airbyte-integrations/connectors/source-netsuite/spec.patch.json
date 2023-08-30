@@ -1,4 +1,7 @@
 {
   "properties": {
+    "start_datetime": {
+      "format": "date-time"
+    }
   }
 }
