@@ -54,7 +54,7 @@ class ConnectorStateManager:
         """
         stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
-            return stream_state.dict()  # type: ignore # this returns a dict...
+            return stream_state.dict()  # type: ignore # mypy thinks dict() returns any, but it returns a dict
         return {}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]) -> None:
