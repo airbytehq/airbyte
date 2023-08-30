@@ -208,6 +208,9 @@ class Stream(ABC):
           If the stream has no primary keys, return None.
         """
 
+    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:

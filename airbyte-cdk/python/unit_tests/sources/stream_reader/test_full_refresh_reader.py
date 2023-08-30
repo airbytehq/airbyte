@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from queue import Queue
 from unittest.mock import Mock, call
 
 import pytest
@@ -22,6 +22,9 @@ from airbyte_cdk.models import (
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentStreamReader
+from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.stream_reader.concurrent.queue_consumer import QueueConsumer
 from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
@@ -36,10 +39,20 @@ def _syncrhonous_reader():
     return SyncrhonousFullRefreshReader(DebugSliceLogger())
 
 
+def _concurrent_reader():
+    queue = Queue()
+    name = "Source"
+    partition_generator = PartitionGenerator(queue, name)
+    queue_consumer = QueueConsumer(name)
+    reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, 1, DebugSliceLogger())
+    return reader
+
+
 @pytest.mark.parametrize(
     "reader",
     [
         pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_concurrent_reader(), id="concurrent_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice_with_debug(reader):
@@ -76,6 +89,7 @@ def test_full_refresh_read_a_single_slice_with_debug(reader):
     "reader",
     [
         pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_concurrent_reader(), id="concurrent_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice(reader):
@@ -107,6 +121,7 @@ def test_full_refresh_read_a_single_slice(reader):
     "reader",
     [
         pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_concurrent_reader(), id="concurrent_reader"),
     ],
 )
 def test_full_refresh_read_a_two_slices(reader):
@@ -149,6 +164,7 @@ def test_full_refresh_read_a_two_slices(reader):
     "reader",
     [
         pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_concurrent_reader(), id="concurrent_reader"),
     ],
 )
 def test_only_read_up_to_limit(reader):
@@ -182,6 +198,7 @@ def test_only_read_up_to_limit(reader):
     "reader",
     [
         pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_concurrent_reader(), id="concurrent_reader"),
     ],
 )
 def test_limit_only_considers_data(reader):
@@ -284,7 +301,7 @@ def _mock_stream(name: str, partitions, records_per_partition, *, available=True
     stream = Mock()
     stream.name = name
     stream.get_json_schema.return_value = {}
-    stream.stream_slices.return_value = iter(partitions)
+    stream.generate_partitions.return_value = iter(partitions)
     stream.read_records.side_effect = [iter(records) for records in records_per_partition]
     stream.logger.isEnabledFor.return_value = debug_log
     if available:
