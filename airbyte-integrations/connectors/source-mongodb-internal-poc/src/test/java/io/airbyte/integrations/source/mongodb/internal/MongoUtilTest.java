@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +39,7 @@ public class MongoUtilTest {
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final List<Map<String, Object>> schemaDiscoveryJsonResponses =
         Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
-    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
 
     when(cursor.hasNext()).thenReturn(true, true, false);
     when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
@@ -67,7 +66,7 @@ public class MongoUtilTest {
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final List<Map<String, Object>> schemaDiscoveryJsonResponses =
         Jsons.deserialize(MoreResources.readResource("schema_discovery_response_different_datatypes.json"), new TypeReference<>() {});
-    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
 
     when(cursor.hasNext()).thenReturn(true, true, false);
     when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));

@@ -67,7 +67,7 @@ public class MongoDbResumeTokenHelper {
 
   private static Optional<BsonTimestamp> createTimestampFromSource(final JsonNode source) {
     try {
-      return Optional.ofNullable(
+      return Optional.of(
           new BsonTimestamp(
               Long.valueOf(TimeUnit.MILLISECONDS.toSeconds(
                   source.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS)

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
-import static io.debezium.connector.mongodb.MongoDbConnectorConfig.REPLICA_SETS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,6 +15,9 @@ import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
+import com.mongodb.connection.ClusterDescription;
+import com.mongodb.connection.ClusterType;
+import com.mongodb.connection.ServerDescription;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -36,6 +38,8 @@ import org.junit.jupiter.api.Test;
 class MongoDbDebeziumStateUtilTest {
 
   private static final String DATABASE = "test-database";
+  private static final String REPLICA_SET = "test-replica-set";
+  private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -57,16 +61,16 @@ class MongoDbDebeziumStateUtilTest {
   @Test
   void testConstructInitialDebeziumState() {
     final String database = DATABASE;
-    final String replicaSet = "test_rs";
-    final String resumeToken = "8264BEB9F3000000012B0229296E04";
+    final String replicaSet = REPLICA_SET;
+    final String resumeToken = RESUME_TOKEN;
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final MongoClient mongoClient = mock(MongoClient.class);
     final Properties baseProperties = new Properties();
-    baseProperties.put("connector.class", "io.debezium.connector.mongodb.MongoDbConnector");
-    baseProperties.put(REPLICA_SETS.name(), "mongodb://host:12345/?replicaSet=" + replicaSet);
 
     final JsonNode config = Jsons.jsonNode(Map.of(
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
@@ -75,7 +79,11 @@ class MongoDbDebeziumStateUtilTest {
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
     final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient,
         database, replicaSet);
@@ -94,10 +102,19 @@ class MongoDbDebeziumStateUtilTest {
             baseProperties,
             CONFIGURED_CATALOG,
             initialState,
-            config);
+            config,
+            mongoClient);
     assertTrue(parsedOffset.isPresent());
-    assertNotNull(parsedOffset.getAsLong());
     assertEquals(timestamp.getValue(), parsedOffset.getAsLong());
+  }
+
+  @Test
+  void testOffsetDataFormat() {
+    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN);
+
+    assertNotNull(offsetState);
+    assertEquals("[\"" + DATABASE + "\",{\"" + MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET + "\":\"" + REPLICA_SET + "\",\""
+        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + DATABASE + "\"}]", offsetState.fieldNames().next());
   }
 
 }

@@ -33,7 +33,7 @@ class MongoDbCdcTargetPositionTest {
   @Test
   void testCreateTargetPosition() {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -51,7 +51,7 @@ class MongoDbCdcTargetPositionTest {
   void testReachedTargetPosition() throws IOException {
     final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -66,7 +66,7 @@ class MongoDbCdcTargetPositionTest {
     final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
-    when(changeEvent.value()).thenReturn(changeEventJson.replaceAll("\"ts_ms\"\\: \\d+,", "\"ts_ms\": 1590221043000,"));
+    when(changeEvent.value()).thenReturn(changeEventJson.replaceAll("\"ts_ms\": \\d+,", "\"ts_ms\": 1590221043000,"));
     final ChangeEventWithMetadata changeEventWithMetadata2 = new ChangeEventWithMetadata(changeEvent);
     assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata2));
   }
@@ -75,7 +75,7 @@ class MongoDbCdcTargetPositionTest {
   void testReachedTargetPositionSnapshotEvent() throws IOException {
     final String changeEventJson = MoreResources.readResource("mongodb/change_event_snapshot.json");
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -95,7 +95,7 @@ class MongoDbCdcTargetPositionTest {
   void testReachedTargetPositionSnapshotLastEvent() throws IOException {
     final String changeEventJson = MoreResources.readResource("mongodb/change_event_snapshot_last.json");
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -114,7 +114,7 @@ class MongoDbCdcTargetPositionTest {
   @Test
   void testReachedTargetPositionFromHeartbeat() {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -135,7 +135,7 @@ class MongoDbCdcTargetPositionTest {
   @Test
   void testIsHeartbeatSupported() {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -153,7 +153,7 @@ class MongoDbCdcTargetPositionTest {
   void testExtractPositionFromHeartbeatOffset() {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
     final BsonTimestamp resumeTokenTimestamp = ResumeTokens.getTimestamp(resumeTokenDocument);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -175,7 +175,7 @@ class MongoDbCdcTargetPositionTest {
   @Test
   void testIsEventAheadOfOffset() throws IOException {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -198,7 +198,7 @@ class MongoDbCdcTargetPositionTest {
   @Test
   void testIsSameOffset() {
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);

@@ -11,7 +11,6 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -101,7 +100,7 @@ public class MongoDbCdcInitializer {
 
     final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
     final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
-    final Properties defaultDebeziumProperties = getDebeziumProperties();
+    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
@@ -111,7 +110,8 @@ public class MongoDbCdcInitializer {
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState,
-        config);
+        config,
+        mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
     if (cdcState != null && savedOffset.isEmpty()) {
@@ -214,12 +214,6 @@ public class MongoDbCdcInitializer {
         })
         .toList();
   }
-
-  @VisibleForTesting
-  Properties getDebeziumProperties() {
-    return MongoDbCdcProperties.getDebeziumProperties();
-  }
-
 
   /**
    * Returns a list of types (as strings) that the _id field has for the provided collection.

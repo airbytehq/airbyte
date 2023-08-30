@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A state-emitting iterator that emits a state message every checkpointInterval messages when
  * iterating over a MongoCursor.
- *
+ * <p>
  * Will also output a state message as the last message after the wrapper iterator has completed.
  */
 public class MongoDbStateIterator implements Iterator<AirbyteMessage> {

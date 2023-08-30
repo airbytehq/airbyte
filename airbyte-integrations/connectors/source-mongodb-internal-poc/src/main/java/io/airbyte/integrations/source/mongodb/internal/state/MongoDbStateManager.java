@@ -60,10 +60,9 @@ public class MongoDbStateManager {
       if (stateMessages.size() == 1) {
         final AirbyteStateMessage stateMessage = stateMessages.get(0);
         stateManager.updateCdcState(Jsons.object(stateMessage.getGlobal().getSharedState(), MongoDbCdcState.class));
-        stateMessage.getGlobal().getStreamStates().forEach(s ->
-            stateManager.updateStreamState(s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace(),
-            Jsons.object(s.getStreamState(), MongoDbStreamState.class)))
-        ;
+        stateMessage.getGlobal().getStreamStates()
+            .forEach(s -> stateManager.updateStreamState(s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace(),
+                Jsons.object(s.getStreamState(), MongoDbStreamState.class)));
       } else {
         throw new IllegalStateException("The state contains multiple message, but only 1 is expected.");
       }
@@ -177,10 +176,10 @@ public class MongoDbStateManager {
   /**
    * Tests whether the provided {@link StreamDescriptor} is valid. A valid descriptor is defined as
    * one that has a non-{@code null} name.
-   *
-   * See
-   * https://github.com/airbytehq/airbyte/blob/e63458fabb067978beb5eaa74d2bc130919b419f/docs/understanding-airbyte/airbyte-protocol.md
-   * for more details
+   * <p>
+   * See <a href=
+   * "https://github.com/airbytehq/airbyte/blob/e63458fabb067978beb5eaa74d2bc130919b419f/docs/understanding-airbyte/airbyte-protocol.md">the
+   * Airbyte protocol</a> for more details
    *
    * @param streamDescriptor A {@link StreamDescriptor} to be validated.
    * @return {@code true} if the provided {@link StreamDescriptor} is valid or {@code false} if it is

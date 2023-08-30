@@ -71,11 +71,11 @@ public class MongoDbCdcInitialSnapshotUtils {
       initialSnapshotStreams.addAll(fullCatalog.getStreams().stream()
           .filter(stream -> streamsStillInInitialSnapshot.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
           .map(Jsons::clone)
-          .collect(Collectors.toList()));
+          .toList());
 
       // Fetch the streams added to the catalog since the last sync
       initialSnapshotStreams.addAll(identifyStreamsToSnapshot(fullCatalog,
-          stateManager.getStreamStates().entrySet().stream().map(e -> e.getKey()).collect(Collectors.toSet())));
+          new HashSet<>(stateManager.getStreamStates().keySet())));
 
       return initialSnapshotStreams;
     }
