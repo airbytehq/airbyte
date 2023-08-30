@@ -75,7 +75,7 @@ public class MySqlQueryUtils {
       return Collections.EMPTY_SET;
     }
   }
-  
+
   public static String getMaxPkValueForStream(final JdbcDatabase database,
                                               final ConfiguredAirbyteStream stream,
                                               final String pkFieldName,
