@@ -53,7 +53,7 @@
     // 2. Map the devcontainer.json file to it.
     // 3. Mark the root directory as 'safe' for git.
     // 4. Install the Python/Poetry dependencies.
-    "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/source-s3/devcontainer.json ./.symlinks/source-s3-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/sources/s3.md ./.symlinks/${CONNECTOR_NAME}-docs.md && git config --add safe.directory /workspaces/airbyte && pip install --editable ."
+    "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/source-s3/devcontainer.json ./.symlinks/source-s3-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/sources/s3.md ./.symlinks/${CONNECTOR_NAME}-docs.md && ln -sf /workspaces/airbyte/airbyte-cdk/python/ ./.symlinks/airbyte_cdk && git config --add safe.directory /workspaces/airbyte && pip install --editable ."
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
