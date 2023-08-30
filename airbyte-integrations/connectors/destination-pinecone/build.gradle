@@ -4,5 +4,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'destination_langchain'
+    moduleDirectory 'destination_pinecone'
 }

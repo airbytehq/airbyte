@@ -79,9 +79,7 @@ class PineconeIndexingModel(BaseModel):
 
     class Config:
         title = "Pinecone"
-        schema_extra = {
-            "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings. It is a managed service and can also be queried from outside of langchain."
-        }
+        schema_extra = {"description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings."}
 
 
 class ConfigModel(BaseModel):
