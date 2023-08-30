@@ -25,11 +25,16 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Retrieves iterators used for the initial snapshot
+ */
 public class InitialSnapshotHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSnapshotHandler.class);
   /**
-   * Converts the streams in the catalog into a list of AutoCloseableIterators.
+   * For each given stream configured as incremental sync it will output an iterator that will
+   * retrieve documents from the given database. Each iterator will start after the last checkpointed
+   * document, if any, or from the beginning of the stream otherwise.
    */
   public List<AutoCloseableIterator<AirbyteMessage>> getIterators(
       final List<ConfiguredAirbyteStream> streams,
@@ -46,8 +51,6 @@ public class InitialSnapshotHandler {
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
           final var collection = database.getCollection(collectionName);
-          // TODO verify that if all fields are selected that all fields are returned here
-          // (or should this check and ignore them if all fields are selected)
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           // find the existing state, if there is one, for this stream
