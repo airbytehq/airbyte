@@ -4,8 +4,18 @@
   "title": "Item collection schema",
   "additionalProperties": true,
   "properties": {
-    "format": {
+    "url": {
       "type": ["null", "string"]
+    },
+    "#debug": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "pageTitle": {
+      "type": ["null", "string"]
+    },
+    "#error": {
+      "type": ["null", "boolean"]
     }
   }
 }

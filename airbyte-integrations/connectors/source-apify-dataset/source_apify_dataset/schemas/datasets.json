@@ -49,24 +49,10 @@
       "type": ["null", "number"]
     },
     "actId": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "object"
-        }
-      ]
+      "type": ["null", "string"]
     },
     "actRunId": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "object"
-        }
-      ]
+      "type": ["null", "string"]
     },
     "fields": {
       "anyOf": [
