@@ -32,8 +32,8 @@ public enum IdType {
   public static final String SUPPORTED;
   static {
     SUPPORTED = Arrays.stream(IdType.values())
-        .map(Enum::name)
-        .collect(Collectors.joining());
+        .map(e -> e.mongoDbType)
+        .collect(Collectors.joining(", "));
   }
 
   /** Mongodb BSON type */
@@ -50,6 +50,6 @@ public enum IdType {
   }
 
   public static Optional<IdType> findByMongoDbType(final String mongoDbType) {
-    return Optional.ofNullable(byMongoDbType.get(mongoDbType.toLowerCase()));
+    return Optional.ofNullable(byMongoDbType.get(mongoDbType));
   }
 }

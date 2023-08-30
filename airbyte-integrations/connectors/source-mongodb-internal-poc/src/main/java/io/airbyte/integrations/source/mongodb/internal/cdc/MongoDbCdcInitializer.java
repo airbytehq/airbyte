@@ -198,7 +198,7 @@ public class MongoDbCdcInitializer {
           // "where _id > [last saved state] order by _id ASC".
           // If no state exists, it will create a query akin to "where 1=1 order by _id ASC"
           final Bson filter = existingState
-              .map(state -> Filters.gt(ID_FIELD, state.idType().convert(state.id())))
+              .map(state -> Filters.gt(ID_FIELD, state.idTypeAsMongoDbType(state.id())))
               // if nothing was found, return a new BsonDocument
               .orElseGet(BsonDocument::new);
 

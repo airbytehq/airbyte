@@ -6,11 +6,16 @@ package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
@@ -22,6 +27,7 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerDescription;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
@@ -46,10 +52,13 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
+import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
 class MongoDbCdcInitializerTest {
@@ -75,6 +84,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsEmptyInitialState() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
+    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
     final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
 
@@ -85,9 +95,11 @@ class MongoDbCdcInitializerTest {
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
-    final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
+    final MongoCursor<BsonDocument> findCursor = mock(MongoCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> aggregateCursor = mock(MongoCursor.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -101,11 +113,16 @@ class MongoDbCdcInitializerTest {
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
+    when(mongoCollection.aggregate(anyList())).thenReturn(aggregateIterable);
+    when(aggregateIterable.iterator()).thenReturn(aggregateCursor);
+    when(aggregateCursor.hasNext()).thenReturn(true, false);
+    when(aggregateCursor.next()).thenReturn(aggregate);
+    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
     when(mongoCollection.find()).thenReturn(findIterable);
     when(findIterable.filter(any())).thenReturn(findIterable);
     when(findIterable.projection(any())).thenReturn(findIterable);
     when(findIterable.sort(any())).thenReturn(findIterable);
-    when(findIterable.cursor()).thenReturn(cursor);
+    when(findIterable.cursor()).thenReturn(findCursor);
 
     final JsonNode config = Jsons.jsonNode(Map.of(
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
@@ -123,6 +140,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsFromInitialStateWithInProgressInitialSnapshot() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
+    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
     final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS));
 
@@ -133,9 +151,11 @@ class MongoDbCdcInitializerTest {
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
-    final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
+    final MongoCursor<BsonDocument> findCursor = mock(MongoCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> aggregateCursor = mock(MongoCursor.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -146,11 +166,16 @@ class MongoDbCdcInitializerTest {
     when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
+    when(mongoCollection.aggregate(anyList())).thenReturn(aggregateIterable);
+    when(aggregateIterable.iterator()).thenReturn(aggregateCursor);
+    when(aggregateCursor.hasNext()).thenReturn(true, false);
+    when(aggregateCursor.next()).thenReturn(aggregate);
+    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
     when(mongoCollection.find()).thenReturn(findIterable);
     when(findIterable.filter(any())).thenReturn(findIterable);
     when(findIterable.projection(any())).thenReturn(findIterable);
     when(findIterable.sort(any())).thenReturn(findIterable);
-    when(findIterable.cursor()).thenReturn(cursor);
+    when(findIterable.cursor()).thenReturn(findCursor);
 
     final JsonNode config = Jsons.jsonNode(Map.of(
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
@@ -168,6 +193,7 @@ class MongoDbCdcInitializerTest {
   @Test
   void testCreateCdcIteratorsFromInitialStateWithCompletedInitialSnapshot() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
+    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
     final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
 
@@ -181,6 +207,8 @@ class MongoDbCdcInitializerTest {
     final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final AggregateIterable<Document> mongoAggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> mongoAggregateCursor = mock(MongoCursor.class);
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -192,6 +220,11 @@ class MongoDbCdcInitializerTest {
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
     when(mongoCollection.find()).thenReturn(findIterable);
+    when(mongoCollection.aggregate(anyList())).thenReturn(mongoAggregateIterable);
+    when(mongoAggregateIterable.iterator()).thenReturn(mongoAggregateCursor);
+    when(mongoAggregateCursor.hasNext()).thenReturn(true, false);
+    when(mongoAggregateCursor.next()).thenReturn(aggregate);
+    doCallRealMethod().when(mongoAggregateIterable).forEach(any(Consumer.class));
     when(findIterable.filter(any())).thenReturn(findIterable);
     when(findIterable.projection(any())).thenReturn(findIterable);
     when(findIterable.sort(any())).thenReturn(findIterable);
@@ -208,6 +241,117 @@ class MongoDbCdcInitializerTest {
         .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
     assertNotNull(iterators);
     assertEquals(1, iterators.size());
+  }
+
+  @Test
+  void testMultipleIdTypesThrowsException() {
+    final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
+    final Document aggregate1 = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
+    final Document aggregate2 = Document.parse("{\"_id\": {\"_id\": \"string\"}, \"count\": 1}");
+    final Instant emittedAt = Instant.now();
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
+    final MongoCursor<BsonDocument> findCursor = mock(MongoCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> aggregateCursor = mock(MongoCursor.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
+    when(mongoCollection.aggregate(anyList())).thenReturn(aggregateIterable);
+    when(aggregateIterable.iterator()).thenReturn(aggregateCursor);
+    when(aggregateCursor.hasNext()).thenReturn(true, true,false);
+    when(aggregateCursor.next()).thenReturn(aggregate1, aggregate2);
+    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
+    when(mongoCollection.find()).thenReturn(findIterable);
+    when(findIterable.filter(any())).thenReturn(findIterable);
+    when(findIterable.projection(any())).thenReturn(findIterable);
+    when(findIterable.sort(any())).thenReturn(findIterable);
+    when(findIterable.cursor()).thenReturn(findCursor);
+
+    final JsonNode config = Jsons.jsonNode(Map.of(
+        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
+        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
+
+    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config));
+    assertTrue(thrown.getMessage().contains("must be consistently typed"));
+  }
+
+  @Test
+  void testUnsupportedIdTypeThrowsException() {
+    final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
+    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"exotic\"}, \"count\": 1}");
+    final Instant emittedAt = Instant.now();
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
+    final MongoCursor<BsonDocument> findCursor = mock(MongoCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> aggregateCursor = mock(MongoCursor.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
+    when(mongoCollection.aggregate(anyList())).thenReturn(aggregateIterable);
+    when(aggregateIterable.iterator()).thenReturn(aggregateCursor);
+    when(aggregateCursor.hasNext()).thenReturn(true, false);
+    when(aggregateCursor.next()).thenReturn(aggregate);
+    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
+    when(mongoCollection.find()).thenReturn(findIterable);
+    when(findIterable.filter(any())).thenReturn(findIterable);
+    when(findIterable.projection(any())).thenReturn(findIterable);
+    when(findIterable.sort(any())).thenReturn(findIterable);
+    when(findIterable.cursor()).thenReturn(findCursor);
+
+    final JsonNode config = Jsons.jsonNode(Map.of(
+        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
+        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
+
+    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config));
+    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
   private static JsonNode createInitialDebeziumState(final InitialSnapshotStatus initialSnapshotStatus) {
