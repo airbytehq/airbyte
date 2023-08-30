@@ -29,6 +29,7 @@ public enum IdType {
     }
   }
 
+  /** A comma-separated, human-readable list of supported _id types. */
   public static final String SUPPORTED;
   static {
     SUPPORTED = Arrays.stream(IdType.values())
