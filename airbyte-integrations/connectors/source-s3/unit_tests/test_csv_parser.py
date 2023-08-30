@@ -458,5 +458,5 @@ class TestCsvParser(AbstractTestParser):
         with smart_open(filepath, self._get_readmode({"AbstractFileParser": parser})) as f:
             with pytest.raises(AirbyteTracedException) as e:
                 list(parser.stream_records(f, FileInfo(key=filepath, size=1, last_modified=pendulum.now())))
-        expected_message = "Unable to parse the csv file. Please check your format options. Please validate data schema, looks like some types cannot be converted. In CSV column #2: CSV conversion error to int64: invalid value '44.2'"
+        expected_message = "Unable to parse the csv file. Please check your format options. Please validate or provide a data schema, looks like some types cannot be converted. In CSV column #2: CSV conversion error to int64: invalid value '44.2'"
         assert expected_message == e.value.message
