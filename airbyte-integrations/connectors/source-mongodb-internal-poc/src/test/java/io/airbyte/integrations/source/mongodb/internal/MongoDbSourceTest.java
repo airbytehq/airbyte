@@ -11,7 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,11 +29,13 @@ import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcInitializer;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,13 +50,15 @@ class MongoDbSourceTest {
 
   private JsonNode airbyteSourceConfig;
   private MongoClient mongoClient;
+  private MongoDbCdcInitializer cdcInitializer;
   private MongoDbSource source;
 
   @BeforeEach
   void setup() {
     airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty());
     mongoClient = mock(MongoClient.class);
-    source = spy(new MongoDbSource());
+    cdcInitializer = mock(MongoDbCdcInitializer.class);
+    source = spy(new MongoDbSource(cdcInitializer));
     doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
   }
 
@@ -181,13 +188,19 @@ class MongoDbSourceTest {
   }
 
   @Test
-  void testFullRefresh() {
-    // TODO implement
+  void testReadClosesMongoClient() {
+    final MongoClient mongoClient = mock(MongoClient.class);
+    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any())).thenThrow(new RuntimeException());
+    assertThrows(RuntimeException.class, () -> source.read(airbyteSourceConfig, null, null));
+    verify(mongoClient, times(1)).close();
   }
 
   @Test
-  void testIncrementalRefresh() {
-    // TODO implement
+  void testReadKeepsMongoClientOpen() {
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+    source.read(airbyteSourceConfig, null, null);
+    verify(mongoClient, never()).close();
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {

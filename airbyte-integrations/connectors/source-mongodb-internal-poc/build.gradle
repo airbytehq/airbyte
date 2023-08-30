@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation "org.jetbrains.kotlinx:kotlinx-cli:0.3.5"
+    testImplementation libs.connectors.testcontainers.mongodb
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-internal-poc')

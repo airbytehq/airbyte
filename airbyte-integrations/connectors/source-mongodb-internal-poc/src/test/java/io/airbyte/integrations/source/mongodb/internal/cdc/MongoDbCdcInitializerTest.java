@@ -6,8 +6,11 @@ package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,8 +50,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MongoDbCdcInitializerTest {
@@ -57,7 +62,8 @@ class MongoDbCdcInitializerTest {
   private static final String DATABASE = "test-database";
   private static final String ID = "64c0029d95ad260d69ef28a0";
   private static final String REPLICA_SET = "test-replica-set";
-  private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
+  private static final String RESUME_TOKEN1 = "8264BEB9F3000000012B0229296E04";
+  private static final String RESUME_TOKEN_AFTER_RESUME_TOKEN1 = "8264BEC9F3000000012B0229296E04";
   private static final String STREAM_NAME = COLLECTION;
   private static final String STREAM_NAMESPACE = DATABASE;
 
@@ -71,16 +77,26 @@ class MongoDbCdcInitializerTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = toConfiguredCatalog(CATALOG);
 
-  @Test
-  void testCreateCdcIteratorsEmptyInitialState() {
-    final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
-    final Instant emittedAt = Instant.now();
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+  final JsonNode CONFIG = Jsons.jsonNode(Map.of(
+      MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+      MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
+      MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
+
+  final Instant EMITTED_AT = Instant.now();
+
+  private MongoDbCdcInitializer cdcInitializer;
+  private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
+  private MongoClient mongoClient;
+  private MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor;
+
+  @BeforeEach
+  void setUp() {
+    final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN1));
 
     final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+    mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
+    mongoClient = mock(MongoClient.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
@@ -88,9 +104,6 @@ class MongoDbCdcInitializerTest {
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
@@ -106,112 +119,58 @@ class MongoDbCdcInitializerTest {
     when(findIterable.sort(any())).thenReturn(findIterable);
     when(findIterable.cursor()).thenReturn(cursor);
 
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
-        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
+    mongoDbDebeziumStateUtil = spy(new MongoDbDebeziumStateUtil());
+    cdcInitializer = new MongoDbCdcInitializer(mongoDbDebeziumStateUtil);
+  }
 
-    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
-
+  @Test
+  void testCreateCdcIteratorsEmptyInitialState() {
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size());
+    assertEquals(2, iterators.size(), "Should have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
   }
 
   @Test
   void testCreateCdcIteratorsFromInitialStateWithInProgressInitialSnapshot() {
-    final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
-    final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS));
-
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final MongoCollection mongoCollection = mock(MongoCollection.class);
-    final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
-    final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
-    final ServerDescription serverDescription = mock(ServerDescription.class);
-    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
-    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
-    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
-    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
-    when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
-    when(mongoCollection.find()).thenReturn(findIterable);
-    when(findIterable.filter(any())).thenReturn(findIterable);
-    when(findIterable.projection(any())).thenReturn(findIterable);
-    when(findIterable.sort(any())).thenReturn(findIterable);
-    when(findIterable.cursor()).thenReturn(cursor);
-
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
-        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
-
-    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
-
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, iterators.size());
+    assertEquals(2, iterators.size(), "Should have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
   }
 
   @Test
   void testCreateCdcIteratorsFromInitialStateWithCompletedInitialSnapshot() {
-    final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
-    final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
-
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
-    final MongoClient mongoClient = mock(MongoClient.class);
-    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
-    final MongoCollection mongoCollection = mock(MongoCollection.class);
-    final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
-    final MongoCursor<BsonDocument> cursor = mock(MongoCursor.class);
-    final ServerDescription serverDescription = mock(ServerDescription.class);
-    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
-    when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
-    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
-    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(mongoClient.getDatabase(DATABASE)).thenReturn(mongoDatabase);
-    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
-    when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
-    when(mongoCollection.find()).thenReturn(findIterable);
-    when(findIterable.filter(any())).thenReturn(findIterable);
-    when(findIterable.projection(any())).thenReturn(findIterable);
-    when(findIterable.sort(any())).thenReturn(findIterable);
-    when(findIterable.cursor()).thenReturn(cursor);
-
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
-        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
-
-    final MongoDbCdcInitializer cdcInitializer = new MongoDbCdcInitializer();
-
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
-        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, emittedAt, config);
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(1, iterators.size());
+    assertEquals(1, iterators.size(), "Should only have 1 iterator for the cdc stream since initial snapshot has been completed");
+  }
+
+  @Test
+  void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetBeforeResumeToken() {
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(new BsonDocument("_data", new BsonString(RESUME_TOKEN_AFTER_RESUME_TOKEN1)));
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
+        .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+    assertNotNull(iterators);
+    assertEquals(2, iterators.size(),
+        "Should have two iterators since a full refresh is required due to saved offset being before most recent resume token");
+  }
+
+  @Test
+  void testUnableToExtractOffsetFromStateException() {
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
+    doReturn(OptionalLong.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any(), any());
+    assertThrows(RuntimeException.class, () -> cdcInitializer.createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
   }
 
   private static JsonNode createInitialDebeziumState(final InitialSnapshotStatus initialSnapshotStatus) {
     final StreamDescriptor streamDescriptor = new StreamDescriptor().withNamespace(STREAM_NAMESPACE).withName(STREAM_NAME);
-    final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN));
+    final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN1));
     final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID, initialSnapshotStatus);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
     final JsonNode streamState = Jsons.jsonNode(mongoDbStreamState);
@@ -222,11 +181,11 @@ class MongoDbCdcInitializerTest {
     return Jsons.jsonNode(List.of(airbyteStateMessage));
   }
 
-  public static ConfiguredAirbyteCatalog toConfiguredCatalog(AirbyteCatalog catalog) {
+  public static ConfiguredAirbyteCatalog toConfiguredCatalog(final AirbyteCatalog catalog) {
     return (new ConfiguredAirbyteCatalog()).withStreams(catalog.getStreams().stream().map(MongoDbCdcInitializerTest::toConfiguredStream).toList());
   }
 
-  public static ConfiguredAirbyteStream toConfiguredStream(AirbyteStream stream) {
+  public static ConfiguredAirbyteStream toConfiguredStream(final AirbyteStream stream) {
     return (new ConfiguredAirbyteStream())
         .withStream(stream)
         .withSyncMode(SyncMode.INCREMENTAL)
