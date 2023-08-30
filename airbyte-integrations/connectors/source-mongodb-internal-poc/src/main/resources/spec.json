@@ -12,6 +12,8 @@
         "title": "Connection String",
         "type": "string",
         "description": "The connection string of the database that you want to replicate..",
+        "pattern": "mongodb(?:\\+srv)?://(?![a-zA-Z0-9-_.%]+:[a-zA-Z0-9-_.%]+@).*/",
+        "pattern_descriptor": "The connection string must not include username/password information, the database name or any additional options.  See https://www.mongodb.com/docs/manual/reference/connection-string/ for more information.",
         "examples": [
           "mongodb+srv://example.mongodb.net/",
           "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/",

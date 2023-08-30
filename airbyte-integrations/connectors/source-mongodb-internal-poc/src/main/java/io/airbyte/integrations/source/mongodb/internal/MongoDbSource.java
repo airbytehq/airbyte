@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -26,6 +27,17 @@ import org.slf4j.LoggerFactory;
 public class MongoDbSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbSource.class);
+
+  private final MongoDbCdcInitializer cdcInitializer;
+
+  public MongoDbSource() {
+    this(new MongoDbCdcInitializer());
+  }
+
+  @VisibleForTesting
+  MongoDbSource(final MongoDbCdcInitializer cdcInitializer) {
+    this.cdcInitializer = cdcInitializer;
+  }
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
@@ -79,9 +91,9 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) {
     final var emittedAt = Instant.now();
-    final var cdcInitializer = new MongoDbCdcInitializer();
     final var stateManager = MongoDbStateManager.createStateManager(state);
-    final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
+    // WARNING: do not close the client here since it needs to be used by the iterator
+    final MongoClient mongoClient = createMongoClient(config);
 
     try {
       final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config);

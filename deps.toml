@@ -8,6 +8,7 @@ connectors-source-testcontainers-clickhouse = "1.17.3"
 connectors-testcontainers = "1.15.3"
 connectors-testcontainers-cassandra = "1.16.0"
 connectors-testcontainers-mariadb = "1.16.2"
+connectors-testcontainers-mongodb = "1.18.3"
 connectors-testcontainers-pulsar = "1.16.2"
 connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
@@ -54,7 +55,7 @@ connectors-testcontainers-elasticsearch = { module = "org.testcontainers:elastic
 connectors-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "connectors-testcontainers-mariadb" }
-connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers-mongodb" }
 connectors-testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "connectors-testcontainers" }
