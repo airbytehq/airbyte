@@ -58,6 +58,7 @@ public class MongoConnectionUtils {
     return connectionString +
         "?replicaSet=" +
         replicaSet +
+        "&readPreference=secondary" +
         "&retryWrites=false" +
         "&provider=airbyte" +
         "&tls=true";
