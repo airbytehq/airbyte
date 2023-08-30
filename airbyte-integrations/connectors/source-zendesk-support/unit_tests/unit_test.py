@@ -423,8 +423,8 @@ class TestSourceZendeskSupportStream:
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response, None))
         expected_records = [
-            {'condition': 'all', 'subject': 'number_of_incidents', 'title': 'Number of incidents'},
-            {'condition': 'any', 'subject': 'brand', 'title': 'Brand'}
+            {"condition": "all", "subject": "number_of_incidents", "title": "Number of incidents"},
+            {"condition": "any", "subject": "brand", "title": "Brand"}
         ]
         assert expected_records == output
 
