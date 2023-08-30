@@ -92,7 +92,8 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final JsonNode state) {
     final var emittedAt = Instant.now();
     final var stateManager = MongoDbStateManager.createStateManager(state);
-    final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
+    // WARNING: do not close the client here since it needs to be used by the iterator
+    final MongoClient mongoClient = createMongoClient(config);
 
     try {
       final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config);
