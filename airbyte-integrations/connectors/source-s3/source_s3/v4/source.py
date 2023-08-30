@@ -10,7 +10,6 @@ from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from source_s3.source import SourceS3Spec
 from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
 
-
 _V3_DEPRECATION_FIELD_MAPPING = {
     "dataset": "streams.name",
     "format": "streams.format",
@@ -21,7 +20,6 @@ _V3_DEPRECATION_FIELD_MAPPING = {
 
 
 class SourceS3(FileBasedSource):
-
     def read_config(self, config_path: str) -> Mapping[str, Any]:
         """
         Used to override the default read_config so that when the new file-based S3 connector processes a config
@@ -46,9 +44,10 @@ class SourceS3(FileBasedSource):
         for v3_property_key, v3_property_value in s3_spec["properties"].items():
             s4_spec["properties"][v3_property_key] = v3_property_value
             s4_spec["properties"][v3_property_key]["airbyte_hidden"] = True
-            s4_spec["properties"][v3_property_key]["description"] = SourceS3._create_description_with_deprecation_prefix(
-                _V3_DEPRECATION_FIELD_MAPPING.get(v3_property_key, None)
-            ) + s4_spec["properties"][v3_property_key]["description"]
+            s4_spec["properties"][v3_property_key]["description"] = (
+                SourceS3._create_description_with_deprecation_prefix(_V3_DEPRECATION_FIELD_MAPPING.get(v3_property_key, None))
+                + s4_spec["properties"][v3_property_key]["description"]
+            )
             self._clean_required_fields(s4_spec["properties"][v3_property_key])
 
         return ConnectorSpecification(
