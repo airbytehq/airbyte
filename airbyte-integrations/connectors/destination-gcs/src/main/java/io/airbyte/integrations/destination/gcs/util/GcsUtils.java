@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.gcs.util;
 
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
@@ -23,7 +22,8 @@ public class GcsUtils {
 
   public static Schema getDefaultAvroSchema(final String name,
                                             @Nullable final String namespace,
-                                            final boolean appendAirbyteFields) {
+                                            final boolean appendAirbyteFields,
+                                            final boolean useDestinationsV2Columns) {
     LOGGER.info("Default schema.");
     final String stdName = AvroConstants.NAME_TRANSFORMER.getIdentifier(name);
     final String stdNamespace = AvroConstants.NAME_TRANSFORMER.getNamespace(namespace);
@@ -32,25 +32,24 @@ public class GcsUtils {
     if (stdNamespace != null) {
       builder = builder.namespace(stdNamespace);
     }
-    if (TypingAndDedupingFlag.isDestinationV2()) {
+    if (useDestinationsV2Columns) {
       builder.namespace("airbyte");
     }
 
     SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
-    if (TypingAndDedupingFlag.isDestinationV2()) {
+    if (useDestinationsV2Columns) {
       if (appendAirbyteFields) {
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).type(UUID_SCHEMA).noDefault();
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).type(TIMESTAMP_MILLIS_SCHEMA).noDefault();
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT).type(NULLABLE_TIMESTAMP_MILLIS).withDefault(null);
       }
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_DATA).type().stringType().noDefault();
     } else {
       if (appendAirbyteFields) {
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_ID).type(UUID_SCHEMA).noDefault();
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).type(TIMESTAMP_MILLIS_SCHEMA).noDefault();
       }
-      assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_DATA).type().stringType().noDefault();
     }
+    assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_DATA).type().stringType().noDefault();
 
     return assembler.endRecord();
   }
