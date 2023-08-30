@@ -8,8 +8,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from requests.exceptions import ChunkedEncodingError
 
-from source_wildberries_seller.schemas.statistics import Income, Stock, Order, Sale, ReportDetailByPeriod
-from source_wildberries_seller.types import WildberriesCredentials, SchemaT, IsSuccess, Message
+from source_wildberries_statistics.schemas import Income, Stock, Order, Sale, ReportDetailByPeriod
+from source_wildberries_statistics.types import WildberriesCredentials, IsSuccess, Message, SchemaT
 
 
 def check_statistics_stream_connection(credentials: WildberriesCredentials) -> tuple[IsSuccess, Optional[Message]]:
@@ -20,7 +20,7 @@ def check_statistics_stream_connection(credentials: WildberriesCredentials) -> t
         if response.status_code == 200:
             return True, None
         elif response.status_code == 401:
-            return False, f"Invalid API key. Response status code: {response.status_code}. Body: {response.text}"
+            return False, f"Invalid statistics API key. Response status code: {response.status_code}. Body: {response.text}"
         else:
             return False, f"Response status code: {response.status_code}. Body: {response.text}"
     except Exception as e:

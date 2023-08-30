@@ -46,10 +46,14 @@ connectionSpecification:
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - 2023-08-01
+    strict_date_from:
+      title: Download data only for one day
+      type: boolean
+      description: Information about all orders or sales with a date EQUAL to the passed "Date from" parameter will be downloaded
     date_to:
       title: Date to
       type: string
-      description: End replication date in format YYYY-MM-DD. Is used only in ReportDetailByPeriod!
+      description: End replication date in format YYYY-MM-DD. Is used only in ReportDetailByPeriodStream!
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - 2023-08-01
@@ -59,37 +63,3 @@ connectionSpecification:
       minimum: 0
       examples:
         - 7
-    brand_names:
-      title: Brand names
-      type: array
-      items:
-        type: string
-    object_ids:
-      title: Item IDs
-      type: array
-      items:
-        type: number
-    tag_ids:
-      title: Tag IDs
-      type: array
-      items:
-        type: number
-    nm_ids:
-      title: WB articles
-      type: array
-      items:
-        type: number
-      description: Required for DetailHistoryNmReportStream!
-    timezone:
-      title: Timezone
-      type: string
-      description: If not specified, Europe/Moscow is used by default.
-      examples:
-        - Europe/Moscow
-    aggregation_level:
-      title: Aggregation level
-      type: string
-      enum: [ "day", "week", "month" ]
-      description: If not specified, aggregation by days is used by default. Is used only in history streams!
-      examples:
-        - day

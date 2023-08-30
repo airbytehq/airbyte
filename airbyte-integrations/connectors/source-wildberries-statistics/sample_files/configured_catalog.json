@@ -1,0 +1,809 @@
+{
+  "streams" : [
+    {
+      "stream" : {
+        "name" : "income_stream",
+        "json_schema" : {
+          "title" : "Income",
+          "type" : "object",
+          "properties" : {
+            "incomeId" : {
+              "title" : "Incomeid",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
+              "type" : "integer"
+            },
+            "number" : {
+              "title" : "Number",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u0423\u041f\u0414",
+              "type" : "string"
+            },
+            "date" : {
+              "title" : "Date",
+              "description" : "\u0414\u0430\u0442\u0430 \u043f\u043e\u0441\u0442\u0443\u043f\u043b\u0435\u043d\u0438\u044f",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "lastChangeDate" : {
+              "title" : "Lastchangedate",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u0432 \u0441\u0435\u0440\u0432\u0438\u0441\u0435",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "supplierArticle" : {
+              "title" : "Supplierarticle",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430",
+              "type" : "string"
+            },
+            "techSize" : {
+              "title" : "Techsize",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u043e\u0432\u0430\u0440\u0430 (\u043f\u0440\u0438\u043c\u0435\u0440 S, M, L, XL, 42, 42-43)",
+              "type" : "string"
+            },
+            "barcode" : {
+              "title" : "Barcode",
+              "description" : "\u0411\u0430\u0440-\u043a\u043e\u0434",
+              "type" : "string"
+            },
+            "quantity" : {
+              "title" : "Quantity",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e",
+              "type" : "integer"
+            },
+            "totalPrice" : {
+              "title" : "Totalprice",
+              "description" : "\u0426\u0435\u043d\u0430 \u0438\u0437 \u0423\u041f\u0414",
+              "type" : "number"
+            },
+            "dateClose" : {
+              "title" : "Dateclose",
+              "description" : "\u0414\u0430\u0442\u0430 \u043f\u0440\u0438\u043d\u044f\u0442\u0438\u044f (\u0437\u0430\u043a\u0440\u044b\u0442\u0438\u044f) \u0432 WB",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "warehouseName" : {
+              "title" : "Warehousename",
+              "description" : "\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0441\u043a\u043b\u0430\u0434\u0430",
+              "type" : "string"
+            },
+            "nmId" : {
+              "title" : "Nmid",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+              "type" : "integer"
+            },
+            "status" : {
+              "title" : "Status",
+              "description" : "\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u0441\u0442\u0430\u0442\u0443\u0441 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "stock_stream",
+        "json_schema" : {
+          "title" : "Stock",
+          "type" : "object",
+          "properties" : {
+            "lastChangeDate" : {
+              "title" : "Lastchangedate",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u0432 \u0441\u0435\u0440\u0432\u0438\u0441\u0435",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "warehouseName" : {
+              "title" : "Warehousename",
+              "description" : "\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0441\u043a\u043b\u0430\u0434\u0430",
+              "type" : "string"
+            },
+            "supplierArticle" : {
+              "title" : "Supplierarticle",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430",
+              "type" : "string"
+            },
+            "nmId" : {
+              "title" : "Nmid",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+              "type" : "integer"
+            },
+            "barcode" : {
+              "title" : "Barcode",
+              "description" : "\u0411\u0430\u0440\u043a\u043e\u0434",
+              "type" : "string"
+            },
+            "quantity" : {
+              "title" : "Quantity",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e, \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e\u0435 \u0434\u043b\u044f \u043f\u0440\u043e\u0434\u0430\u0436\u0438 (\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u043c\u043e\u0436\u043d\u043e \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443)",
+              "type" : "integer"
+            },
+            "inWayToClient" : {
+              "title" : "Inwaytoclient",
+              "description" : "\u0412 \u043f\u0443\u0442\u0438 \u043a \u043a\u043b\u0438\u0435\u043d\u0442\u0443",
+              "type" : "integer"
+            },
+            "inWayFromClient" : {
+              "title" : "Inwayfromclient",
+              "description" : "\u0412 \u043f\u0443\u0442\u0438 \u043e\u0442 \u043a\u043b\u0438\u0435\u043d\u0442\u0430",
+              "type" : "integer"
+            },
+            "quantityFull" : {
+              "title" : "Quantityfull",
+              "description" : "\u041f\u043e\u043b\u043d\u043e\u0435 (\u043d\u0435\u043f\u0440\u043e\u0434\u0430\u043d\u043d\u043e\u0435) \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e, \u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u0447\u0438\u0441\u043b\u0438\u0442\u0441\u044f \u0437\u0430 \u0441\u043a\u043b\u0430\u0434\u043e\u043c",
+              "type" : "integer"
+            },
+            "category" : {
+              "title" : "Category",
+              "description" : "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f",
+              "type" : "string"
+            },
+            "subject" : {
+              "title" : "Subject",
+              "description" : "\u041f\u0440\u0435\u0434\u043c\u0435\u0442",
+              "type" : "string"
+            },
+            "brand" : {
+              "title" : "Brand",
+              "description" : "\u0411\u0440\u0435\u043d\u0434",
+              "type" : "string"
+            },
+            "techSize" : {
+              "title" : "Techsize",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440",
+              "type" : "string"
+            },
+            "Price" : {
+              "title" : "Price",
+              "description" : "\u0426\u0435\u043d\u0430",
+              "type" : "number"
+            },
+            "Discount" : {
+              "title" : "Discount",
+              "description" : "\u0421\u043a\u0438\u0434\u043a\u0430",
+              "type" : "number"
+            },
+            "isSupply" : {
+              "title" : "Issupply",
+              "description" : "\u0414\u043e\u0433\u043e\u0432\u043e\u0440 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438 (\u0432\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0434\u0430\u043d\u043d\u044b\u0435)",
+              "type" : "boolean"
+            },
+            "isRealization" : {
+              "title" : "Isrealization",
+              "description" : "\u0414\u043e\u0433\u043e\u0432\u043e\u0440 \u0440\u0435\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438 (\u0432\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0434\u0430\u043d\u043d\u044b\u0435)",
+              "type" : "boolean"
+            },
+            "SCCode" : {
+              "title" : "Sccode",
+              "description" : "\u041a\u043e\u0434 \u043a\u043e\u043d\u0442\u0440\u0430\u043a\u0442\u0430 (\u0432\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0434\u0430\u043d\u043d\u044b\u0435)",
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "order_stream",
+        "json_schema" : {
+          "title" : "Order",
+          "type" : "object",
+          "properties" : {
+            "gNumber" : {
+              "title" : "Gnumber",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u0437\u0430\u043a\u0430\u0437\u0430. \u041e\u0431\u044a\u0435\u0434\u0438\u043d\u044f\u0435\u0442 \u0432\u0441\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u043e\u0434\u043d\u043e\u0433\u043e \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string"
+            },
+            "date" : {
+              "title" : "Date",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "lastChangeDate" : {
+              "title" : "Lastchangedate",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u0432 \u0441\u0435\u0440\u0432\u0438\u0441\u0435",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "supplierArticle" : {
+              "title" : "Supplierarticle",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430",
+              "type" : "string"
+            },
+            "techSize" : {
+              "title" : "Techsize",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u043e\u0432\u0430\u0440\u0430 (\u043f\u0440\u0438\u043c\u0435\u0440 S, M, L, XL, 42, 42-43)",
+              "type" : "string"
+            },
+            "barcode" : {
+              "title" : "Barcode",
+              "description" : "\u0411\u0430\u0440-\u043a\u043e\u0434",
+              "type" : "string"
+            },
+            "totalPrice" : {
+              "title" : "Totalprice",
+              "description" : "\u0426\u0435\u043d\u0430 \u0434\u043e \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u043e\u0439 \u0438\u0442\u043e\u0433\u043e\u0432\u043e\u0439 \u0441\u043a\u0438\u0434\u043a\u0438/\u043f\u0440\u043e\u043c\u043e/\u0441\u043f\u043f",
+              "type" : "number"
+            },
+            "discountPercent" : {
+              "title" : "Discountpercent",
+              "description" : "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0438\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u0434\u0438\u0441\u043a\u043e\u043d\u0442",
+              "type" : "integer"
+            },
+            "warehouseName" : {
+              "title" : "Warehousename",
+              "description" : "\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0441\u043a\u043b\u0430\u0434\u0430 \u043e\u0442\u0433\u0440\u0443\u0437\u043a\u0438",
+              "type" : "string"
+            },
+            "oblast" : {
+              "title" : "Oblast",
+              "description" : "\u041e\u0431\u043b\u0430\u0441\u0442\u044c",
+              "type" : "string"
+            },
+            "incomeID" : {
+              "title" : "Incomeid",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438 (\u043e\u0442 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 \u043d\u0430 \u0441\u043a\u043b\u0430\u0434)",
+              "type" : "integer"
+            },
+            "odid" : {
+              "title" : "Odid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u0437\u0430\u043a\u0430\u0437\u0430. \u041c\u043e\u0436\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c\u0441\u044f \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u044f \u043c\u0435\u0436\u0434\u0443 \u0437\u0430\u043a\u0430\u0437\u0430\u043c\u0438 \u0438 \u043f\u0440\u043e\u0434\u0430\u0436\u0430\u043c\u0438",
+              "type" : "integer"
+            },
+            "nmId" : {
+              "title" : "Nmid",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+              "type" : "integer"
+            },
+            "subject" : {
+              "title" : "Subject",
+              "description" : "\u041f\u0440\u0435\u0434\u043c\u0435\u0442",
+              "type" : "string"
+            },
+            "category" : {
+              "title" : "Category",
+              "description" : "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f",
+              "type" : "string"
+            },
+            "brand" : {
+              "title" : "Brand",
+              "description" : "\u0411\u0440\u0435\u043d\u0434",
+              "type" : "string"
+            },
+            "isCancel" : {
+              "title" : "Iscancel",
+              "description" : "\u041e\u0442\u043c\u0435\u043d\u0430 \u0437\u0430\u043a\u0430\u0437\u0430. true - \u0437\u0430\u043a\u0430\u0437 \u043e\u0442\u043c\u0435\u043d\u0435\u043d \u0434\u043e \u043e\u043f\u043b\u0430\u0442\u044b.",
+              "type" : "boolean"
+            },
+            "cancel_dt" : {
+              "title" : "Cancel Dt",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u043e\u0442\u043c\u0435\u043d\u044b \u0437\u0430\u043a\u0430\u0437\u0430. \u0415\u0441\u043b\u0438 \u0437\u0430\u043a\u0430\u0437 \u043d\u0435 \u0431\u044b\u043b \u043e\u0442\u043c\u0435\u043d\u0435\u043d, \u0442\u043e \"0001-01-01T00:00:00\"",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "sticker" : {
+              "title" : "Sticker",
+              "description" : "\u0426\u0438\u0444\u0440\u043e\u0432\u043e\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u0441\u0442\u0438\u043a\u0435\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043a\u043b\u0435\u0438\u0442\u0441\u044f \u043d\u0430 \u0442\u043e\u0432\u0430\u0440 \u0432 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435 \u0441\u0431\u043e\u0440\u043a\u0438 \u0437\u0430\u043a\u0430\u0437\u0430 \u043f\u043e \u0441\u0438\u0441\u0442\u0435\u043c\u0435 \u041c\u0430\u0440\u043a\u0435\u0442\u043f\u043b\u0435\u0439\u0441",
+              "type" : "string"
+            },
+            "srid" : {
+              "title" : "Srid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string"
+            },
+            "orderType" : {
+              "title" : "Ordertype",
+              "description" : "\u0422\u0438\u043f \u043f\u043e\u0441\u0442\u0443\u043f\u0438\u0432\u0448\u0435\u0433\u043e \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "sale_stream",
+        "json_schema" : {
+          "title" : "Sale",
+          "type" : "object",
+          "properties" : {
+            "gNumber" : {
+              "title" : "Gnumber",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u0437\u0430\u043a\u0430\u0437\u0430. \u041e\u0431\u044a\u0435\u0434\u0438\u043d\u044f\u0435\u0442 \u0432\u0441\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u043e\u0434\u043d\u043e\u0433\u043e \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string"
+            },
+            "date" : {
+              "title" : "Date",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u043f\u0440\u043e\u0434\u0430\u0436\u0438",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "lastChangeDate" : {
+              "title" : "Lastchangedate",
+              "description" : "\u0414\u0430\u0442\u0430 \u0438 \u0432\u0440\u0435\u043c\u044f \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u044f \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u0432 \u0441\u0435\u0440\u0432\u0438\u0441\u0435",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "supplierArticle" : {
+              "title" : "Supplierarticle",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430",
+              "type" : "string"
+            },
+            "techSize" : {
+              "title" : "Techsize",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440 \u0442\u043e\u0432\u0430\u0440\u0430 (\u043f\u0440\u0438\u043c\u0435\u0440 S, M, L, XL, 42, 42-43)",
+              "type" : "string"
+            },
+            "barcode" : {
+              "title" : "Barcode",
+              "description" : "\u0411\u0430\u0440-\u043a\u043e\u0434",
+              "type" : "string"
+            },
+            "totalPrice" : {
+              "title" : "Totalprice",
+              "description" : "\u0426\u0435\u043d\u0430 \u0434\u043e \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u043e\u0439 \u0441\u043a\u0438\u0434\u043a\u0438/\u043f\u0440\u043e\u043c\u043e/\u0441\u043f\u043f",
+              "type" : "number"
+            },
+            "discountPercent" : {
+              "title" : "Discountpercent",
+              "description" : "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0438\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u0434\u0438\u0441\u043a\u043e\u043d\u0442",
+              "type" : "integer"
+            },
+            "isSupply" : {
+              "title" : "Issupply",
+              "description" : "\u0414\u043e\u0433\u043e\u0432\u043e\u0440 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
+              "type" : "boolean"
+            },
+            "isRealization" : {
+              "title" : "Isrealization",
+              "description" : "\u0414\u043e\u0433\u043e\u0432\u043e\u0440 \u0440\u0435\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438",
+              "type" : "boolean"
+            },
+            "promoCodeDiscount" : {
+              "title" : "Promocodediscount",
+              "description" : "\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u043e \u043f\u0440\u043e\u043c\u043e\u043a\u043e\u0434\u0443",
+              "type" : "number"
+            },
+            "warehouseName" : {
+              "title" : "Warehousename",
+              "description" : "\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0441\u043a\u043b\u0430\u0434\u0430 \u043e\u0442\u0433\u0440\u0443\u0437\u043a\u0438",
+              "type" : "string"
+            },
+            "countryName" : {
+              "title" : "Countryname",
+              "description" : "\u0421\u0442\u0440\u0430\u043d\u0430",
+              "type" : "string"
+            },
+            "oblastOkrugName" : {
+              "title" : "Oblastokrugname",
+              "description" : "\u041e\u043a\u0440\u0443\u0433",
+              "type" : "string"
+            },
+            "regionName" : {
+              "title" : "Regionname",
+              "description" : "\u0420\u0435\u0433\u0438\u043e\u043d",
+              "type" : "string"
+            },
+            "incomeID" : {
+              "title" : "Incomeid",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438 (\u043e\u0442 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 \u043d\u0430 \u0441\u043a\u043b\u0430\u0434)",
+              "type" : "integer"
+            },
+            "saleID" : {
+              "title" : "Saleid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u043f\u0440\u043e\u0434\u0430\u0436\u0438/\u0432\u043e\u0437\u0432\u0440\u0430\u0442\u0430",
+              "type" : "string"
+            },
+            "odid" : {
+              "title" : "Odid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u0437\u0430\u043a\u0430\u0437\u0430. \u041c\u043e\u0436\u0435\u0442 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c\u0441\u044f \u0434\u043b\u044f \u043f\u043e\u0438\u0441\u043a\u0430 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u044f \u043c\u0435\u0436\u0434\u0443 \u0437\u0430\u043a\u0430\u0437\u0430\u043c\u0438 \u0438 \u043f\u0440\u043e\u0434\u0430\u0436\u0430\u043c\u0438",
+              "type" : "integer"
+            },
+            "spp" : {
+              "title" : "Spp",
+              "description" : "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u0430\u044f \u0441\u043a\u0438\u0434\u043a\u0430 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0433\u043e \u043f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u044f",
+              "type" : "number"
+            },
+            "forPay" : {
+              "title" : "Forpay",
+              "description" : "\u041a \u043f\u0435\u0440\u0435\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044e \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0443",
+              "type" : "number"
+            },
+            "finishedPrice" : {
+              "title" : "Finishedprice",
+              "description" : "\u0424\u0430\u043a\u0442\u0438\u0447\u0435\u0441\u043a\u0430\u044f \u0446\u0435\u043d\u0430 \u0437\u0430\u043a\u0430\u0437\u0430 \u0441 \u0443\u0447\u0435\u0442\u043e\u043c \u0432\u0441\u0435\u0445 \u0441\u043a\u0438\u0434\u043e\u043a",
+              "type" : "number"
+            },
+            "priceWithDisc" : {
+              "title" : "Pricewithdisc",
+              "description" : "\u0426\u0435\u043d\u0430, \u043e\u0442 \u043a\u043e\u0442\u043e\u0440\u043e\u0439 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u0432\u043e\u0437\u043d\u0430\u0433\u0440\u0430\u0436\u0434\u0435\u043d\u0438\u0435 \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430 forpay (\u0441 \u0443\u0447\u0435\u0442\u043e\u043c \u0432\u0441\u0435\u0445 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u044b\u0445 \u0441\u043a\u0438\u0434\u043e\u043a)",
+              "type" : "number"
+            },
+            "nmId" : {
+              "title" : "Nmid",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+              "type" : "integer"
+            },
+            "subject" : {
+              "title" : "Subject",
+              "description" : "\u041f\u0440\u0435\u0434\u043c\u0435\u0442",
+              "type" : "string"
+            },
+            "category" : {
+              "title" : "Category",
+              "description" : "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0438\u044f",
+              "type" : "string"
+            },
+            "brand" : {
+              "title" : "Brand",
+              "description" : "\u0411\u0440\u0435\u043d\u0434",
+              "type" : "string"
+            },
+            "IsStorno" : {
+              "title" : "Isstorno",
+              "description" : "\u0414\u043b\u044f \u0441\u0442\u043e\u0440\u043d\u043e-\u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439 1, \u0434\u043b\u044f \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u044b\u0445 0",
+              "type" : "integer"
+            },
+            "sticker" : {
+              "title" : "Sticker",
+              "description" : "\u0426\u0438\u0444\u0440\u043e\u0432\u043e\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u0441\u0442\u0438\u043a\u0435\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043a\u043b\u0435\u0438\u0442\u0441\u044f \u043d\u0430 \u0442\u043e\u0432\u0430\u0440 \u0432 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435 \u0441\u0431\u043e\u0440\u043a\u0438 \u0437\u0430\u043a\u0430\u0437\u0430 \u043f\u043e \u0441\u0438\u0441\u0442\u0435\u043c\u0435 \u041c\u0430\u0440\u043a\u0435\u0442\u043f\u043b\u0435\u0439\u0441",
+              "type" : "string"
+            },
+            "srid" : {
+              "title" : "Srid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "report_detail_by_period_stream",
+        "json_schema" : {
+          "title" : "ReportDetailByPeriod",
+          "type" : "object",
+          "properties" : {
+            "realizationreport_id" : {
+              "title" : "Realizationreport Id",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043e\u0442\u0447\u0451\u0442\u0430",
+              "type" : "integer"
+            },
+            "date_from" : {
+              "title" : "Date From",
+              "description" : "\u0414\u0430\u0442\u0430 \u043d\u0430\u0447\u0430\u043b\u0430 \u043e\u0442\u0447\u0451\u0442\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "date_to" : {
+              "title" : "Date To",
+              "description" : "\u0414\u0430\u0442\u0430 \u043a\u043e\u043d\u0446\u0430 \u043e\u0442\u0447\u0451\u0442\u043d\u043e\u0433\u043e \u043f\u0435\u0440\u0438\u043e\u0434\u0430",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "create_dt" : {
+              "title" : "Create Dt",
+              "description" : "\u0414\u0430\u0442\u0430 \u0444\u043e\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u044f \u043e\u0442\u0447\u0451\u0442\u0430",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "currency_name" : {
+              "title" : "Currency Name",
+              "description" : "\u0412\u0430\u043b\u044e\u0442\u0430 \u043e\u0442\u0447\u0451\u0442\u0430",
+              "type" : "string"
+            },
+            "suppliercontract_code" : {
+              "title" : "Suppliercontract Code",
+              "description" : "\u0414\u043e\u0433\u043e\u0432\u043e\u0440",
+              "type" : "object"
+            },
+            "rrd_id" : {
+              "title" : "Rrd Id",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u0441\u0442\u0440\u043e\u043a\u0438",
+              "type" : "integer"
+            },
+            "gi_id" : {
+              "title" : "Gi Id",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043f\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
+              "type" : "integer"
+            },
+            "subject_name" : {
+              "title" : "Subject Name",
+              "description" : "\u041f\u0440\u0435\u0434\u043c\u0435\u0442",
+              "type" : "string"
+            },
+            "nm_id" : {
+              "title" : "Nm Id",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+              "type" : "integer"
+            },
+            "brand_name" : {
+              "title" : "Brand Name",
+              "description" : "\u0411\u0440\u0435\u043d\u0434",
+              "type" : "string"
+            },
+            "sa_name" : {
+              "title" : "Sa Name",
+              "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0430",
+              "type" : "string"
+            },
+            "ts_name" : {
+              "title" : "Ts Name",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440",
+              "type" : "string"
+            },
+            "barcode" : {
+              "title" : "Barcode",
+              "description" : "\u0411\u0430\u0440\u043a\u043e\u0434",
+              "type" : "string"
+            },
+            "doc_type_name" : {
+              "title" : "Doc Type Name",
+              "description" : "\u0422\u0438\u043f \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430",
+              "type" : "string"
+            },
+            "quantity" : {
+              "title" : "Quantity",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e",
+              "type" : "integer"
+            },
+            "retail_price" : {
+              "title" : "Retail Price",
+              "description" : "\u0426\u0435\u043d\u0430 \u0440\u043e\u0437\u043d\u0438\u0447\u043d\u0430\u044f",
+              "type" : "number"
+            },
+            "retail_amount" : {
+              "title" : "Retail Amount",
+              "description" : "\u0421\u0443\u043c\u043c\u0430 \u043f\u0440\u043e\u0434\u0430\u0436 (\u0432\u043e\u0437\u0432\u0440\u0430\u0442\u043e\u0432)",
+              "type" : "number"
+            },
+            "sale_percent" : {
+              "title" : "Sale Percent",
+              "description" : "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u0430\u044f \u0441\u043a\u0438\u0434\u043a\u0430",
+              "type" : "integer"
+            },
+            "commission_percent" : {
+              "title" : "Commission Percent",
+              "description" : "\u041f\u0440\u043e\u0446\u0435\u043d\u0442 \u043a\u043e\u043c\u0438\u0441\u0441\u0438\u0438",
+              "type" : "number"
+            },
+            "office_name" : {
+              "title" : "Office Name",
+              "description" : "\u0421\u043a\u043b\u0430\u0434",
+              "type" : "string"
+            },
+            "supplier_oper_name" : {
+              "title" : "Supplier Oper Name",
+              "description" : "\u041e\u0431\u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0434\u043b\u044f \u043e\u043f\u043b\u0430\u0442\u044b",
+              "type" : "string"
+            },
+            "order_dt" : {
+              "title" : "Order Dt",
+              "description" : "\u0414\u0430\u0442\u0430 \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "sale_dt" : {
+              "title" : "Sale Dt",
+              "description" : "\u0414\u0430\u0442\u0430 \u043f\u0440\u043e\u0434\u0430\u0436\u0438",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "rr_dt" : {
+              "title" : "Rr Dt",
+              "description" : "\u0414\u0430\u0442\u0430 \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0438",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "shk_id" : {
+              "title" : "Shk Id",
+              "description" : "\u0428\u0442\u0440\u0438\u0445-\u043a\u043e\u0434",
+              "type" : "integer"
+            },
+            "retail_price_withdisc_rub" : {
+              "title" : "Retail Price Withdisc Rub",
+              "description" : "\u0426\u0435\u043d\u0430 \u0440\u043e\u0437\u043d\u0438\u0447\u043d\u0430\u044f \u0441 \u0443\u0447\u0435\u0442\u043e\u043c \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u043e\u0439 \u0441\u043a\u0438\u0434\u043a\u0438",
+              "type" : "number"
+            },
+            "delivery_amount" : {
+              "title" : "Delivery Amount",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u0441\u0442\u0430\u0432\u043e\u043a",
+              "type" : "integer"
+            },
+            "return_amount" : {
+              "title" : "Return Amount",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0432\u043e\u0437\u0432\u0440\u0430\u0442\u043e\u0432",
+              "type" : "integer"
+            },
+            "delivery_rub" : {
+              "title" : "Delivery Rub",
+              "description" : "\u0421\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043b\u043e\u0433\u0438\u0441\u0442\u0438\u043a\u0438",
+              "type" : "number"
+            },
+            "gi_box_type_name" : {
+              "title" : "Gi Box Type Name",
+              "description" : "\u0422\u0438\u043f \u043a\u043e\u0440\u043e\u0431\u043e\u0432",
+              "type" : "string"
+            },
+            "product_discount_for_report" : {
+              "title" : "Product Discount For Report",
+              "description" : "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u043f\u0440\u043e\u0434\u0443\u043a\u0442\u043e\u0432\u044b\u0439 \u0434\u0438\u0441\u043a\u043e\u043d\u0442",
+              "type" : "number"
+            },
+            "supplier_promo" : {
+              "title" : "Supplier Promo",
+              "description" : "\u041f\u0440\u043e\u043c\u043e\u043a\u043e\u0434",
+              "type" : "number"
+            },
+            "rid" : {
+              "title" : "Rid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "integer"
+            },
+            "ppvz_spp_prc" : {
+              "title" : "Ppvz Spp Prc",
+              "description" : "\u0421\u043a\u0438\u0434\u043a\u0430 \u043f\u043e\u0441\u0442\u043e\u044f\u043d\u043d\u043e\u0433\u043e \u043f\u043e\u043a\u0443\u043f\u0430\u0442\u0435\u043b\u044f",
+              "type" : "number"
+            },
+            "ppvz_kvw_prc_base" : {
+              "title" : "Ppvz Kvw Prc Base",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440 \u043a\u0412\u0412 \u0431\u0435\u0437 \u041d\u0414\u0421, % \u0431\u0430\u0437\u043e\u0432\u044b\u0439",
+              "type" : "number"
+            },
+            "ppvz_kvw_prc" : {
+              "title" : "Ppvz Kvw Prc",
+              "description" : "\u0418\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u043a\u0412\u0412 \u0431\u0435\u0437 \u041d\u0414\u0421, %",
+              "type" : "number"
+            },
+            "sup_rating_prc_up" : {
+              "title" : "Sup Rating Prc Up",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440 \u0441\u043d\u0438\u0436\u0435\u043d\u0438\u044f \u043a\u0412\u0412 \u0438\u0437-\u0437\u0430 \u0440\u0435\u0439\u0442\u0438\u043d\u0433\u0430",
+              "type" : "number"
+            },
+            "is_kgvp_v2" : {
+              "title" : "Is Kgvp V2",
+              "description" : "\u0420\u0430\u0437\u043c\u0435\u0440 \u0441\u043d\u0438\u0436\u0435\u043d\u0438\u044f \u043a\u0412\u0412 \u0438\u0437-\u0437\u0430 \u0430\u043a\u0446\u0438\u0438",
+              "type" : "number"
+            },
+            "ppvz_sales_commission" : {
+              "title" : "Ppvz Sales Commission",
+              "description" : "\u0412\u043e\u0437\u043d\u0430\u0433\u0440\u0430\u0436\u0434\u0435\u043d\u0438\u0435 \u0441 \u043f\u0440\u043e\u0434\u0430\u0436 \u0434\u043e \u0432\u044b\u0447\u0435\u0442\u0430 \u0443\u0441\u043b\u0443\u0433 \u043f\u043e\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0433\u043e, \u0431\u0435\u0437 \u041d\u0414\u0421",
+              "type" : "number"
+            },
+            "ppvz_for_pay" : {
+              "title" : "Ppvz For Pay",
+              "description" : "\u041a \u043f\u0435\u0440\u0435\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044e \u043f\u0440\u043e\u0434\u0430\u0432\u0446\u0443 \u0437\u0430 \u0440\u0435\u0430\u043b\u0438\u0437\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0442\u043e\u0432\u0430\u0440",
+              "type" : "number"
+            },
+            "ppvz_reward" : {
+              "title" : "Ppvz Reward",
+              "description" : "\u0412\u043e\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u0435 \u0437\u0430 \u0432\u044b\u0434\u0430\u0447\u0443 \u0438 \u0432\u043e\u0437\u0432\u0440\u0430\u0442 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u043d\u0430 \u041f\u0412\u0417",
+              "type" : "number"
+            },
+            "acquiring_fee" : {
+              "title" : "Acquiring Fee",
+              "description" : "\u0412\u043e\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u0435 \u0438\u0437\u0434\u0435\u0440\u0436\u0435\u043a \u043f\u043e \u044d\u043a\u0432\u0430\u0439\u0440\u0438\u043d\u0433\u0443",
+              "type" : "number"
+            },
+            "acquiring_bank" : {
+              "title" : "Acquiring Bank",
+              "description" : "\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0431\u0430\u043d\u043a\u0430-\u044d\u043a\u0432\u0430\u0439\u0435\u0440\u0430",
+              "type" : "string"
+            },
+            "ppvz_vw" : {
+              "title" : "Ppvz Vw",
+              "description" : "\u0412\u043e\u0437\u043d\u0430\u0433\u0440\u0430\u0436\u0434\u0435\u043d\u0438\u0435 WB \u0431\u0435\u0437 \u041d\u0414\u0421",
+              "type" : "number"
+            },
+            "ppvz_vw_nds" : {
+              "title" : "Ppvz Vw Nds",
+              "description" : "\u041d\u0414\u0421 \u0441 \u0432\u043e\u0437\u043d\u0430\u0433\u0440\u0430\u0436\u0434\u0435\u043d\u0438\u044f WB",
+              "type" : "number"
+            },
+            "ppvz_office_id" : {
+              "title" : "Ppvz Office Id",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043e\u0444\u0438\u0441\u0430",
+              "type" : "integer"
+            },
+            "ppvz_office_name" : {
+              "title" : "Ppvz Office Name",
+              "description" : "\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u043e\u0444\u0438\u0441\u0430 \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438",
+              "type" : "string"
+            },
+            "ppvz_supplier_id" : {
+              "title" : "Ppvz Supplier Id",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0430",
+              "type" : "integer"
+            },
+            "ppvz_supplier_name" : {
+              "title" : "Ppvz Supplier Name",
+              "description" : "\u041f\u0430\u0440\u0442\u043d\u0435\u0440",
+              "type" : "string"
+            },
+            "ppvz_inn" : {
+              "title" : "Ppvz Inn",
+              "description" : "\u0418\u041d\u041d \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0430",
+              "type" : "string"
+            },
+            "declaration_number" : {
+              "title" : "Declaration Number",
+              "description" : "\u041d\u043e\u043c\u0435\u0440 \u0442\u0430\u043c\u043e\u0436\u0435\u043d\u043d\u043e\u0439 \u0434\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u0438",
+              "type" : "string"
+            },
+            "bonus_type_name" : {
+              "title" : "Bonus Type Name",
+              "description" : "\u041e\u0431\u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0448\u0442\u0440\u0430\u0444\u043e\u0432 \u0438 \u0434\u043e\u043f\u043b\u0430\u0442",
+              "type" : "string"
+            },
+            "sticker_id" : {
+              "title" : "Sticker Id",
+              "description" : "\u0426\u0438\u0444\u0440\u043e\u0432\u043e\u0435 \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u0435 \u0441\u0442\u0438\u043a\u0435\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043a\u043b\u0435\u0438\u0442\u0441\u044f \u043d\u0430 \u0442\u043e\u0432\u0430\u0440 \u0432 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u0435 \u0441\u0431\u043e\u0440\u043a\u0438 \u0437\u0430\u043a\u0430\u0437\u0430 \u043f\u043e \u0441\u0445\u0435\u043c\u0435 \"\u041c\u0430\u0440\u043a\u0435\u0442\u043f\u043b\u0435\u0439\u0441\"",
+              "type" : "string"
+            },
+            "site_country" : {
+              "title" : "Site Country",
+              "description" : "\u0421\u0442\u0440\u0430\u043d\u0430 \u043f\u0440\u043e\u0434\u0430\u0436\u0438",
+              "type" : "string"
+            },
+            "penalty" : {
+              "title" : "Penalty",
+              "description" : "\u0428\u0442\u0440\u0430\u0444\u044b",
+              "type" : "number"
+            },
+            "additional_payment" : {
+              "title" : "Additional Payment",
+              "description" : "\u0414\u043e\u043f\u043b\u0430\u0442\u044b",
+              "type" : "number"
+            },
+            "rebill_logistic_cost" : {
+              "title" : "Rebill Logistic Cost",
+              "description" : "\u0412\u043e\u0437\u043c\u0435\u0449\u0435\u043d\u0438\u0435 \u0438\u0437\u0434\u0435\u0440\u0436\u0435\u043a \u043f\u043e \u043f\u0435\u0440\u0435\u0432\u043e\u0437\u043a\u0435",
+              "type" : "number"
+            },
+            "rebill_logistic_org" : {
+              "title" : "Rebill Logistic Org",
+              "description" : "\u041e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0442\u043e\u0440 \u043f\u0435\u0440\u0435\u0432\u043e\u0437\u043a\u0438",
+              "type" : "string"
+            },
+            "kiz" : {
+              "title" : "Kiz",
+              "description" : "\u041a\u043e\u0434 \u043c\u0430\u0440\u043a\u0438\u0440\u043e\u0432\u043a\u0438",
+              "type" : "string"
+            },
+            "srid" : {
+              "title" : "Srid",
+              "description" : "\u0423\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u0437\u0430\u043a\u0430\u0437\u0430",
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    }
+  ]
+}

@@ -9,7 +9,6 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.2",
     "pydantic~=1.10",
     "requests~=2.31",
-    "pytz~=2023.3",
 ]
 
 TEST_REQUIREMENTS = [
@@ -19,8 +18,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_wildberries_seller",
-    description="Source implementation for Wildberries Seller.",
+    name="source_wildberries_statistics",
+    description="Source implementation for Wildberries Statistics.",
     author="Oleg Denisov",
     author_email="o.denisov@adventum.ru",
     packages=find_packages(),
