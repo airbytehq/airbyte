@@ -294,8 +294,8 @@
             }
           },
           {
-            "title": "Detect changes with XMIN system column",
-            "description": "Incrementally reads new inserts and updates via Postgres XMIN system column.",
+            "title": "Detect Changes with Xmin System Column",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">Xmin system column</a>. Only recommended for tables up to 500GB.",
             "required": ["method"],
             "properties": {
               "method": {
