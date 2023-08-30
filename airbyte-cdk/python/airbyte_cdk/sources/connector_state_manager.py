@@ -141,7 +141,7 @@ class ConnectorStateManager:
                     name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace
                 ): per_stream_state.stream.stream_state
                 for per_stream_state in state
-                if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore
+                if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore # state is always a list of AirbyteStateMessage if is_per_stream is True
             }
             return None, streams
         else:
