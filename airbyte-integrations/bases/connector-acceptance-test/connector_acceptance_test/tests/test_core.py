@@ -472,7 +472,9 @@ class TestSpec(BaseTest):
                 errors.append(f"display_type is only allowed on fields which have a oneOf property, but is set on {parent_path}")
             display_type_value = parent_object.get("display_type")
             if display_type_value != "dropdown" and display_type_value != "radio":
-                errors.append(f"display_type must be either 'dropdown' or 'radio', but is set to '{display_type_value}' at {display_type_path}")
+                errors.append(
+                    f"display_type must be either 'dropdown' or 'radio', but is set to '{display_type_value}' at {display_type_path}"
+                )
         self._fail_on_errors(errors)
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
