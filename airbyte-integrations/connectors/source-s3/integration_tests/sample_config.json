@@ -1,0 +1,15 @@
+{
+    "dataset": "test",
+    "provider": {
+        "storage": "S3",
+        "bucket": "airbyte-acceptance-test-source-s3",
+        "aws_access_key_id": "****",
+        "aws_secret_access_key": "****",
+        "path_prefix": ""
+    },
+    "format": {
+        "filetype": "csv"
+    },
+    "path_pattern": "**",
+    "schema": "{}"
+}

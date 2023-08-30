@@ -1,0 +1,18 @@
+{
+    "dataset": "test_stream",
+    "config_version": "0.1",
+    "bucket": "airbyte-acceptance-test-source-s3",
+    "aws_access_key_id": "****",
+    "aws_secret_access_key": "****",
+    "streams": [
+      {
+        "name": "test",
+        "file_type": "csv",
+        "globs": [
+          "*.csv"
+        ],
+        "validation_policy": "Emit Record"
+      }
+    ]
+  }
+  
