@@ -25,7 +25,7 @@ public abstract class SnowflakeSqlStagingOperations extends SnowflakeSqlOperatio
 
     final CsvSerializedBuffer csvSerializedBuffer = new CsvSerializedBuffer(
         new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-        new StagingDatabaseCsvSheetGenerator(),
+        new StagingDatabaseCsvSheetGenerator(true),
         true);
 
     // create a dummy stream\records that will bed used to test uploading

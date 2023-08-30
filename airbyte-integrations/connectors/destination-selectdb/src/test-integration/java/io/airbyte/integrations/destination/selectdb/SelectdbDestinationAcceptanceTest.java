@@ -112,7 +112,7 @@ public class SelectdbDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
 
