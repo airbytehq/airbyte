@@ -1121,7 +1121,7 @@ def test_nested_group(mocker, connector_spec, should_fail):
                 "properties": {
                     "select_type": {
                         "type": "string",
-                        "display_type": "invalid",
+                        "display_type": "dropdown",
                     },
                 },
             }, 
