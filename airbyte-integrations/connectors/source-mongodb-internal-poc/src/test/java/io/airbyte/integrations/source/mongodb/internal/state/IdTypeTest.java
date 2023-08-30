@@ -38,4 +38,5 @@ class IdTypeTest {
   void supported() {
     assertEquals("objectId, string, int, long", IdType.SUPPORTED);
   }
+
 }

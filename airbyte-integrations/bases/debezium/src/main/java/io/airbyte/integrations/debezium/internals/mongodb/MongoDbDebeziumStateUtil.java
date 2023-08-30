@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;

@@ -213,7 +213,8 @@ class InitialSnapshotHandlerTest {
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
-    when(stateManager.getStreamState(COLLECTION1, NAMESPACE)).thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
+    when(stateManager.getStreamState(COLLECTION1, NAMESPACE))
+        .thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now());
 
@@ -271,8 +272,7 @@ class InitialSnapshotHandlerTest {
     insertDocuments(COLLECTION1, List.of(
         new Document(Map.of(
             CURSOR_FIELD, 0.1,
-            NAME_FIELD, NAME1))
-        ));
+            NAME_FIELD, NAME1))));
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);

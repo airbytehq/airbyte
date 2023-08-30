@@ -56,11 +56,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.function.Consumer;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
-import java.util.OptionalLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -191,7 +191,7 @@ class MongoDbCdcInitializerTest {
     final Document aggregate1 = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
     final Document aggregate2 = Document.parse("{\"_id\": {\"_id\": \"string\"}, \"count\": 1}");
 
-    when(aggregateCursor.hasNext()).thenReturn(true, true,false);
+    when(aggregateCursor.hasNext()).thenReturn(true, true, false);
     when(aggregateCursor.next()).thenReturn(aggregate1, aggregate2);
     doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
 
