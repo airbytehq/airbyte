@@ -1,5 +1,16 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
-  }
-}
+[
+    {
+        "type": "STREAM",
+        "stream": {
+            "stream_state": {"updated_on": "2021-09-08T07:04:28.000Z", "guid": "table_unique_id"},
+            "stream_descriptor": {"name": "tables"}
+        }
+    },
+    {
+        "type": "STREAM",
+        "stream": {
+            "stream_state": {"guid": "table_unique_id", "rank": 1},
+            "stream_descriptor": {"name": "lineage"}
+        }
+    }
+]

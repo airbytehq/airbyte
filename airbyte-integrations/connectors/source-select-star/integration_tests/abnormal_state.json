@@ -1,5 +1,9 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_on": "3021-09-08T07:04:28.000Z" },
+      "stream_descriptor": { "name": "tables" }
+    }
   }
-}
+]
