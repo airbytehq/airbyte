@@ -36,13 +36,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestination.class);
 
   @Override
-  protected String getTargetTableName(final String streamName) {
-    // This BigQuery destination does not write to a staging "raw" table but directly to a normalized
-    // table
-    return namingResolver.getIdentifier(streamName);
-  }
-
-  @Override
   protected Map<UploaderType, BigQueryRecordFormatter> getFormatterMap(final JsonNode jsonSchema) {
     return Map.of(UploaderType.STANDARD, new DefaultBigQueryDenormalizedRecordFormatter(jsonSchema, namingResolver),
         UploaderType.AVRO, new GcsBigQueryDenormalizedRecordFormatter(jsonSchema, namingResolver));
@@ -73,23 +66,14 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return streamSchema -> new GcsBigQueryDenormalizedRecordFormatter(streamSchema, namingResolver);
   }
 
-  /**
-   * This BigQuery destination does not write to a staging "raw" table but directly to a normalized
-   * table.
-   */
   @Override
-  protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
-    return namingResolver::getIdentifier;
-  }
-
-  @Override
-  protected void putStreamIntoUploaderMap(AirbyteStream stream,
-                                          UploaderConfig uploaderConfig,
-                                          Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+  protected void putStreamIntoUploaderMap(final AirbyteStream stream,
+                                          final UploaderConfig uploaderConfig,
+                                          final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
       throws IOException {
-    String datasetId = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
-    Table existingTable = uploaderConfig.getBigQuery().getTable(datasetId, uploaderConfig.getTargetTableName());
-    BigQueryRecordFormatter formatter = uploaderConfig.getFormatter();
+    final String datasetId = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
+    final Table existingTable = uploaderConfig.getBigQuery().getTable(datasetId, uploaderConfig.getTargetTableName());
+    final BigQueryRecordFormatter formatter = uploaderConfig.getFormatter();
 
     if (existingTable != null) {
       LOGGER.info("Target table already exists. Checking could we use the default destination processing.");
@@ -104,7 +88,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
       LOGGER.info("Target table is not created yet. The default destination processing will be used.");
     }
 
-    AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
+    final AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         uploader);
@@ -119,7 +103,8 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
    * @param existingSchema BigQuery schema of the existing table (created by previous run)
    * @return Are calculated fields same as we have in the existing table
    */
-  private boolean compareSchemas(com.google.cloud.bigquery.Schema expectedSchema, @Nullable com.google.cloud.bigquery.Schema existingSchema) {
+  private boolean compareSchemas(final com.google.cloud.bigquery.Schema expectedSchema,
+                                 @Nullable final com.google.cloud.bigquery.Schema existingSchema) {
     if (expectedSchema != null && existingSchema == null) {
       LOGGER.warn("Existing schema is null when we expect {}", expectedSchema);
       return false;
@@ -131,11 +116,11 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
       return false;
     }
 
-    var expectedFields = expectedSchema.getFields();
-    var existingFields = existingSchema.getFields();
+    final var expectedFields = expectedSchema.getFields();
+    final var existingFields = existingSchema.getFields();
 
-    for (Field expectedField : expectedFields) {
-      var existingField = existingFields.get(expectedField.getName());
+    for (final Field expectedField : expectedFields) {
+      final var existingField = existingFields.get(expectedField.getName());
       if (isDifferenceBetweenFields(expectedField, existingField)) {
         LOGGER.warn("Expected field {} is different from existing field {}", expectedField, existingField);
         return false;
@@ -146,7 +131,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     return true;
   }
 
-  private boolean isDifferenceBetweenFields(Field expectedField, Field existingField) {
+  private boolean isDifferenceBetweenFields(final Field expectedField, final Field existingField) {
     if (existingField == null) {
       return true;
     } else {
@@ -165,9 +150,9 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
    * @param existingField existing field structure
    * @return is critical difference in the field modes
    */
-  private boolean compareRepeatedMode(Field expectedField, Field existingField) {
-    var expectedMode = expectedField.getMode();
-    var existingMode = existingField.getMode();
+  private boolean compareRepeatedMode(final Field expectedField, final Field existingField) {
+    final var expectedMode = expectedField.getMode();
+    final var existingMode = existingField.getMode();
 
     if (expectedMode != null && expectedMode.equals(REPEATED) || existingMode != null && existingMode.equals(REPEATED)) {
       return expectedMode != null && expectedMode.equals(existingMode);
@@ -176,17 +161,17 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
     }
   }
 
-  private boolean compareSubFields(Field expectedField, Field existingField) {
-    var expectedSubFields = expectedField.getSubFields();
-    var existingSubFields = existingField.getSubFields();
+  private boolean compareSubFields(final Field expectedField, final Field existingField) {
+    final var expectedSubFields = expectedField.getSubFields();
+    final var existingSubFields = existingField.getSubFields();
 
     if (expectedSubFields == null || expectedSubFields.isEmpty()) {
       return true;
     } else if (existingSubFields == null || existingSubFields.isEmpty()) {
       return false;
     } else {
-      for (Field expectedSubField : expectedSubFields) {
-        var existingSubField = existingSubFields.get(expectedSubField.getName());
+      for (final Field expectedSubField : expectedSubFields) {
+        final var existingSubField = existingSubFields.get(expectedSubField.getName());
         if (isDifferenceBetweenFields(expectedSubField, existingSubField)) {
           return false;
         }

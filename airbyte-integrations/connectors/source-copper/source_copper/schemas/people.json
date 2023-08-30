@@ -9,6 +9,38 @@
     "name": {
       "type": ["null", "string"]
     },
+    "socials": {
+      "type": ["null", "array"],
+      "properties": {
+        "note": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "leads_converted_from": {
+      "type": ["null", "array"],
+      "properties": {
+        "leads": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "properties": {
+        "sticker": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "properties": {
+        "mprc": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "prefix": {
       "type": ["null", "string"]
     },
@@ -26,10 +58,9 @@
     },
     "address": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "street": {
-          "type": ["string", "null"]
+          "type": ["null", "string"]
         },
         "city": {
           "type": ["string", "null"]
@@ -54,44 +85,16 @@
     "company_name": {
       "type": ["null", "string"]
     },
-    "tags": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "socials": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": true
-      }
-    },
-    "leads_converted_from": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": true
-      }
-    },
-    "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "additionalProperties": true
-      }
-    },
     "contact_type_id": {
       "type": ["null", "integer"]
     },
     "details": {
-      "type": ["null", "string"]
+      "type": "null"
     },
     "emails": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": true,
         "properties": {
           "category": {
             "type": ["null", "string"]
@@ -106,7 +109,6 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": true,
         "properties": {
           "number": {
             "type": ["null", "string"]
@@ -124,13 +126,12 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": true,
         "properties": {
           "url": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "category": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
@@ -139,16 +140,17 @@
       "type": ["null", "integer"]
     },
     "date_modified": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "date_last_contacted": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     },
     "interaction_count": {
       "type": ["null", "integer"]
     },
     "date_lead_created": {
-      "type": ["integer", "null"]
+      "type": ["null", "integer"]
     }
-  }
+  },
+  "required": ["id"]
 }
