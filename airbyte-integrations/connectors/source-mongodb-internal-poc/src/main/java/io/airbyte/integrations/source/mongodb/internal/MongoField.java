@@ -31,7 +31,7 @@ public class MongoField extends Field {
   }
 
   public int hashCode() {
-    return Objects.hash(new Object[] {this.getName()});
+    return Objects.hash(this.getName());
   }
 
 }

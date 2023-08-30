@@ -64,7 +64,7 @@ class MongoDbStateIteratorTest {
       private int count = 0;
 
       @Override
-      public Boolean answer(InvocationOnMock invocation) throws Throwable {
+      public Boolean answer(InvocationOnMock invocation) {
         count++;
         // hasNext will be called for each doc plus for each state message
         return count <= (docs.size() + (docs.size() % CHECKPOINT_INTERVAL));
@@ -77,7 +77,7 @@ class MongoDbStateIteratorTest {
       private int offset = 0;
 
       @Override
-      public Document answer(final InvocationOnMock invocation) throws Throwable {
+      public Document answer(final InvocationOnMock invocation) {
         final var doc = docs.get(offset);
         offset++;
         return doc;

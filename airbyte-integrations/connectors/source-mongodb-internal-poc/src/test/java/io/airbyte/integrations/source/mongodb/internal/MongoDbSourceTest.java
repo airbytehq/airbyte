@@ -40,7 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,7 +128,7 @@ class MongoDbSourceTest {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
     final List<Map<String, Object>> schemaDiscoveryJsonResponses =
         Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
-    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
     final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);
@@ -181,7 +180,7 @@ class MongoDbSourceTest {
   }
 
   @Test
-  void testDiscoverOperationWithUnexpectedFailure() throws IOException {
+  void testDiscoverOperationWithUnexpectedFailure() {
     final String expectedMessage = "This is just a test failure.";
     when(mongoClient.getDatabase(any())).thenThrow(new IllegalArgumentException(expectedMessage));
 
@@ -205,14 +204,13 @@ class MongoDbSourceTest {
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {
-    final Map<String, Object> config = new HashMap<>();
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
         MongoConstants.REPLICA_SET_CONFIGURATION_KEY, "replica-set");
 
-    config.putAll(baseConfig);
+    final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USER_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(config));

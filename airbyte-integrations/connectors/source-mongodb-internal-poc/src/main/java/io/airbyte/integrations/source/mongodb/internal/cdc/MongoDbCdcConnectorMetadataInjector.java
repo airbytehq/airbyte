@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * MongoDB specific implementation of the {@link CdcMetadataInjector} that stores cursor information
  * for MongoDB source event data.
  */
-public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector {
+public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<Object> {
 
   static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
 

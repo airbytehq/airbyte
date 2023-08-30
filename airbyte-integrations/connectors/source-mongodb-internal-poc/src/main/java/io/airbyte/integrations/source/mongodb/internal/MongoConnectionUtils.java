@@ -55,14 +55,12 @@ public class MongoConnectionUtils {
   private static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
-    final StringBuilder builder = new StringBuilder();
-    builder.append(connectionString);
-    builder.append("?replicaSet=");
-    builder.append(replicaSet);
-    builder.append("&retryWrites=false");
-    builder.append("&provider=airbyte");
-    builder.append("&tls=true");
-    return builder.toString();
+    return connectionString +
+        "?replicaSet=" +
+        replicaSet +
+        "&retryWrites=false" +
+        "&provider=airbyte" +
+        "&tls=true";
   }
 
 }

@@ -93,7 +93,7 @@ class MongoDbCdcInitializerTest {
   void setUp() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN1));
 
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     mongoClient = mock(MongoClient.class);
@@ -188,8 +188,8 @@ class MongoDbCdcInitializerTest {
     return (new ConfiguredAirbyteStream())
         .withStream(stream)
         .withSyncMode(SyncMode.INCREMENTAL)
-        .withCursorField(new ArrayList())
+        .withCursorField(new ArrayList<>())
         .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-        .withPrimaryKey(new ArrayList());
+        .withPrimaryKey(new ArrayList<>());
   }
 }
