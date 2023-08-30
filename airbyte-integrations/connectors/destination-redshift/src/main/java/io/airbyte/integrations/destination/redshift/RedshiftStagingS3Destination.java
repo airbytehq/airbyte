@@ -63,7 +63,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   private boolean isEphemeralKeysAndPurgingStagingData(final JsonNode config, final EncryptionConfig encryptionConfig) {
-    return !isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
+    return !isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
   }
 
   @Override
@@ -175,7 +175,9 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
         // The parsedcatalog is only used in v2 mode, so just pass null for now
         null,
         // Overwriting null namespace with null is perfectly safe
-        null);
+        null,
+        // still using v1 table format
+        false);
   }
 
   /**

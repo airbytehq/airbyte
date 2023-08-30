@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.8
+Add vector db CDK helpers
+
 ## 0.51.7
 File-based CDK: allow user to provided column names for CSV files
 
