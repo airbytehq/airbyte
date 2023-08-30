@@ -77,6 +77,11 @@ definitions:
       basic_auth: "#/definitions/basic_authenticator"
       oauth2: "#/definitions/oauth2_authenticator"
     request_body_json: {}
+    error_handlers:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        type: ExponentialBackoffStrategy
+        factor: 2
   opportunity_child_stream:
     type: DeclarativeStream
     primary_key: id
