@@ -70,16 +70,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                 raise Exception("authorization.service_account_info is not valid JSON")
 
         # custom report validation
-        if "custom_reports" in config:
-            try:
-                config["custom_reports"] = json.loads(config["custom_reports"])
-            except ValueError:
-                raise Exception("custom_reports is not valid JSON")
-            jsonschema.validate(config["custom_reports"], custom_reports_schema)
-            for report in config["custom_reports"]:
-                for dimension in report["dimensions"]:
-                    if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
-                        raise Exception(f"dimension: '{dimension}' not found")
+        config = self._validate_custom_reports(config)
 
         # start date checks
         pendulum.parse(config.get("start_date", "2021-01-01"))  # `2021-01-01` is the default value
@@ -93,6 +84,24 @@ class SourceGoogleSearchConsole(AbstractSource):
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
         # data state checks
         config["data_state"] = config.get("data_state", "final")
+        return config
+
+    def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        if "custom_reports" in config:
+            try:
+                custom_reports = config["custom_reports"]
+                if isinstance(custom_reports, str):
+                    # load the json_str old report structure and transform it into valid JSON Object
+                    config["custom_reports"] = json.loads(config["custom_reports"])
+                elif isinstance(custom_reports, list):
+                    pass  # allow the list structure only
+            except ValueError:
+                raise Exception("custom_reports is not valid JSON")
+            jsonschema.validate(config["custom_reports"], custom_reports_schema)
+            for report in config["custom_reports"]:
+                for dimension in report["dimensions"]:
+                    if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
+                        raise Exception(f"dimension: '{dimension}' not found")
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:

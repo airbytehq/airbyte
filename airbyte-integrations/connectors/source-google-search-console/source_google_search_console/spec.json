@@ -113,10 +113,33 @@
         ]
       },
       "custom_reports": {
-        "order": 4,
-        "type": "string",
         "title": "Custom Reports",
-        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See our <a href='https://docs.airbyte.com/integrations/sources/google-search-console'>documentation</a> for more information on formulating custom reports."
+        "description": "You can add your Custom Analytics report by creating one.",
+        "order": 4,
+        "type": "array",
+        "items": {
+          "title": "Custom Report Config",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "description": "The name of the custom report, this name would be used as stream name",
+              "type": "string"
+            },
+            "dimensions": {
+              "title": "Dimensions",
+              "description": "A list of dimensions (country, date, device, page, query, search_type)",
+              "type": "array",
+              "items": {
+                "title": "ValidEnums",
+                "description": "An enumeration of dimensions.",
+                "enum": ["country", "date", "device", "page", "query", "search_type"]
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["name", "dimensions"]
+        }
       },
       "data_state": {
         "type": "string",
