@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import threading
-from queue import Empty, Queue
-from typing import Iterable, List, Optional
+from queue import Queue
+from typing import Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.record import Record
@@ -17,8 +17,11 @@ class PartitionReader:
         self._name = name
         self._output_queue = output_queue
         self._queue_consumer_futures = []
+        self._mutex = threading.Lock()
 
     def process_partition(self, partition: StreamPartition) -> None:
+        if partition is None:
+            return
         print(f"{self._name} is processing partition={partition}")
         for record in partition.stream.read_records(
             stream_slice=partition.slice, sync_mode=SyncMode.full_refresh, cursor_field=partition.cursor_field
@@ -33,14 +36,18 @@ class PartitionReader:
             return None
 
     def there_are_records_ready(self) -> bool:
-        return self._output_queue.qsize() > 0
+        with self._mutex:
+            return self._output_queue.qsize() > 0
 
     def is_done(self) -> bool:
-        return self._output_queue.qsize() == 0 and not self._futures_are_running(self._queue_consumer_futures)
+        done = self._output_queue.qsize() == 0 and self._futures_are_done(self._queue_consumer_futures)
+        print(f"{self._name} is done: {done}")
+        return done
 
     def process_partition_async(self, partition, executor):
-        record_generation_future = executor.submit(PartitionReader.process_partition, self, partition)
-        self._queue_consumer_futures.append(record_generation_future)
+        with self._mutex:
+            record_generation_future = executor.submit(PartitionReader.process_partition, self, partition)
+            self._queue_consumer_futures.append(record_generation_future)
 
-    def _futures_are_running(self, queue_consumer_futures):
-        return not all(future.done() for future in queue_consumer_futures)
+    def _futures_are_done(self, queue_consumer_futures):
+        return all(future.done() for future in queue_consumer_futures)
