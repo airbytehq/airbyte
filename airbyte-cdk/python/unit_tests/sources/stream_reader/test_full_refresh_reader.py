@@ -41,9 +41,10 @@ def _syncrhonous_reader():
 
 def _concurrent_reader():
     queue = Queue()
+    record_queue = Queue()
     name = "Source"
     partition_generator = PartitionGenerator(queue, name)
-    queue_consumer = QueueConsumer(name)
+    queue_consumer = QueueConsumer(name, record_queue)
     reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, 5, DebugSliceLogger())
     return reader
 

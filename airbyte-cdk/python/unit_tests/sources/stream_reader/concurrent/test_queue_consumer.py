@@ -20,7 +20,8 @@ class QueueConsumerTestCase(TestCase):
     def setUp(self):
         self._name = "A"
         self._queue = Queue()
-        self._queue_consumer = QueueConsumer(self._name)
+        self._output_queue = Queue
+        self._queue_consumer = QueueConsumer(self._name, self._output_queue)
 
     def test_queue_consumer_returns_after_reader_a_sentinel_value(self):
         self._queue.put(_SENTINEL)

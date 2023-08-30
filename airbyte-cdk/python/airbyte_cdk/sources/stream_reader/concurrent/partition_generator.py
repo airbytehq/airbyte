@@ -15,12 +15,9 @@ class PartitionGenerator:
         self._queue = queue
         self._name = name
 
-    def generate_partitions_for_stream(
-        self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]]
-    ) -> Iterable[StreamPartition]:
+    def generate_partitions_for_stream(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> None:
         print(f"generate_partitions_for_stream for {self._name} for stream {stream.name}")
         for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field):
             print(f"putting partition and stream on queue for {partition}. stream: {stream.name}")
             stream_partition = StreamPartition(stream, partition, cursor_field)
             self._queue.put(stream_partition)
-            yield stream_partition  # FIXME: Why is this needed?
