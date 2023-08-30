@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dagger import Client, Directory, Secret
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
 from pipelines.github import AIRBYTE_GITHUB_REPO
-from dagger import Client, Directory, Secret
 
 
 class GitPushChanges(Step):
