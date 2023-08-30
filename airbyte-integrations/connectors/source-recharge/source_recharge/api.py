@@ -174,7 +174,13 @@ class Onetimes(IncrementalRechargeStream):
 class Orders(IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
+    Using old API version to avoid schema changes and loosing email, first_name, last_name columns, because in new version it not present
     """
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"x-recharge-version": OLD_API_VERSION}
 
 
 class Products(RechargeStream):
