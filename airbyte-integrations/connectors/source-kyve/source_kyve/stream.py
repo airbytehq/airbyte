@@ -132,8 +132,8 @@ class KYVEStream(HttpStream, IncrementalMixin):
             else:
                 response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
 
-            if not response.ok:
-                logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
+            if not response_from_storage_provider.ok:
+                logger.error(f"Reading bundle {storage_id} with status code {response_from_storage_provider.status_code}")
                 # todo future: this is a temporary fix until the bugs with Arweave are solved
                 continue
             try:
