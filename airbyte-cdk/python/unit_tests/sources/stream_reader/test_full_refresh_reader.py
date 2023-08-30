@@ -150,7 +150,9 @@ def test_full_refresh_read_a_two_slices(reader):
 
     actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
 
-    assert expected_records == actual_records
+    for record in expected_records:
+        assert record in actual_records
+    assert len(expected_records) == len(actual_records)
 
     expected_read_records_calls = [
         call(stream_slice=partition1, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD),

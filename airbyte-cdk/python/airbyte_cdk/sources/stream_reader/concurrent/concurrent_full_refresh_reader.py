@@ -53,9 +53,6 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                 )
                 partition_generation_futures.append(partition_generation_future)
 
-                print(f"max workers: {self._max_workers}")
-                print(f"consumers: {self._get_num_dedicated_consumer_worker()}")
-
                 # Submit record generator tasks
                 for i in range(self._get_num_dedicated_consumer_worker()):  # FIXME?
                     record_generation_future = executor.submit(QueueConsumer.consume_from_queue, self._queue_consumer, self._queue)
@@ -70,10 +67,7 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                             # but these cannot be used by the connector builder to build slices because they can be unordered
                             yield self._slice_logger.create_slice_log_message(stream_partition.slice)
                 # Then put the sentinel on the queue
-                for _ in range(self._get_num_dedicated_consumer_worker()):
-                    # FIXME: need a test to verify we put many sentinels..
-                    self._queue.put(_SENTINEL)
-                print("waiting for consumers to finish")
+                self._terminate_consumers()
                 # Wait for the consumers to finish
                 # FIXME: We should start yielding as soon as the first ones are done...
                 for future_records in concurrent.futures.as_completed(queue_consumer_futures):
@@ -86,12 +80,15 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                             if internal_config and internal_config.is_limit_reached(total_records_counter):
                                 return
             except Exception as e:
-                print(f"caught exception: {e}")
-                for _ in queue_consumer_futures:
-                    self._queue.put(_SENTINEL)
+                self._terminate_consumers()
                 executor.shutdown(wait=True, cancel_futures=True)
                 raise e
 
     def _get_num_dedicated_consumer_worker(self) -> int:
         # FIXME figure this out and add a unit test
         return int(max(self._max_workers / 2, 1))
+
+    def _terminate_consumers(self):
+        # FIXME: add a unit test
+        for _ in range(self._get_num_dedicated_consumer_worker()):
+            self._queue.put(_SENTINEL)
