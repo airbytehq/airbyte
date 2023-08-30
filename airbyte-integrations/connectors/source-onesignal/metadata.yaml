@@ -22,4 +22,5 @@ data:
   supportLevel: community
   tags:
     - language:lowcode
+  supportLevel: certified
 metadataSpecVersion: "1.0"
