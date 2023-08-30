@@ -41,9 +41,9 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ## Quick Start to Upgrading
 
-The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
+The quickest path to upgrading is to click upgrade on any out-of-date destination in the UI:
 
-![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
+![Upgrade Path](./assets/airbyte_destinations_v2_bq_upgrade.png)
 
 After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
 
@@ -152,7 +152,7 @@ For each destination connector, Destinations V2 is effective as of the following
 
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible |
 | --------------------- | --------------------- | -------------------------- |
-| BigQuery              | 1.4.4                 | 2.0.0+                     |
+| BigQuery              | 1.4.4                 | 2.0.1+                     |
 | Snowflake             | 2.0.0                 | 3.0.0+                     |
 | Redshift              | 0.4.8                 | 2.0.0+                     |
 | MSSQL                 | 0.1.24                | 2.0.0+                     |
