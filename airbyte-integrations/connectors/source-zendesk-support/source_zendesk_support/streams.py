@@ -259,7 +259,7 @@ class IncrementalZendeskSupportStream(FullRefreshZendeskSupportStream):
         new_value = str((latest_record or {}).get(self.cursor_field, ""))
         return {self.cursor_field: max(new_value, old_value)}
 
-    def check_stream_state(self, stream_state: Mapping[str, Any] = None):
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
         """
         Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
         """
@@ -330,7 +330,7 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
     sideload_param: str = None
 
     @staticmethod
-    def check_start_time_param(requested_start_time: int, value: int = 1):
+    def check_start_time_param(requested_start_time: int, value: int = 1) -> int:
         """
         Requesting tickets in the future is not allowed, hits 400 - bad request.
         We get current UNIX timestamp minus `value` from now(), default = 1 (minute).
@@ -350,7 +350,7 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         if self._ignore_pagination:
             return None
         response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, False) else {"cursor": response_json.get("after_cursor")}
+        return None if response_json.get(END_OF_STREAM_KEY, True) else {"cursor": response_json.get("after_cursor")}
 
     def request_params(
         self,
@@ -403,7 +403,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
         Returns next_page_token based on `end_of_stream` parameter inside of response
         """
         response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, False) else {"start_time": response_json.get("end_time")}
+        return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
 
     def request_params(
         self,
@@ -482,29 +482,10 @@ class Users(SourceZendeskIncrementalExportStream):
         return params
 
 
-class Organizations(SourceZendeskSupportStream):
+class Organizations(SourceZendeskIncrementalExportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
 
-
-class Posts(CursorPaginationZendeskSupportStream):
-    """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
-
-    use_cache = True
-
-    cursor_field = "updated_at"
-
-    def path(self, **kwargs):
-        return "community/posts"
-
-
-class Tickets(SourceZendeskIncrementalExportStream):
-    """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
-
-    response_list_name: str = "tickets"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-
-    def path(self, **kwargs) -> str:
-        return "incremental/tickets/cursor.json"
+    response_list_name: str = "organizations"
 
     def request_params(
         self,
@@ -526,7 +507,55 @@ class Tickets(SourceZendeskIncrementalExportStream):
             params.update(next_page_token)
         return params
 
-    def check_start_time_param(self, requested_start_time: int, value: int = 1):
+
+class Posts(CursorPaginationZendeskSupportStream):
+    """Posts stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts"""
+
+    use_cache = True
+
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs):
+        return "community/posts"
+
+
+class Tickets(SourceZendeskIncrementalExportStream):
+    """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
+
+    response_list_name: str = "tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    cursor_field = "generated_timestamp"
+
+    def path(self, **kwargs) -> str:
+        return "incremental/tickets/cursor.json"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        parsed_state = self.check_stream_state(stream_state)
+        params = {"start_time": self.check_start_time_param(parsed_state)}
+        if self.sideload_param:
+            params["include"] = self.sideload_param
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        return {self.cursor_field: max(new_value, old_value)}
+
+    def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
+        """
+        Returns the state value, if exists. Otherwise, returns user defined `Start Date`.
+        """
+        return stream_state.get(self.cursor_field) if stream_state else pendulum.parse(self._start_date).int_timestamp
+
+    def check_start_time_param(self, requested_start_time: int, value: int = 1) -> int:
         """
         The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
@@ -794,6 +823,13 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {}
+
+
+class UserFields(FullRefreshZendeskSupportStream):
+    """User Fields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "user_fields"
 
 
 class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):

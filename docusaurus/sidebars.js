@@ -10,7 +10,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md") || fileName.endsWith("postgres.md"))
+        !(fileName.endsWith(".inapp.md") || fileName.endsWith("postgres.md"))
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -30,24 +30,24 @@ function getDestinationConnectors() {
 }
 
 const sourcePostgres = {
-   type: 'category',
-   label: 'Postgres',
-   link: {
-       type: 'doc',
-       id: 'integrations/sources/postgres',
-   },
-   items: [
-        {
-          type: "doc",
-          label: "Cloud SQL for Postgres",
-          id: "integrations/sources/postgres/cloud-sql-postgres",
-        },
-        {
-        type: "doc",
-        label: "Troubleshooting",
-        id: "integrations/sources/postgres/postgres-troubleshooting",
-        }
-   ],
+  type: "category",
+  label: "Postgres",
+  link: {
+    type: "doc",
+    id: "integrations/sources/postgres",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Cloud SQL for Postgres",
+      id: "integrations/sources/postgres/cloud-sql-postgres",
+    },
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/postgres/postgres-troubleshooting",
+    },
+  ],
 };
 
 const sectionHeader = (title) => ({
@@ -333,11 +333,6 @@ const deployAirbyte = {
     },
     {
       type: "doc",
-      label: "On Kubernetes using Kustomize",
-      id: "deploying-airbyte/on-kubernetes",
-    },
-    {
-      type: "doc",
       label: "On Kubernetes using Helm",
       id: "deploying-airbyte/on-kubernetes-via-helm",
     },
@@ -465,8 +460,8 @@ module.exports = {
       id: "troubleshooting",
     },
     {
-      type: 'doc',
-      id: 'airbyte-pro',
+      type: "doc",
+      id: "airbyte-enterprise",
     },
     sectionHeader("Developer Guides"),
     {
@@ -523,6 +518,7 @@ module.exports = {
       },
       items: [
         "release_notes/upgrading_to_destinations_v2",
+        "release_notes/july_2023",
         "release_notes/june_2023",
         "release_notes/may_2023",
         "release_notes/april_2023",

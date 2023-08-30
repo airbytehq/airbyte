@@ -30,21 +30,21 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     configJson = TestDataFactory.createJsonConfig(
         cassandraContainer.getUsername(),
         cassandraContainer.getPassword(),
         HostPortResolver.resolveHost(cassandraContainer),
         HostPortResolver.resolvePort(cassandraContainer));
-    var cassandraConfig = new CassandraConfig(configJson);
+    final var cassandraConfig = new CassandraConfig(configJson);
     cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
     cassandraNameTransformer = new CassandraNameTransformer(cassandraConfig);
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     cassandraCqlProvider.retrieveMetadata().forEach(meta -> {
-      var keyspace = meta.value1();
+      final var keyspace = meta.value1();
       meta.value2().forEach(table -> cassandraCqlProvider.truncate(keyspace, table));
     });
   }
@@ -74,12 +74,12 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
-    var table = cassandraNameTransformer.outputTable(streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final var keyspace = cassandraNameTransformer.outputKeyspace(namespace);
+    final var table = cassandraNameTransformer.outputTable(streamName);
     return cassandraCqlProvider.select(keyspace, table).stream()
         .sorted(Comparator.comparing(CassandraRecord::getTimestamp))
         .map(CassandraRecord::getData)

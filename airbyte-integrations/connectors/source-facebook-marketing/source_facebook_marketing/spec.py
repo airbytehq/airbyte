@@ -202,7 +202,7 @@ class ConnectorConfig(BaseConfig):
         default=28,
     )
 
-    max_batch_size: Optional[PositiveInt] = Field(
+    max_batch_size: Optional[int] = Field(
         title="Maximum size of Batched Requests",
         order=9,
         description=(
@@ -210,6 +210,8 @@ class ConnectorConfig(BaseConfig):
             "Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),
         default=50,
+        gt=0,
+        le=50,
     )
 
     action_breakdowns_allow_empty: bool = Field(
