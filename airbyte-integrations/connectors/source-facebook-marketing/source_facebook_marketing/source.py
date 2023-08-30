@@ -7,7 +7,6 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
-import requests
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -19,7 +18,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from source_facebook_marketing.api import API, FacebookAPIException
+from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
@@ -53,7 +52,6 @@ from source_facebook_marketing.streams import (
     Images,
     Videos,
 )
-from source_facebook_marketing.streams.common import AccountTypeException
 
 from .utils import validate_end_date, validate_start_date
 

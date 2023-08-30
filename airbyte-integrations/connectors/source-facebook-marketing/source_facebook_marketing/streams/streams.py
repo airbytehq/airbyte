@@ -10,7 +10,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
-from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
@@ -129,7 +128,7 @@ class Activities(FBMarketingIncrementalStream):
     cursor_field = "event_time"
     primary_key = None
 
-    def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_activities(fields=self.fields, params=params)
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:

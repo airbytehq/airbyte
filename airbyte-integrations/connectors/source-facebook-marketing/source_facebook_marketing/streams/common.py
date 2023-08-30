@@ -121,9 +121,15 @@ def user_friendly_error_message(error_message):
     print(error_message)
     # https://github.com/airbytehq/airbyte/issues/26679
     if "Error validating access token" in error_message:
-        return 'config_error', "Re-authenticate to restore access or/and re-verify the Ad Account ID becuase user changed their password or Facebook has changed the session for security reasons"
+        return (
+            "config_error",
+            "Re-authenticate to restore access or/and re-verify the Ad Account ID becuase user changed their password or Facebook has changed the session for security reasons",
+        )
 
     elif "Missing permissions" in error_message:
-        return 'config_error', "Re-authenticate to restore access or/and re-verify the Ad Account ID because authenticated user no longer has access"
+        return (
+            "config_error",
+            "Re-authenticate to restore access or/and re-verify the Ad Account ID because authenticated user no longer has access",
+        )
 
-    return '', ''
+    return "", ""

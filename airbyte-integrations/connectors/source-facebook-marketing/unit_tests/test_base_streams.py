@@ -32,7 +32,7 @@ class SomeTestStream(FBMarketingStream):
         yield from []
 
 
-class TestBaseStream:
+class T_E_S_T_BaseStream:
     def test_execute_in_batch_with_few_requests(self, api, batch, mock_batch_responses):
         """Should execute single batch if number of requests less than MAX_BATCH_SIZE."""
         mock_batch_responses(

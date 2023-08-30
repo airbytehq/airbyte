@@ -114,7 +114,10 @@ class TestBackoff:
         stream = AdCreatives(api=api, include_deleted=False)
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
-        assert records == [{"name": "creative 1"}, {"name": "creative 2"}]
+        assert records == [
+            {'id': '123', 'object_type': 'SHARE', 'status': 'ACTIVE'},
+            {'id': '1234', 'object_type': 'SHARE', 'status': 'ACTIVE'}
+        ]
 
     @pytest.mark.parametrize(
         "error_response",
