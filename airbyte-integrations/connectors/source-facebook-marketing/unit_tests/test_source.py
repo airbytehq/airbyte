@@ -95,8 +95,10 @@ class TestSourceFacebookMarketing:
     def test_check_connection_exception(self, api, config, logger_mock, fb_marketing):
         api.side_effect = RuntimeError("Something went wrong!")
 
-        with pytest.raises(RuntimeError, match="Something went wrong!"):
-            fb_marketing.check_connection(logger_mock, config=config)
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert not ok
+        assert error_msg == "RuntimeError('Something went wrong!')"
 
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)
@@ -159,4 +161,4 @@ def test_check_connection_account_type_exception(mocker, fb_marketing, config, l
     result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
 
     assert not result
-    assert isinstance(error, AccountTypeException)
+    assert error == "The personal ad account you're currently using is not eligible for this operation. Please switch to a business ad account."

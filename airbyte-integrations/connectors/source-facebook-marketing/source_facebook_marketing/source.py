@@ -19,7 +19,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
 from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
@@ -96,10 +95,14 @@ class SourceFacebookMarketing(AbstractSource):
                     "The personal ad account you're currently using is not eligible "
                     "for this operation. Please switch to a business ad account."
                 )
-                raise AccountTypeException(message)
+                return False, message
 
-        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException, AccountTypeException) as e:
-            return False, e
+        except Exception as e:
+            if isinstance(e, AirbyteTracedException):
+                msg = e.message
+            else:
+                msg = repr(e)
+            return False, msg
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):

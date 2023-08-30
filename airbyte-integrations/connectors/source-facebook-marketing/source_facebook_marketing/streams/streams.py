@@ -68,8 +68,32 @@ class AdCreatives(FBMarketingStream):
                     record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
             yield record
 
+    def read_records___(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Read with super method and append thumbnail_data_url if enabled"""
+        for record in self.list_objects2(params=self.request_params(stream_state=stream_state)):
+
+            if isinstance(record, AbstractObject):
+                yield record.export_all_data()  # convert FB object to dict
+            else:
+                yield record  # execute_in_batch will emmit dicts
+
+            # if self._fetch_thumbnail_images:
+            #     thumbnail_url = record.get("thumbnail_url")
+            #     if thumbnail_url:
+            #         record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
+            # yield record
+
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_creatives(params=params)
+
+    def list_objects2(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_ad_creatives(params=params, fields=self.fields)
 
 
 class CustomConversions(FBMarketingStream):
