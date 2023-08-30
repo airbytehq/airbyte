@@ -33,6 +33,7 @@ from source_zendesk_support.streams import (
     Organizations,
     PostCommentVotes,
     Posts,
+    PostVotes,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -950,6 +951,26 @@ def test_read_tickets_stream(requests_mock):
             ]
         },
     ]
+
+
+def test_read_post_votes_stream(requests_mock):
+    post_response = {
+        "posts": [
+            {"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
+
+    post_votes_response = {
+        "votes": [
+            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607}
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/votes", json=post_votes_response)
+
+    stream = PostVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == post_votes_response.get('votes')
 
 
 def test_read_post_comment_votes_stream(requests_mock):
