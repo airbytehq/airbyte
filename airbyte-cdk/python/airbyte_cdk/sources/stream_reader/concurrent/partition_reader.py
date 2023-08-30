@@ -16,6 +16,7 @@ class PartitionReader:
     def __init__(self, name: str, output_queue: Queue[Optional[Record]]):
         self._name = name
         self._output_queue = output_queue
+        self._queue_consumer_futures = []
 
     def process_partition(self, partition: StreamPartition) -> None:
         print(f"{self._name} is processing partition={partition}")
@@ -24,3 +25,22 @@ class PartitionReader:
         ):
             record = Record(record, partition)
             self._output_queue.put(record)
+
+    def get_next_record(self) -> Optional[Record]:
+        if self._output_queue.qsize() > 0:
+            return self._output_queue.get()
+        else:
+            return None
+
+    def there_are_records_ready(self) -> bool:
+        return self._output_queue.qsize() > 0
+
+    def is_done(self) -> bool:
+        return self._output_queue.qsize() == 0 and not self._futures_are_running(self._queue_consumer_futures)
+
+    def process_partition_async(self, partition, executor):
+        record_generation_future = executor.submit(PartitionReader.process_partition, self, partition)
+        self._queue_consumer_futures.append(record_generation_future)
+
+    def _futures_are_running(self, queue_consumer_futures):
+        return not all(future.done() for future in queue_consumer_futures)

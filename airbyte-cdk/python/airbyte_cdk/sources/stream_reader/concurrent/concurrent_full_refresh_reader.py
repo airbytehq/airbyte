@@ -34,14 +34,12 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
         self._queue = queue
         self._max_workers = max_workers
         self._slice_logger = slice_logger
-        self._output_queue = Queue()
-        self._partition_reader = PartitionReader("partition_reader", self._output_queue)
+        self._partition_reader = PartitionReader("partition_reader", Queue())
 
     def read_stream(
         self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
     ) -> Iterable[StreamData]:
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
-        queue_consumer_futures = []
         total_records_counter = 0
         with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool") as executor:
             try:
@@ -54,10 +52,10 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                     cursor_field,
                 )
                 # While partitions are still being generated
-                while not partition_generation_future.done() or self._futures_are_running(queue_consumer_futures) or self._output_queue.qsize() > 0 or self._queue.qsize() > 0:
+                while not partition_generation_future.done() or not self._partition_reader.is_done() or self._queue.qsize() > 0:
                     # While there is a partition to process
-                    while self._output_queue.qsize() > 0:
-                        record = self._output_queue.get()
+                    while self._partition_reader.there_are_records_ready():
+                        record = self._partition_reader.get_next_record()
                         yield record.stream_data
                         if FullRefreshStreamReader.is_record(record.stream_data):
                             total_records_counter += 1
@@ -70,8 +68,7 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                             # FIXME: This is creating slice log messages for parity with the synchronous implementation
                             # but these cannot be used by the connector builder to build slices because they can be unordered
                             yield self._slice_logger.create_slice_log_message(partition.slice)
-                        record_generation_future = executor.submit(PartitionReader.process_partition, self._partition_reader, partition)
-                        queue_consumer_futures.append(record_generation_future)
+                        self._partition_reader.process_partition_async(partition, executor)
             except Exception as e:
                 self._terminate_consumers()
                 executor.shutdown(wait=True, cancel_futures=True)
