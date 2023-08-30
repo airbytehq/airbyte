@@ -13,10 +13,11 @@ import java.util.stream.Collectors;
 import org.bson.types.ObjectId;
 
 /**
- * _id field types that are currently supported, potential types are defined
- * <a href="https://www.mongodb.com/docs/manual/reference/operator/query/type/#std-label-document-type-available-types">here</a>
+ * _id field types that are currently supported, potential types are defined <a href=
+ * "https://www.mongodb.com/docs/manual/reference/operator/query/type/#std-label-document-type-available-types">here</a>
  */
 public enum IdType {
+
   OBJECT_ID("objectId", ObjectId::new),
   STRING("string", s -> s),
   INT("int", Integer::valueOf),
@@ -41,6 +42,7 @@ public enum IdType {
   private final String mongoDbType;
   /** Converter for converting a string value into an appropriate MongoDb type. */
   private final Function<String, Object> converter;
+
   IdType(final String mongoDbType, final Function<String, Object> converter) {
     this.mongoDbType = mongoDbType;
     this.converter = converter;
@@ -53,4 +55,5 @@ public enum IdType {
   public static Optional<IdType> findByMongoDbType(final String mongoDbType) {
     return Optional.ofNullable(byMongoDbType.get(mongoDbType));
   }
+
 }

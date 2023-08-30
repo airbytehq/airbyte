@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mongodb.internal.state;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.nio.charset.StandardCharsets;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
@@ -31,4 +30,5 @@ class IdTypeTest {
   void supported() {
     assertEquals("objectId, string, int, long", IdType.SUPPORTED);
   }
+
 }

@@ -103,6 +103,7 @@ public class InitialSnapshotHandler {
 
   /**
    * Returns a list of types (as strings) that the _id field has for the provided collection.
+   *
    * @param collection Collection to aggregate the _id types of.
    * @return List of bson types (as strings) that the _id field contains.
    */
@@ -110,25 +111,25 @@ public class InitialSnapshotHandler {
     final List<String> idTypes = new ArrayList<>();
     // Sanity check that all ID_FIELD values are of the same type for this collection.
     // db.collection.aggregate([
-    //   {
-    //     $group : {
-    //       _id : { $type : "$_id" },
-    //       count : { $sum : 1 }
-    //     }
-    //   }
+    // {
+    // $group : {
+    // _id : { $type : "$_id" },
+    // count : { $sum : 1 }
+    // }
+    // }
     // ])
     collection.aggregate(List.of(
         Aggregates.group(
             new Document("_id", new Document("$type", "$_id")),
-            Accumulators.sum("count", 1)
-        )
-    )).forEach(document -> {
-      // the document will be in the structure of
-      // {"_id": {"_id": "[TYPE]"}, "count": [COUNT]}
-      // where [TYPE] is the bson type (objectId, string, etc.) and [COUNT] is the number of documents of that type
-      final Document innerDocument = document.get("_id", Document.class);
-      idTypes.add(innerDocument.get("_id").toString());
-    });
+            Accumulators.sum("count", 1))))
+        .forEach(document -> {
+          // the document will be in the structure of
+          // {"_id": {"_id": "[TYPE]"}, "count": [COUNT]}
+          // where [TYPE] is the bson type (objectId, string, etc.) and [COUNT] is the number of documents of
+          // that type
+          final Document innerDocument = document.get("_id", Document.class);
+          idTypes.add(innerDocument.get("_id").toString());
+        });
 
     return idTypes;
   }

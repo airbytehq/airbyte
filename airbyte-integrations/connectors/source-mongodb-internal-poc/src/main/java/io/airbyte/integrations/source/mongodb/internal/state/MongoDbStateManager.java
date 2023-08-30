@@ -52,7 +52,6 @@ public class MongoDbStateManager {
       return stateManager;
     }
 
-
     LOGGER.info("Initial state {}", initialState);
     final List<AirbyteStateMessage> stateMessages = deserializeState(initialState);
 
