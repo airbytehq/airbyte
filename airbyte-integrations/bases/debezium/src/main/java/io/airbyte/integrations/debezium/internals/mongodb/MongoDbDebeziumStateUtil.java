@@ -200,7 +200,7 @@ public class MongoDbDebeziumStateUtil {
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database);
 
-    final List<Object> key = new LinkedList();
+    final List<Object> key = new LinkedList<>();
     key.add(database);
     key.add(sourceInfoMap);
     return key;
