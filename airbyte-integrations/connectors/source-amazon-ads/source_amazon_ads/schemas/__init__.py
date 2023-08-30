@@ -7,6 +7,7 @@ from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
 from .sponsored_display import DisplayAdGroup, DisplayBudgetRules, DisplayCampaign, DisplayProductAds, DisplayTargeting
 from .sponsored_products import (
+    NegativeProductTargeting,
     ProductAd,
     ProductAdGroupBidRecommendations,
     ProductAdGroups,
@@ -34,6 +35,7 @@ __all__ = [
     "ProductAdGroupSuggestedKeywords",
     "ProductCampaign",
     "ProductTargeting",
+    "NegativeProductTargeting",
     "Profile",
     "AttributionReportModel",
 ]

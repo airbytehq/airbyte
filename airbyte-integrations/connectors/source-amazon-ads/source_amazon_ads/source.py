@@ -39,6 +39,7 @@ from .streams import (
     SponsoredProductCampaigns,
     SponsoredProductKeywords,
     SponsoredProductNegativeKeywords,
+    SponsoredProductNegativeTargetingClauses,
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
 )
@@ -117,6 +118,7 @@ class SourceAmazonAds(AbstractSource):
             SponsoredProductCampaignNegativeKeywords,
             SponsoredProductAds,
             SponsoredProductTargetings,
+            SponsoredProductNegativeTargetingClauses,
             SponsoredProductsReportStream,
             SponsoredBrandsCampaigns,
             SponsoredBrandsAdGroups,

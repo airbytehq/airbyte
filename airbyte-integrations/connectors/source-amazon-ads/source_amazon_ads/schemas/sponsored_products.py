@@ -76,3 +76,9 @@ class ProductTargeting(Targeting):
     campaignId: Decimal
     expression: List[Dict[str, str]]
     resolvedExpression: List[Dict[str, str]]
+
+
+class NegativeProductTargeting(Targeting):
+    totalResults: int
+    nextToken: str
+    negativeTargetingClauses: List[Dict[str, str]]

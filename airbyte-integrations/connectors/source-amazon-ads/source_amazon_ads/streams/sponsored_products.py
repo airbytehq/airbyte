@@ -11,6 +11,7 @@ from airbyte_protocol.models import SyncMode
 from source_amazon_ads.schemas import (
     Keywords,
     NegativeKeywords,
+    NegativeProductTargeting,
     ProductAd,
     ProductAdGroupBidRecommendations,
     ProductAdGroups,
@@ -212,3 +213,16 @@ class SponsoredProductTargetings(SubProfilesStream):
 
     def path(self, **kvargs) -> str:
         return "v2/sp/targets"
+
+
+class SponsoredProductNegativeTargetingClauses(SubProfilesStream):
+    """
+    This stream corresponds to Amazon Advertising API - Sponsored Products Targetings
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/NegativeTargetingClauses/operation/ListSponsoredProductsNegativeTargetingClauses
+    """
+
+    primary_key = "targetId"
+    model = NegativeProductTargeting
+
+    def path(self, **kvargs) -> str:
+        return "v2/sp/negativeTargets/list"
