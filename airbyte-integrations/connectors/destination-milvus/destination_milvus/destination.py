@@ -40,7 +40,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-from pymilvus import DataType, connections, Collection
+from pymilvus import Collection, DataType, connections
 from pymilvus.exceptions import DescribeCollectionException
 
 BATCH_SIZE = 128
