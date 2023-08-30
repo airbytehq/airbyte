@@ -158,7 +158,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-            if not stream_state or record_lmd >= state_lmd:
+            if not stream_state or record_lmd > state_lmd:
                 yield from transform_properties(record)
 
     def get_updated_state(
