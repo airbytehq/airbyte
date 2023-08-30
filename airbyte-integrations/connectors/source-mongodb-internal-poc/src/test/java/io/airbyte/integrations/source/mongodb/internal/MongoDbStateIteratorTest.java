@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
@@ -180,6 +181,28 @@ class MongoDbStateIteratorTest {
         "state status should be in_progress");
 
     assertFalse(iter.hasNext(), "should have no more records");
+  }
+
+  @Test
+  void anInvalidIdFieldThrowsAnException() {
+    final var doc = new Document("_id", 0.1).append("name", "Air Force Blue").append("hex", "#5d8aa8");
+
+    // on the second hasNext call, throw an exception
+    when(mongoCursor.hasNext())
+        .thenReturn(true, false);
+
+    when(mongoCursor.next()).thenReturn(doc);
+
+    final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
+
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, stream, Instant.now(), CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
+
+    assertTrue(iter.hasNext(), "air force blue should be next");
+    // first next call should return the document
+    iter.next();
+    assertTrue(iter.hasNext(), "air force blue should be next");
+    // second next call should throw an exception
+    assertThrows(ConfigErrorException.class, iter::next);
   }
 
   @Test

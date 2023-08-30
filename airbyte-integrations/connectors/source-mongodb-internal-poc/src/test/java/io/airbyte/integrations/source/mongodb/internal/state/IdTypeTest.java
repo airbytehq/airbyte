@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mongodb.internal.state;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.nio.charset.StandardCharsets;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
@@ -21,10 +20,18 @@ class IdTypeTest {
   }
 
   @Test
-  void findByMongoDbType() {
-    assertTrue(IdType.findByMongoDbType("objectId").isPresent(), "objectId not found");
-    assertTrue(IdType.findByMongoDbType("objectid").isEmpty(), "should have found nothing as it is case-sensitive");
-    assertTrue(IdType.findByMongoDbType(null).isEmpty(), "passing in a null is fine");
+  void findByBsonType() {
+    assertTrue(IdType.findByBsonType("objectId").isPresent(), "objectId not found");
+    assertTrue(IdType.findByBsonType("objectid").isPresent(), "should have found nothing as it is case-insensitive");
+    assertTrue(IdType.findByBsonType(null).isEmpty(), "passing in a null is fine");
+  }
+
+  @Test
+  void findByJavaType() {
+    assertTrue(IdType.findByJavaType("objectId").isPresent(), "objectId not found");
+    assertTrue(IdType.findByJavaType("objectid").isPresent(), "should have found nothing as it is case-insensitive");
+    assertTrue(IdType.findByJavaType("Integer").isPresent(), "Integer not found");
+    assertTrue(IdType.findByJavaType(null).isEmpty(), "passing in a null is fine");
   }
 
   @Test

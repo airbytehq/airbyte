@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
@@ -52,7 +53,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   /**
    * Pointer to the last document _id seen by this iterator, necessary to track for state messages.
    */
-  private String lastId;
+  private Object lastId;
 
   /**
    * This iterator outputs a final state when the wrapped `iter` has concluded. When this is true, the
@@ -126,9 +127,10 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       lastCheckpoint = Instant.now();
 
       if (lastId != null) {
-        // TODO add type support in here once more than ObjectId fields are supported
-        stateManager.updateStreamState(stream.getStream().getName(),
-            stream.getStream().getNamespace(), new MongoDbStreamState(lastId, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID));
+        final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+            .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+        final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
+        stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
 
       return new AirbyteMessage()
@@ -136,9 +138,11 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
           .withState(stateManager.toState());
     } else if (finalStateNext) {
       final var finalStateStatus = iterThrewException ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
+      final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+          .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+      final var state = new MongoDbStreamState(lastId.toString(), finalStateStatus, idType);
 
-      stateManager.updateStreamState(stream.getStream().getName(),
-          stream.getStream().getNamespace(), new MongoDbStreamState(lastId, finalStateStatus, IdType.OBJECT_ID));
+      stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
 
       return new AirbyteMessage()
           .withType(Type.STATE)
@@ -149,7 +153,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     final var document = iter.next();
     final var jsonNode = MongoUtils.toJsonNode(document, fields);
 
-    lastId = document.getObjectId("_id").toString();
+    lastId = document.get("_id");
 
     return new AirbyteMessage()
         .withType(Type.RECORD)

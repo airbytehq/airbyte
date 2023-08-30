@@ -70,7 +70,7 @@ public class InitialSnapshotHandler {
             throw new ConfigErrorException("The _id fields in a collection must be consistently typed.");
           }
 
-          if (IdType.findByMongoDbType(idTypes.get(0)).isEmpty()) {
+          if (IdType.findByBsonType(idTypes.get(0)).isEmpty()) {
             throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED);
           }
 
