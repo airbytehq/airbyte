@@ -20,7 +20,6 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_zendesk_support.ZendeskSupportAvailabilityStrategy import ZendeskSupportAvailabilityStrategy
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -147,10 +146,6 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
     @property
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return ZendeskSupportAvailabilityStrategy()
 
     def path(self, **kwargs):
         return self.name
