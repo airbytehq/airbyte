@@ -6,6 +6,8 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,7 +16,9 @@ import com.google.common.collect.ImmutableSet;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -209,7 +213,7 @@ class InitialSnapshotHandlerTest {
 
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
-    when(stateManager.getStreamState(COLLECTION1, NAMESPACE)).thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null)));
+    when(stateManager.getStreamState(COLLECTION1, NAMESPACE)).thenReturn(Optional.of(new MongoDbStreamState(OBJECT_ID1_STRING, null, IdType.OBJECT_ID)));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators =
         initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now());
 
@@ -242,6 +246,40 @@ class InitialSnapshotHandlerTest {
     assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection2.hasNext());
+  }
+
+  @Test
+  void testGetIteratorsThrowsExceptionWhenThereAreDifferentIdTypes() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, OBJECT_ID1,
+            NAME_FIELD, NAME1)),
+        new Document(Map.of(
+            CURSOR_FIELD, "string-id",
+            NAME_FIELD, NAME2))));
+
+    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
+    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+
+    final var thrown = assertThrows(ConfigErrorException.class,
+        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now()));
+    assertTrue(thrown.getMessage().contains("must be consistently typed"));
+  }
+
+  @Test
+  void testGetIteratorsThrowsExceptionWhenThereAreUnsupportedIdTypes() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, 0.1,
+            NAME_FIELD, NAME1))
+        ));
+
+    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
+    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
+
+    final var thrown = assertThrows(ConfigErrorException.class,
+        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME), Instant.now()));
+    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
   private void assertConfiguredFieldsEqualsRecordDataFields(final Set<String> configuredStreamFields, final JsonNode recordMessageData) {
