@@ -1,7 +1,6 @@
 version: "0.50.2"
 
 definitions:
-
   ## bases
   schema_loader:
     type: JsonFileSchemaLoader
@@ -10,7 +9,7 @@ definitions:
     description: "Base records selector for Full Refresh streams"
     extractor:
       type: DpathExtractor
-      field_path: ["{{ parameters.get('data_field', 'data')}}"] 
+      field_path: ["{{ parameters.get('data_field', 'data')}}"]
   requester:
     description: "Base Requester for Full Refresh streams"
     type: CustomRequester
@@ -21,8 +20,8 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
     request_headers:
-      Intercom-Version: '2.5' # ATTENTION: API version change is possible here
-      Accept: 'application/json'
+      Intercom-Version: "2.5" # ATTENTION: API version change is possible here
+      Accept: "application/json"
     error_handler:
       type: "DefaultErrorHandler"
   retriever:
@@ -49,26 +48,26 @@ definitions:
     http_method: "POST"
     request_body_json:
       query: "{
-          'operator': 'OR',
-          'value': [
-              {
-                  'field': 'updated_at',
-                  'operator': '>',
-                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
-              },
-              {
-                  'field': 'updated_at',
-                  'operator': '=',
-                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
-              },
-          ],
-      }"
+        'operator': 'OR',
+        'value': [
+        {
+        'field': 'updated_at',
+        'operator': '>',
+        'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
+        },
+        {
+        'field': 'updated_at',
+        'operator': '=',
+        'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
+        },
+        ],
+        }"
       sort: "{'field': 'updated_at', 'order': 'ascending'}"
       pagination: "{
         'per_page': {{ parameters.get('page_size') }},
         'page': {{ next_page_token.get('next_page_token').get('page') }},
         'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after') }}'
-      }"
+        }"
 
   ## streams
   # full-refresh
@@ -127,7 +126,7 @@ definitions:
       path: "data_attributes"
       model: "contact"
 
-  # semi-incremental 
+  # semi-incremental
   # (full-refresh and emit records >= *prior state)
   # (prior state - frozen state from previous sync, it automatically updates with next sync)
   stream_semi_incremental:
@@ -185,7 +184,7 @@ definitions:
                 500 - server-side error, should retry after 60 sec.
                 "
               response_filters:
-                - http_codes: [ 400, 500 ]
+                - http_codes: [400, 500]
                   action: RETRY
               backoff_strategies:
                 - type: ConstantBackoffStrategy
@@ -193,7 +192,7 @@ definitions:
             - type: DefaultErrorHandler
               description: "404 - scroll_param is expired or not found while requesting, ignore"
               response_filters:
-                - http_codes: [ 404 ]
+                - http_codes: [404]
                   action: IGNORE
 
   # semi-incremental substreams

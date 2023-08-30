@@ -7,34 +7,19 @@
           "type": "object",
           "properties": {
             "id": {
-              "type": [
-                "null",
-                "integer"
-              ]
+              "type": ["null", "integer"]
             },
             "name": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "valid": {
-              "type": [
-                "null",
-                "boolean"
-              ]
+              "type": ["null", "boolean"]
             },
             "value": {
-              "type": [
-                "null",
-                "number"
-              ]
+              "type": ["null", "number"]
             },
             "event_date": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "_ab_source_file_last_modified": {
               "type": "string",
@@ -45,14 +30,9 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "_ab_source_file_last_modified"
-        ]
+        "default_cursor_field": ["_ab_source_file_last_modified"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"

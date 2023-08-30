@@ -38,6 +38,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
@@ -354,6 +355,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new MySqlCdcStateHandler(stateManager),
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getDebeziumProperties(database),
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
           false);
 
@@ -366,6 +368,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getSnapshotProperties(database),
           mySqlCdcStateHandler,
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt);
 
       return Collections.singletonList(

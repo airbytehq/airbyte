@@ -63,11 +63,11 @@ public class BigQuerySqlGeneratorTest {
   @Test
   public void testClusteringMatches() {
     StreamConfig stream = new StreamConfig(null,
-            null,
-            DestinationSyncMode.APPEND_DEDUP,
-            List.of(new ColumnId("foo", "bar", "fizz")),
-            null,
-            null);
+        null,
+        DestinationSyncMode.APPEND_DEDUP,
+        List.of(new ColumnId("foo", "bar", "fizz")),
+        null,
+        null);
 
     // Clustering is null
     final StandardTableDefinition existingTable = Mockito.mock(StandardTableDefinition.class);
@@ -76,33 +76,33 @@ public class BigQuerySqlGeneratorTest {
 
     // Clustering does not contain all fields
     Mockito.when(existingTable.getClustering())
-            .thenReturn(Clustering.newBuilder().setFields(List.of("_airbyte_extracted_at")).build());
+        .thenReturn(Clustering.newBuilder().setFields(List.of("_airbyte_extracted_at")).build());
     Assertions.assertFalse(generator.clusteringMatches(stream, existingTable));
-    
+
     // Clustering matches
     stream = new StreamConfig(null,
-            null,
-            DestinationSyncMode.OVERWRITE,
-            null,
-            null,
-            null);
+        null,
+        DestinationSyncMode.OVERWRITE,
+        null,
+        null,
+        null);
     Assertions.assertTrue(generator.clusteringMatches(stream, existingTable));
 
     // Clustering only the first 3 PK columns (See https://github.com/airbytehq/oncall/issues/2565)
     final var expectedStreamColumnNames = List.of("a", "b", "c");
     Mockito.when(existingTable.getClustering())
-            .thenReturn(Clustering.newBuilder().setFields(
-                    Stream.concat(expectedStreamColumnNames.stream(), Stream.of("_airbyte_extracted_at"))
-                            .collect(Collectors.toList()))
-                    .build());
+        .thenReturn(Clustering.newBuilder().setFields(
+            Stream.concat(expectedStreamColumnNames.stream(), Stream.of("_airbyte_extracted_at"))
+                .collect(Collectors.toList()))
+            .build());
     stream = new StreamConfig(null,
-            null,
-            DestinationSyncMode.APPEND_DEDUP,
-            Stream.concat(expectedStreamColumnNames.stream(), Stream.of("d", "e"))
-                    .map(name -> new ColumnId(name, "foo", "bar"))
-                    .collect(Collectors.toList()),
-            null,
-            null);
+        null,
+        DestinationSyncMode.APPEND_DEDUP,
+        Stream.concat(expectedStreamColumnNames.stream(), Stream.of("d", "e"))
+            .map(name -> new ColumnId(name, "foo", "bar"))
+            .collect(Collectors.toList()),
+        null,
+        null);
     Assertions.assertTrue(generator.clusteringMatches(stream, existingTable));
   }
 
@@ -114,27 +114,29 @@ public class BigQuerySqlGeneratorTest {
     Assertions.assertFalse(generator.partitioningMatches(existingTable));
     // incorrect field
     Mockito.when(existingTable.getTimePartitioning())
-            .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build());
+        .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_foo").build());
     Assertions.assertFalse(generator.partitioningMatches(existingTable));
     // incorrect partitioning scheme
     Mockito.when(existingTable.getTimePartitioning())
-            .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.YEAR).setField("_airbyte_extracted_at").build());
+        .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.YEAR).setField("_airbyte_extracted_at").build());
     Assertions.assertFalse(generator.partitioningMatches(existingTable));
 
     // partitioning matches
     Mockito.when(existingTable.getTimePartitioning())
-            .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_airbyte_extracted_at").build());
+        .thenReturn(TimePartitioning.newBuilder(TimePartitioning.Type.DAY).setField("_airbyte_extracted_at").build());
     Assertions.assertTrue(generator.partitioningMatches(existingTable));
   }
 
   @Test
   public void testSchemaContainAllFinalTableV2AirbyteColumns() {
-    Assertions.assertTrue(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at", "_airbyte_raw_id")));
+    Assertions.assertTrue(
+        BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at", "_airbyte_raw_id")));
     Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_extracted_at", "_airbyte_raw_id")));
     Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_raw_id")));
     Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_airbyte_meta", "_airbyte_extracted_at")));
     Assertions.assertFalse(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of()));
-    Assertions.assertTrue(BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
+    Assertions.assertTrue(
+        BigQuerySqlGenerator.schemaContainAllFinalTableV2AirbyteColumns(Set.of("_AIRBYTE_META", "_AIRBYTE_EXTRACTED_AT", "_AIRBYTE_RAW_ID")));
   }
 
 }

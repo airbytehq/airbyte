@@ -188,6 +188,7 @@ This is a good solution if:
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
 - You are replicating Postgres tables less than 500GB.
+- You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication. 
 
 ## Connecting with SSL or SSH Tunneling
 

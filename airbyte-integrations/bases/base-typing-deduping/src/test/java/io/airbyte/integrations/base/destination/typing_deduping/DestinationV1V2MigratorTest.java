@@ -73,8 +73,7 @@ public class DestinationV1V2MigratorTest {
     final var sqlGenerator = new MockSqlGenerator();
     final StreamConfig stream = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final DestinationHandler<String> handler = Mockito.mock(DestinationHandler.class);
-    final var sql = String.join("\n\n", sqlGenerator.migrateFromV1toV2(STREAM_ID, "v1_raw_namespace", "v1_raw_table"),
-        sqlGenerator.softReset(stream));
+    final var sql = sqlGenerator.migrateFromV1toV2(STREAM_ID, "v1_raw_namespace", "v1_raw_table");
     // All is well
     final var migrator = noIssuesMigrator();
     migrator.migrate(sqlGenerator, handler, stream);

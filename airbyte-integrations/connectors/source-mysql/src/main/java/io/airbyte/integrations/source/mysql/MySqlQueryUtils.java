@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -16,19 +20,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlQueryUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlQueryUtils.class);
-  public record TableSizeInfo(Long tableSize, Long avgRowLength) { }
+
+  public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
 
   public static final String TABLE_ESTIMATE_QUERY =
       """
-      SELECT
-        (data_length + index_length) as %s,
-        AVG_ROW_LENGTH as %s
-     FROM
-        information_schema.tables
-     WHERE
-        table_schema = '%s' AND table_name = '%s'; 
-      """;
+       SELECT
+         (data_length + index_length) as %s,
+         AVG_ROW_LENGTH as %s
+      FROM
+         information_schema.tables
+      WHERE
+         table_schema = '%s' AND table_name = '%s';
+       """;
 
   public static final String MAX_PK_VALUE_QUERY =
       """
@@ -40,9 +46,9 @@ public class MySqlQueryUtils {
   public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
 
   public static String getMaxPkValueForStream(final JdbcDatabase database,
-    final ConfiguredAirbyteStream stream,
-    final String pkFieldName,
-    final String quoteString) {
+                                              final ConfiguredAirbyteStream stream,
+                                              final String pkFieldName,
+                                              final String quoteString) {
     final String name = stream.getStream().getName();
     final String namespace = stream.getStream().getNamespace();
     final String fullTableName =
@@ -67,8 +73,8 @@ public class MySqlQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, TableSizeInfo> getTableSizeInfoForStreams(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final String quoteString) {
+                                                                                              final List<ConfiguredAirbyteStream> streams,
+                                                                                              final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
@@ -103,4 +109,5 @@ public class MySqlQueryUtils {
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }
+
 }
