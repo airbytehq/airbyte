@@ -47,7 +47,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.junit.jupiter.api.Test;
@@ -76,10 +75,9 @@ class MongoDbCdcInitializerTest {
   void testCreateCdcIteratorsEmptyInitialState() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN));
     final Instant emittedAt = Instant.now();
-    final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
 
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -127,7 +125,7 @@ class MongoDbCdcInitializerTest {
     final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS));
 
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -172,7 +170,7 @@ class MongoDbCdcInitializerTest {
     final Instant emittedAt = Instant.now();
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
 
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -232,9 +230,9 @@ class MongoDbCdcInitializerTest {
     return (new ConfiguredAirbyteStream())
         .withStream(stream)
         .withSyncMode(SyncMode.INCREMENTAL)
-        .withCursorField(new ArrayList())
+        .withCursorField(new ArrayList<>())
         .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-        .withPrimaryKey(new ArrayList());
+        .withPrimaryKey(new ArrayList<>());
   }
 
 }

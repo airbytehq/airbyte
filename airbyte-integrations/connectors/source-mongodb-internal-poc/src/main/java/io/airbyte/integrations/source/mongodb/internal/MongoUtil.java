@@ -94,9 +94,8 @@ public class MongoUtil {
        * Fetch the keys/types from the first N documents and the last N documents from the collection.
        * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
        */
-      final Set<Field> discoveredFields = new HashSet<>();
       final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-      discoveredFields.addAll(getFieldsInCollection(mongoCollection));
+      final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection));
       return createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields));
     }).collect(Collectors.toList());
   }
@@ -105,7 +104,7 @@ public class MongoUtil {
     return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection collection) {
+  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection) {
     final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
@@ -149,7 +148,7 @@ public class MongoUtil {
   }
 
   private static boolean isSupportedCollection(final String collectionName) {
-    return !IGNORED_COLLECTIONS.stream().anyMatch(s -> collectionName.startsWith(s));
+    return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
   }
 
 }

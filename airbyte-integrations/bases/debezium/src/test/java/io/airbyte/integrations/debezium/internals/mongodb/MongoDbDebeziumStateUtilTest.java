@@ -64,7 +64,7 @@ class MongoDbDebeziumStateUtilTest {
     final String replicaSet = REPLICA_SET;
     final String resumeToken = RESUME_TOKEN;
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
@@ -105,7 +105,6 @@ class MongoDbDebeziumStateUtilTest {
             config,
             mongoClient);
     assertTrue(parsedOffset.isPresent());
-    assertNotNull(parsedOffset.getAsLong());
     assertEquals(timestamp.getValue(), parsedOffset.getAsLong());
   }
 

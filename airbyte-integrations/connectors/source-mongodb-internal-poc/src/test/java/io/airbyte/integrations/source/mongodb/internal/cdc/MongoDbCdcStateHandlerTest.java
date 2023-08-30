@@ -23,13 +23,11 @@ class MongoDbCdcStateHandlerTest {
   private static final String REPLICA_SET = "test-replica-set";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
 
-  private MongoDbStateManager mongoDbStateManager;
-
   private MongoDbCdcStateHandler mongoDbCdcStateHandler;
 
   @BeforeEach
   void setup() {
-    mongoDbStateManager = MongoDbStateManager.createStateManager(null);
+    final MongoDbStateManager mongoDbStateManager = MongoDbStateManager.createStateManager(null);
     mongoDbCdcStateHandler = new MongoDbCdcStateHandler(mongoDbStateManager);
   }
 
