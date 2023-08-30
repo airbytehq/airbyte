@@ -21,6 +21,8 @@ acceptance_tests:
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: outcomes
             bypass_reason: "Sandbox account cannot seed the stream"
+          - name: devices
+            bypass_reason: "Sandbox account cannot seed the stream"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
