@@ -44,7 +44,7 @@ def _concurrent_reader():
     name = "Source"
     partition_generator = PartitionGenerator(queue, name)
     queue_consumer = QueueConsumer(name)
-    reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, 1, DebugSliceLogger())
+    reader = ConcurrentStreamReader(partition_generator, queue_consumer, queue, 5, DebugSliceLogger())
     return reader
 
 
@@ -248,6 +248,32 @@ def test_limit_only_considers_data(reader):
     expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
 
     stream.read_records.assert_has_calls(expected_read_records_calls)
+
+
+@pytest.mark.parametrize(
+    "reader",
+    [
+        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_concurrent_reader(), id="concurrent_reader"),
+    ],
+)
+def test_exception_is_raised_if_generate_partitions_fails(reader):
+    logger = _mock_logger()
+
+    partition = {"partition": 1}
+    partitions = [partition]
+
+    records = [
+        {"id": 1, "partition": 1},
+        {"id": 2, "partition": 1},
+    ]
+    records_per_partition = [records]
+
+    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
+    stream.generate_partitions.side_effect = Mock(side_effect=RuntimeError("Test"))
+
+    with pytest.raises(RuntimeError):
+        list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
 
 
 @pytest.mark.parametrize(
