@@ -67,6 +67,21 @@ class Helpers {
             }
         }
     }
+
+    static boolean isPyenvInPath() {
+        String path = System.getenv('PATH')
+        if (path == null || path.empty) {
+            return false
+        }
+        for (final String p : path.split(File.pathSeparator)) {
+            for (final String d : p.split(File.separator)) {
+                if (".pyenv" == d) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }
 
 class AirbytePythonPlugin implements Plugin<Project> {
@@ -75,10 +90,23 @@ class AirbytePythonPlugin implements Plugin<Project> {
         def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
 
         def venvDirectoryName = '.venv'
+
+        // Add a task that allows cleaning up venvs to every python project
+        project.task('cleanPythonVenv', type: Exec) {
+            commandLine 'rm'
+            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
+        }
+        project.clean.dependsOn project.cleanPythonVenv
+
         project.plugins.apply 'ru.vyarus.use-python'
 
+        // Configure gradle python plugin.
         project.python {
             envPath = venvDirectoryName
+            if (Helpers.isPyenvInPath()) {
+                // When using pyenv, prefer 'python' instead of 'python3'.
+                pythonBinary = 'python'
+            }
             minPythonVersion = '3.9'
             scope = 'VIRTUALENV'
             installVirtualenv = true
@@ -96,24 +124,10 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'coverage[toml]:6.3.1'
         }
 
-
-        project.task('isortFormat', type: PythonTask) {
-            module = "isort"
-            command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} ./"
-        }
-
         project.task('isortReport', type: PythonTask) {
             module = "isort"
             command = "--settings-file=${project.rootProject.file('pyproject.toml').absolutePath} --diff --quiet ./"
             outputPrefix = ''
-        }
-
-        project.task('blackFormat', type: PythonTask) {
-            module = "black"
-            // the line length should match .isort.cfg
-            command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
-            dependsOn project.rootProject.licenseFormat
-            dependsOn project.isortFormat
         }
 
         project.task('blackReport', type: PythonTask) {
@@ -122,7 +136,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputPrefix = ''
         }
 
-        project.task('flakeCheck', type: PythonTask, dependsOn: project.blackFormat) {
+        project.task('flakeCheck', type: PythonTask) {
             module = "pflake8"
             command = "--config ${project.rootProject.file('pyproject.toml').absolutePath} ./"
         }
@@ -139,10 +153,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
             setIgnoreExitValue true
         }
 
-
-
-        // attempt to install anything in requirements.txt. by convention this should only be dependencies whose source is located in the project.
-
+        // Attempt to install anything in requirements.txt.
+        // By convention this should only be dependencies whose source is located in the project.
         if (project.file('requirements.txt').exists()) {
             project.task('installLocalReqs', type: PythonTask) {
                 module = "pip"
@@ -168,6 +180,22 @@ class AirbytePythonPlugin implements Plugin<Project> {
             outputs.file('build/installedreqs.txt')
         }
 
+        project.task('airbytePythonChecks') {
+            dependsOn project.installReqs
+            dependsOn project.flakeCheck
+        }
+
+        if (extension.moduleDirectory) {
+            project.task('mypyCheck', type: PythonTask) {
+                module = "mypy"
+                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
+            }
+
+            project.airbytePythonChecks.dependsOn project.mypyCheck
+        }
+
+        project.assemble.dependsOn project.airbytePythonChecks
+
         project.task('installTestReqs', type: PythonTask, dependsOn: project.installReqs) {
             module = "pip"
             command = "install .[tests]"
@@ -177,28 +205,19 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'unitTest', project.installTestReqs)
 
+        project.task('airbytePythonTest') {
+            dependsOn project.airbytePythonChecks
+            dependsOn project.unitTest
+        }
+        project.test.dependsOn project.airbytePythonTest
+
         Helpers.addTestTaskIfTestFilesFound(project, 'integration_tests', 'customIntegrationTests', project.installTestReqs)
         if (!project.tasks.findByName('integrationTest')) {
             project.task('integrationTest')
         }
-        project.integrationTest.dependsOn(project.customIntegrationTests)
+        project.integrationTest.dependsOn project.customIntegrationTests
 
-        if (extension.moduleDirectory) {
-            project.task('mypyCheck', type: PythonTask) {
-                module = "mypy"
-                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-            }
-
-            project.check.dependsOn mypyCheck
-        }
-
-        project.task('airbytePythonFormat', type: DefaultTask) {
-            dependsOn project.blackFormat
-            dependsOn project.isortFormat
-            dependsOn project.flakeCheck
-        }
-
-        project.task('airbytePythonReport', type: DefaultTask) {
+        project.task('airbytePythonReport') {
             dependsOn project.blackReport
             dependsOn project.isortReport
             dependsOn project.flakeReport
@@ -227,35 +246,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
                }
             }
         }
-
-        project.task('airbytePythonApply', type: DefaultTask) {
-            dependsOn project.installReqs
-            dependsOn project.airbytePythonFormat
-        }
-
-
-        project.task('airbytePythonTest', type: DefaultTask) {
-            dependsOn project.airbytePythonApply
-            dependsOn project.installTestReqs
-            dependsOn project.unitTest
-        }
-
-        // Add a task that allows cleaning up venvs to every python project
-        project.task('cleanPythonVenv', type: Exec) {
-            commandLine 'rm'
-            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
-        }
-
-        // Add a task which can be run at the root project level to delete all python venvs
-        if (!project.rootProject.hasProperty('cleanPythonVenvs')) {
-            project.rootProject.task('cleanPythonVenvs')
-        }
-        project.rootProject.cleanPythonVenvs.dependsOn(project.cleanPythonVenv)
-
-        project.assemble.dependsOn project.airbytePythonApply
-        project.assemble.dependsOn project.airbytePythonTest
-        project.test.dependsOn project.airbytePythonTest
-
                 // saves tools reports to a custom folder
         def reportsFolder = project.hasProperty('reports_folder') ? project.reports_folder : ''
         if ( reportsFolder != '' ) {
@@ -263,8 +253,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
             // clean reports folders
             project.file(reportsFolder).deleteDir()
             project.file(reportsFolder).mkdirs()
-
-
 
             project.tasks.blackReport.configure {
                 it.logging.addStandardOutputListener(new StandardOutputListener() {

@@ -455,43 +455,6 @@ subprojects { subproj ->
     check.dependsOn 'jacocoTestCoverageVerification'
 }
 
-
-// add licenses for python projects.
-subprojects {
-    def pythonFormatTask = project.tasks.findByName('blackFormat')
-
-    if (pythonFormatTask != null) {
-        apply plugin: "com.github.hierynomus.license"
-        license {
-            header rootProject.file("LICENSE_SHORT")
-        }
-        task licenseFormatPython(type: com.hierynomus.gradle.license.tasks.LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = fileTree(dir: projectDir)
-                    .include("**/*.py")
-                    .exclude(".venv/**/*.py")
-                    .exclude("**/airbyte_api_client/**/*.py")
-                    .exclude("**/__init__.py")
-            strictCheck = true
-        }
-        def licenseTask = project.tasks.findByName('licenseFormatPython')
-        def isortFormatTask = project.tasks.findByName('isortFormat')
-        if (isortFormatTask != null) {
-            isortFormat.dependsOn licenseTask
-        }
-        def flakeCheckTask = project.tasks.findByName('flakeCheck')
-        if (flakeCheckTask != null) {
-            flakeCheck.dependsOn licenseTask
-        }
-        blackFormat.dependsOn licenseTask
-
-        def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
-        if (generateManifestFilesTask != null) {
-            licenseTask.dependsOn generateManifestFilesTask
-        }
-    }
-}
-
 // python is required by the root project to apply python formatters like isort or black.
 python {
     envPath = '.venv'
@@ -499,22 +462,22 @@ python {
     scope = 'VIRTUALENV'
     installVirtualenv = true
     pip 'pip:21.3.1'
-    // https://github.com/csachs/pyproject-flake8/issues/13
-    pip 'flake8:4.0.1'
-    // flake8 doesn't support pyproject.toml files
-    // and thus there is the wrapper "pyproject-flake8" for this
-    pip 'pyproject-flake8:0.0.1a2'
     pip 'black:22.3.0'
     pip 'mypy:1.4.1'
     pip 'isort:5.6.4'
-    pip 'coverage[toml]:6.3.1'
 }
 
-task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
-    dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
+// code and config generation is required for 'format'
+task generate { t ->
+    [ 'generateApiClient',
+      'generateComponentManifestClassFiles',
+      'generateJsonSchema2Pojo',
+    ].each { n ->
+        t.dependsOn subprojects.collect { getTasksByName(n, true) }
+    }
 }
 
+// python license header generation is part of 'format'
 license {
     header rootProject.file("LICENSE_SHORT")
 }
@@ -550,16 +513,21 @@ task blackGlobalFormat(type: PythonTask) {
     dependsOn generate
 }
 
-task('format') {
+task pythonFormat {
     dependsOn generate
-    dependsOn spotlessApply
     dependsOn licensePythonGlobalFormat
     dependsOn isortGlobalFormat
     dependsOn blackGlobalFormat
-    tasks.findByName('spotlessApply').mustRunAfter 'generate'
     tasks.findByName('licensePythonGlobalFormat').mustRunAfter 'generate'
     tasks.findByName('isortGlobalFormat').mustRunAfter 'licensePythonGlobalFormat'
     tasks.findByName('blackGlobalFormat').mustRunAfter 'isortGlobalFormat'
+}
+
+task format {
+    dependsOn generate
+    dependsOn spotlessApply
+    dependsOn pythonFormat
+    tasks.findByName('spotlessApply').mustRunAfter 'generate'
 }
 
 // convenience task to list all dependencies per project task

@@ -155,7 +155,6 @@ customIntegrationTests.dependsOn("customIntegrationTestPython")
 task('mypyCheck', type: PythonTask) {
     module = "mypy"
     command = "normalization --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-
-    dependsOn 'blackFormat'
 }
-check.dependsOn mypyCheck
+
+airbytePythonChecks.dependsOn mypyCheck
