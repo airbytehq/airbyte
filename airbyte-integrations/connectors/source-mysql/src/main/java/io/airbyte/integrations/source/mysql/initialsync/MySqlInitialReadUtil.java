@@ -149,12 +149,11 @@ public class MySqlInitialReadUtil {
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
         new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
         new MySqlCdcSavedInfoFetcher(stateToBeUsed),
         new MySqlCdcStateHandler(stateManager),
         metadataInjector,
         MySqlCdcProperties.getDebeziumProperties(database),
-        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
         emittedAt,
         false);
 

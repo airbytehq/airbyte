@@ -159,12 +159,11 @@ public class PostgresCdcCtidInitializer {
           PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime, queueSize);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
           new PostgresCdcSavedInfoFetcher(stateToBeUsed),
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
           false);
 

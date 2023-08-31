@@ -10,6 +10,8 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.*;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.CollectionAndField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -20,6 +22,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,24 +59,19 @@ public class AirbyteDebeziumHandler<T> {
     this.queueSize = queueSize;
   }
 
-  public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(
+  public AutoCloseableIterator<AirbyteMessage> getRelationalDatabaseSnapshotIterators(
                                                                     final ConfiguredAirbyteCatalog catalogContainingStreamsToSnapshot,
                                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                                     final Properties snapshotProperties,
                                                                     final CdcStateHandler cdcStateHandler,
-                                                                    final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
                                                                     final Instant emittedAt) {
 
     LOGGER.info("Running snapshot for " + catalogContainingStreamsToSnapshot.getStreams().size() + " new tables");
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
-    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(snapshotProperties,
-        config,
-        catalogContainingStreamsToSnapshot,
-        offsetManager,
-        schemaHistoryManager(new EmptySavedInfo()),
-        debeziumConnectorType);
+    final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(
+    new RelationalDbDebeziumPropertiesManager(snapshotProperties, config, catalogContainingStreamsToSnapshot, offsetManager,schemaHistoryManager(new EmptySavedInfo())));
     tableSnapshotPublisher.start(queue);
 
     final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
@@ -91,21 +89,63 @@ public class AirbyteDebeziumHandler<T> {
             .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
-  public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
-                                                                       final CdcSavedInfoFetcher cdcSavedInfoFetcher,
-                                                                       final CdcStateHandler cdcStateHandler,
-                                                                       final CdcMetadataInjector cdcMetadataInjector,
-                                                                       final Properties connectorProperties,
-                                                                       final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
-                                                                       final Instant emittedAt,
-                                                                       final boolean addDbNameToState) {
-    LOGGER.info("Using CDC: {}", true);
-    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
+
+  public AutoCloseableIterator<AirbyteMessage> getRelationalDatabaseIncrementalIterator(final ConfiguredAirbyteCatalog catalog,
+                                                                                        final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+                                                                                        final CdcStateHandler cdcStateHandler,
+                                                                                        final CdcMetadataInjector cdcMetadataInjector,
+                                                                                        final Properties connectorProperties,
+                                                                                        final Instant emittedAt,
+                                                                                        final boolean addDbNameToState) {
+
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
-    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
-        schemaHistoryManager, debeziumConnectorType);
+    return getIncrementalIterator(
+        cdcSavedInfoFetcher,
+        cdcStateHandler,
+        cdcMetadataInjector,
+        new RelationalDbDebeziumPropertiesManager(connectorProperties, config, catalog, offsetManager,schemaHistoryManager),
+        emittedAt,
+        offsetManager
+    );
+  }
+
+  // debezium's mongodb connector doesn't let you specify a list of fields to include, so we can't filter fields
+  // solely using the configured catalog. Instead, we need to specify a list of fields to exclude (in addition to the catalog)
+  public AutoCloseableIterator<AirbyteMessage> getMongoDbIncrementalIterator(final ConfiguredAirbyteCatalog catalog,
+                                                                                        final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+                                                                                        final CdcStateHandler cdcStateHandler,
+                                                                                        final CdcMetadataInjector cdcMetadataInjector,
+                                                                                        final Properties connectorProperties,
+                                                                                        final Instant emittedAt,
+                                                                                        final Set<CollectionAndField> fieldsToExclude,
+                                                                                        final boolean addDbNameToState) {
+
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
+        addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
+    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
+    return getIncrementalIterator(
+        cdcSavedInfoFetcher,
+        cdcStateHandler,
+        cdcMetadataInjector,
+        new MongoDbDebeziumPropertiesManager(connectorProperties, config,fieldsToExclude , catalog, offsetManager,schemaHistoryManager),
+        emittedAt,
+        offsetManager
+    );
+  }
+
+  private AutoCloseableIterator<AirbyteMessage> getIncrementalIterator(
+                                                                             final CdcSavedInfoFetcher cdcSavedInfoFetcher,
+                                                                             final CdcStateHandler cdcStateHandler,
+                                                                             final CdcMetadataInjector cdcMetadataInjector,
+                                                                             final DebeziumPropertiesManager debeziumPropertiesManager,
+                                                                             final Instant emittedAt,
+                                                                             final AirbyteFileOffsetBackingStore offsetManager) {
+    LOGGER.info("Using CDC: {}", true);
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
+    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
+    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager);
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.

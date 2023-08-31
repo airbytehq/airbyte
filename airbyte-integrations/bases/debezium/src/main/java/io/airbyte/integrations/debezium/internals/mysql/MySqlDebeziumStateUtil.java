@@ -149,7 +149,7 @@ public class MySqlDebeziumStateUtil {
           }
           return Optional.empty();
         })) {
-      List<Optional<GtidSet>> gtidSet = stream.toList();
+      final List<Optional<GtidSet>> gtidSet = stream.toList();
       if (gtidSet.isEmpty()) {
         return Optional.empty();
       } else if (gtidSet.size() == 1) {
@@ -257,12 +257,8 @@ public class MySqlDebeziumStateUtil {
         Optional.empty());
     final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
-        database.getSourceConfig(),
-        catalog,
-        offsetManager,
-        Optional.of(schemaHistoryStorage),
-        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
+    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(
+        new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog, offsetManager,Optional.of(schemaHistoryStorage)))) {
       publisher.start(queue);
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);

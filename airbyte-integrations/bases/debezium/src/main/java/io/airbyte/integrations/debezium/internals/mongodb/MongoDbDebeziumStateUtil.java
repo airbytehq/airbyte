@@ -10,6 +10,7 @@ import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.CollectionAndField;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
+import java.util.Set;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.json.JsonConverterConfig;
 import org.apache.kafka.connect.runtime.WorkerConfig;
@@ -123,9 +125,13 @@ public class MongoDbDebeziumStateUtil {
                                   final ConfiguredAirbyteCatalog catalog,
                                   final JsonNode cdcState,
                                   final JsonNode config,
+                                  final Set<CollectionAndField> fieldsToExclude,
                                   final MongoClient mongoClient) {
-    final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
-        config, catalog,
+    final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
+        baseProperties,
+        config,
+        fieldsToExclude,
+        catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     return parseSavedOffset(debeziumProperties, mongoClient);

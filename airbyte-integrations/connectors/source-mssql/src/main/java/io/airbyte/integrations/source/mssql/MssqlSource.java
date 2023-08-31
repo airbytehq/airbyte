@@ -459,12 +459,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager),
           mssqlCdcConnectorMetadataInjector,
           MssqlCdcHelper.getDebeziumProperties(database, catalog),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());

@@ -126,13 +126,13 @@ public class MongoDbCdcInitializer {
     final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getMongoDbIncrementalIterator(catalog,
         cdcSavedInfoFetcher,
         mongoDbCdcStateHandler,
         cdcMetadataInjector,
         defaultDebeziumProperties,
-        DebeziumPropertiesManager.DebeziumConnectorType.MONGODB,
         emittedAt,
+        fieldsToExclude,
         false);
 
     return Stream
@@ -140,5 +140,4 @@ public class MongoDbCdcInitializer {
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
-
 }

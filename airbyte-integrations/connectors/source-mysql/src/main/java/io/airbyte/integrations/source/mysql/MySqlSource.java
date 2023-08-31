@@ -350,12 +350,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
           new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
           new MySqlCdcStateHandler(stateManager),
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getDebeziumProperties(database),
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
           false);
 
@@ -363,12 +362,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
 
-      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getRelationalDatabaseSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot),
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getSnapshotProperties(database),
           mySqlCdcStateHandler,
-          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt);
 
       return Collections.singletonList(
