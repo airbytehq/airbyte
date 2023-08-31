@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
     "type": "object",
-    "required": ["site_urls", "start_date", "authorization"],
+    "required": ["site_urls", "authorization"],
     "properties": {
       "site_urls": {
         "type": "array",
@@ -20,7 +20,7 @@
         "type": "string",
         "title": "Start Date",
         "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
-        "examples": ["2021-01-01"],
+        "default": "2021-01-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
         "order": 1,

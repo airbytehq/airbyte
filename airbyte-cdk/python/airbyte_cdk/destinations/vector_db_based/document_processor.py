@@ -28,6 +28,7 @@ class Chunk:
 class DocumentProcessor:
     """
     DocumentProcessor is a helper class that generates documents from Airbyte records.
+
     It is used to generate documents from records before writing them to the destination:
     * The text fields are extracted from the record and concatenated to a single string.
     * The metadata fields are extracted from the record and added to the document metadata.
