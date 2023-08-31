@@ -36,7 +36,6 @@ class PartitionReader:
 
     def is_done(self) -> bool:
         done = self._output_queue.qsize() == 0 and self._futures_are_done(self._queue_consumer_futures)
-        print(f"{self._name} is done: {done}")
         return done
 
     def process_partition_async(self, partition, executor):
