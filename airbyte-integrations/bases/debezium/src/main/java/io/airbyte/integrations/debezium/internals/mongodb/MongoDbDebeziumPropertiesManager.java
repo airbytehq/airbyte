@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  */
 public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager {
 
+  static final String FIELD_EXCLUDE_LIST_KEY = "field.exclude.list";
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
@@ -41,13 +43,18 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";
   static final String MONGODB_SSL_ENABLED_VALUE = Boolean.TRUE.toString();
   static final String MONGODB_USER_KEY = "mongodb.user";
+  private final Set<CollectionAndField> fieldsToExclude;
+
+  public record CollectionAndField(String collection, String field) {}
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
+                                          final Set<CollectionAndField> fieldsToExclude,
                                           final ConfiguredAirbyteCatalog catalog,
                                           final AirbyteFileOffsetBackingStore offsetManager,
                                           final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     super(properties, config, catalog, offsetManager, schemaHistoryManager);
+    this.fieldsToExclude = fieldsToExclude;
   }
 
   @Override
@@ -81,9 +88,17 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
     // Database/collection selection
     properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams()));
-    properties.setProperty(DATABASE_INCLUDE_LIST_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
+    final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+    properties.setProperty(DATABASE_INCLUDE_LIST_KEY, databaseName);
+    properties.setProperty(FIELD_EXCLUDE_LIST_KEY, createFieldsToExcludeString(fieldsToExclude, databaseName));
 
     return properties;
+  }
+
+  private String createFieldsToExcludeString(final Set<CollectionAndField>  fieldsToExclude, final String databaseName) {
+    return fieldsToExclude.stream()
+        .map(field -> databaseName + "." + field.collection() + "." + field.field())
+        .collect(Collectors.joining(","));
   }
 
   protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams) {
