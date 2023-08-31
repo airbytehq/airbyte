@@ -34,5 +34,3 @@ task downloadSpecSecretMask(type: Download) {
 
 processResources.dependsOn(downloadConnectorRegistry)
 processResources.dependsOn(downloadSpecSecretMask)
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

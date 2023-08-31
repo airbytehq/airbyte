@@ -34,11 +34,8 @@ plugins {
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'com.github.spotbugs' version '5.0.13'
     id 'version-catalog'
-    id 'maven-publish'
     id 'ru.vyarus.use-python'
 }
-
-apply from: "$rootDir/publish-repositories.gradle"
 
 repositories {
     mavenCentral()
@@ -182,30 +179,6 @@ tasks.named('spotlessStyling').configure {
 }
 
 check.dependsOn 'spotlessApply'
-
-@SuppressWarnings('GroovyAssignabilityCheck')
-def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
-    // generate a unique task name based on the directory name.
-    return task("publishArtifact-$subproject.name" {
-        apply plugin: 'maven-publish'
-        publishing {
-            repositories {
-                publications {
-                    "$subproject.name"(MavenPublication) {
-                        from subproject.components.java
-
-                        // use the subproject group and name with the assumption there are no identical subproject
-                        // names, group names or subproject group/name combination.
-                        groupId = "$subproject.group"
-                        artifactId = "$subproject.name"
-                        version = "$buildVersion"
-                        repositories.add(rootProject.repositories.getByName('cloudrepo'))
-                    }
-                }
-            }
-        }
-    })
-}
 
 allprojects {
     apply plugin: 'base'
@@ -599,24 +572,9 @@ tasks.withType(AbstractArchiveTask) {
     reproducibleFileOrder = true
 }
 
-// definition for publishing
+// pin dependency versions according to ./deps.toml
 catalog {
     versionCatalog {
         from(files("deps.toml"))
     }
-}
-
-publishing {
-    publications {
-        // This block is present for dependency catalog publishing.
-        maven(MavenPublication) {
-            groupId = 'io.airbyte'
-            artifactId = 'oss-catalog'
-
-            from components.versionCatalog
-            // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config-oss:config-persistence:<version-number>.
-        }
-    }
-    repositories.add(rootProject.repositories.getByName('cloudrepo'))
 }

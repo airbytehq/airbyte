@@ -56,5 +56,3 @@ task logClientsIntegrationTest(type: Test) {
         events "passed", "skipped", "failed"
     }
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

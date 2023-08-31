@@ -200,5 +200,3 @@ sourceSets {
         }
     }
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
