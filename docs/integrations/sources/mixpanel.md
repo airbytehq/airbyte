@@ -51,7 +51,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 0.1.38  | 2023-08-31 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Handle gracefully project timezone mismatch                                                                 |
+| 0.1.38  | 2023-08-31 | [30028](https://github.com/airbytehq/airbyte/pull/30028) | Handle gracefully project timezone mismatch                                                                 |
 | 0.1.37  | 2023-07-20 | [27932](https://github.com/airbytehq/airbyte/pull/27932) | Fix spec: change start/end date format to `date`                                                            |
 | 0.1.36  | 2023-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |
 | 0.1.35  | 2023-06-12 | [27252](https://github.com/airbytehq/airbyte/pull/27252) | Add should_retry False for 402 error                                                                        |
