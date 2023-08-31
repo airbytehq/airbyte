@@ -448,6 +448,10 @@ module.exports = {
       id: 'api-documentation',
     },
     {
+      type: "doc",
+      id: "terraform-documentation",
+    },
+    {
       type: 'doc',
       id: 'cli-documentation',
     },
