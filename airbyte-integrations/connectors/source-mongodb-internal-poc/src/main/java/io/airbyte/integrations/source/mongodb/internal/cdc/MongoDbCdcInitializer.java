@@ -14,8 +14,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.CollectionAndField;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,21 +45,23 @@ import org.slf4j.LoggerFactory;
  * <p />
  * For more information on the iterator selection logic, see
  * {@link MongoDbCdcInitialSnapshotUtils#getStreamsForInitialSnapshot(MongoDbStateManager, ConfiguredAirbyteCatalog, boolean)}
- * and {@link AirbyteDebeziumHandler#getIncrementalIterators}
+ * and {@link AirbyteDebeziumHandler#getMongoDbIncrementalIterator}
  */
 public class MongoDbCdcInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitializer.class);
 
   private final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
+  private final MongoDbDebeziumFieldsUtil mongoDbDebeziumFieldsUtil;
 
   @VisibleForTesting
-  MongoDbCdcInitializer(MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil) {
+  MongoDbCdcInitializer(final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil, final MongoDbDebeziumFieldsUtil mongoDbDebeziumFieldsUtil) {
     this.mongoDbDebeziumStateUtil = mongoDbDebeziumStateUtil;
+    this.mongoDbDebeziumFieldsUtil = mongoDbDebeziumFieldsUtil;
   }
 
   public MongoDbCdcInitializer() {
-    this(new MongoDbDebeziumStateUtil());
+    this(new MongoDbDebeziumStateUtil(), new MongoDbDebeziumFieldsUtil());
   }
 
   /**
@@ -90,11 +93,13 @@ public class MongoDbCdcInitializer {
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
         : Jsons.clone(stateManager.getCdcState().state());
+    final Set<CollectionAndField> fieldsToExclude = mongoDbDebeziumFieldsUtil.getFieldsToExclude(catalog, databaseName, mongoClient);
     final OptionalLong savedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState,
         config,
+        fieldsToExclude,
         mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
