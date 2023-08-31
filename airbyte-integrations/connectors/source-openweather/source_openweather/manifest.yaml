@@ -7,7 +7,6 @@ definitions:
       type: DpathExtractor
       field_path: []
 
-
   requester:
     type: HttpRequester
     url_base: "https://api.openweathermap.org/data/3.0/"
@@ -20,11 +19,11 @@ definitions:
       units: "{{ config.get('units')}}"
     error_handler:
       response_filters:
-          - http_codes: [ 500 ]
-            action: RETRY
+        - http_codes: [500]
+          action: RETRY
   retriever:
     type: SimpleRetriever
-    record_selector:  
+    record_selector:
       $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
@@ -47,7 +46,7 @@ definitions:
   #     datetime: "{{ format_datetime(now_utc(), '%s') }}"
   #     datetime_format: "%s"
   #   step: "P1M"
-       
+
   onecall_stream:
     $ref: "#/definitions/base_stream"
     name: "onecall"
@@ -56,15 +55,15 @@ definitions:
     $parameters:
       path: "onecall"
     # the commented section is for incremental sync which is not supported by the API
-      # path: "{% if config['dt']%}onecall/timemachine{% else %}onecall{% endif %}"
+    # path: "{% if config['dt']%}onecall/timemachine{% else %}onecall{% endif %}"
     # transformations:
     #   - type: AddFields
     #     fields:
     #       - path: [ "sync_field" ]
     #         value: "{{ record['current']['dt'] }}"
-      # incremental_cursor: ["current","dt"]
+    # incremental_cursor: ["current","dt"]
     # incremental_sync:
-    #       $ref: "#/definitions/incremental_sync_base" 
+    #       $ref: "#/definitions/incremental_sync_base"
 
 streams:
   - "#/definitions/onecall_stream"
@@ -107,7 +106,7 @@ spec:
       units:
         type: string
         description: "Units of measurement. standard, metric and imperial units are available. If you do not use the units parameter, standard units will be applied by default."
-        enum : 
+        enum:
           - standard
           - metric
           - imperial
@@ -122,12 +121,13 @@ spec:
       #     - '1693023447'
       only_current:
         type: boolean
-        description : "True for particular day"
+        description: "True for particular day"
         example:
-          - 'true'
+          - "true"
       lang:
         type: string
-        description: You can use lang parameter to get the output in your language.
+        description:
+          You can use lang parameter to get the output in your language.
           The contents of the description field will be translated. See <a href="https://openweathermap.org/api/one-call-api#multi">here</a>
           for the list of supported languages.
         enum:
@@ -158,7 +158,7 @@ spec:
           - la
           - lt
           - mk
-          - 'no'
+          - "no"
           - nl
           - pl
           - pt
