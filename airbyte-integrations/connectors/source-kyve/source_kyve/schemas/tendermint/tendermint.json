@@ -1,170 +1,173 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "key": {
-      "type": "string"
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "key" : {
+      "type" : "string"
     },
-    "value.block.block_id.hash": {
-      "type": "string"
+    "value__block__block_id__hash" : {
+      "type" : "string"
     },
-    "value.block.block.data.txs": {
-      "type": "array",
-      "items": {}
+    "value__block_results__height" : {
+      "type" : "string"
     },
-    "value.block_results.height": {
-      "type": "string"
+    "value__block__block__data__txs" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
     },
-    "value.block.block.header.time": {
-      "type": "string"
+    "value__block__block__header__time" : {
+      "type" : "string"
     },
-    "value.block.block.header.height": {
-      "type": "string"
+    "value__block_results__txs_results" : {
+      "type" : "array",
+      "items" : {}
     },
-    "value.block.block_id.parts.hash": {
-      "type": "string"
+    "value__block__block__header__height" : {
+      "type" : "string"
     },
-    "value.block_results.txs_results": {
-      "type": "null"
+    "value__block__block_id__parts__hash" : {
+      "type" : "string"
     },
-    "value.block.block_id.parts.total": {
-      "type": "integer"
+    "value__block__block_id__parts__total" : {
+      "type" : "integer"
     },
-    "value.block.block.header.app_hash": {
-      "type": "string"
+    "value__block__block__header__app_hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.chain_id": {
-      "type": "string"
+    "value__block__block__header__chain_id" : {
+      "type" : "string"
     },
-    "value.block.block.header.data_hash": {
-      "type": "string"
+    "value__block__block__header__data_hash" : {
+      "type" : "string"
     },
-    "value.block.block.evidence.evidence": {
-      "type": "array",
-      "items": {}
+    "value__block_results__end_block_events" : {
+      "type" : "array",
+      "items" : {}
     },
-    "value.block.block.last_commit.round": {
-      "type": "integer"
+    "value__block__block__evidence__evidence" : {
+      "type" : "array",
+      "items" : {}
     },
-    "value.block.block.last_commit.height": {
-      "type": "string"
+    "value__block__block__last_commit__round" : {
+      "type" : "integer"
     },
-    "value.block_results.end_block_events": {
-      "type": "array",
-      "items": {}
+    "value__block_results__validator_updates" : {
+      "type" : "null"
     },
-    "value.block_results.validator_updates": {
-      "type": "null"
+    "value__block__block__last_commit__height" : {
+      "type" : "string"
     },
-    "value.block.block.header.evidence_hash": {
-      "type": "string"
+    "value__block_results__begin_block_events" : {
+      "type" : "array",
+      "items" : {}
     },
-    "value.block.block.header.version.block": {
-      "type": "string"
+    "value__block__block__header__evidence_hash" : {
+      "type" : "string"
     },
-    "value.block_results.begin_block_events": {
-      "type": "array",
-      "items": {}
+    "value__block__block__header__consensus_hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.consensus_hash": {
-      "type": "string"
+    "value__block__block__header__version__block" : {
+      "type" : "string"
     },
-    "value.block.block.header.validators_hash": {
-      "type": "string"
+    "value__block__block__header__validators_hash" : {
+      "type" : "string"
     },
-    "value.block.block.last_commit.signatures": {
-      "type": "array",
-      "items": {}
+    "value__block__block__last_commit__signatures" : {
+      "type" : "array",
+      "items" : {}
     },
-    "value.block.block.header.last_commit_hash": {
-      "type": "string"
+    "value__block__block__header__last_commit_hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.proposer_address": {
-      "type": "string"
+    "value__block__block__header__proposer_address" : {
+      "type" : "string"
     },
-    "value.block.block.header.last_results_hash": {
-      "type": "string"
+    "value__block__block__header__last_results_hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.last_block_id.hash": {
-      "type": "string"
+    "value__block__block__header__last_block_id__hash" : {
+      "type" : "string"
     },
-    "value.block.block.last_commit.block_id.hash": {
-      "type": "string"
+    "value__block__block__last_commit__block_id__hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.next_validators_hash": {
-      "type": "string"
+    "value__block__block__header__next_validators_hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.last_block_id.parts.hash": {
-      "type": "string"
+    "value__block__block__header__last_block_id__parts__hash" : {
+      "type" : "string"
     },
-    "value.block.block.last_commit.block_id.parts.hash": {
-      "type": "string"
+    "value__block__block__last_commit__block_id__parts__hash" : {
+      "type" : "string"
     },
-    "value.block.block.header.last_block_id.parts.total": {
-      "type": "integer"
+    "value__block__block__header__last_block_id__parts__total" : {
+      "type" : "integer"
     },
-    "value.block.block.last_commit.block_id.parts.total": {
-      "type": "integer"
+    "value__block__block__last_commit__block_id__parts__total" : {
+      "type" : "integer"
     },
-    "value.block_results.consensus_param_updates.block.max_gas": {
-      "type": "string"
+    "value__block_results__consensus_param_updates__block__max_gas" : {
+      "type" : "string"
     },
-    "value.block_results.consensus_param_updates.block.max_bytes": {
-      "type": "string"
+    "value__block_results__consensus_param_updates__block__max_bytes" : {
+      "type" : "string"
     },
-    "value.block_results.consensus_param_updates.evidence.max_bytes": {
-      "type": "string"
+    "value__block_results__consensus_param_updates__evidence__max_bytes" : {
+      "type" : "string"
     },
-    "value.block_results.consensus_param_updates.validator.pub_key_types": {
-      "type": "array",
-      "items": {}
+    "value__block_results__consensus_param_updates__validator__pub_key_types" : {
+      "type" : "array",
+      "items" : {}
     },
-    "value.block_results.consensus_param_updates.evidence.max_age_duration": {
-      "type": "string"
+    "value__block_results__consensus_param_updates__evidence__max_age_duration" : {
+      "type" : "string"
     },
-    "value.block_results.consensus_param_updates.evidence.max_age_num_blocks": {
-      "type": "string"
+    "value__block_results__consensus_param_updates__evidence__max_age_num_blocks" : {
+      "type" : "string"
     }
   },
-  "required": [
+  "required" : [
     "key",
-    "value.block.block_id.hash",
-    "value.block.block.data.txs",
-    "value.block_results.height",
-    "value.block.block.header.time",
-    "value.block.block.header.height",
-    "value.block.block_id.parts.hash",
-    "value.block_results.txs_results",
-    "value.block.block_id.parts.total",
-    "value.block.block.header.app_hash",
-    "value.block.block.header.chain_id",
-    "value.block.block.header.data_hash",
-    "value.block.block.evidence.evidence",
-    "value.block.block.last_commit.round",
-    "value.block.block.last_commit.height",
-    "value.block_results.end_block_events",
-    "value.block_results.validator_updates",
-    "value.block.block.header.evidence_hash",
-    "value.block.block.header.version.block",
-    "value.block_results.begin_block_events",
-    "value.block.block.header.consensus_hash",
-    "value.block.block.header.validators_hash",
-    "value.block.block.last_commit.signatures",
-    "value.block.block.header.last_commit_hash",
-    "value.block.block.header.proposer_address",
-    "value.block.block.header.last_results_hash",
-    "value.block.block.header.last_block_id.hash",
-    "value.block.block.last_commit.block_id.hash",
-    "value.block.block.header.next_validators_hash",
-    "value.block.block.header.last_block_id.parts.hash",
-    "value.block.block.last_commit.block_id.parts.hash",
-    "value.block.block.header.last_block_id.parts.total",
-    "value.block.block.last_commit.block_id.parts.total",
-    "value.block_results.consensus_param_updates.block.max_gas",
-    "value.block_results.consensus_param_updates.block.max_bytes",
-    "value.block_results.consensus_param_updates.evidence.max_bytes",
-    "value.block_results.consensus_param_updates.validator.pub_key_types",
-    "value.block_results.consensus_param_updates.evidence.max_age_duration",
-    "value.block_results.consensus_param_updates.evidence.max_age_num_blocks"
+    "value__block__block_id__hash",
+    "value__block_results__height",
+    "value__block__block__data__txs",
+    "value__block__block__header__time",
+    "value__block_results__txs_results",
+    "value__block__block__header__height",
+    "value__block__block_id__parts__hash",
+    "value__block__block_id__parts__total",
+    "value__block__block__header__app_hash",
+    "value__block__block__header__chain_id",
+    "value__block__block__header__data_hash",
+    "value__block_results__end_block_events",
+    "value__block__block__evidence__evidence",
+    "value__block__block__last_commit__round",
+    "value__block_results__validator_updates",
+    "value__block__block__last_commit__height",
+    "value__block_results__begin_block_events",
+    "value__block__block__header__evidence_hash",
+    "value__block__block__header__consensus_hash",
+    "value__block__block__header__version__block",
+    "value__block__block__header__validators_hash",
+    "value__block__block__last_commit__signatures",
+    "value__block__block__header__last_commit_hash",
+    "value__block__block__header__proposer_address",
+    "value__block__block__header__last_results_hash",
+    "value__block__block__header__last_block_id__hash",
+    "value__block__block__last_commit__block_id__hash",
+    "value__block__block__header__next_validators_hash",
+    "value__block__block__header__last_block_id__parts__hash",
+    "value__block__block__last_commit__block_id__parts__hash",
+    "value__block__block__header__last_block_id__parts__total",
+    "value__block__block__last_commit__block_id__parts__total",
+    "value__block_results__consensus_param_updates__block__max_gas",
+    "value__block_results__consensus_param_updates__block__max_bytes",
+    "value__block_results__consensus_param_updates__evidence__max_bytes",
+    "value__block_results__consensus_param_updates__validator__pub_key_types",
+    "value__block_results__consensus_param_updates__evidence__max_age_duration",
+    "value__block_results__consensus_param_updates__evidence__max_age_num_blocks"
   ]
 }

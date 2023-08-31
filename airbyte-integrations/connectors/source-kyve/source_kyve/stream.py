@@ -18,7 +18,7 @@ runtime_to_root_file_mapping = {
     "@kyvejs/celo": "celo/block",
     "@kyvejs/cosmos": "cosmos/block",
     "@kyvejs/evm": "evm/block",
-    "@kyvejs/tendermint": "tendermint/dataItem",
+    "@kyvejs/tendermint": "tendermint/tendermint",
     "@kyvejs/uniswap": "uniswap/event"
 }
 

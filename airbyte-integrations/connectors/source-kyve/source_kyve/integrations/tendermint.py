@@ -1,4 +1,3 @@
-
 import gzip
 import json
 import logging
@@ -8,8 +7,8 @@ from source_kyve.stream import KYVEStream
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from source_kyve.util import CustomResourceSchemaLoader
 
-
 logger = logging.getLogger("airbyte")
+
 
 def flatten_bundle(bundle):
     flattened_bundle = []
@@ -19,9 +18,10 @@ def flatten_bundle(bundle):
         flattened_bundle.append(flattened_data_item)
     return flattened_bundle
 
+
 def flatten_data_item(d, result, parent_key=''):
     for key, value in d.items():
-        new_key = f"{parent_key}.{key}" if parent_key else key
+        new_key = f"{parent_key}__{key}" if parent_key else key
         if isinstance(value, dict):
             flatten_data_item(value, result, new_key)
         else:
@@ -31,7 +31,7 @@ def flatten_data_item(d, result, parent_key=''):
 class TendermintStream(KYVEStream):
     def get_json_schema(self) -> Mapping[str, Any]:
         return CustomResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("tendermint/tendermint")
-    
+
     def parse_response(
             self,
             response: requests.Response,
