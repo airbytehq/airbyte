@@ -271,19 +271,20 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
             """
+            DECLARE _ab_missing_primary_key EXCEPTION (-20001, 'Table `${raw_table_id}` has rows missing missing a primary key');
             BEGIN
-            LET missing_pk_count INTEGER := (
-              SELECT COUNT(1)
-              FROM ${raw_table_id}
-              WHERE
-                "_airbyte_loaded_at" IS NULL
-                ${pk_null_checks}
-            );
-
-            IF (missing_pk_count > 0) THEN
-              RAISE STATEMENT_ERROR;
-            END IF;
-            RETURN 'SUCCESS';
+              LET missing_pk_count INTEGER := (
+                SELECT COUNT(1)
+                FROM ${raw_table_id}
+                WHERE
+                  "_airbyte_loaded_at" IS NULL
+                  ${pk_null_checks}
+              );
+  
+              IF (missing_pk_count > 0) THEN
+                RAISE _ab_missing_primary_key;
+              END IF;
+              RETURN 'SUCCESS';
             END;
             """);
     return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
