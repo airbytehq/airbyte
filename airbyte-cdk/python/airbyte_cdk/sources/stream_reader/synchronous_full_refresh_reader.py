@@ -6,8 +6,7 @@ import logging
 from typing import Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import FullRefreshStreamReader, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -20,7 +19,7 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
     def read_stream(
         self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
     ) -> Iterable[StreamData]:
-        slices = stream.generate_partitions(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
+        slices = stream.generate_partitions(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_reader=self)
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         for _slice in slices:

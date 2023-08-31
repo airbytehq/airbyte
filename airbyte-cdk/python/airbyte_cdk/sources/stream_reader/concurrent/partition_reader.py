@@ -13,13 +13,12 @@ _SENTINEL = None
 
 
 class PartitionReader:
-    def __init__(self, name: str, output_queue: Queue[Optional[Record]]):
-        self._name = name
-        self._output_queue = output_queue
+    def __init__(self, output_queue: Optional[Queue[Optional[Record]]] = None):
+        self._output_queue = output_queue if output_queue else Queue()
         self._queue_consumer_futures = []
 
     def process_partition(self, partition: StreamPartition) -> None:
-        print(f"{self._name} is processing partition={partition}")
+        print(f"Processing partition={partition}")
         for record in partition.stream.read_records(
             stream_slice=partition.slice, sync_mode=SyncMode.full_refresh, cursor_field=partition.cursor_field
         ):

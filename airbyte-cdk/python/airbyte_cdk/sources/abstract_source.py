@@ -21,9 +21,8 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import FullRefreshStreamReader, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message

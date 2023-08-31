@@ -12,9 +12,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from airbyte_cdk.models import Type as MessageType
 
 # list of all possible HTTP methods which can be used for sending of request bodies
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
@@ -208,7 +209,9 @@ class Stream(ABC):
           If the stream has no primary keys, return None.
         """
 
-    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Optional[Mapping[str, Any]]]:
+    def generate_partitions(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_reader: "FullRefreshStreamReader"
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)
 
     def stream_slices(
@@ -277,3 +280,27 @@ class Stream(ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
+
+
+class FullRefreshStreamReader(ABC):
+    @abstractmethod
+    def read_stream(
+        self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
+    ) -> Iterable[StreamData]:
+        """
+        Read a stream in full refresh mode
+        :param stream: The stream to read data from
+        :param cursor_field:
+        :param logger:
+        :param internal_config:
+        :return: The stream's records
+        """
+
+    @staticmethod
+    def is_record(record_data_or_message: StreamData) -> bool:
+        if isinstance(record_data_or_message, dict):
+            return True
+        elif isinstance(record_data_or_message, AirbyteMessage):
+            return bool(record_data_or_message.type == MessageType.RECORD)
+        else:
+            return False

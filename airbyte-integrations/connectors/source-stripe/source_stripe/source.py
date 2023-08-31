@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from queue import Queue
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
@@ -67,10 +66,8 @@ from source_stripe.streams import (
 
 class SourceStripe(AbstractSource):
     def get_full_refresh_stream_reader(self):
-        partition_generator = PartitionGenerator(Queue(), "SourceStripe")
-        partition_reader = PartitionReader("PartitionReader", Queue())
         max_workers = 10
-        return ConcurrentFullRefreshStreamReader(partition_generator, partition_reader, max_workers, DebugSliceLogger())
+        return ConcurrentFullRefreshStreamReader(PartitionGenerator, PartitionReader, max_workers, DebugSliceLogger())
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:

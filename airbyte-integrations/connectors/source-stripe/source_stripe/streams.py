@@ -5,18 +5,13 @@
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
-from queue import Queue
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentFullRefreshStreamReader
-from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
 
@@ -378,12 +373,8 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
     def get_parent_stream_instance(self):
         return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
 
-    def generate_partitions(self, sync_mode, cursor_field):
+    def generate_partitions(self, sync_mode, cursor_field, stream_reader):
         parent_stream = self.get_parent_stream_instance()
-        partition_generator = PartitionGenerator(Queue(), "SourceStripe")
-        partition_reader = PartitionReader("PartitionReader", Queue())
-        max_workers = 10
-        stream_reader = ConcurrentFullRefreshStreamReader(partition_generator, partition_reader, max_workers, DebugSliceLogger())
         yield from stream_reader.read_stream(parent_stream, None, parent_stream.logger)
 
     def stream_slices(

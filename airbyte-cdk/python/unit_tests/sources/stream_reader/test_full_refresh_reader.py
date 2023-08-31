@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from queue import Queue
 from unittest.mock import Mock, call
 
 import pytest
@@ -26,8 +25,8 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentFullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
+from airbyte_cdk.sources.streams import FullRefreshStreamReader
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
@@ -41,10 +40,7 @@ def _syncrhonous_reader():
 
 
 def _concurrent_reader():
-    name = "Source"
-    partition_generator = PartitionGenerator(Queue(), name)
-    partition_reader = PartitionReader("PartitionRader", Queue())
-    reader = ConcurrentFullRefreshStreamReader(partition_generator, partition_reader, 5, DebugSliceLogger())
+    reader = ConcurrentFullRefreshStreamReader(PartitionGenerator, PartitionReader, 5, DebugSliceLogger())
     return reader
 
 

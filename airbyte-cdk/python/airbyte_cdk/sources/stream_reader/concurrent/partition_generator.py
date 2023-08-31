@@ -11,26 +11,26 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class PartitionGenerator:
-    def __init__(self, queue: Queue[Optional[StreamPartition]], name: str):
-        self._queue = queue
-        self._name = name
+    def __init__(self, queue: Optional[Queue[Optional[StreamPartition]]] = None):
+        self._queue = queue if queue else Queue()
         self._futures: List[Future] = []
 
-    def generate_partitions_for_stream(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> None:
-        print(f"generate_partitions_for_stream for {self._name} for stream {stream.name}")
-        for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field):
+    def generate_partitions_for_stream(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_reader) -> None:
+        print(f"generate_partitions_for_stream for stream {stream.name}")
+        for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field, stream_reader=stream_reader):
             print(f"putting partition and stream on queue for {partition}. stream: {stream.name}")
             stream_partition = StreamPartition(stream, partition, cursor_field)
             self._queue.put(stream_partition)
         print(f"done. queue size: {self._queue.qsize()}")
 
-    def generate_partitions_async(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], executor):
+    def generate_partitions_async(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], executor, stream_reader):
         f = executor.submit(
             PartitionGenerator.generate_partitions_for_stream,
             self,
             stream,
             sync_mode,
             cursor_field,
+            stream_reader,
         )
         self._futures.append(f)
 
