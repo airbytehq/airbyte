@@ -275,7 +275,7 @@ const airbyteCloud = [
       type: "generated-index",
     },
     items: [
-      "cloud/managing-airbyte-cloud/edit-stream-configuration",
+      "cloud/managing-airbyte-cloud/configuring-connections",
       "cloud/managing-airbyte-cloud/review-connection-status",
       "cloud/managing-airbyte-cloud/review-sync-history",
       "cloud/managing-airbyte-cloud/manage-schema-changes",

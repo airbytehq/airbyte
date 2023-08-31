@@ -90,6 +90,10 @@ const config = {
             from: "/cloud/managing-airbyte-cloud/review-connection-state",
             to: "/cloud/managing-airbyte-cloud/manage-connection-state",
           },
+          {
+            from: "/cloud/managing-airbyte-cloud/edit-stream-configuration",
+            to: "/cloud/managing-airbyte-cloud/configuring-connections", 
+          },
           //                        {
           //                         from: '/some-lame-path',
           //                         to: '/a-much-cooler-uri',
