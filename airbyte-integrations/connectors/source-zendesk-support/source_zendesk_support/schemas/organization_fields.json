@@ -56,7 +56,7 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "urk": {
+    "url": {
       "type": ["null", "string"]
     }
   }
