@@ -12,7 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FutureUtils {
 
-  public static void reduceExceptions(Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, String initialMessage)
+
+  public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)
       throws Exception {
     final var exceptionMessages = potentialExceptions.stream()
         .map(CompletableFuture::join)

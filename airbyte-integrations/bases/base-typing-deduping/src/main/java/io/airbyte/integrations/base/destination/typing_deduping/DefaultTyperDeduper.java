@@ -81,7 +81,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }
     overwriteStreamsWithTmpTable = new HashSet<>();
     LOGGER.info("Preparing final tables");
-    Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
+    final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {
       prepareTablesTasks.add(prepareTablesFuture(stream));
     }
@@ -165,7 +165,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
    */
   public void commitFinalTables() throws Exception {
     LOGGER.info("Committing final tables");
-    Set<CompletableFuture<Optional<Exception>>> tableCommitTasks = new HashSet<>();
+    final Set<CompletableFuture<Optional<Exception>>> tableCommitTasks = new HashSet<>();
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
       if (!streamsWithSuccessfulSetup.containsKey(new Pair<>(streamConfig.id().originalNamespace(), streamConfig.id().originalName()))) {
         LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
@@ -180,7 +180,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     reduceExceptions(tableCommitTasks, "The Following Exceptions were thrown while committing final tables:\n");
   }
 
-  private CompletableFuture<Optional<Exception>> commitFinalTableTask(StreamConfig streamConfig) {
+  private CompletableFuture<Optional<Exception>> commitFinalTableTask(final StreamConfig streamConfig) {
     return CompletableFuture.supplyAsync(() -> {
       final StreamId streamId = streamConfig.id();
       final String finalSuffix = getFinalTableSuffix(streamId);

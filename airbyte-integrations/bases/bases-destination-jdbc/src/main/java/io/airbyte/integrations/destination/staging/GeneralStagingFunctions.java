@@ -91,10 +91,8 @@ public class GeneralStagingFunctions {
     }
   }
 
-  private static CompletableFuture<Optional<Exception>> dropStageTask(WriteConfig writeConfig,
-                                                                      StagingOperations stagingOperations,
-                                                                      boolean purgeStagingData,
-                                                                      JdbcDatabase database) {
+  private static CompletableFuture<Optional<Exception>> dropStageTask(final WriteConfig writeConfig, final StagingOperations stagingOperations,
+                                                               final boolean purgeStagingData, final JdbcDatabase database) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         final String schemaName = writeConfig.getOutputSchemaName();
@@ -111,7 +109,7 @@ public class GeneralStagingFunctions {
     });
   }
 
-  private static CompletableFuture<Optional<Exception>> typeAndDedupeTask(WriteConfig writeConfig, TyperDeduper typerDeduper) {
+  private static CompletableFuture<Optional<Exception>> typeAndDedupeTask(final WriteConfig writeConfig, final TyperDeduper typerDeduper) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
