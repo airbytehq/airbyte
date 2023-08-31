@@ -280,7 +280,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                   "_airbyte_loaded_at" IS NULL
                   ${pk_null_checks}
               );
-  
+
               IF (missing_pk_count > 0) THEN
                 RAISE _ab_missing_primary_key;
               END IF;
