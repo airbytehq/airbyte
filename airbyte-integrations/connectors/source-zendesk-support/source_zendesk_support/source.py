@@ -15,6 +15,7 @@ from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskExcepti
 
 from .streams import (
     AccountAttributes,
+    Articles,
     AttributeDefinitions,
     AuditLogs,
     Brands,
@@ -123,6 +124,7 @@ class SourceZendeskSupport(AbstractSource):
         """
         args = self.convert_config2stream_args(config)
         streams = [
+            Articles(**args),
             AuditLogs(**args),
             GroupMemberships(**args),
             Groups(**args),
