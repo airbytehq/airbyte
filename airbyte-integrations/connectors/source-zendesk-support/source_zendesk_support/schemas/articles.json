@@ -38,6 +38,9 @@
     "locale": {
       "type": ["null", "string"]
     },
+    "name": {
+      "type": ["null", "string"]
+    },
     "outdated": {
       "type": ["null", "boolean"]
     },
