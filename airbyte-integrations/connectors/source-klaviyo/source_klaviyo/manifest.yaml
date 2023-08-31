@@ -181,7 +181,7 @@ definitions:
     $parameters:
       name: "global_exclusions"
       cursor_field: timestamp
-      cursor_datetime_formats: '%s'
+      cursor_datetime_formats: '%Y-%m-%d %H:%M:%S'
 
   lists_stream:
     $ref: "#/definitions/base_stream"
@@ -244,8 +244,6 @@ definitions:
         - '%Y-%m-%d %H:%M:%S'
     $parameters:
       name: "flows"
-      cursor_field: created
-      cursor_datetime_formats: '%Y-%m-%d %H:%M:%S'
 
   profiles_stream:
     $ref: "#/definitions/base_stream"
