@@ -54,11 +54,6 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
         name);
   }
 
-  public ColumnId buildColumnId_lowercase(final String name) {
-    // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(escapeIdentifier_lowercase(name), name, name);
-  }
-
   private static String escapeIdentifier_lowercase(final String identifier) {
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be doubled.
