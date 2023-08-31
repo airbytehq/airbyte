@@ -416,7 +416,7 @@ public abstract class BaseTypingDedupingTest {
     // The raw data is unaffected by the schema, but the final table should not have a `name` column.
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl").stream()
-        .peek(record -> ((ObjectNode) record).remove("name"))
+        .peek(record -> ((ObjectNode) record).remove(getSqlGenerator().buildColumnId("name").name()))
         .toList();
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
