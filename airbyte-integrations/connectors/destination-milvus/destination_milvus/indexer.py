@@ -3,6 +3,7 @@
 #
 
 
+from multiprocessing import Process
 from typing import List, Optional
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
@@ -22,7 +23,7 @@ class MilvusIndexer(Indexer):
     def __init__(self, config: MilvusIndexingConfigModel, embedder: Embedder):
         super().__init__(config, embedder)
 
-    def _create_client(self):
+    def _connect(self):
         connections.connect(
             uri=self.config.host,
             db_name=self.config.db if self.config.db else "",
@@ -30,6 +31,21 @@ class MilvusIndexer(Indexer):
             password=self.config.auth.password if self.config.auth.mode == "username_password" else "",
             token=self.config.auth.token if self.config.auth.mode == "token" else "",
         )
+
+    def _create_client(self):
+        # Run connect in a separate process as it will hang if the token is invalid.
+        proc = Process(target=self._connect)
+        proc.start()
+        proc.join(5)
+        if proc.is_alive():
+            # If the process is still alive after 5 seconds, terminate it and raise an exception
+            proc.terminate()
+            proc.join()
+            raise Exception("Connection timed out, check your host and credentials")
+
+        # If the process exited within 5 seconds, it's safe to connect on the main process to execute the command
+        self._connect()
+
         self._collection = Collection(self.config.collection)
 
     def check(self) -> Optional[str]:

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
@@ -25,52 +25,46 @@ class TestMilvusIndexer(unittest.TestCase):
         self.mock_embedder = Mock()
         self.mock_embedder.embedding_dimensions = 128
         self.milvus_indexer = MilvusIndexer(self.mock_config, self.mock_embedder)
+        self.milvus_indexer._create_client = Mock()
+        self.milvus_indexer._collection = Mock()
 
-    @patch("destination_milvus.indexer.connections")
-    @patch("destination_milvus.indexer.Collection")
-    def test_check_returns_expected_result(self, MockCollection, MockConnections):
-        mock_collection = Mock()
-        mock_collection.describe.return_value = {
+    def test_check_returns_expected_result(self):
+        self.milvus_indexer._collection.describe.return_value = {
             "auto_id": True,
             "fields": [{"name": "vector", "type": DataType.FLOAT_VECTOR, "params": {"dim": 128}}],
         }
-        MockCollection.return_value = mock_collection
 
         result = self.milvus_indexer.check()
 
         self.assertIsNone(result)
 
-        mock_collection.describe.assert_called()
+        self.milvus_indexer._collection.describe.assert_called()
 
-    @patch("destination_milvus.indexer.connections")
-    @patch("destination_milvus.indexer.Collection")
-    def test_check_handles_failure_conditions(self, MockCollection, MockConnections):
+    def test_check_handles_failure_conditions(self):
         # Test 1: Collection does not exist
-        mock_collection = Mock()
-        mock_collection.describe.side_effect = DescribeCollectionException("Some error")
-        MockCollection.return_value = mock_collection
+        self.milvus_indexer._collection.describe.side_effect = DescribeCollectionException("Some error")
 
         result = self.milvus_indexer.check()
         self.assertEqual(result, f"Collection {self.mock_config.collection} does not exist")
 
         # Test 2: General exception in describe
-        mock_collection.describe.side_effect = Exception("Random exception")
+        self.milvus_indexer._collection.describe.side_effect = Exception("Random exception")
         result = self.milvus_indexer.check()
         self.assertTrue("Random exception" in result)  # Assuming format_exception includes the exception message
 
         # Test 3: auto_id is not True
-        mock_collection.describe.return_value = {"auto_id": False}
-        mock_collection.describe.side_effect = None
+        self.milvus_indexer._collection.describe.return_value = {"auto_id": False}
+        self.milvus_indexer._collection.describe.side_effect = None
         result = self.milvus_indexer.check()
         self.assertEqual(result, "Only collections with auto_id are supported")
 
         # Test 4: Vector field not found
-        mock_collection.describe.return_value = {"auto_id": True, "fields": [{"name": "wrong_vector_field"}]}
+        self.milvus_indexer._collection.describe.return_value = {"auto_id": True, "fields": [{"name": "wrong_vector_field"}]}
         result = self.milvus_indexer.check()
         self.assertEqual(result, f"Vector field {self.mock_config.vector_field} not found")
 
         # Test 5: Vector field is not a vector
-        mock_collection.describe.return_value = {
+        self.milvus_indexer._collection.describe.return_value = {
             "auto_id": True,
             "fields": [{"name": self.mock_config.vector_field, "type": DataType.INT32}],
         }
@@ -78,7 +72,7 @@ class TestMilvusIndexer(unittest.TestCase):
         self.assertEqual(result, f"Vector field {self.mock_config.vector_field} is not a vector")
 
         # Test 6: Vector field dimension mismatch
-        mock_collection.describe.return_value = {
+        self.milvus_indexer._collection.describe.return_value = {
             "auto_id": True,
             "fields": [{"name": self.mock_config.vector_field, "type": DataType.FLOAT_VECTOR, "params": {"dim": 64}}],
         }
@@ -87,14 +81,10 @@ class TestMilvusIndexer(unittest.TestCase):
             result, f"Vector field {self.mock_config.vector_field} is not a {self.mock_embedder.embedding_dimensions}-dimensional vector"
         )
 
-    @patch("destination_milvus.indexer.connections")
-    @patch("destination_milvus.indexer.Collection")
-    def test_pre_sync_calls_delete(self, MockCollection, MockConnections):
-        mock_collection = Mock()
-        MockCollection.return_value = mock_collection
+    def test_pre_sync_calls_delete(self):
         mock_iterator = Mock()
         mock_iterator.next.side_effect = [[{"id": 1}], []]
-        mock_collection.query_iterator.return_value = mock_iterator
+        self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
 
         self.milvus_indexer.pre_sync(
             Mock(
@@ -107,41 +97,31 @@ class TestMilvusIndexer(unittest.TestCase):
             )
         )
 
-        mock_collection.query_iterator.assert_called_with(expr='_ab_stream == "some_stream"')
-        mock_collection.delete.assert_called_with(expr="id in [1]")
+        self.milvus_indexer._collection.query_iterator.assert_called_with(expr='_ab_stream == "some_stream"')
+        self.milvus_indexer._collection.delete.assert_called_with(expr="id in [1]")
 
-    @patch("destination_milvus.indexer.connections")
-    @patch("destination_milvus.indexer.Collection")
-    def test_pre_sync_does_not_call_delete(self, MockCollection, MockConnections):
-        mock_collection = Mock()
-        MockCollection.return_value = mock_collection
-
+    def test_pre_sync_does_not_call_delete(self):
         self.milvus_indexer.pre_sync(
             Mock(streams=[Mock(destination_sync_mode=DestinationSyncMode.append, stream=Mock(name="some_stream"))])
         )
 
-        mock_collection.delete.assert_not_called()
+        self.milvus_indexer._collection.delete.assert_not_called()
 
     def test_index_calls_insert(self):
-        mock_collection = Mock()
-        self.milvus_indexer._collection = mock_collection
-
         self.mock_embedder.embed_texts.return_value = [[1, 2, 3]]
         self.milvus_indexer.index([Mock(metadata={"key": "value"}, page_content="some content")], [])
 
         self.mock_embedder.embed_texts.assert_called_with(["some content"])
-        mock_collection.insert.assert_called_with(
+        self.milvus_indexer._collection.insert.assert_called_with(
             [{"key": "value", "vector": self.mock_embedder.embed_texts.return_value[0], "text": "some content"}]
         )
 
     def test_index_calls_delete(self):
-        mock_collection = Mock()
-        self.milvus_indexer._collection = mock_collection
         mock_iterator = Mock()
         mock_iterator.next.side_effect = [[{"id": "123"}], []]
-        mock_collection.query_iterator.return_value = mock_iterator
+        self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
 
         self.milvus_indexer.index([], ["some_id"])
 
-        mock_collection.query_iterator.assert_called_with(expr='_ab_record_id in ["some_id"]')
-        mock_collection.delete.assert_called_with(expr="id in [123]")
+        self.milvus_indexer._collection.query_iterator.assert_called_with(expr='_ab_record_id in ["some_id"]')
+        self.milvus_indexer._collection.delete.assert_called_with(expr="id in [123]")

@@ -1,5 +1,3 @@
-import json
-import re
 from typing import Literal, Optional, Union
 
 import dpath.util
@@ -10,7 +8,6 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
 
@@ -59,18 +56,6 @@ class ConfigModel(BaseModel):
                 {"id": "indexing", "title": "Indexing"},
             ]
         }
-
-    @staticmethod
-    def resolve_refs(schema: dict) -> dict:
-        # config schemas can't contain references, so inline them
-        json_schema_ref_resolver = RefResolver.from_schema(schema)
-        str_schema = json.dumps(schema)
-        for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
-            ref = json.loads(ref_block)["$ref"]
-            str_schema = str_schema.replace(ref_block, json.dumps(json_schema_ref_resolver.resolve(ref)[1]))
-        pyschema: dict = json.loads(str_schema)
-        del pyschema["definitions"]
-        return pyschema
 
     @staticmethod
     def remove_discriminator(schema: dict) -> None:
