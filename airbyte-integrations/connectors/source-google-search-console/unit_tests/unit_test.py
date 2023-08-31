@@ -199,12 +199,12 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
 
     # test custom_reports
     with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(custom_reports="")) == AirbyteConnectionStatus(
+        assert command_check(source, config_gen(custom_reports_array="")) == AirbyteConnectionStatus(
             status=Status.FAILED,
             message="'<ValidationError: \"{} is not of type \\'array\\'\">'",
         )
     with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(
+        assert command_check(source, config_gen(custom_reports_array="{}")) == AirbyteConnectionStatus(
             status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
         )
 
@@ -231,7 +231,7 @@ def test_streams(config_gen):
     source = SourceGoogleSearchConsole()
     streams = source.streams(config_gen())
     assert len(streams) == 15
-    streams = source.streams(config_gen(custom_reports=...))
+    streams = source.streams(config_gen(custom_reports_array=...))
     assert len(streams) == 14
 
 

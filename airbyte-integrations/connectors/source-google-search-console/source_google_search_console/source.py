@@ -87,18 +87,18 @@ class SourceGoogleSearchConsole(AbstractSource):
         return config
 
     def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        if "custom_reports" in config:
+        if "custom_reports_array" in config:
             try:
-                custom_reports = config["custom_reports"]
+                custom_reports = config["custom_reports_array"]
                 if isinstance(custom_reports, str):
                     # load the json_str old report structure and transform it into valid JSON Object
-                    config["custom_reports"] = json.loads(config["custom_reports"])
+                    config["custom_reports_array"] = json.loads(config["custom_reports_array"])
                 elif isinstance(custom_reports, list):
                     pass  # allow the list structure only
             except ValueError:
-                raise Exception("custom_reports is not valid JSON")
-            jsonschema.validate(config["custom_reports"], custom_reports_schema)
-            for report in config["custom_reports"]:
+                raise Exception("Custom Reports provided is not valid List of Object (reports)")
+            jsonschema.validate(config["custom_reports_array"], custom_reports_schema)
+            for report in config["custom_reports_array"]:
                 for dimension in report["dimensions"]:
                     if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
                         raise Exception(f"dimension: '{dimension}' not found")
@@ -190,7 +190,7 @@ class SourceGoogleSearchConsole(AbstractSource):
     def get_custom_reports(self, config: Mapping[str, Any], stream_config: Mapping[str, Any]) -> List[Optional[Stream]]:
         return [
             type(report["name"], (SearchAnalyticsByCustomDimensions,), {})(dimensions=report["dimensions"], **stream_config)
-            for report in config.get("custom_reports", [])
+            for report in config.get("custom_reports_array", [])
         ]
 
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
