@@ -13,6 +13,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -62,7 +63,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
     if (streamNamespace == null) {
       streamNamespace = getDefaultSchema();
     }
-    return SnowflakeTestUtils.dumpFinalTable(database, databaseName, streamNamespace, streamName);
+    return SnowflakeTestUtils.dumpFinalTable(database, databaseName, streamNamespace.toUpperCase(), streamName.toUpperCase());
   }
 
   @Override
@@ -77,13 +78,19 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
             DROP SCHEMA IF EXISTS "%s" CASCADE
             """,
             getRawSchema(),
+            // Raw table is still lowercase.
             StreamId.concatenateRawTableName(streamNamespace, streamName),
-            streamNamespace));
+            streamNamespace.toUpperCase()));
   }
 
   @Override
   protected void globalTeardown() throws Exception {
     DataSourceFactory.close(dataSource);
+  }
+
+  @Override
+  protected SqlGenerator<?> getSqlGenerator() {
+    return new SnowflakeSqlGenerator();
   }
 
   /**

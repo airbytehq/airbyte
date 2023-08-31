@@ -68,12 +68,7 @@ public abstract class BaseTypingDedupingTest {
       throw new RuntimeException(e);
     }
   }
-  // TODO use columnID to get escaped names
-  private static final RecordDiffer DIFFER = new RecordDiffer(
-      Pair.of("id1", AirbyteProtocolType.INTEGER),
-      Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
-      Pair.of("old_cursor", AirbyteProtocolType.INTEGER));
+  private RecordDiffer DIFFER;
 
   private String randomSuffix;
   private JsonNode config;
@@ -139,6 +134,8 @@ public abstract class BaseTypingDedupingTest {
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
+  protected abstract SqlGenerator<?> getSqlGenerator();
+
   /**
    * Destinations which need to clean up resources after an entire test finishes should override this
    * method. For example, if you want to gracefully close a database connection, you should do that
@@ -166,6 +163,14 @@ public abstract class BaseTypingDedupingTest {
     streamNamespace = "typing_deduping_test" + getUniqueSuffix();
     streamName = "test_stream" + getUniqueSuffix();
     streamsToTearDown = new ArrayList<>();
+
+    final SqlGenerator<?> generator = getSqlGenerator();
+    DIFFER = new RecordDiffer(
+        Pair.of(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER),
+        Pair.of(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER),
+        Pair.of(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
+        Pair.of(generator.buildColumnId("old_cursor"), AirbyteProtocolType.INTEGER));
+
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
   }
 

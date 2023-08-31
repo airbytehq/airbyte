@@ -205,9 +205,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
     DIFFER = new RecordDiffer(
-        Pair.of(id1.name(""), AirbyteProtocolType.INTEGER),
-        Pair.of(id2.name(""), AirbyteProtocolType.INTEGER),
-        Pair.of(cursor.name(""), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+        Pair.of(id1, AirbyteProtocolType.INTEGER),
+        Pair.of(id2, AirbyteProtocolType.INTEGER),
+        Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
 
     namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
