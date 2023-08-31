@@ -110,25 +110,23 @@ public class InitialSnapshotHandler {
   private List<String> aggregateIdField(final MongoCollection<Document> collection) {
     final List<String> idTypes = new ArrayList<>();
     // Sanity check that all ID_FIELD values are of the same type for this collection.
-    // db.collection.aggregate([
-    // {
-    // $group : {
-    // _id : { $type : "$_id" },
-    // count : { $sum : 1 }
-    // }
-    // }
-    // ])
+    // db.collection.aggregate([{
+    //   $group : {
+    //     _id : { $type : "$_id" },
+    //     count : { $sum : 1 }
+    //   }
+    // }])
     collection.aggregate(List.of(
         Aggregates.group(
-            new Document("_id", new Document("$type", "$_id")),
+            new Document(ID_FIELD, new Document("$type", "$_id")),
             Accumulators.sum("count", 1))))
         .forEach(document -> {
           // the document will be in the structure of
           // {"_id": {"_id": "[TYPE]"}, "count": [COUNT]}
           // where [TYPE] is the bson type (objectId, string, etc.) and [COUNT] is the number of documents of
           // that type
-          final Document innerDocument = document.get("_id", Document.class);
-          idTypes.add(innerDocument.get("_id").toString());
+          final Document innerDocument = document.get(ID_FIELD, Document.class);
+          idTypes.add(innerDocument.get(ID_FIELD).toString());
         });
 
     return idTypes;

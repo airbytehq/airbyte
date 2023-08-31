@@ -153,7 +153,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     final var document = iter.next();
     final var jsonNode = MongoUtils.toJsonNode(document, fields);
 
-    lastId = document.get("_id");
+    lastId = document.get(MongoConstants.ID_FIELD);
 
     return new AirbyteMessage()
         .withType(Type.RECORD)
