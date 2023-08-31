@@ -9,14 +9,13 @@ data:
       enabled: false
   connectorSubtype: database
   connectorType: destination
-  definitionId: FAKE-UUID-0000-0000-000000000000
+  definitionId: 0e89b786-e44c-4cca-ac2b-9b3971f3d7e7
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-scaffold-destination-python
   githubIssueLabel: destination-scaffold-destination-python
   icon: scaffold-destination-python.svg
   license: MIT
   name: Scaffold Destination Python
-  releaseDate: TODO
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python

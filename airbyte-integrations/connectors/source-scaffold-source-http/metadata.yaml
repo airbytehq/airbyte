@@ -9,14 +9,13 @@ data:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: FAKE-UUID-0000-0000-000000000000
+  definitionId: 01df31ad-a6dd-42e1-82e3-d580f6520cbb
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-scaffold-source-http
   githubIssueLabel: source-scaffold-source-http
   icon: scaffold-source-http.svg
   license: MIT
   name: Scaffold Source Http
-  releaseDate: TODO
   supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-http
