@@ -380,7 +380,7 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
         partition_generator = PartitionGenerator(Queue(), "SourceStripe")
         partition_reader = PartitionReader("PartitionReader", Queue())
         max_workers = 10
-        stream_reader = ConcurrentreamReader(partition_generator, partition_reader, max_workers, DebugSliceLogger())
+        stream_reader = ConcurrentFullRefreshStreamReader(partition_generator, partition_reader, max_workers, DebugSliceLogger())
         yield from stream_reader.read_stream(parent_stream, None, parent_stream.logger)
 
     def stream_slices(
