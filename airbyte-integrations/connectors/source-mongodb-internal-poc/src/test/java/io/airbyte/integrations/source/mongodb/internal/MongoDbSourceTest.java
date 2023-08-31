@@ -194,7 +194,7 @@ class MongoDbSourceTest {
   void testReadClosesMongoClient() {
     final MongoClient mongoClient = mock(MongoClient.class);
     doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
-    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(new RuntimeException());
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any())).thenThrow(new RuntimeException());
     assertThrows(RuntimeException.class, () -> source.read(airbyteSourceConfig, null, null));
     verify(mongoClient, times(1)).close();
   }
@@ -205,7 +205,7 @@ class MongoDbSourceTest {
     final MongoChangeStreamCursor mongoChangeStreamCursor = mock(MongoChangeStreamCursor.class);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
-    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
+    when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfig, null, null);
     verify(mongoClient, never()).close();
   }

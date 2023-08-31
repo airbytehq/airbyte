@@ -12,6 +12,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
@@ -29,7 +31,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
+import java.util.Optional;
 import java.util.Properties;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
@@ -98,7 +100,7 @@ class MongoDbDebeziumStateUtilTest {
     assertEquals(timestamp.getInc(), Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
     assertEquals("null", Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID).asText());
 
-    final OptionalLong parsedOffset =
+    final Optional<BsonDocument> parsedOffset =
         mongoDbDebeziumStateUtil.savedOffset(
             baseProperties,
             CONFIGURED_CATALOG,
@@ -106,7 +108,7 @@ class MongoDbDebeziumStateUtilTest {
             config,
             mongoClient);
     assertTrue(parsedOffset.isPresent());
-    assertEquals(timestamp.getValue(), parsedOffset.getAsLong());
+    assertEquals(resumeToken, parsedOffset.get().get("_data").asString().getValue());
   }
 
   @Test
@@ -119,16 +121,37 @@ class MongoDbDebeziumStateUtilTest {
   }
 
   @Test
-  void testSavedOffsetAfterResumeToken() {
+  void testIsResumeTokenValid() {
     final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
-    final long resumeTokenTimestamp = ResumeTokens.getTimestamp(resumeToken).getValue();
-    final OptionalLong savedOffsetAfter = OptionalLong.of(resumeTokenTimestamp + 1);
-    final OptionalLong savedOffsetBefore = OptionalLong.of(resumeTokenTimestamp - 1);
-    final OptionalLong savedOffsetEquals = OptionalLong.of(resumeTokenTimestamp);
 
-    assertTrue(mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffsetAfter));
-    assertFalse(mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffsetBefore));
-    assertTrue(mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffsetEquals));
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    assertTrue(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient));
+  }
+
+  @Test
+  void testIsResumeTokenInvalid() {
+    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
+
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeToken);
+    when(changeStreamIterable.cursor()).thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()));
+    when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+
+    assertFalse(mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient));
   }
 
 }

@@ -29,8 +29,8 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -83,8 +83,7 @@ public class MongoDbCdcInitializer {
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
-                                                                        final JsonNode config,
-                                                                        final BsonDocument resumeToken) {
+                                                                        final JsonNode config) {
 
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config);
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
@@ -94,7 +93,7 @@ public class MongoDbCdcInitializer {
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
         : Jsons.clone(stateManager.getCdcState().state());
-    final OptionalLong savedOffset = mongoDbDebeziumStateUtil.savedOffset(
+    final Optional<BsonDocument> savedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState,
@@ -107,19 +106,19 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
-    final boolean savedOffsetAfterResumeToken = mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffset);
+    final boolean savedOffsetIsValid = savedOffset.isPresent() ? mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset.get(), mongoClient) : false;
 
-    if (!savedOffsetAfterResumeToken) {
-      LOGGER.warn("Saved offset is before most recent resume token. Airbyte will trigger a full refresh.");
+    if (!savedOffsetIsValid) {
+      LOGGER.warn("Saved offset is not valid. Airbyte will trigger a full refresh.");
     }
 
     final MongoDbCdcState stateToBeUsed =
-        (!savedOffsetAfterResumeToken || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
+        (!savedOffsetIsValid || stateManager.getCdcState() == null || stateManager.getCdcState().state() == null)
             ? new MongoDbCdcState(initialDebeziumState)
             : stateManager.getCdcState();
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
-        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(stateManager, catalog, savedOffsetAfterResumeToken);
+        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(stateManager, catalog, savedOffsetIsValid);
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), emittedAt);
