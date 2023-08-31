@@ -8,7 +8,7 @@ import re
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-from urllib.parse import parse_qsl, urljoin, urlparse
+from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import pytz
@@ -152,26 +152,6 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
-
-    def get_api_records_count(self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
-        """
-        Count stream records before generating the future requests
-        to then correctly generate the pagination parameters.
-        """
-
-        count_url = urljoin(self.url_base, f"{self.path(stream_state=stream_state, stream_slice=stream_slice)}/count.json")
-
-        start_date = self._start_date
-        params = {}
-        if self.cursor_field and stream_state:
-            start_date = stream_state.get(self.cursor_field)
-        if start_date:
-            params["start_time"] = self.str2datetime(start_date)
-
-        response = self._session.request("get", count_url)
-        records_count = response.json().get("count", {}).get("value", 0)
-
-        return records_count
 
     def request_params(
         self,
@@ -402,10 +382,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         parsed_state = self.check_stream_state(stream_state)
-        if self.cursor_field:
-            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        else:
-            params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
@@ -458,10 +435,7 @@ class Users(SourceZendeskIncrementalExportStream):
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         parsed_state = self.check_stream_state(stream_state)
-        if self.cursor_field:
-            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        else:
-            params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
@@ -484,10 +458,7 @@ class Organizations(SourceZendeskIncrementalExportStream):
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         parsed_state = self.check_stream_state(stream_state)
-        if self.cursor_field:
-            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        else:
-            params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
@@ -769,7 +740,7 @@ class AttributeDefinitions(FullRefreshZendeskSupportStream):
             definition["condition"] = "all"
             yield definition
         for definition in response.json()["definitions"]["conditions_any"]:
-            definition["confition"] = "any"
+            definition["condition"] = "any"
             yield definition
 
     def path(self, *args, **kwargs) -> str:
