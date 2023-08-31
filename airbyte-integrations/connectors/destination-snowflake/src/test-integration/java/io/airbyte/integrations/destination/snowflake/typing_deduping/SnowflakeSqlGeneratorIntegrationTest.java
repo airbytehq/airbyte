@@ -37,6 +37,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -384,7 +385,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords_missing_pk.jsonl"));
 
     final String sql = generator.updateTable(incrementalDedupStream, "");
-    Exception exception = assertThrows(Exception.class, () -> { // TODO (evan): I don't really know what class of error the Snowflake driver throws
+    Exception exception = assertThrows(SnowflakeSQLException.class, () -> {
       destinationHandler.execute(sql);
     });
 
