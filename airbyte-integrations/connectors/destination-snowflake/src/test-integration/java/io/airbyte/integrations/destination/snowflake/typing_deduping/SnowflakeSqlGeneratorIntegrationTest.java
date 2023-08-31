@@ -10,6 +10,8 @@ import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -367,6 +370,26 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       // diffRawTableRecords makes some assumptions about the structure of the blob.
       DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
+  }
+
+  /**
+   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key
+   */
+  @Test
+  protected void customExceptionWhenMissingPK () throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords_missing_pk.jsonl"));
+
+    final String sql = generator.updateTable(incrementalDedupStream, "");
+    Exception exception = assertThrows(Exception.class, () -> { //TODO (evan): I don't really know what class of error the Snowflake driver throws
+      destinationHandler.execute(sql);
+    });
+
+    assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
+    assertTrue(exception.getMessage().contains("\"users_raw\"` has rows missing a primary key"));
   }
 
 }

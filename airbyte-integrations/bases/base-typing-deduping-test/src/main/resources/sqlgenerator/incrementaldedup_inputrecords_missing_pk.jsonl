@@ -1,0 +1,2 @@
+{"_airbyte_raw_id": "d7b81af0-01da-4846-a650-cc398986bc91", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 1, "id2": 100, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}}
+{"_airbyte_raw_id": "d7b81af0-01da-4846-a650-cc398986bc92", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {                      "updated_at": "2023-01-01T01:00:00Z", "string": "Bob",   "struct": {"city": "San Francisco", "state": "CA"}, "integer": 43}}
