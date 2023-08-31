@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,12 +122,9 @@ public class MongoDbCdcInitialSnapshotUtils {
   private static void estimateInitialSnapshotSyncSize(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {
     try {
       final Map<String, Object> collStats = Map.of(STORAGE_STATS_KEY, Map.of(), COUNT_KEY, Map.of());
-      final List<Bson> aggregateList = new ArrayList<>();
-      aggregateList.add(new Document("$collStats", collStats));
-
       final MongoDatabase mongoDatabase = mongoClient.getDatabase(stream.getStream().getNamespace());
       final MongoCollection<Document> collection = mongoDatabase.getCollection(stream.getStream().getName());
-      final AggregateIterable<Document> output = collection.aggregate(aggregateList);
+      final AggregateIterable<Document> output = collection.aggregate(List.of(new Document("$collStats", collStats)));
 
       try (final MongoCursor<Document> cursor = output.cursor()) {
         if (cursor.hasNext()) {
