@@ -119,7 +119,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                          final List<JsonNode> records)
       throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
+    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_AB_CDC_DELETED_AT\"" : "";
     final String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
     final String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
@@ -132,7 +132,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     database.execute(new StringSubstitutor(
         Map.of(
-            "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
+            "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix.toUpperCase()),
             "cdc_deleted_at_name", cdcDeletedAtName,
             "cdc_deleted_at_extract", cdcDeletedAtExtract,
             "records", recordsText),
@@ -141,50 +141,50 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             // Similar to insertRawTableRecords, some of these columns are declared as string and wrapped in
             // parse_json().
             """
-            INSERT INTO #{final_table_id} (
-              "_airbyte_raw_id",
-              "_airbyte_extracted_at",
-              "_airbyte_meta",
-              "id1",
-              "id2",
-              "updated_at",
-              "struct",
-              "array",
-              "string",
-              "number",
-              "integer",
-              "boolean",
-              "timestamp_with_timezone",
-              "timestamp_without_timezone",
-              "time_with_timezone",
-              "time_without_timezone",
-              "date",
-              "unknown"
-              #{cdc_deleted_at_name}
-            )
-            SELECT
-              column1,
-              column2,
-              PARSE_JSON(column3),
-              column4,
-              column5,
-              column6,
-              PARSE_JSON(column7),
-              PARSE_JSON(column8),
-              column9,
-              column10,
-              column11,
-              column12,
-              column13,
-              column14,
-              column15,
-              column16,
-              column17,
-              PARSE_JSON(column18)
-              #{cdc_deleted_at_extract}
-            FROM VALUES
-              #{records}
-            """));
+                INSERT INTO #{final_table_id} (
+                  "_AIRBYTE_RAW_ID",
+                  "_AIRBYTE_EXTRACTED_AT",
+                  "_AIRBYTE_META",
+                  "ID1",
+                  "ID2",
+                  "UPDATED_AT",
+                  "STRUCT",
+                  "ARRAY",
+                  "STRING",
+                  "NUMBER",
+                  "INTEGER",
+                  "BOOLEAN",
+                  "TIMESTAMP_WITH_TIMEZONE",
+                  "TIMESTAMP_WITHOUT_TIMEZONE",
+                  "TIME_WITH_TIMEZONE",
+                  "TIME_WITHOUT_TIMEZONE",
+                  "DATE",
+                  "UNKNOWN"
+                  #{cdc_deleted_at_name}
+                )
+                SELECT
+                  column1,
+                  column2,
+                  PARSE_JSON(column3),
+                  column4,
+                  column5,
+                  column6,
+                  PARSE_JSON(column7),
+                  PARSE_JSON(column8),
+                  column9,
+                  column10,
+                  column11,
+                  column12,
+                  column13,
+                  column14,
+                  column15,
+                  column16,
+                  column17,
+                  PARSE_JSON(column18)
+                  #{cdc_deleted_at_extract}
+                FROM VALUES
+                  #{records}
+                """));
   }
 
   private String dollarQuoteWrap(final JsonNode node) {
