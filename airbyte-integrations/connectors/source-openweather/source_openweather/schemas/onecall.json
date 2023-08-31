@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "lat": {
       "type": "number"
@@ -16,6 +17,7 @@
     },
     "current": {
       "type": "object",
+      "additionalProperties": true,
       "properties": {
         "dt": {
           "type": "number"
@@ -61,6 +63,7 @@
         },
         "rain": {
           "type": "object",
+          "additionalProperties": true,
           "properties": {
             "1h": {
               "type": "number"
