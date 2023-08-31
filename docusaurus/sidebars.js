@@ -490,6 +490,10 @@ module.exports = {
     },
     {
       type: "doc",
+      id: "terraform-documentation",
+    },
+    {
+      type: "doc",
       id: "cli-documentation",
     },
     understandingAirbyte,
