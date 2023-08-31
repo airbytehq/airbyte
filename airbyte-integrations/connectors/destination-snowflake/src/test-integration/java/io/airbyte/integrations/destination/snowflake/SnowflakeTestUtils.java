@@ -75,7 +75,11 @@ public class SnowflakeTestUtils {
    *
    * @param tableIdentifier Table identifier (e.g. "schema.table"), with quotes if necessary.
    */
-  public static List<JsonNode> dumpTable(final List<String> columns, final JdbcDatabase database, final String tableIdentifier, final boolean upcaseExtractedAt) throws SQLException {
+  public static List<JsonNode> dumpTable(final List<String> columns,
+                                         final JdbcDatabase database,
+                                         final String tableIdentifier,
+                                         final boolean upcaseExtractedAt)
+      throws SQLException {
     return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
         "columns", columns.stream().collect(joining(",")),
         "table", tableIdentifier,
@@ -91,14 +95,13 @@ public class SnowflakeTestUtils {
               JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
               JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
               JavaBaseConstants.COLUMN_NAME_DATA,
-              JavaBaseConstants.COLUMN_NAME_AB_META
-          ).forEach(columnName -> {
-            final JsonNode value = row.get(columnName.toUpperCase());
-            if (value != null) {
-              ((ObjectNode) row).set(columnName, value);
-              ((ObjectNode) row).remove(columnName.toUpperCase());
-            }
-          });
+              JavaBaseConstants.COLUMN_NAME_AB_META).forEach(columnName -> {
+                final JsonNode value = row.get(columnName.toUpperCase());
+                if (value != null) {
+                  ((ObjectNode) row).set(columnName, value);
+                  ((ObjectNode) row).remove(columnName.toUpperCase());
+                }
+              });
         }).toList();
   }
 

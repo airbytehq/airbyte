@@ -117,8 +117,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
 
   /**
-   * Subclasses should override this method if they need to make changes to the stream ID.
-   * For example, you could upcase the final table name here.
+   * Subclasses should override this method if they need to make changes to the stream ID. For
+   * example, you could upcase the final table name here.
    */
   protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
     return new StreamId(namespace, finalTableName, namespace, rawTableName, namespace, finalTableName);

@@ -141,50 +141,50 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             // Similar to insertRawTableRecords, some of these columns are declared as string and wrapped in
             // parse_json().
             """
-                INSERT INTO #{final_table_id} (
-                  "_AIRBYTE_RAW_ID",
-                  "_AIRBYTE_EXTRACTED_AT",
-                  "_AIRBYTE_META",
-                  "ID1",
-                  "ID2",
-                  "UPDATED_AT",
-                  "STRUCT",
-                  "ARRAY",
-                  "STRING",
-                  "NUMBER",
-                  "INTEGER",
-                  "BOOLEAN",
-                  "TIMESTAMP_WITH_TIMEZONE",
-                  "TIMESTAMP_WITHOUT_TIMEZONE",
-                  "TIME_WITH_TIMEZONE",
-                  "TIME_WITHOUT_TIMEZONE",
-                  "DATE",
-                  "UNKNOWN"
-                  #{cdc_deleted_at_name}
-                )
-                SELECT
-                  column1,
-                  column2,
-                  PARSE_JSON(column3),
-                  column4,
-                  column5,
-                  column6,
-                  PARSE_JSON(column7),
-                  PARSE_JSON(column8),
-                  column9,
-                  column10,
-                  column11,
-                  column12,
-                  column13,
-                  column14,
-                  column15,
-                  column16,
-                  column17,
-                  PARSE_JSON(column18)
-                  #{cdc_deleted_at_extract}
-                FROM VALUES
-                  #{records}
-                """));
+            INSERT INTO #{final_table_id} (
+              "_AIRBYTE_RAW_ID",
+              "_AIRBYTE_EXTRACTED_AT",
+              "_AIRBYTE_META",
+              "ID1",
+              "ID2",
+              "UPDATED_AT",
+              "STRUCT",
+              "ARRAY",
+              "STRING",
+              "NUMBER",
+              "INTEGER",
+              "BOOLEAN",
+              "TIMESTAMP_WITH_TIMEZONE",
+              "TIMESTAMP_WITHOUT_TIMEZONE",
+              "TIME_WITH_TIMEZONE",
+              "TIME_WITHOUT_TIMEZONE",
+              "DATE",
+              "UNKNOWN"
+              #{cdc_deleted_at_name}
+            )
+            SELECT
+              column1,
+              column2,
+              PARSE_JSON(column3),
+              column4,
+              column5,
+              column6,
+              PARSE_JSON(column7),
+              PARSE_JSON(column8),
+              column9,
+              column10,
+              column11,
+              column12,
+              column13,
+              column14,
+              column15,
+              column16,
+              column17,
+              PARSE_JSON(column18)
+              #{cdc_deleted_at_extract}
+            FROM VALUES
+              #{records}
+            """));
   }
 
   private String dollarQuoteWrap(final JsonNode node) {
@@ -238,10 +238,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     final String sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted identifiers.
-    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
-        .stream().map(record -> record.get("kind").asText())
-        .findFirst();
+    // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
+    // identifiers.
+    final Optional<String> tableKind =
+        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
+            .stream().map(record -> record.get("kind").asText())
+            .findFirst();
     final Map<String, String> columns = database.queryJsons(
         """
         SELECT column_name, data_type, numeric_precision, numeric_scale

@@ -65,8 +65,8 @@ public class RecordDiffer {
         .map(p -> Pair.of(
             // Final tables may have modified the column names, so use the final name here.
             p.getLeft().name(),
-            p.getRight())).
-        toArray(Pair[]::new);
+            p.getRight()))
+        .toArray(Pair[]::new);
     this.finalRecordIdentityComparator = buildIdentityComparator(finalTableIdentifyingColumns);
     this.finalRecordSortComparator = finalRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
     this.finalRecordIdentityExtractor = buildIdentityExtractor(finalTableIdentifyingColumns);

@@ -122,7 +122,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
     final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase).noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
+        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
+            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
