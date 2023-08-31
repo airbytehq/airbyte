@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +19,7 @@ import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.InitialSnapshotHandler;
+import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -52,9 +52,6 @@ import org.slf4j.LoggerFactory;
 public class MongoDbCdcInitializer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitializer.class);
-
-  private static final int MIN_QUEUE_SIZE = 1000;
-  private static final int MAX_QUEUE_SIZE = 10000;
 
   private final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
 
@@ -90,7 +87,7 @@ public class MongoDbCdcInitializer {
                                                                         final BsonDocument resumeToken) {
 
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config);
-    final OptionalInt queueSize = getQueueSize(config);
+    final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
@@ -146,26 +143,6 @@ public class MongoDbCdcInitializer {
         .of(initialSnapshotIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
-  }
-
-  private OptionalInt getQueueSize(final JsonNode config) {
-    final OptionalInt sizeFromConfig =
-        config.has(QUEUE_SIZE_CONFIGURATION_KEY) ? OptionalInt.of(config.get(QUEUE_SIZE_CONFIGURATION_KEY).asInt()) : OptionalInt.empty();
-
-    if (sizeFromConfig.isPresent()) {
-      int size = sizeFromConfig.getAsInt();
-      if (size < MIN_QUEUE_SIZE) {
-        LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
-            MIN_QUEUE_SIZE);
-        return OptionalInt.of(MIN_QUEUE_SIZE);
-      } else if (size > MAX_QUEUE_SIZE) {
-        LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
-            MAX_QUEUE_SIZE);
-        return OptionalInt.of(MAX_QUEUE_SIZE);
-      }
-      return OptionalInt.of(size);
-    }
-    return OptionalInt.of(MAX_QUEUE_SIZE);
   }
 
 }
