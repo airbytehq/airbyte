@@ -17,7 +17,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
-class ConcurrentStreamReader(FullRefreshStreamReader):
+class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
     def __init__(
         self,
         partition_generator: PartitionGenerator,
@@ -35,12 +35,11 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
     ) -> Iterable[StreamData]:
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
-        generating_partitions = True
         with concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool") as executor:
             # Submit partition generation tasks
             self._partitions_generator.generate_partitions_async(stream, SyncMode.full_refresh, cursor_field, executor)
             # While partitions are still being generated
-            while not self._partitions_generator.is_done() or not self._partition_reader.is_done() or generating_partitions:
+            while not self._partitions_generator.is_done() or not self._partition_reader.is_done():
                 print("in while loop...")
                 # While there is a partition to process
                 while self._partition_reader.there_are_records_ready():
@@ -55,12 +54,8 @@ class ConcurrentStreamReader(FullRefreshStreamReader):
                     partition = self._partitions_generator.get_next_partition()
                     print(f"found partition to process: {partition}")
                     self._partition_reader.process_partition_async(partition, executor)
-                    if partition is None:
-                        generating_partitions = False
-                        print("stop generating partitions")
-                    else:
-                        print(f"processing partition {partition} for {stream.name}")
-                        if self._slice_logger.should_log_slice_message(logger):
-                            # FIXME: This is creating slice log messages for parity with the synchronous implementation
-                            # but these cannot be used by the connector builder to build slices because they can be unordered
-                            yield self._slice_logger.create_slice_log_message(partition.slice)
+                    print(f"processing partition {partition} for {stream.name}")
+                    if self._slice_logger.should_log_slice_message(logger):
+                        # FIXME: This is creating slice log messages for parity with the synchronous implementation
+                        # but these cannot be used by the connector builder to build slices because they can be unordered
+                        yield self._slice_logger.create_slice_log_message(partition.slice)

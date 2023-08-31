@@ -33,5 +33,5 @@ def test_partition_generator(partitions):
     while queue.qsize() > 0:
         actual_partitions.append(queue.get())
 
-    expected_partitions = [StreamPartition(stream, p, cursor_field) for p in partitions] + [None]
+    expected_partitions = [StreamPartition(stream, p, cursor_field) for p in partitions]
     assert actual_partitions == expected_partitions

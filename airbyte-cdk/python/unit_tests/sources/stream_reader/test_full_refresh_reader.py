@@ -23,7 +23,7 @@ from airbyte_cdk.models import (
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentStreamReader
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentFullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.stream_reader.full_refresh_stream_reader import FullRefreshStreamReader
@@ -44,7 +44,7 @@ def _concurrent_reader():
     name = "Source"
     partition_generator = PartitionGenerator(Queue(), name)
     partition_reader = PartitionReader("PartitionRader", Queue())
-    reader = ConcurrentStreamReader(partition_generator, partition_reader, 5, DebugSliceLogger())
+    reader = ConcurrentFullRefreshStreamReader(partition_generator, partition_reader, 5, DebugSliceLogger())
     return reader
 
 
