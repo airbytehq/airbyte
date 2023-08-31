@@ -28,6 +28,6 @@ The stream status allows you to monitor each stream's latest status. The stream 
 
 Each stream shows the last record loaded to the destination. Toggle the header to display the exact datetime the last record was loaded.
 
-You can reest an individual stream without resetting all streams in a connection by clicking the three grey dots next to any stream. It is recommended to start a new sync after a reset.
+You can reset an individual stream without resetting all streams in a connection by clicking the three grey dots next to any stream. It is recommended to start a new sync after a reset.
 
-You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration
+You can also navigate directly to the stream's configuration by click the three grey dots next to any stream and selecting "Open details" to be redirected to the stream configuration.
