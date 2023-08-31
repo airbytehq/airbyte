@@ -89,7 +89,7 @@ class StateValueWrapper(pydantic.BaseModel):
 
     stream: T
     state_value: str
-    max_cursor_time = ""
+    max_cursor_time: str = ""
 
     def __repr__(self):
         """Overrides print view"""
@@ -158,7 +158,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-            if not stream_state or record_lmd >= state_lmd:
+            if not stream_state or record_lmd > state_lmd:
                 yield from transform_properties(record)
 
     def get_updated_state(
@@ -168,7 +168,7 @@ class IncrementalNotionStream(NotionStream, ABC):
     ) -> Mapping[str, Any]:
         state_value = (current_stream_state or {}).get(self.cursor_field, "")
         if not isinstance(state_value, StateValueWrapper):
-            state_value = StateValueWrapper(stream=self, state_value=state_value)
+            state_value = StateValueWrapper(stream=self, state_value=state_value, max_cursor_time=state_value)
 
         record_time = latest_record.get(self.cursor_field, self.start_date)
         state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
