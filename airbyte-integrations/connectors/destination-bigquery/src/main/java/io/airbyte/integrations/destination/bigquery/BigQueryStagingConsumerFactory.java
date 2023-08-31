@@ -217,7 +217,7 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(AirbyteStreamNameNamespacePair streamId, TyperDeduper typerDeduper) {
+  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(final AirbyteStreamNameNamespacePair streamId, final TyperDeduper typerDeduper) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());

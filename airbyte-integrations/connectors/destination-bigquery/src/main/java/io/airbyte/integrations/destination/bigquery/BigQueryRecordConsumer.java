@@ -121,7 +121,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // https://github.com/airbytehq/airbyte/issues/27586
   }
 
-  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(AirbyteStreamNameNamespacePair streamId) {
+  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(final AirbyteStreamNameNamespacePair streamId) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
