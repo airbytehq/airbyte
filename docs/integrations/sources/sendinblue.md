@@ -2,20 +2,20 @@
 
 ## Sync overview
 
-This source can sync data from the [Sendinblue API](https://developers.sendinblue.com/). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Sendinblue API](https://developers.sendinblue.com/).
 
 ## This Source Supports the Following Streams
 
-* contacts
-* campaigns
-* templates
+* [contacts](https://developers.brevo.com/reference/getcontacts-1) *(Incremental Sync)*
+* [campaigns](https://developers.brevo.com/reference/getemailcampaigns-1)
+* [templates](https://developers.brevo.com/reference/getsmtptemplates)
 
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Incremental Sync | Yes |  |
 
 ### Performance considerations
 
