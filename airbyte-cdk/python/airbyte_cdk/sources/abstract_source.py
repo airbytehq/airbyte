@@ -62,6 +62,7 @@ class AbstractSource(Source, ABC):
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, Stream] = {}
+    _slice_logger: SliceLogger = DebugSliceLogger()
 
     @property
     def name(self) -> str:
@@ -238,8 +239,8 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            if self.get_slice_logger().should_log_slice_message(logger):
-                yield self.get_slice_logger().create_slice_log_message(_slice)
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,

@@ -71,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -244,6 +245,18 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         .collect(Collectors.toList());
 
     return iteratorList;
+  }
+
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    final Set<String> streamNames = new HashSet<>();
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      streamNames.add(stream.getStream().getName());
+    }
+    final Set<String> storageEngines = MySqlQueryUtils.getStorageEngines(database, streamNames);
+    LOGGER.info(String.format("Detected the following storage engines for MySQL: %s", storageEngines.toString()));
   }
 
   @Override

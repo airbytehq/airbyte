@@ -192,7 +192,7 @@ class InternalConfig(BaseModel):
     def is_limit_reached(self, records_counter: int) -> bool:
         """
         Check if record count reached limit set by internal config.
-        :records_counter - number of records already red
+        :param records_counter - number of records already red
         :return True if limit reached, False otherwise
         """
         if self.limit:
