@@ -18,6 +18,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.AggregateIterable;
+import com.mongodb.MongoCommandException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
@@ -56,8 +58,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.function.Consumer;
+import java.util.Optional;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
@@ -98,13 +100,14 @@ class MongoDbCdcInitializerTest {
   private MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor;
   private AggregateIterable<Document> aggregateIterable;
   private MongoCursor<Document> aggregateCursor;
+  private ChangeStreamIterable<BsonDocument> changeStreamIterable;
 
   @BeforeEach
   void setUp() {
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN1));
     final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
 
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    changeStreamIterable = mock(ChangeStreamIterable.class);
     mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     mongoClient = mock(MongoClient.class);
@@ -169,8 +172,11 @@ class MongoDbCdcInitializerTest {
   }
 
   @Test
-  void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetBeforeResumeToken() {
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(new BsonDocument("_data", new BsonString(RESUME_TOKEN_AFTER_RESUME_TOKEN1)));
+  void testCreateCdcIteratorsWithCompletedInitialSnapshotSavedOffsetInvalid() {
+    when(changeStreamIterable.cursor())
+        .thenReturn(mongoChangeStreamCursor)
+        .thenThrow(new MongoCommandException(new BsonDocument(), new ServerAddress()))
+        .thenReturn(mongoChangeStreamCursor);
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
@@ -182,8 +188,9 @@ class MongoDbCdcInitializerTest {
   @Test
   void testUnableToExtractOffsetFromStateException() {
     final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE));
-    doReturn(OptionalLong.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any(), any());
-    assertThrows(RuntimeException.class, () -> cdcInitializer.createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
+    doReturn(Optional.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any(), any());
+    assertThrows(RuntimeException.class,
+        () -> cdcInitializer.createCdcIterators(mongoClient, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG));
   }
 
   @Test
