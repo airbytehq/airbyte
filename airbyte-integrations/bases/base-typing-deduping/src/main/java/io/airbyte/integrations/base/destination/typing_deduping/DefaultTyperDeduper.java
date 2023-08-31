@@ -15,6 +15,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private Set<StreamId> overwriteStreamsWithTmpTable;
   private final Map<Pair<String, String>, Boolean> streamsWithSuccessfulSetup;
 
+  private final ExecutorService executorService;
+
   public DefaultTyperDeduper(final SqlGenerator<DialectTableDefinition> sqlGenerator,
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
@@ -60,6 +64,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
     this.streamsWithSuccessfulSetup = new ConcurrentHashMap<>();
+    this.executorService = Executors.newFixedThreadPool(8);
   }
 
   public DefaultTyperDeduper(
@@ -132,7 +137,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       } catch (Exception e) {
         return Optional.of(e);
       }
-    });
+    }, this.executorService);
   }
 
   /**
@@ -195,7 +200,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         }
       }
       return Optional.empty();
-    });
+    }, this.executorService);
   }
 
   private String getFinalTableSuffix(final StreamId streamId) {
