@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
@@ -32,8 +36,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is responsible to divide the data of the stream into chunks based on the ctid and dynamically create iterator and keep processing them one after another.
- * The class also makes sure to check for VACUUM in between processing chunks and if VACUUM happens then re-start syncing the data
+ * This class is responsible to divide the data of the stream into chunks based on the ctid and
+ * dynamically create iterator and keep processing them one after another. The class also makes sure
+ * to check for VACUUM in between processing chunks and if VACUUM happens then re-start syncing the
+ * data
  */
 public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
@@ -59,16 +65,16 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private boolean subQueriesInitialized = false;
 
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
-      final JdbcDatabase database,
-      final CtidPostgresSourceOperations sourceOperations,
-      final String quoteString,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final long tableSize,
-      final long blockSize,
-      final FileNodeHandler fileNodeHandler,
-      final boolean useTestPageSize) {
+                                 final JdbcDatabase database,
+                                 final CtidPostgresSourceOperations sourceOperations,
+                                 final String quoteString,
+                                 final List<String> columnNames,
+                                 final String schemaName,
+                                 final String tableName,
+                                 final long tableSize,
+                                 final long blockSize,
+                                 final FileNodeHandler fileNodeHandler,
+                                 final boolean useTestPageSize) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
     this.columnNames = columnNames;
@@ -167,16 +173,21 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   /**
-   * Builds a plan for subqueries. Each query returning an approximate amount of data. Using information about a table size and block (page) size.
+   * Builds a plan for subqueries. Each query returning an approximate amount of data. Using
+   * information about a table size and block (page) size.
    *
-   * @param startCtid    starting point
+   * @param startCtid starting point
    * @param relationSize table size
-   * @param blockSize    page size
-   * @param chunkSize  required amount of data in each partition
+   * @param blockSize page size
+   * @param chunkSize required amount of data in each partition
    * @return a list of ctid that can be used to generate queries.
    */
   @VisibleForTesting
-  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSize, final double dataSize) {
+  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid,
+                                              final long relationSize,
+                                              final long blockSize,
+                                              final int chunkSize,
+                                              final double dataSize) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
@@ -203,9 +214,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   public PreparedStatement createCtidQueryStatement(
-      final Connection connection,
-      final Ctid lowerBound,
-      final Ctid upperBound) {
+                                                    final Connection connection,
+                                                    final Ctid lowerBound,
+                                                    final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
@@ -236,4 +247,5 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       currentIterator.close();
     }
   }
+
 }

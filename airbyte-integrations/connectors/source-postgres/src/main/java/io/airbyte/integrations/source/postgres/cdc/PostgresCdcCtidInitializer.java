@@ -18,7 +18,6 @@ import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
-import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.PostgresUtils;

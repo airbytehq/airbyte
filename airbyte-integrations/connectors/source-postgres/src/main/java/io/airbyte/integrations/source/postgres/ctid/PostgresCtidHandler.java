@@ -67,9 +67,9 @@ public class PostgresCtidHandler {
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-                                                                             final Instant emmitedAt) {
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+                                                                                final Instant emmitedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -115,8 +115,9 @@ public class PostgresCtidHandler {
                                                                 final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodeHandler,
-        config.has("use_test_page_size")  && config.get("use_test_page_size").asBoolean());
+    return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
+        blockSize, fileNodeHandler,
+        config.has("use_test_page_size") && config.get("use_test_page_size").asBoolean());
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}

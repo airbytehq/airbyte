@@ -948,7 +948,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   /**
-   * This test is setup to force {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} create multiple pages
+   * This test is setup to force
+   * {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} create multiple
+   * pages
    */
   @Test
   protected void ctidIteratorPageSizeTest() throws Exception {
@@ -962,8 +964,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     }
 
     /**
-     * Setting the property to make the {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} use smaller page size of 8KB instead of default 1GB
-     * This allows us to make sure that the iterator logic works with multiple pages (sub queries)
+     * Setting the property to make the
+     * {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} use smaller page
+     * size of 8KB instead of default 1GB This allows us to make sure that the iterator logic works with
+     * multiple pages (sub queries)
      */
     final JsonNode config = getConfig();
     ((ObjectNode) config).put("use_test_page_size", true);

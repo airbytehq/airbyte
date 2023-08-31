@@ -35,7 +35,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private boolean hasEmittedFinalState;
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
-  private final  FileNodeHandler fileNodeHandler;
+  private final FileNodeHandler fileNodeHandler;
   private final CtidStateManager stateManager;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();

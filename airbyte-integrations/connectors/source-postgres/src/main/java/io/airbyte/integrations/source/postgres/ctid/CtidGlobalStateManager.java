@@ -37,7 +37,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
-                                final FileNodeHandler fileNodeHandler ,
+                                final FileNodeHandler fileNodeHandler,
                                 final CdcState cdcState,
                                 final ConfiguredAirbyteCatalog catalog) {
     super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodeHandler));

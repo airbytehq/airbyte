@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -8,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileNodeHandler {
+
   private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
   private final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery;
 
@@ -24,7 +29,6 @@ public class FileNodeHandler {
     return fileNodes.containsKey(namespacePair);
   }
 
-
   public Long getFileNode(final AirbyteStreamNameNamespacePair namespacePair) {
     return fileNodes.get(namespacePair);
   }
@@ -36,6 +40,5 @@ public class FileNodeHandler {
   public List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> getFailedToQuery() {
     return Collections.unmodifiableList(failedToQuery);
   }
-
 
 }

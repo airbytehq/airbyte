@@ -190,8 +190,8 @@ public class PostgresQueryUtils {
   }
 
   public static FileNodeHandler fileNodeForStreams(final JdbcDatabase database,
-                                                                             final List<ConfiguredAirbyteStream> streams,
-                                                                             final String quoteString) {
+                                                   final List<ConfiguredAirbyteStream> streams,
+                                                   final String quoteString) {
     final FileNodeHandler fileNodeHandler = new FileNodeHandler();
     streams.forEach(stream -> {
       try {
@@ -200,7 +200,8 @@ public class PostgresQueryUtils {
         final Optional<Long> fileNode = fileNodeForIndividualStream(database, namespacePair, quoteString);
         fileNode.ifPresentOrElse(
             l -> fileNodeHandler.updateFileNode(namespacePair, l),
-            () -> fileNodeHandler.updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
+            () -> fileNodeHandler
+                .updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
       } catch (final Exception e) {
         LOGGER.warn("Failed to fetch relation node for {}.{} .", stream.getStream().getNamespace(), stream.getStream().getName(), e);
         fileNodeHandler.updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
@@ -209,7 +210,9 @@ public class PostgresQueryUtils {
     return fileNodeHandler;
   }
 
-  public static Optional<Long> fileNodeForIndividualStream(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString)
+  public static Optional<Long> fileNodeForIndividualStream(final JdbcDatabase database,
+                                                           final AirbyteStreamNameNamespacePair stream,
+                                                           final String quoteString)
       throws SQLException {
     final String streamName = stream.getName();
     final String schemaName = stream.getNamespace();
