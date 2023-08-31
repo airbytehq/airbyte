@@ -522,6 +522,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/bigquery_enchancements_and_key_bug_fixes",
         "release_notes/upgrading_to_destinations_v2",
         "release_notes/july_2023",
         "release_notes/june_2023",
