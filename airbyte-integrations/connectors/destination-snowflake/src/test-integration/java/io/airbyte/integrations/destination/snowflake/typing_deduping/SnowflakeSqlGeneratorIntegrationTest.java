@@ -89,37 +89,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws Exception {
-    final String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
-    database.execute(new StringSubstitutor(Map.of(
-        "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
-        "cdc_deleted_at", cdcDeletedAt)).replace(
-            """
-            CREATE TABLE ${final_table_id} (
-              "_airbyte_raw_id" TEXT NOT NULL,
-              "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
-              "_airbyte_meta" VARIANT NOT NULL,
-              "id1" NUMBER,
-              "id2" NUMBER,
-              "updated_at" TIMESTAMP_TZ,
-              ${cdc_deleted_at}
-              "struct" OBJECT,
-              "array" ARRAY,
-              "string" TEXT,
-              "number" FLOAT,
-              "integer" NUMBER,
-              "boolean" BOOLEAN,
-              "timestamp_with_timezone" TIMESTAMP_TZ,
-              "timestamp_without_timezone" TIMESTAMP_NTZ,
-              "time_with_timezone" TEXT,
-              "time_without_timezone" TIME,
-              "date" DATE,
-              "unknown" VARIANT
-            )
-            """));
-  }
-
-  @Override
   protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     return SnowflakeTestUtils.dumpRawTable(database, streamId.rawTableId(SnowflakeSqlGenerator.QUOTE));
   }
