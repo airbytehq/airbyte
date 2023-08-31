@@ -19,26 +19,37 @@
           "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/",
           "mongodb://example.host.com:27017/"
         ],
-        "order": 1
+        "order": 1,
+        "group": "db"
       },
       "database": {
         "title": "Database Name",
         "type": "string",
         "description": "The database you want to replicate.",
-        "order": 2
+        "order": 2,
+        "group": "db"
+      },
+      "replica_set": {
+        "title": "Replica Set",
+        "type": "string",
+        "description": "The name of the replica set to be replicated.",
+        "order": 3,
+        "group": "db"
       },
       "user": {
         "title": "User",
         "type": "string",
         "description": "The username which is used to access the database.",
-        "order": 3
+        "order": 4,
+        "group": "auth"
       },
       "password": {
         "title": "Password",
         "type": "string",
         "description": "The password associated with this username.",
         "airbyte_secret": true,
-        "order": 4
+        "order": 5,
+        "group": "auth"
       },
       "auth_source": {
         "title": "Authentication Source",
@@ -46,14 +57,41 @@
         "description": "The authentication source where the user information is stored.",
         "default": "admin",
         "examples": ["admin"],
-        "order": 5
+        "order": 6,
+        "group": "auth"
       },
-      "replica_set": {
-        "title": "Replica Set",
-        "type": "string",
-        "description": "The name of the replica set to be replicated.",
-        "order": 6
+      "initial_waiting_seconds": {
+        "type": "integer",
+        "title": "Initial Waiting Time in Seconds (Advanced)",
+        "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",
+        "default": 300,
+        "order": 7,
+        "min": 120,
+        "max": 1200,
+        "group": "advanced"
+      },
+      "queue_size": {
+        "type": "integer",
+        "title": "Size of the queue (Advanced)",
+        "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
+        "default": 10000,
+        "order": 8,
+        "min": 1000,
+        "max": 10000,
+        "group": "advanced"
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "db"
+      },
+      {
+        "id": "auth"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
   }
 }
