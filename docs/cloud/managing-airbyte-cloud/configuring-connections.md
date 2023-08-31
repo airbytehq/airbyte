@@ -47,7 +47,7 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are loaded to the destination.
 
-:::note
+:::info
 A connection's schema consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there can be one or many fields or columns.
 :::
 
@@ -61,17 +61,11 @@ To modify streams:
 
 Modify an individual stream:
 
-1. In the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream.
-
-:::note
-
-To select or deselect all streams, click the checkbox in the table header. To deselect an individual stream, deselect its checkbox in the table.
-
-:::
+1. In the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream. To select or deselect all streams, click the checkbox in the table header. To deselect an individual stream, deselect its checkbox in the table.
 
 2. Click the **Sync mode** dropdown and select the sync mode you want to apply. Depending on the sync mode you select, you may need to choose a cursor or primary key.
 
-:::note
+:::info
 
 Source-defined cursors and primary keys are selected automatically and cannot be changed in the table.
 
@@ -81,7 +75,7 @@ Source-defined cursors and primary keys are selected automatically and cannot be
 
 4. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
 
-:::note
+:::info
 
 * You can only deselect top-level fields. You cannot deselect nested fields.
 * The Airbyte platform may read all data from the source (depending on the source), but it will only write data to the destination from fields you selected. Deselecting fields will not prevent the Airbyte platform from reading them.
