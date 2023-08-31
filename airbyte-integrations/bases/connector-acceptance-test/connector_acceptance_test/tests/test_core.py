@@ -459,27 +459,26 @@ class TestSpec(BaseTest):
                 errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
         self._fail_on_errors(errors)
 
-    def test_required_always_show(self, actual_connector_spec: ConnectorSpecification):
+    def test_display_type(self, actual_connector_spec: ConnectorSpecification):
         """
-        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
+        The display_type property can only be set on fields which have a oneOf property, and must be either "dropdown" or "radio"
         """
         errors = []
         schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
-        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
-            always_show_path = result[0]
-            parent_path = schema_helper.get_parent_path(always_show_path)
-            is_property_named_always_show = parent_path.endswith("properties")
-            if is_property_named_always_show:
+        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/display_type", yielded=True):
+            display_type_path = result[0]
+            parent_path = schema_helper.get_parent_path(display_type_path)
+            is_property_named_display_type = parent_path.endswith("properties")
+            if is_property_named_display_type:
                 continue
-            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
-            properties_path = schema_helper.get_parent_path(parent_path)
-            parent_object = schema_helper.get_parent(properties_path)
-            if (
-                "required" in parent_object
-                and isinstance(parent_object.get("required"), List)
-                and property_name in parent_object.get("required")
-            ):
-                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
+            parent_object = schema_helper.get_parent(display_type_path)
+            if not "oneOf" in parent_object:
+                errors.append(f"display_type is only allowed on fields which have a oneOf property, but is set on {parent_path}")
+            display_type_value = parent_object.get("display_type")
+            if display_type_value != "dropdown" and display_type_value != "radio":
+                errors.append(
+                    f"display_type must be either 'dropdown' or 'radio', but is set to '{display_type_value}' at {display_type_path}"
+                )
         self._fail_on_errors(errors)
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
