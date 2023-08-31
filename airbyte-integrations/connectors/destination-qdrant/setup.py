@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]", "qdrant-client", "openai", "cohere", "tiktoken", "langchain"]
+MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]", "qdrant-client"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 

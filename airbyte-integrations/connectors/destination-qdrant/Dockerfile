@@ -6,10 +6,6 @@ WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
 
-RUN apt-get update \
-    && pip install --upgrade pip \
-    && apt-get install -y build-essential
-
 COPY setup.py ./
 
 RUN pip install --upgrade pip
@@ -21,10 +17,6 @@ RUN pip install --prefix=/install "Cython<3.0" "pyyaml~=5.4" --no-build-isolatio
 
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
-
-# Workaround
-COPY airbyte-cdk ./airbyte-cdk
-RUN pip install --prefix=/install ./airbyte-cdk
 
 # build a clean environment
 FROM base

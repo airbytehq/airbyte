@@ -43,7 +43,7 @@ from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 from qdrant_client.conversions.common_types import PointsSelector
 
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 
 
 class UsernamePasswordAuth(BaseModel):
@@ -192,7 +192,7 @@ class DestinationQdrant(Destination):
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        writer = Writer(config_model.processing, self.indexer, batch_size=5)
+        writer = Writer(config_model.processing, self.indexer, batch_size=BATCH_SIZE)
         yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
