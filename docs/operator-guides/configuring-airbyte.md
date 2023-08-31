@@ -78,7 +78,7 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Define the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
-3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information.
+3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
 
 #### Jobs
 
