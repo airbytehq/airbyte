@@ -410,6 +410,10 @@ class OrganizationMemberships(CursorPaginationZendeskSupportStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
 
 
+class OrganizationFields(CursorPaginationZendeskSupportStream):
+    """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields"""
+
+
 class AuditLogs(CursorPaginationZendeskSupportStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
 
