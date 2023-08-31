@@ -1,4 +1,4 @@
-# Review the sync history:
+# Review the sync history
 The job history displays information about synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this summary can help you monitor the sync performance and identify any potential issues.  
  
 To review the sync history:
@@ -8,11 +8,11 @@ To review the sync history:
 
     Sync History displays the sync status or [reset](https://docs.airbyte.com/operator-guides/reset/) status. The sync status is defined as: 
 
-    - Succeeded: 100% of the data has been extracted and loaded to the destination
-    - Partially Succeeded: a subset of the data has been loaded to the destination
-    - Failed: none of the data has been loaded to the destination
-    - Cancelled: the sync was cancelled manually before finishing
-    - Running: the sync is currently running
+    - **Succeeded**: 100% of the data has been extracted and loaded to the destination
+    - **Partially Succeeded**: a subset of the data has been loaded to the destination
+    - **Failed**: none of the data has been loaded to the destination
+    - **Cancelled**: the sync was cancelled manually before finishing
+    - **Running**: the sync is currently running
     
     :::note
     In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. The latest rules can be read about [here](../../understanding-airbyte/jobs.md#retry-rules).
