@@ -47,14 +47,14 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/users"
-  
+
   projects_stream:
     $ref: "#/definitions/base_stream"
     name: "projects"
     primary_key: "id"
     $parameters:
       path: "workspaces/{{ config['workspace_id'] }}/projects"
-      
+
   clients_stream:
     $ref: "#/definitions/base_stream"
     name: "clients"
