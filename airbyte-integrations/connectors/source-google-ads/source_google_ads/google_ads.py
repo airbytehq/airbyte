@@ -127,6 +127,8 @@ class GoogleAds:
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
+        if report_name != "change_status" and "change_status.last_change_date_time" in fields:
+            fields.remove("change_status.last_change_date_time")
         fields = ", ".join(fields)
 
         query_template = f"SELECT {fields} FROM {from_category}"

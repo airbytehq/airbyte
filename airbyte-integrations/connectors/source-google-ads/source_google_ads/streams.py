@@ -565,7 +565,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name)
         ):
             customer_id = parent_slice.get("customer_id")
-            child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set()}
+            child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set(), "id_to_time": dict()}
             if not self.current_state(customer_id):
                 yield child_slice
                 continue
@@ -577,6 +577,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 if not substream_id:
                     continue
                 stream_is_updated = True
+                child_slice["id_to_time"][substream_id] = parent_record[self.parent_cursor_field]
                 # Add ids to set of changed or deleted items
                 if parent_record.get("change_status.resource_status") == "REMOVED":
                     child_slice["deleted_ids"].add(substream_id)
@@ -611,6 +612,10 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
         records = super().read_records(sync_mode, stream_slice=stream_slice)
         for record in records:
+            if record.get(self.primary_key[0]) in stream_slice.get("id_to_time"):
+                record[self.cursor_field] = stream_slice["id_to_time"][record[self.primary_key[0]]]
+            else:
+                record[self.cursor_field] = None
             yield record
 
         # update parent state in child stream
@@ -625,6 +630,10 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         deleted_record = {field_: None for field_ in record_fields}
         for id_ in stream_slice.get("deleted_ids", []):
             deleted_record[self.id_field] = id_
+            if deleted_record.get(self.primary_key[0]) in stream_slice.get("id_to_time"):
+                deleted_record[self.cursor_field] = stream_slice["id_to_time"][deleted_record[self.primary_key[0]]]
+            else:
+                deleted_record[self.cursor_field] = None
             yield deleted_record
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
