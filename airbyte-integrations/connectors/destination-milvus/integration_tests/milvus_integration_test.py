@@ -4,16 +4,14 @@
 
 import json
 import logging
-from time import sleep
 
-import pymilvus
-from airbyte_cdk.models import DestinationSyncMode, Status
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_milvus.destination import DestinationMilvus
 from integration_tests.base_integration_test import BaseIntegrationTest
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Milvus
-from pymilvus import Collection, DataType, connections
+from pymilvus import Collection, connections
 
 
 class MilvusIntegrationTest(BaseIntegrationTest):
@@ -27,6 +25,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         "primaryField": "pk"
     }
     """
+
     def _init_milvus(self):
         connections.connect(alias="test_driver", uri=self.config["indexing"]["host"], token=self.config["indexing"]["auth"]["token"])
         self._collection = Collection(self.config["indexing"]["collection"], using="test_driver")
@@ -85,13 +84,24 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
         self._collection.flush()
-        result = self._collection.search(anns_field=self.config["indexing"]["vector_field"], param={}, data=[[0] * OPEN_AI_VECTOR_SIZE], limit=10, expr="_ab_record_id == \"2\"", output_fields=["text"])
+        result = self._collection.search(
+            anns_field=self.config["indexing"]["vector_field"],
+            param={},
+            data=[[0] * OPEN_AI_VECTOR_SIZE],
+            limit=10,
+            expr='_ab_record_id == "2"',
+            output_fields=["text"],
+        )
         assert len(result[0]) == 1
         assert result[0][0].entity.get("text") == "str_col: Cats are nice"
 
         # test langchain integration
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
-        vs = Milvus(embedding_function=embeddings, collection_name=self.config["indexing"]["collection"], connection_args={"uri": self.config["indexing"]["host"], "token": self.config["indexing"]["auth"]["token"]})
+        vs = Milvus(
+            embedding_function=embeddings,
+            collection_name=self.config["indexing"]["collection"],
+            connection_args={"uri": self.config["indexing"]["host"], "token": self.config["indexing"]["auth"]["token"]},
+        )
         vs.fields.append("text")
         vs.fields.append("_ab_record_id")
         # call  vs.fields.append() for all fields you need in the metadata

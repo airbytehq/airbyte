@@ -1,7 +1,6 @@
 import json
 import re
 from typing import Literal, Optional, Union
-from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
@@ -10,6 +9,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
+from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
@@ -84,4 +84,3 @@ class ConfigModel(BaseModel):
         schema = resolve_refs(schema)
         cls.remove_discriminator(schema)
         return schema
-

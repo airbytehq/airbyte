@@ -5,25 +5,16 @@
 
 from typing import Any, Iterable, Mapping
 
-from destination_milvus.indexer import MilvusIndexer
-from destination_milvus.config import ConfigModel
-
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.document_processor import (
-    DocumentProcessor,
-)
+from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    Status,
-)
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from destination_milvus.config import ConfigModel
+from destination_milvus.indexer import MilvusIndexer
 
 BATCH_SIZE = 128
 

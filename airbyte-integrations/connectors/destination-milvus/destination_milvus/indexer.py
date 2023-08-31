@@ -4,22 +4,17 @@
 
 
 from typing import List, Optional
-from destination_milvus.config import MilvusIndexingConfigModel
 
-from airbyte_cdk.destinations.vector_db_based.document_processor import (
-    METADATA_RECORD_ID_FIELD,
-    METADATA_STREAM_FIELD,
-    Chunk,
-)
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from airbyte_cdk.models import (
-    ConfiguredAirbyteCatalog,
-)
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from destination_milvus.config import MilvusIndexingConfigModel
 from pymilvus import Collection, DataType, connections
 from pymilvus.exceptions import DescribeCollectionException
+
 
 class MilvusIndexer(Indexer):
     config: MilvusIndexingConfigModel
@@ -40,9 +35,9 @@ class MilvusIndexer(Indexer):
     def check(self) -> Optional[str]:
         try:
             self._create_client()
-            
+
             description = self._collection.describe()
-            if description["auto_id"] != True:
+            if not description["auto_id"]:
                 return "Only collections with auto_id are supported"
             vector_field = next((field for field in description["fields"] if field["name"] == self.config.vector_field), None)
             if vector_field is None:
@@ -51,7 +46,7 @@ class MilvusIndexer(Indexer):
                 return f"Vector field {self.config.vector_field} is not a vector"
             if vector_field["params"]["dim"] != self.embedder.embedding_dimensions:
                 return f"Vector field {self.config.vector_field} is not a {self.embedder.embedding_dimensions}-dimensional vector"
-        except DescribeCollectionException as e:
+        except DescribeCollectionException:
             return f"Collection {self.config.collection} does not exist"
         except Exception as e:
             return format_exception(e)
@@ -84,4 +79,3 @@ class MilvusIndexer(Indexer):
             chunk = document_chunks[i]
             entities.append({**chunk.metadata, self.config.vector_field: embedding_vectors[i], self.config.text_field: chunk.page_content})
         self._collection.insert(entities)
-

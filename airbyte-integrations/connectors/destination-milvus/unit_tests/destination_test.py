@@ -1,30 +1,32 @@
 import unittest
-from unittest.mock import MagicMock, patch, Mock
-from destination_milvus.destination import DestinationMilvus, embedder_map
-from destination_milvus.config import ConfigModel
-from airbyte_cdk.models import AirbyteConnectionStatus, Status, ConfiguredAirbyteCatalog, AirbyteMessage, ConnectorSpecification
+from unittest.mock import MagicMock, Mock, patch
+
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification, Status
+from destination_milvus.config import ConfigModel
+from destination_milvus.destination import DestinationMilvus, embedder_map
+
 
 class TestDestinationMilvus(unittest.TestCase):
     def setUp(self):
         self.config = {
-                "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
-                "embedding": {"mode": "openai", "openai_key": "mykey"},
-                "indexing": {
-                    "host": "https://notmilvus.com",
-                    "collection": "test2",
-                    "auth": {
-                        "mode": "token",
-                        "token": "mytoken",
-                    },
-                    "vector_field": "vector",
-                    "text_field": "text",
+            "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
+            "embedding": {"mode": "openai", "openai_key": "mykey"},
+            "indexing": {
+                "host": "https://notmilvus.com",
+                "collection": "test2",
+                "auth": {
+                    "mode": "token",
+                    "token": "mytoken",
                 },
-            }
+                "vector_field": "vector",
+                "text_field": "text",
+            },
+        }
         self.config_model = ConfigModel.parse_obj(self.config)
         self.logger = AirbyteLogger()
 
-    @patch('destination_milvus.destination.MilvusIndexer')
+    @patch("destination_milvus.destination.MilvusIndexer")
     @patch.dict(embedder_map, openai=MagicMock())
     def test_check(self, MockedMilvusIndexer):
         mock_embedder = Mock()
@@ -42,7 +44,7 @@ class TestDestinationMilvus(unittest.TestCase):
         mock_embedder.check.assert_called_once()
         mock_indexer.check.assert_called_once()
 
-    @patch('destination_milvus.destination.MilvusIndexer')
+    @patch("destination_milvus.destination.MilvusIndexer")
     @patch.dict(embedder_map, openai=MagicMock())
     def test_check_with_errors(self, MockedMilvusIndexer):
         mock_embedder = Mock()
@@ -65,9 +67,8 @@ class TestDestinationMilvus(unittest.TestCase):
         mock_embedder.check.assert_called_once()
         mock_indexer.check.assert_called_once()
 
-
-    @patch('destination_milvus.destination.Writer')
-    @patch('destination_milvus.destination.MilvusIndexer')
+    @patch("destination_milvus.destination.Writer")
+    @patch("destination_milvus.destination.MilvusIndexer")
     @patch.dict(embedder_map, openai=MagicMock())
     def test_write(self, MockedMilvusIndexer, MockedWriter):
         mock_embedder = Mock()
