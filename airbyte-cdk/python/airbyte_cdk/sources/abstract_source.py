@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -10,13 +9,11 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping,
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
-    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStateMessage,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
-    Level,
     Status,
     SyncMode,
 )
@@ -29,6 +26,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -39,8 +37,6 @@ class AbstractSource(Source, ABC):
     Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source.
     """
-
-    SLICE_LOG_PREFIX = "slice:"
 
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -65,6 +61,7 @@ class AbstractSource(Source, ABC):
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, Stream] = {}
+    _slice_logger: SliceLogger = DebugSliceLogger()
 
     @property
     def name(self) -> str:
@@ -241,8 +238,8 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            if self.should_log_slice_message(logger):
-                yield self._create_slice_log_message(_slice)
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -279,14 +276,6 @@ class AbstractSource(Source, ABC):
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
 
-    def should_log_slice_message(self, logger: logging.Logger) -> bool:
-        """
-
-        :param logger:
-        :return:
-        """
-        return logger.isEnabledFor(logging.DEBUG)
-
     def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
             yield from self.message_repository.consume_queue()
@@ -305,8 +294,8 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            if self.should_log_slice_message(logger):
-                yield self._create_slice_log_message(_slice)
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
@@ -319,17 +308,6 @@ class AbstractSource(Source, ABC):
                     total_records_counter += 1
                     if internal_config.is_limit_reached(total_records_counter):
                         return
-
-    def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
-        """
-        Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
-        the slice is a class implementing Mapping. Therefore, we want to cast this as a dict before passing this to json.dump
-        """
-        printable_slice = dict(_slice) if _slice else _slice
-        return AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
-        )
 
     def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
