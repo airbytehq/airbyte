@@ -32,14 +32,14 @@ _DEFAULT_INTERNAL_CONFIG = InternalConfig()
 _STREAM_NAME = "STREAM"
 
 
-def _syncrhonous_reader():
+def _synchronous_reader():
     return SyncrhonousFullRefreshReader(DebugSliceLogger())
 
 
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_synchronous_reader(), id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice_with_debug(reader):
@@ -75,7 +75,7 @@ def test_full_refresh_read_a_single_slice_with_debug(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_synchronous_reader(), id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice(reader):
@@ -106,7 +106,7 @@ def test_full_refresh_read_a_single_slice(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_synchronous_reader(), id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_two_slices(reader):
@@ -148,7 +148,7 @@ def test_full_refresh_read_a_two_slices(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_synchronous_reader(), id="synchronous_reader"),
     ],
 )
 def test_only_read_up_to_limit(reader):
@@ -181,7 +181,7 @@ def test_only_read_up_to_limit(reader):
 @pytest.mark.parametrize(
     "reader",
     [
-        pytest.param(_syncrhonous_reader(), id="synchronous_reader"),
+        pytest.param(_synchronous_reader(), id="synchronous_reader"),
     ],
 )
 def test_limit_only_considers_data(reader):
