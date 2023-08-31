@@ -18,7 +18,9 @@ public class MongoConstants {
   public static final String CONNECTION_STRING_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
   public static final String DATABASE_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
   public static final String ID_FIELD = "_id";
+  public static final String IS_TEST_CONFIGURATION_KEY = "is_test";
   public static final String PASSWORD_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
+  public static final String QUEUE_SIZE_CONFIGURATION_KEY = "queue_size";
   public static final String REPLICA_SET_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY;
   public static final String USER_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
 

@@ -20,6 +20,8 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.ChangeStreamIterable;
+import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -40,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -198,6 +201,10 @@ class MongoDbSourceTest {
 
   @Test
   void testReadKeepsMongoClientOpen() {
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor mongoChangeStreamCursor = mock(MongoChangeStreamCursor.class);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
     source.read(airbyteSourceConfig, null, null);
     verify(mongoClient, never()).close();

@@ -54,22 +54,22 @@ public class MongoDbCdcInitialSnapshotUtils {
    * @param stateManager The {@link MongoDbStateManager} that contains information about each stream's
    *        progress.
    * @param fullCatalog The fully configured Airbyte catalog.
-   * @param savedOffsetAfterResumeToken Boolean value that indicates whether the offset exists on the
-   *        server.
+   * @param savedOffsetIsValid Boolean value that indicates whether the offset exists on the server.
+   *        If it does not exist, all streams will perform an initial sync.
    * @return The list of Airbyte streams to be used in the initial snapshot sync.
    */
   public static List<ConfiguredAirbyteStream> getStreamsForInitialSnapshot(
                                                                            final MongoClient mongoClient,
                                                                            final MongoDbStateManager stateManager,
                                                                            final ConfiguredAirbyteCatalog fullCatalog,
-                                                                           final boolean savedOffsetAfterResumeToken) {
+                                                                           final boolean savedOffsetIsValid) {
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams = new ArrayList<>();
 
-    if (!savedOffsetAfterResumeToken) {
+    if (!savedOffsetIsValid) {
       /*
-       * If the saved offset is not after the resume token retrieved from the server, re-sync everything
-       * via initial snapshot as we have lost track of the changes. This occurs when the oplog cycles
+       * If the saved offset does not exist on the server, re-sync everything via initial snapshot as we
+       * have lost track of which changes have been processed already. This occurs when the oplog cycles
        * faster than a sync interval, resulting in the stored offset in our state being removed from the
        * oplog.
        */

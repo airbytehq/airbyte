@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.IS_TEST_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -65,6 +66,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
     ((ObjectNode) config).put(DATABASE_CONFIGURATION_KEY, DATABASE_NAME);
+    ((ObjectNode) config).put(IS_TEST_CONFIGURATION_KEY, true);
 
     mongoClient = MongoConnectionUtils.createMongoClient(config);
 

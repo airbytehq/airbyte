@@ -6,6 +6,9 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoChangeStreamException;
+import com.mongodb.MongoCommandException;
+import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
@@ -26,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Properties;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.json.JsonConverterConfig;
@@ -88,23 +90,26 @@ public class MongoDbDebeziumStateUtil {
   }
 
   /**
-   * Test whether the retrieved saved offset value is after the resume token.
+   * Test whether the retrieved saved offset resume token value is valid. A valid resume token is one
+   * that can be used to resume a change event stream in MongoDB.
    *
-   * @param mongoClient The {@link MongoClient} used to retrieve the current resume token value.
-   * @param savedOffset The saved offset value.
-   * @return {@code true} if the saved offset value is after the retrieved resume token value or if
-   *         the provided saved offset value is not present. Otherwise, {@code false} is returned if
-   *         the saved offset value precedes the resume token value.
+   * @param savedOffset The resume token from the saved offset.
+   * @param mongoClient The {@link MongoClient} used to validate the saved offset.
+   * @return {@code true} if the saved offset value is valid Otherwise, {@code false} is returned to
+   *         indicate that an initial snapshot should be performed.
    */
-  public boolean isSavedOffsetAfterResumeToken(final MongoClient mongoClient, final OptionalLong savedOffset) {
+  public boolean isValidResumeToken(final BsonDocument savedOffset, final MongoClient mongoClient) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
     }
 
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
-    final BsonTimestamp currentTimestamp = ResumeTokens.getTimestamp(resumeToken);
-
-    return savedOffset.getAsLong() >= currentTimestamp.getValue();
+    final ChangeStreamIterable<BsonDocument> stream = mongoClient.watch(BsonDocument.class);
+    stream.resumeAfter(savedOffset);
+    try (var ignored = stream.cursor()) {
+      return true;
+    } catch (MongoCommandException | MongoChangeStreamException e) {
+      return false;
+    }
   }
 
   /**
@@ -119,11 +124,11 @@ public class MongoDbDebeziumStateUtil {
    * @return The offset value (the timestamp extracted from the resume token) retrieved from the CDC
    *         state/offset data.
    */
-  public OptionalLong savedOffset(final Properties baseProperties,
-                                  final ConfiguredAirbyteCatalog catalog,
-                                  final JsonNode cdcState,
-                                  final JsonNode config,
-                                  final MongoClient mongoClient) {
+  public Optional<BsonDocument> savedOffset(final Properties baseProperties,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final JsonNode cdcState,
+                                            final JsonNode config,
+                                            final MongoClient mongoClient) {
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
         config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
@@ -137,10 +142,9 @@ public class MongoDbDebeziumStateUtil {
    * @param properties Properties should contain the relevant properties like path to the Debezium
    *        state file, etc. It's assumed that the state file is already initialised with the saved
    *        state
-   * @return Returns the timestamp extracted from a resume token that Airbyte has acknowledged in the
-   *         source database server.
+   * @return Returns the resume token that Airbyte has acknowledged in the source database server.
    */
-  private OptionalLong parseSavedOffset(final Properties properties, final MongoClient mongoClient) {
+  private Optional<BsonDocument> parseSavedOffset(final Properties properties, final MongoClient mongoClient) {
     FileOffsetBackingStore fileOffsetBackingStore = null;
     OffsetStorageReaderImpl offsetStorageReader = null;
     try {
@@ -171,11 +175,15 @@ public class MongoDbDebeziumStateUtil {
       if (offsets != null && offsets.values().stream().anyMatch(Objects::nonNull)) {
         final MongoDbOffsetContext offsetContext = loader.loadOffsets(offsets);
         final Map<String, ?> offset = offsetContext.getReplicaSetOffsetContext(replicaSets.all().get(0)).getOffset();
-        final BsonTimestamp timestamp = new BsonTimestamp((Integer) offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS),
-            (Integer) offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT));
-        return OptionalLong.of(timestamp.getValue());
+        final Object resumeTokenData = offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
+        if (resumeTokenData != null) {
+          final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());
+          return Optional.of(resumeToken);
+        } else {
+          return Optional.empty();
+        }
       } else {
-        return OptionalLong.empty();
+        return Optional.empty();
       }
     } finally {
       LOGGER.info("Closing offsetStorageReader and fileOffsetBackingStore");

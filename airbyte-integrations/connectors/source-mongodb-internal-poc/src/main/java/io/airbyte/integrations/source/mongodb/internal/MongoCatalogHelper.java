@@ -22,7 +22,7 @@ public class MongoCatalogHelper {
   /**
    * The default cursor field name.
    */
-  public static final String DEFAULT_CURSOR_FIELD = "_id";
+  public static final String DEFAULT_CURSOR_FIELD = MongoConstants.ID_FIELD;
 
   /**
    * The list of supported sync modes for a given stream.
