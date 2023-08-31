@@ -5,7 +5,7 @@
 from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
-from pytest import fixture
+from pytest import fixture, mark
 from source_notion.streams import Blocks, IncrementalNotionStream, Pages
 
 
@@ -42,27 +42,51 @@ def test_cursor_field(stream):
     assert stream.cursor_field == expected_cursor_field
 
 
-def test_get_updated_state(stream):
-    stream.is_finished = False
-
-    inputs = {
-        "current_stream_state": {"last_edited_time": "2021-10-10T00:00:00.000Z"},
-        "latest_record": {"last_edited_time": "2021-10-20T00:00:00.000Z"},
-    }
-    expected_state = "2021-10-10T00:00:00.000Z"
-    state = stream.get_updated_state(**inputs)
+@mark.parametrize(
+    "is_finished, current_stream_state, latest_record, expected_state",
+    [
+        # Stream not finished, latest record is later than current state
+        (False, {"last_edited_time": "2021-10-10T00:00:00.000Z"}, {"last_edited_time": "2021-10-20T00:00:00.000Z"}, "2021-10-10T00:00:00.000Z"),
+        # Stream not finished, latest record is equal to current state
+        (False, {"last_edited_time": "2021-10-10T00:00:00.000Z"}, {"last_edited_time": "2021-10-10T00:00:00.000Z"}, "2021-10-10T00:00:00.000Z"),
+        # Stream not finished, latest record is earlier than current state
+        (False, {"last_edited_time": "2021-10-10T00:00:00.000Z"}, {"last_edited_time": "2021-10-01T00:00:00.000Z"}, "2021-10-10T00:00:00.000Z"),
+        # Stream is finished, latest record is later than current state
+        (True, {"last_edited_time": "2021-10-10T00:00:00.000Z"}, {"last_edited_time": "2021-10-30T00:00:00.000Z"}, "2021-10-30T00:00:00.000Z"),
+        # Stream is finished, latest record is earlier than current state
+        (True, {"last_edited_time": "2021-10-20T00:00:00.000Z"}, {"last_edited_time": "2021-10-10T00:00:00.000Z"}, "2021-10-20T00:00:00.000Z"),
+        # Current stream state is empty
+        (False, None, {"last_edited_time": "2021-10-01T00:00:00.000Z"}, ""),
+        # Current stream state is empty and stream is finished
+        (True, None, {"last_edited_time": "2021-10-01T00:00:00.000Z"}, "2021-10-01T00:00:00.000Z"),
+    ]
+)
+def test_get_updated_state(stream, is_finished, current_stream_state, latest_record, expected_state):
+    stream.is_finished = is_finished
+    state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
     assert state["last_edited_time"].value == expected_state
 
-    inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
-    state = stream.get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+# def test_get_updated_state(stream):
+#     stream.is_finished = False
 
-    # after stream sync is finished, state should output the max cursor time
-    stream.is_finished = True
-    inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
-    expected_state = "2021-10-30T00:00:00.000Z"
-    state = stream.get_updated_state(**inputs)
-    assert state["last_edited_time"].value == expected_state
+#     inputs = {
+#         "current_stream_state": {"last_edited_time": "2021-10-10T00:00:00.000Z"},
+#         "latest_record": {"last_edited_time": "2021-10-20T00:00:00.000Z"},
+#     }
+#     expected_state = "2021-10-10T00:00:00.000Z"
+#     state = stream.get_updated_state(**inputs)
+#     assert state["last_edited_time"].value == expected_state
+
+#     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
+#     state = stream.get_updated_state(**inputs)
+#     assert state["last_edited_time"].value == expected_state
+
+#     # after stream sync is finished, state should output the max cursor time
+#     stream.is_finished = True
+#     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
+#     expected_state = "2021-10-30T00:00:00.000Z"
+#     state = stream.get_updated_state(**inputs)
+#     assert state["last_edited_time"].value == expected_state
 
 
 def test_stream_slices(blocks, requests_mock):
