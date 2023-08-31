@@ -367,17 +367,6 @@ subprojects { subproj ->
         finalizedBy jacocoTestReport
     }
 
-    task allTests(type: Test) {
-        useJUnitPlatform()
-        testLogging() {
-            events "passed", "failed", "started"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
     dependencies {
         if (subproj.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
