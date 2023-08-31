@@ -19,7 +19,6 @@ data:
   name: OneSignal
   releaseDate: 2023-08-12
   releaseStage: alpha
-  supportLevel: community
   tags:
     - language:lowcode
 metadataSpecVersion: "1.0"
