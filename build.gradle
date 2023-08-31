@@ -492,6 +492,7 @@ subprojects {
     }
 }
 
+// python is required by the root project to apply python formatters like isort or black.
 python {
     envPath = '.venv'
     minPythonVersion = '3.9'
@@ -561,6 +562,7 @@ task('format') {
     tasks.findByName('blackGlobalFormat').mustRunAfter 'isortGlobalFormat'
 }
 
+// convenience task to list all dependencies per project task
 subprojects {
     task listAllDependencies(type: DependencyReportTask) {}
 }
