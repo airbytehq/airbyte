@@ -76,7 +76,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   @Override
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
+  protected Properties getCustomConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
     final Properties properties = new Properties();
 
     // Database/collection selection

@@ -90,8 +90,7 @@ public abstract class DebeziumPropertiesManager {
     // scratch
     props.setProperty(TOPIC_PREFIX_KEY, getName(config));
 
-    // includes
-    props.putAll(getIncludeConfiguration(catalog, config));
+    props.putAll(getCustomConfiguration(catalog, config));
 
     return props;
   }
@@ -100,11 +99,10 @@ public abstract class DebeziumPropertiesManager {
 
   protected abstract String getName(final JsonNode config);
 
-  protected abstract Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
-
   public enum DebeziumConnectorType {
     RELATIONALDB,
     MONGODB;
   }
 
+  protected abstract Properties getCustomConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config);
 }

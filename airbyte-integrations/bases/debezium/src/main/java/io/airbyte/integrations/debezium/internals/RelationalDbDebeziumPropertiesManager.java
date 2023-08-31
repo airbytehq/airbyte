@@ -28,7 +28,7 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   @Override
-  protected Properties getConnectionConfiguration(JsonNode config) {
+  protected Properties getConnectionConfiguration(final JsonNode config) {
     final Properties properties = new Properties();
 
     // db connection configuration
@@ -45,12 +45,12 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   @Override
-  protected String getName(JsonNode config) {
+  protected String getName(final JsonNode config) {
     return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
-  protected Properties getIncludeConfiguration(ConfiguredAirbyteCatalog catalog, JsonNode config) {
+  protected Properties getCustomConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
     final Properties properties = new Properties();
 
     // table selection
