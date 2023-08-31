@@ -497,7 +497,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         actualFinalRecords);
     assertAll(
         () -> assertEquals("bar", actualRawRecords.get(0).get("_airbyte_data").get("string").asText()),
-        () -> assertEquals("bar", actualFinalRecords.get(0).get("string").asText()));
+        () -> assertEquals("bar", actualFinalRecords.get(0).get(generator.buildColumnId("string").name()).asText()));
   }
 
   @Test
