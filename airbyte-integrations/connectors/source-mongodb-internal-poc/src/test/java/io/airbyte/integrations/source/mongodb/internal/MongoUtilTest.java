@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.AuthenticationMechanism;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
@@ -36,7 +35,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
@@ -133,7 +131,8 @@ public class MongoUtilTest {
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final MongoClient mongoClient = mock(MongoClient.class);
     final MongoCommandException cause = new MongoCommandException(new BsonDocument(), new ServerAddress());
-    final MongoSecurityException exception = new MongoSecurityException(MongoCredential.createCredential("username", databaseName, "password".toCharArray()), "test", cause);
+    final MongoSecurityException exception =
+        new MongoSecurityException(MongoCredential.createCredential("username", databaseName, "password".toCharArray()), "test", cause);
 
     when(mongoDatabase.runCommand(any())).thenThrow(exception);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
