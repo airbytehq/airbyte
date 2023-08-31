@@ -58,7 +58,7 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
                     # FIXME: This is creating slice log messages for parity with the synchronous implementation
                     # but these cannot be used by the connector builder to build slices because they can be unordered
                     yield self._slice_logger.create_slice_log_message(partition.slice)
-            self._check_for_errors(partition_generator, partition_reader, stream)
+        self._check_for_errors(partition_generator, partition_reader, stream)
 
     def _check_for_errors(self, partition_generator: PartitionGenerator, partition_reader: PartitionReader, stream: Stream) -> None:
         errors = []
