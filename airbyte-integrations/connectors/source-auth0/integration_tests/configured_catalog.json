@@ -7,9 +7,9 @@
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
       "cursor_field": ["updated_at"],
-      "primary_key": [["user_id"]]
+      "primary_key": [["user_id"]],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -38,8 +38,8 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "primary_key": [["user_id"]],
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -48,8 +48,8 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

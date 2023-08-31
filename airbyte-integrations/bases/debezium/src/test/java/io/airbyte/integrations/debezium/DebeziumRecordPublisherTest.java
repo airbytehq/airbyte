@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -28,7 +28,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
     final String expectedWhitelist = "\\Qpublic.id_and_name\\E,\\Qpublic.id_\\,something\\E,\\Qpublic.n\"aMéS\\E";
-    final String actualWhitelist = DebeziumPropertiesManager.getTableIncludelist(catalog);
+    final String actualWhitelist = RelationalDbDebeziumPropertiesManager.getTableIncludelist(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
   }
@@ -40,7 +40,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public").withSyncMode(SyncMode.FULL_REFRESH)));
 
     final String expectedWhitelist = "\\Qpublic.id_and_name\\E";
-    final String actualWhitelist = DebeziumPropertiesManager.getTableIncludelist(catalog);
+    final String actualWhitelist = RelationalDbDebeziumPropertiesManager.getTableIncludelist(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
   }
@@ -57,7 +57,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
     final String expectedWhitelist = "\\Qpublic.id_and_name\\E\\.(\\Qfld2\\E|\\Qfld1\\E),\\Qpublic.id_\\,something\\E,\\Qpublic.n\"aMéS\\E";
-    final String actualWhitelist = DebeziumPropertiesManager.getColumnIncludeList(catalog);
+    final String actualWhitelist = RelationalDbDebeziumPropertiesManager.getColumnIncludeList(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
   }
@@ -76,7 +76,7 @@ class DebeziumRecordPublisherTest {
             "public",
             Field.of("fld1", JsonSchemaType.NUMBER), Field.of("fld2", JsonSchemaType.STRING)).withSyncMode(SyncMode.INCREMENTAL)));
 
-    final String anchored = "^" + DebeziumPropertiesManager.getColumnIncludeList(catalog) + "$";
+    final String anchored = "^" + RelationalDbDebeziumPropertiesManager.getColumnIncludeList(catalog) + "$";
     final Pattern pattern = Pattern.compile(anchored);
 
     assertTrue(pattern.matcher("public.id_and_name.fld1").find());

@@ -140,7 +140,10 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["campaign_budget.id"], ["segments.date"]]
+        "source_defined_primary_key": [
+          ["campaign_budget.id"],
+          ["segments.date"]
+        ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
@@ -188,13 +191,21 @@
         "name": "campaign_bidding_strategies",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [["campaign.id"], ["bidding_strategy.id"], ["segments.date"]],
+        "source_defined_primary_key": [
+          ["campaign.id"],
+          ["bidding_strategy.id"],
+          ["segments.date"]
+        ],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "primary_key": [["campaign.id"], ["bidding_strategy.id"], ["segments.date"]],
+      "primary_key": [
+        ["campaign.id"],
+        ["bidding_strategy.id"],
+        ["segments.date"]
+      ],
       "cursor_field": ["segments.date"]
     },
     {
@@ -202,13 +213,21 @@
         "name": "ad_group_bidding_strategies",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [["ad_group.id"], ["bidding_strategy.id"], ["segments.date"]],
+        "source_defined_primary_key": [
+          ["ad_group.id"],
+          ["bidding_strategy.id"],
+          ["segments.date"]
+        ],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "primary_key": [["ad_group.id"], ["bidding_strategy.id"], ["segments.date"]],
+      "primary_key": [
+        ["ad_group.id"],
+        ["bidding_strategy.id"],
+        ["segments.date"]
+      ],
       "cursor_field": ["segments.date"]
     }
   ]

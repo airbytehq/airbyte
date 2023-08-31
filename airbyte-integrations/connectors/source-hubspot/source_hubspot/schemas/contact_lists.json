@@ -66,16 +66,16 @@
     "ilsFilterBranch": {
       "type": ["null", "string"]
     },
-    "internal":{
+    "internal": {
       "type": ["null", "boolean"]
     },
-    "authorId":{
+    "authorId": {
       "type": ["null", "integer"]
     },
-    "limitExempt":{
+    "limitExempt": {
       "type": ["null", "boolean"]
     },
-    "teamIds":{
+    "teamIds": {
       "type": ["null", "array"]
     },
     "portalId": {

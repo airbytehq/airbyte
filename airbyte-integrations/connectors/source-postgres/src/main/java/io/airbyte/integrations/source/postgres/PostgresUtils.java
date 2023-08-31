@@ -172,10 +172,7 @@ public class PostgresUtils {
   }
 
   public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
-    return streamList.
-        stream().
-        map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).
-        collect(Collectors.joining(", "));
+    return streamList.stream().map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).collect(Collectors.joining(", "));
   }
 
 }

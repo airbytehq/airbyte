@@ -373,6 +373,11 @@ class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     aggregation_type = QueryAggregationType.by_page
 
 
+class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
+    dimensions = ["date", "country", "device", "query"]
+    aggregation_type = QueryAggregationType.by_property
+
+
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
     dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_property
