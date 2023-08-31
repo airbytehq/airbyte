@@ -13,7 +13,7 @@ To review the connection state:
 
 To edit the connection state:
 
-:::note 
+:::warning
 Updates to connection state should be handled with extreme care. Updates may break your syncs, requiring a reset to fix. Make changes only as directed by the Airbyte team.
 :::
 
