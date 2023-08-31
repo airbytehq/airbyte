@@ -91,8 +91,10 @@ public class GeneralStagingFunctions {
     }
   }
 
-  private static CompletableFuture<Optional<Exception>> dropStageTask(final WriteConfig writeConfig, final StagingOperations stagingOperations,
-                                                               final boolean purgeStagingData, final JdbcDatabase database) {
+  private static CompletableFuture<Optional<Exception>> dropStageTask(final WriteConfig writeConfig,
+                                                                      final StagingOperations stagingOperations,
+                                                                      final boolean purgeStagingData,
+                                                                      final JdbcDatabase database) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         final String schemaName = writeConfig.getOutputSchemaName();
