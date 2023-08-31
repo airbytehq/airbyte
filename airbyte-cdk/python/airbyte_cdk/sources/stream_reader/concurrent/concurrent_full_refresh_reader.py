@@ -49,15 +49,13 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
             self._check_for_errors(stream, futures)
 
             # While there is a partition to process
-            while partition_reader.has_next():
-                record = partition_reader.get_next_record()
+            for record in partition_reader:
                 yield record.stream_data
                 if FullRefreshStreamReader.is_record(record.stream_data):
                     total_records_counter += 1
                     if internal_config and internal_config.is_limit_reached(total_records_counter):
                         return
-            while partition_generator.has_next():
-                partition = partition_generator.get_next_partition()
+            for partition in partition_generator:
                 futures.append(self._threadpool.submit(PartitionReader.process_partition, partition_reader, partition))
                 if self._slice_logger.should_log_slice_message(logger):
                     # FIXME: This is creating slice log messages for parity with the synchronous implementation

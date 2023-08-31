@@ -23,14 +23,14 @@ class PartitionGenerator:
             self._queue.put(stream_partition)
         stream.logger.debug(f"Done generating partitions for stream {stream.name}")
 
-    def get_next_partition(self) -> Optional[StreamPartition]:
-        if self._queue.qsize() > 0:
-            return self._queue.get()
-        else:
-            return None
-
     def has_next(self) -> bool:
         return self._queue.qsize() > 0
 
-    def is_done(self) -> bool:
-        return self._queue.qsize() == 0
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._queue.qsize() > 0:
+            return self._queue.get()
+        else:
+            raise StopIteration
