@@ -305,12 +305,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
-                    THEN ['Problem with `${printable_col_name}`']
-                  ELSE []
+                    THEN 'Problem with `${printable_col_name}`'
+                  ELSE NULL
                 END"""))
-        .reduce(
-            "ARRAY_CONSTRUCT()",
-            (acc, col) -> "ARRAY_CAT(" + acc + ", " + col + ")");
+        .collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -341,7 +339,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             WITH intermediate_data AS (
               SELECT
             ${column_casts}
-            ${column_errors} as "_airbyte_cast_errors",
+            ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
               "_airbyte_raw_id",
               "_airbyte_extracted_at"
               FROM ${raw_table_id}
