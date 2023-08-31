@@ -54,7 +54,7 @@ class ConnectorStateManager:
         """
         stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
-            return stream_state.dict()  # type: ignore # this returns a dict...
+            return stream_state.dict()  # type: ignore # mypy thinks dict() returns any, but it returns a dict
         return {}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]) -> None:
@@ -141,7 +141,7 @@ class ConnectorStateManager:
                     name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace
                 ): per_stream_state.stream.stream_state
                 for per_stream_state in state
-                if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore
+                if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore # state is always a list of AirbyteStateMessage if is_per_stream is True
             }
             return None, streams
         else:

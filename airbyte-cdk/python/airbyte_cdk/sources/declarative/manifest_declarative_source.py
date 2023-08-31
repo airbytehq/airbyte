@@ -28,7 +28,7 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, SliceLogger
+from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, DebugSliceLogger, SliceLogger
 from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
 
@@ -64,6 +64,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages)
         self._message_repository = self._constructor.get_message_repository()
+        self._slice_logger: SliceLogger = AlwaysLogSliceLogger() if emit_connector_builder_messages else DebugSliceLogger()
 
         self._validate_source()
 
@@ -135,12 +136,6 @@ class ManifestDeclarativeSource(DeclarativeSource):
     ) -> Iterator[AirbyteMessage]:
         self._configure_logger_level(logger)
         yield from super().read(logger, config, catalog, state)
-
-    def get_slice_logger(self) -> SliceLogger:
-        if self._emit_connector_builder_messages:
-            return AlwaysLogSliceLogger()
-        else:
-            return super().get_slice_logger()
 
     def _configure_logger_level(self, logger: logging.Logger) -> None:
         """
