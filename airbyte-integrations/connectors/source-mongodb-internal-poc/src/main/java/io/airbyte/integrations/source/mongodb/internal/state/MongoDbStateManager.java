@@ -48,21 +48,25 @@ public class MongoDbStateManager {
   public static MongoDbStateManager createStateManager(final JsonNode initialState) {
     final MongoDbStateManager stateManager = new MongoDbStateManager();
 
-    if (initialState != null) {
-      LOGGER.info("Initial state {}", initialState);
-      final List<AirbyteStateMessage> stateMessages = deserializeState(initialState);
-      if (!stateMessages.isEmpty()) {
-        if (stateMessages.size() == 1) {
-          final AirbyteStateMessage stateMessage = stateMessages.get(0);
-          stateManager.updateCdcState(Jsons.object(stateMessage.getGlobal().getSharedState(), MongoDbCdcState.class));
-          stateMessage.getGlobal().getStreamStates()
-              .forEach(s -> stateManager.updateStreamState(s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace(),
-                  Jsons.object(s.getStreamState(), MongoDbStreamState.class)));
-        } else {
-          throw new IllegalStateException("The state contains multiple message, but only 1 is expected.");
-        }
+    if (initialState == null) {
+      return stateManager;
+    }
+
+    LOGGER.info("Initial state {}", initialState);
+    final List<AirbyteStateMessage> stateMessages = deserializeState(initialState);
+
+    if (!stateMessages.isEmpty()) {
+      if (stateMessages.size() == 1) {
+        final AirbyteStateMessage stateMessage = stateMessages.get(0);
+        stateManager.updateCdcState(Jsons.object(stateMessage.getGlobal().getSharedState(), MongoDbCdcState.class));
+        stateMessage.getGlobal().getStreamStates()
+            .forEach(s -> stateManager.updateStreamState(s.getStreamDescriptor().getName(), s.getStreamDescriptor().getNamespace(),
+                Jsons.object(s.getStreamState(), MongoDbStreamState.class)));
+      } else {
+        throw new IllegalStateException("The state contains multiple message, but only 1 is expected.");
       }
     }
+
     return stateManager;
   }
 

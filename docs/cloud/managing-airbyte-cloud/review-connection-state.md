@@ -10,3 +10,17 @@ To review the connection state:
 3. Click the **Advanced** dropdown arrow. 
 
     **Connection State** displays.
+
+To edit the connection state:
+
+    :::note 
+    
+    Updates to connection state should be handled with extreme care. Updates may break your syncs, requiring a reset to fix. Make changes only as directed by the Airbyte team.
+    
+    :::
+
+1. Click anywhere in the Connection state to start editing.
+
+2. Confirm changes by clicking "Update state". Discard any changes by clikcing "Revert changes".
+
+3. Confirm the changes to the connection state update. 

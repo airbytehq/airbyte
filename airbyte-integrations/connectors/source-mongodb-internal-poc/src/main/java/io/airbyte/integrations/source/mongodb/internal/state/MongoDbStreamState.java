@@ -4,9 +4,16 @@
 
 package io.airbyte.integrations.source.mongodb.internal.state;
 
-/*
- * TODO replace `isObjectId` with _id enum (ObjectId, String, etc.)
- */
-public record MongoDbStreamState(String id, InitialSnapshotStatus status) { // , boolean isObjectId) {
+public record MongoDbStreamState(String id, InitialSnapshotStatus status, IdType idType) {
+
+  /**
+   * Takes a value converting it to the appropriate MongoDb type based on the IdType of this record.
+   *
+   * @param value the value to convert
+   * @return a converted value.
+   */
+  public Object idTypeAsMongoDbType(final String value) {
+    return idType.convert(value);
+  }
 
 }
