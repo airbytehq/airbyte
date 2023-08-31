@@ -232,8 +232,8 @@
         "display_type": "radio",
         "oneOf": [
           {
-            "title": "Read Changes using WAL (CDC)",
-            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#cdc\">write-ahead log (WAL)</a>. This needs to be configured on the source database itself. Only available on Postgres 10 and above.",
+            "title": "Read Changes using Write-Ahead Log (CDC)",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#cdc\">write-ahead log (WAL)</a>. This needs to be configured on the source database itself. Recommended for tables of any size.",
             "required": ["method", "replication_slot", "publication"],
             "additionalProperties": true,
             "properties": {
