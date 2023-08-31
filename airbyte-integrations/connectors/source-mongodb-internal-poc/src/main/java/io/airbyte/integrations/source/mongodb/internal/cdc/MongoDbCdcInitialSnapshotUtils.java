@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -38,6 +39,8 @@ import org.slf4j.LoggerFactory;
 public class MongoDbCdcInitialSnapshotUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitialSnapshotUtils.class);
+  
+  private static final Predicate<ConfiguredAirbyteStream> SYNC_MODE_FILTER = c -> SyncMode.INCREMENTAL.equals(c.getSyncMode());
 
   /**
    * Returns the list of configured Airbyte streams that need to perform the initial snapshot portion
@@ -75,8 +78,8 @@ public class MongoDbCdcInitialSnapshotUtils {
        */
       initialSnapshotStreams.addAll(fullCatalog.getStreams()
           .stream()
-          .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
-          .collect(Collectors.toList()));
+          .filter(SYNC_MODE_FILTER)
+          .toList();
     } else {
 
       // Find and filter out streams that have completed the initial snapshot
@@ -107,9 +110,9 @@ public class MongoDbCdcInitialSnapshotUtils {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(SYNC_MODE_FILTER)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))).map(Jsons::clone)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static void estimateInitialSnapshotSyncSize(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {

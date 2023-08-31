@@ -109,13 +109,10 @@ public class InitialSnapshotHandler {
    */
   private List<String> aggregateIdField(final MongoCollection<Document> collection) {
     final List<String> idTypes = new ArrayList<>();
-    // Sanity check that all ID_FIELD values are of the same type for this collection.
-    // db.collection.aggregate([{
-    // $group : {
-    // _id : { $type : "$_id" },
-    // count : { $sum : 1 }
-    // }
-    // }])
+    /*
+     * Sanity check that all ID_FIELD values are of the same type for this collection.
+     * db.collection.aggregate([{ $group : { _id : { $type : "$_id" }, count : { $sum : 1 } } }])
+     */
     collection.aggregate(List.of(
         Aggregates.group(
             new Document(ID_FIELD, new Document("$type", "$_id")),

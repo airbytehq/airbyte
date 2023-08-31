@@ -9,17 +9,24 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MAX_QUEU
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MIN_QUEUE_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCommandException;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
+import com.mongodb.MongoSecurityException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -27,6 +34,8 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 
@@ -86,6 +95,49 @@ public class MongoUtilTest {
     assertEquals(11, streams.get(0).getJsonSchema().get("properties").size());
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         streams.get(0).getJsonSchema().get("properties").get("total").get("type").asText());
+  }
+
+  @Test
+  void testGetAuthorizedCollections() {
+    final String databaseName = "test-database";
+    final String collectionName = "test-collection";
+    final Document result = new Document(Map.of("cursor", Map.of("firstBatch", List.of(Map.of("name", collectionName)))));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoDatabase.runCommand(any())).thenReturn(result);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final Set<String> authorizedCollections = MongoUtil.getAuthorizedCollections(mongoClient, databaseName);
+
+    assertEquals(Set.of(collectionName), authorizedCollections);
+  }
+
+  @Test
+  void testGetAuthorizedCollectionsMongoException() {
+    final String databaseName = "test-database";
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoDatabase.runCommand(any())).thenThrow(new MongoException("test"));
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    assertThrows(ConnectionErrorException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+  }
+
+  @Test
+  void testGetAuthorizedCollectionsMongoSecurityException() {
+    final String databaseName = "test-database";
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoCommandException cause = new MongoCommandException(new BsonDocument(), new ServerAddress());
+    final MongoSecurityException exception =
+        new MongoSecurityException(MongoCredential.createCredential("username", databaseName, "password".toCharArray()), "test", cause);
+
+    when(mongoDatabase.runCommand(any())).thenThrow(exception);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    assertThrows(ConnectionErrorException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
   }
 
   @Test
