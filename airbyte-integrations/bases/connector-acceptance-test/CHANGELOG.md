@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.3
+Add tests for display_type property
+
 ## 1.0.2
 Fix bug in skip_backward_compatibility_tests_fixture, the previous connector version could not be retrieved.
 
