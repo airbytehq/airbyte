@@ -71,17 +71,15 @@ To select or deselect all streams, click the checkbox in the table header. To de
 
 2. Click the **Sync mode** dropdown and select the sync mode you want to apply. Depending on the sync mode you select, you may need to choose a cursor or primary key.
 
-3. Select the **Cursor** or **Primary keys** when they are required by the stream sync mode.
-
 :::note
 
 Source-defined cursors and primary keys are selected automatically and cannot be changed in the table.
 
 :::
 
-4. Click on a stream to display the stream details panel.
+3. Click on a stream to display the stream details panel.
 
-5. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
+4. Toggle individual fields to include or exclude them in the sync, or use the toggle in the table header to select all fields at once.
 
 :::note
 
@@ -91,11 +89,11 @@ Source-defined cursors and primary keys are selected automatically and cannot be
 
 :::
 
-6. Click the **X** to close the stream details panel.
+5. Click the **X** to close the stream details panel.
 
-7. Click **Save changes**, or click **Cancel** to discard the changes.
+6. Click **Save changes**, or click **Cancel** to discard the changes.
 
-8. The **Stream configuration changed** dialog displays. This gives you the option to reset streams when you save the changes.
+7. The **Stream configuration changed** dialog displays. This gives you the option to reset streams when you save the changes.
 
 :::caution
 
@@ -103,4 +101,4 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 
 :::
 
-10. Click **Save connection**.
+8. Click **Save connection**.
