@@ -116,14 +116,15 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
             .sourceType("hstore")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("""
-                '"paperback" => "243","publisher" => "postgresqltutorial.com",
-                "language"  => "English","ISBN-13" => "978-1449370000",
-                "weight"    => "11.2 ounces"'
-                """, null)
+                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                             "language"  => "English","ISBN-13" => "978-1449370000",
+                             "weight"    => "11.2 ounces"'
+                             """, null)
             .addExpectedValues(
                 //
                 "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
                 null)
             .build());
   }
+
 }

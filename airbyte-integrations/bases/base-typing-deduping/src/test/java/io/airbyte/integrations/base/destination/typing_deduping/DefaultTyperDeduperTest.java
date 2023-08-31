@@ -98,16 +98,17 @@ public class DefaultTyperDeduperTest {
   void existingEmptyTable() throws Exception {
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(true);
+    when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(false);
 
     typerDeduper.prepareTables();
-    verify(destinationHandler).execute("SOFT RESET overwrite_ns.overwrite_stream");
+    verify(destinationHandler).execute("CREATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
     verify(destinationHandler).execute("SOFT RESET append_ns.append_stream");
     verify(destinationHandler).execute("SOFT RESET dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream");
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
     typerDeduper.typeAndDedupe("append_ns", "append_stream");
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
@@ -116,7 +117,8 @@ public class DefaultTyperDeduperTest {
     clearInvocations(destinationHandler);
 
     typerDeduper.commitFinalTables();
-    verify(destinationHandler, never()).execute(any());
+    verify(destinationHandler).execute("OVERWRITE TABLE overwrite_ns.overwrite_stream FROM overwrite_ns.overwrite_stream_airbyte_tmp");
+    verifyNoMoreInteractions(ignoreStubs(destinationHandler));
   }
 
   /**

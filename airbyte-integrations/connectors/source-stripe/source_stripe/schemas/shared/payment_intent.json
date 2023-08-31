@@ -374,7 +374,7 @@
                       "type": ["null", "object"],
                       "properties": {
                         "billing_address": {
-                            "$ref": "address.json"
+                          "$ref": "address.json"
                         },
                         "email": {
                           "type": ["null", "string"]

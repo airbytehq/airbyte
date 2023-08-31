@@ -72,7 +72,7 @@
       "cursor_field": ["date"],
       "destination_sync_mode": "append"
     },
-     {
+    {
       "stream": {
         "name": "search_analytics_keyword_page_report",
         "json_schema": {},

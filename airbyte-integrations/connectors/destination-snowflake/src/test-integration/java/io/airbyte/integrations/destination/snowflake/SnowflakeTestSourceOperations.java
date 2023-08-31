@@ -10,7 +10,6 @@ import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTestUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

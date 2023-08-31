@@ -1,22 +1,26 @@
-import sentry_sdk
-import pandas as pd
-from dagster import MetadataValue, Output, asset
-from typing import List
-from orchestrator.templates.render import (
-    render_connector_registry_locations_html,
-    dataframe_to_table_html,
-    simple_link_html,
-    icon_image_html,
-    test_badge_html,
-    internal_level_html,
-    ColumnInfo,
-)
-from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.logging import sentry
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from metadata_service.models.transform import to_json_sanitized_dict
+from typing import List
+
+import pandas as pd
+import sentry_sdk
+from dagster import MetadataValue, Output, asset
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.transform import to_json_sanitized_dict
+from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
+from orchestrator.logging import sentry
+from orchestrator.templates.render import (
+    ColumnInfo,
+    dataframe_to_table_html,
+    icon_image_html,
+    internal_level_html,
+    render_connector_registry_locations_html,
+    simple_link_html,
+    test_badge_html,
+)
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 GROUP_NAME = "registry_reports"
 

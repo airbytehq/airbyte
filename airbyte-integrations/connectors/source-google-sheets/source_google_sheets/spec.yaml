@@ -15,15 +15,6 @@ connectionSpecification:
         Enter the link to the Google spreadsheet you want to sync. To copy the link, click the 'Share' button in the top-right corner of the spreadsheet, then click 'Copy link'.
       examples:
         - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
-    row_batch_size:
-      type: integer
-      title: Row Batch Size
-      description: The number of rows fetched when making a Google Sheet API call. Defaults to 200. You can increase this value to avoid rate limits if your data is particularly wide.
-      default: 200
-      examples:
-        - 50
-        - 100
-        - 200
     names_conversion:
       type: boolean
       title: Convert Column Names to SQL-Compliant Format

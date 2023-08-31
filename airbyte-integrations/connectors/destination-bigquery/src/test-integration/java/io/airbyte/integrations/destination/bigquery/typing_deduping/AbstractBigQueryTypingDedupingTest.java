@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +53,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    final TableResult result = bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
+    final TableResult result =
+        bq.query(QueryJobConfiguration.of("SELECT * FROM " + getRawDataset() + "." + StreamId.concatenateRawTableName(streamNamespace, streamName)));
     return BigQuerySqlGeneratorIntegrationTest.toJsonRecords(result);
   }
 
@@ -67,15 +72,16 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     if (streamNamespace == null) {
       streamNamespace = BigQueryUtils.getDatasetId(getConfig());
     }
-    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to create it)
+    // bq.delete simply returns false if the table/schema doesn't exist (e.g. if the connector failed to
+    // create it)
     // so we don't need to do any existence checks here.
     bq.delete(TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
   }
 
   /**
-   * Run a sync using 1.9.0 (which is the highest version that still creates v2 raw tables with JSON _airbyte_data).
-   * Then run a sync using our current version.
+   * Run a sync using 1.9.0 (which is the highest version that still creates v2 raw tables with JSON
+   * _airbyte_data). Then run a sync using our current version.
    */
   @Test
   public void testRawTableJsonToStringMigration() throws Exception {
@@ -116,4 +122,5 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   protected String getRawDataset() {
     return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
   }
+
 }

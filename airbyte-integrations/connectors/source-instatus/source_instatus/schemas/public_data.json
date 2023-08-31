@@ -5,9 +5,9 @@
     "page": {
       "type": ["null", "object"],
       "properties": {
-        "name": {"type": ["null", "string"]},
-        "url": {"type": ["null", "string"]},
-        "status": {"type": ["null", "string"]}
+        "name": { "type": ["null", "string"] },
+        "url": { "type": ["null", "string"] },
+        "status": { "type": ["null", "string"] }
       }
     },
     "activeIncidents": {
@@ -15,11 +15,11 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-        "name": {"type": ["null", "string"]},
-        "started": {"type": ["null", "string"]},
-        "status": {"type": ["null", "string"]},
-        "impact": {"type": ["null", "string"]},
-        "url": {"type": ["null", "string"]}
+          "name": { "type": ["null", "string"] },
+          "started": { "type": ["null", "string"] },
+          "status": { "type": ["null", "string"] },
+          "impact": { "type": ["null", "string"] },
+          "url": { "type": ["null", "string"] }
         }
       }
     },
@@ -28,11 +28,11 @@
       "items": {
         "type": ["null", "object"],
         "properties": {
-          "name": {"type": ["null", "string"]},
-          "start": {"type": ["null", "string"]},
-          "status": {"type": ["null", "string"]},
-          "duration": {"type": ["null", "string"]},
-          "url": {"type": ["null", "string"]}
+          "name": { "type": ["null", "string"] },
+          "start": { "type": ["null", "string"] },
+          "status": { "type": ["null", "string"] },
+          "duration": { "type": ["null", "string"] },
+          "url": { "type": ["null", "string"] }
         }
       }
     }

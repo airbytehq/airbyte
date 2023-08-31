@@ -51,7 +51,7 @@
       "type": ["null", "string"]
     },
     "attributes": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "customerTags": {

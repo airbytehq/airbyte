@@ -2,10 +2,28 @@
 
 This page provides guidance on how to manage notifications for Airbyte Cloud, allowing you to stay up-to-date on the activities in your workspace. 
 
+## Notification Event Types
+
+1. **Failed Syncs:** A sync from any of your connections fails. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy.
+2. **Successful Syncs:** A sync from any of your connections succeeds. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy.
+3. **Automated Connection Updates:** A connection is updated automatically (ex. a source schema is automatically updated)
+4. **Connection Updates Requiring Action:** A connection update requires you to take action (ex. a breaking schema change is detected)
+5. **Sync Disabled Warning:** A connection will be disabled soon due to repeated failures. It has failed 50 times consecutively or there were only failed jobs in the past 7 days.
+6. **Sync Disabled:** A connection was automatically disabled due to repeated failures. It will be disabled when it has failed 100 times consecutively or has been failing for 14 days in a row.
 
 ## Configure Notification Settings
 
-To set up Webhook notifications:
+To set up email notifications:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
+
+2. Click **Notifications**.
+
+3. Toggle which messages you'd like to receive from Airbyte. All email notifications will be sent to the owner of this workspace. The owner of your workspace is noted at the top of the page.
+
+4. Click **Save changes**.
+
+To set up webhook notifications:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
@@ -17,15 +35,6 @@ To set up Webhook notifications:
 	1. To enable webhook notifications, the webhook URL is required. For your convenience, we provide a 'test' function to send a test message to your webhook URL so you can make sure it's working as expected.
 
 5. Click **Save changes**.
-
-## Notification Event Types
-
-1. Failed syncs and successful syncs: When a connection sync has finished, you can choose to be notified whether the sync has failed, succeeded or both. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy.
-1. Automated Connection Updates: when Airbyte detects that the connection's source schema has changed and can be updated automatically, Airbyte will update your connection and send you a notification message.
-1. Connection Updates Requiring Action: When Airbyte detects some updates that requires your action to run syncs. Since this will affect your sync from running as scheduled, you cannot disable this type of email notification.
-1. Sync Disabled and Sync Disabled Warning: If a sync has been failing for multiple days or many times consecutively, Airbyte will disable the connection to prevent it from running further. Airbyte will send a Sync Disabled Warning notification when we detect the trend, and once the failure counts hits a threshold Airbyte will send a Sync Disabled notification and will actually disable the connection. Again, because the sync will not continue to run as you have configured, the Sync Disabled notification cannot be disabled.
-
- 
 
 ## Enable schema update notifications
 
