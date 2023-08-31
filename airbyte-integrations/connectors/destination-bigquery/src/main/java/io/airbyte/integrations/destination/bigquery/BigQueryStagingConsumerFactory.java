@@ -60,10 +60,7 @@ public class BigQueryStagingConsumerFactory {
         recordFormatterCreator,
         tmpTableNameTransformer);
 
-    final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
-        incrementalTypingAndDedupingStreamConsumer(typerDeduper);
-
-    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
+    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
@@ -72,19 +69,6 @@ public class BigQueryStagingConsumerFactory {
         catalog,
         new BufferManager(),
         defaultNamespace);
-  }
-
-  private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
-    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
-    return (streamId) -> {
-      if (!valve.containsKey(streamId)) {
-        valve.addStream(streamId);
-      }
-      if (valve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        valve.updateTimeAndIncreaseInterval(streamId);
-      }
-    };
   }
 
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,

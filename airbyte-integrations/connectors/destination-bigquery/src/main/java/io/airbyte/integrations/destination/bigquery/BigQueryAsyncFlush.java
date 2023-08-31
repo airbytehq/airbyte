@@ -30,17 +30,14 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
   private final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig;
   private final BigQueryStagingOperations stagingOperations;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer;
 
   public BigQueryAsyncFlush(
                             final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
                             final BigQueryStagingOperations stagingOperations,
-                            final ConfiguredAirbyteCatalog catalog,
-                            final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer) {
+                            final ConfiguredAirbyteCatalog catalog) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.catalog = catalog;
-    this.incrementalTypingAndDedupingStreamConsumer = incrementalTypingAndDedupingStreamConsumer;
   }
 
   @Override
@@ -82,8 +79,6 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
           writeConfig.targetTableId(),
           writeConfig.tableSchema(),
           List.of(stagedFile));
-
-      incrementalTypingAndDedupingStreamConsumer.accept(new AirbyteStreamNameNamespacePair(writeConfig.streamName(), writeConfig.namespace()));
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
