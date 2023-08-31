@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import StreamPartition
-from airbyte_cdk.sources.streams import FullRefreshStreamReader, Stream
+from airbyte_cdk.sources.streams import Stream
 
 
 class PartitionGenerator:
@@ -16,27 +16,12 @@ class PartitionGenerator:
         self._queue = queue if queue else Queue()
         self._futures: List[Future[None]] = []
 
-    def generate_partitions_for_stream(
-        self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_reader: FullRefreshStreamReader
-    ) -> None:
+    def generate_partitions(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> None:
         stream.logger.debug(f"Generating partitions for stream {stream.name}")
-        for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field, stream_reader=stream_reader):
+        for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field):
             stream_partition = StreamPartition(stream, partition, cursor_field)
             self._queue.put(stream_partition)
         stream.logger.debug(f"Done generating partitions for stream {stream.name}")
-
-    def generate_partitions_async(
-        self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], executor, stream_reader: FullRefreshStreamReader
-    ):
-        f = executor.submit(
-            PartitionGenerator.generate_partitions_for_stream,
-            self,
-            stream,
-            sync_mode,
-            cursor_field,
-            stream_reader,
-        )
-        self._futures.append(f)
 
     def get_next_partition(self) -> Optional[StreamPartition]:
         if self._queue.qsize() > 0:
@@ -44,14 +29,8 @@ class PartitionGenerator:
         else:
             return None
 
-    def there_are_partitions_ready(self) -> bool:
+    def has_next(self) -> bool:
         return self._queue.qsize() > 0
 
     def is_done(self) -> bool:
-        return self._queue.qsize() == 0 and self._futures_are_done(self._futures)
-
-    def _futures_are_done(self, futures) -> bool:
-        return all(future.done() for future in futures)
-
-    def get_exceptions(self) -> List[BaseException]:
-        return [f for f in [future.exception() for future in self._futures] if f is not None]
+        return self._queue.qsize() == 0

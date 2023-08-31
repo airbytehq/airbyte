@@ -19,7 +19,7 @@ class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
     def read_stream(
         self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
     ) -> Iterable[StreamData]:
-        slices = stream.generate_partitions(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_reader=self)
+        slices = stream.generate_partitions(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         for _slice in slices:

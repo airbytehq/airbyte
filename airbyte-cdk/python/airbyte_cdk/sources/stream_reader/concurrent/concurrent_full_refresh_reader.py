@@ -35,34 +35,40 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
     ) -> Iterable[StreamData]:
         logger.debug(f"Processing stream slices for {stream.name} (sync_mode: full_refresh)")
         total_records_counter = 0
+        futures = []
         partition_generator = self._partitions_generator_provider()
         partition_reader = self._partition_reader_provider()
         # Submit partition generation tasks
-        partition_generator.generate_partitions_async(stream, SyncMode.full_refresh, cursor_field, self._threadpool, self)
+        futures.append(
+            self._threadpool.submit(
+                PartitionGenerator.generate_partitions, partition_generator, stream, SyncMode.full_refresh, cursor_field
+            )
+        )
         # While partitions are still being generated
-        while not (partition_generator.is_done() and partition_reader.is_done()):
-            self._check_for_errors(partition_generator, partition_reader, stream)
+        while partition_generator.has_next() or partition_reader.has_next() or not self._is_done(futures):
+            self._check_for_errors(stream, futures)
 
             # While there is a partition to process
-            while partition_reader.there_are_records_ready():
+            while partition_reader.has_next():
                 record = partition_reader.get_next_record()
                 yield record.stream_data
                 if FullRefreshStreamReader.is_record(record.stream_data):
                     total_records_counter += 1
                     if internal_config and internal_config.is_limit_reached(total_records_counter):
                         return
-            while partition_generator.there_are_partitions_ready():
+            while partition_generator.has_next():
                 partition = partition_generator.get_next_partition()
-                partition_reader.process_partition_async(partition, self._threadpool)
+                futures.append(self._threadpool.submit(PartitionReader.process_partition, partition_reader, partition))
                 if self._slice_logger.should_log_slice_message(logger):
                     # FIXME: This is creating slice log messages for parity with the synchronous implementation
                     # but these cannot be used by the connector builder to build slices because they can be unordered
                     yield self._slice_logger.create_slice_log_message(partition.slice)
-        self._check_for_errors(partition_generator, partition_reader, stream)
+        self._check_for_errors(stream, futures)
 
-    def _check_for_errors(self, partition_generator: PartitionGenerator, partition_reader: PartitionReader, stream: Stream) -> None:
-        errors = []
-        errors.extend(partition_generator.get_exceptions())
-        errors.extend(partition_reader.get_exceptions())
-        if errors:
-            raise RuntimeError(f"Failed reading from stream {stream.name} with errors: {errors}")
+    def _is_done(self, futures):
+        return all(future.done() for future in futures)
+
+    def _check_for_errors(self, stream: Stream, futures) -> None:
+        exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
+        if exceptions_from_futures:
+            raise RuntimeError(f"Failed reading from stream {stream.name} with errors: {exceptions_from_futures}")

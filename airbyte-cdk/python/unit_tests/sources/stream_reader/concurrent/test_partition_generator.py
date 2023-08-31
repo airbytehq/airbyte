@@ -15,21 +15,18 @@ from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Stream
     "partitions", [pytest.param([], id="test_no_partitions"), pytest.param([{"partition": 1}, {"partition": 2}], id="test_two_partitions")]
 )
 def test_partition_generator(partitions):
-    print(f"partitions: {partitions}")
     queue = Queue()
     partition_generator = PartitionGenerator(queue)
 
     stream = Mock()
     stream.generate_partitions.return_value = iter(partitions)
 
-    stream_reader = Mock()
-
     sync_mode = SyncMode.full_refresh
     cursor_field = ["A_NESTED", "CURSOR_FIELD"]
 
     assert queue.empty()
 
-    partition_generator.generate_partitions_for_stream(stream, sync_mode, cursor_field, stream_reader)
+    partition_generator.generate_partitions(stream, sync_mode, cursor_field)
 
     actual_partitions = []
     while queue.qsize() > 0:

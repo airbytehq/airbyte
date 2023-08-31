@@ -31,7 +31,7 @@ class PartitionReader:
         else:
             return None
 
-    def there_are_records_ready(self) -> bool:
+    def has_next(self) -> bool:
         return self._output_queue.qsize() > 0
 
     def is_done(self) -> bool:
