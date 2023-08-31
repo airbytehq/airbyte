@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery.uploader.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;

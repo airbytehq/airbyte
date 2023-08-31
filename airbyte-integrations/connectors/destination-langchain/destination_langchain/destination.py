@@ -21,12 +21,12 @@ from destination_langchain.batcher import Batcher
 from destination_langchain.config import ConfigModel
 from destination_langchain.document_processor import DocumentProcessor
 from destination_langchain.embedder import Embedder, FakeEmbedder, OpenAIEmbedder
-from destination_langchain.indexer import DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
+from destination_langchain.indexer import ChromaLocalIndexer, DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
 from langchain.document_loaders.base import Document
 
 BATCH_SIZE = 128
 
-indexer_map = {"pinecone": PineconeIndexer, "DocArrayHnswSearch": DocArrayHnswSearchIndexer}
+indexer_map = {"pinecone": PineconeIndexer, "DocArrayHnswSearch": DocArrayHnswSearchIndexer, "chroma_local": ChromaLocalIndexer}
 
 embedder_map = {"openai": OpenAIEmbedder, "fake": FakeEmbedder}
 

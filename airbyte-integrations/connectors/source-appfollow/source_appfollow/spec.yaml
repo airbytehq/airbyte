@@ -4,26 +4,11 @@ connectionSpecification:
   title: Appfollow Spec
   type: object
   required:
-    - ext_id
-    - country
-    - cid
-    - api_secret
+    - api_key
   additionalProperties: true
   properties:
-    ext_id:
-      type: string
-      title: app external id
-      description: for App Store — this is 9-10 digits identification number; for Google Play — this is bundle name;
-    cid:
-      type: string
-      title: client id
-      description: client id provided by Appfollow
     api_secret:
       type: string
-      title: api secret
-      description: api secret provided by Appfollow
+      title: API Key
+      description: API Key provided by Appfollow
       airbyte_secret: true
-    country:
-      type: string
-      title: country
-      description: getting data by Country

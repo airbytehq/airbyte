@@ -5,13 +5,13 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.configoss.WorkerDestinationConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -60,23 +60,24 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseTypingDedupingTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseTypingDedupingTest.class);
-  private static final JsonNode SCHEMA;
+  protected static final JsonNode SCHEMA;
   static {
     try {
-      SCHEMA = Jsons.deserialize(MoreResources.readResource("schema.json"));
-    } catch (IOException e) {
+      SCHEMA = Jsons.deserialize(MoreResources.readResource("dat/schema.json"));
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
   private static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
+      Pair.of("old_cursor", AirbyteProtocolType.INTEGER));
 
   private String randomSuffix;
   private JsonNode config;
-  private String streamNamespace;
-  private String streamName;
+  protected String streamNamespace;
+  protected String streamName;
   private List<AirbyteStreamNameNamespacePair> streamsToTearDown;
 
   /**
@@ -137,7 +138,14 @@ public abstract class BaseTypingDedupingTest {
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
   /**
-   * @return A suffix which is different for each concurrent test run.
+   * Destinations which need to clean up resources after an entire test finishes should override this
+   * method. For example, if you want to gracefully close a database connection, you should do that
+   * here.
+   */
+  protected void globalTeardown() throws Exception {}
+
+  /**
+   * @return A suffix which is different for each concurrent test, but stable within a single test.
    */
   protected synchronized String getUniqueSuffix() {
     if (randomSuffix == null) {
@@ -161,9 +169,10 @@ public abstract class BaseTypingDedupingTest {
 
   @AfterEach
   public void teardown() throws Exception {
-    for (AirbyteStreamNameNamespacePair streamId : streamsToTearDown) {
+    for (final AirbyteStreamNameNamespacePair streamId : streamsToTearDown) {
       teardownStreamAndNamespace(streamId.getNamespace(), streamId.getName());
     }
+    globalTeardown();
   }
 
   /**
@@ -173,7 +182,7 @@ public abstract class BaseTypingDedupingTest {
    */
   @Test
   public void fullRefreshOverwrite() throws Exception {
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
@@ -183,21 +192,21 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     // Second sync
-    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
@@ -208,7 +217,7 @@ public abstract class BaseTypingDedupingTest {
    */
   @Test
   public void fullRefreshAppend() throws Exception {
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -218,21 +227,21 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     // Second sync
-    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
@@ -245,7 +254,7 @@ public abstract class BaseTypingDedupingTest {
    */
   @Test
   public void incrementalAppend() throws Exception {
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             // These two lines are literally the only difference between this test and fullRefreshAppend
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -257,21 +266,21 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_nondedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_nondedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     // Second sync
-    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
@@ -282,7 +291,7 @@ public abstract class BaseTypingDedupingTest {
    */
   @Test
   public void incrementalDedup() throws Exception {
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
@@ -294,21 +303,21 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl");
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_dedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
     // Second sync
-    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl");
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
@@ -317,7 +326,7 @@ public abstract class BaseTypingDedupingTest {
    */
   @Test
   public void incrementalDedupDefaultNamespace() throws Exception {
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
@@ -329,21 +338,21 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    List<AirbyteMessage> messages1 = readMessages("sync1_messages.jsonl", null, streamName);
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl", null, streamName);
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_dedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1, null, streamName);
 
     // Second sync
-    List<AirbyteMessage> messages2 = readMessages("sync2_messages.jsonl", null, streamName);
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl", null, streamName);
 
     runSync(catalog, messages2);
 
-    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, null, streamName);
   }
 
@@ -363,11 +372,46 @@ public abstract class BaseTypingDedupingTest {
         .build());
   }
 
+  /**
+   * Run a sync, then remove the {@code name} column from the schema and run a second sync. Verify
+   * that the final table doesn't contain the `name` column after the second sync.
+   */
   @Test
-  @Disabled("Not yet implemented")
   public void testIncrementalSyncDropOneColumn() throws Exception {
-    // TODO in incremental dedup mode: run a sync, remove a column from the schema, run another sync
-    // verify that the column is dropped from the destination table
+    final AirbyteStream stream = new AirbyteStream()
+        .withNamespace(streamNamespace)
+        .withName(streamName)
+        .withJsonSchema(SCHEMA);
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(stream)));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+    final JsonNode trimmedSchema = SCHEMA.deepCopy();
+    ((ObjectNode) trimmedSchema.get("properties")).remove("name");
+    stream.setJsonSchema(trimmedSchema);
+
+    runSync(catalog, messages2);
+
+    // The raw data is unaffected by the schema, but the final table should not have a `name` column.
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl").stream()
+        .peek(record -> ((ObjectNode) record).remove("name"))
+        .toList();
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Test
@@ -375,7 +419,7 @@ public abstract class BaseTypingDedupingTest {
   public void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
     // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using a stream with null
     // namespace:
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withCursorField(List.of("updated_at"))
@@ -396,9 +440,9 @@ public abstract class BaseTypingDedupingTest {
    */
   @Test
   public void incrementalDedupIdenticalName() throws Exception {
-    String namespace1 = streamNamespace + "_1";
-    String namespace2 = streamNamespace + "_2";
-    ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+    final String namespace1 = streamNamespace + "_1";
+    final String namespace2 = streamNamespace + "_2";
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
@@ -420,26 +464,26 @@ public abstract class BaseTypingDedupingTest {
 
     // First sync
     // Read the same set of messages for both streams
-    List<AirbyteMessage> messages1 = Stream.concat(
-        readMessages("sync1_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("sync1_messages.jsonl", namespace2, streamName).stream()).toList();
+    final List<AirbyteMessage> messages1 = Stream.concat(
+        readMessages("dat/sync1_messages.jsonl", namespace1, streamName).stream(),
+        readMessages("dat/sync1_messages.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages1);
 
-    List<JsonNode> expectedRawRecords1 = readRecords("sync1_expectedrecords_dedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords1 = readRecords("sync1_expectedrecords_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace1, streamName);
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace2, streamName);
 
     // Second sync
-    List<AirbyteMessage> messages2 = Stream.concat(
-        readMessages("sync2_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("sync2_messages.jsonl", namespace2, streamName).stream()).toList();
+    final List<AirbyteMessage> messages2 = Stream.concat(
+        readMessages("dat/sync2_messages.jsonl", namespace1, streamName).stream(),
+        readMessages("dat/sync2_messages.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages2);
 
-    List<JsonNode> expectedRawRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 = readRecords("sync2_expectedrecords_incremental_dedup_final.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace1, streamName);
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace2, streamName);
   }
@@ -451,6 +495,55 @@ public abstract class BaseTypingDedupingTest {
     // run another sync
     // We might want to write a test that verifies more general schema evolution (e.g. all valid
     // evolutions)
+  }
+
+  /**
+   * Change the cursor column in the second sync to a column that doesn't exist in the first sync.
+   * Verify that we overwrite everything correctly.
+   * <p>
+   * This essentially verifies that the destination connector correctly recognizes NULL cursors as
+   * older than non-NULL cursors.
+   */
+  @Test
+  public void incrementalDedupChangeCursor() throws Exception {
+    final JsonNode mangledSchema = SCHEMA.deepCopy();
+    ((ObjectNode) mangledSchema.get("properties")).remove("updated_at");
+    ((ObjectNode) mangledSchema.get("properties")).set(
+        "old_cursor",
+        Jsons.deserialize(
+            """
+            {"type": "integer"}
+            """));
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(List.of("old_cursor"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+        .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+        .withStream(new AirbyteStream()
+            .withNamespace(streamNamespace)
+            .withName(streamName)
+            .withJsonSchema(mangledSchema));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_cursorchange_messages.jsonl");
+
+    runSync(catalog, messages1);
+
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_cursorchange_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_cursorchange_expectedrecords_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+    configuredStream.getStream().setJsonSchema(SCHEMA);
+    configuredStream.setCursorField(List.of("updated_at"));
+
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_cursorchange_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_cursorchange_expectedrecords_incremental_dedup_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   @Test
@@ -476,34 +569,34 @@ public abstract class BaseTypingDedupingTest {
     // this test probably needs some configuration per destination to specify what values are supported?
   }
 
-  private void verifySyncResult(List<JsonNode> expectedRawRecords, List<JsonNode> expectedFinalRecords) throws Exception {
+  protected void verifySyncResult(final List<JsonNode> expectedRawRecords, final List<JsonNode> expectedFinalRecords) throws Exception {
     verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName);
   }
 
-  private void verifySyncResult(List<JsonNode> expectedRawRecords,
-                                List<JsonNode> expectedFinalRecords,
-                                String streamNamespace,
-                                String streamName)
+  private void verifySyncResult(final List<JsonNode> expectedRawRecords,
+                                final List<JsonNode> expectedFinalRecords,
+                                final String streamNamespace,
+                                final String streamName)
       throws Exception {
-    List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
-    List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
+    final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
+    final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
     DIFFER.verifySyncResult(expectedRawRecords, actualRawRecords, expectedFinalRecords, actualFinalRecords);
   }
 
-  private static List<JsonNode> readRecords(String filename) throws IOException {
+  public static List<JsonNode> readRecords(final String filename) throws IOException {
     return MoreResources.readResource(filename).lines()
         .map(String::trim)
         .filter(line -> !line.isEmpty())
         .filter(line -> !line.startsWith("//"))
-        .map(Jsons::deserialize)
+        .map(Jsons::deserializeExact)
         .toList();
   }
 
-  private List<AirbyteMessage> readMessages(String filename) throws IOException {
+  protected List<AirbyteMessage> readMessages(final String filename) throws IOException {
     return readMessages(filename, streamNamespace, streamName);
   }
 
-  private static List<AirbyteMessage> readMessages(String filename, String streamNamespace, String streamName) throws IOException {
+  private static List<AirbyteMessage> readMessages(final String filename, final String streamNamespace, final String streamName) throws IOException {
     return readRecords(filename).stream()
         .map(record -> Jsons.convertValue(record, AirbyteMessage.class))
         .peek(message -> {
@@ -527,7 +620,7 @@ public abstract class BaseTypingDedupingTest {
     Files.createDirectories(testDir);
     final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
-    Path localRoot = Files.createTempDirectory(testDir, "output");
+    final Path localRoot = Files.createTempDirectory(testDir, "output");
     processFactory = new DockerProcessFactory(
         workspaceRoot,
         workspaceRoot.toString(),
@@ -536,7 +629,11 @@ public abstract class BaseTypingDedupingTest {
         Collections.emptyMap());
   }
 
-  private void runSync(ConfiguredAirbyteCatalog catalog, List<AirbyteMessage> messages) throws Exception {
+  protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages) throws Exception {
+    runSync(catalog, messages, getImageName());
+  }
+
+  protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
     catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
@@ -547,7 +644,7 @@ public abstract class BaseTypingDedupingTest {
     final AirbyteDestination destination = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(
         "0",
         0,
-        getImageName(),
+        imageName,
         processFactory,
         null,
         null,

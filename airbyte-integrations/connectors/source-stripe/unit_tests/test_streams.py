@@ -2,9 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
+from source_stripe.availability_strategy import STRIPE_ERROR_CODES
 from source_stripe.streams import (
     ApplicationFees,
     ApplicationFeesRefunds,
@@ -27,11 +30,14 @@ from source_stripe.streams import (
     Invoices,
     PaymentIntents,
     Payouts,
+    Persons,
     Plans,
+    Prices,
     Products,
     PromotionCodes,
     Refunds,
     SetupIntents,
+    ShippingRates,
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
@@ -149,14 +155,8 @@ def test_sub_stream(requests_mock):
     ]
 
 
-@pytest.fixture(name="config")
-def config_fixture():
-    config = {"authenticator": "authenticator", "account_id": "<account_id>", "start_date": 1596466368}
-    return config
-
-
 @pytest.mark.parametrize(
-    "stream, kwargs, expected",
+    "stream_cls, kwargs, expected",
     [
         (ApplicationFees, {}, "application_fees"),
         (ApplicationFeesRefunds, {"stream_slice": {"refund_id": "fr"}}, "application_fees/fr/refunds"),
@@ -172,7 +172,9 @@ def config_fixture():
         (InvoiceLineItems, {"stream_slice": {"invoice_id": "I1"}}, "invoices/I1/lines"),
         (InvoiceItems, {}, "invoiceitems"),
         (Payouts, {}, "payouts"),
+        (Persons, {"stream_slice": {"id": "A1"}}, "accounts/A1/persons"),
         (Plans, {}, "plans"),
+        (Prices, {}, "prices"),
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
@@ -186,15 +188,19 @@ def config_fixture():
         (PromotionCodes, {}, "promotion_codes"),
         (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
         (SetupIntents, {}, "setup_intents"),
+        (ShippingRates, {}, "shipping_rates"),
     ],
 )
-def test_path(
-    stream,
+def test_path_and_headers(
+    stream_cls,
     kwargs,
     expected,
-    config,
+    stream_args,
 ):
-    assert stream(**config).path(**kwargs) == expected
+    stream = stream_cls(**stream_args)
+    assert stream.path(**kwargs) == expected
+    headers = stream.request_headers(**kwargs)
+    assert headers["Stripe-Version"] == "2022-11-15"
 
 
 @pytest.mark.parametrize(
@@ -232,6 +238,44 @@ def test_request_params(
     stream,
     kwargs,
     expected,
-    config,
+    stream_args,
 ):
-    assert stream(**config).request_params(**kwargs) == expected
+    assert stream(**stream_args).request_params(**kwargs) == expected
+
+
+@pytest.mark.parametrize(
+    "stream_cls",
+    (
+        ApplicationFees,
+        Customers,
+        BalanceTransactions,
+        Charges,
+        Coupons,
+        Disputes,
+        Events,
+        Invoices,
+        InvoiceItems,
+        Payouts,
+        Plans,
+        Prices,
+        Products,
+        Subscriptions,
+        SubscriptionSchedule,
+        Transfers,
+        Refunds,
+        PaymentIntents,
+        CheckoutSessions,
+        PromotionCodes,
+        ExternalAccount,
+        SetupIntents,
+        ShippingRates
+    )
+)
+def test_403_error_handling(stream_args, stream_cls, requests_mock):
+    stream = stream_cls(**stream_args)
+    logger = logging.getLogger("airbyte")
+    for error_code in STRIPE_ERROR_CODES:
+        requests_mock.get(f"{stream.url_base}{stream.path()}", status_code=403, json={"error": {"code": f"{error_code}"}})
+        available, message = stream.check_availability(logger)
+        assert not available
+        assert STRIPE_ERROR_CODES[error_code] in message

@@ -158,9 +158,7 @@ public class PostgresXminHandler {
                                                      final XminStatus currentXminStatus)
       throws SQLException {
 
-    if (prevRunXminStatus == null) {
-      throw new RuntimeException("XminStatus not found for table " + fullTableName + ", should have triggered a full sync via ctid path");
-    } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
+    if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
       // don't miss data associated with the current transaction, we have to issue an >=. Because of the
       // wraparound, the changes prior to the
@@ -180,7 +178,12 @@ public class PostgresXminHandler {
           wrappedColumnNames, fullTableName);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-      preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
+      if (prevRunXminStatus != null) {
+        preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
+      } else {
+        // In case ctid sync is not possible we will do the initial load using "WHERE xmin >= 0"
+        preparedStatement.setLong(1, 0L);
+      }
 
       return preparedStatement;
     }
@@ -189,7 +192,8 @@ public class PostgresXminHandler {
   @VisibleForTesting
   static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
     // Detect whether the source Postgres DB has undergone a single wraparound event.
-    return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
+    return prevRunXminStatus != null && currentXminStatus != null
+        && currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
   }
 
   public static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {

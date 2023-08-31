@@ -6,6 +6,7 @@ import json
 import re
 from typing import List, Literal, Optional, Union
 
+import dpath.util
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
@@ -68,6 +69,27 @@ class PineconeIndexingModel(BaseModel):
         }
 
 
+class ChromaLocalIndexingModel(BaseModel):
+    mode: Literal["chroma_local"] = Field("chroma_local", const=True)
+    destination_path: str = Field(
+        ...,
+        title="Destination Path",
+        description="Path to the directory where chroma files will be written. The files will be placed inside that local mount.",
+        examples=["/local/my_chroma_db"],
+    )
+    collection_name: str = Field(
+        title="Collection Name",
+        description="Name of the collection to use.",
+        default="langchain",
+    )
+
+    class Config:
+        title = "Chroma (local persistance)"
+        schema_extra = {
+            "description": "Chroma is a popular vector store that can be used to store and retrieve embeddings. It will build its index in memory and persist it to disk by the end of the sync."
+        }
+
+
 class DocArrayHnswSearchIndexingModel(BaseModel):
     mode: Literal["DocArrayHnswSearch"] = Field("DocArrayHnswSearch", const=True)
     destination_path: str = Field(
@@ -89,7 +111,7 @@ class ConfigModel(BaseModel):
     embedding: Union[OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
         ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
     )
-    indexing: Union[PineconeIndexingModel, DocArrayHnswSearchIndexingModel] = Field(
+    indexing: Union[PineconeIndexingModel, DocArrayHnswSearchIndexingModel, ChromaLocalIndexingModel] = Field(
         ..., title="Indexing", description="Indexing configuration", discriminator="mode", group="indexing", type="object"
     )
 
@@ -115,9 +137,15 @@ class ConfigModel(BaseModel):
         del pyschema["definitions"]
         return pyschema
 
+    @staticmethod
+    def remove_discriminator(schema: dict) -> None:
+        """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
+        dpath.util.delete(schema, "properties/*/discriminator")
+
     @classmethod
     def schema(cls):
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema()
         schema = cls.resolve_refs(schema)
+        cls.remove_discriminator(schema)
         return schema

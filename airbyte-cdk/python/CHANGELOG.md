@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.51.9
+[Issue #29660] Support empty keys with record selection
+
+## 0.51.8
+Add vector db CDK helpers
+
+## 0.51.7
+File-based CDK: allow user to provided column names for CSV files
+
+## 0.51.6
+File-based CDK: allow for extension mismatch
+
+## 0.51.5
+File-based CDK: Remove CSV noisy log
+
+## 0.51.4
+Source-S3 V4: feature parity rollout
+
+## 0.51.3
+File-based CDK: Do not stop processing files in slice on error
+
+## 0.51.2
+Check config against spec in embedded sources and remove list endpoint from connector builder module
+
+## 0.51.1
+low-code: allow formatting datetime as milliseconds since unix epoch
+
+## 0.51.0
+File-based CDK: handle legacy options
+
+## 0.50.2
+Fix title and description of datetime_format fields
+
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
+## 0.50.0
+Low code CDK: Decouple SimpleRetriever and HttpStream
+
+## 0.49.0
+Add utils for embedding sources in other Python applications
+
+## 0.48.0
+Relax pydantic version requirement and update to protocol models version 0.4.0
+
+## 0.47.5
+Support many format for cursor datetime
+
+## 0.47.4
+File-based CDK updates
+
+## 0.47.3
+Connector Builder: Ensure we return when there are no slices
+
+## 0.47.2
+low-code: deduplicate query params if they are already encoded in the URL
+
+## 0.47.1
+Fix RemoveFields transformation issue
+
+## 0.47.0
+Breaking change: Rename existing SessionTokenAuthenticator to LegacySessionTokenAuthenticator and make SessionTokenAuthenticator more generic
+
+## 0.46.1
+Connector builder: warn if the max number of records was reached
+
+## 0.46.0
+Remove pyarrow from main dependency and add it to extras
+
+## 0.45.0
+Fix pyyaml and cython incompatibility
+
 ## 0.44.4
 Connector builder: Show all request/responses as part of the testing panel
 

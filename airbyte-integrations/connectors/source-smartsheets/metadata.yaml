@@ -21,4 +21,8 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   tags:
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

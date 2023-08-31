@@ -10,6 +10,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,7 +35,7 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     configJson = KinesisDataFactory.jsonConfig(
         kinesisContainer.getEndpointOverride().toString(),
         kinesisContainer.getRegion(),
@@ -65,7 +66,7 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     kinesisStream.deleteAllStreams();
   }
 
@@ -94,11 +95,11 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    var stream = kinesisNameTransformer.streamName(namespace, streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final var stream = kinesisNameTransformer.streamName(namespace, streamName);
     return kinesisStream.getRecords(stream).stream()
         .sorted(Comparator.comparing(KinesisRecord::getTimestamp))
         .map(KinesisRecord::getData)

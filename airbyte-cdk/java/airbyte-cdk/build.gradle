@@ -1,0 +1,72 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group 'io.airbyte'
+
+// Version is dynamically loaded from version.properties file.
+def props = new Properties()
+file("src/main/resources/version.properties").withInputStream { props.load(it) }
+version = props.getProperty('version')
+description = "Airbyte Connector Development Kit (CDK) for Java."
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'io.airbyte'
+            artifactId = 'airbyte-cdk'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name 'cloudrepo'
+            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+            credentials {
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+            }
+        }
+    }
+}
+
+// Adds publishToMavenLocal as final command in the list of 'build' tasks.
+build.dependsOn(publishToMavenLocal)
+
+publishToMavenLocal {
+    // Always re-publish the artifact to MavenLocal
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        println "Running CDK publishToMavenLocal..."
+    }
+    doLast {
+        println "Finished CDK publishToMavenLocal."
+    }
+}
+
+// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
+task publishSnapshotIfNeeded {}
+
+if (version.endsWith("-SNAPSHOT")) {
+    logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
+    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
+} else {
+    logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+        showExceptions = true
+        showCauses = true
+        showStackTraces = false
+        events = ['passed', 'skipped', 'failed']
+    }
+}

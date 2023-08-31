@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.engine.DebeziumEngine;
@@ -41,14 +42,27 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                  final JsonNode config,
                                  final ConfiguredAirbyteCatalog catalog,
                                  final AirbyteFileOffsetBackingStore offsetManager,
-                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    this.debeziumPropertiesManager = new DebeziumPropertiesManager(properties, config, catalog, offsetManager,
+                                 final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager,
+                                 final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
+    this.debeziumPropertiesManager = createDebeziumPropertiesManager(debeziumConnectorType, properties, config, catalog, offsetManager,
         schemaHistoryManager);
     this.hasClosed = new AtomicBoolean(false);
     this.isClosing = new AtomicBoolean(false);
     this.thrownError = new AtomicReference<>();
     this.executor = Executors.newSingleThreadExecutor();
     this.engineLatch = new CountDownLatch(1);
+  }
+
+  private DebeziumPropertiesManager createDebeziumPropertiesManager(final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
+                                                                    final Properties properties,
+                                                                    final JsonNode config,
+                                                                    final ConfiguredAirbyteCatalog catalog,
+                                                                    final AirbyteFileOffsetBackingStore offsetManager,
+                                                                    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+    return switch (debeziumConnectorType) {
+      case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
+      default -> new RelationalDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
+    };
   }
 
   public void start(final BlockingQueue<ChangeEvent<String, String>> queue) {

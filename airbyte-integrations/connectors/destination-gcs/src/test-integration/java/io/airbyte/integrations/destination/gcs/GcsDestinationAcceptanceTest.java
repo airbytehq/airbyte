@@ -29,6 +29,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -160,7 +161,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
    * <li>Construct the GCS client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random GCS bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);

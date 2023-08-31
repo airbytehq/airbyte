@@ -1,5 +1,5 @@
 # CDK and Connector Acceptance Tests
-/airbyte-cdk/ @airbytehq/connector-extensibility
+/airbyte-cdk/python @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 /airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 

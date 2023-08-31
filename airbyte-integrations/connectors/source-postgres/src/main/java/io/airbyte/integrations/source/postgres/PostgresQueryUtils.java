@@ -38,6 +38,8 @@ public class PostgresQueryUtils {
 
   public record TableBlockSize(Long tableSize, Long blockSize) {}
 
+  public record ResultWithFailed<T> (T result, List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failed) {}
+
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresQueryUtils.class);
 
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
@@ -72,7 +74,7 @@ public class PostgresQueryUtils {
       """;
   public static final String MAX_CURSOR_VALUE_QUERY =
       """
-        SELECT %s FROM %s WHERE %s = (SELECT MAX(%s) FROM %s);
+        SELECT "%s" FROM %s WHERE "%s" = (SELECT MAX("%s") FROM %s);
       """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
@@ -132,30 +134,36 @@ public class PostgresQueryUtils {
    * @param database the source db
    * @param streams streams to be synced
    * @param stateManager stream stateManager
-   * @return
+   * @return Map of streams to statuses
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
-                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager) {
+                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager,
+                                                                                                          final String quoteString) {
 
     final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
     streams.forEach(stream -> {
       try {
         final String name = stream.getStream().getName();
         final String namespace = stream.getStream().getNamespace();
+        final String fullTableName =
+            getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
+
         final Optional<CursorInfo> cursorInfoOptional =
             stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name, namespace));
         if (cursorInfoOptional.isEmpty()) {
           throw new RuntimeException(String.format("Stream %s was not provided with an appropriate cursor", stream.getStream().getName()));
         }
 
+        LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
         final String cursorField = cursorInfoOptional.get().getCursorField();
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             cursorField,
-            name,
+            fullTableName,
             cursorField,
             cursorField,
-            name);
+            fullTableName);
+        LOGGER.debug("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
@@ -170,7 +178,7 @@ public class PostgresQueryUtils {
           cursorBasedStatus.setCursor(result.get(cursorField).asText());
           cursorBasedStatus.setCursorRecordCount((long) jsonNodes.size());
         }
-        
+
         cursorBasedStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), cursorBasedStatus);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
@@ -180,41 +188,52 @@ public class PostgresQueryUtils {
     return cursorBasedStatusMap;
   }
 
-  public static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
-                                                                             final List<ConfiguredAirbyteStream> streams,
-                                                                             final String quoteString) {
+  public static ResultWithFailed<Map<AirbyteStreamNameNamespacePair, Long>> fileNodeForStreams(final JdbcDatabase database,
+                                                                                               final List<ConfiguredAirbyteStream> streams,
+                                                                                               final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
+    final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery = new ArrayList<>();
     streams.forEach(stream -> {
-      final AirbyteStreamNameNamespacePair namespacePair =
-          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final long l = fileNodeForStreams(database, namespacePair, quoteString);
-      fileNodes.put(namespacePair, l);
+      try {
+        final AirbyteStreamNameNamespacePair namespacePair =
+            new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+        final Optional<Long> fileNode = fileNodeForStreams(database, namespacePair, quoteString);
+        fileNode.ifPresentOrElse(
+            l -> fileNodes.put(namespacePair, l),
+            () -> failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
+      } catch (final Exception e) {
+        LOGGER.warn("Failed to fetch relation node for {}.{} .", stream.getStream().getNamespace(), stream.getStream().getName(), e);
+        failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
+      }
     });
-    return fileNodes;
+    return new ResultWithFailed<>(fileNodes, failedToQuery);
   }
 
-  public static long fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString) {
-    try {
-      final String streamName = stream.getName();
-      final String schemaName = stream.getNamespace();
-      final String fullTableName =
-          getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
-      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
-          conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
-          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-      Preconditions.checkState(jsonNodes.size() == 1);
-      final long relationFilenode = jsonNodes.get(0).get("pg_relation_filenode").asLong();
+  public static Optional<Long> fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString)
+      throws SQLException {
+    final String streamName = stream.getName();
+    final String schemaName = stream.getNamespace();
+    final String fullTableName =
+        getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+        conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    Long relationFilenode = null;
+    if (!jsonNodes.get(0).isEmpty()) {
+      relationFilenode = jsonNodes.get(0).get("pg_relation_filenode").asLong();
       LOGGER.info("Relation filenode is for stream {} is {}", fullTableName, relationFilenode);
-      return relationFilenode;
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
+    } else {
+      LOGGER.debug("No filenode found for {}", fullTableName);
     }
+    return Optional.ofNullable(relationFilenode);
   }
 
-  public static List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum(final JdbcDatabase database,
-                                                                                                      final List<ConfiguredAirbyteStream> streams,
-                                                                                                      final String quoteString) {
+  public static ResultWithFailed<List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair>> streamsUnderVacuum(final JdbcDatabase database,
+                                                                                                                        final List<ConfiguredAirbyteStream> streams,
+                                                                                                                        final String quoteString) {
     final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuuming = new ArrayList<>();
+    final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery = new ArrayList<>();
     streams.forEach(stream -> {
       final String streamName = stream.getStream().getName();
       final String schemaName = stream.getStream().getNamespace();
@@ -230,17 +249,18 @@ public class PostgresQueryUtils {
               jsonNodes.get(0).get("phase"));
           streamsUnderVacuuming.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
         }
-      } catch (final SQLException e) {
+      } catch (final Exception e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
-        LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
+        LOGGER.warn("Failed to fetch vacuum for table {} info", fullTableName, e);
+        failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
       }
     });
-    return streamsUnderVacuuming;
+    return new ResultWithFailed<>(streamsUnderVacuuming, failedToQuery);
   }
 
-  public static Map<AirbyteStreamNameNamespacePair, TableBlockSize> getTableBlockSizeForStream(final JdbcDatabase database,
-                                                                                               final List<ConfiguredAirbyteStream> streams,
-                                                                                               final String quoteString) {
+  public static Map<AirbyteStreamNameNamespacePair, TableBlockSize> getTableBlockSizeForStreams(final JdbcDatabase database,
+                                                                                                final List<ConfiguredAirbyteStream> streams,
+                                                                                                final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -282,7 +302,7 @@ public class PostgresQueryUtils {
    */
   public static List<ConfiguredAirbyteStream> filterStreamsUnderVacuumForCtidSync(final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum,
                                                                                   final CtidStreams ctidStreams) {
-    return streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
+    return streamsUnderVacuum.isEmpty() ? List.copyOf(ctidStreams.streamsForCtidSync())
         : ctidStreams.streamsForCtidSync().stream()
             .filter(c -> !streamsUnderVacuum.contains(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
             .toList();

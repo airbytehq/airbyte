@@ -13,6 +13,5 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 
-
-LABEL io.airbyte.version=3.11.0
+LABEL io.airbyte.version=3.17.4
 LABEL io.airbyte.name=airbyte/source-stripe

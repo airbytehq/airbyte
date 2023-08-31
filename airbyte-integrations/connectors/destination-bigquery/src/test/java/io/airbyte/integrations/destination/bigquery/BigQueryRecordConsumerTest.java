@@ -10,10 +10,9 @@ import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -24,6 +23,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,14 +40,15 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
   public void setup() {
     DestinationConfig.initialize(Jsons.deserialize("{}"));
 
+    ParsedCatalog parsedCatalog = new ParsedCatalog(Collections.emptyList());
+    BigQueryV1V2Migrator migrator = Mockito.mock(BigQueryV1V2Migrator.class);
     bigQueryRecordConsumer = new BigQueryRecordConsumer(
         mock(BigQuery.class),
         uploaderMap,
         outputRecordCollector,
         "test-dataset-id",
-        mock(BigQuerySqlGenerator.class),
-        mock(BigQueryDestinationHandler.class),
-        new CatalogParser.ParsedCatalog(Collections.emptyList()));
+        new NoopTyperDeduper(),
+        parsedCatalog);
   }
 
   @Override

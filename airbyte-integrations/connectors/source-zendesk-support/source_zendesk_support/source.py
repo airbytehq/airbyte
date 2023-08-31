@@ -40,6 +40,8 @@ from .streams import (
     TicketMetrics,
     Tickets,
     TicketSkips,
+    Topics,
+    UserFields,
     Users,
     UserSettingsStream,
 )
@@ -140,10 +142,12 @@ class SourceZendeskSupport(AbstractSource):
             TicketMetricEvents(**args),
             TicketSkips(**args),
             Tickets(**args),
+            Topics(**args),
             Users(**args),
             Brands(**args),
             CustomRoles(**args),
             Schedules(**args),
+            UserFields(**args),
         ]
         ticket_forms_stream = TicketForms(**args)
         account_attributes = AccountAttributes(**args)

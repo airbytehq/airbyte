@@ -125,23 +125,13 @@ public final class PostgresCatalogHelper {
     return publicizedTables;
   }
 
-  /**
-   * This method is used for xmin syncs in order to overwrite sync modes for cursor fields. For xmin, we want streams to only have incremental mode
-   * enabled.
-   *
-   * @param stream - airbyte stream
-   * @return will return list of sync modes
-   */
-  public static AirbyteStream overrideSyncModesForXmin(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL));
-  }
-
   /*
-   * To prepare for Destination v2, cdc streams must have a default cursor field
-   * this defaults to lsn as a cursor as it is monotonically increasing and unique
+   * To prepare for Destination v2, cdc streams must have a default cursor field this defaults to lsn
+   * as a cursor as it is monotonically increasing and unique
    */
   public static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
     stream.setDefaultCursorField(ImmutableList.of(CDC_LSN));
     return stream;
   }
+
 }

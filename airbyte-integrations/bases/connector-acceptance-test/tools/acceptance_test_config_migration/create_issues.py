@@ -52,7 +52,7 @@ def get_issue_content(source_definition) -> Optional[Dict[Text, Any]]:
     # TODO: Make list of variables to render, and how to render them, configurable
     issue_body = template.render(
         connector_name=source_definition["name"],
-        release_stage=source_definition["releaseStage"],
+        support_level=source_definition["supportLevel"],
         test_failure_logs=get_test_failure_logs(source_definition),
     )
     file_definition, issue_body_path = tempfile.mkstemp()

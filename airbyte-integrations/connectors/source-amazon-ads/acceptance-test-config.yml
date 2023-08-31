@@ -50,7 +50,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: 2.1.0
+          disable_for_version: 2.3.1
   full_refresh:
     tests:
       - config_path: secrets/config.json

@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -125,29 +125,22 @@ class Requester(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def request_kwargs(
+    def send_request(
         self,
-        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
         """
-        Returns a mapping of keyword arguments to be used when creating the HTTP request.
-        Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
-        this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
-        """
+        Sends a request and returns the response. Might return no response if the error handler chooses to ignore the response or throw an exception in case of an error.
+        If path is set, the path configured on the requester itself is ignored.
+        If header, params and body are set, they are merged with the ones configured on the requester itself.
 
-    @property
-    @abstractmethod
-    def cache_filename(self) -> str:
-        """
-        Return the name of cache file
-        """
-
-    @property
-    @abstractmethod
-    def use_cache(self) -> bool:
-        """
-        If True, all records will be cached.
+        If a log formatter is provided, it's used to log the performed request and response. If it's not provided, no logging is performed.
         """

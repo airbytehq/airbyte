@@ -19,7 +19,7 @@
     "metadata": {
       "type": ["null", "array"],
       "items": {
-        "type" : "string"
+        "type": "string"
       }
     },
     "connections": {

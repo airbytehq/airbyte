@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -9,9 +14,11 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
+import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
@@ -51,12 +58,12 @@ public class PostgresCdcCtidInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcCtidInitializer.class);
 
   public static List<AutoCloseableIterator<AirbyteMessage>> cdcCtidIteratorsCombined(final JdbcDatabase database,
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-      final StateManager stateManager,
-      final Instant emittedAt,
-      final String quoteString,
-      final JsonNode replicationSlot) {
+                                                                                     final ConfiguredAirbyteCatalog catalog,
+                                                                                     final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+                                                                                     final StateManager stateManager,
+                                                                                     final Instant emittedAt,
+                                                                                     final String quoteString,
+                                                                                     final JsonNode replicationSlot) {
     try {
       final JsonNode sourceConfig = database.getSourceConfig();
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
@@ -105,14 +112,14 @@ public class PostgresCdcCtidInitializer {
       }
       final CdcState stateToBeUsed = (!savedOffsetAfterReplicationSlotLSN || stateManager.getCdcStateManager().getCdcState() == null
           || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
-          : stateManager.getCdcStateManager().getCdcState();
+              : stateManager.getCdcStateManager().getCdcState();
       final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
           savedOffsetAfterReplicationSlotLSN);
       final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
       if (!ctidStreams.streamsForCtidSync().isEmpty()) {
         streamsUnderVacuum.addAll(streamsUnderVacuum(database,
-            ctidStreams.streamsForCtidSync(), quoteString));
+            ctidStreams.streamsForCtidSync(), quoteString).result());
 
         final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
             streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
@@ -120,22 +127,24 @@ public class PostgresCdcCtidInitializer {
                     .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                     .toList();
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
-            finalListOfStreamsToBeSyncedViaCtid,
-            quoteString);
-        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes, stateToBeUsed, catalog);
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
+        final ResultWithFailed<Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long>> fileNodes =
+            PostgresQueryUtils.fileNodeForStreams(database,
+                finalListOfStreamsToBeSyncedViaCtid,
+                quoteString);
+        final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodes.result(), stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(
                 emittedAt.toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-            PostgresQueryUtils.getTableBlockSizeForStream(
+            PostgresQueryUtils.getTableBlockSizeForStreams(
                 database,
                 finalListOfStreamsToBeSyncedViaCtid,
                 quoteString);
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
             ctidPostgresSourceOperations,
             quoteString,
-            fileNodes,
+            fileNodes.result(),
             tableBlockSizes,
             ctidStateManager,
             namespacePair -> Jsons.emptyObject());
@@ -155,6 +164,7 @@ public class PostgresCdcCtidInitializer {
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
           false);
 
@@ -163,8 +173,10 @@ public class PostgresCdcCtidInitializer {
       }
 
       if (streamsUnderVacuum.isEmpty()) {
-        // This starts processing the WAL as soon as initial sync is complete, this is a bit different from the current cdc syncs.
-        // We finish the current CDC once the initial snapshot is complete and the next sync starts processing the WAL
+        // This starts processing the WAL as soon as initial sync is complete, this is a bit different from
+        // the current cdc syncs.
+        // We finish the current CDC once the initial snapshot is complete and the next sync starts
+        // processing the WAL
         return Stream
             .of(ctidIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
             .flatMap(Collection::stream)
@@ -178,4 +190,5 @@ public class PostgresCdcCtidInitializer {
       throw new RuntimeException(e);
     }
   }
+
 }

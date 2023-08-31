@@ -1,0 +1,17 @@
+{
+  "start_date": "2021-01-01",
+  "account_ids": [],
+  "credentials": {
+    "auth_method": "oAuth2.0",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "ad_analytics_reports": [
+    {
+      "name": "CreativeAdByMonth",
+      "pivot_by": "not_in_enum",
+      "time_granularity": "MONTHLY"
+    }
+  ]
+}

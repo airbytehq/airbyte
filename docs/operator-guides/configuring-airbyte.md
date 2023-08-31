@@ -15,14 +15,12 @@ If you want to manage your own docker files, please refer to Airbyte's docker fi
 
 ## Kubernetes Deployments
 
-The recommended way to run an Airbyte Kubernetes deployment is via the `Kustomize` overlays.
+The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
 
-We recommend using the overlays in the `stable` directory as these have preset resource limits.
+To configure the  Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
+Each application will consume the appropriate values from that file.
 
-To configure the default Airbyte Kubernetes deployment, modify the `.env` in the respective directory. Each application will consume the appropriate
-env var from a generated configmap.
-
-If you want to manage your own Kube manifests, please refer to the various `Kustomize` overlays for examples.
+If you want to manage your own Kube manifests, please refer to the `Helm Chart`.
 
 ## Reference
 
@@ -80,16 +78,23 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 1. `TEMPORAL_HOST` - Define the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Define the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
-3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information.
+3. `WEBAPP_URL` - Define the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
 
 #### Jobs
 
-1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing.
-2. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
-3. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-4. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-5. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-6. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing. *Legacy - this is superseded by the values below*
+2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
+3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which no data was synchronized before failing the job.
+4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds between failed attempts in which no data was synchronized.
+5. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MAX_INTERVAL_S` - Defines the maximum backoff interval in seconds between failed attempts in which no data was synchronized.
+6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval between failed attempts in which no data was synchronized.
+7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the max number of attempts in which some data was synchronized before failing the job.
+8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which some data was synchronized before failing the job.
+9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
+10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 
 #### Logging
 
@@ -112,7 +117,7 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 #### Data Retention
 
-1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker, 
+1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker,
    this same value is applied to the log retention.
 
 ### Docker-Only
@@ -149,13 +154,13 @@ A job specific variable overwrites the default sync job variable defined above.
 
 #### Worker
 
-1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
+1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
 
 #### Logging
 
 Note that Airbyte does not support logging to separate Cloud Storage providers.
 
-Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kubernetes logging.
+Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes-via-helm#configure-logs) for more information on configuring Kubernetes logging.
 
 1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
 2. `S3_BUCKET` - Define the S3 bucket to store logs.
