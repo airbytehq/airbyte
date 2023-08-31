@@ -5,7 +5,8 @@
 import concurrent
 import concurrent.futures
 import logging
-from typing import Callable, Iterable, List, Optional
+from concurrent.futures import Future
+from typing import Any, Callable, Iterable, List, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
@@ -63,10 +64,10 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
                     yield self._slice_logger.create_slice_log_message(partition.slice)
         self._check_for_errors(stream, futures)
 
-    def _is_done(self, futures):
+    def _is_done(self, futures: List[Future[Any]]) -> bool:
         return all(future.done() for future in futures)
 
-    def _check_for_errors(self, stream: Stream, futures) -> None:
+    def _check_for_errors(self, stream: Stream, futures: List[Future[Any]]) -> None:
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
         if exceptions_from_futures:
             raise RuntimeError(f"Failed reading from stream {stream.name} with errors: {exceptions_from_futures}")

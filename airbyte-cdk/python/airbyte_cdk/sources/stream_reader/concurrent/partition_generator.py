@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class PartitionGenerator:
-    def __init__(self, queue: Optional[Queue[Optional[StreamPartition]]] = None):
+    def __init__(self, queue: Optional[Queue[StreamPartition]] = None):
         self._queue = queue if queue else Queue()
         self._futures: List[Future[None]] = []
 
@@ -26,10 +26,10 @@ class PartitionGenerator:
     def has_next(self) -> bool:
         return self._queue.qsize() > 0
 
-    def __iter__(self):
+    def __iter__(self) -> "PartitionGenerator":
         return self
 
-    def __next__(self):
+    def __next__(self) -> StreamPartition:
         if self._queue.qsize() > 0:
             return self._queue.get()
         else:
