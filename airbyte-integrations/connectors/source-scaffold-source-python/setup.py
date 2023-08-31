@@ -9,11 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = [
-    "requests-mock~=1.9.3",
-    "pytest-mock~=3.6.1",
-    "pytest~=6.2"
-]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.2"]
 
 setup(
     name="source_scaffold_source_python",
