@@ -5,18 +5,13 @@
 package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.destination.typing_deduping.FutureUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -91,37 +86,6 @@ public class GeneralStagingFunctions {
     }
   }
 
-  private static CompletableFuture<Optional<Exception>> dropStageTask(final WriteConfig writeConfig,
-                                                                      final StagingOperations stagingOperations,
-                                                                      final boolean purgeStagingData,
-                                                                      final JdbcDatabase database) {
-    return CompletableFuture.supplyAsync(() -> {
-      try {
-        final String schemaName = writeConfig.getOutputSchemaName();
-        if (purgeStagingData) {
-          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-          log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-              stageName);
-          stagingOperations.dropStageIfExists(database, stageName);
-        }
-        return Optional.empty();
-      } catch (Exception e) {
-        return Optional.of(e);
-      }
-    });
-  }
-
-  private static CompletableFuture<Optional<Exception>> typeAndDedupeTask(final WriteConfig writeConfig, final TyperDeduper typerDeduper) {
-    return CompletableFuture.supplyAsync(() -> {
-      try {
-        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
-        return Optional.empty();
-      } catch (Exception e) {
-        return Optional.of(e);
-      }
-    });
-  }
-
   /**
    * Tear down process, will attempt to try to clean out any staging area
    *
@@ -137,16 +101,19 @@ public class GeneralStagingFunctions {
                                                 final boolean purgeStagingData,
                                                 final TyperDeduper typerDeduper) {
     return (hasFailed) -> {
-      // After moving data from staging area to the target table (airbyte_raw) clean up the staging
+      // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       log.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      final Set<CompletableFuture<Optional<Exception>>> closingTasks = new HashSet<>();
+      typerDeduper.typeAndDedupe();
       for (final WriteConfig writeConfig : writeConfigs) {
-        closingTasks.add(dropStageTask(writeConfig, stagingOperations, purgeStagingData, database));
-        closingTasks.add(typeAndDedupeTask(writeConfig, typerDeduper));
+        final String schemaName = writeConfig.getOutputSchemaName();
+        if (purgeStagingData) {
+          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+          log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
+              stageName);
+          stagingOperations.dropStageIfExists(database, stageName);
+        }
       }
-      CompletableFuture.allOf(closingTasks.toArray(CompletableFuture[]::new)).join();
-      FutureUtils.reduceExceptions(closingTasks, "Exceptions thrown while closing streams: ");
       typerDeduper.commitFinalTables();
       log.info("Cleaning up destination completed.");
     };

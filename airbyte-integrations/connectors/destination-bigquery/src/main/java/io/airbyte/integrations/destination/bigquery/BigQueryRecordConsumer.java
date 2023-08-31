@@ -20,14 +20,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -123,42 +117,20 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // https://github.com/airbytehq/airbyte/issues/27586
   }
 
-  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(final AirbyteStreamNameNamespacePair streamId,
-                                                                     final ExecutorService executorService) {
-    return CompletableFuture.supplyAsync(() -> {
-      try {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        return Optional.empty();
-      } catch (Exception e) {
-        return Optional.of(e);
-      }
-    }, executorService);
-  }
-
   @Override
   public void close(final boolean hasFailed) throws Exception {
     LOGGER.info("Started closing all connections");
-    final ExecutorService executorService = Executors.newFixedThreadPool(8);
     final List<Exception> exceptionsThrown = new ArrayList<>();
-    final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
+    typerDeduper.typeAndDedupe();
+    typerDeduper.commitFinalTables();
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        typeAndDedupeTasks.add(typeAndDedupeFuture(streamId, executorService));
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }
     });
-    // Kick off all the typing and deduping tasks in parallel, wait for them all to finish
-    CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
-    // All the typing and deduping tasks should now be finished, report any exceptions thrown.
-    typeAndDedupeTasks.stream()
-        .map(CompletableFuture::join)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .forEach(exception -> exceptionsThrown.add(exception));
-    typerDeduper.commitFinalTables();
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
     }

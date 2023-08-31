@@ -10,6 +10,9 @@ public interface TyperDeduper {
 
   void typeAndDedupe(String originalNamespace, String originalName) throws Exception;
 
+  void typeAndDedupe() throws Exception;
+
   void commitFinalTables() throws Exception;
+
 
 }

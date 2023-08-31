@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
   private final ExecutorService executorService;
 
+  private static final int MAX_THREADS = 16;
+
   public DefaultTyperDeduper(final SqlGenerator<DialectTableDefinition> sqlGenerator,
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
@@ -63,7 +66,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
     this.streamsWithSuccessfulSetup = new ConcurrentHashMap<>();
-    this.executorService = Executors.newFixedThreadPool(8);
+    this.executorService = Executors.newFixedThreadPool(MAX_THREADS, new BasicThreadFactory.Builder().namingPattern("type-and-dedupe").build());
   }
 
   public DefaultTyperDeduper(
@@ -160,6 +163,41 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     final String suffix = getFinalTableSuffix(streamConfig.id());
     final String sql = sqlGenerator.updateTable(streamConfig, suffix);
     destinationHandler.execute(sql);
+  }
+
+  public CompletableFuture<Optional<Exception>> typeAndDedupeTask(StreamConfig streamConfig) {
+    return CompletableFuture.supplyAsync(() -> {
+      final var originalNamespace = streamConfig.id().originalNamespace();
+      final var originalName = streamConfig.id().originalName();
+      try {
+        if (!streamsWithSuccessfulSetup.containsKey(new Pair<>(originalNamespace, originalName))) {
+          // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
+          // we should skip it.
+          LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
+                      originalName
+          );
+          return Optional.empty();
+        }
+        final String suffix = getFinalTableSuffix(streamConfig.id());
+        final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+        destinationHandler.execute(sql);
+        return Optional.empty();
+      } catch (Exception e) {
+        LOGGER.error("Exception occurred while typing and deduping stream " + originalName, e);
+        return Optional.of(e);
+      }
+    }, this.executorService);
+  }
+
+  @Override
+  public void typeAndDedupe() throws Exception {
+    LOGGER.info("Typing and deduping all tables");
+    final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
+    parsedCatalog.streams().forEach(streamConfig -> {
+      typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig));
+    });
+    CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
+    reduceExceptions(typeAndDedupeTasks, "The Following Exceptions were thrown while typing and deduping tables:\n");
   }
 
   /**
