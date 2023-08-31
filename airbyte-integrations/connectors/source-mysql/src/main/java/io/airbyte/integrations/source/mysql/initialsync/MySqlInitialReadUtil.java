@@ -18,7 +18,6 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
@@ -149,13 +148,14 @@ public class MySqlInitialReadUtil {
     final AirbyteDebeziumHandler<MySqlCdcPosition> handler =
         new AirbyteDebeziumHandler<>(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime, OptionalInt.empty());
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
-        new MySqlCdcSavedInfoFetcher(stateToBeUsed),
-        new MySqlCdcStateHandler(stateManager),
-        metadataInjector,
-        MySqlCdcProperties.getDebeziumProperties(database),
-        emittedAt,
-        false);
+    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier =
+        () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
+            new MySqlCdcSavedInfoFetcher(stateToBeUsed),
+            new MySqlCdcStateHandler(stateManager),
+            metadataInjector,
+            MySqlCdcProperties.getDebeziumProperties(database),
+            emittedAt,
+            false);
 
     // This starts processing the binglogs as soon as initial sync is complete, this is a bit different
     // from the current cdc syncs.

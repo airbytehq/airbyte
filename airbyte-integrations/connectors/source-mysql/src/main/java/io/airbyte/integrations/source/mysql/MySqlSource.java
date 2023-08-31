@@ -38,7 +38,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
@@ -350,13 +349,14 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
-          new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
-          new MySqlCdcStateHandler(stateManager),
-          mySqlCdcConnectorMetadataInjector,
-          MySqlCdcProperties.getDebeziumProperties(database),
-          emittedAt,
-          false);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier =
+          () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
+              new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
+              new MySqlCdcStateHandler(stateManager),
+              mySqlCdcConnectorMetadataInjector,
+              MySqlCdcProperties.getDebeziumProperties(database),
+              emittedAt,
+              false);
 
       if (streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());

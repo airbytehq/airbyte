@@ -145,4 +145,5 @@ public class MongoDbCdcInitializer {
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
+
 }

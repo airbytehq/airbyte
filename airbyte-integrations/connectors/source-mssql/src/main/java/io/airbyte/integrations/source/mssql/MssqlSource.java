@@ -32,7 +32,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -459,12 +458,13 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
       final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
-      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
-          new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager),
-          mssqlCdcConnectorMetadataInjector,
-          MssqlCdcHelper.getDebeziumProperties(database, catalog),
-          emittedAt, true);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier =
+          () -> handler.getRelationalDatabaseIncrementalIterator(catalog,
+              new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+              new MssqlCdcStateHandler(stateManager),
+              mssqlCdcConnectorMetadataInjector,
+              MssqlCdcHelper.getDebeziumProperties(database, catalog),
+              emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {

@@ -95,7 +95,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     return properties;
   }
 
-  private String createFieldsToExcludeString(final Set<CollectionAndField>  fieldsToExclude, final String databaseName) {
+  private String createFieldsToExcludeString(final Set<CollectionAndField> fieldsToExclude, final String databaseName) {
     return fieldsToExclude.stream()
         .map(field -> databaseName + "." + field.collection() + "." + field.field())
         .collect(Collectors.joining(","));
