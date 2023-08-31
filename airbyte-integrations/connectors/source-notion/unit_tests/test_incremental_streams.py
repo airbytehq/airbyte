@@ -66,28 +66,6 @@ def test_get_updated_state(stream, is_finished, current_stream_state, latest_rec
     state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
     assert state["last_edited_time"].value == expected_state
 
-# def test_get_updated_state(stream):
-#     stream.is_finished = False
-
-#     inputs = {
-#         "current_stream_state": {"last_edited_time": "2021-10-10T00:00:00.000Z"},
-#         "latest_record": {"last_edited_time": "2021-10-20T00:00:00.000Z"},
-#     }
-#     expected_state = "2021-10-10T00:00:00.000Z"
-#     state = stream.get_updated_state(**inputs)
-#     assert state["last_edited_time"].value == expected_state
-
-#     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
-#     state = stream.get_updated_state(**inputs)
-#     assert state["last_edited_time"].value == expected_state
-
-#     # after stream sync is finished, state should output the max cursor time
-#     stream.is_finished = True
-#     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
-#     expected_state = "2021-10-30T00:00:00.000Z"
-#     state = stream.get_updated_state(**inputs)
-#     assert state["last_edited_time"].value == expected_state
-
 
 def test_stream_slices(blocks, requests_mock):
     stream = blocks
