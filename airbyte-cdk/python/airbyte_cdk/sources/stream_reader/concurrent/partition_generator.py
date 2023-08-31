@@ -19,12 +19,11 @@ class PartitionGenerator:
     def generate_partitions_for_stream(
         self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_reader: FullRefreshStreamReader
     ) -> None:
-        print(f"generate_partitions_for_stream for stream {stream.name}")
+        stream.logger.debug(f"Generating partitions for stream {stream.name}")
         for partition in stream.generate_partitions(sync_mode=sync_mode, cursor_field=cursor_field, stream_reader=stream_reader):
-            print(f"putting partition and stream on queue for {partition}. stream: {stream.name}")
             stream_partition = StreamPartition(stream, partition, cursor_field)
             self._queue.put(stream_partition)
-        print(f"done. queue size: {self._queue.qsize()}")
+        stream.logger.debug(f"Done generating partitions for stream {stream.name}")
 
     def generate_partitions_async(
         self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]], executor, stream_reader: FullRefreshStreamReader

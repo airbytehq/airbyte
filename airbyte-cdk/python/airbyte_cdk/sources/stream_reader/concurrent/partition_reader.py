@@ -18,7 +18,7 @@ class PartitionReader:
         self._queue_consumer_futures = []
 
     def process_partition(self, partition: StreamPartition) -> None:
-        print(f"Processing partition={partition}")
+        partition.stream.logger.debug(f"Processing partition={partition}")
         for record in partition.stream.read_records(
             stream_slice=partition.slice, sync_mode=SyncMode.full_refresh, cursor_field=partition.cursor_field
         ):

@@ -24,7 +24,6 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
         max_workers: int,
         slice_logger: SliceLogger,
     ):
-        # FIXME: need to either create them when reading, or reset them at the end of the read...
         self._partitions_generator_provider = partition_generator_provider
         self._partition_reader_provider = partition_reader_provider
         self._max_workers = max_workers
@@ -47,7 +46,6 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
             # While there is a partition to process
             while partition_reader.there_are_records_ready():
                 record = partition_reader.get_next_record()
-                # print(f"found record to process: {record}")
                 yield record.stream_data
                 if FullRefreshStreamReader.is_record(record.stream_data):
                     total_records_counter += 1
@@ -55,14 +53,11 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
                         return
             while partition_generator.there_are_partitions_ready():
                 partition = partition_generator.get_next_partition()
-                print(f"found partition to process: {partition}")
                 partition_reader.process_partition_async(partition, self._threadpool)
-                print(f"processing partition {partition} for {stream.name}")
                 if self._slice_logger.should_log_slice_message(logger):
                     # FIXME: This is creating slice log messages for parity with the synchronous implementation
                     # but these cannot be used by the connector builder to build slices because they can be unordered
                     yield self._slice_logger.create_slice_log_message(partition.slice)
-            print(f"futures: {partition_generator._futures}")
             self._check_for_errors(partition_generator, partition_reader, stream)
 
     def _check_for_errors(self, partition_generator: PartitionGenerator, partition_reader: PartitionReader, stream: Stream) -> None:
