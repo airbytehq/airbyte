@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,8 @@ public class MongoDbCdcInitializer {
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
-                                                                        final JsonNode config) {
+                                                                        final JsonNode config,
+                                                                        final BsonDocument resumeToken) {
 
     final Duration firstRecordWaitTime = Duration.ofMinutes(5); // TODO get from connector config?
     final OptionalInt queueSize = OptionalInt.empty(); // TODO get from connector config?
@@ -103,7 +105,7 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
-    final boolean savedOffsetAfterResumeToken = mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(mongoClient, savedOffset);
+    final boolean savedOffsetAfterResumeToken = mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffset);
 
     if (!savedOffsetAfterResumeToken) {
       LOGGER.warn("Saved offset is before most recent resume token. Airbyte will trigger a full refresh.");

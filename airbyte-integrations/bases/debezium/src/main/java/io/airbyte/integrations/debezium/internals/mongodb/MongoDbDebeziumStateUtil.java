@@ -90,20 +90,18 @@ public class MongoDbDebeziumStateUtil {
   /**
    * Test whether the retrieved saved offset value is after the resume token.
    *
-   * @param mongoClient The {@link MongoClient} used to retrieve the current resume token value.
+   * @param resumeToken The resume token that will be used as the starting point for Debezium.
    * @param savedOffset The saved offset value.
    * @return {@code true} if the saved offset value is after the retrieved resume token value or if
    *         the provided saved offset value is not present. Otherwise, {@code false} is returned if
    *         the saved offset value precedes the resume token value.
    */
-  public boolean isSavedOffsetAfterResumeToken(final MongoClient mongoClient, final OptionalLong savedOffset) {
+  public boolean isSavedOffsetAfterResumeToken(final BsonDocument resumeToken, final OptionalLong savedOffset) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
     }
 
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
     final BsonTimestamp currentTimestamp = ResumeTokens.getTimestamp(resumeToken);
-
     return savedOffset.getAsLong() >= currentTimestamp.getValue();
   }
 

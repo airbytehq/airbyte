@@ -16,6 +16,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcInitializer;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
@@ -96,7 +97,8 @@ public class MongoDbSource extends BaseConnector implements Source {
     final MongoClient mongoClient = createMongoClient(config);
 
     try {
-      final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config);
+      final var resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
+      final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config, resumeToken);
       return AutoCloseableIterators
           .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList,
               AirbyteTraceMessageUtility::emitStreamStatusTrace),

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium.internals.mongodb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -115,6 +116,19 @@ class MongoDbDebeziumStateUtilTest {
     assertNotNull(offsetState);
     assertEquals("[\"" + DATABASE + "\",{\"" + MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET + "\":\"" + REPLICA_SET + "\",\""
         + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + DATABASE + "\"}]", offsetState.fieldNames().next());
+  }
+
+  @Test
+  void testSavedOffsetAfterResumeToken() {
+    final BsonDocument resumeToken = ResumeTokens.fromData(RESUME_TOKEN);
+    final long resumeTokenTimestamp = ResumeTokens.getTimestamp(resumeToken).getValue();
+    final OptionalLong savedOffsetAfter = OptionalLong.of(resumeTokenTimestamp + 1);
+    final OptionalLong savedOffsetBefore = OptionalLong.of(resumeTokenTimestamp - 1);
+    final OptionalLong savedOffsetEquals = OptionalLong.of(resumeTokenTimestamp);
+
+    assertTrue(mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffsetAfter));
+    assertFalse(mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffsetBefore));
+    assertTrue(mongoDbDebeziumStateUtil.isSavedOffsetAfterResumeToken(resumeToken, savedOffsetEquals));
   }
 
 }
