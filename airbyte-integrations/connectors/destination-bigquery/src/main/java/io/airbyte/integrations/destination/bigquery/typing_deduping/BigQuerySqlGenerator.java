@@ -29,7 +29,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -317,7 +316,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   public String softReset(final StreamConfig stream) {
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false, null);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
     return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
@@ -330,18 +329,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final BigInteger limit) {
-    return updateTable(stream, finalSuffix, true, limit);
+  public String updateTable(final StreamConfig stream, final String finalSuffix) {
+    return updateTable(stream, finalSuffix, true);
   }
 
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys, final BigInteger limit) {
+  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
     String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       pkVarDeclaration = "DECLARE missing_pk_count INT64;";
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), limit);
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -411,8 +410,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                          final BigInteger limit) {
+  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -450,16 +448,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          """;
     }
 
-    final var record_limit = limit == null ? "" : "LIMIT %d".formatted(limit);
-
     return new StringSubstitutor(Map.of(
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
-        "column_list", columnList,
-        "limit_records", record_limit)).replace(
+        "column_list", columnList)).replace(
             """
             INSERT INTO ${final_table_id}
             (
@@ -478,7 +473,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               WHERE
                 _airbyte_loaded_at IS NULL
                 ${cdcConditionalOrIncludeStatement}
-              ${limit_records}
             )
             SELECT
             ${column_list}

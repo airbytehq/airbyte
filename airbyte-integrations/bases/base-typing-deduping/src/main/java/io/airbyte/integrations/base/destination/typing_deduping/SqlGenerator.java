@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.math.BigInteger;
-
 public interface SqlGenerator<DialectTableDefinition> {
 
   String SOFT_RESET_SUFFIX = "_ab_soft_reset";
@@ -63,11 +61,11 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Implementing classes are recommended to break this into smaller methods, which can be tested in
    * isolation. However, this interface only requires a single mega-method.
    *
-   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh
-   *                    overwrite syncs, where we write the entire sync to a temp table and then swap it into the final table at the end.
-   * @param limit provide a limit if we only want to type and dedupe some records
+   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
+   *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
+   *        sync to a temp table and then swap it into the final table at the end.
    */
-  String updateTable(final StreamConfig stream, String finalSuffix, final BigInteger limit);
+  String updateTable(final StreamConfig stream, String finalSuffix);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.

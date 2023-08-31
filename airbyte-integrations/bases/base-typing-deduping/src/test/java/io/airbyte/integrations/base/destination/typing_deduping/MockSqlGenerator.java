@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import java.math.BigInteger;
-
 /**
  * Basic SqlGenerator mock. See {@link DefaultTyperDeduperTest} for example usage.
  */
@@ -37,7 +35,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final BigInteger limit) {
+  public String updateTable(final StreamConfig stream, final String finalSuffix) {
     return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix);
   }
 
