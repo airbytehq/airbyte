@@ -122,14 +122,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
     final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> !JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.contains(column.getKey()))
+        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase).noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
     final boolean sameColumns = actualColumns.equals(intendedColumns)
-        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
-        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META));
+        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()))
+        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()))
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()));
 
     return sameColumns;
   }

@@ -85,10 +85,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   // TODO use columnID to get escaped names
-  protected RecordDiffer DIFFER = new RecordDiffer(
-      Pair.of("id1", AirbyteProtocolType.INTEGER),
-      Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+  protected RecordDiffer DIFFER;
 
   /**
    * Subclasses may use these four StreamConfigs in their tests.
