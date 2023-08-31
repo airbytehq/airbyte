@@ -1,0 +1,153 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pinecone",
+  "connectionSpecification": {
+    "title": "Pinecone Destination Config",
+    "type": "object",
+    "properties": {
+      "indexing": {
+        "title": "Pinecone",
+        "type": "object",
+        "properties": {
+          "pinecone_key": {
+            "title": "Pinecone API key",
+            "airbyte_secret": true,
+            "type": "string"
+          },
+          "pinecone_environment": {
+            "title": "Pinecone environment",
+            "description": "Pinecone environment to use",
+            "type": "string"
+          },
+          "index": {
+            "title": "Index",
+            "description": "Pinecone index to use",
+            "type": "string"
+          }
+        },
+        "required": ["pinecone_key", "pinecone_environment", "index"],
+        "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings."
+      },
+      "embedding": {
+        "title": "Embedding",
+        "description": "Embedding configuration",
+        "group": "embedding",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "openai",
+                "const": "openai",
+                "enum": ["openai"],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "OpenAI API key",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["openai_key"],
+            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
+            "title": "Cohere",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "cohere",
+                "const": "cohere",
+                "enum": ["cohere"],
+                "type": "string"
+              },
+              "cohere_key": {
+                "title": "Cohere API key",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["cohere_key"],
+            "description": "Use the Cohere API to embed text. This option is using the embed-english-light-v2.0 model with 1024 embedding dimensions."
+          },
+          {
+            "title": "Fake",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "fake",
+                "const": "fake",
+                "enum": ["fake"],
+                "type": "string"
+              }
+            },
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+          }
+        ]
+      },
+      "processing": {
+        "title": "ProcessingConfigModel",
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "title": "Chunk size",
+            "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "maximum": 8191,
+            "type": "integer"
+          },
+          "chunk_overlap": {
+            "title": "Chunk overlap",
+            "description": "Size of overlap between chunks in tokens to store in vector store to better capture relevant context",
+            "default": 0,
+            "type": "integer"
+          },
+          "text_fields": {
+            "title": "Text fields to embed",
+            "description": "List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+            "default": [],
+            "always_show": true,
+            "examples": ["text", "user.name", "users.*.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata_fields": {
+            "title": "Metadata fields",
+            "description": "List of fields in the record that should be stored as metadata. ",
+            "default": [],
+            "always_show": true,
+            "examples": ["text", "user.name", "users.*.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["chunk_size"],
+        "group": "processing"
+      }
+    },
+    "required": ["indexing", "embedding", "processing"],
+    "groups": [
+      {
+        "id": "processing",
+        "title": "Processing"
+      },
+      {
+        "id": "embedding",
+        "title": "Embedding"
+      },
+      {
+        "id": "indexing",
+        "title": "Indexing"
+      }
+    ]
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}
