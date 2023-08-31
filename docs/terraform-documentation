@@ -1,3 +1,7 @@
 # Terraform provider documentation
 
-Save time on managing Airbyte Cloud and collaborate on Airbyte configuration changes with your teammates. Airbyte's Terraform provider is based on our new [Airbyte API](https://api.airbyte.com). The Terraform provider is available for Airbyte Cloud customers today (& OSS users in Q3). Check out our guide for [getting started with Airbyte's Terraform provider](https://reference.airbyte.com/reference/using-the-terraform-provider).
+Airbyte's Terraform provider enables you to automate & version-control your Airbyte configuration as code. Save time managing Airbyte and collaborate on Airbyte configuration changes with your teammates. Airbyte's Terraform provider is built off our [Airbyte API](https://api.airbyte.com). 
+
+The Terraform provider is available for users on Airbyte Cloud, OSS & Self-Managed Enterprise. 
+
+Check out our guide for [getting started with Airbyte's Terraform provider](https://reference.airbyte.com/reference/using-the-terraform-provider).
