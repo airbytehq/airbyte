@@ -13,9 +13,12 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +44,37 @@ public class MySqlQueryUtils {
         SELECT MAX(%s) as %s FROM %s;
       """;
 
+  public static final String SHOW_TABLE_QUERY =
+      """
+        SHOW TABLE STATUS;
+      """;
+
   public static final String MAX_PK_COL = "max_pk";
   public static final String TABLE_SIZE_BYTES_COL = "TotalSizeBytes";
   public static final String AVG_ROW_LENGTH = "AVG_ROW_LENGTH";
+
+  // Returns a set of all storage engines used by the configured tables
+  public static Set<String> getStorageEngines(final JdbcDatabase database, final Set<String> streamNames) {
+    try {
+      // Construct the query.
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(SHOW_TABLE_QUERY),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      final Set<String> storageEngines = new HashSet<>();
+      if (jsonNodes != null) {
+        jsonNodes.stream().forEach(jsonNode -> {
+          final String tableName = jsonNode.get("Name").asText();
+          final String storageEngine = jsonNode.get("Engine").asText();
+          if (streamNames.contains(tableName)) {
+            storageEngines.add(storageEngine);
+          }
+        });
+      }
+      return storageEngines;
+    } catch (final Exception e) {
+      LOGGER.info("Storage engines could not be determined");
+      return Collections.EMPTY_SET;
+    }
+  }
 
   public static String getMaxPkValueForStream(final JdbcDatabase database,
                                               final ConfiguredAirbyteStream stream,

@@ -96,14 +96,17 @@ You may want to iterate on the acceptance test project itself: adding new tests,
 These iterations are more conveniently achieved by remaining in the current directory.
 
 1. Install dependencies via `poetry install`
-3. Run the unit tests on the acceptance tests themselves: `poetry run python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+2. Run the unit tests on the acceptance tests themselves: `poetry run python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+3. To run specific unit test(s), add `-k` to the above command, e.g. `poetry run python -m pytest unit_tests -k 'test_property_can_store_secret'`. You can use wildcards `*` here as well.
 4. Make the changes you want:
     * Global pytest fixtures are defined in `./connector_acceptance_test/conftest.py`
     * Existing test modules are defined in `./connector_acceptance_test/tests`
     * `acceptance-test-config.yaml` structure is defined in `./connector_acceptance_test/config.py`
 5. Unit test your changes by adding tests to `./unit_tests`
 6. Run the unit tests on the acceptance tests again: `poetry run pytest unit_tests`, make sure the coverage did not decrease. You can bypass slow tests by using the `slow` marker: `poetry run pytest unit_tests -m "not slow"`.
-7. Manually test the changes you made by running acceptance tests on a specific connector. e.g. `poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
+7. Manually test the changes you made by running acceptance tests on a specific connector:
+    * First build the connector to ensure your local image is up-to-date: `./gradlew :airbyte-integrations:connectors:source-pokeapi:airbyteDocker`
+    * Then run the acceptance tests on the connector: `poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/source-pokeapi`
 8. Make sure you updated `docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md` according to your changes
 9. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
 10. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`

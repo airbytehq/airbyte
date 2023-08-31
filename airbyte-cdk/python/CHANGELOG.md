@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.8
+Add vector db CDK helpers
+
+## 0.51.7
+File-based CDK: allow user to provided column names for CSV files
+
 ## 0.51.6
 File-based CDK: allow for extension mismatch
 
