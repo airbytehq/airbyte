@@ -67,7 +67,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
@@ -80,5 +80,5 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           subcommand: "connectors --modified test"

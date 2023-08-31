@@ -93,6 +93,10 @@ The Bing Ads source connector supports the following streams. For more informati
 - [ad_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [ad_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [ad_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
 - [budget_summary_report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
 - [campaign_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [campaign_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
@@ -119,6 +123,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0  | 2023-08-17 | [27619](https://github.com/airbytehq/airbyte/pull/27619) | Add Geographic Performance Report  |
 | 0.1.24  | 2023-06-22 | [27619](https://github.com/airbytehq/airbyte/pull/27619)                                                                         | Retry request after facing temporary name resolution error.                                                                                  |
 | 0.1.23  | 2023-05-11 | [25996](https://github.com/airbytehq/airbyte/pull/25996)                                                                         | Implement a retry logic if SSL certificate validation fails.                                                                                 |
 | 0.1.22  | 2023-05-08 | [24223](https://github.com/airbytehq/airbyte/pull/24223)                                                                         | Add CampaignLabels report column in campaign performance report                                                                              |

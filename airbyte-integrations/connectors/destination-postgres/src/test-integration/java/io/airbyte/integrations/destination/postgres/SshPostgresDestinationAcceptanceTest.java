@@ -160,7 +160,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
         getConfig(),

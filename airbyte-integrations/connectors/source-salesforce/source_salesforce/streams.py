@@ -441,6 +441,25 @@ class BulkSalesforceStream(SalesforceStream):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
+    def get_response_encoding(self, headers) -> str:
+        """Returns encodings from given HTTP Header Dict.
+
+        :param headers: dictionary to extract encoding from.
+        :rtype: str
+        """
+
+        content_type = headers.get("content-type")
+
+        if not content_type:
+            return self.encoding
+
+        content_type, params = requests.utils._parse_content_type_header(content_type)
+
+        if "charset" in params:
+            return params["charset"].strip("'\"")
+
+        return self.encoding
+
     def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str, dict]:
         """
         Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
@@ -453,8 +472,8 @@ class BulkSalesforceStream(SalesforceStream):
         with closing(self._send_http_request("GET", url, headers={"Accept-Encoding": "gzip"}, stream=True)) as response, open(
             tmp_file, "wb"
         ) as data_file:
-            response_encoding = response.encoding or self.encoding
             response_headers = response.headers
+            response_encoding = self.get_response_encoding(response_headers)
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists

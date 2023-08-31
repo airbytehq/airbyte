@@ -40,5 +40,5 @@ jobs:
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=8 --support-level=certified' }} test"

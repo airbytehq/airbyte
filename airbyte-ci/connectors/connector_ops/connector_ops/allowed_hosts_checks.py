@@ -8,36 +8,13 @@ from typing import List
 
 from connector_ops import utils
 
-ALLOWED_HOST_THRESHOLD = {
-    "sl": 200,
-    "ql": 300,
-}
-
-
-def _requires_allowed_hosts(connector: utils.Connector) -> bool:
-    """Check if a connector requires allowed hosts.
-
-    Args:
-        connector (utils.Connector): The connector to check.
-
-    Returns:
-        bool: True if the connector requires allowed hosts, False otherwise.
-    """
-    if connector.ab_internal_sl >= ALLOWED_HOST_THRESHOLD["sl"]:
-        return True
-
-    if connector.ab_internal_ql >= ALLOWED_HOST_THRESHOLD["ql"]:
-        return True
-
-    return False
-
 
 def get_connectors_missing_allowed_hosts() -> List[utils.Connector]:
     connectors_missing_allowed_hosts: List[utils.Connector] = []
     changed_connectors = utils.get_changed_connectors(destination=False, third_party=False)
 
     for connector in changed_connectors:
-        if _requires_allowed_hosts(connector):
+        if connector.requires_allowed_hosts_check:
             missing = not connector_has_allowed_hosts(connector)
             if missing:
                 connectors_missing_allowed_hosts.append(connector)

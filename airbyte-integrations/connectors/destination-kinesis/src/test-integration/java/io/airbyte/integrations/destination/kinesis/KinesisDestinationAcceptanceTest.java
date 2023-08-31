@@ -35,7 +35,7 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     configJson = KinesisDataFactory.jsonConfig(
         kinesisContainer.getEndpointOverride().toString(),
         kinesisContainer.getRegion(),
@@ -66,7 +66,7 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     kinesisStream.deleteAllStreams();
   }
 
@@ -95,11 +95,11 @@ public class KinesisDestinationAcceptanceTest extends DestinationAcceptanceTest 
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    var stream = kinesisNameTransformer.streamName(namespace, streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final var stream = kinesisNameTransformer.streamName(namespace, streamName);
     return kinesisStream.getRecords(stream).stream()
         .sorted(Comparator.comparing(KinesisRecord::getTimestamp))
         .map(KinesisRecord::getData)

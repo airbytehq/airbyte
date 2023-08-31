@@ -9,7 +9,6 @@ import com.google.cloud.bigquery.TableId;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -43,51 +42,43 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
-  private final boolean use1s1t;
   private final TyperDeduper typerDeduper;
 
-
   public BigQueryRecordConsumer(final BigQuery bigquery,
-      final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
-      final Consumer<AirbyteMessage> outputRecordCollector,
-      final String defaultDatasetId,
-      TyperDeduper typerDeduper,
-      final ParsedCatalog catalog) {
+                                final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final String defaultDatasetId,
+                                final TyperDeduper typerDeduper,
+                                final ParsedCatalog catalog) {
     this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
     this.defaultDatasetId = defaultDatasetId;
     this.typerDeduper = typerDeduper;
     this.catalog = catalog;
-    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
 
     LOGGER.info("Got parsed catalog {}", catalog);
     LOGGER.info("Got canonical stream IDs {}", uploaderMap.keySet());
   }
 
   @Override
-  protected void startTracked() throws Exception {
+  protected void startTracked() {
     // todo (cgardens) - move contents of #write into this method.
-    typerDeduper.prepareTables();
-    if (use1s1t) {
-      // Set up our raw tables
-      uploaderMap.forEach((streamId, uploader) -> {
-        StreamConfig stream = catalog.getStream(streamId);
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          // For streams in overwrite mode, truncate the raw table.
-          // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
-          // 1s1t mode.
-          final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
-          bigquery.delete(rawTableId);
-          BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
-        } else {
-          uploader.createRawTable();
-        }
-      });
-    }
+    // Set up our raw tables
+    uploaderMap.forEach((streamId, uploader) -> {
+      final StreamConfig stream = catalog.getStream(streamId);
+      if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+        // For streams in overwrite mode, truncate the raw table.
+        // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+        // 1s1t mode.
+        final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+        bigquery.delete(rawTableId);
+        BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+      } else {
+        uploader.createRawTable();
+      }
+    });
   }
-
-
 
   /**
    * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected

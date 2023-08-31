@@ -44,13 +44,13 @@ public abstract class BaseIcebergHadoopCatalogS3IntegrationTest extends Destinat
   private MinioContainer s3Storage;
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     s3Storage = IcebergIntegrationTestUtil.createAndStartMinioContainer(null);
     IcebergIntegrationTestUtil.createS3WarehouseBucket(getConfig());
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     IcebergIntegrationTestUtil.stopAndCloseContainer(s3Storage, "Minio");
   }
 
@@ -61,7 +61,7 @@ public abstract class BaseIcebergHadoopCatalogS3IntegrationTest extends Destinat
 
   @Override
   protected JsonNode getConfig() {
-    String s3Endpoint = "http://" + s3Storage.getHostAddress();
+    final String s3Endpoint = "http://" + s3Storage.getHostAddress();
     LOGGER.info("Configurate S3 endpoint to {}", s3Endpoint);
     return Jsons.jsonNode(ofEntries(
         entry(ICEBERG_CATALOG_CONFIG_KEY,
@@ -80,7 +80,7 @@ public abstract class BaseIcebergHadoopCatalogS3IntegrationTest extends Destinat
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    String s3Endpoint = "http://%s:%s".formatted(HostPortResolver.resolveHost(s3Storage),
+    final String s3Endpoint = "http://%s:%s".formatted(HostPortResolver.resolveHost(s3Storage),
         HostPortResolver.resolvePort(s3Storage));
     return Jsons.jsonNode(ofEntries(
         entry(ICEBERG_CATALOG_CONFIG_KEY,
@@ -98,10 +98,10 @@ public abstract class BaseIcebergHadoopCatalogS3IntegrationTest extends Destinat
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
   }

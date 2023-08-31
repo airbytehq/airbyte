@@ -64,6 +64,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   void setup() {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>("postgres:13-alpine")

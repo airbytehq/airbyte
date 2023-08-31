@@ -171,7 +171,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }

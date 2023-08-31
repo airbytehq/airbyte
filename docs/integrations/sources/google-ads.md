@@ -115,6 +115,7 @@ The Google Ads source connector can sync the following tables. It can also sync 
 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
+
 ### Report Tables
 
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
@@ -133,6 +134,12 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 :::note
 Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v11/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+:::
+
+:::warning
+Google Ads doesn't support `PERFORMACE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level. 
+If you have this type of campaign Google will remove them from the results for the `ads` reports.
+More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).

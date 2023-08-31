@@ -165,7 +165,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
         .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
         .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
@@ -185,7 +185,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     db.stop();
     db.close();
   }

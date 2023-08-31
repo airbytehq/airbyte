@@ -105,6 +105,7 @@ The Zendesk Support source connector supports the following streams:
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ## Performance considerations
 
@@ -116,6 +117,12 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.2.2`  | 2023-08-30 | [29998](https://github.com/airbytehq/airbyte/pull/29998) | Fix typo in stream `AttributeDefinitions`: field condition                                                                                                                                                                         |
+| `1.2.1`  | 2023-08-30 | [29991](https://github.com/airbytehq/airbyte/pull/29991) | Remove Custom availability strategy                                                                                                                                                                                                |
+| `1.2.0`  | 2023-08-29 | [29940](https://github.com/airbytehq/airbyte/pull/29940) | Add undeclared fields to schemas                                                                                                                                                                                                   |
+| `1.1.1`  | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | make `Organizations` stream incremental                                                                                                                                                                                            |
+| `1.1.0`  | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields`                                                                                                                                                                                                            |
+| `1.0.0`  | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
 | `0.11.0` | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics`                                                                                                                                                                                                                |
 | `0.10.7` | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec                                                                                                                                                                                                |
 | `0.10.6` | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                                                                                                                               |

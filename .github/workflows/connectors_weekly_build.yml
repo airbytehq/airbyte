@@ -40,5 +40,5 @@ jobs:
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=3 --support-level=community' }} test"

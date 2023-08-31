@@ -47,11 +47,20 @@
       },
       "profiles": {
         "title": "Profile IDs",
-        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details.",
+        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
         "order": 6,
         "type": "array",
         "items": {
           "type": "integer"
+        }
+      },
+      "marketplace_ids": {
+        "title": "Marketplace IDs",
+        "description": "Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
+        "order": 7,
+        "type": "array",
+        "items": {
+          "type": "string"
         }
       },
       "state_filter": {
@@ -63,14 +72,14 @@
         },
         "type": "array",
         "uniqueItems": true,
-        "order": 7
+        "order": 8
       },
       "look_back_window": {
         "title": "Look Back Window",
         "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
         "default": 3,
         "examples": [3, 10],
-        "order": 8,
+        "order": 9,
         "type": "integer"
       },
       "report_record_types": {
@@ -91,7 +100,7 @@
         },
         "type": "array",
         "uniqueItems": true,
-        "order": 9
+        "order": 10
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],

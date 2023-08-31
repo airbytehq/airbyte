@@ -4,11 +4,10 @@
 
 import logging
 import sys
-from typing import List, Dict, Union, Set
+from typing import Dict, List, Set, Union
+
 import yaml
-
 from connector_ops import utils
-
 
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}

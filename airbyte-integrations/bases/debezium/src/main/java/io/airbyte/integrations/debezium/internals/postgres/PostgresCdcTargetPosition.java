@@ -94,7 +94,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   }
 
   @Override
-  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+  public boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
     if (offset.size() != 1) {
       return false;
     }

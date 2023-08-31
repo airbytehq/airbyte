@@ -41,7 +41,7 @@ class DestStreamStateLifecycleManagerTest {
 
   @BeforeEach
   void setup() {
-    mgr = new DestStreamStateLifecycleManager();
+    mgr = new DestStreamStateLifecycleManager("default_namespace");
   }
 
   /**

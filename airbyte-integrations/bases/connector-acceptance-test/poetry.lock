@@ -2,17 +2,17 @@
 
 [[package]]
 name = "airbyte-protocol-models"
-version = "1.0.1"
+version = "0.4.1"
 description = "Declares the Airbyte Protocol."
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models-1.0.1-py3-none-any.whl", hash = "sha256:2c214fb8cb42b74aa6408beeea2cd52f094bc8a3ba0e78af20bb358e5404f4a8"},
-    {file = "airbyte_protocol_models-1.0.1.tar.gz", hash = "sha256:caa860d15c9c9073df4b221f58280b9855d36de07519e010d1e610546458d0a7"},
+    {file = "airbyte_protocol_models-0.4.1-py3-none-any.whl", hash = "sha256:95f1197c800d7867ba067f75770b83aeff4c2cec9b3d1def2dbf70261fee89ee"},
+    {file = "airbyte_protocol_models-0.4.1.tar.gz", hash = "sha256:92602134eab4c921d1328fa4f24e9a810a679c117ccb352cf6b1521f95f0ed53"},
 ]
 
 [package.dependencies]
-pydantic = ">=1.9.2,<1.10.0"
+pydantic = ">=1.9.2,<2.0.0"
 
 [[package]]
 name = "anyio"
@@ -1489,4 +1489,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "dc94f212796e27c07d193ff182b26dc08ecccbbc836788a50dbf84e537b0f00b"
+content-hash = "d0bfe69918b1133a0ea31368570203e0413bccf22aabfca6b5339cca59e2df2d"

@@ -1,9 +1,6 @@
 plugins {
+    // airbyte-docker is kept to support /legacy-publish until airbyte-ci cat publish command exists.
     id 'airbyte-docker'
-    // id 'airbyte-python'
 }
 
-// airbytePython {
-//     moduleDirectory 'connector_acceptance_test'
-// }
 

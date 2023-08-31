@@ -35,7 +35,9 @@ from connector_acceptance_test.tests.test_incremental import (
     future_state_fixture,
 )
 
-pytestmark = (pytest.mark.anyio,)
+pytestmark = [
+    pytest.mark.anyio,
+]
 
 
 def build_messages_from_record_data(stream: str, records: list[dict]) -> list[AirbyteMessage]:

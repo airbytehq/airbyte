@@ -76,7 +76,6 @@
     "metadata": {
       "type": ["null", "object"],
       "additionalProperties": true
-
     },
     "object": {
       "type": ["null", "string"]
