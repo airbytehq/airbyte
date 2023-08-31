@@ -82,7 +82,7 @@
               "type": "array",
               "items": {
                 "title": "ValidEnums",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "description": "An enumeration.",
                 "enum": [
                   "account_currency",
                   "account_id",
@@ -226,7 +226,7 @@
               "type": "array",
               "items": {
                 "title": "ValidBreakdowns",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "description": "An enumeration.",
                 "enum": [
                   "ad_format_asset",
                   "age",
@@ -270,7 +270,7 @@
               "type": "array",
               "items": {
                 "title": "ValidActionBreakdowns",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "description": "An enumeration.",
                 "enum": [
                   "action_canvas_component_name",
                   "action_carousel_card_id",
@@ -351,9 +351,9 @@
         "title": "Maximum size of Batched Requests",
         "description": "Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
         "default": 50,
+        "order": 9,
         "exclusiveMinimum": 0,
         "maximum": 50,
-        "order": 9,
         "type": "integer"
       },
       "action_breakdowns_allow_empty": {
