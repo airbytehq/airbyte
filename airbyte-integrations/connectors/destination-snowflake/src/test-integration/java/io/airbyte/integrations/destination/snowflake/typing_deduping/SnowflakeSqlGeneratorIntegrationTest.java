@@ -70,8 +70,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
+  protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
+    return new StreamId(namespace.toUpperCase(), finalTableName.toUpperCase(), namespace.toUpperCase(), rawTableName, namespace, finalTableName);
+  }
+
+  @Override
   protected void createNamespace(final String namespace) throws SQLException {
-    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace + '"');
+    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace.toUpperCase() + '"');
   }
 
   @Override
@@ -99,12 +104,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         database,
         databaseName,
         streamId.finalNamespace(),
-        streamId.finalName() + suffix);
+        streamId.finalName() + suffix.toUpperCase());
   }
 
   @Override
   protected void teardownNamespace(final String namespace) throws SQLException {
-    database.execute("DROP SCHEMA IF EXISTS \"" + namespace + '"');
+    database.execute("DROP SCHEMA IF EXISTS \"" + namespace.toUpperCase() + '"');
   }
 
   @Override
