@@ -1,4 +1,7 @@
 data:
+  allowedHosts:
+    hosts:
+      - "*.${indexing.pinecone_environment}.pinecone.io"
   registries:
     cloud:
       enabled: true
@@ -7,7 +10,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/destination-pinecone
   githubIssueLabel: destination-pinecone
   icon: pinecone.svg
