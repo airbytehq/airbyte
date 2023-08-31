@@ -3,13 +3,13 @@ description: >-
   Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
 ---
 
-::: note
+# Shopify
+
+:::note
 
 If you are already a Cloud user but still use the `API PASSWORD` authentication method (option), please make sure you've switched to the `OAuth2.0`, as far as the `API PASSWORD` is going to be deprecated soon for Cloud Users, but this option remains for `OSS` users.
 
 :::
-
-# Shopify
 
 This page contains the setup guide and reference information for the Shopify source connector.
 
