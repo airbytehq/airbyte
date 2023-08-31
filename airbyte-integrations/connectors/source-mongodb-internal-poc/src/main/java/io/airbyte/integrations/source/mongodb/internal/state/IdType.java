@@ -17,6 +17,7 @@ import org.bson.types.ObjectId;
  * "https://www.mongodb.com/docs/manual/reference/operator/query/type/#std-label-document-type-available-types">here</a>
  */
 public enum IdType {
+
   OBJECT_ID("objectId", "ObjectId", ObjectId::new),
   STRING("string", "String", s -> s),
   INT("int", "Integer", Integer::valueOf),
