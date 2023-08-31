@@ -18,9 +18,16 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Path;
 import java.util.List;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.Test;
 
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
@@ -98,6 +105,36 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
    */
   protected String getRawSchema() {
     return JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+  }
+
+  /**
+   * Run a sync using 3.0.0 (which is the highest version that still creates v2 final tables with
+   * lowercased+quoted names). Then run a sync using our current version.
+   */
+  @Test
+  public void testFinalTableUppercasingMigration() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    // First sync
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0");
+    // We no longer have the code to dump a lowercased table, so just move on directly to the new sync
+
+    // Second sync
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+    runSync(catalog, messages2);
+
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
 
   private String getDefaultSchema() {
