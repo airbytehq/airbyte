@@ -2,11 +2,12 @@
 # Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
+import dpath.options
+
 from .abstract_source import AbstractSource
 from .config import BaseConfig
 from .source import Source
 
-import dpath.options
 # As part of the CDK sources, we do not control what the APIs return and it is possible that a key is empty.
 # Reasons why we are doing this at the airbyte_cdk level:
 # * As of today, all the use cases should allow for empty keys
