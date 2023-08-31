@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -219,7 +217,7 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(AirbyteStreamNameNamespacePair streamId, final ExecutorService executorService, TyperDeduper typerDeduper) {
+  private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(AirbyteStreamNameNamespacePair streamId, TyperDeduper typerDeduper) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
@@ -227,14 +225,14 @@ public class BigQueryStagingConsumerFactory {
       } catch (Exception e) {
         return Optional.of(e);
       }
-    }, executorService);
+    });
   }
 
-  private CompletableFuture<Optional<Exception>> stageDroppingFuture(final BigQueryWriteConfig writeConfig, final BigQueryStagingOperations bigQueryStagingOperations, final ExecutorService executorService) {
+  private CompletableFuture<Optional<Exception>> stageDroppingFuture(final BigQueryWriteConfig writeConfig, final BigQueryStagingOperations bigQueryStagingOperations) {
     return CompletableFuture.supplyAsync(() -> {
       bigQueryStagingOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
       return Optional.empty();
-    }, executorService);
+    });
   }
 
   /**
@@ -254,11 +252,10 @@ public class BigQueryStagingConsumerFactory {
        */
 
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
-      final ExecutorService executorService = Executors.newCachedThreadPool();
       final Set<CompletableFuture<Optional<Exception>>> closingTasks = new HashSet<>();
       for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        closingTasks.add(typeAndDedupeFuture(entry.getKey(), executorService, typerDeduper));
-        closingTasks.add(stageDroppingFuture(entry.getValue(), bigQueryGcsOperations, executorService));
+        closingTasks.add(typeAndDedupeFuture(entry.getKey(), typerDeduper));
+        closingTasks.add(stageDroppingFuture(entry.getValue(), bigQueryGcsOperations));
       }
       CompletableFuture.allOf(closingTasks.toArray(CompletableFuture[]::new)).join();
       FutureUtils.reduceExceptions(closingTasks, "Exceptions thrown while closing streams: ");
