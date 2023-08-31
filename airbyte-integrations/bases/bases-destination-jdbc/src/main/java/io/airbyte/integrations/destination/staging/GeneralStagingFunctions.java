@@ -114,7 +114,7 @@ public class GeneralStagingFunctions {
   private static CompletableFuture<Optional<Exception>> typeAndDedupeTask(final WriteConfig writeConfig, final TyperDeduper typerDeduper) {
     return CompletableFuture.supplyAsync(() -> {
       try {
-        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
+        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName(), null);
         return Optional.empty();
       } catch (Exception e) {
         return Optional.of(e);

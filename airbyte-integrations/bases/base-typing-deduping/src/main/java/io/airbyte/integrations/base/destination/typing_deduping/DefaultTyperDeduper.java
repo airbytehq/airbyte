@@ -8,6 +8,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 
 import autovalue.shaded.kotlin.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * In a typical sync, destinations should call the methods:
  * <ol>
  * <li>{@link #prepareTables()} once at the start of the sync</li>
- * <li>{@link #typeAndDedupe(String, String)} as needed throughout the sync</li>
+ * <li>{@link TyperDeduper#typeAndDedupe(String, String, BigInteger)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
  * Note that createFinalTables initializes some internal state. The other methods will throw an
@@ -135,15 +136,15 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   /**
-   * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final table,
-   * etc.).
+   * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final table, etc.).
    * <p>
    * This method is thread-safe; multiple threads can call it concurrently.
    *
    * @param originalNamespace The stream's namespace, as declared in the configured catalog
-   * @param originalName The stream's name, as declared in the configured catalog
+   * @param originalName      The stream's name, as declared in the configured catalog
+   * @param limit
    */
-  public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final BigInteger limit) throws Exception {
     LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
     if (!streamsWithSuccessfulSetup.containsKey(new Pair<>(originalNamespace, originalName))) {
@@ -153,7 +154,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       return;
     }
     final String suffix = getFinalTableSuffix(streamConfig.id());
-    final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+    final String sql = sqlGenerator.updateTable(streamConfig, suffix, null);
     destinationHandler.execute(sql);
   }
 

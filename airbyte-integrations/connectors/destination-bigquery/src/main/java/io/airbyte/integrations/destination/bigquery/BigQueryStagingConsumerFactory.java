@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,7 @@ public class BigQueryStagingConsumerFactory {
         valve.addStream(streamId);
       }
       if (valve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), BigInteger.valueOf(1000));
         valve.updateTimeAndIncreaseInterval(streamId);
       }
     };
@@ -220,7 +221,7 @@ public class BigQueryStagingConsumerFactory {
   private CompletableFuture<Optional<Exception>> typeAndDedupeFuture(final AirbyteStreamNameNamespacePair streamId, final TyperDeduper typerDeduper) {
     return CompletableFuture.supplyAsync(() -> {
       try {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), null);
         return Optional.empty();
       } catch (Exception e) {
         return Optional.of(e);
