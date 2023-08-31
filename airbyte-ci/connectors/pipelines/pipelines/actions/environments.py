@@ -678,14 +678,6 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
 
 
 BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
-    "destination-bigquery": {
-        "dockerfile": "Dockerfile",
-        "dbt_adapter": "dbt-bigquery==1.0.0",
-        "integration_name": "bigquery",
-        "normalization_image": "airbyte/normalization:0.4.3",
-        "supports_in_connector_normalization": True,
-        "yum_packages": [],
-    },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
@@ -741,14 +733,6 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "normalization_image": "airbyte/normalization-redshift:0.4.3",
         "supports_in_connector_normalization": True,
         "yum_packages": [],
-    },
-    "destination-snowflake": {
-        "dockerfile": "snowflake.Dockerfile",
-        "dbt_adapter": "dbt-snowflake==1.0.0",
-        "integration_name": "snowflake",
-        "normalization_image": "airbyte/normalization-snowflake:0.4.3",
-        "supports_in_connector_normalization": True,
-        "yum_packages": ["gcc-c++"],
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",

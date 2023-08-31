@@ -10,7 +10,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md") || fileName.endsWith("postgres.md"))
+        !(fileName.endsWith(".inapp.md") || fileName.endsWith("postgres.md"))
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -30,24 +30,24 @@ function getDestinationConnectors() {
 }
 
 const sourcePostgres = {
-   type: 'category',
-   label: 'Postgres',
-   link: {
-       type: 'doc',
-       id: 'integrations/sources/postgres',
-   },
-   items: [
-        {
-          type: "doc",
-          label: "Cloud SQL for Postgres",
-          id: "integrations/sources/postgres/cloud-sql-postgres",
-        },
-        {
-        type: "doc",
-        label: "Troubleshooting",
-        id: "integrations/sources/postgres/postgres-troubleshooting",
-        }
-   ],
+  type: "category",
+  label: "Postgres",
+  link: {
+    type: "doc",
+    id: "integrations/sources/postgres",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Cloud SQL for Postgres",
+      id: "integrations/sources/postgres/cloud-sql-postgres",
+    },
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/postgres/postgres-troubleshooting",
+    },
+  ],
 };
 
 const sectionHeader = (title) => ({
@@ -460,8 +460,8 @@ module.exports = {
       id: "troubleshooting",
     },
     {
-      type: 'doc',
-      id: 'airbyte-enterprise',
+      type: "doc",
+      id: "airbyte-enterprise",
     },
     sectionHeader("Developer Guides"),
     {
