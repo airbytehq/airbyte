@@ -84,7 +84,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
-  // TODO use columnID to get escaped names
   protected RecordDiffer DIFFER;
 
   /**
