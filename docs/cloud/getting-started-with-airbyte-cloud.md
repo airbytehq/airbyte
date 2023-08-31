@@ -168,7 +168,7 @@ To better understand the destination namespace configurations, see [Destination 
         **Note:** This creates duplicate records
       - Select **Append + Deduped** to mirror your source while keeping records unique
 
-        **Note:** Some sync modes may not yet be available for the connector or are not available due to an API limitation beyond Airbyte's control.
+        **Note:** Some sync modes may not yet be available for the source or destination.
 
    4. **Cursor field**: Used in **Incremental** sync mode to determine which records to sync. Airbyte pre-selects the cursor field for you (example: updated date). If you have multiple cursor fields, select the one you want.
    5. **Primary key**: Used in **Append + Deduped** sync mode to determine the unique identifier.
