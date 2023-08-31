@@ -11,6 +11,7 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REP
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
@@ -24,6 +25,9 @@ import com.mongodb.client.MongoClients;
  */
 public class MongoConnectionUtils {
 
+  @VisibleForTesting
+  static final String DRIVER_NAME = "Airbyte";
+
   /**
    * Creates a new {@link MongoClient} from the source configuration.
    *
@@ -31,12 +35,10 @@ public class MongoConnectionUtils {
    * @return The configured {@link MongoClient}.
    */
   public static MongoClient createMongoClient(final JsonNode config) {
-    final String authSource = config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText();
-
     final ConnectionString mongoConnectionString = new ConnectionString(buildConnectionString(config));
 
     final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
-        .driverName("Airbyte")
+        .driverName(DRIVER_NAME)
         .build();
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
@@ -44,6 +46,7 @@ public class MongoConnectionUtils {
         .readPreference(ReadPreference.secondaryPreferred());
 
     if (config.has(USER_CONFIGURATION_KEY) && config.has(PASSWORD_CONFIGURATION_KEY)) {
+      final String authSource = config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText();
       final String user = config.get(USER_CONFIGURATION_KEY).asText();
       final String password = config.get(PASSWORD_CONFIGURATION_KEY).asText();
       mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));

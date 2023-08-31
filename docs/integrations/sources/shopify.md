@@ -1,21 +1,9 @@
----
-description: >-
-  Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
----
-
-::: note
-
-If you are already a Cloud user but still use the `API PASSWORD` authentication method (option), please make sure you've switched to the `OAuth2.0`, as far as the `API PASSWORD` is going to be deprecated soon for Cloud Users, but this option remains for `OSS` users.
-
-:::
-
 # Shopify
-
 This page contains the setup guide and reference information for the Shopify source connector.
 
 ## Setup guide
 
-This connector supports the `OAuth2.0` and `API PASSWORD` (for private applications) athentication methods.
+This connector supports the `OAuth2.0` and `API Password` (for private applications) athentication methods.
 
 ### Connect using OAuth2.0 (for Cloud users only)
 1. Click `Authenticate your Shopify account` to start the autentication.
@@ -28,9 +16,6 @@ This connector supports the `OAuth2.0` and `API PASSWORD` (for private applicati
 8. Click `Test and Save` to finish the source set up.
 
 ### Connect using `API PASSWORD` option (for OSS users)
-
-## Setup guide
-
 1. Name your source.
 2. Enter your Store name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
 3. Enter your Admin API access token. To set up the access token, you will need to set up a custom application. See instructions below on creating a custom app.

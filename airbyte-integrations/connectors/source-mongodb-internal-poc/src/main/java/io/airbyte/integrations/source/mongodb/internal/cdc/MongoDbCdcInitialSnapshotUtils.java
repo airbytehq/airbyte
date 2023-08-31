@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
  * portion of a CDC sync for MongoDB.
  */
 public class MongoDbCdcInitialSnapshotUtils {
+
+  private static final Predicate<ConfiguredAirbyteStream> SYNC_MODE_FILTER = c -> SyncMode.INCREMENTAL.equals(c.getSyncMode());
 
   /**
    * Returns the list of configured Airbyte streams that need to perform the initial snapshot portion
@@ -56,8 +59,8 @@ public class MongoDbCdcInitialSnapshotUtils {
        */
       return fullCatalog.getStreams()
           .stream()
-          .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
-          .collect(Collectors.toList());
+          .filter(SYNC_MODE_FILTER)
+          .toList();
     } else {
       final List<ConfiguredAirbyteStream> initialSnapshotStreams = new ArrayList<>();
 
@@ -87,9 +90,9 @@ public class MongoDbCdcInitialSnapshotUtils {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()
-        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(SYNC_MODE_FILTER)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))).map(Jsons::clone)
-        .collect(Collectors.toList());
+        .toList();
   }
 
 }
