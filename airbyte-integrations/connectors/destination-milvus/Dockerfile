@@ -22,10 +22,6 @@ RUN pip install --prefix=/install "Cython<3.0" "pyyaml~=5.4" --no-build-isolatio
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
-# Workaround
-COPY airbyte-cdk ./airbyte-cdk
-RUN pip install --prefix=/install ./airbyte-cdk
-
 # build a clean environment
 FROM base
 WORKDIR /airbyte/integration_code
