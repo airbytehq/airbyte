@@ -60,7 +60,7 @@ definitions:
         type: NoPagination
       requester:
         $ref: "#/definitions/user_auth_requester"
-  
+
   rest_api_key_auth_base_stream:
     type: DeclarativeStream
     retriever:
@@ -102,7 +102,7 @@ definitions:
       incremental_cursor: "last_active"
       path: "players"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"  
+      $ref: "#/definitions/incremental_sync_base"
     retriever:
       $ref: "#/definitions/retriever_with_pagination"
 
@@ -115,7 +115,7 @@ definitions:
       incremental_cursor: "queued_at"
       path: "notifications"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"  
+      $ref: "#/definitions/incremental_sync_base"
     retriever:
       $ref: "#/definitions/retriever_with_pagination"
 
