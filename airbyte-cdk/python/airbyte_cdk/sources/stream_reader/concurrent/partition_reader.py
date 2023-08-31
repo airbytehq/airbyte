@@ -44,3 +44,6 @@ class PartitionReader:
 
     def _futures_are_done(self, queue_consumer_futures):
         return all(future.done() for future in queue_consumer_futures)
+
+    def get_exceptions(self):
+        return [future.exception() for future in self._queue_consumer_futures if future.exception() is not None]

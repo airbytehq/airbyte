@@ -25,6 +25,7 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
         max_workers: int,
         slice_logger: SliceLogger,
     ):
+        # FIXME: need to either create them when reading, or reset them at the end of the read...
         self._partitions_generator = partition_generator
         self._partition_reader = partition_reader
         self._max_workers = max_workers
@@ -40,7 +41,8 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
             self._partitions_generator.generate_partitions_async(stream, SyncMode.full_refresh, cursor_field, executor)
             # While partitions are still being generated
             while not (self._partitions_generator.is_done() and self._partition_reader.is_done()):
-                # print("in while loop...")
+                self._check_for_errors(stream)
+
                 # While there is a partition to process
                 while self._partition_reader.there_are_records_ready():
                     record = self._partition_reader.get_next_record()
@@ -59,3 +61,12 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
                         # FIXME: This is creating slice log messages for parity with the synchronous implementation
                         # but these cannot be used by the connector builder to build slices because they can be unordered
                         yield self._slice_logger.create_slice_log_message(partition.slice)
+            print(f"futures: {self._partitions_generator._futures}")
+            self._check_for_errors(stream)
+
+    def _check_for_errors(self, stream: Stream) -> None:
+        errors = []
+        errors.extend(self._partitions_generator.get_exceptions())
+        errors.extend(self._partition_reader.get_exceptions())
+        if errors:
+            raise RuntimeError(f"Failed reading from stream {stream.name} with errors: {errors}")

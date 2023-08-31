@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from concurrent.futures import Future
 from queue import Queue
 from typing import List, Optional
 
@@ -14,7 +14,7 @@ class PartitionGenerator:
     def __init__(self, queue: Queue[Optional[StreamPartition]], name: str):
         self._queue = queue
         self._name = name
-        self._futures = []
+        self._futures: List[Future] = []
 
     def generate_partitions_for_stream(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> None:
         print(f"generate_partitions_for_stream for {self._name} for stream {stream.name}")
@@ -48,3 +48,6 @@ class PartitionGenerator:
 
     def _futures_are_done(self, futures):
         return all(future.done() for future in futures)
+
+    def get_exceptions(self):
+        return [future.exception() for future in self._futures if future.exception() is not None]
