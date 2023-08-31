@@ -119,6 +119,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
 
   /**
+   * Subclasses should override this method if they need to make changes to the stream ID.
+   * For example, you could upcase the final table name here.
+   */
+  protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
+    return new StreamId(namespace, finalTableName, namespace, rawTableName, namespace, finalTableName);
+  }
+
+  /**
    * Do any setup work to create a namespace for this test run. For example, this might create a
    * BigQuery dataset, or a Snowflake schema.
    */
@@ -203,7 +211,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
     // airbyte_internal.testDataset_raw__stream_users.
-    streamId = new StreamId(namespace, "users_final", namespace, "users_raw", namespace, "users_final");
+    streamId = buildStreamId(namespace, "users_final", "users_raw");
 
     incrementalDedupStream = new StreamConfig(
         streamId,
@@ -791,15 +799,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
     final String str = namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
-    final StreamId modifiedStreamId = new StreamId(
+    final StreamId modifiedStreamId = buildStreamId(
         originalStreamId.finalNamespace(),
         originalStreamId.finalName(),
-        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup
-        // easier.
-        originalStreamId.finalNamespace(),
-        "raw_table",
-        null,
-        null);
+        "raw_table");
     final ColumnId columnId = generator.buildColumnId(str);
     try {
       createNamespace(modifiedStreamId.finalNamespace());
