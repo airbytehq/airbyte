@@ -115,7 +115,8 @@ public class PostgresCtidHandler {
                                                                 final long blockSize) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
-    return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodeHandler);
+    return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize, blockSize, fileNodeHandler,
+        config.has("use_test_page_size")  && config.get("use_test_page_size").asBoolean());
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}

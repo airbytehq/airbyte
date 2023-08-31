@@ -1,5 +1,9 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.MAX_ALLOWED_RESYNCS;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.QUERY_TARGET_SIZE;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -27,13 +31,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class is responsible to divide the data of the stream into chunks based on the ctid and dynamically create iterator and keep processing them one after another.
+ * The class also makes sure to check for VACUUM in between processing chunks and if VACUUM happens then re-start syncing the data
+ */
 public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSyncCtidIterator.class);
-  private static final int MAX_ALLOWED_RESYNCS = 5;
-  private static final int QUERY_TARGET_SIZE_GB = 1;
-  private static final double MEGABYTE = Math.pow(1024, 2);
-  private static final double GIGABYTE = MEGABYTE * 1024;
 
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final long blockSize;
@@ -47,8 +51,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private final Queue<Pair<Ctid, Ctid>> subQueriesPlan;
   private final String tableName;
   private final long tableSize;
-  private AutoCloseableIterator<RowDataWithCtid> currentIterator;
+  private final boolean useTestPageSize;
 
+  private AutoCloseableIterator<RowDataWithCtid> currentIterator;
   private Long lastKnownFileNode;
   private int numberOfTimesReSynced = 0;
   private boolean subQueriesInitialized = false;
@@ -62,7 +67,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       final String tableName,
       final long tableSize,
       final long blockSize,
-      final FileNodeHandler fileNodeHandler) {
+      final FileNodeHandler fileNodeHandler,
+      final boolean useTestPageSize) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
     this.columnNames = columnNames;
@@ -75,6 +81,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     this.subQueriesPlan = new LinkedList<>();
     this.tableName = tableName;
     this.tableSize = tableSize;
+    this.useTestPageSize = useTestPageSize;
   }
 
   @CheckForNull
@@ -133,10 +140,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   private void initSubQueries() {
+    if (useTestPageSize) {
+      LOGGER.warn("Using test page size");
+    }
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
     subQueriesPlan.clear();
     subQueriesPlan.addAll(ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0, 0) : Ctid.of(currentCtidStatus.getCtid()),
-        tableSize, blockSize, QUERY_TARGET_SIZE_GB));
+        tableSize, blockSize, QUERY_TARGET_SIZE, useTestPageSize ? EIGHT_KB : GIGABYTE));
     lastKnownFileNode = currentCtidStatus != null ? currentCtidStatus.getRelationFilenode() : null;
   }
 
@@ -152,7 +162,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     }
     subQueriesPlan.clear();
     subQueriesPlan.addAll(ctidQueryPlan(Ctid.of(0, 0),
-        tableSize, blockSize, QUERY_TARGET_SIZE_GB));
+        tableSize, blockSize, QUERY_TARGET_SIZE, useTestPageSize ? EIGHT_KB : GIGABYTE));
     numberOfTimesReSynced++;
   }
 
@@ -162,17 +172,17 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
    * @param startCtid    starting point
    * @param relationSize table size
    * @param blockSize    page size
-   * @param chunkSizeGB  required amount of data in each partition
+   * @param chunkSize  required amount of data in each partition
    * @return a list of ctid that can be used to generate queries.
    */
   @VisibleForTesting
-  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSizeGB) {
+  static List<Pair<Ctid, Ctid>> ctidQueryPlan(final Ctid startCtid, final long relationSize, final long blockSize, final int chunkSize, final double dataSize) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
-    final double oneGigaPages = GIGABYTE / blockSize;
-    final long eachStep = (long) oneGigaPages * chunkSizeGB;
-    LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSizeGB);
+    final double pages = dataSize / blockSize;
+    final long eachStep = (long) pages * chunkSize;
+    LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSize);
     final long theoreticalLastPage = relationSize / blockSize;
     LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
     upperBound = lowerBound + eachStep;

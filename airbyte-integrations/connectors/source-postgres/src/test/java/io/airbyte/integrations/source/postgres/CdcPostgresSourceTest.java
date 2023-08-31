@@ -947,4 +947,33 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
   }
 
+  /**
+   * This test is setup to force {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} create multiple pages
+   */
+  @Test
+  protected void ctidIteratorPageSizeTest() throws Exception {
+    final int recordsToCreate = 25_000;
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    /**
+     * Setting the property to make the {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} use smaller page size of 8KB instead of default 1GB
+     * This allows us to make sure that the iterator logic works with multiple pages (sub queries)
+     */
+    final JsonNode config = getConfig();
+    ((ObjectNode) config).put("use_test_page_size", true);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+
+    final Set<AirbyteRecordMessage> airbyteRecordMessages = extractRecordMessages(dataFromFirstBatch);
+    assertEquals(recordsToCreate + MODEL_RECORDS.size(), airbyteRecordMessages.size());
+  }
+
 }
