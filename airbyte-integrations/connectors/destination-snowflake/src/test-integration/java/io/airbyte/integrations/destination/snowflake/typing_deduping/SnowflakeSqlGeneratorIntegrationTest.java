@@ -376,7 +376,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
    * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key
    */
   @Test
-  protected void customExceptionWhenMissingPK () throws Exception {
+  protected void customExceptionWhenMissingPK() throws Exception {
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
@@ -384,7 +384,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords_missing_pk.jsonl"));
 
     final String sql = generator.updateTable(incrementalDedupStream, "");
-    Exception exception = assertThrows(Exception.class, () -> { //TODO (evan): I don't really know what class of error the Snowflake driver throws
+    Exception exception = assertThrows(Exception.class, () -> { // TODO (evan): I don't really know what class of error the Snowflake driver throws
       destinationHandler.execute(sql);
     });
 
