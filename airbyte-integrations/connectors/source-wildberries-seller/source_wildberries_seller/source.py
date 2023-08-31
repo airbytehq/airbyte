@@ -15,6 +15,8 @@ from source_wildberries_seller.streams import (
     DetailHistoryNmReportStream,
     GroupedHistoryNmReportStream,
     check_content_analytics_stream_connection,
+    GetStocksWarehouseStream,
+    check_marketplace_stream_connection,
 )
 from source_wildberries_seller.types import StartDate, EndDate, IsSuccess, Message, WildberriesCredentials
 
@@ -29,6 +31,8 @@ class SourceWildberriesSeller(AbstractSource):
         content_analytics_nm_ids = config.get("nm_ids", [])
         content_analytics_timezone = config.get("timezone")
         content_analytics_aggregation_level = config.get("aggregation_level")
+        stock_warehouse = config.get("warehouse_id")
+        stock_warehouse_ids = config.get("skus", [])
 
         return [
             DetailNmReportStream(
@@ -68,9 +72,21 @@ class SourceWildberriesSeller(AbstractSource):
                 timezone=content_analytics_timezone,
                 aggregation_level=content_analytics_aggregation_level,
             ),
+            GetStocksWarehouseStream(
+                credentials=credentials,
+                warehouse_id=stock_warehouse,
+                skus=stock_warehouse_ids,
+            ),
         ]
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[IsSuccess, Message | None]:
+        # Check dates config
+        is_success, message = self._check_dates(
+            date_from=config.get("date_from"), date_to=config.get("date_to"), last_days=config.get("last_days")
+        )
+        if not is_success:
+            return is_success, message
+
         # Check connection to CredentialsCraft
         auth = self._get_auth(config)
         if isinstance(auth, CredentialsCraftAuthenticator):
@@ -82,6 +98,11 @@ class SourceWildberriesSeller(AbstractSource):
 
         # Check content analytics config
         is_success, message = self._check_content_analytics_config(config=config, credentials=credentials)
+        if not is_success:
+            return is_success, message
+
+        # Check marketplace config
+        is_success, message = self._check_marketplace_config(config=config, credentials=credentials)
         if not is_success:
             return is_success, message
 
@@ -111,12 +132,7 @@ class SourceWildberriesSeller(AbstractSource):
         return date_from, date_to
 
     @staticmethod
-    def _check_content_analytics_config(config: Mapping[str, Any], credentials: WildberriesCredentials) -> Tuple[IsSuccess, Message | None]:
-        # Check dates config
-        date_from = config.get("date_from")
-        date_to = config.get("date_to")
-        last_days = config.get("last_days")
-
+    def _check_dates(date_from: str, date_to: str, last_days: int) -> Tuple[IsSuccess, Message | None]:
         if not (last_days or (date_from and date_to)):
             message = "You must specify either 'Date from' and 'Date to' or just 'Load last N days' params in content_analytics config"
             return False, message
@@ -125,6 +141,10 @@ class SourceWildberriesSeller(AbstractSource):
             if datetime.fromisoformat(date_from) > datetime.fromisoformat(date_to):
                 return False, "'Date from' exceeds 'Date to' in content_analytics config"
 
+        return True, None
+
+    @staticmethod
+    def _check_content_analytics_config(config: Mapping[str, Any], credentials: WildberriesCredentials) -> Tuple[IsSuccess, Message | None]:
         if timezone := config.get("timezone"):
             try:
                 pytz.timezone(timezone)
@@ -133,6 +153,27 @@ class SourceWildberriesSeller(AbstractSource):
 
         # Check connection
         is_success, message = check_content_analytics_stream_connection(credentials=credentials)
+        if not is_success:
+            return is_success, message
+
+        return True, None
+
+    @staticmethod
+    def _check_marketplace_config(config: Mapping[str, Any], credentials: WildberriesCredentials) -> Tuple[IsSuccess, Message | None]:
+        warehouse_id = config.get("warehouse_id")
+        skus = config.get("skus", [])
+
+        if not warehouse_id and not skus:
+            return True, None
+
+        if not warehouse_id:
+            return False, "'Warehouse ID' is required in marketplace config"
+
+        if not skus:
+            return False, "Barcodes are required in marketplace config"
+
+        # Check connection
+        is_success, message = check_marketplace_stream_connection(credentials=credentials, warehouse_id=warehouse_id)
         if not is_success:
             return is_success, message
 

@@ -61,35 +61,48 @@ connectionSpecification:
         - 7
     brand_names:
       title: Brand names
+      description: Used in DetailNmReportStream, GroupedNmReportStream, GroupedHistoryNmReportStream.
       type: array
       items:
         type: string
     object_ids:
       title: Item IDs
       type: array
+      description: Used in DetailNmReportStream, GroupedNmReportStream, GroupedHistoryNmReportStream.
       items:
-        type: number
+        type: integer
     tag_ids:
       title: Tag IDs
+      description: Used in DetailNmReportStream, GroupedNmReportStream, GroupedHistoryNmReportStream.
       type: array
       items:
-        type: number
+        type: integer
     nm_ids:
       title: WB articles
+      description: Required for DetailHistoryNmReportStream! Used in DetailNmReportStream and DetailHistoryNmReportStream.
       type: array
       items:
-        type: number
-      description: Required for DetailHistoryNmReportStream!
+        type: integer
     timezone:
       title: Timezone
+      description: If not specified, Europe/Moscow is used by default. Used in DetailNmReportStream, DetailHistoryNmReportStream, GroupedNmReportStream, GroupedHistoryNmReportStream.
       type: string
-      description: If not specified, Europe/Moscow is used by default.
       examples:
         - Europe/Moscow
     aggregation_level:
       title: Aggregation level
+      description: If not specified, aggregation by days is used by default. Is used only in history streams!
       type: string
       enum: [ "day", "week", "month" ]
-      description: If not specified, aggregation by days is used by default. Is used only in history streams!
       examples:
         - day
+    warehouse_id:
+      title: Warehouse ID
+      description: Used and required for GetStocksWarehouseStream.
+      type: integer
+    skus:
+      title: Barcodes for warehouse stocks
+      description: Used in GetStocksWarehouseStream.
+      type: array
+      items:
+        type: string

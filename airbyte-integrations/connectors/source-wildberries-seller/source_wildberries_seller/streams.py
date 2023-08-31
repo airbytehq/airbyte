@@ -8,6 +8,11 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from requests.exceptions import ChunkedEncodingError
 
+from source_wildberries_seller.schemas.get_stocks_warehouse import (
+    GetStocksWarehouseStock,
+    GetStocksWarehouseStockResponse,
+    GetStocksWarehouseStockErrorResponse,
+)
 from source_wildberries_seller.schemas.nm_report_detail import DetailNmReport, DetailNmReportResponse
 from source_wildberries_seller.schemas.nm_report_detail_history import DetailHistoryNmReport, DetailHistoryNmReportResponse
 from source_wildberries_seller.schemas.nm_report_grouped import GroupedNmReport, GroupedNmReportResponse
@@ -31,9 +36,30 @@ def check_content_analytics_stream_connection(credentials: WildberriesCredential
         if response.status_code == 200:
             return True, None
         elif response.status_code == 401:
-            return False, f"Invalid content_analytics API key. Response status code: {response.status_code}. Body: {response.text}"
+            return False, f"Content-analytics: invalid API key. Response status code: {response.status_code}. Body: {response.text}"
         else:
-            return False, f"Response status code: {response.status_code}. Body: {response.text}"
+            return False, f"Content-analytics: response status code: {response.status_code}. Body: {response.text}"
+    except Exception as e:
+        return False, str(e)
+
+
+def check_marketplace_stream_connection(credentials: WildberriesCredentials, warehouse_id: int) -> tuple[IsSuccess, Optional[Message]]:
+    try:
+        response = requests.post(
+            url=f"https://suppliers-api.wildberries.ru/api/v3/stocks/{warehouse_id}",
+            json={"skus": ["test"]},
+            headers={"Authorization": credentials["api_key"]},
+        )
+        if response.status_code == 200:
+            return True, None
+        elif response.status_code == 400:
+            return False, f"Marketplace: invalid request body. Response status code: {response.status_code}. Body: {response.text}"
+        elif response.status_code == 401:
+            return False, f"Marketplace: invalid API key. Response status code: {response.status_code}. Body: {response.text}"
+        elif response.status_code == 404:
+            return False, f"Marketplace: warehouse not found. Response status code: {response.status_code}. Body: {response.text}"
+        else:
+            return False, f"Marketplace: response status code: {response.status_code}. Body: {response.text}"
     except Exception as e:
         return False, str(e)
 
@@ -291,3 +317,61 @@ class GroupedHistoryNmReportStream(HistoryNmReportStream):
         if self.aggregation_level:
             body["aggregationLevel"] = self.aggregation_level
         return body
+
+
+class GetStocksWarehouseStream(Stream):
+    def __init__(self, credentials: WildberriesCredentials, warehouse_id: int, skus: List[str]):
+        self.credentials = credentials
+        self.warehouse_id = warehouse_id
+        self.skus = skus
+
+    @property
+    def url(self) -> str:
+        return f"https://suppliers-api.wildberries.ru/api/v3/stocks/{self.warehouse_id}"
+
+    @property
+    def request_body(self) -> dict:
+        return {"skus": self.skus}
+
+    @property
+    def primary_key(self) -> None:
+        return None
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return GetStocksWarehouseStock.schema()
+
+    @property
+    def headers(self) -> Dict:
+        return {"Authorization": self.credentials["api_key"]}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        attempts_count = 0
+        while attempts_count < 3:
+            try:
+                response = requests.post(self.url, json=self.request_body, headers=self.headers)
+            except ChunkedEncodingError:
+                time.sleep(60)
+                continue
+            if response.status_code == 200:
+                data = GetStocksWarehouseStockResponse(**response.json())
+                if data.stocks:
+                    for record in data.stocks:
+                        yield record.dict()
+                return
+            elif response.status_code in (408, 429):
+                attempts_count += 1
+                if attempts_count < 3:
+                    time.sleep(60)
+                else:
+                    raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
+            elif response.status_code == 400:
+                error_response = GetStocksWarehouseStockErrorResponse(**response.json())
+                raise Exception(f"Status code: {response.status_code}. Error: {error_response}")
+            else:
+                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")

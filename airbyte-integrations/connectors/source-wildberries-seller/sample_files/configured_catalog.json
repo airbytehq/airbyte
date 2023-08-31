@@ -838,6 +838,34 @@
       },
       "sync_mode" : "full_refresh",
       "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "get_stocks_warehouse_stream",
+        "json_schema" : {
+          "title" : "GetStocksWarehouseStock",
+          "type" : "object",
+          "properties" : {
+            "sku" : {
+              "title" : "Sku",
+              "type" : "string"
+            },
+            "amount" : {
+              "title" : "Amount",
+              "type" : "integer"
+            }
+          },
+          "required" : [
+            "sku",
+            "amount"
+          ]
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
     }
   ]
 }
