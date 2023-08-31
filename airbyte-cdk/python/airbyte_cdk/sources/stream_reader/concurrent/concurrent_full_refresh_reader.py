@@ -39,7 +39,7 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
             # Submit partition generation tasks
             self._partitions_generator.generate_partitions_async(stream, SyncMode.full_refresh, cursor_field, executor)
             # While partitions are still being generated
-            while not self._partitions_generator.is_done() or not self._partition_reader.is_done():
+            while not (self._partitions_generator.is_done() and self._partition_reader.is_done()):
                 # print("in while loop...")
                 # While there is a partition to process
                 while self._partition_reader.there_are_records_ready():

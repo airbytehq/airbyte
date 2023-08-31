@@ -36,8 +36,7 @@ class PartitionReader:
         return self._output_queue.qsize() > 0
 
     def is_done(self) -> bool:
-        done = self._output_queue.qsize() == 0 and self._futures_are_done(self._queue_consumer_futures)
-        return done
+        return self._futures_are_done(self._queue_consumer_futures) and self._output_queue.qsize() == 0
 
     def process_partition_async(self, partition, executor):
         record_generation_future = executor.submit(PartitionReader.process_partition, self, partition)

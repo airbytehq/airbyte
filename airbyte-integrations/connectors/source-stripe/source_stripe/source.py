@@ -66,7 +66,6 @@ from source_stripe.streams import (
 
 class SourceStripe(AbstractSource):
     def get_full_refresh_stream_reader(self):
-        # FIXME: This should be configurable somehow
         partition_generator = PartitionGenerator(Queue(), "SourceStripe")
         partition_reader = PartitionReader("PartitionReader", Queue())
         max_workers = 10
