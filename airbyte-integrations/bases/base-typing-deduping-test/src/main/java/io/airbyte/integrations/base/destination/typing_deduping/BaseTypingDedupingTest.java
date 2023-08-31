@@ -68,6 +68,7 @@ public abstract class BaseTypingDedupingTest {
       throw new RuntimeException(e);
     }
   }
+  // TODO use columnID to get escaped names
   private static final RecordDiffer DIFFER = new RecordDiffer(
       Pair.of("id1", AirbyteProtocolType.INTEGER),
       Pair.of("id2", AirbyteProtocolType.INTEGER),
@@ -112,7 +113,8 @@ public abstract class BaseTypingDedupingTest {
   /**
    * For a given stream, return the records that exist in the destination's final table. Each record
    * must be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta":
-   * {...}, "field1": ..., "field2": ..., ...}.
+   * {...}, "field1": ..., "field2": ..., ...}. If the destination renames (e.g. upcases) the airbyte
+   * fields, this method must revert that naming to use the exact strings "_airbyte_raw_id", etc.
    * <p>
    * For JSON-valued columns, there is some nuance: a SQL null should be represented as a missing
    * entry, whereas a JSON null should be represented as a
