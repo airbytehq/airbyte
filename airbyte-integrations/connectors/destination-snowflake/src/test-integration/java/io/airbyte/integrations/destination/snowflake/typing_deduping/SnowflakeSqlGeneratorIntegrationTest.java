@@ -238,7 +238,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     final String sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
+    // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted identifiers.
+    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
         .stream().map(record -> record.get("kind").asText())
         .findFirst();
     final Map<String, String> columns = database.queryJsons(
@@ -251,8 +252,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         ORDER BY ordinal_position;
         """,
         databaseName,
-        namespace,
-        "users_final").stream()
+        namespace.toUpperCase(),
+        "USERS_FINAL").stream()
         .collect(toMap(
             record -> record.get("COLUMN_NAME").asText(),
             record -> {
@@ -267,24 +268,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         () -> assertEquals(Optional.of("TABLE"), tableKind, "Table should be permanent, not transient"),
         () -> assertEquals(
             ImmutableMap.builder()
-                .put("_airbyte_raw_id", "TEXT")
-                .put("_airbyte_extracted_at", "TIMESTAMP_TZ")
-                .put("_airbyte_meta", "VARIANT")
-                .put("id1", "NUMBER(38, 0)")
-                .put("id2", "NUMBER(38, 0)")
-                .put("updated_at", "TIMESTAMP_TZ")
-                .put("struct", "OBJECT")
-                .put("array", "ARRAY")
-                .put("string", "TEXT")
-                .put("number", "FLOAT")
-                .put("integer", "NUMBER(38, 0)")
-                .put("boolean", "BOOLEAN")
-                .put("timestamp_with_timezone", "TIMESTAMP_TZ")
-                .put("timestamp_without_timezone", "TIMESTAMP_NTZ")
-                .put("time_with_timezone", "TEXT")
-                .put("time_without_timezone", "TIME")
-                .put("date", "DATE")
-                .put("unknown", "VARIANT")
+                .put("_AIRBYTE_RAW_ID", "TEXT")
+                .put("_AIRBYTE_EXTRACTED_AT", "TIMESTAMP_TZ")
+                .put("_AIRBYTE_META", "VARIANT")
+                .put("ID1", "NUMBER(38, 0)")
+                .put("ID2", "NUMBER(38, 0)")
+                .put("UPDATED_AT", "TIMESTAMP_TZ")
+                .put("STRUCT", "OBJECT")
+                .put("ARRAY", "ARRAY")
+                .put("STRING", "TEXT")
+                .put("NUMBER", "FLOAT")
+                .put("INTEGER", "NUMBER(38, 0)")
+                .put("BOOLEAN", "BOOLEAN")
+                .put("TIMESTAMP_WITH_TIMEZONE", "TIMESTAMP_TZ")
+                .put("TIMESTAMP_WITHOUT_TIMEZONE", "TIMESTAMP_NTZ")
+                .put("TIME_WITH_TIMEZONE", "TEXT")
+                .put("TIME_WITHOUT_TIMEZONE", "TIME")
+                .put("DATE", "DATE")
+                .put("UNKNOWN", "VARIANT")
                 .build(),
             columns));
   }
