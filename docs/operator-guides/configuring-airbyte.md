@@ -15,14 +15,12 @@ If you want to manage your own docker files, please refer to Airbyte's docker fi
 
 ## Kubernetes Deployments
 
-The recommended way to run an Airbyte Kubernetes deployment is via the `Kustomize` overlays.
+The recommended way to run an [Airbyte Kubernetes deployment](../deploying-airbyte/on-kubernetes-via-helm.md) is via the `Helm Charts`.
 
-We recommend using the overlays in the `stable` directory as these have preset resource limits.
+To configure the  Airbyte Kubernetes deployment you need to modify the `values.yaml` file, more [info here](../deploying-airbyte/on-kubernetes-via-helm.md#custom-deployment).
+Each application will consume the appropriate values from that file.
 
-To configure the default Airbyte Kubernetes deployment, modify the `.env` in the respective directory. Each application will consume the appropriate
-env var from a generated configmap.
-
-If you want to manage your own Kube manifests, please refer to the various `Kustomize` overlays for examples.
+If you want to manage your own Kube manifests, please refer to the `Helm Chart`.
 
 ## Reference
 
@@ -156,7 +154,7 @@ A job specific variable overwrites the default sync job variable defined above.
 
 #### Worker
 
-1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Kustomize deployments.
+1. `TEMPORAL_WORKER_PORTS` - Define the local ports the Airbyte Worker pod uses to connect to the various Job pods. Port 9001 - 9040 are exposed by default in the Helm Chart.
 
 #### Logging
 
