@@ -1,16 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+from queue import Queue
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentStreamReader
+from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from source_stripe.streams import (
     Accounts,
     ApplicationFees,
@@ -62,6 +65,13 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+    def get_full_refresh_stream_reader(self):
+        # FIXME: This should be configurable somehow
+        partition_generator = PartitionGenerator(Queue(), "SourceStripe")
+        partition_reader = PartitionReader("PartitionReader", Queue())
+        max_workers = 10
+        return ConcurrentStreamReader(partition_generator, partition_reader, max_workers, DebugSliceLogger())
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stripe.api_key = config["client_secret"]

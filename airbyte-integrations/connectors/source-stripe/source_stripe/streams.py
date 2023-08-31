@@ -1,15 +1,17 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
+from queue import Queue
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -168,6 +170,9 @@ class Customers(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/customers/list
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**{**kwargs, **{"slice_range": 365}})
 
     cursor_field = "created"
     use_cache = True
@@ -369,6 +374,14 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
 
     def get_parent_stream_instance(self):
         return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+
+    def generate_partitions(self, sync_mode, cursor_field):
+        parent_stream = self.get_parent_stream_instance()
+        partition_generator = PartitionGenerator(Queue(), "SourceStripe")
+        partition_reader = PartitionReader("PartitionReader", Queue())
+        max_workers = 10
+        stream_reader = ConcurrentreamReader(partition_generator, partition_reader, max_workers, DebugSliceLogger())
+        yield from stream_reader.read_stream(parent_stream, None, parent_stream.logger)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
