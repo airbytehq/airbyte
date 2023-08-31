@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MAX_QUEUE_SIZE;
+import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MIN_QUEUE_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -11,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -82,6 +86,20 @@ public class MongoUtilTest {
     assertEquals(11, streams.get(0).getJsonSchema().get("properties").size());
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
         streams.get(0).getJsonSchema().get("properties").get("total").get("type").asText());
+  }
+
+  @Test
+  void testGetDebeziumEventQueueSize() {
+    final int queueSize = 5000;
+    final JsonNode validQueueSizeConfiguration = Jsons.jsonNode(Map.of(QUEUE_SIZE_CONFIGURATION_KEY, queueSize));
+    final JsonNode tooSmallQueueSizeConfiguration = Jsons.jsonNode(Map.of(QUEUE_SIZE_CONFIGURATION_KEY, Integer.MIN_VALUE));
+    final JsonNode tooLargeQueueSizeConfiguration = Jsons.jsonNode(Map.of(QUEUE_SIZE_CONFIGURATION_KEY, Integer.MAX_VALUE));
+    final JsonNode missingQueueSizeConfiguration = Jsons.jsonNode(Map.of());
+
+    assertEquals(queueSize, MongoUtil.getDebeziumEventQueueSize(validQueueSizeConfiguration).getAsInt());
+    assertEquals(MIN_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooSmallQueueSizeConfiguration).getAsInt());
+    assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooLargeQueueSizeConfiguration).getAsInt());
+    assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(missingQueueSizeConfiguration).getAsInt());
   }
 
 }

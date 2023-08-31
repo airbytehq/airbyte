@@ -96,6 +96,7 @@ public class MongoDbSource extends BaseConnector implements Source {
     final MongoClient mongoClient = createMongoClient(config);
 
     try {
+
       final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config);
       return AutoCloseableIterators
           .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList,
