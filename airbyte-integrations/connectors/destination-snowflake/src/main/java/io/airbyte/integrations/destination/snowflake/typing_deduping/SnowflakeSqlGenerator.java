@@ -514,9 +514,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public static String escapeIdentifier(final String identifier) {
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be doubled.
-    return identifier
-//        .toUpperCase()
-        .replace("\"", "\"\"");
+    return identifier.replace("\"", "\"\"");
   }
 
   public static String escapeSingleQuotedString(final String str) {
