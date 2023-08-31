@@ -1,22 +1,26 @@
 data:
+  allowedHosts:
+    hosts:
+      - "*.auth0.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-auth0
   githubIssueLabel: source-auth0
   icon: auth0.svg
   license: MIT
   name: Auth0
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: 2023-08-10
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
   tags:
-    - language:python
+    - language:lowcode
   ab_internal:
     sl: 100
     ql: 100

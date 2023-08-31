@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 import static io.airbyte.integrations.source.mssql.MssqlSource.DRIVER_CLASS;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -38,6 +40,7 @@ import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
 import java.util.List;
@@ -374,6 +377,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
     data.remove(CDC_EVENT_SERIAL_NO);
+    data.remove(CDC_DEFAULT_CURSOR);
   }
 
   @Override
@@ -409,6 +413,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
     assertNull(data.get(CDC_EVENT_SERIAL_NO));
+    assertNull(data.get(CDC_DEFAULT_CURSOR));
   }
 
   @Override
@@ -416,6 +421,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertNotNull(data.get(CDC_LSN));
     assertNotNull(data.get(CDC_EVENT_SERIAL_NO));
     assertNotNull(data.get(CDC_UPDATED_AT));
+    assertNotNull(data.get(CDC_DEFAULT_CURSOR));
     if (deletedAtNull) {
       assertTrue(data.get(CDC_DELETED_AT).isNull());
     } else {
@@ -428,17 +434,21 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
 
   }
 
   @Override
   protected void addCdcDefaultCursorField(final AirbyteStream stream) {
-    // Leaving empty until cdc default cursor is implemented for MSSQL
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
   }
 
   @Override

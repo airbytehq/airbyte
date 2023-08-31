@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
@@ -23,8 +27,9 @@ import java.util.stream.Collectors;
 
 public class PostgresCdcCtidUtils {
 
-  public static CtidStreams streamsToSyncViaCtid(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog,
-      final boolean savedOffsetAfterReplicationSlotLSN) {
+  public static CtidStreams streamsToSyncViaCtid(final CdcStateManager stateManager,
+                                                 final ConfiguredAirbyteCatalog fullCatalog,
+                                                 final boolean savedOffsetAfterReplicationSlotLSN) {
     if (!savedOffsetAfterReplicationSlotLSN) {
       return new CtidStreams(
           fullCatalog.getStreams()
@@ -69,7 +74,7 @@ public class PostgresCdcCtidUtils {
   }
 
   private static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
-      final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
+                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
     return catalog.getStreams().stream()

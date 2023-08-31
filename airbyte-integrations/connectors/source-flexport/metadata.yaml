@@ -19,7 +19,6 @@ data:
   name: Flexport
   releaseDate: 2021-12-14
   releaseStage: alpha
-  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/flexport
   tags:
     - language:low-code

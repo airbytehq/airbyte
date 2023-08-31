@@ -38,6 +38,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
@@ -70,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -246,6 +248,18 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    final Set<String> streamNames = new HashSet<>();
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      streamNames.add(stream.getStream().getName());
+    }
+    final Set<String> storageEngines = MySqlQueryUtils.getStorageEngines(database, streamNames);
+    LOGGER.info(String.format("Detected the following storage engines for MySQL: %s", storageEngines.toString()));
+  }
+
+  @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
@@ -354,6 +368,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new MySqlCdcStateHandler(stateManager),
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getDebeziumProperties(database),
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
           false);
 
@@ -366,6 +381,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           mySqlCdcConnectorMetadataInjector,
           MySqlCdcProperties.getSnapshotProperties(database),
           mySqlCdcStateHandler,
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt);
 
       return Collections.singletonList(

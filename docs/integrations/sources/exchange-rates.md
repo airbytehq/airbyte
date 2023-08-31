@@ -46,6 +46,7 @@ If you have `free` subscription plan \(you may check it [here](https://manage.ex
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.3.0   | 2023-08-25 | [29299](https://github.com/airbytehq/airbyte/pull/29299) | Migrate to low-code |
 | 1.2.9   | 2023-08-15 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Fix schema and tests  |
 | 1.2.8   | 2023-02-14 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Specified date formatting in specification                                                                          |
 | 1.2.7   | 2022-10-31 | [18726](https://github.com/airbytehq/airbyte/pull/18726) | Fix handling error during check connection                                                                          |
