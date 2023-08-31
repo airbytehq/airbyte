@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.openweathermap.org
   registries:
     oss:
-      enabled: false
+      enabled: true
     cloud:
       enabled: false
   connectorSubtype: api
@@ -16,7 +16,6 @@ data:
   icon: openweather.svg
   license: MIT
   name: Openweather
-  releaseDate: TODO
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
