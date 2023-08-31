@@ -68,7 +68,7 @@ allprojects {
     // projects clobber each other in an environments with subprojects when projects are in directories named identically.
     def sub = rootDir.relativePath(projectDir.parentFile).replace('/', '.')
     group = "io.${rootProject.name}${sub.isEmpty() ? '' : ".$sub"}"
-    project.archivesBaseName = "${project.group}-${project.name}"
+    project.base.archivesName = "${project.group}-${project.name}"
 
     version = rootProject.ext.version
 }
@@ -139,8 +139,10 @@ subprojects { subproj ->
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'pmd'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 
     if (subproj.name.startsWith("source-") || subproj.name.startsWith("destination-")) {
         // This is a Java connector project.
@@ -453,13 +455,15 @@ python {
 }
 
 // code and config generation is required for 'format'
-task generate { t ->
-    [ 'generateApiClient',
-      'generateComponentManifestClassFiles',
-      'generateJsonSchema2Pojo',
-    ].each { n ->
-        t.dependsOn subprojects.collect { getTasksByName(n, true) }
-    }
+task generate {}
+
+allprojects {
+    tasks.matching {
+        ['generateApiClient',
+         'generateComponentManifestClassFiles',
+         'generateJsonSchema2Pojo',
+        ].contains(it.name)
+    }.configureEach {rootProject.generate.dependsOn it}
 }
 
 // python license header generation is part of 'format'
