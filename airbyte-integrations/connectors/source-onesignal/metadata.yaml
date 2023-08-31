@@ -21,4 +21,5 @@ data:
   releaseStage: alpha
   tags:
     - language:lowcode
+  supportLevel: community
 metadataSpecVersion: "1.0"
