@@ -4,3 +4,6 @@ This directory contains templates used to bootstrap developing new connectors, a
 
 See the `generator/` directory to get started writing a new connector. 
 Other directories contain templates used to bootstrap a connector. 
+
+When you do changes here please run `./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates`
+to regenerate the files.
