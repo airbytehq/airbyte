@@ -150,10 +150,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
     // All the typing and deduping tasks should now be finished, report any exceptions thrown.
     typeAndDedupeTasks.stream()
-                      .map(CompletableFuture::join)
-                      .filter(Optional::isPresent)
-                      .map(Optional::get)
-                      .forEach(exception -> exceptionsThrown.add(exception));
+        .map(CompletableFuture::join)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(exception -> exceptionsThrown.add(exception));
     typerDeduper.commitFinalTables();
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));

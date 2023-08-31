@@ -112,7 +112,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
               destinationHandler.execute(sqlGenerator.createTable(stream, TMP_OVERWRITE_TABLE_SUFFIX, true));
               LOGGER.info("Using temp final table for stream {}, will overwrite existing table at end of sync", stream.id().finalName());
             } else {
-              LOGGER.info("Final Table for stream {} is empty and matches the expected v2 format, writing to table directly", stream.id().finalName());
+              LOGGER.info("Final Table for stream {} is empty and matches the expected v2 format, writing to table directly",
+                  stream.id().finalName());
             }
 
           } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {

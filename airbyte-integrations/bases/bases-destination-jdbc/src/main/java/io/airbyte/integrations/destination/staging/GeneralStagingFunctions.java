@@ -91,16 +91,17 @@ public class GeneralStagingFunctions {
     }
   }
 
-  private static CompletableFuture<Optional<Exception>> dropStageTask(WriteConfig writeConfig, StagingOperations stagingOperations,
-                                                               boolean purgeStagingData, JdbcDatabase database) {
+  private static CompletableFuture<Optional<Exception>> dropStageTask(WriteConfig writeConfig,
+                                                                      StagingOperations stagingOperations,
+                                                                      boolean purgeStagingData,
+                                                                      JdbcDatabase database) {
     return CompletableFuture.supplyAsync(() -> {
       try {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
           log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-                   stageName
-          );
+              stageName);
           stagingOperations.dropStageIfExists(database, stageName);
         }
         return Optional.empty();

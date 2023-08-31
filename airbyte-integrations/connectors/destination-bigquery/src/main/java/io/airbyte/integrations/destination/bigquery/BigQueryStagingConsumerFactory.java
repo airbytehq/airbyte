@@ -228,7 +228,8 @@ public class BigQueryStagingConsumerFactory {
     });
   }
 
-  private CompletableFuture<Optional<Exception>> stageDroppingFuture(final BigQueryWriteConfig writeConfig, final BigQueryStagingOperations bigQueryStagingOperations) {
+  private CompletableFuture<Optional<Exception>> stageDroppingFuture(final BigQueryWriteConfig writeConfig,
+                                                                     final BigQueryStagingOperations bigQueryStagingOperations) {
     return CompletableFuture.supplyAsync(() -> {
       bigQueryStagingOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
       return Optional.empty();
