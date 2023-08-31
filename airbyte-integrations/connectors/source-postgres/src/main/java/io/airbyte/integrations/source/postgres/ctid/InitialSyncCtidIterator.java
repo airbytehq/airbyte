@@ -110,8 +110,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
               } else {
                 LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
                     latestFileNode,
-                    lastKnownFileNode,
-                    airbyteStream);
+                    airbyteStream,
+                    lastKnownFileNode);
               }
             }
             lastKnownFileNode = latestFileNode;
@@ -160,8 +160,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     LOGGER.warn(
         "The latest file node {} for stream {} is not equal to the last known file node {} known to Airbyte. Airbyte will sync this table from scratch again",
         latestFileNode,
-        lastKnownFileNode,
-        airbyteStream);
+        airbyteStream,
+        lastKnownFileNode);
     if (numberOfTimesReSynced > MAX_ALLOWED_RESYNCS) {
       throw new RuntimeException("Airbyte has tried re-syncing stream " + airbyteStream + " more than " + MAX_ALLOWED_RESYNCS
           + " times but VACUUM is still happening in between the sync, Please reach out to the customer to understand their VACUUM frequency.");
