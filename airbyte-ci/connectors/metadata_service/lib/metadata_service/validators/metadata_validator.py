@@ -1,12 +1,16 @@
-import semver
-import pathlib
-import yaml
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import pathlib
 from dataclasses import dataclass
-from pydantic import ValidationError
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from typing import Optional, Tuple, Union, List, Callable
+from typing import Callable, List, Optional, Tuple, Union
+
+import semver
+import yaml
 from metadata_service.docker_hub import is_image_on_docker_hub
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from pydantic import ValidationError
 from pydash.objects import get
 
 

@@ -35,14 +35,16 @@ class AsyncFlush implements DestinationFlushFunction {
   private final TypeAndDedupeOperationValve typerDeduperValve;
   private final TyperDeduper typerDeduper;
   private final long optimalBatchSizeBytes;
+  private final boolean useDestinationsV2Columns;
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                     final StagingOperations stagingOperations,
                     final JdbcDatabase database,
                     final ConfiguredAirbyteCatalog catalog,
                     final TypeAndDedupeOperationValve typerDeduperValve,
-                    final TyperDeduper typerDeduper) {
-    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024);
+                    final TyperDeduper typerDeduper,
+                    final boolean useDestinationsV2Columns) {
+    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024, useDestinationsV2Columns);
   }
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
@@ -56,7 +58,8 @@ class AsyncFlush implements DestinationFlushFunction {
                     // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
                     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
                     // freed earlier similar to a sliding window effect
-                    long optimalBatchSizeBytes) {
+                    final long optimalBatchSizeBytes,
+                    final boolean useDestinationsV2Columns) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.database = database;
@@ -64,6 +67,7 @@ class AsyncFlush implements DestinationFlushFunction {
     this.typerDeduperValve = typerDeduperValve;
     this.typerDeduper = typerDeduper;
     this.optimalBatchSizeBytes = optimalBatchSizeBytes;
+    this.useDestinationsV2Columns = useDestinationsV2Columns;
   }
 
   @Override
@@ -72,7 +76,7 @@ class AsyncFlush implements DestinationFlushFunction {
     try {
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-          new StagingDatabaseCsvSheetGenerator(),
+          new StagingDatabaseCsvSheetGenerator(useDestinationsV2Columns),
           true);
 
       // reassign as lambdas require references to be final.

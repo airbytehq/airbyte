@@ -32,7 +32,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     container = new MongoDBContainer(DOCKER_IMAGE_NAME)
         .withNetwork(network)
         .withExposedPorts(DEFAULT_PORT);
@@ -82,7 +82,7 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     container.stop();
     container.close();
     bastion.getContainer().stop();

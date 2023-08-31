@@ -161,7 +161,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();
   }
 

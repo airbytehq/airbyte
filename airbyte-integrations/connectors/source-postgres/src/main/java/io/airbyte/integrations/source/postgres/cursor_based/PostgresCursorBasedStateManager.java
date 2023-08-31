@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.postgres.cursor_based;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 public class PostgresCursorBasedStateManager extends StreamStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
-
 
   public PostgresCursorBasedStateManager(final List<AirbyteStateMessage> airbyteStateMessages, final ConfiguredAirbyteCatalog catalog) {
     super(airbyteStateMessages, catalog);
@@ -79,7 +78,7 @@ public class PostgresCursorBasedStateManager extends StreamStateManager {
   }
 
   private CursorBasedStatus generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                               final CursorInfo cursorInfo) {
+                                                  final CursorInfo cursorInfo) {
     final CursorBasedStatus state = new CursorBasedStatus();
     state.setStateType(StateType.CURSOR_BASED);
     state.setVersion(2L);

@@ -134,6 +134,10 @@ public class SnowflakeDatabase {
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
 
+    // https://docs.snowflake.com/sql-reference/parameters#abort-detached-query
+    // If the connector crashes, snowflake should abort in-flight queries.
+    properties.put("ABORT_DETACHED_QUERY", "true");
+
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
@@ -148,7 +152,7 @@ public class SnowflakeDatabase {
   private static void createPrivateKeyFile(final String fileName, final String fileValue) {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException("Failed to create file for private key");
     }
   }

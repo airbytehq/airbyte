@@ -17,7 +17,7 @@
       "destination_sync_mode": "overwrite"
     },
     {
-        "stream": {
+      "stream": {
         "name": "sponsored_brands_v3_report_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

@@ -305,9 +305,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   /**
-   * This test verifies that multiple states are sent during the CDC process based on number of records.
-   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert
-   * the exact number of messages sent as depends on Debezium.
+   * This test verifies that multiple states are sent during the CDC process based on number of
+   * records. We can ensure that more than one `STATE` type of message is sent, but we are not able to
+   * assert the exact number of messages sent as depends on Debezium.
    *
    * @throws Exception Exception happening in the test.
    */
@@ -329,8 +329,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
       final JsonNode record =
           Jsons.jsonNode(ImmutableMap
-                             .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
-                                 "F-" + recordsCreated));
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
       writeModelRecord(record);
     }
 
@@ -348,4 +348,5 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   protected void assertStateForSyncShouldHandlePurgedLogsGracefully(final List<AirbyteStateMessage> stateMessages, final int syncNumber) {
     assertExpectedStateMessages(stateMessages);
   }
+
 }

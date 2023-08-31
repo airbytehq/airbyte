@@ -115,6 +115,9 @@ The Facebook Marketing source connector supports the following sync modes:
 - [Campaigns](https://developers.facebook.com/docs/marketing-api/reference/ad-campaign-group#fields)
 - [CustomConversions](https://developers.facebook.com/docs/marketing-api/reference/custom-conversion)
 - [CustomAudiences](https://developers.facebook.com/docs/marketing-api/reference/custom-audience)
+:::caution CustomAudiences
+The `rule` field may not be synced for all records because it caused the error message `Please reduce the amount of data...`.
+:::
 - [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 - [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
@@ -175,6 +178,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.7   | 2023-08-21 | [29674](https://github.com/airbytehq/airbyte/pull/29674) | Exclude `rule` from stream `CustomAudiences`                                                                                                                                                                                                                                                      |
 | 1.1.6   | 2023-08-18 | [29642](https://github.com/airbytehq/airbyte/pull/29642) | Stop batch requests if only 1 left in a batch                                                                                                                                                                                                                                                     |
 | 1.1.5   | 2023-08-18 | [29610](https://github.com/airbytehq/airbyte/pull/29610) | Automatically reduce batch size                                                                                                                                                                                                                                                                   |
 | 1.1.4   | 2023-08-08 | [29412](https://github.com/airbytehq/airbyte/pull/29412) | Add new custom_audience stream                                                                                                                                                                                                                                                                    |

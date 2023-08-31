@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from datetime import datetime, timezone
 from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock

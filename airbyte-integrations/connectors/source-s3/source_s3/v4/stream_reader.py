@@ -123,7 +123,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         total_n_keys_for_prefix = 0
         kwargs = {"Bucket": bucket}
         while True:
-            response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix) if prefix else s3.list_objects_v2(Bucket=bucket)
+            response = s3.list_objects_v2(Prefix=prefix, **kwargs) if prefix else s3.list_objects_v2(**kwargs)
             key_count = response.get("KeyCount")
             total_n_keys_for_prefix += key_count
             logger.info(f"Received {key_count} objects from S3 for prefix '{prefix}'.")

@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-// Feature flags to gate new primary key load features. 
+// Feature flags to gate new primary key load features.
 public class MySqlFeatureFlags {
 
   public static final String CDC_VIA_PK = "cdc_via_pk";
@@ -16,7 +16,7 @@ public class MySqlFeatureFlags {
     this.sourceConfig = sourceConfig;
   }
 
-  public boolean isCdcSyncEnabled() {
+  public boolean isCdcInitialSyncViaPkEnabled() {
     return getFlagValue(CDC_VIA_PK);
   }
 

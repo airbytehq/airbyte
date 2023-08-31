@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dagger import Platform
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext
-from dagger import Platform
 
 
 # TODO this class could be deleted
