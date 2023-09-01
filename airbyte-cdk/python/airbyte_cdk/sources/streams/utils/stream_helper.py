@@ -5,7 +5,10 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
+from airbyte_cdk.sources.streams.core import Stream, StreamData, LegacyPartition
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
 
 def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
@@ -18,21 +21,21 @@ def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
     # We wrap the return output of stream_slices() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
     slices = iter(
-        stream.stream_slices(
+        [p.to_slice for p in stream.generate_partitions(
             cursor_field=stream.cursor_field,
             sync_mode=SyncMode.full_refresh,
-        )
+        )]
     )
     return next(slices)
 
 
-def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:
+def get_first_record(stream: Stream) -> StreamData:
     """
-    Gets the first record for a stream_slice of a stream.
+    Gets the first record a stream.
     :param stream: stream
     :param stream_slice: stream_slice
     :raises StopIteration: if there is no first record to return (the read_records generator is empty)
     :return: StreamData containing the first record in the slice
     """
-    records_for_slice = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-    return next(records_for_slice)
+    # FIXME: this assumes everything uses a legacy partitions generator
+    return next(stream.read(None, stream.logger, DebugSliceLogger(), InternalConfig()))

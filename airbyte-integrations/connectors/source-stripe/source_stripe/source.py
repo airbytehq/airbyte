@@ -2,15 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
+# from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentFullRefreshStreamReader
+# from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
+# from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+# from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
 from source_stripe.streams import (
     Accounts,
     ApplicationFees,
@@ -62,6 +67,10 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+    # def get_full_refresh_stream_reader(self):
+    #     max_workers = 10
+    #     return ConcurrentFullRefreshStreamReader(PartitionGenerator, PartitionReader, max_workers, DebugSliceLogger())
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stripe.api_key = config["client_secret"]
@@ -70,7 +79,7 @@ class SourceStripe(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def _get_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
         args = {
@@ -80,7 +89,7 @@ class SourceStripe(AbstractSource):
             "slice_range": config.get("slice_range"),
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
-        return [
+        legacy_streams =  [
             Accounts(**args),
             ApplicationFees(**incremental_args),
             ApplicationFeesRefunds(**args),
@@ -127,4 +136,8 @@ class SourceStripe(AbstractSource):
             TransferReversals(**args),
             Transfers(**incremental_args),
             UsageRecords(**args),
+        ]
+        return [
+            ConcurrentStream(name=stream.name, partition_generator=stream.get_partition_generator(), max_workers=10, slice_logger=self._slice_logger, json_schema=stream.get_json_schema(),  availability_strategy=stream.availability_strategy)
+            for stream in legacy_streams
         ]

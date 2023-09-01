@@ -23,6 +23,7 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SynchronousFullRefreshReader
 from airbyte_cdk.sources.streams import FullRefreshStreamReader, Stream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -52,13 +53,13 @@ class AbstractSource(Source, ABC):
           The error object will be cast to string to display the problem to the user.
         """
 
-    @abstractmethod
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
+        raise NotImplemented
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, Stream] = {}
@@ -85,6 +86,9 @@ class AbstractSource(Source, ABC):
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
+    def _get_streams(self, config) -> List[AbstractStream]:
+        return self.streams(config)
+
     def read(
         self,
         logger: logging.Logger,
@@ -97,7 +101,7 @@ class AbstractSource(Source, ABC):
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self.streams(config)}
+        stream_instances = {s.name: s for s in self._get_streams(config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
@@ -112,6 +116,7 @@ class AbstractSource(Source, ABC):
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
+                    print(f"stream_is_available: {stream_is_available}")
                     if not stream_is_available:
                         logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
                         continue
@@ -282,18 +287,15 @@ class AbstractSource(Source, ABC):
             yield from self.message_repository.consume_queue()
         return
 
-    def get_full_refresh_stream_reader(self) -> FullRefreshStreamReader:
-        return SynchronousFullRefreshReader(self.get_slice_logger())
-
     def _read_full_refresh(
         self,
         logger: logging.Logger,
-        stream_instance: Stream,
+        stream_instance: AbstractStream,
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        for data_or_message in self.get_full_refresh_stream_reader().read_stream(
-            stream_instance, configured_stream.cursor_field, logger, internal_config
+        for data_or_message in stream_instance.read(
+            configured_stream.cursor_field, logger, self._slice_logger, internal_config
         ):
             yield self._get_message(data_or_message, stream_instance)
 

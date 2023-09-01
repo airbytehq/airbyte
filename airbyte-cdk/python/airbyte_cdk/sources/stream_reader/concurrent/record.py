@@ -4,7 +4,7 @@
 
 from typing import Any
 
-from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.utils.types import StreamData
 
 
 class Record:

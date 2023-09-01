@@ -6,7 +6,7 @@ from queue import Queue
 from typing import Optional
 
 from airbyte_cdk.sources.stream_reader.concurrent.record import Record
-from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import StreamPartition
+from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 
 
 class PartitionReader:
@@ -14,9 +14,8 @@ class PartitionReader:
         self._output_queue = Queue()
         self._done = True
 
-    def process_partition(self, partition: StreamPartition) -> None:
+    def process_partition(self, partition: Partition) -> None:
         self._done = False
-        partition.get_logger().debug(f"Processing partition={partition}")
         for record in partition.read():
             self._output_queue.put(record)
         self._done = True
