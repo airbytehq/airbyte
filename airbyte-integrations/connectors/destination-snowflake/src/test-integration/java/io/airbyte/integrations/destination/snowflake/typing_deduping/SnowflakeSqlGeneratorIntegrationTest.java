@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.timestampToString;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -288,6 +289,47 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             columns));
   }
 
+  /**
+   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key and a custom error message
+   */
+  @Override
+  @Test
+  public void incrementalDedupInvalidPrimaryKey() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        List.of(
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {}
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {"id1": 1, "id2": 100}
+                }
+                """)));
+
+    final String sql = generator.updateTable(incrementalDedupStream, "");
+    final Exception exception = assertThrows(
+        Exception.class,
+        () -> destinationHandler.execute(sql));
+
+    assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
+    assertTrue(exception.getMessage().contains("\"users_raw\"` has rows missing a primary key"));
+
+    DIFFER.diffFinalTableRecords(
+        emptyList(),
+        dumpFinalTableRecords(streamId, ""));
+  }
+
   @Override
   protected void createV1RawTable(final StreamId v1RawTable) throws Exception {
     database.execute(String.format(
@@ -372,25 +414,4 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
   }
-
-  /**
-   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key
-   */
-  @Test
-  protected void customExceptionWhenMissingPK() throws Exception {
-    createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords_missing_pk.jsonl"));
-
-    final String sql = generator.updateTable(incrementalDedupStream, "");
-    Exception exception = assertThrows(SnowflakeSQLException.class, () -> {
-      destinationHandler.execute(sql);
-    });
-
-    assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
-    assertTrue(exception.getMessage().contains("\"users_raw\"` has rows missing a primary key"));
-  }
-
 }
