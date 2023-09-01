@@ -17,14 +17,12 @@ from pydantic import BaseModel, Field
 
 class UsernamePasswordAuth(BaseModel):
     mode: Literal["username_password"] = Field("username_password", const=True)
-    username: str = Field(..., title="Username", description="Username for the Milvus instance")
-    password: str = Field(..., title="Password", description="Password for the Milvus instance", airbyte_secret=True)
+    username: str = Field(..., title="Username", description="Username for the Milvus instance", order=1)
+    password: str = Field(..., title="Password", description="Password for the Milvus instance", airbyte_secret=True, order=2)
 
     class Config:
         title = "Username/Password"
-        schema_extra = {
-            "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
-        }
+        schema_extra = {"description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"}
 
 
 class TokenAuth(BaseModel):
@@ -33,17 +31,21 @@ class TokenAuth(BaseModel):
 
     class Config:
         title = "API Token"
-        schema_extra = {
-            "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
-        }
+        schema_extra = {"description": "Authenticate using an API token (suitable for Zilliz Cloud)"}
 
 
 class MilvusIndexingConfigModel(BaseModel):
-    host: str = Field(..., title="Public Endpoint")
+    host: str = Field(
+        ...,
+        title="Public Endpoint",
+        order=1,
+        description="The public endpoint of the Milvus instance. ",
+        examples=["https://my-instance.zone.zillizcloud.com", "tcp://host.docker.internal:19530", "tcp://my-local-milvus:19530"],
+    )
     db: Optional[str] = Field(title="Database Name", description="The database to connect to", default="")
-    collection: str = Field(..., title="Collection Name", description="The collection to load data into")
-    auth: Union[UsernamePasswordAuth, TokenAuth] = Field(
-        ..., title="Authentication", description="Authentication method", discriminator="mode", type="object"
+    collection: str = Field(..., title="Collection Name", description="The collection to load data into", order=3)
+    auth: Union[TokenAuth, UsernamePasswordAuth] = Field(
+        ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2
     )
     vector_field: str = Field(title="Vector Field", description="The field in the entity that contains the vector", default="vector")
     text_field: str = Field(title="Text Field", description="The field in the entity that contains the embedded text", default="text")
