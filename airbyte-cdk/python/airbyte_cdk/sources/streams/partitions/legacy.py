@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
