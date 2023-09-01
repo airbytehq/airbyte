@@ -42,21 +42,21 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
 
   @Override
   public void migrateIfNecessary(final StreamConfig streamConfig) throws Exception {
-    final StreamId lowercasedStreamId = buildStreamId_lowercase(
+    final StreamId caseSensitiveStreamId = buildStreamId_caseSensitive(
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
         rawNamespace);
     final boolean syncModeRequiresMigration = streamConfig.destinationSyncMode() != DestinationSyncMode.OVERWRITE;
-    final boolean existingTableLowercaseExists = findExistingTable_lowercase(lowercasedStreamId).isPresent();
+    final boolean existingTableCaseSensitiveExists = findExistingTable_caseSensitive(caseSensitiveStreamId).isPresent();
     final boolean existingTableUppercaseDoesNotExist = !handler.findExistingTable(streamConfig.id()).isPresent();
     LOGGER.info(
-        "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing lowercased table exists: {}; existing uppercased table does not exist: {}",
+        "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing case-sensitive table exists: {}; existing uppercased table does not exist: {}",
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
         syncModeRequiresMigration,
-        existingTableLowercaseExists,
+        existingTableCaseSensitiveExists,
         existingTableUppercaseDoesNotExist);
-    if (syncModeRequiresMigration && existingTableLowercaseExists && existingTableUppercaseDoesNotExist) {
+    if (syncModeRequiresMigration && existingTableCaseSensitiveExists && existingTableUppercaseDoesNotExist) {
       LOGGER.info(
           "Executing upcasing migration for {}.{}",
           streamConfig.id().originalNamespace(),
@@ -67,20 +67,20 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
 
   // These methods were copied from
   // https://github.com/airbytehq/airbyte/blob/d5fdb1b982d464f54941bf9a830b9684fb47d249/airbyte-integrations/connectors/destination-snowflake/src/main/java/io/airbyte/integrations/destination/snowflake/typing_deduping/SnowflakeSqlGenerator.java
-  // which is the highest version of destination-snowflake that still uses quoted+lowercased
+  // which is the highest version of destination-snowflake that still uses quoted+case-sensitive
   // identifiers
-  private static StreamId buildStreamId_lowercase(final String namespace, final String name, final String rawNamespaceOverride) {
+  private static StreamId buildStreamId_caseSensitive(final String namespace, final String name, final String rawNamespaceOverride) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new StreamId(
-        escapeIdentifier_lowercase(namespace),
-        escapeIdentifier_lowercase(name),
-        escapeIdentifier_lowercase(rawNamespaceOverride),
-        escapeIdentifier_lowercase(StreamId.concatenateRawTableName(namespace, name)),
+        escapeIdentifier_caseSensitive(namespace),
+        escapeIdentifier_caseSensitive(name),
+        escapeIdentifier_caseSensitive(rawNamespaceOverride),
+        escapeIdentifier_caseSensitive(StreamId.concatenateRawTableName(namespace, name)),
         namespace,
         name);
   }
 
-  private static String escapeIdentifier_lowercase(final String identifier) {
+  private static String escapeIdentifier_caseSensitive(final String identifier) {
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be doubled.
     return identifier.replace("\"", "\"\"");
@@ -88,7 +88,7 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
 
   // And this was taken from
   // https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-snowflake/src/main/java/io/airbyte/integrations/destination/snowflake/typing_deduping/SnowflakeDestinationHandler.java
-  public Optional<SnowflakeTableDefinition> findExistingTable_lowercase(final StreamId id) throws SQLException {
+  public Optional<SnowflakeTableDefinition> findExistingTable_caseSensitive(final StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
     final LinkedHashMap<String, String> columns = database.queryJsons(
