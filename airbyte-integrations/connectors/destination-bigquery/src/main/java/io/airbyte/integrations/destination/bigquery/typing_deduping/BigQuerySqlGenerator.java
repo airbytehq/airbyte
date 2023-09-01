@@ -414,12 +414,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors;
-    if (streamColumns.isEmpty()) {
-      // ARRAY_CONCAT doesn't like having an empty argument list, so handle that case separately
-      columnErrors = "[]";
-    } else {
-      columnErrors = "[" + streamColumns.entrySet().stream().map(
+    final String columnErrors = "[" + streamColumns.entrySet().stream().map(
           col -> new StringSubstitutor(Map.of(
               "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
               "col_type", toDialectType(col.getValue()).name(),
@@ -435,7 +430,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                     ELSE NULL
                   END"""))
           .collect(joining(",\n")) + "]";
-    }
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -466,8 +460,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             WITH intermediate_data AS (
               SELECT
             ${column_casts}
-              ARRAY_AGG(column_errors IGNORE NULLS) as _airbyte_cast_errors
-              FROM UNNEST(${column_errors}) AS column_errors,
+              ${column_errors} AS column_errors,
               _airbyte_raw_id,
               _airbyte_extracted_at
               FROM ${raw_table_id}
@@ -477,7 +470,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             )
             SELECT
             ${column_list}
-              to_json(struct(_airbyte_cast_errors AS errors)) AS _airbyte_meta,
+              to_json(struct((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors) AS errors)) AS _airbyte_meta,
               _airbyte_raw_id,
               _airbyte_extracted_at
             FROM intermediate_data;""");
