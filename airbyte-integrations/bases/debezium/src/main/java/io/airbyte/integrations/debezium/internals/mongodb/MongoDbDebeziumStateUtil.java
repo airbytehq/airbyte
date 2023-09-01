@@ -107,11 +107,11 @@ public class MongoDbDebeziumStateUtil {
     stream.resumeAfter(savedOffset);
     try (var ignored = stream.cursor()) {
       LOGGER.info("Valid resume token '{}' present.  Incremental sync will be performed for up-to-date streams.",
-              ResumeTokens.getData(savedOffset).asString().getValue());
+          ResumeTokens.getData(savedOffset).asString().getValue());
       return true;
     } catch (MongoCommandException | MongoChangeStreamException e) {
       LOGGER.info("Invalid resume token '{}' present.  Initial snapshot will be performed for all streams.",
-              ResumeTokens.getData(savedOffset).asString().getValue());
+          ResumeTokens.getData(savedOffset).asString().getValue());
       return false;
     }
   }
