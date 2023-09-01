@@ -27,7 +27,7 @@ def test_partition_generator(partitions):
     # assert the generator has partitions if the stream has partitions
     assert partition_generator.has_next() == (len(partitions) > 0)
 
-    actual_partitions = list(p for p in partition_generator)
+    actual_partitions = [p for p in partition_generator]
     assert not partition_generator.has_next()
 
     expected_partitions = [StreamPartition(stream, p, cursor_field) for p in partitions]
