@@ -6,6 +6,8 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -30,8 +32,6 @@ public class DebeziumEventUtils {
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
 
-    LOGGER.info("Debezium record = {}, (before = {}, after = {}, source = {}).", debeziumRecord, before, after, source);
-
     final JsonNode data = formatDebeziumData(before, after, source, cdcMetadataInjector);
     final String schemaName = cdcMetadataInjector.namespace(source);
     final String streamName = cdcMetadataInjector.name(source);
@@ -52,7 +52,7 @@ public class DebeziumEventUtils {
                                              final JsonNode after,
                                              final JsonNode source,
                                              final CdcMetadataInjector cdcMetadataInjector) {
-    final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
+    final ObjectNode base = getBaseNode(after, before);
 
     final long transactionMillis = source.get("ts_ms").asLong();
     final String transactionTimestamp = new Timestamp(transactionMillis).toInstant().toString();
@@ -67,6 +67,23 @@ public class DebeziumEventUtils {
     }
 
     return base;
+  }
+
+  /**
+   * Selects the proper node from the Debezium change event that represents the modified document.
+   * <p />
+   * <p />
+   * Some data sources actually store their record data as JSON. This method handles nested JSON
+   * documents in the change event to ensure that the changed document can be added to the
+   * {@link AirbyteMessage} as a JSON document.
+   *
+   * @param after The state of the record after the change.
+   * @param before The state of the record before the change.
+   * @return The record that represents the change.
+   */
+  private static ObjectNode getBaseNode(final JsonNode after, final JsonNode before) {
+    final JsonNode baseNode = after.isNull() ? before : after;
+    return (ObjectNode) (baseNode instanceof TextNode ? Jsons.deserialize(baseNode.asText()) : baseNode);
   }
 
 }
