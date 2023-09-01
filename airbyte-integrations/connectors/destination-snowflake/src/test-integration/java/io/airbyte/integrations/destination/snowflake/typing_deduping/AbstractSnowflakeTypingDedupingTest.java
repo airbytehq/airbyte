@@ -143,6 +143,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
       database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
     }
   }
+
   @Test
   public void testFinalTableUppercasingMigration_overwrite() throws Exception {
     try {
