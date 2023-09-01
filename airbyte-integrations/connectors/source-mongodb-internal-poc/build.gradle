@@ -46,6 +46,7 @@ dependencies {
     debeziumTestImplementation libs.bundles.slf4j
     debeziumTestImplementation "org.slf4j:slf4j-simple:1.7.36"
     debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    debeziumTestImplementation libs.spotbugs.annotations
 }
 
 /*

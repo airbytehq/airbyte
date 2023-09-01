@@ -4,6 +4,7 @@ import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import com.mongodb.ReadPreference
 import com.mongodb.client.MongoClients
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.debezium.connector.mongodb.MongoDbConnector
 import io.debezium.connector.mongodb.ResumeTokens
 import io.debezium.engine.DebeziumEngine
@@ -159,7 +160,7 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         }
     }
 
-    protected fun getDebeziumProperties(cdcOffsetFilePath: Path, collectionNames: String?): Properties {
+    protected fun getDebeziumProperties(cdcOffsetFilePath: Path, collectionNames: String): Properties {
         val props = Properties()
         LOGGER.info("Included collection names regular expression: '{}'.", collectionNames)
         props.setProperty("connector.class", MongoDbConnector::class.java.getName())
@@ -213,12 +214,12 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
             return cdcWorkingDir.resolve("offset.txt")
         }
 
+    @SuppressFBWarnings("OBJECT_DESERIALIZATION")
     private fun readOffsetFile(path: Path) {
         LOGGER.info("Reading contents of offset file '{}'...", path)
         try {
             ObjectInputStream(Files.newInputStream(path)).use { ois ->
-                val obj = ois.readObject()
-                val raw = obj as Map<ByteArray, ByteArray>
+                val raw = ois.readObject() as Map<ByteArray, ByteArray>
                 raw.entries.forEach(Consumer { (key, value): Map.Entry<ByteArray, ByteArray> -> LOGGER.info("{}:{}", String(ByteBuffer.wrap(key).array(), StandardCharsets.UTF_8), String(ByteBuffer.wrap(value).array(), StandardCharsets.UTF_8)) })
             }
         } catch (e: IOException) {
