@@ -299,7 +299,7 @@ class ReportsBase(HarvestStream, ABC):
         super().__init__(**kwargs)
 
         current_date = pendulum.now().date()
-        self._from_date = from_date or current_date.subtract(years=1)
+        self._from_date = from_date or current_date.subtract(days=365)
         self._to_date = to_date or current_date
         # `to` date greater than `from` date causes an exception on Harvest
         if self._from_date > current_date:
