@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
     Accounts,
@@ -70,7 +70,7 @@ class SourceStripe(AbstractSource):
         except Exception as e:
             return False, e
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
         args = {
@@ -80,7 +80,7 @@ class SourceStripe(AbstractSource):
             "slice_range": config.get("slice_range"),
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
-        return [
+        legacy_streams = [
             Accounts(**args),
             ApplicationFees(**incremental_args),
             ApplicationFeesRefunds(**args),
@@ -128,3 +128,4 @@ class SourceStripe(AbstractSource):
             Transfers(**incremental_args),
             UsageRecords(**args),
         ]
+        return [ConcurrentStream.create_from_legacy_stream(stream, 10) for stream in legacy_streams]
