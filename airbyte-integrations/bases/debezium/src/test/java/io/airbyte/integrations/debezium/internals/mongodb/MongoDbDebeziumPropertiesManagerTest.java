@@ -24,6 +24,7 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_USER_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -118,6 +119,20 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
     assertEquals(debeziumPropertiesManager.createCollectionIncludeString(streams), debeziumProperties.get(COLLECTION_INCLUDE_LIST_KEY));
     assertEquals(DATABASE_NAME, debeziumProperties.get(DATABASE_INCLUDE_LIST_KEY));
+  }
+
+  @Test
+  void testNormalizeName() {
+    final String nameWithUnderscore = "name_with_underscore";
+    final String nameWithoutUnderscore = "nameWithout-Underscore";
+    final String blankName = "";
+    final String nullName = null;
+
+    assertEquals("name-with-underscore", MongoDbDebeziumPropertiesManager.normalizeName(nameWithUnderscore));
+    assertEquals(nameWithoutUnderscore, MongoDbDebeziumPropertiesManager.normalizeName(nameWithoutUnderscore));
+    assertEquals(blankName, MongoDbDebeziumPropertiesManager.normalizeName(blankName));
+    assertNull(MongoDbDebeziumPropertiesManager.normalizeName(nullName));
+
   }
 
   private JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {

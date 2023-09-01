@@ -17,6 +17,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
@@ -100,7 +101,8 @@ public class MongoDbCdcInitializer {
     final Set<ExcludedField> fieldsNotIncludedInCatalog = mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
-    final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
+    final JsonNode initialDebeziumState =
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, MongoDbDebeziumPropertiesManager.normalizeName(databaseName), replicaSet);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
         : Jsons.clone(stateManager.getCdcState().state());
     final Optional<BsonDocument> savedOffset = mongoDbDebeziumStateUtil.savedOffset(
