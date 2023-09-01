@@ -56,7 +56,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 @responses.activate
 @patch("time.sleep")
 def test_internal_server_error_retry(time_mock):
-    args = {"authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    args = {"api_url": "https://api.github.com", "authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = CommitCommentReactions(**args)
     stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
@@ -133,7 +133,7 @@ def test_retry_after(time_mock):
         content_type="application/json",
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    stream = Organizations(organizations=["airbytehq"], api_url="https://api.github.com/")
     list(read_full_refresh(stream))
     assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
@@ -164,7 +164,11 @@ def test_graphql_rate_limited(time_mock, sleep_mock):
         content_type="application/json",
     )
 
-    stream = PullRequestStats(repositories=["airbytehq/airbyte"], page_size_for_large_streams=30)
+    stream = PullRequestStats(
+        repositories=["airbytehq/airbyte"], 
+        page_size_for_large_streams=30,
+        api_url="https://api.github.com/"
+    )
     records = list(read_full_refresh(stream))
     assert records == []
     assert len(responses.calls) == 2
@@ -175,7 +179,7 @@ def test_graphql_rate_limited(time_mock, sleep_mock):
 
 @responses.activate
 def test_stream_teams_404():
-    organization_args = {"organizations": ["org_name"]}
+    organization_args = {"organizations": ["org_name"], "api_url": "https://api.github.com/"}
     stream = Teams(**organization_args)
 
     responses.add(
@@ -193,7 +197,7 @@ def test_stream_teams_404():
 @responses.activate
 @patch("time.sleep")
 def test_stream_teams_502(sleep_mock):
-    organization_args = {"organizations": ["org_name"]}
+    organization_args = {"organizations": ["org_name"], "api_url": "https://api.github.com/"}
     stream = Teams(**organization_args)
 
     url = "https://api.github.com/orgs/org_name/teams"
@@ -212,7 +216,7 @@ def test_stream_teams_502(sleep_mock):
 
 @responses.activate
 def test_stream_organizations_read():
-    organization_args = {"organizations": ["org1", "org2"]}
+    organization_args = {"organizations": ["org1", "org2"], "api_url": "https://api.github.com/"}
     stream = Organizations(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1", json={"id": 1})
     responses.add("GET", "https://api.github.com/orgs/org2", json={"id": 2})
@@ -222,7 +226,7 @@ def test_stream_organizations_read():
 
 @responses.activate
 def test_stream_teams_read():
-    organization_args = {"organizations": ["org1", "org2"]}
+    organization_args = {"organizations": ["org1", "org2"], "api_url": "https://api.github.com/"}
     stream = Teams(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
@@ -235,7 +239,7 @@ def test_stream_teams_read():
 
 @responses.activate
 def test_stream_users_read():
-    organization_args = {"organizations": ["org1", "org2"]}
+    organization_args = {"organizations": ["org1", "org2"], "api_url": "https://api.github.com/"}
     stream = Users(**organization_args)
     responses.add("GET", "https://api.github.com/orgs/org1/members", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/members", json=[{"id": 3}])
@@ -248,7 +252,7 @@ def test_stream_users_read():
 
 @responses.activate
 def test_stream_repositories_404():
-    organization_args = {"organizations": ["org_name"]}
+    organization_args = {"organizations": ["org_name"], "api_url": "https://api.github.com/"}
     stream = Repositories(**organization_args)
 
     responses.add(
@@ -265,7 +269,10 @@ def test_stream_repositories_404():
 
 @responses.activate
 def test_stream_repositories_401(caplog):
-    organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
+    organization_args = {
+        "organizations": ["org_name"], 
+        "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE,
+        "api_url": "https://api.github.com/"}
     stream = Repositories(**organization_args)
 
     responses.add(
@@ -285,7 +292,7 @@ def test_stream_repositories_401(caplog):
 
 @responses.activate
 def test_stream_repositories_read():
-    organization_args = {"organizations": ["org1", "org2"]}
+    organization_args = {"organizations": ["org1", "org2"], "api_url": "https://api.github.com/"}
     stream = Repositories(**organization_args)
     updated_at = "2020-01-01T00:00:00Z"
     responses.add(
@@ -306,7 +313,12 @@ def test_stream_repositories_read():
 @responses.activate
 def test_stream_projects_disabled():
 
-    repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
+    repository_args_with_start_date = {
+        "start_date": "start_date", 
+        "page_size_for_large_streams": 30, 
+        "repositories": ["test_repo"],
+        "api_url": "https://api.github.com/"
+    }
 
     stream = Projects(**repository_args_with_start_date)
     responses.add(
@@ -329,6 +341,7 @@ def test_stream_pull_requests_incremental_read():
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": page_size,
         "start_date": "2022-02-02T10:10:03Z",
+        "api_url": "https://api.github.com/"
     }
 
     stream = PullRequests(**repository_args_with_start_date)
@@ -392,6 +405,7 @@ def test_stream_commits_incremental_read():
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
         "start_date": "2022-02-02T10:10:03Z",
+        "api_url": "https://api.github.com"
     }
 
     default_branches = {"organization/repository": "master"}
@@ -449,6 +463,7 @@ def test_stream_pull_request_commits():
     repository_args = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
+        "api_url": "https://api.github.com"
     }
     repository_args_with_start_date = {**repository_args, "start_date": "2022-02-02T10:10:02Z"}
 
@@ -492,6 +507,7 @@ def test_stream_project_columns():
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
         "start_date": "2022-02-01T00:00:00Z",
+        "api_url": "https://api.github.com"
     }
 
     data = [
@@ -584,6 +600,7 @@ def test_stream_project_cards():
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
         "start_date": "2022-03-01T00:00:00Z",
+        "api_url": "https://api.github.com"
     }
 
     projects_stream = Projects(**repository_args_with_start_date)
@@ -680,6 +697,7 @@ def test_stream_comments():
         "repositories": ["organization/repository", "airbytehq/airbyte"],
         "page_size_for_large_streams": 2,
         "start_date": "2022-02-02T10:10:01Z",
+        "api_url": "https://api.github.com"
     }
 
     stream = Comments(**repository_args_with_start_date)
@@ -811,6 +829,7 @@ def test_streams_read_full_refresh():
     repository_args = {
         "repositories": ["organization/repository"],
         "page_size_for_large_streams": 100,
+        "api_url": "https://api.github.com"
     }
 
     repository_args_with_start_date = {**repository_args, "start_date": "2022-02-01T00:00:00Z"}
@@ -873,6 +892,7 @@ def test_stream_reviews_incremental_read():
         "start_date": "2000-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
         "repositories": ["airbytehq/airbyte"],
+        "api_url": "https://api.github.com"
     }
     stream = Reviews(**repository_args_with_start_date)
     stream.page_size = 2
@@ -905,8 +925,12 @@ def test_stream_reviews_incremental_read():
 
 @responses.activate
 def test_stream_team_members_full_refresh():
-    organization_args = {"organizations": ["org1"]}
-    repository_args = {"repositories": [], "page_size_for_large_streams": 100}
+    organization_args = {"organizations": ["org1"], "api_url": "https://api.github.com"}
+    repository_args = {
+        "repositories": [], 
+        "page_size_for_large_streams": 100,
+        "api_url": "https://api.github.com"
+    }
 
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"slug": "team1"}, {"slug": "team2"}])
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team1/members", json=[{"login": "login1"}, {"login": "login2"}])
@@ -939,7 +963,11 @@ def test_stream_team_members_full_refresh():
 @responses.activate
 def test_stream_commit_comment_reactions_incremental_read():
 
-    repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
+    repository_args = {
+        "repositories": ["airbytehq/integration-test"], 
+        "page_size_for_large_streams": 100,
+        "api_url": "https://api.github.com"
+    }
     stream = CommitCommentReactions(**repository_args)
 
     responses.add(
@@ -1023,6 +1051,7 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
         "repositories": ["org/repos"],
         "page_size_for_large_streams": 30,
         "start_date": "2022-01-01T00:00:00Z",
+        "api_url": "https://api.github.com"
     }
 
     monkeypatch.setattr(constants, "DEFAULT_PAGE_SIZE", 1)
@@ -1141,6 +1170,7 @@ def test_stream_workflow_jobs_read():
     repository_args = {
         "repositories": ["org/repo"],
         "page_size_for_large_streams": 100,
+        "api_url": "https://api.github.com"
     }
     repository_args_with_start_date = {**repository_args, "start_date": "2022-09-02T09:05:00Z"}
 
@@ -1243,6 +1273,7 @@ def test_stream_pull_request_comment_reactions_read():
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 2,
         "repositories": ["airbytehq/airbyte"],
+        "api_url": "https://api.github.com"
     }
     stream = PullRequestCommentReactions(**repository_args_with_start_date)
     stream.page_size = 2

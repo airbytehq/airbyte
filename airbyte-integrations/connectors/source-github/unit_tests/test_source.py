@@ -20,7 +20,7 @@ from .utils import command_check
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
     source = SourceGithub()
-    config = {"access_token": "test_token", "repository": repo_line}
+    config = {"api_url": "https://api.github.com/", "access_token": "test_token", "repository": repo_line}
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
 
@@ -70,7 +70,10 @@ def test_check_connection_org_only():
 @responses.activate
 def test_get_branches_data():
 
-    repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 10}
+    repository_args = {
+        "api_url": "https://api.github.com/",
+        "repositories": ["airbytehq/integration-test"], 
+        "page_size_for_large_streams": 10}
 
     source = SourceGithub()
 
@@ -126,7 +129,10 @@ def test_get_org_repositories():
         ],
     )
 
-    config = {"repository": "airbytehq/integration-test docker/*"}
+    config = {
+        "api_url": "https://api.github.com",
+        "repository": "airbytehq/integration-test docker/*"
+    }
     organisations, repositories = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
@@ -259,6 +265,7 @@ def test_streams_page_size():
     responses.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}])
 
     config = {
+        "api_url": "https://api.github.com/",
         "credentials": {"access_token": "access_token"},
         "repository": "airbytehq/airbyte",
         "start_date": "1900-07-12T00:00:00Z",
