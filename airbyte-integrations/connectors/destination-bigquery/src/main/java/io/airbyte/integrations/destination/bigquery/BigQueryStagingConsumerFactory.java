@@ -81,15 +81,15 @@ public class BigQueryStagingConsumerFactory {
 
   // TODO Commenting this out for now since it slows down syncs
   private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
-//    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
+    // final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
     return (streamId) -> {
-//      if (!valve.containsKey(streamId)) {
-//        valve.addStream(streamId);
-//      }
-//      if (valve.readyToTypeAndDedupe(streamId)) {
-//        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-//        valve.updateTimeAndIncreaseInterval(streamId);
-//      }
+      // if (!valve.containsKey(streamId)) {
+      // valve.addStream(streamId);
+      // }
+      // if (valve.readyToTypeAndDedupe(streamId)) {
+      // typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+      // valve.updateTimeAndIncreaseInterval(streamId);
+      // }
     };
   }
 
