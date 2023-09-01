@@ -12,7 +12,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
-class SyncrhonousFullRefreshReader(FullRefreshStreamReader):
+class SynchronousFullRefreshReader(FullRefreshStreamReader):
     def __init__(self, slice_logger: SliceLogger):
         self._slice_logger = slice_logger
 

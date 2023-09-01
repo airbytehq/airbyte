@@ -25,7 +25,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentFullRefreshStreamReader
 from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
+from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SynchronousFullRefreshReader
 from airbyte_cdk.sources.streams import FullRefreshStreamReader
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
@@ -36,7 +36,7 @@ _STREAM_NAME = "STREAM"
 
 
 def _synchronous_reader():
-    return SyncrhonousFullRefreshReader(DebugSliceLogger())
+    return SynchronousFullRefreshReader(DebugSliceLogger())
 
 
 def _concurrent_reader():

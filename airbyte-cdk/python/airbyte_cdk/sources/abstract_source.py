@@ -21,7 +21,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SyncrhonousFullRefreshReader
+from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SynchronousFullRefreshReader
 from airbyte_cdk.sources.streams import FullRefreshStreamReader, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -283,7 +283,7 @@ class AbstractSource(Source, ABC):
         return
 
     def get_full_refresh_stream_reader(self) -> FullRefreshStreamReader:
-        return SyncrhonousFullRefreshReader(self.get_slice_logger())
+        return SynchronousFullRefreshReader(self.get_slice_logger())
 
     def _read_full_refresh(
         self,
