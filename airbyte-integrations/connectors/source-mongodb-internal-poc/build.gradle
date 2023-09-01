@@ -11,6 +11,18 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations {
+    debeziumTest.extendsFrom testImplementation
+}
+
+sourceSets {
+    debeziumTest {
+        kotlin {
+            srcDirs('src/test/debezium')
+        }
+    }
+}
+
 dependencies {
     implementation libs.slf4j.api
     implementation libs.jackson.databind
@@ -29,6 +41,11 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-internal-poc')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    debeziumTestImplementation libs.bundles.debezium.bundle
+    debeziumTestImplementation libs.bundles.slf4j
+    debeziumTestImplementation "org.slf4j:slf4j-simple:1.7.36"
+    debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
 }
 
 /*
@@ -64,6 +81,35 @@ tasks.register('generateTestData', JavaExec) {
 
     classpath = sourceSets.test.runtimeClasspath
     main 'io.airbyte.integrations.source.mongodb.internal.MongoDbInsertClient'
+    standardInput = System.in
+    args arguments
+}
+
+/**
+ * Executes the Debezium MongoDB Connector test harness.
+ *
+ * To execute this task, use the following command:
+ *
+ * ./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:debeziumTest -PconnectionString=<connection string> -PdatabaseName=<database name> -PcollectionName=<collection name> -Pusername=<username>
+ */
+tasks.register('debeziumTest', JavaExec) {
+    def arguments = []
+
+    if(project.hasProperty('collectionName')) {
+        arguments.addAll(['--collection-name', collectionName])
+    }
+    if(project.hasProperty('connectionString')) {
+        arguments.addAll(['--connection-string', connectionString])
+    }
+    if(project.hasProperty('databaseName')) {
+        arguments.addAll(['--database-name', databaseName])
+    }
+    if(project.hasProperty('username')) {
+        arguments.addAll(['--username', username])
+    }
+
+    classpath = sourceSets.debeziumTest.runtimeClasspath
+    main 'io.airbyte.integrations.source.mongodb.internal.DebeziumMongoDbConnectorTest'
     standardInput = System.in
     args arguments
 }

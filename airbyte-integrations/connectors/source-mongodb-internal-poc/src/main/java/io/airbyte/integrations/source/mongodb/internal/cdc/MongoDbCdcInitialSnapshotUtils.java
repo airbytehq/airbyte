@@ -85,7 +85,6 @@ public class MongoDbCdcInitialSnapshotUtils {
           .filter(SYNC_MODE_FILTER)
           .toList());
     } else {
-
       // Find and filter out streams that have completed the initial snapshot
       final Set<AirbyteStreamNameNamespacePair> streamsStillInInitialSnapshot = stateManager.getStreamStates().entrySet().stream()
           .filter(e -> InitialSnapshotStatus.IN_PROGRESS.equals(e.getValue().status()))

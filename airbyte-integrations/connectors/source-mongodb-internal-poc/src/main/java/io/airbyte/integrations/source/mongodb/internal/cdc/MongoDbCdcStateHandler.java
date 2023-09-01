@@ -23,7 +23,7 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
 
   private final MongoDbStateManager stateManager;
 
-  public MongoDbCdcStateHandler(MongoDbStateManager stateManager) {
+  public MongoDbCdcStateHandler(final MongoDbStateManager stateManager) {
     this.stateManager = stateManager;
   }
 

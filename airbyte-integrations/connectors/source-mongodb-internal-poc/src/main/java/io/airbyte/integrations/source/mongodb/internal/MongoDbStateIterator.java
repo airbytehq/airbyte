@@ -40,7 +40,6 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private final ConfiguredAirbyteStream stream;
   private final List<String> fields;
   private final Instant emittedAt;
-
   private Instant lastCheckpoint = Instant.now();
   private final Integer checkpointInterval;
   private final Duration checkpointDuration;
