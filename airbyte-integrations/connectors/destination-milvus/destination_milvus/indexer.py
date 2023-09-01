@@ -4,6 +4,7 @@
 
 
 from multiprocessing import Process
+import os
 from typing import List, Optional
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
@@ -16,6 +17,8 @@ from destination_milvus.config import MilvusIndexingConfigModel
 from pymilvus import Collection, DataType, connections
 from pymilvus.exceptions import DescribeCollectionException
 
+
+CLOUD_DEPLOYMENT_MODE = "cloud"
 
 class MilvusIndexer(Indexer):
     config: MilvusIndexingConfigModel
@@ -49,6 +52,9 @@ class MilvusIndexer(Indexer):
         self._collection = Collection(self.config.collection)
 
     def check(self) -> Optional[str]:
+        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_https():
+            return "Host must start with https://"
         try:
             self._create_client()
 
@@ -67,6 +73,9 @@ class MilvusIndexer(Indexer):
         except Exception as e:
             return format_exception(e)
         return None
+    
+    def _uses_https(self) -> bool:
+        return self.config.host.startswith("https://")
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()

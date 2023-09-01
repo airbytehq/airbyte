@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+
 import unittest
 from unittest.mock import Mock
 
@@ -43,6 +45,25 @@ class TestMilvusIndexer(unittest.TestCase):
         self.assertIsNone(result)
 
         self.milvus_indexer._collection.describe.assert_called()
+
+    def test_check_secure_endpoint(self):
+        self.milvus_indexer._collection.describe.return_value = {
+            "auto_id": True,
+            "fields": [{"name": "vector", "type": DataType.FLOAT_VECTOR, "params": {"dim": 128}}],
+        }
+        test_cases = [
+            ("cloud", "http://example.org", "Host must start with https://"),
+            ("cloud", "https://example.org", None),
+            ("", "http://example.org", None),
+            ("", "https://example.org", None)
+        ]
+        for deployment_mode, uri, expected_error_message in test_cases:
+            os.environ["DEPLOYMENT_MODE"] = deployment_mode
+            self.milvus_indexer.config.host = uri
+
+            result = self.milvus_indexer.check()
+
+            self.assertEqual(result, expected_error_message)
 
     def test_check_handles_failure_conditions(self):
         # Test 1: Collection does not exist

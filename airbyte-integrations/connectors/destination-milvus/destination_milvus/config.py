@@ -20,10 +20,22 @@ class UsernamePasswordAuth(BaseModel):
     username: str = Field(..., title="Username", description="Username for the Milvus instance")
     password: str = Field(..., title="Password", description="Password for the Milvus instance", airbyte_secret=True)
 
+    class Config:
+        title = "Username/Password"
+        schema_extra = {
+            "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
+        }
+
 
 class TokenAuth(BaseModel):
     mode: Literal["token"] = Field("token", const=True)
     token: str = Field(..., title="API Token", description="API Token for the Milvus instance", airbyte_secret=True)
+
+    class Config:
+        title = "API Token"
+        schema_extra = {
+            "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
+        }
 
 
 class MilvusIndexingConfigModel(BaseModel):
@@ -39,7 +51,7 @@ class MilvusIndexingConfigModel(BaseModel):
     class Config:
         title = "Indexing"
         schema_extra = {
-            "group": "Indexing",
+            "group": "indexing",
             "description": "Indexing configuration",
         }
 
@@ -65,6 +77,7 @@ class ConfigModel(BaseModel):
     def remove_discriminator(schema: dict) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
         dpath.util.delete(schema, "properties/*/discriminator")
+        dpath.util.delete(schema, "properties/**/discriminator")
 
     @classmethod
     def schema(cls):

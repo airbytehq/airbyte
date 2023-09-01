@@ -5,11 +5,6 @@ FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-
-RUN apt-get update \
-    && pip install --upgrade pip \
-    && apt-get install -y build-essential
-
 COPY setup.py ./
 
 RUN pip install --upgrade pip
