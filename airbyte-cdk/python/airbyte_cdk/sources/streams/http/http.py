@@ -3,9 +3,11 @@
 #
 
 
+import asyncio
+import aiohttp
+from aiohttp import ClientSession, ClientResponse
 import logging
 import os
-import urllib
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -18,8 +20,9 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from requests.auth import AuthBase
+from requests_cache.session import CachedSession
 
-from ...utils.types import JsonType
+
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
@@ -37,12 +40,13 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None):
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
         if self.use_cache:
             self._session = self.request_cache()
         else:
             self._session = requests.Session()
 
+        self.client_session = None
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
@@ -50,24 +54,24 @@ class HttpStream(Stream, ABC):
             self._authenticator = authenticator
 
     @property
-    def cache_filename(self) -> str:
+    def cache_filename(self):
         """
         Override if needed. Return the name of cache file
         """
         return f"{self.name}.sqlite"
 
     @property
-    def use_cache(self) -> bool:
+    def use_cache(self):
         """
         Override if needed. If True, all records will be cached.
         """
         return False
 
-    def request_cache(self) -> requests.Session:
+    def request_cache(self) -> CachedSession:
         self.clear_cache()
         return requests_cache.CachedSession(self.cache_filename)
 
-    def clear_cache(self) -> None:
+    def clear_cache(self):
         """
         remove cache file only once
         """
@@ -134,9 +138,9 @@ class HttpStream(Stream, ABC):
     def path(
         self,
         *,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> str:
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
@@ -144,9 +148,9 @@ class HttpStream(Stream, ABC):
 
     def request_params(
         self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Override this method to define the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -156,10 +160,7 @@ class HttpStream(Stream, ABC):
         return {}
 
     def request_headers(
-        self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -168,10 +169,10 @@ class HttpStream(Stream, ABC):
 
     def request_body_data(
         self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Union[Mapping[str, Any], str]]:
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Mapping, str]]:
         """
         Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
 
@@ -185,10 +186,10 @@ class HttpStream(Stream, ABC):
 
     def request_body_json(
         self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
         """
         Override when creating POST/PUT/PATCH requests to populate the body of the request with a JSON payload.
 
@@ -198,9 +199,9 @@ class HttpStream(Stream, ABC):
 
     def request_kwargs(
         self,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         """
         Override to return a mapping of keyword arguments to be used when creating the HTTP request.
@@ -215,9 +216,9 @@ class HttpStream(Stream, ABC):
         response: requests.Response,
         *,
         stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         """
         Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
@@ -262,38 +263,15 @@ class HttpStream(Stream, ABC):
         """
         return ""
 
-    def must_deduplicate_query_params(self) -> bool:
-        return False
-
-    def deduplicate_query_params(self, url: str, params: Optional[Mapping[str, Any]]) -> Mapping[str, Any]:
-        """
-        Remove query parameters from params mapping if they are already encoded in the URL.
-        :param url: URL with
-        :param params:
-        :return:
-        """
-        if params is None:
-            params = {}
-        query_string = urllib.parse.urlparse(url).query
-        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
-
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
-
     def _create_prepared_request(
         self,
         path: str,
-        headers: Optional[Mapping[str, str]] = None,
-        params: Optional[Mapping[str, str]] = None,
-        json: Optional[Mapping[str, Any]] = None,
-        data: Optional[Union[str, Mapping[str, Any]]] = None,
+        headers: Mapping = None,
+        params: Mapping = None,
+        json: Any = None,
+        data: Any = None,
     ) -> requests.PreparedRequest:
-        url = self._join_url(self.url_base, path)
-        if self.must_deduplicate_query_params():
-            query_params = self.deduplicate_query_params(url, params)
-        else:
-            query_params = params or {}
-        args = {"method": self.http_method, "url": url, "headers": headers, "params": query_params}
+        args = {"method": self.http_method, "url": self._join_url(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -303,11 +281,41 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
+
         return self._session.prepare_request(requests.Request(**args))
 
     @classmethod
-    def _join_url(cls, url_base: str, path: str) -> str:
+    def _join_url(cls, url_base: str, path: str):
         return urljoin(url_base, path)
+
+    async def aiohttp_to_requests_response(self, aiohttp_resp: ClientResponse) -> requests.Response:
+        # Create a new requests.Response object
+        requests_resp = requests.Response()
+
+        # Transfer basic attributes
+        requests_resp.status_code = aiohttp_resp.status
+        requests_resp.url = str(aiohttp_resp.url)
+        requests_resp.headers = {k: v for k, v in aiohttp_resp.headers.items()}
+        requests_resp.encoding = aiohttp_resp.get_encoding()
+
+        # Set the content
+        content = await aiohttp_resp.read()
+        requests_resp._content = content
+
+        # Since 'requests' uses the 'requests.sessions' attribute for some operations,
+        # we'll set it to None to avoid AttributeError. This may not support all operations.
+        requests_resp.raw = None
+        requests_resp.reason = aiohttp_resp.reason
+        return requests_resp
+
+    async def _async_send(self, request: requests.PreparedRequest, **request_kwargs) -> requests.Response:
+        # print("Entering Async Send")
+        # print(request_kwargs)
+        print("HERE")
+        async with aiohttp.request(request.method, url=request.url, headers=request.headers) as response:
+            response = await self.aiohttp_to_requests_response(response)
+            return response
+
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
@@ -331,6 +339,14 @@ class HttpStream(Stream, ABC):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
+
+        # print("MOOSE")
+        # print(request_kwargs)
+        # print(request.__dict__)
+
+        # response = asyncio.run(self._async_send(request, **request_kwargs))
+        # print(res)
+        # raise Exception("Hold it right there")
         response: requests.Response = self._session.send(request, **request_kwargs)
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
@@ -400,12 +416,11 @@ class HttpStream(Stream, ABC):
         """
 
         # default logic to grab error from common fields
-        def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
+        def _try_get_error(value):
             if isinstance(value, str):
                 return value
             elif isinstance(value, list):
-                errors_in_value = [_try_get_error(v) for v in value]
-                return ", ".join(v for v in errors_in_value if v is not None)
+                return ", ".join(_try_get_error(v) for v in value)
             elif isinstance(value, dict):
                 new_value = (
                     value.get("message")
@@ -443,9 +458,9 @@ class HttpStream(Stream, ABC):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         yield from self._read_pages(
             lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
@@ -454,10 +469,10 @@ class HttpStream(Stream, ABC):
     def _read_pages(
         self,
         records_generator_fn: Callable[
-            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
         ],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         pagination_complete = False
@@ -474,10 +489,7 @@ class HttpStream(Stream, ABC):
         yield from []
 
     def _fetch_next_page(
-        self,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
@@ -494,7 +506,7 @@ class HttpStream(Stream, ABC):
 
 
 class HttpSubStream(HttpStream, ABC):
-    def __init__(self, parent: HttpStream, **kwargs: Any):
+    def __init__(self, parent: HttpStream, **kwargs):
         """
         :param parent: should be the instance of HttpStream class
         """
@@ -502,7 +514,7 @@ class HttpSubStream(HttpStream, ABC):
         self.parent = parent
 
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
