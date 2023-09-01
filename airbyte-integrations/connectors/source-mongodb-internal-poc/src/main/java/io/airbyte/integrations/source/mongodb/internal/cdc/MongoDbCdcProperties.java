@@ -25,9 +25,11 @@ public class MongoDbCdcProperties {
   static final String FIELD_EXCLUDE_LIST_KEY = "field.exclude.list";
 
   public record ExcludedField(String database, String collection, String field) {
+
     public String getFullyQualifiedName() {
       return String.format("%s.%s.%s", database, collection, field);
     }
+
   }
 
   /**
