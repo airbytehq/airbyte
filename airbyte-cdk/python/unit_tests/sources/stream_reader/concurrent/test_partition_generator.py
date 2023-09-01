@@ -11,16 +11,17 @@ from airbyte_cdk.sources.streams.core import LegacyPartition
 
 
 @pytest.mark.parametrize(
-    "partitions", [pytest.param([], id="test_no_partitions"), pytest.param([{"partition": 1}, {"partition": 2}], id="test_two_partitions")]
+    "slices", [pytest.param([], id="test_no_partitions"), pytest.param([{"partition": 1}, {"partition": 2}], id="test_two_partitions")]
 )
-def test_partition_generator(partitions):
+def test_partition_generator(slices):
     partition_generator = ConcurrentPartitionGenerator()
 
     stream = Mock()
-    stream.generate_partitions.return_value = iter(partitions)
+    cursor_field = ["A_NESTED", "CURSOR_FIELD"]
+    partitions = [LegacyPartition(stream, s, cursor_field) for s in slices]
+    stream.generate.return_value = iter(partitions)
 
     sync_mode = SyncMode.full_refresh
-    cursor_field = ["A_NESTED", "CURSOR_FIELD"]
 
     assert partition_generator.is_done()
 
@@ -34,5 +35,4 @@ def test_partition_generator(partitions):
 
     assert partition_generator.is_done()
 
-    expected_partitions = [LegacyPartition(stream, p, cursor_field) for p in partitions]
-    assert actual_partitions == expected_partitions
+    assert actual_partitions == partitions
