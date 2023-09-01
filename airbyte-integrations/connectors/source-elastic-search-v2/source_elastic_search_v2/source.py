@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+from airbyte_cdk.sources.streams.http.auth import NoAuth, HttpAuthenticator
 from elasticsearch import Elasticsearch
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -14,6 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.models import SyncMode
+from requests.auth import AuthBase
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -33,6 +35,7 @@ There are additional required TODOs in the files within the integration_tests fo
 # Basic full refresh stream
 class ElasticSearchV2Stream(HttpStream, ABC):
     url_base = "http://aes-statistic01.prod.dld:9200"
+    doc_count = 0
 
     @property
     def http_method(self) -> str:
@@ -43,9 +46,11 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         docs = response.json()["hits"]["hits"]
+        self.doc_count += len(docs)
+        pit_id = response.json()["pit_id"]
         if response.status_code == 200 and docs != []:
             search_after = docs[len(docs) - 1].get("sort")
-            return search_after
+            return {"search_after": search_after, "pit_id": pit_id}
         else:
             return None
 
@@ -133,6 +138,81 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, ABC):
     state_checkpoint_interval = 10
     _cursor_value = ""
+    pit = ""
+    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "/_search"
+
+    def request_body_data(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: int = 0,
+    ) -> Optional[Union[Mapping, str]]:
+        """
+        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
+
+        If returns a ready text that it will be sent as is.
+        If returns a dict that it will be converted to a urlencoded form.
+        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+
+        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
+        """
+
+        if stream_state == {}:
+            date_filter_start = "2023-08-30"
+        else:
+            date_filter_start = stream_state.get("date")
+
+        if next_page_token is None:
+            payload = {
+                "query": {
+                    "bool": {
+                        "filter": [
+                            {
+                                "range": {
+                                    "date": {
+                                        "gte": date_filter_start
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "pit": {
+                    "id": self.pit.body["id"],
+                    "keep_alive": "5m"
+                },
+                "size": 10000,
+                "sort": [
+                    "date",
+                    "ad_creative",
+                    "image"
+                ]
+            }
+
+        else:
+            pit_id = next_page_token["pit_id"]
+            search_after = next_page_token["search_after"]
+
+            payload = {
+                "query": {
+                    "query_string": {
+                        "query": "*"
+                    }
+                },
+                "pit": {
+                    "id": pit_id,
+                    "keep_alive": "5m"
+                },
+                "size": 10000,
+                "search_after": search_after
+            }
+
+        return payload
 
     @property
     def cursor_field(self) -> str:
@@ -242,8 +322,6 @@ class SourceElasticSearchV2(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         return [Creatives(), Campaigns(), Accounts()]
@@ -251,13 +329,14 @@ class SourceElasticSearchV2(AbstractSource):
 
 class Creatives(IncrementalElasticSearchV2Stream):
     cursor_field = "date"
-
     primary_key = "_id"
 
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "statistics_ad_creative*" + "/_search"
+    def __init__(self):
+
+        pit = self.client.open_point_in_time(index="statistics_ad_creative*", keep_alive="1m")
+        self.pit = pit
+
+        super().__init__()
 
     def request_body_data(
             self,
@@ -265,74 +344,30 @@ class Creatives(IncrementalElasticSearchV2Stream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: int = 0,
     ) -> Optional[Union[Mapping, str]]:
-        """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
 
-        If returns a ready text that it will be sent as is.
-        If returns a dict that it will be converted to a urlencoded form.
-        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        payload = super().request_body_data(stream_state, stream_slice, next_page_token)
 
-        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
-        """
-
-        if stream_state == {}:
-            date_filter_start = "2020-01-01"
-        else:
-            date_filter_start = stream_state.get("date")
-
-        self.logger.info("Date filter : {}".format(date_filter_start))
-
-        if next_page_token is None:
-            payload = {
-                "query": {
-                    "bool": {
-                        "filter": [
-                            {
-                                "range": {
-                                    "date": {
-                                        "gte": date_filter_start
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                },
-                "size": 10000,
-                "sort": [
+        payload["sort"] = [
                     "date",
                     "ad_creative",
                     "image"
-                ]
-            }
-
-        else:
-            payload = {
-                "query": {
-                    "query_string": {
-                        "query": "*"
-                    }
-                },
-                "size": 10000,
-                "search_after": next_page_token,
-                "sort": [
-                    "date",
-                    "ad_creative",
-                    "image"
-                ]
-            }
+                    ]
 
         return json.dumps(payload)
 
 
 class Campaigns(IncrementalElasticSearchV2Stream):
     cursor_field = "date"
-
     primary_key = "_id"
+    pit = ""
+    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
 
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "statistics_campaign*" + "/_search"
+    def __init__(self):
+
+        pit = self.client.open_point_in_time(index="statistics_campaign*", keep_alive="1m")
+        self.pit = pit
+
+        super().__init__()
 
     def request_body_data(
             self,
@@ -340,72 +375,29 @@ class Campaigns(IncrementalElasticSearchV2Stream):
             stream_slice: Mapping[str, Any] = None,
             next_page_token: int = 0,
     ) -> Optional[Union[Mapping, str]]:
-        """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
 
-        If returns a ready text that it will be sent as is.
-        If returns a dict that it will be converted to a urlencoded form.
-        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
+        payload = super().request_body_data(stream_state, stream_slice, next_page_token)
 
-        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
-        """
-
-        if stream_state == {}:
-            date_filter_start = "2020-01-01"
-        else:
-            date_filter_start = stream_state.get("date")
-
-        self.logger.info("Date filter : {}".format(date_filter_start))
-
-        if next_page_token is None:
-            payload = {
-                "query": {
-                    "bool": {
-                        "filter": [
-                            {
-                                "range": {
-                                    "date": {
-                                        "gte": date_filter_start
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                },
-                "size": 10000,
-                "sort": [
+        payload["sort"] = [
                     "date",
                     "campaign"
                 ]
-            }
-
-        else:
-            payload = {
-                "query": {
-                    "query_string": {
-                        "query": "*"
-                    }
-                },
-                "size": 10000,
-                "search_after": next_page_token,
-                "sort": [
-                    "date",
-                    "campaign"
-                ]
-            }
 
         return json.dumps(payload)
 
 
 class Accounts(IncrementalElasticSearchV2Stream):
     cursor_field = "date"
-
     primary_key = "_id"
+    pit = ""
+    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
 
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "statistics_account*" + "/_search"
+    def __init__(self):
+
+        pit = self.client.open_point_in_time(index="statistics_account*", keep_alive="1m")
+        self.pit = pit
+
+        super().__init__()
 
     def request_body_data(
             self,
@@ -424,7 +416,7 @@ class Accounts(IncrementalElasticSearchV2Stream):
         """
 
         if stream_state == {}:
-            date_filter_start = "2020-01-01"
+            date_filter_start = "2023-08-30"
         else:
             date_filter_start = stream_state.get("date")
 
@@ -466,5 +458,21 @@ class Accounts(IncrementalElasticSearchV2Stream):
                     "account"
                 ]
             }
+
+        return json.dumps(payload)
+
+    def request_body_data(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: int = 0,
+    ) -> Optional[Union[Mapping, str]]:
+
+        payload = super().request_body_data(stream_state, stream_slice, next_page_token)
+
+        payload["sort"] = [
+                    "date",
+                    "account"
+                ]
 
         return json.dumps(payload)
