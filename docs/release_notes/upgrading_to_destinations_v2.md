@@ -41,6 +41,8 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ## Quick Start to Upgrading
 
+**Self-hosted Airbyte users will need to be on at least version 0.50.24 of the Airbte Platform.**
+
 The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
 
 ![Upgrade Path](./assets/airbyte_destinations_v2_upgrade_prompt.png)
