@@ -9,7 +9,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
