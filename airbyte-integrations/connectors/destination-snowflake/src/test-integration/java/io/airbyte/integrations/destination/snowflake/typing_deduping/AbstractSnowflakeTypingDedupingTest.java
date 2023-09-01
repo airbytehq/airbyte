@@ -138,7 +138,8 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
       verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
-      // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code handles it fine)
+      // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
+      // handles it fine)
       database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
     }
   }
