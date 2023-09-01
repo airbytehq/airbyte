@@ -93,7 +93,7 @@ class Stream(AbstractStream, ABC):
         logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         for _slice in slices:
-            if slice_logger.should_log_slice_message(logger):
+            if slice_logger.should_log_slice_message(self.logger):
                 yield slice_logger.create_slice_log_message(_slice)
             record_data_or_messages = self.read_records(
                 stream_slice=_slice,

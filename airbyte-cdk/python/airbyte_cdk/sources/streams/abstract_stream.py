@@ -38,6 +38,10 @@ class AbstractStream(ABC):
         :return: The stream's records
         """
 
+    @abstractmethod
+    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
+        pass
+
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.streams.{self.name}")
@@ -112,10 +116,6 @@ class AbstractStream(ABC):
 
     def _wrapped_cursor_field(self) -> List[str]:
         return [self.cursor_field] if isinstance(self.cursor_field, str) else self.cursor_field
-
-    @abstractmethod
-    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        pass
 
     @classmethod
     def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
