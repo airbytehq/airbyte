@@ -398,7 +398,7 @@ jobs:
       - name: Generate Template scaffold
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+          command: ./gradlew :airbyte-integrations:connector-templates:generator:generateScaffolds --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 

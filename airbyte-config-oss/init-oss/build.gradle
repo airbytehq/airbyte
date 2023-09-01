@@ -19,9 +19,11 @@ dependencies {
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 
-task downloadConnectorRegistry(type: Download) {
+def downloadConnectorRegistry = tasks.register('downloadConnectorRegistry', Download) {
     src 'https://connectors.airbyte.com/files/registries/v0/oss_registry.json'
     dest new File(projectDir, 'src/main/resources/seed/oss_registry.json')
     overwrite true
 }
-processResources.dependsOn(downloadConnectorRegistry)
+tasks.named('processResources')configure {
+    dependsOn downloadConnectorRegistry
+}

@@ -7,18 +7,19 @@ airbytePython {
     moduleDirectory 'airbyte_cdk'
 }
 
-task generateComponentManifestClassFiles(type: Exec) {
+tasks.register('generateComponentManifestClassFiles', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
+}.configure {
     dependsOn ':tools:code-generator:airbyteDocker'
 }
 
-task validateSourceYamlManifest(type: Exec) {
+tasks.register('validateSourceYamlManifest', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/validate-yaml-schema.sh'
 }
 
-task runLowCodeConnectorUnitTests(type: Exec) {
+tasks.register('runLowCodeConnectorUnitTests', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/low-code-unit-tests.sh'
 }
