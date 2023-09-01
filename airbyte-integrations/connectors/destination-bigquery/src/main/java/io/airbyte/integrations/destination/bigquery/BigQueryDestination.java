@@ -281,7 +281,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               bigQueryGcsOperations,
               getCsvRecordFormatterCreator(namingResolver),
               namingResolver::getTmpTableName,
-              getTargetTableNameTransformer(namingResolver),
               typerDeduper,
               parsedCatalog,
               BigQueryUtils.getDatasetId(config));
@@ -295,7 +294,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throws IOException {
     return () -> {
       final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
-      LOGGER.error("Use 1s1t in the uploader map supplier" + use1s1t);
       for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
@@ -311,13 +309,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
         final String streamName = stream.getName();
         final String targetTableName;
-        if (use1s1t) {
-          parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
-          targetTableName = parsedStream.id().rawName();
-        } else {
-          parsedStream = null;
-          targetTableName = getTargetTableName(streamName);
-        }
+
+        parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+        targetTableName = parsedStream.id().rawName();
 
         final UploaderConfig uploaderConfig = UploaderConfig
                 .builder()
@@ -348,7 +342,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throws IOException {
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
-        BigQueryUploaderFactory.getUploader(uploaderConfig, AirbyteStreamNameNamespacePair.fromAirbyteStream(stream)));
+        BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 
   /**

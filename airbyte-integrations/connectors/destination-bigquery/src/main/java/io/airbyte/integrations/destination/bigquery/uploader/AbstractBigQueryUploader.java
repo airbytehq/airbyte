@@ -154,13 +154,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   protected void uploadData() {
     try {
-      if (!use1s1t) {
-        // This only needs to happen if we actually wrote to a tmp table.
-        LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
-        uploadDataToTableFromTmpTable();
-        LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
-      }
-
       LOGGER.info("Final state message is accepted.");
     } catch (final Exception e) {
       LOGGER.error("Upload data is failed!");

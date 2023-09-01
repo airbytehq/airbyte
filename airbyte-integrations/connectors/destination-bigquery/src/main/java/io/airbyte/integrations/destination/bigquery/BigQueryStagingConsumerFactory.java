@@ -61,7 +61,13 @@ public class BigQueryStagingConsumerFactory {
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
-        () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false),
+        (hasFailed) -> {
+            try {
+                onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        },
         flusher,
         catalog,
         new BufferManager(),
