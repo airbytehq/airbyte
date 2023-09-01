@@ -51,8 +51,8 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
 
             # While there is a partition to process
             for record in partition_reader:
-                yield record.stream_data
-                if FullRefreshStreamReader.is_record(record.stream_data):
+                yield record._stream_data
+                if FullRefreshStreamReader.is_record(record._stream_data):
                     total_records_counter += 1
                     if internal_config and internal_config.is_limit_reached(total_records_counter):
                         return
@@ -61,7 +61,7 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
                 if self._slice_logger.should_log_slice_message(logger):
                     # FIXME: This is creating slice log messages for parity with the synchronous implementation
                     # but these cannot be used by the connector builder to build slices because they can be unordered
-                    yield self._slice_logger.create_slice_log_message(partition.slice)
+                    yield self._slice_logger.create_slice_log_message(partition._slice)
         self._check_for_errors(stream, futures)
 
     def _is_done(self, futures: List[Future[Any]]) -> bool:
