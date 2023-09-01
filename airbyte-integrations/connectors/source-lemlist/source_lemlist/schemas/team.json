@@ -86,9 +86,13 @@
       "properties": {
         "errors": {
           "type": "array",
-          "items": {
-            "type": "string"
-          }
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "text": {
+                "type": "string"
+              }
+            }
         },
         "lastAt": {
           "format": "%Y-%m-%dT%H:%M:%S.%fZ",
