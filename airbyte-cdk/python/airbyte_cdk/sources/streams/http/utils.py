@@ -1,7 +1,10 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Optional
 
 import requests
-
 from airbyte_cdk.sources.utils.types import JsonType
 
 
@@ -23,13 +26,13 @@ def parse_response_error_message(response: requests.Response) -> Optional[str]:
             return ", ".join(v for v in errors_in_value if v is not None)
         elif isinstance(value, dict):
             new_value = (
-                    value.get("message")
-                    or value.get("messages")
-                    or value.get("error")
-                    or value.get("errors")
-                    or value.get("failures")
-                    or value.get("failure")
-                    or value.get("detail")
+                value.get("message")
+                or value.get("messages")
+                or value.get("error")
+                or value.get("errors")
+                or value.get("failures")
+                or value.get("failure")
+                or value.get("detail")
             )
             return _try_get_error(new_value)
         return None

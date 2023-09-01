@@ -1,32 +1,35 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import concurrent
 import logging
 from abc import abstractmethod
 from concurrent.futures import Future
 from functools import lru_cache
-from typing import Optional, List, Iterable, Any, Tuple, Union, Mapping
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import PartitionGenerator, FullRefreshStreamReader, package_name_from_class
+from airbyte_cdk.sources.streams.core import FullRefreshStreamReader, PartitionGenerator, package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import StreamData
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
 
 
 class ConcurrentStream(AbstractStream):
-
     def __init__(
-            self,
-            partition_generator: PartitionGenerator,
-            max_workers: int,
-            slice_logger: SliceLogger,
-            name: str,
-            json_schema: Mapping[str, Any],
-            availability_strategy: AvailabilityStrategy,
+        self,
+        partition_generator: PartitionGenerator,
+        max_workers: int,
+        slice_logger: SliceLogger,
+        name: str,
+        json_schema: Mapping[str, Any],
+        availability_strategy: AvailabilityStrategy,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -36,7 +39,12 @@ class ConcurrentStream(AbstractStream):
         self._json_schema = json_schema
         self._availability_strategy = availability_strategy
 
-    def read(self, cursor_field: Optional[List[str]], logger: logging.Logger, slice_logger: SliceLogger, internal_config: InternalConfig = InternalConfig()
+    def read(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        internal_config: InternalConfig = InternalConfig(),
     ) -> Iterable[StreamData]:
         logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         total_records_counter = 0
@@ -45,7 +53,11 @@ class ConcurrentStream(AbstractStream):
         partition_reader = PartitionReader()
 
         # Submit partition generation tasks
-        futures.append(self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh, cursor_field))
+        futures.append(
+            self._threadpool.submit(
+                partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh, cursor_field
+            )
+        )
         # While partitions are still being generated
         while partition_generator.has_next() or partition_reader.has_next() or not self._is_done(futures):
             self._check_for_errors(futures)
@@ -75,7 +87,6 @@ class ConcurrentStream(AbstractStream):
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
         if exceptions_from_futures:
             raise RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
-
 
     @property
     def name(self) -> str:

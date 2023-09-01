@@ -8,8 +8,8 @@ from typing import Optional, Tuple
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from requests import HTTPError
 from airbyte_cdk.sources.streams.http.utils import parse_response_error_message
+from requests import HTTPError
 
 STRIPE_ERROR_CODES = {
     "more_permissions_required": "This is most likely due to insufficient permissions on the credentials in use. "
