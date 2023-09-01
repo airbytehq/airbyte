@@ -29,11 +29,13 @@ definitions:
     request_parameters:
       sort_dir: ASC
       sort_field: '{{ parameters.cursor_field }}'
-    authenticator:
-      class_name: source_mailchimp.components.MailchimpAuthenticator
-      basic_auth: "#/definitions/basic_authenticator"
-      oauth: "#/definitions/oauth_authenticator"
+    # authenticator:
+    #   class_name: source_mailchimp.components.MailchimpAuthenticator
+      # basic_auth: "#/definitions/basic_authenticator"
+      # oauth: "#/definitions/oauth_authenticator"
     request_body_json: {}
+    basic_auth: "#/definitions/basic_authenticator"
+    oauth: "#/definitions/oauth_authenticator"
   paginator:
     type: DefaultPaginator
     page_token_option:
