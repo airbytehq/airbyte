@@ -13,6 +13,13 @@ definitions:
       type: DpathExtractor
       field_path:
         - '{{ parameters.field_path }}'
+  basic_authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config.credentials.apikey }}'
+      username: 'anystring'
+  oauth_authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config.credentials.access_token }}'
   requester:
     type: HttpRequester
     url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
@@ -23,9 +30,9 @@ definitions:
       sort_dir: ASC
       sort_field: '{{ parameters.cursor_field }}'
     authenticator:
-      type: BasicHttpAuthenticator
-      password: '{{ config[''password''] }}'
-      username: '{{ config[''username''] }}'
+      class_name: source_mailchimp.components.MailchimpAuthenticator
+      basic_auth: "#/definitions/basic_authenticator"
+      oauth: "#/definitions/oauth_authenticator"
     request_body_json: {}
   paginator:
     type: DefaultPaginator
@@ -107,7 +114,12 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_mailchimp.components.EmailActivityRecordExtractor
+          field_path:
+            - emails
       paginator:
         $ref: "#/definitions/paginator"
       partition_router:
@@ -134,8 +146,6 @@ definitions:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
-    $parameters:
-      field_path: emails
 streams:
   - "#/definitions/lists_stream"
   - "#/definitions/campaigns_stream"
