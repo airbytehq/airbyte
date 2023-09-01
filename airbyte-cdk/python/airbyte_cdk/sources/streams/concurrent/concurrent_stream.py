@@ -15,8 +15,8 @@ from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.streams.core import PartitionGenerator
-from airbyte_cdk.sources.streams.partition import Partition
+from airbyte_cdk.sources.streams.partitions.legacy import LegacyPartitionGenerator
+from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import StreamData
@@ -40,11 +40,13 @@ class ConcurrentStream(AbstractStream):
     @classmethod
     def create_from_legacy_stream(cls, stream: Stream, max_workers: int) -> "ConcurrentStream":
         return ConcurrentStream(
-            partition_generator=stream.get_partition_generator(),
+            partition_generator=LegacyPartitionGenerator(stream),
             max_workers=max_workers,
             name=stream.name,
             json_schema=stream.get_json_schema(),
             availability_strategy=AvailabilityStrategyLegacyAdapter(stream, stream.availability_strategy),
+            primary_key=stream.primary_key,
+            cursor_field=stream.cursor_field,
         )
 
     def __init__(
@@ -54,6 +56,8 @@ class ConcurrentStream(AbstractStream):
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AvailabilityStrategy,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        cursor_field: Union[str, List[str]],
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -61,6 +65,8 @@ class ConcurrentStream(AbstractStream):
         self._name = name
         self._json_schema = json_schema
         self._availability_strategy = availability_strategy
+        self._primary_key = primary_key
+        self._cursor_field = cursor_field
 
     def read(
         self,
@@ -77,9 +83,7 @@ class ConcurrentStream(AbstractStream):
 
         # Submit partition generation tasks
         futures.append(
-            self._threadpool.submit(
-                partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh, cursor_field
-            )
+            self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
         )
         # While partitions are still being generated
         while not (partition_generator.is_done() and partition_reader.is_done() and self._is_done(futures)):
@@ -101,11 +105,8 @@ class ConcurrentStream(AbstractStream):
                     if slice_logger.should_log_slice_message(logger):
                         # FIXME: This is creating slice log messages for parity with the synchronous implementation
                         # but these cannot be used by the connector builder to build slices because they can be unordered
-                        yield slice_logger.create_slice_log_message(partition._slice)
+                        yield slice_logger.create_slice_log_message(partition.to_slice())
         self._check_for_errors(futures)
-
-    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        yield from self._stream_partition_generator.generate(sync_mode=sync_mode, cursor_field=cursor_field)
 
     def _is_done(self, futures: List[Future[Any]]) -> bool:
         return all(future.done() for future in futures)
@@ -124,13 +125,11 @@ class ConcurrentStream(AbstractStream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        # FIXME need to support this!
-        return None
+        return self._primary_key
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        # FIXME need to support this!
-        return []
+        return self._cursor_field
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:

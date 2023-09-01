@@ -8,7 +8,6 @@ from typing import Optional, Tuple
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.http.utils import parse_response_error_message
 from requests import HTTPError
 
 STRIPE_ERROR_CODES = {
@@ -34,7 +33,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
             raise error
         doc_ref = self._visit_docs_message(logger, source)
         reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {error_message}. {doc_ref} "
-        response_error_message = parse_response_error_message(error.response)
+        response_error_message = stream.parse_response_error_message(error.response)
         if response_error_message:
             reason += response_error_message
         return False, reason

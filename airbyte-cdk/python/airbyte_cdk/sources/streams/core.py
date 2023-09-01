@@ -13,8 +13,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.partition import Partition
-from airbyte_cdk.sources.streams.record import Record
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
@@ -93,7 +91,7 @@ class Stream(AbstractStream, ABC):
         logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         for _slice in slices:
-            if slice_logger.should_log_slice_message(self.logger):
+            if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(_slice)
             record_data_or_messages = self.read_records(
                 stream_slice=_slice,
@@ -204,12 +202,6 @@ class Stream(AbstractStream, ABC):
         """
         return None
 
-    def get_partition_generator(self):
-        return LegacyPartitionGenerator(self)
-
-    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        yield from self.get_partition_generator().generate(sync_mode, cursor_field)
-
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -276,41 +268,3 @@ class Stream(AbstractStream, ABC):
             return wrapped_keys
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
-
-
-class PartitionGenerator(ABC):
-    def generate(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        # FIXME: probably need to pass the state right?
-        pass
-
-
-class LegacyPartitionGenerator(PartitionGenerator):
-    def __init__(self, stream: Stream):
-        self._stream = stream
-
-    def generate(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        return [
-            LegacyPartition(self._stream, _slice, cursor_field)
-            for _slice in self._stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)
-        ]
-
-
-class LegacyPartition(Partition):
-    def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]], cursor_field: Optional[List[str]] = None):
-        self._stream = stream
-        self._slice = _slice
-        self._cursor_field = cursor_field
-
-    def read(self) -> Iterable[Record]:
-        for record_data in self._stream.read_records(
-            sync_mode=SyncMode.full_refresh, cursor_field=self._cursor_field, stream_slice=self._slice
-        ):
-            yield Record(record_data)
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, LegacyPartition):
-            return False
-        return self._slice == other._slice and self._stream == other._stream
-
-    def to_slice(self) -> Mapping[str, Any]:
-        return self._slice

@@ -7,8 +7,8 @@ from queue import Queue
 from typing import List, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import PartitionGenerator
-from airbyte_cdk.sources.streams.partition import Partition
+from airbyte_cdk.sources.streams.partitions.partition import Partition
+from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
 
 
 class ConcurrentPartitionGenerator:
@@ -17,9 +17,9 @@ class ConcurrentPartitionGenerator:
         self._futures: List[Future[None]] = []
         self._done = True
 
-    def generate_partitions(self, partition_generator: PartitionGenerator, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> None:
+    def generate_partitions(self, partition_generator: PartitionGenerator, sync_mode: SyncMode) -> None:
         self._done = False
-        for partition in partition_generator.generate(sync_mode=sync_mode, cursor_field=cursor_field):
+        for partition in partition_generator.generate(sync_mode=sync_mode):
             self._queue.put(partition)
         self._done = True
 

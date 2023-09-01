@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
-from airbyte_cdk.sources.streams.core import LegacyPartition
+from airbyte_cdk.sources.streams.partitions.legacy import LegacyPartition
 
 
 @pytest.mark.parametrize(
@@ -17,15 +17,14 @@ def test_partition_generator(slices):
     partition_generator = ConcurrentPartitionGenerator()
 
     stream = Mock()
-    cursor_field = ["A_NESTED", "CURSOR_FIELD"]
-    partitions = [LegacyPartition(stream, s, cursor_field) for s in slices]
+    partitions = [LegacyPartition(stream, s) for s in slices]
     stream.generate.return_value = iter(partitions)
 
     sync_mode = SyncMode.full_refresh
 
     assert partition_generator.is_done()
 
-    partition_generator.generate_partitions(stream, sync_mode, cursor_field)
+    partition_generator.generate_partitions(stream, sync_mode)
 
     assert partition_generator.is_done() == (len(partitions) == 0)
 

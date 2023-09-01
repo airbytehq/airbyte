@@ -5,7 +5,7 @@
 from queue import Queue
 from typing import Optional
 
-from airbyte_cdk.sources.streams.partition import Partition
+from airbyte_cdk.sources.streams.partitions.partition import Partition
 from airbyte_cdk.sources.streams.record import Record
 
 

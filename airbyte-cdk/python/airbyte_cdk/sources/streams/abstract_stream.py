@@ -8,10 +8,9 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 import requests
-from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.streams.partition import Partition
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -37,10 +36,6 @@ class AbstractStream(ABC):
         :param internal_config:
         :return: The stream's records
         """
-
-    @abstractmethod
-    def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        pass
 
     @property
     def logger(self) -> logging.Logger:
