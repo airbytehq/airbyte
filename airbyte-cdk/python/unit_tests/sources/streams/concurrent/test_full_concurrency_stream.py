@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Iterable, List, Mapping, Optional, Union
 from unittest.mock import Mock
 
