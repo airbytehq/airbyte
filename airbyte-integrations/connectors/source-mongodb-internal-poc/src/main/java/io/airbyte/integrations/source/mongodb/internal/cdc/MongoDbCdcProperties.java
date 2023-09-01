@@ -11,7 +11,6 @@ import java.time.Duration;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 
 /**
  * Defines MongoDB specific CDC configuration properties for Debezium.
@@ -49,8 +48,9 @@ public class MongoDbCdcProperties {
      *
      * This is not the best place to be setting this property. Ideally, we would be setting it in the
      * {@link MongoDbDebeziumPropertiesManager}, but it is not straightforward to do so since debezium
-     * only allows to specify an exclude list of fields (as opposed to an include list). If/when debezium adds
-     * support for an include list, we should move this property to {@link MongoDbDebeziumPropertiesManager}.
+     * only allows to specify an exclude list of fields (as opposed to an include list). If/when
+     * debezium adds support for an include list, we should move this property to
+     * {@link MongoDbDebeziumPropertiesManager}.
      */
     props.setProperty(FIELD_EXCLUDE_LIST_KEY, createFieldsToExcludeString(fieldsToExclude, databaseName));
 
@@ -62,4 +62,5 @@ public class MongoDbCdcProperties {
         .map(field -> databaseName + "." + field.collection() + "." + field.field())
         .collect(Collectors.joining(","));
   }
+
 }

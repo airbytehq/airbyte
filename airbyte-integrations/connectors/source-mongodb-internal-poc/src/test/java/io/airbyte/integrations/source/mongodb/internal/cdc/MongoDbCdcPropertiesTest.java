@@ -37,7 +37,7 @@ class MongoDbCdcPropertiesTest {
   private final String FIELD2 = "field2";
   private final String FIELD3 = "field3";
 
-  private final String DATABASE= "database";
+  private final String DATABASE = "database";
 
   private final String FULLY_QUALIFIED_FIELD1 = DATABASE + "." + COLLECTION1 + "." + FIELD1;
   private final String FULLY_QUALIFIED_FIELD2 = DATABASE + "." + COLLECTION2 + "." + FIELD2;
@@ -47,12 +47,11 @@ class MongoDbCdcPropertiesTest {
   @Test
   void testDebeziumProperties() {
     final JsonNode config = Jsons.jsonNode(Map.of(DATABASE_CONFIGURATION_KEY, DATABASE));
-    final Set<CollectionAndField>  fieldsToExclude = Set.of(
+    final Set<CollectionAndField> fieldsToExclude = Set.of(
         new CollectionAndField(COLLECTION1, FIELD1),
         new CollectionAndField(COLLECTION2, FIELD2),
         new CollectionAndField(COLLECTION3, FIELD3),
-        new CollectionAndField(COLLECTION3, FIELD1)
-    );
+        new CollectionAndField(COLLECTION3, FIELD1));
 
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(config, fieldsToExclude);
     assertEquals(5, debeziumProperties.size());
@@ -68,4 +67,5 @@ class MongoDbCdcPropertiesTest {
     assertTrue(actualFullyQualifiedExcludedFields.contains(FULLY_QUALIFIED_FIELD3));
     assertTrue(actualFullyQualifiedExcludedFields.contains(FULLY_QUALIFIED_FIELD4));
   }
+
 }

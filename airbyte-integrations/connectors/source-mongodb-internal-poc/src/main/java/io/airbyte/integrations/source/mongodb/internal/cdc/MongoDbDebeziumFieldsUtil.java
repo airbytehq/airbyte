@@ -20,8 +20,9 @@ import java.util.stream.Collectors;
 public class MongoDbDebeziumFieldsUtil {
 
   /**
-   * Catalog contains the list of fields to include. In order to get the list of fields not included in the configuredCatalog, we
-   * need to get the list of all fields in the source database and subtract the list of fields in the configuredCatalog
+   * Catalog contains the list of fields to include. In order to get the list of fields not included
+   * in the configuredCatalog, we need to get the list of all fields in the source database and
+   * subtract the list of fields in the configuredCatalog
    */
   public Set<CollectionAndField> getFieldsNotIncludedInCatalog(final ConfiguredAirbyteCatalog configuredCatalog,
                                                                final String databaseName,
@@ -33,9 +34,10 @@ public class MongoDbDebeziumFieldsUtil {
 
   @VisibleForTesting
   static Set<CollectionAndField> getFieldsNotIncludedInConfiguredStreams(final ConfiguredAirbyteCatalog configuredCatalog,
-                                                                                 final List<AirbyteStream> sourceAirbyteStreams) {
+                                                                         final List<AirbyteStream> sourceAirbyteStreams) {
 
-    final List<AirbyteStream> configuredAirbyteStreams = configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
+    final List<AirbyteStream> configuredAirbyteStreams =
+        configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
     final Set<CollectionAndField> fieldsToInclude =
         configuredAirbyteStreams.stream().map(MongoDbDebeziumFieldsUtil::getCollectionAndFields).flatMap(Set::stream)
             .collect(Collectors.toSet());
@@ -55,4 +57,5 @@ public class MongoDbDebeziumFieldsUtil {
     final Map<String, Object> object = (Map) io.airbyte.protocol.models.Jsons.object(stream.getJsonSchema().get("properties"), Map.class);
     return object.keySet();
   }
+
 }

@@ -92,11 +92,15 @@ public class MongoDbCdcInitializer {
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config);
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
-    // WARNING!!! debezium's mongodb connector doesn't let you specify a list of fields to include, so we can't
-    // filter fields solely using the configured catalog. Instead, debezium only lets you specify a list of fields to exclude.
-    // If the fields to exclude we specify are not equal to all the fields in the source that are not in the configured catalog then
+    // WARNING!!! debezium's mongodb connector doesn't let you specify a list of fields to include, so
+    // we can't
+    // filter fields solely using the configured catalog. Instead, debezium only lets you specify a list
+    // of fields to exclude.
+    // If the fields to exclude we specify are not equal to all the fields in the source that are not in
+    // the configured catalog then
     // we will be outputting incorrect data.
-    final Set<CollectionAndField> fieldsNotIncludedInCatalog = mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
+    final Set<CollectionAndField> fieldsNotIncludedInCatalog =
+        mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(config, fieldsNotIncludedInCatalog);
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);

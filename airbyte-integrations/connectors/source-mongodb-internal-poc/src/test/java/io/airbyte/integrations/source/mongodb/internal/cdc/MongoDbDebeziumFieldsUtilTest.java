@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +31,7 @@ class MongoDbDebeziumFieldsUtilTest {
 
   @Test
   void getFieldsNotIncludedInCatalogTest() {
-    //source
+    // source
     final AirbyteStream sourceAirbyteStream1 = CatalogHelpers.createAirbyteStream(COLLECTION1,
         Field.of(FIELD1, JsonSchemaType.STRING),
         Field.of(FIELD2, JsonSchemaType.STRING));
@@ -38,14 +42,15 @@ class MongoDbDebeziumFieldsUtilTest {
         Field.of(FIELD4, JsonSchemaType.STRING),
         Field.of(FIELD5, JsonSchemaType.STRING));
 
-    //configured
+    // configured
     final AirbyteStream configuredAirbyteStream1 = CatalogHelpers.createAirbyteStream(COLLECTION2,
         Field.of(FIELD2, JsonSchemaType.STRING));
     final AirbyteStream configuredAirbyteStream2 = CatalogHelpers.createAirbyteStream(COLLECTION3,
         Field.of(FIELD4, JsonSchemaType.STRING),
         Field.of(FIELD5, JsonSchemaType.STRING));
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = new ConfiguredAirbyteCatalog().withStreams(
-        List.of(new ConfiguredAirbyteStream().withStream(configuredAirbyteStream1), new ConfiguredAirbyteStream().withStream(configuredAirbyteStream2)));
+        List.of(new ConfiguredAirbyteStream().withStream(configuredAirbyteStream1),
+            new ConfiguredAirbyteStream().withStream(configuredAirbyteStream2)));
 
     final Set<CollectionAndField> fieldsNotIncludedInCatalog =
         MongoDbDebeziumFieldsUtil.getFieldsNotIncludedInConfiguredStreams(
@@ -59,4 +64,5 @@ class MongoDbDebeziumFieldsUtilTest {
 
     assertEquals(expectedFieldsNotIncludedInCatalog, fieldsNotIncludedInCatalog);
   }
+
 }
