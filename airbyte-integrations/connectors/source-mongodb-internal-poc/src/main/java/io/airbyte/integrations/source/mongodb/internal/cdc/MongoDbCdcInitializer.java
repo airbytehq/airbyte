@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * <p />
  * <p />
  * For more information on the iterator selection logic, see
- * {@link MongoDbCdcInitialSnapshotUtils#getStreamsForInitialSnapshot(MongoDbStateManager, ConfiguredAirbyteCatalog, boolean)}
+ * {@link MongoDbCdcInitialSnapshotUtils#getStreamsForInitialSnapshot(MongoClient, MongoDbStateManager, ConfiguredAirbyteCatalog, boolean)}
  * and {@link AirbyteDebeziumHandler#getIncrementalIterators}
  */
 public class MongoDbCdcInitializer {
