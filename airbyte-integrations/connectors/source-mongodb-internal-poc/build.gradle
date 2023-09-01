@@ -43,7 +43,6 @@ dependencies {
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     debeziumTestImplementation libs.bundles.debezium.bundle
-    debeziumTestImplementation project(':airbyte-commons')
 }
 
 /*
