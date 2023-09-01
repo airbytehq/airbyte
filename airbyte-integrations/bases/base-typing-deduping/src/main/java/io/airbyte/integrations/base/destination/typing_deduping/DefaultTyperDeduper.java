@@ -10,7 +10,6 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 import autovalue.shaded.kotlin.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -50,7 +49,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
-  private final Map<Pair<String, String>, Boolean> streamsWithSuccessfulSetup;
+  private final Set<Pair<String, String>> streamsWithSuccessfulSetup;
 
   private final ExecutorService executorService;
 
@@ -66,7 +65,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
-    this.streamsWithSuccessfulSetup = new ConcurrentHashMap<>();
+    this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
     this.executorService = Executors.newFixedThreadPool(MAX_THREADS,
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
@@ -136,9 +135,10 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           // The table doesn't exist. Create it. Don't force.
           destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
         }
-        streamsWithSuccessfulSetup.put(new Pair<>(stream.id().originalNamespace(), stream.id().originalName()), true);
+        streamsWithSuccessfulSetup.add(new Pair<>(stream.id().originalNamespace(), stream.id().originalName()));
         return Optional.empty();
       } catch (Exception e) {
+        LOGGER.error("Exception occurred while preparing tables for stream " + stream.id().originalName(), e);
         return Optional.of(e);
       }
     }, this.executorService);
@@ -156,7 +156,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
     LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
-    if (!streamsWithSuccessfulSetup.containsKey(new Pair<>(originalNamespace, originalName))) {
+    if (!streamsWithSuccessfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
       // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
       // we should skip it.
       LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace, originalName);
@@ -172,7 +172,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       final var originalNamespace = streamConfig.id().originalNamespace();
       final var originalName = streamConfig.id().originalName();
       try {
-        if (!streamsWithSuccessfulSetup.containsKey(new Pair<>(originalNamespace, originalName))) {
+        if (!streamsWithSuccessfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
           // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
           // we should skip it.
           LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
@@ -211,7 +211,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Committing final tables");
     final Set<CompletableFuture<Optional<Exception>>> tableCommitTasks = new HashSet<>();
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
-      if (!streamsWithSuccessfulSetup.containsKey(new Pair<>(streamConfig.id().originalNamespace(), streamConfig.id().originalName()))) {
+      if (!streamsWithSuccessfulSetup.contains(new Pair<>(streamConfig.id().originalNamespace(), streamConfig.id().originalName()))) {
         LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
             streamConfig.id().originalNamespace(), streamConfig.id().originalName());
         continue;
@@ -234,6 +234,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         try {
           destinationHandler.execute(overwriteFinalTable);
         } catch (Exception e) {
+          LOGGER.error("Exception Occurred while committing final table for stream " + streamId.originalName(), e);
           return Optional.of(e);
         }
       }
