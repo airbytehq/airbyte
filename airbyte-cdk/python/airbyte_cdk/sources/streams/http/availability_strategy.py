@@ -9,6 +9,7 @@ from typing import Dict, Optional, Tuple
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.http.utils import parse_response_error_message
 from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
 from requests import HTTPError
 
@@ -86,7 +87,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
 
         doc_ref = self._visit_docs_message(logger, source)
         reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
-        response_error_message = stream.parse_response_error_message(error.response)
+        response_error_message = parse_response_error_message(error.response)
         if response_error_message:
             reason += response_error_message
         return False, reason
