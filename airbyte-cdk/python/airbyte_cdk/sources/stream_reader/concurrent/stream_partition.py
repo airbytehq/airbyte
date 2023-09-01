@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-from typing import Any, List, Mapping, Optional
+import logging
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -22,10 +22,10 @@ class StreamPartition:
             return False
         return self._slice == other._slice and self._stream == other._stream
 
-    def read(self):
+    def read(self) -> Iterable[Mapping[str, Any]]:
         # FIXME: Only full refresh is supported for now
         # FIXME: User-defined cursor fields are not supported for now
         yield from self._stream.read_records(SyncMode.full_refresh, cursor_field=self._cursor_field, stream_slice=self._slice)
 
-    def get_logger(self):
+    def get_logger(self) -> logging.Logger:
         return self._stream.logger
