@@ -66,9 +66,12 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
       final PreparedStatement statement = statementCreator.apply(connection);
       final JdbcStreamingQueryConfig streamingConfig = streamingQueryConfigProvider.get();
       streamingConfig.initialize(connection, statement);
-      return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig)
+      final ResultSet resultSet = statement.executeQuery();
+      return toUnsafeStream(resultSet, recordTransform, streamingConfig)
           .onClose(() -> {
             try {
+              resultSet.close();
+              statement.close();
               connection.setAutoCommit(true);
               connection.close();
               if (isStreamFailed) {
