@@ -15,6 +15,12 @@ class PartitionReader:
         self._done = True
 
     def process_partition(self, partition: Partition) -> None:
+        """
+        Process a partition and put the records in the output queue.
+        This method is meant to be called from a thread.
+        :param partition:
+        :return:
+        """
         self._done = False
         for record in partition.read():
             self._output_queue.put(record)

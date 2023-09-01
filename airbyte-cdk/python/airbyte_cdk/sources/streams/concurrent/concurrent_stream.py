@@ -23,7 +23,11 @@ from airbyte_cdk.sources.utils.types import StreamData
 
 
 class AvailabilityStrategyLegacyAdapter(AvailabilityStrategy):
-    def __init__(self, stream: AbstractStream, availability_strategy: AvailabilityStrategy):
+    """
+    This class is used to adapt the legacy Stream's Availability so it can be used from a ConcurrentStream.
+    """
+
+    def __init__(self, stream: Stream, availability_strategy: AvailabilityStrategy):
         self._stream = stream
         self._availability_strategy = availability_strategy
 
@@ -39,6 +43,12 @@ class AvailabilityStrategyLegacyAdapter(AvailabilityStrategy):
 class ConcurrentStream(AbstractStream):
     @classmethod
     def create_from_legacy_stream(cls, stream: Stream, max_workers: int) -> "ConcurrentStream":
+        """
+        Create a ConcurrentStream from a legacy Stream.
+        :param stream:
+        :param max_workers:
+        :return:
+        """
         return ConcurrentStream(
             partition_generator=LegacyPartitionGenerator(stream),
             max_workers=max_workers,
@@ -87,7 +97,8 @@ class ConcurrentStream(AbstractStream):
         futures.append(
             self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
         )
-        # While partitions are still being generated
+
+        # Run as long as there are partitions to process or records to read
         while not (partition_generator.is_done() and partition_reader.is_done() and self._is_done(futures)):
             self._check_for_errors(futures)
 
