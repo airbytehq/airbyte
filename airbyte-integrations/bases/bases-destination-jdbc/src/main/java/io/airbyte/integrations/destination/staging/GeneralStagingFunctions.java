@@ -115,6 +115,7 @@ public class GeneralStagingFunctions {
         }
       }
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       log.info("Cleaning up destination completed.");
     };
   }

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 
 import autovalue.shaded.kotlin.Pair;
@@ -66,7 +67,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
     this.streamsWithSuccessfulSetup = new ConcurrentHashMap<>();
-    this.executorService = Executors.newFixedThreadPool(MAX_THREADS, new BasicThreadFactory.Builder().namingPattern("type-and-dedupe").build());
+    this.executorService = Executors.newFixedThreadPool(MAX_THREADS,
+                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   public DefaultTyperDeduper(
@@ -244,4 +246,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     return overwriteStreamsWithTmpTable.contains(streamId) ? TMP_OVERWRITE_TABLE_SUFFIX : NO_SUFFIX;
   }
 
+  @Override
+  public void cleanup() {
+    LOGGER.info("Cleaning Up type-and-dedupe thread pool");
+    this.executorService.shutdown();
+  }
 }

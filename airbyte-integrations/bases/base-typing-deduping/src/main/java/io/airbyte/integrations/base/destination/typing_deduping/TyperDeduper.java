@@ -14,5 +14,5 @@ public interface TyperDeduper {
 
   void commitFinalTables() throws Exception;
 
-
+  void cleanup();
 }

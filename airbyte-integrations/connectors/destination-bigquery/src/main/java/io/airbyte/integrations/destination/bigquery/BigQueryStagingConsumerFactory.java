@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
@@ -80,16 +81,15 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
-//    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
+    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
     return (streamId) -> {
-//      Typing and deduping is slowing down syncs, lets not do this right now
-//      if (!valve.containsKey(streamId)) {
-//        valve.addStream(streamId);
-//      }
-//      if (valve.readyToTypeAndDedupe(streamId)) {
-//        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-//        valve.updateTimeAndIncreaseInterval(streamId);
-//      }
+      if (!valve.containsKey(streamId)) {
+        valve.addStream(streamId);
+      }
+      if (valve.readyToTypeAndDedupe(streamId)) {
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        valve.updateTimeAndIncreaseInterval(streamId);
+      }
     };
   }
 
@@ -233,6 +233,7 @@ public class BigQueryStagingConsumerFactory {
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       LOGGER.info("Cleaning up destination completed.");
     };
   }

@@ -123,6 +123,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     final List<Exception> exceptionsThrown = new ArrayList<>();
     typerDeduper.typeAndDedupe();
     typerDeduper.commitFinalTables();
+    typerDeduper.cleanup();
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
