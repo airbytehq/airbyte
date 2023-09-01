@@ -113,28 +113,34 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
    */
   @Test
   public void testFinalTableUppercasingMigration() throws Exception {
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(new AirbyteStream()
-                .withNamespace(streamNamespace)
-                .withName(streamName)
-                .withJsonSchema(SCHEMA))));
+    try {
+      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.FULL_REFRESH)
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(new AirbyteStream()
+                  .withNamespace(streamNamespace)
+                  .withName(streamName)
+                  .withJsonSchema(SCHEMA))));
 
-    // First sync
-    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
-    runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0");
-    // We no longer have the code to dump a lowercased table, so just move on directly to the new sync
+      // First sync
+      final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+      runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0");
+      // We no longer have the code to dump a lowercased table, so just move on directly to the new sync
 
-    // Second sync
-    final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+      // Second sync
+      final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
-    runSync(catalog, messages2);
+      runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+      final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    } finally {
+      // manually drop the lowercased schema, since we no longer have the code to do it automatically
+      // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code handles it fine)
+      database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
+    }
   }
 
   private String getDefaultSchema() {
