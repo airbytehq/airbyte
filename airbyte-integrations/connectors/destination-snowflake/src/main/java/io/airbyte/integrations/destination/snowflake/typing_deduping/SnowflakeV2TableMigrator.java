@@ -15,8 +15,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableDefinition> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeV2TableMigrator.class);
 
   private final JdbcDatabase database;
   private final String rawNamespace;
@@ -41,9 +44,19 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
         rawNamespace);
-    final Optional<SnowflakeTableDefinition> existingTableLowercase = findExistingTable_lowercase(lowercasedStreamId);
-
-    if (existingTableLowercase.isPresent()) {
+    final boolean existingTableLowercaseExists = findExistingTable_lowercase(lowercasedStreamId).isPresent();
+    final boolean existingTableUppercaseDoesNotExist = !handler.findExistingTable(streamConfig.id()).isPresent();
+    LOGGER.info(
+        "Checking whether upcasing migration is necessary for {}.{}. Existing lowercased table exists: {}; existing uppercased table does not exist: {}",
+        streamConfig.id().originalNamespace(),
+        streamConfig.id().originalName(),
+        existingTableLowercaseExists,
+        existingTableUppercaseDoesNotExist);
+    if (existingTableLowercaseExists && existingTableUppercaseDoesNotExist) {
+      LOGGER.info(
+          "Executing upcasing migration for {}.{}",
+          streamConfig.id().originalNamespace(),
+          streamConfig.id().originalName());
       handler.execute(generator.softReset(streamConfig));
     }
   }
