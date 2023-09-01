@@ -268,7 +268,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     final String script = new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "raw_table_id_no_single_quotes", id.rawTableId(QUOTE).replaceAll("'", ""),
+        "raw_table_id_no_single_quotes", escapeSingleQuotedString(id.rawTableId(QUOTE)),
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
             """
