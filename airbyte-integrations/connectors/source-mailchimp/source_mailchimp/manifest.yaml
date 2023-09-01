@@ -21,8 +21,8 @@ definitions:
       type: BearerAuthenticator
       api_token: '{{ config.credentials.access_token }}'
   requester:
-    type: HttpRequester
-    url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
+    type: CustomRequester
+    class_name: source_mailchimp.components.MailchimpRequester
     http_method: GET
     request_headers: {}
     path: '{{ parameters.path }}'

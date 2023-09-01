@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 
 import requests
 
@@ -70,3 +71,28 @@ class MailchimpAuthenticator(DeclarativeAuthenticator):
             return oauth
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
+
+@dataclass
+class MailchimpRequester(HttpRequester):
+    url_base = None
+
+    @staticmethod
+    def get_server_prefix(access_token: str) -> str:
+        try:
+            response = requests.get(
+                "https://login.mailchimp.com/oauth2/metadata", headers={"Authorization": "OAuth {}".format(access_token)}
+            )
+            return response.json()["dc"]
+        except Exception as e:
+            raise Exception(f"Cannot retrieve server_prefix for you account. \n {repr(e)}")
+    
+    def get_url_base(self) -> str:
+        auth_type = self.config.credentials.auth_type
+        if auth_type == "apikey":
+            data_center = self.config.credentials.apikey.split("-").pop()
+        elif auth_type == "oauth2.0":
+            data_center = self.get_server_prefix(self.config.credentials.access_token)
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
+
+        return f"https://{data_center}.api.mailchimp.com/3.0/"
