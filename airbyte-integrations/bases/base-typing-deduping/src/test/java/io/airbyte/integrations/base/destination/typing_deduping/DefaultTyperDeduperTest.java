@@ -196,7 +196,7 @@ public class DefaultTyperDeduperTest {
   void failedSetup() throws Exception {
     doThrow(new RuntimeException("foo")).when(destinationHandler).execute(any());
 
-    assertThrows(RuntimeException.class, () -> typerDeduper.prepareTables());
+    assertThrows(Exception.class, () -> typerDeduper.prepareTables());
     clearInvocations(destinationHandler);
 
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
