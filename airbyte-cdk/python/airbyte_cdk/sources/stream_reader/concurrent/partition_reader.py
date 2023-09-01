@@ -3,15 +3,14 @@
 #
 
 from queue import Queue
-from typing import Optional
 
 from airbyte_cdk.sources.stream_reader.concurrent.record import Record
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import StreamPartition
 
 
 class PartitionReader:
-    def __init__(self, output_queue: Optional[Queue[Record]] = None):
-        self._output_queue = output_queue if output_queue else Queue()
+    def __init__(self):
+        self._output_queue = Queue()
 
     def process_partition(self, partition: StreamPartition) -> None:
         partition.get_logger().debug(f"Processing partition={partition}")

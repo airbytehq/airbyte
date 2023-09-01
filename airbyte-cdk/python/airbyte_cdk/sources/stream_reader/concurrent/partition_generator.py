@@ -12,8 +12,8 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class PartitionGenerator:
-    def __init__(self, queue: Optional[Queue[StreamPartition]] = None):
-        self._queue = queue if queue else Queue()
+    def __init__(self):
+        self._queue = Queue()
         self._futures: List[Future[None]] = []
 
     def generate_partitions(self, stream: Stream, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> None:
