@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.MAX_ALLOWED_RESYNCS;
-import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.QUERY_TARGET_SIZE;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.QUERY_TARGET_SIZE_GB;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -108,7 +108,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
               if (!latestFileNode.equals(lastKnownFileNode)) {
                 resetSubQueries(latestFileNode);
               } else {
-                LOGGER.info("The latest file node {} for stream {} is equal to the last known file node {} known to Airbyte.",
+                LOGGER.info("The latest file node {} for stream {} is equal to the last file node {} known to Airbyte.",
                     latestFileNode,
                     airbyteStream,
                     lastKnownFileNode);
@@ -152,13 +152,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
     subQueriesPlan.clear();
     subQueriesPlan.addAll(ctidQueryPlan((currentCtidStatus == null) ? Ctid.of(0, 0) : Ctid.of(currentCtidStatus.getCtid()),
-        tableSize, blockSize, QUERY_TARGET_SIZE, useTestPageSize ? EIGHT_KB : GIGABYTE));
+        tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE));
     lastKnownFileNode = currentCtidStatus != null ? currentCtidStatus.getRelationFilenode() : null;
   }
 
   private void resetSubQueries(final Long latestFileNode) {
     LOGGER.warn(
-        "The latest file node {} for stream {} is not equal to the last known file node {} known to Airbyte. Airbyte will sync this table from scratch again",
+        "The latest file node {} for stream {} is not equal to the last file node {} known to Airbyte. Airbyte will sync this table from scratch again",
         latestFileNode,
         airbyteStream,
         lastKnownFileNode);
@@ -168,7 +168,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     }
     subQueriesPlan.clear();
     subQueriesPlan.addAll(ctidQueryPlan(Ctid.of(0, 0),
-        tableSize, blockSize, QUERY_TARGET_SIZE, useTestPageSize ? EIGHT_KB : GIGABYTE));
+        tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE));
     numberOfTimesReSynced++;
   }
 

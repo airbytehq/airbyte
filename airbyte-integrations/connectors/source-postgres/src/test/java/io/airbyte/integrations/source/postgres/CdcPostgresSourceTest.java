@@ -8,6 +8,7 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -970,7 +971,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
      * multiple pages (sub queries)
      */
     final JsonNode config = getConfig();
-    ((ObjectNode) config).put("use_test_page_size", true);
+    ((ObjectNode) config).put(USE_TEST_CHUNK_SIZE, true);
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators

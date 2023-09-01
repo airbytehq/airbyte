@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -117,7 +119,7 @@ public class PostgresCtidHandler {
     LOGGER.info("Queueing query for table: {}", tableName);
     return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
         blockSize, fileNodeHandler,
-        config.has("use_test_page_size") && config.get("use_test_page_size").asBoolean());
+        config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean());
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
