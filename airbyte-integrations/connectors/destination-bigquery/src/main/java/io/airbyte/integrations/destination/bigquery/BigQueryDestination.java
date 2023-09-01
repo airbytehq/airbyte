@@ -249,8 +249,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         migrator,
         v2RawTableMigrator,
-        8
-    );
+        8);
 
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {

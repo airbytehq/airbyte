@@ -20,8 +20,8 @@ public class FutureUtils {
    */
   public static int countOfTypingDedupingThreads(final int defaultThreads) {
     return Optional.ofNullable(System.getenv("TD_THREADS"))
-                   .map(Integer::valueOf)
-                   .orElse(defaultThreads);
+        .map(Integer::valueOf)
+        .orElse(defaultThreads);
   }
 
   public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)

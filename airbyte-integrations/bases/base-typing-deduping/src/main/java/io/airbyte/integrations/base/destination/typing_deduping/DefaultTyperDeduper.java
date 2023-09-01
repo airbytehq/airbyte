@@ -71,10 +71,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   }
 
   public DefaultTyperDeduper(
-      final SqlGenerator<DialectTableDefinition> sqlGenerator,
-      final DestinationHandler<DialectTableDefinition> destinationHandler,
-      final ParsedCatalog parsedCatalog,
-      final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator, final int defaultThreadCount) {
+                             final SqlGenerator<DialectTableDefinition> sqlGenerator,
+                             final DestinationHandler<DialectTableDefinition> destinationHandler,
+                             final ParsedCatalog parsedCatalog,
+                             final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
+                             final int defaultThreadCount) {
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2RawTableMigrator<>(), defaultThreadCount);
   }
 
