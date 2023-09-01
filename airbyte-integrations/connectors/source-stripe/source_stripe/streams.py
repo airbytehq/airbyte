@@ -169,9 +169,6 @@ class Customers(IncrementalStripeStream):
     API docs: https://stripe.com/docs/api/customers/list
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**{**kwargs, **{"slice_range": 365}})
-
     cursor_field = "created"
     use_cache = True
 
@@ -372,10 +369,6 @@ class StripeSubStream(BasePaginationStripeStream, ABC):
 
     def get_parent_stream_instance(self):
         return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-
-    # def generate_partitions(self, sync_mode, cursor_field, stream_reader):
-    #     parent_stream = self.get_parent_stream_instance()
-    #     yield from stream_reader.read_stream(parent_stream, None, parent_stream.logger)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
