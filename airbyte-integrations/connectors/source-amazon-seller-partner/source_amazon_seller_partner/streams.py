@@ -1052,3 +1052,10 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+
+class FBALongTermStorageFeeChargesReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_LONGTERM_STORAGE_FEE_CHARGES_DATA"
+    
+class FBAReimbursementsReport(ReportsAmazonSPStream):
+    name = "GET_FBA_REIMBURSEMENTS_DATA"
