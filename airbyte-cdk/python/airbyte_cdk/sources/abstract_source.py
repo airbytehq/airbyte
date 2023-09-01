@@ -53,13 +53,13 @@ class AbstractSource(Source, ABC):
           The error object will be cast to string to display the problem to the user.
         """
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+    @abstractmethod
+    def streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         """
         :param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
-        raise NotImplementedError
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, AbstractStream] = {}
@@ -86,15 +86,6 @@ class AbstractSource(Source, ABC):
             return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def _get_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
-        """
-        Returns a list of AbstractStreams.
-        This method should be used instead of streams when using concurrent streams.
-        :param config:
-        :return:
-        """
-        return self.streams(config)  # type: ignore # Stream is an AbstractStream
-
     def read(
         self,
         logger: logging.Logger,
@@ -107,7 +98,7 @@ class AbstractSource(Source, ABC):
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self._get_streams(config)}
+        stream_instances = {s.name: s for s in self.streams(config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:

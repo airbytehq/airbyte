@@ -70,7 +70,7 @@ class SourceStripe(AbstractSource):
         except Exception as e:
             return False, e
 
-    def _get_streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
+    def streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
         args = {
