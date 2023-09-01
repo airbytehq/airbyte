@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FutureUtils {
 
-  public static final int DEFAULT_TD_THREADS = 8;
+  public static final int DEFAULT_TD_THREADS = 4;
 
   /**
    * Allow for configuring the number of typing and deduping threads via an enviornment variable in
