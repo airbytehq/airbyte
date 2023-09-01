@@ -10,22 +10,25 @@ from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Stream
 
 
 class PartitionReader:
-    def __init__(self, output_queue: Optional[Queue[Record]] = None):
-        self._output_queue = output_queue if output_queue else Queue()
+    def __init__(self):
+        self._output_queue = Queue()
+        self._done = True
 
     def process_partition(self, partition: StreamPartition) -> None:
+        self._done = False
         partition.get_logger().debug(f"Processing partition={partition}")
         for record in partition.read():
             self._output_queue.put(record)
+        self._done = True
 
-    def has_next(self) -> bool:
+    def is_done(self) -> bool:
+        return self._output_queue.qsize() == 0 and self._done
+
+    def has_record_ready(self) -> bool:
         return self._output_queue.qsize() > 0
 
-    def __iter__(self) -> "PartitionReader":
-        return self
-
-    def __next__(self) -> Record:
+    def get_next(self) -> Optional[Record]:
         if self._output_queue.qsize() > 0:
             return self._output_queue.get()
         else:
-            raise StopIteration
+            return None
