@@ -54,6 +54,7 @@ from .streams import (
 )
 from .utils import read_full_refresh
 
+GITHUB_API_DEFAULT = "https://api.github.com"
 
 class SourceGithub(AbstractSource):
     @staticmethod
@@ -94,7 +95,7 @@ class SourceGithub(AbstractSource):
             stream = Repositories(
                 authenticator=authenticator, 
                 organizations=unchecked_orgs,
-                api_url=config["api_url"]
+                api_url=config.get("api_url", GITHUB_API_DEFAULT)
             )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -105,7 +106,7 @@ class SourceGithub(AbstractSource):
             stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=unchecked_repos,
-                api_url=config["api_url"],
+               api_url=config.get("api_url", GITHUB_API_DEFAULT),
                 # This parameter is deprecated and in future will be used sane default, page_size: 10
                 page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
