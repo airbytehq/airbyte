@@ -18,7 +18,6 @@ data:
   name: Zendesk Sunshine
   releaseDate: 2021-07-08
   releaseStage: alpha
-  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
   tags:
     - language:low-code

@@ -268,22 +268,24 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     final String script = new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
+        "raw_table_id_no_single_quotes", escapeSingleQuotedString(id.rawTableId(QUOTE)),
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
             """
+            DECLARE _ab_missing_primary_key EXCEPTION (-20001, 'Table ${raw_table_id_no_single_quotes} has rows missing a primary key');
             BEGIN
-            LET missing_pk_count INTEGER := (
-              SELECT COUNT(1)
-              FROM ${raw_table_id}
-              WHERE
-                "_airbyte_loaded_at" IS NULL
-                ${pk_null_checks}
-            );
+              LET missing_pk_count INTEGER := (
+                SELECT COUNT(1)
+                FROM ${raw_table_id}
+                WHERE
+                  "_airbyte_loaded_at" IS NULL
+                  ${pk_null_checks}
+              );
 
-            IF (missing_pk_count > 0) THEN
-              RAISE STATEMENT_ERROR;
-            END IF;
-            RETURN 'SUCCESS';
+              IF (missing_pk_count > 0) THEN
+                RAISE _ab_missing_primary_key;
+              END IF;
+              RETURN 'SUCCESS';
             END;
             """);
     return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
@@ -305,12 +307,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 CASE
                   WHEN (TYPEOF("_airbyte_data":"${raw_col_name}") NOT IN ('NULL', 'NULL_VALUE'))
                     AND (${json_extract} IS NULL)
-                    THEN ['Problem with `${printable_col_name}`']
-                  ELSE []
+                    THEN 'Problem with `${printable_col_name}`'
+                  ELSE NULL
                 END"""))
-        .reduce(
-            "ARRAY_CONSTRUCT()",
-            (acc, col) -> "ARRAY_CAT(" + acc + ", " + col + ")");
+        .collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -341,7 +341,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             WITH intermediate_data AS (
               SELECT
             ${column_casts}
-            ${column_errors} as "_airbyte_cast_errors",
+            ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
               "_airbyte_raw_id",
               "_airbyte_extracted_at"
               FROM ${raw_table_id}

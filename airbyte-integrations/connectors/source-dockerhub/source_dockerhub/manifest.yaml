@@ -25,7 +25,7 @@ streams:
             type: HttpRequester
             url_base: >-
               https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/alpine:pull/
-            path: ''
+            path: ""
             authenticator:
               type: NoAuth
             http_method: GET
