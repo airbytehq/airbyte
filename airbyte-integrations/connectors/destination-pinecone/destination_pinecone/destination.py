@@ -23,6 +23,8 @@ from destination_pinecone.document_processor import DocumentProcessor
 from destination_pinecone.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_pinecone.indexer import Indexer, PineconeIndexer
 from langchain.document_loaders.base import Document
+import queue
+import threading
 
 BATCH_SIZE = 128
 
@@ -30,6 +32,39 @@ indexer_map = {"pinecone": PineconeIndexer}
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
 
+
+class Worker:
+    indexer: Indexer
+    processor: DocumentProcessor
+    embedder: Embedder
+
+    def __init__(self, config: ConfigModel, configured_catalog: ConfiguredAirbyteCatalog):
+        self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.indexer = indexer_map["pinecone"](config.indexing, self.embedder)
+        self.processor = DocumentProcessor(config.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
+
+    def process_batch(self, batch: List[AirbyteRecordMessage]):
+        documents: List[Document] = []
+        ids_to_delete = []
+        for record in batch:
+            record_documents, record_id_to_delete = self.processor.process(record)
+            documents.extend(record_documents)
+            if record_id_to_delete is not None:
+                ids_to_delete.append(record_id_to_delete)
+        self.indexer.index(documents, ids_to_delete)
+
+def worker_thread(worker_id, shared_queue, worker):
+    while True:
+        # Wait for data package to arrive
+        data = shared_queue.get()
+
+        print("Starting worker thread %d" % worker_id)
+        # Process the data package
+        worker.process_batch(data)
+        print("Done worker thread %d" % worker_id)
+
+        # Mark the task as done
+        shared_queue.task_done()
 
 class DestinationPinecone(Destination):
     indexer: Indexer
@@ -41,14 +76,7 @@ class DestinationPinecone(Destination):
         self.indexer = indexer_map["pinecone"](config.indexing, self.embedder)
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]):
-        documents: List[Document] = []
-        ids_to_delete = []
-        for record in batch:
-            record_documents, record_id_to_delete = self.processor.process(record)
-            documents.extend(record_documents)
-            if record_id_to_delete is not None:
-                ids_to_delete.append(record_id_to_delete)
-        self.indexer.index(documents, ids_to_delete)
+        self.shared_queue.put(batch)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -58,6 +86,18 @@ class DestinationPinecone(Destination):
         self.processor = DocumentProcessor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
         batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
         self.indexer.pre_sync(configured_catalog)
+        num_workers = 10
+
+        # Shared queue for data packages
+        self.shared_queue = queue.Queue(num_workers)
+
+        # Start the worker threads
+        for i in range(num_workers):
+            worker = Worker(config_model, configured_catalog)
+            t = threading.Thread(target=worker_thread, args=(i, self.shared_queue, worker))
+            t.daemon = True  # Set threads as daemons to exit when the main program finishes
+            t.start()
+
         for message in input_messages:
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
@@ -67,6 +107,7 @@ class DestinationPinecone(Destination):
             elif message.type == Type.RECORD:
                 batcher.add(message.record)
         batcher.flush()
+        self.shared_queue.join()
         yield from self.indexer.post_sync()
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:

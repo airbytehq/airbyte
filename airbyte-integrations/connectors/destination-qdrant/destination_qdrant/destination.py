@@ -27,7 +27,6 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -42,8 +41,9 @@ from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 from qdrant_client import QdrantClient, models
 from qdrant_client.conversions.common_types import PointsSelector
+from langchain.text_splitter import CharacterTextSplitter
 
-BATCH_SIZE = 256
+BATCH_SIZE = 2000
 
 
 class UsernamePasswordAuth(BaseModel):
@@ -172,10 +172,53 @@ class QdrantIndexer(Indexer):
                     vector=embedding_vectors[i],
                 )
             )
-        self._client.upload_records(collection_name=self.config.collection, records=entities)
+        self._client.upload_records(collection_name=self.config.collection, records=entities, batch_size=BATCH_SIZE//10, parallel=10)
 
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
+
+class Writer:
+    """
+    The Writer class is orchestrating the document processor, the batcher and the indexer:
+    * Incoming records are collected using the batcher
+    * The document processor generates documents from all records in the batch
+    * The indexer indexes the resulting documents in the destination
+
+    The destination connector is responsible to create a writer instance and pass the input messages iterable to the write method.
+    The batch size can be configured by the destination connector to give the freedom of either letting the user configure it or hardcoding it to a sensible value depending on the destination.
+    """
+
+    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, batch_size: int) -> None:
+        self.processing_config = processing_config
+        self.indexer = indexer
+        self.batcher = Batcher(batch_size, lambda batch: self._process_batch(batch))
+
+    def _process_batch(self, batch: List[AirbyteRecordMessage]) -> None:
+        documents: List[Chunk] = []
+        ids_to_delete = []
+        for record in batch:
+            record_documents, record_id_to_delete = self.processor.process(record)
+            documents.extend(record_documents)
+            if record_id_to_delete is not None:
+                ids_to_delete.append(record_id_to_delete)
+        self.indexer.index(documents, ids_to_delete)
+
+    def write(self, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]) -> Iterable[AirbyteMessage]:
+        self.processor = DocumentProcessor(self.processing_config, configured_catalog)
+        self.processor.splitter = CharacterTextSplitter(
+            chunk_size=1000, chunk_overlap=0
+        )
+        self.indexer.pre_sync(configured_catalog)
+        for message in input_messages:
+            if message.type == Type.STATE:
+                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
+                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
+                self.batcher.flush()
+                yield message
+            elif message.type == Type.RECORD:
+                self.batcher.add(message.record)
+        self.batcher.flush()
+        yield from self.indexer.post_sync()
 
 
 class DestinationQdrant(Destination):
