@@ -68,11 +68,12 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 
 To get started, use the [Pinecone web UI or API](https://docs.pinecone.io/docs/quickstart) to create a project and an index before running the destination. All streams will be indexed into the same index, the `_ab_stream` metadata field is used to distinguish between streams. Overall, the size of the metadata fields is limited to 30KB per document. 
 
-OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordingly.
+OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere embeddings produce vectors with 1024 dimensions. Make sure to configure the index accordi../../../docs/integrations/destinations/pinecone.mdngly.
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.2   | 2023-09-01 | [#29442](https://github.com/airbytehq/airbyte/pull/29946)     | Improve test coverage  | 
+| 0.0.3   | 2023-09-01 | [#30079](https://github.com/airbytehq/airbyte/pull/30079)     | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade.  | 
+| 0.0.2   | 2023-08-31 | [#29442](https://github.com/airbytehq/airbyte/pull/29946)     | Improve test coverage  | 
 | 0.0.1   | 2023-08-29 | [#29539](https://github.com/airbytehq/airbyte/pull/29539)     | Pinecone connector with some embedders  | 
