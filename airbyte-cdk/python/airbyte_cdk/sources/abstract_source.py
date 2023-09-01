@@ -327,6 +327,3 @@ class AbstractSource(Source, ABC):
     @property
     def message_repository(self) -> Union[None, MessageRepository]:
         return None
-
-    def get_slice_logger(self) -> SliceLogger:
-        return DebugSliceLogger()
