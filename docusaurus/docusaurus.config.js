@@ -82,6 +82,18 @@ const config = {
             from: "/cloud/dbt-cloud-integration",
             to: "/cloud/managing-airbyte-cloud/dbt-cloud-integration",
           },
+          {
+            from: "/cloud/managing-airbyte-cloud/review-sync-summary",
+            to: "/cloud/managing-airbyte-cloud/review-sync-history",
+          },
+          {
+            from: "/cloud/managing-airbyte-cloud/review-connection-state",
+            to: "/cloud/managing-airbyte-cloud/manage-connection-state",
+          },
+          {
+            from: "/cloud/managing-airbyte-cloud/edit-stream-configuration",
+            to: "/cloud/managing-airbyte-cloud/configuring-connections", 
+          },
           //                        {
           //                         from: '/some-lame-path',
           //                         to: '/a-much-cooler-uri',
