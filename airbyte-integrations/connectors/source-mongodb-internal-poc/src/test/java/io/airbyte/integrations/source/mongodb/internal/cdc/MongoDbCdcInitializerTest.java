@@ -96,6 +96,7 @@ class MongoDbCdcInitializerTest {
 
   private MongoDbCdcInitializer cdcInitializer;
   private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
+  private MongoDbDebeziumFieldsUtil mongoDbDebeziumFieldsUtil;
   private MongoClient mongoClient;
   private MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor;
   private AggregateIterable<Document> aggregateIterable;
@@ -141,7 +142,8 @@ class MongoDbCdcInitializerTest {
     when(findIterable.cursor()).thenReturn(findCursor);
 
     mongoDbDebeziumStateUtil = spy(new MongoDbDebeziumStateUtil());
-    cdcInitializer = new MongoDbCdcInitializer(mongoDbDebeziumStateUtil);
+    mongoDbDebeziumFieldsUtil = mock(MongoDbDebeziumFieldsUtil.class);
+    cdcInitializer = new MongoDbCdcInitializer(mongoDbDebeziumStateUtil, mongoDbDebeziumFieldsUtil);
   }
 
   @Test
