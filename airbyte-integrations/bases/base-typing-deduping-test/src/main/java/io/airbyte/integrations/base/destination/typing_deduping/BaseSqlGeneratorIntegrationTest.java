@@ -110,8 +110,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected String namespace;
 
   protected StreamId streamId;
-  private List<ColumnId> primaryKey;
-  private ColumnId cursor;
+  protected List<ColumnId> primaryKey;
+  protected ColumnId cursor;
   private LinkedHashMap<ColumnId, AirbyteType> COLUMNS;
 
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();

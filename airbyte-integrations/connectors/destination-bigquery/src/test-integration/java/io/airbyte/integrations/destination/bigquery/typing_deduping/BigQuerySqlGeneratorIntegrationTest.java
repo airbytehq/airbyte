@@ -21,28 +21,42 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
+import com.google.cloud.bigquery.FormatOptions;
+import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.JobId;
+import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
+import com.google.cloud.bigquery.WriteChannelConfiguration;
+import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -422,6 +436,71 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   @Disabled
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
     super.noCrashOnSpecialCharacters(specialChars);
+  }
+
+  @Test
+  public void testWideStream() throws Exception {
+    final int numColumns = 1000;
+    final int numRecords = 100;
+    final LinkedHashMap<ColumnId, AirbyteType> columns = new LinkedHashMap<>();
+    columns.put(primaryKey.get(0), AirbyteProtocolType.INTEGER);
+    columns.put(primaryKey.get(1), AirbyteProtocolType.INTEGER);
+    columns.put(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    for (int i = 0; i < numColumns; i++) {
+      columns.put(generator.buildColumnId("column_" + i), AirbyteProtocolType.STRING);
+    }
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        primaryKey,
+        Optional.of(cursor),
+        columns
+    );
+
+    createRawTable(streamId);
+    final String createTable = generator.createTable(stream, "", false);
+    destinationHandler.execute(createTable);
+
+    final WriteChannelConfiguration writeChannelConfiguration =
+        WriteChannelConfiguration.newBuilder(TableId.of(streamId.finalNamespace(), streamId.rawName()))
+            .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
+            .setSchema(com.google.cloud.bigquery.Schema.of(
+                Field.newBuilder(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING).setMode(Field.Mode.REQUIRED).build(),
+                Field.newBuilder(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP).setMode(Field.Mode.REQUIRED).build(),
+                Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
+                Field.newBuilder(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING).setMode(Field.Mode.REQUIRED).build()))
+            .setFormatOptions(FormatOptions.json())
+            .build();
+    final JobId job = JobId.newBuilder()
+        .setRandomJob()
+        .setLocation("US")
+        .setProject("dataline-integration-testing")
+        .build();
+    final TableDataWriteChannel writer = bq.writer(job, writeChannelConfiguration);
+    final List<JsonNode> records = new ArrayList<>();
+    for (int i = 0; i < numRecords; i++) {
+      final ObjectNode data = (ObjectNode) Jsons.emptyObject();
+      data.put("id1", i);
+      data.put("id2", i);
+      data.put("updated_at", "2023-01-01T00:00:00Z");
+
+      for (int j = 0; j < numColumns; j++) {
+        data.put("column_" + j, "value_" + j);
+      }
+
+      final ObjectNode record = (ObjectNode) Jsons.emptyObject();
+      record.put("_airbyte_raw_id", UUID.randomUUID().toString());
+      record.put("_airbyte_data", Jsons.serialize(data));
+      record.put("_airbyte_extracted_at", "2023-01-01T00:00:00Z");
+
+      records.add(record);
+      writer.write(ByteBuffer.wrap((Jsons.serialize(record) + "\n").getBytes(Charsets.UTF_8)));
+    }
+    writer.close();
+
+    final String updateTable = generator.updateTable(stream, "");
+    destinationHandler.execute(updateTable);
   }
 
   /**
