@@ -64,6 +64,18 @@
           }
         ]
       },
+      "api_url": {
+        "type": "string",
+        "examples": [
+          "https://api.github.com",
+          "https://source.selfhosted.com/api/v3"
+        ],
+        "pattern": "^https?:\\\/\\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\\/=]*)$",
+        "title": "API URL",
+        "default": "https://api.github.com",
+        "description": "The API URL to your self-hosted Github instance.",
+        "order": 99
+      },
       "start_date": {
         "type": "string",
         "title": "Start date",

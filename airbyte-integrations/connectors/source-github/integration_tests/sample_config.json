@@ -1,4 +1,5 @@
 {
+  "api_url": "https://api.github.com",
   "access_token": "<user's_access_token>",
   "repository": "<your_repository>",
   "start_date": "2021-06-29T03:46:25Z"
