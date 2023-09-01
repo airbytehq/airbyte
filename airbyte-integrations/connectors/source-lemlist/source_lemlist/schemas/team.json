@@ -83,7 +83,8 @@
       }
     },
     "_updatedAt": {
-      "type": "string"
+      "format": "%Y-%m-%dT%H:%M:%S.%fZ",
+      "type": ["null", "string"]
     },
     "dataIntegrityChecksCron": {
       "type": "object",
