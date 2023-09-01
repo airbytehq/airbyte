@@ -42,12 +42,11 @@ class MongoDbCdcPropertiesTest {
 
   @Test
   void testDebeziumProperties() {
-    final Set<ExcludedField>  fieldsToExclude = Set.of(
+    final Set<ExcludedField> fieldsToExclude = Set.of(
         new ExcludedField(DATABASE, COLLECTION1, FIELD1),
         new ExcludedField(DATABASE, COLLECTION2, FIELD2),
         new ExcludedField(DATABASE, COLLECTION3, FIELD3),
-        new ExcludedField(DATABASE, COLLECTION3, FIELD1)
-    );
+        new ExcludedField(DATABASE, COLLECTION3, FIELD1));
 
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsToExclude);
     assertEquals(5, debeziumProperties.size());

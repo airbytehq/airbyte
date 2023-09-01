@@ -36,7 +36,8 @@ public class MongoDbDebeziumFieldsUtil {
   static Set<ExcludedField> getFieldsNotIncludedInConfiguredStreams(final ConfiguredAirbyteCatalog configuredCatalog,
                                                                     final List<AirbyteStream> sourceAirbyteStreams) {
 
-    final List<AirbyteStream> configuredAirbyteStreams = configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
+    final List<AirbyteStream> configuredAirbyteStreams =
+        configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
     final Set<ExcludedField> fieldsToInclude =
         configuredAirbyteStreams.stream().map(MongoDbDebeziumFieldsUtil::getCollectionAndFields).flatMap(Set::stream)
             .collect(Collectors.toSet());
@@ -49,7 +50,8 @@ public class MongoDbDebeziumFieldsUtil {
   }
 
   private static Set<ExcludedField> getCollectionAndFields(final AirbyteStream stream) {
-    return getTopLevelFieldNames(stream).stream().map(fieldName -> new ExcludedField(stream.getNamespace(), stream.getName(), fieldName)).collect(Collectors.toSet());
+    return getTopLevelFieldNames(stream).stream().map(fieldName -> new ExcludedField(stream.getNamespace(), stream.getName(), fieldName))
+        .collect(Collectors.toSet());
   }
 
   private static Set<String> getTopLevelFieldNames(final AirbyteStream stream) {

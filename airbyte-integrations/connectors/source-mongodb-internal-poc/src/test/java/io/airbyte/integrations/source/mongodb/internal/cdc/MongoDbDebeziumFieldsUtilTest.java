@@ -29,11 +29,11 @@ class MongoDbDebeziumFieldsUtilTest {
   private static final String FIELD4 = "field4";
   private static final String FIELD5 = "field5";
 
-  private static final String DATABASE= "database";
+  private static final String DATABASE = "database";
 
   @Test
   void getFieldsNotIncludedInCatalogTest() {
-    //source
+    // source
     final AirbyteStream sourceAirbyteStream1 = CatalogHelpers.createAirbyteStream(COLLECTION1, DATABASE,
         Field.of(FIELD1, JsonSchemaType.STRING),
         Field.of(FIELD2, JsonSchemaType.STRING));
@@ -44,7 +44,7 @@ class MongoDbDebeziumFieldsUtilTest {
         Field.of(FIELD4, JsonSchemaType.STRING),
         Field.of(FIELD5, JsonSchemaType.STRING));
 
-    //configured
+    // configured
     final AirbyteStream configuredAirbyteStream1 = CatalogHelpers.createAirbyteStream(COLLECTION2, DATABASE,
         Field.of(FIELD2, JsonSchemaType.STRING));
     final AirbyteStream configuredAirbyteStream2 = CatalogHelpers.createAirbyteStream(COLLECTION3, DATABASE,

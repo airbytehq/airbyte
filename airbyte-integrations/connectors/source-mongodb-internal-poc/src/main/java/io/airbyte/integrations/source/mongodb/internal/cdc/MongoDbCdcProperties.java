@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.Set;
