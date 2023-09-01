@@ -10,7 +10,7 @@ from airbyte_cdk.sources.stream_reader.concurrent.record import Record
 
 def test_partition_reader_initially_has_no_output():
     partition_reader = PartitionReader()
-    assert not partition_reader.has_next()
+    assert partition_reader.is_done()
 
 
 def test_partition_reader():
@@ -23,10 +23,16 @@ def test_partition_reader():
     ]
     stream_partition.read.return_value = iter(records)
 
-    partition_reader.process_partition(stream_partition)
-    assert partition_reader.has_next()
+    assert partition_reader.is_done()
 
-    actual_records = list(r for r in partition_reader)
-    assert not partition_reader.has_next()
+    partition_reader.process_partition(stream_partition)
+
+    assert not partition_reader.is_done()
+
+    actual_records = []
+    while partition_reader.has_record_ready():
+        actual_records.append(partition_reader.get_next())
+
+    assert partition_reader.is_done()
 
     assert records == actual_records

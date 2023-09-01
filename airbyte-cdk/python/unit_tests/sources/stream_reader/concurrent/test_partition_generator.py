@@ -22,13 +22,17 @@ def test_partition_generator(partitions):
     sync_mode = SyncMode.full_refresh
     cursor_field = ["A_NESTED", "CURSOR_FIELD"]
 
+    assert partition_generator.is_done()
+
     partition_generator.generate_partitions(stream, sync_mode, cursor_field)
 
-    # assert the generator has partitions if the stream has partitions
-    assert partition_generator.has_next() == (len(partitions) > 0)
+    assert partition_generator.is_done() == (len(partitions) == 0)
 
-    actual_partitions = [p for p in partition_generator]
-    assert not partition_generator.has_next()
+    actual_partitions = []
+    while partition_generator.has_partition_ready():
+        actual_partitions.append(partition_generator.get_next())
+
+    assert partition_generator.is_done()
 
     expected_partitions = [StreamPartition(stream, p, cursor_field) for p in partitions]
     assert actual_partitions == expected_partitions
