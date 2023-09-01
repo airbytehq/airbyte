@@ -5,7 +5,6 @@
 package io.airbyte.integrations.debezium.internals.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoChangeStreamException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.client.ChangeStreamIterable;
@@ -74,7 +73,6 @@ public class MongoDbDebeziumStateUtil {
    * @param resumeTokenData The MongoDB resume token that represents the offset state.
    * @return The offset state as a {@link JsonNode}.
    */
-  @VisibleForTesting
   public static JsonNode formatState(final String database, final String replicaSet, final String resumeTokenData) {
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeTokenData));
 
@@ -106,8 +104,12 @@ public class MongoDbDebeziumStateUtil {
     final ChangeStreamIterable<BsonDocument> stream = mongoClient.watch(BsonDocument.class);
     stream.resumeAfter(savedOffset);
     try (var ignored = stream.cursor()) {
+      LOGGER.info("Valid resume token '{}' present.  Incremental sync will be performed for up-to-date streams.",
+          ResumeTokens.getData(savedOffset).asString().getValue());
       return true;
-    } catch (MongoCommandException | MongoChangeStreamException e) {
+    } catch (final MongoCommandException | MongoChangeStreamException e) {
+      LOGGER.info("Invalid resume token '{}' present.  Initial snapshot will be performed for all streams.",
+          ResumeTokens.getData(savedOffset).asString().getValue());
       return false;
     }
   }

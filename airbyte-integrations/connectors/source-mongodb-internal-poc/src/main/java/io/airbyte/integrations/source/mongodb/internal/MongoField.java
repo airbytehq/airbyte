@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 public class MongoField extends Field {
 
-  public MongoField(String name, JsonSchemaType type) {
+  public MongoField(final String name, final JsonSchemaType type) {
     super(name, type);
   }
 
