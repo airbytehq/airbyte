@@ -81,6 +81,7 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 0.1.19  | 2023-07-26 | [28755](https://github.com/airbytehq/airbyte/pull/28755) | Changed parameters for Time Reports to use 365 days as opposed to 1 year           |
 | 0.1.18  | 2023-05-29 | [26714](https://github.com/airbytehq/airbyte/pull/26714) | Remove `authSpecification` from spec in favour of `advancedAuth`                   |
 | 0.1.17  | 2023-03-03 | [22983](https://github.com/airbytehq/airbyte/pull/22983) | Specified date formatting in specification                                         |
 | 0.1.16  | 2023-02-07 | [22417](https://github.com/airbytehq/airbyte/pull/22417) | Turn on default HttpAvailabilityStrategy                                           |
