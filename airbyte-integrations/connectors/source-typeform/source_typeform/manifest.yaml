@@ -4,76 +4,58 @@ check:
   type: CheckStream
   stream_names:
     - forms
-streams:
-  - type: DeclarativeStream
-    name: forms
-    primary_key:
-      - id
+
+definitions:
+  items_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - items
+  no_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: https://api.typeform.com/
+    path: '{{ parameters.path }}'
+    http_method: GET
+    request_parameters: {}
+    request_headers: {}
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config[''api_key''] }}'
+    request_body_json: {}
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page
+    page_size_option:
+      type: RequestOption
+      field_name: page_size
+      inject_into: request_parameter
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 200
+      start_from_page: 1
+  paginated_stream:
+    type: DeclarativeStream
+    name: '{{ parameters.name }}'
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: forms/{{ stream_partition.form_id }}
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
+        $ref: "#/definitions/requester"
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
+        $ref: "#/definitions/items_selector"
       paginator:
-        type: NoPagination
-      partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: form_id
-              stream:
-                type: DeclarativeStream
-                name: trim_forms
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.typeform.com/
-                    path: forms
-                    http_method: GET
-                    request_parameters: {}
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - items
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestOption
-                      inject_into: request_parameter
-                      field_name: page
-                    page_size_option:
-                      type: RequestOption
-                      field_name: page_size
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: PageIncrement
-                      page_size: 200
-                      start_from_page: 1
-  - type: DeclarativeStream
+        $ref: "#/definitions/paginator"
+  trim_forms_stream:
+    type: DeclarativeStream
     name: trim_forms
     primary_key:
       - id
@@ -110,30 +92,38 @@ streams:
           type: PageIncrement
           page_size: 200
           start_from_page: 1
-  - type: DeclarativeStream
-    name: responses
-    primary_key:
-      - response_id
+  form_id_partition_router:
+    - type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: id
+          partition_field: form_id
+          stream:
+            $ref: "#/definitions/trim_forms_stream"
+  forms_stream:
+    type: DeclarativeStream
+    name: forms
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: forms/{{ stream_partition.form_id }}/responses
-        http_method: GET
-        request_parameters:
-          sort: submitted_at,asc
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
+        $ref: "#/definitions/requester"
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - items
+        $ref: "#/definitions/no_selector"
+      partition_router:
+        $ref: "#/definitions/form_id_partition_router"
+    $parameters:
+      path: forms/{{ stream_partition.form_id }}
+  responses_stream:
+    type: DeclarativeStream
+    name: responses
+    primary_key: response_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/items_selector"
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -144,49 +134,7 @@ streams:
           type: PageIncrement
           page_size: 1000
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: form_id
-              stream:
-                type: DeclarativeStream
-                name: trim_forms
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.typeform.com/
-                    path: forms
-                    http_method: GET
-                    request_parameters: {}
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - items
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestOption
-                      inject_into: request_parameter
-                      field_name: page
-                    page_size_option:
-                      type: RequestOption
-                      field_name: page_size
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: PageIncrement
-                      page_size: 200
-                      start_from_page: 1
+        $ref: "#/definitions/form_id_partition_router"
     transformations:
       - type: AddFields
         fields:
@@ -213,173 +161,52 @@ streams:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-  - type: DeclarativeStream
+    $parameters:
+      path: forms/{{ stream_partition.form_id }}/responses
+  webhooks_stream:
+    type: DeclarativeStream
     name: webhooks
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: forms/{{ stream_partition.form_id }}/webhooks
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
+        $ref: "#/definitions/requester"
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - items
-      paginator:
-        type: NoPagination
+        $ref: "#/definitions/items_selector"
       partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: form_id
-              stream:
-                type: DeclarativeStream
-                name: trim_forms
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: https://api.typeform.com/
-                    path: forms
-                    http_method: GET
-                    request_parameters: {}
-                    request_headers: {}
-                    authenticator:
-                      type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - items
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestOption
-                      inject_into: request_parameter
-                      field_name: page
-                    page_size_option:
-                      type: RequestOption
-                      field_name: page_size
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: PageIncrement
-                      page_size: 200
-                      start_from_page: 1
-  - type: DeclarativeStream
-    name: workspaces
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: workspaces
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - items
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: page_size
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 200
-          start_from_page: 1
-  - type: DeclarativeStream
+        $ref: "#/definitions/form_id_partition_router"
+    $parameters:
+      path: forms/{{ stream_partition.form_id }}/webhooks
+  workspaces_stream:
+    $ref: "#/definitions/paginated_stream"
+    $parameters:
+      name: workspaces
+      path: workspaces
+  images_stream:
+    type: DeclarativeStream
     name: images
-    primary_key:
-      - id
+    primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: images
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
+        $ref: "#/definitions/requester"
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-  - type: DeclarativeStream
-    name: themes
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: themes
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - items
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: page_size
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 200
-          start_from_page: 1
+        $ref: "#/definitions/no_selector"
+    $parameters:
+      path: images
+  themes_stream:
+    $ref: "#/definitions/paginated_stream"
+    $parameters:
+      name: themes
+      path: themes
+
+streams:
+  - "#/definitions/forms_stream"
+  - "#/definitions/responses_stream"
+  - "#/definitions/webhooks_stream"
+  - "#/definitions/workspaces_stream"
+  - "#/definitions/images_stream"
+  - "#/definitions/themes_stream"
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/typeform
@@ -388,59 +215,59 @@ spec:
     type: object
     additionalProperties: true
     required:
-    - credentials
+      - credentials
     properties:
       credentials:
         title: Authorization Method
         type: object
         order: 0
         oneOf:
-        - type: object
-          title: OAuth2.0
-          required:
-          - client_id
-          - client_secret
-          - refresh_token
-          - access_token
-          - token_expiry_date
-          properties:
-            auth_type:
-              type: string
-              const: oauth2.0
-            client_id:
-              type: string
-              description: The Client ID of the Typeform developer application.
-              airbyte_secret: true
-            client_secret:
-              type: string
-              description: The Client Secret the Typeform developer application.
-              airbyte_secret: true
-            access_token:
-              type: string
-              description: Access Token for making authenticated requests.
-              airbyte_secret: true
-            token_expiry_date:
-              type: string
-              description: The date-time when the access token should be refreshed.
-              format: date-time
-            refresh_token:
-              type: string
-              description: The key to refresh the expired access_token.
-              airbyte_secret: true
-        - title: Private Token
-          type: object
-          required:
-          - access_token
-          properties:
-            auth_type:
-              type: string
-              const: access_token
-            access_token:
-              type: string
-              title: Private Token
-              description: Log into your Typeform account and then generate a personal
-                Access Token.
-              airbyte_secret: true
+          - type: object
+            title: OAuth2.0
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+              - access_token
+              - token_expiry_date
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+              client_id:
+                type: string
+                description: The Client ID of the Typeform developer application.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: The Client Secret the Typeform developer application.
+                airbyte_secret: true
+              access_token:
+                type: string
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                description: The date-time when the access token should be refreshed.
+                format: date-time
+              refresh_token:
+                type: string
+                description: The key to refresh the expired access_token.
+                airbyte_secret: true
+          - title: Private Token
+            type: object
+            required:
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: access_token
+              access_token:
+                type: string
+                title: Private Token
+                description: Log into your Typeform account and then generate a personal
+                  Access Token.
+                airbyte_secret: true
       start_date:
         type: string
         title: Start Date
@@ -448,7 +275,7 @@ spec:
           in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will
           be replicated.
         examples:
-        - '2021-03-01T00:00:00Z'
+          - '2021-03-01T00:00:00Z'
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         order: 2
         format: date-time
@@ -467,8 +294,8 @@ spec:
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
-    - credentials
-    - auth_type
+      - credentials
+      - auth_type
     predicate_value: oauth2.0
     oauth_config_specification:
       complete_oauth_output_specification:
@@ -477,19 +304,19 @@ spec:
           access_token:
             type: string
             path_in_connector_config:
-            - credentials
-            - access_token
+              - credentials
+              - access_token
           refresh_token:
             type: string
             path_in_connector_config:
-            - credentials
-            - refresh_token
+              - credentials
+              - refresh_token
           token_expiry_date:
             type: string
             format: date-time
             path_in_connector_config:
-            - credentials
-            - token_expiry_date
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         properties:
@@ -503,10 +330,10 @@ spec:
           client_id:
             type: string
             path_in_connector_config:
-            - credentials
-            - client_id
+              - credentials
+              - client_id
           client_secret:
             type: string
             path_in_connector_config:
-            - credentials
-            - client_secret
+              - credentials
+              - client_secret
