@@ -5,6 +5,7 @@
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
+import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 
 import autovalue.shaded.kotlin.Pair;
@@ -53,8 +54,6 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
   private final ExecutorService executorService;
 
-  private static final int MAX_THREADS = 16;
-
   public DefaultTyperDeduper(final SqlGenerator<DialectTableDefinition> sqlGenerator,
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
@@ -66,7 +65,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
-    this.executorService = Executors.newFixedThreadPool(MAX_THREADS,
+    this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
