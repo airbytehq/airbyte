@@ -4,7 +4,7 @@
 
 import json
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
@@ -87,10 +87,12 @@ class JsonlParser(FileTypeParser):
             has_warned_for_multiline_json_object = False
             yielded_at_least_once = False
 
-            accumulator = b""
+            accumulator = None
             for line in fp:
+                if not accumulator:
+                    accumulator = self._instantiate_accumulator(line)
                 read_bytes += len(line)
-                accumulator += line
+                accumulator += line  # type: ignore [operator]  # In reality, it's either bytes or string and we add the same type
                 try:
                     record = json.loads(accumulator)
                     if had_json_parsing_error and not has_warned_for_multiline_json_object:
@@ -99,7 +101,7 @@ class JsonlParser(FileTypeParser):
 
                     yield record
                     yielded_at_least_once = True
-                    accumulator = b""
+                    accumulator = self._instantiate_accumulator(line)
                 except json.JSONDecodeError:
                     had_json_parsing_error = True
 
@@ -112,3 +114,10 @@ class JsonlParser(FileTypeParser):
 
             if had_json_parsing_error and not yielded_at_least_once:
                 raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
+
+    @staticmethod
+    def _instantiate_accumulator(line: Union[bytes, str]) -> Union[bytes, str]:
+        if isinstance(line, bytes):
+            return bytes("", json.detect_encoding(line))
+        elif isinstance(line, str):
+            return ""

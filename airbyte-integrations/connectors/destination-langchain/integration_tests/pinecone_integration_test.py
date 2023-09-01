@@ -4,6 +4,7 @@
 
 import json
 import logging
+from time import sleep
 
 import pinecone
 from airbyte_cdk.models import DestinationSyncMode, Status
@@ -17,16 +18,22 @@ from langchain.vectorstores import Pinecone
 class PineconeIntegrationTest(BaseIntegrationTest):
     def _init_pinecone(self):
         pinecone.init(api_key=self.config["indexing"]["pinecone_key"], environment=self.config["indexing"]["pinecone_environment"])
+        self._index = pinecone.Index(self.config["indexing"]["index"])
+
+    def _clean_index(self):
+        self._init_pinecone()
+        zero_vector = [0.0] * OPEN_AI_VECTOR_SIZE
+        query_result = self._index.query(vector=zero_vector, top_k=10_000)
+        vector_ids = [doc.id for doc in query_result.matches]
+        if len(vector_ids) > 0:
+            self._index.delete(ids=vector_ids)
 
     def setUp(self):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
-        self._init_pinecone()
 
     def tearDown(self):
-        # make sure pinecone is initialized correctly before cleaning up
-        self._init_pinecone()
-        pinecone.Index("testdata").delete(delete_all=True)
+        self._clean_index()
 
     def test_check_valid_config(self):
         outcome = DestinationLangchain().check(logging.getLogger("airbyte"), self.config)
@@ -49,6 +56,8 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.FAILED
 
     def test_write(self):
+        self._init_pinecone()
+        is_starter_pod = pinecone.describe_index(self.config["indexing"]["index"]).pod_type == "starter"
         catalog = self._get_configured_catalog(DestinationSyncMode.overwrite)
         first_state_message = self._state({"state": "1"})
         first_record_chunk = [self._record("mystream", f"Dogs are number {i}", i) for i in range(5)]
@@ -56,12 +65,18 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         # initial sync
         destination = DestinationLangchain()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert pinecone.Index("testdata").describe_index_stats().total_vector_count == 5
+        if is_starter_pod:
+            # Documents might not be available right away because Pinecone is handling them async
+            sleep(20)
+        assert self._index.describe_index_stats().total_vector_count == 5
 
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        result = pinecone.Index("testdata").query(
+        if is_starter_pod:
+            # Documents might not be available right away because Pinecone is handling them async
+            sleep(20)
+        result = self._index.query(
             vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "2"}, include_metadata=True
         )
         assert len(result.matches) == 1
@@ -70,7 +85,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         # test langchain integration
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         pinecone.init(api_key=self.config["indexing"]["pinecone_key"], environment=self.config["indexing"]["pinecone_environment"])
-        index = pinecone.Index("testdata")
-        vector_store = Pinecone(index, embeddings.embed_query, "text")
+        vector_store = Pinecone(self._index, embeddings.embed_query, "text")
         result = vector_store.similarity_search("feline animals", 1)
         assert result[0].metadata["_record_id"] == "2"

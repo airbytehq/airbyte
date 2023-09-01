@@ -41,6 +41,6 @@ public final class JavaBaseConstants {
       COLUMN_NAME_AB_EXTRACTED_AT,
       COLUMN_NAME_AB_META);
 
-  public static final String AIRBYTE_NAMESPACE_SCHEMA = "airbyte";
+  public static final String DEFAULT_AIRBYTE_INTERNAL_NAMESPACE = "airbyte_internal";
 
 }

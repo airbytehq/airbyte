@@ -22,4 +22,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubplanner
   tags:
     - language:lowcode
+  ab_internal:
+    sl: 100
+    ql: 100
 metadataSpecVersion: "1.0"

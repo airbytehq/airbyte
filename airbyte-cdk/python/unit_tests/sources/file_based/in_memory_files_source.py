@@ -85,6 +85,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     def get_matching_files(
         self,
         globs: List[str],
+        prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
         yield from self.filter_files_by_globs_and_start_date([

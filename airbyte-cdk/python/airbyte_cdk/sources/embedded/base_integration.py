@@ -9,6 +9,7 @@ from airbyte_cdk.connector import TConfig
 from airbyte_cdk.sources.embedded.catalog import create_configured_catalog, get_stream, get_stream_names
 from airbyte_cdk.sources.embedded.runner import SourceRunner
 from airbyte_cdk.sources.embedded.tools import get_defined_id
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStateMessage, SyncMode, Type
 
 TOutput = TypeVar("TOutput")
@@ -16,6 +17,8 @@ TOutput = TypeVar("TOutput")
 
 class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
     def __init__(self, runner: SourceRunner[TConfig], config: TConfig):
+        check_config_against_spec_or_exit(config, runner.spec())
+
         self.source = runner
         self.config = config
 

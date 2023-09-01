@@ -13,15 +13,15 @@ connectionSpecification:
     account_id:
       type: string
       order: 0
-      description: "The account ID for your Zoom account. You can find this in the Zoom Marketplace under the \"Manage\" tab for your app."
+      description: 'The account ID for your Zoom account. You can find this in the Zoom Marketplace under the "Manage" tab for your app.'
     client_id:
       type: string
       order: 1
-      description: "The client ID for your Zoom app. You can find this in the Zoom Marketplace under the \"Manage\" tab for your app."
+      description: 'The client ID for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for your app.'
     client_secret:
       type: string
       order: 2
-      description: "The client secret for your Zoom app. You can find this in the Zoom Marketplace under the \"Manage\" tab for your app."
+      description: 'The client secret for your Zoom app. You can find this in the Zoom Marketplace under the "Manage" tab for your app.'
       airbyte_secret: true
     authorization_endpoint:
       type: string

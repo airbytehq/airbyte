@@ -180,7 +180,7 @@
                       },
                       "48x48": {
                         "type": "string",
-                        "description": "The URL of the item's 48x48 pixel avatar." 
+                        "description": "The URL of the item's 48x48 pixel avatar."
                       }
                     }
                   },

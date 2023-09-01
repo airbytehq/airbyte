@@ -52,7 +52,7 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     this.redpandaNameTransformer = new RedpandaNameTransformer();
     this.adminClient = AdminClient.create(Map.of(
         AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, redpandaContainer.getBootstrapServers(),
@@ -62,8 +62,8 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws ExecutionException, InterruptedException {
-    var topics = adminClient.listTopics().listings().get().stream()
+  protected void tearDown(final TestDestinationEnv testEnv) throws ExecutionException, InterruptedException {
+    final var topics = adminClient.listTopics().listings().get().stream()
         .filter(tl -> !tl.isInternal())
         .map(TopicListing::name)
         .collect(Collectors.toSet());
@@ -132,15 +132,15 @@ public class RedpandaDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema) {
-    List<JsonNode> records = new ArrayList<>();
-    String bootstrapServers = redpandaContainer.getBootstrapServers();
-    String groupId = redpandaNameTransformer.getIdentifier(namespace + "-" + streamName);
-    try (RedpandaConsumer<String, JsonNode> redpandaConsumer = RedpandaConsumerFactory.getInstance(bootstrapServers, groupId)) {
-      String topicName = redpandaNameTransformer.topicName(namespace, streamName);
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
+    final List<JsonNode> records = new ArrayList<>();
+    final String bootstrapServers = redpandaContainer.getBootstrapServers();
+    final String groupId = redpandaNameTransformer.getIdentifier(namespace + "-" + streamName);
+    try (final RedpandaConsumer<String, JsonNode> redpandaConsumer = RedpandaConsumerFactory.getInstance(bootstrapServers, groupId)) {
+      final String topicName = redpandaNameTransformer.topicName(namespace, streamName);
       redpandaConsumer.subscribe(Collections.singletonList(topicName));
       redpandaConsumer.poll(Duration.ofSeconds(5)).iterator()
           .forEachRemaining(r -> records.add(r.value().get(JavaBaseConstants.COLUMN_NAME_DATA)));

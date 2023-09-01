@@ -1,21 +1,26 @@
-import sentry_sdk
-import pandas as pd
-from dagster import MetadataValue, Output, asset
-from typing import List
-from orchestrator.templates.render import (
-    render_connector_registry_locations_html,
-    dataframe_to_table_html,
-    simple_link_html,
-    icon_image_html,
-    test_badge_html,
-    ColumnInfo,
-)
-from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.logging import sentry
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from metadata_service.models.transform import to_json_sanitized_dict
+from typing import List
+
+import pandas as pd
+import sentry_sdk
+from dagster import MetadataValue, Output, asset
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.transform import to_json_sanitized_dict
+from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
+from orchestrator.logging import sentry
+from orchestrator.templates.render import (
+    ColumnInfo,
+    dataframe_to_table_html,
+    icon_image_html,
+    internal_level_html,
+    render_connector_registry_locations_html,
+    simple_link_html,
+    test_badge_html,
+)
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 GROUP_NAME = "registry_reports"
 
@@ -83,6 +88,22 @@ def test_summary_url(row: pd.DataFrame) -> str:
     return get_public_metadata_service_url(path)
 
 
+def ab_internal_sl(row: pd.DataFrame) -> str:
+    ab_internal = row.get("ab_internal_oss")
+    if not isinstance(ab_internal, dict) or "sl" not in ab_internal:
+        return None
+
+    return ab_internal["sl"]
+
+
+def ab_internal_ql(row: pd.DataFrame) -> str:
+    ab_internal = row.get("ab_internal_oss")
+    if not isinstance(ab_internal, dict) or "ql" not in ab_internal:
+        return None
+
+    return ab_internal["ql"]
+
+
 # 📊 Dataframe Augmentation
 
 
@@ -117,6 +138,10 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
+
+    # Show Internal Fields
+    total_registry["ab_internal_ql"] = total_registry.apply(ab_internal_ql, axis=1)
+    total_registry["ab_internal_sl"] = total_registry.apply(ab_internal_sl, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
@@ -228,6 +253,20 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
         {
             "column": "releaseStage_oss",
             "title": "Release Stage",
+        },
+        {
+            "column": "supportLevel_oss",
+            "title": "Support Level",
+        },
+        {
+            "column": "ab_internal_sl",
+            "title": "Internal SL",
+            "formatter": internal_level_html,
+        },
+        {
+            "column": "ab_internal_ql",
+            "title": "Internal QL",
+            "formatter": internal_level_html,
         },
         {
             "column": "test_summary_url",

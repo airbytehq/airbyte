@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import CodeBlock from '@theme/CodeBlock';
 
 function concatenateRawTableName(namespace, name) {
@@ -43,9 +43,9 @@ export const BigQueryMigrationGenerator = () => {
     return namespace;
   }
 
-  function generateSql(namespace, name, raw_dataset) {
-    let v2RawTableName = '`' + bigqueryConvertStreamName(concatenateRawTableName(namespace, name)) + '`';
-    let v1namespace = '`' + escapeNamespace(namespace) + '`';
+  function generateSql(og_namespace, new_namespace, name, raw_dataset) {
+    let v2RawTableName = '`' + bigqueryConvertStreamName(concatenateRawTableName(new_namespace, name)) + '`';
+    let v1namespace = '`' + escapeNamespace(og_namespace) + '`';
     let v1name = '`' + bigqueryConvertStreamName("_airbyte_raw_" + name) + '`';
     return `CREATE SCHEMA IF NOT EXISTS ${raw_dataset};
 CREATE OR REPLACE TABLE \`${raw_dataset}\`.${v2RawTableName} (
@@ -80,9 +80,9 @@ export const SnowflakeMigrationGenerator = () => {
       return "_" + str;
     }
   }
-  function generateSql(namespace, name, raw_schema) {
-    let v2RawTableName = '"' + concatenateRawTableName(namespace, name) + '"';
-    let v1namespace = snowflakeConvertStreamName(namespace);
+  function generateSql(og_namespace, new_namespace, name, raw_schema) {
+    let v2RawTableName = '"' + concatenateRawTableName(new_namespace, name) + '"';
+    let v1namespace = snowflakeConvertStreamName(og_namespace);
     let v1name = snowflakeConvertStreamName("_airbyte_raw_" + name);
     return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
 CREATE OR REPLACE TABLE "${raw_schema}".${v2RawTableName} (
@@ -113,14 +113,15 @@ If your stream has no namespace, take the default value from the destination con
     'language': 'text'
   });
   function updateSql(event) {
-    let namespace = document.getElementById("stream_namespace_" + destination).value;
+    let og_namespace = document.getElementById("og_stream_namespace_" + destination).value;
+    let new_namespace = document.getElementById("new_stream_namespace_" + destination).value;
     let name = document.getElementById("stream_name_" + destination).value;
     var raw_dataset = document.getElementById("raw_dataset_" + destination).value;
     if (raw_dataset === '') {
       raw_dataset = 'airbyte_internal';
     }
-    let sql = generateSql(namespace, name, raw_dataset);
-    if (namespace !== "" && name !== "") {
+    let sql = generateSql(og_namespace, new_namespace, name, raw_dataset);
+    if ([og_namespace, new_namespace, name].every(text => text != "")) {
       updateMessage({
         'message': sql,
         'language': 'sql'
@@ -135,8 +136,10 @@ If your stream has no namespace, take the default value from the destination con
 
   return (
     <div>
-      <label>Stream namespace </label>
-      <input type="text" id={"stream_namespace_" + destination} onChange={ updateSql }/><br/>
+      <label>Original Stream namespace </label>
+      <input type="text" id={"og_stream_namespace_" + destination} onChange={ updateSql }/><br/>
+      <label>New Stream namespace (to avoid overwriting)</label>
+      <input type="text" id={"new_stream_namespace_" + destination} onChange={ updateSql }/><br/>
       <label>Stream name </label>
       <input type="text" id={"stream_name_" + destination} onChange={ updateSql }/><br/>
       <label>Raw table dataset/schema (defaults to <code>airbyte_internal</code>) </label>

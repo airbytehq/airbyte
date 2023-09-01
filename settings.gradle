@@ -108,6 +108,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("S
 // connectors base
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     include ':airbyte-cdk:python'
+    include ':airbyte-cdk:java:airbyte-cdk'
     include ':airbyte-integrations:bases:base'
     include ':airbyte-integrations:bases:base-java'
     include ':airbyte-integrations:bases:base-java-s3'

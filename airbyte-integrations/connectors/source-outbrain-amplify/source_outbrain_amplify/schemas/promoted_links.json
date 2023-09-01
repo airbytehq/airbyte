@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "text": {
+      "type": ["string", "null"]
+    },
+    "creationTime": {
+      "type": ["string", "null"]
+    },
+    "lastModified": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "siteName": {
+      "type": ["string", "null"]
+    },
+    "sectionName": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "enabled": {
+      "type": ["boolean", "null"]
+    },
+    "campaignId": {
+      "type": ["string", "null"]
+    },
+    "archived": {
+      "type": ["boolean", "null"]
+    },
+    "documentLanguage": {
+      "type": ["string", "null"]
+    },
+    "onAirStatus": {
+      "type": "object",
+      "properties": {
+        "onAir": {
+          "type": ["boolean", "null"]
+        },
+        "reason": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "baseUrl": {
+      "type": ["string", "null"]
+    },
+    "documentId": {
+      "type": ["string", "null"]
+    },
+    "metaData": {
+      "type": ["string", "null"]
+    },
+    "approvalStatus": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": ["string", "null"]
+        },
+        "isEditable": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "callToAction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": ["string", "null"]
+        },
+        "value": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "imageType": {
+      "type": ["string", "null"]
+    },
+    "language": {
+      "type": ["string", "null"]
+    }
+  }
+}

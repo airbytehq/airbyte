@@ -126,7 +126,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * <li>Construct the S3 client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
     // Set a random s3 bucket path for each integration test
     final JsonNode configJson = Jsons.clone(baseConfigJson);
@@ -150,7 +150,7 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
    * Remove all the S3 output from the tests.
    */
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     final List<KeyVersion> keysToDelete = new LinkedList<>();
     final List<S3ObjectSummary> objects = s3Client
         .listObjects(config.getBucketName(), config.getBucketPath())

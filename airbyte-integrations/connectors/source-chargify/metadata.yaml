@@ -24,5 +24,5 @@ data:
     - language:lowcode
   ab_internal:
     sl: 100
-    ql: 200
+    ql: 100
 metadataSpecVersion: "1.0"

@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.1",
 ]
 
 TEST_REQUIREMENTS = [
@@ -19,11 +19,11 @@ TEST_REQUIREMENTS = [
 setup(
     name="source_confluence",
     description="Source implementation for Confluence.",
-    author="Tuan Nguyen",
-    author_email="anhtuan.nguyen@me.com",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

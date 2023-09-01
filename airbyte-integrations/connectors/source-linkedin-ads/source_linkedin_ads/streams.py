@@ -193,7 +193,6 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
 
     parent_stream = Accounts
     parent_values_map = {"account_id": "id"}
-    # define default additional request params
 
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
@@ -343,6 +342,43 @@ class Creatives(LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update({"q": "criteria"})
+        return urlencode(params, safe="():,%")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = (
+            {self.cursor_field: pendulum.parse(self.config.get("start_date")).format("x")}
+            if not current_stream_state
+            else current_stream_state
+        )
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+
+
+class Conversions(LinkedInAdsStreamSlicing):
+    """
+    Get Conversions data using `account_id` slicing.
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversion-tracking?view=li-lms-2023-05&tabs=curl#find-conversions-by-ad-account
+    """
+
+    endpoint = "conversions"
+    search_param = "account"
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers.update({"X-Restli-Protocol-Version": "2.0.0"})
+        return headers
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["q"] = self.search_param
+        params["account"] = f"urn%3Ali%3AsponsoredAccount%3A{stream_slice.get('account_id')}"
+
         return urlencode(params, safe="():,%")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:

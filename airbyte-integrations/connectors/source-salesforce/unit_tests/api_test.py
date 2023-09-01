@@ -19,6 +19,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
 from source_salesforce.api import Salesforce
+from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -27,6 +28,29 @@ from source_salesforce.streams import (
     IncrementalRestSalesforceStream,
     RestSalesforceStream,
 )
+
+
+@pytest.mark.parametrize(
+    "login_status_code, login_json_resp, expected_error_msg, is_config_error",
+    [
+        (400, {"error": "invalid_grant", "error_description": "expired access/refresh token"}, AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"), True),
+        (400, {"error": "invalid_grant", "error_description": "Authentication failure."}, 'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}', False),
+        (401, {"error": "Unauthorized", "error_description": "Unautorized"}, 'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}', False),
+    ]
+)
+def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error):
+    source = SourceSalesforce()
+    logger = logging.getLogger("airbyte")
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
+
+    if is_config_error:
+        with pytest.raises(AirbyteTracedException) as err:
+            source.check_connection(logger, stream_config)
+        assert err.value.message == expected_error_msg
+    else:
+        result, msg = source.check_connection(logger, stream_config)
+        assert result is False
+        assert msg == expected_error_msg
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
@@ -258,16 +282,16 @@ def test_read_with_chunks_should_return_null_value_when_no_data_is_provided(stre
 
 
 @pytest.mark.parametrize(
-    "chunk_size, content_type, content, expected_result",
+    "chunk_size, content_type_header, content, expected_result",
     encoding_symbols_parameters(),
     ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
 )
-def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
+def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_header, content, expected_result):
     job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", job_full_url_results, headers={"Content-Type": f"text/html; charset={content_type}"}, content=content)
+        m.register_uri("GET", job_full_url_results, headers=content_type_header, content=content)
         tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
         res = list(stream.read_with_chunks(tmp_file, response_encoding))
         assert res == expected_result
