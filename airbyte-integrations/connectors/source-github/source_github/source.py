@@ -91,7 +91,11 @@ class SourceGithub(AbstractSource):
                 unchecked_repos.add(org_repos)
 
         if unchecked_orgs:
-            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs)
+            stream = Repositories(
+                authenticator=authenticator, 
+                organizations=unchecked_orgs,
+                api_url=config["api_url"]
+            )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
                 organizations.add(record["organization"])
@@ -101,6 +105,7 @@ class SourceGithub(AbstractSource):
             stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=unchecked_repos,
+                api_url=config["api_url"],
                 # This parameter is deprecated and in future will be used sane default, page_size: 10
                 page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
@@ -232,10 +237,11 @@ class SourceGithub(AbstractSource):
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
 
-        organization_args = {"authenticator": authenticator, "organizations": organizations, "access_token_type": access_token_type}
+        organization_args = {"authenticator": authenticator, "organizations": organizations, "access_token_type": access_token_type, "api_url": config["api_url"]}
         organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
 
         repository_args = {
+            "api_url": config["api_url"],
             "authenticator": authenticator,
             "repositories": repositories,
             "page_size_for_large_streams": page_size,

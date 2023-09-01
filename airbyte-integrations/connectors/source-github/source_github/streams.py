@@ -21,7 +21,6 @@ from .utils import getter
 
 
 class GithubStream(HttpStream, ABC):
-    url_base = "https://api.github.com/"
 
     primary_key = "id"
 
@@ -30,8 +29,9 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], page_size_for_large_streams: int, access_token_type: str = "", **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, access_token_type: str = "", api_url: str = "", **kwargs):
         super().__init__(**kwargs)
+        self.api_url = api_url
         self.repositories = repositories
         self.access_token_type = access_token_type
 
@@ -42,6 +42,10 @@ class GithubStream(HttpStream, ABC):
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
+
+    @property
+    def url_base(self) -> str:
+        return self.api_url
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -378,10 +382,11 @@ class Organizations(GithubStream):
     # GitHub pagination could be from 1 to 100.
     page_size = 100
 
-    def __init__(self, organizations: List[str], access_token_type: str = "", **kwargs):
+    def __init__(self, organizations: List[str], access_token_type: str = "", api_url: str = "", **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
         self.access_token_type = access_token_type
+        self.api_url = api_url
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for organization in self.organizations:
