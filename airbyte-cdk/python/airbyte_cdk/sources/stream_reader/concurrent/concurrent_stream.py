@@ -16,7 +16,7 @@ from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partit
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import FullRefreshStreamReader, PartitionGenerator
+from airbyte_cdk.sources.streams.core import PartitionGenerator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import StreamData
@@ -37,18 +37,26 @@ class AvailabilityStrategyLegacyAdapter(AvailabilityStrategy):
 
 
 class ConcurrentStream(AbstractStream):
+    @classmethod
+    def create_from_legacy_stream(cls, stream: Stream, max_workers: int) -> "ConcurrentStream":
+        return ConcurrentStream(
+            partition_generator=stream.get_partition_generator(),
+            max_workers=max_workers,
+            name=stream.name,
+            json_schema=stream.get_json_schema(),
+            availability_strategy=AvailabilityStrategyLegacyAdapter(stream, stream.availability_strategy),
+        )
+
     def __init__(
         self,
         partition_generator: PartitionGenerator,
         max_workers: int,
-        slice_logger: SliceLogger,
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AvailabilityStrategy,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
-        self._slice_logger = slice_logger
         self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
         self._name = name
         self._json_schema = json_schema
@@ -82,7 +90,7 @@ class ConcurrentStream(AbstractStream):
                 record = partition_reader.get_next()
                 if record is not None:
                     yield record.stream_data
-                    if FullRefreshStreamReader.is_record(record.stream_data):
+                    if AbstractStream.is_record(record.stream_data):
                         total_records_counter += 1
                         if internal_config and internal_config.is_limit_reached(total_records_counter):
                             return
@@ -90,10 +98,10 @@ class ConcurrentStream(AbstractStream):
                 partition = partition_generator.get_next()
                 if partition is not None:
                     futures.append(self._threadpool.submit(partition_reader.process_partition, partition))
-                    if self._slice_logger.should_log_slice_message(logger):
+                    if slice_logger.should_log_slice_message(logger):
                         # FIXME: This is creating slice log messages for parity with the synchronous implementation
                         # but these cannot be used by the connector builder to build slices because they can be unordered
-                        yield self._slice_logger.create_slice_log_message(partition._slice)
+                        yield slice_logger.create_slice_log_message(partition._slice)
         self._check_for_errors(futures)
 
     def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:

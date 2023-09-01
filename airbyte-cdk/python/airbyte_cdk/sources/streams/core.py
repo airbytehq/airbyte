@@ -11,8 +11,7 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.record import Record
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
@@ -20,7 +19,6 @@ from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.utils.types import StreamData
 from deprecated.classic import deprecated
 
@@ -104,7 +102,7 @@ class Stream(AbstractStream, ABC):
             )
             for record_data_or_message in record_data_or_messages:
                 yield record_data_or_message
-                if FullRefreshStreamReader.is_record(record_data_or_message):
+                if AbstractStream.is_record(record_data_or_message):
                     total_records_counter += 1
                     if internal_config and internal_config.is_limit_reached(total_records_counter):
                         return
@@ -316,27 +314,3 @@ class LegacyPartition(Partition):
 
     def to_slice(self) -> Mapping[str, Any]:
         return self._slice
-
-
-class FullRefreshStreamReader(ABC):
-    @abstractmethod
-    def read_stream(
-        self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
-    ) -> Iterable[StreamData]:
-        """
-        Read a stream in full refresh mode
-        :param stream: The stream to read data from
-        :param cursor_field:
-        :param logger:
-        :param internal_config:
-        :return: The stream's records
-        """
-
-    @staticmethod
-    def is_record(record_data_or_message: StreamData) -> bool:
-        if isinstance(record_data_or_message, dict):
-            return True
-        elif isinstance(record_data_or_message, AirbyteMessage):
-            return bool(record_data_or_message.type == MessageType.RECORD)
-        else:
-            return False

@@ -3,6 +3,6 @@
 #
 
 # Initialize Streams Package
-from .core import FullRefreshStreamReader, IncrementalMixin, Stream
+from .core import IncrementalMixin, Stream
 
-__all__ = ["IncrementalMixin", "Stream", "FullRefreshStreamReader"]
+__all__ = ["IncrementalMixin", "Stream"]

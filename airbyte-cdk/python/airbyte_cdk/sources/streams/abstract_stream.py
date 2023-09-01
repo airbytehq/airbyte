@@ -8,7 +8,8 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.utils import casing
@@ -151,3 +152,12 @@ class AbstractStream(ABC):
             return _try_get_error(body)
         except requests.exceptions.JSONDecodeError:
             return None
+
+    @staticmethod
+    def is_record(record_data_or_message: StreamData) -> bool:
+        if isinstance(record_data_or_message, dict):
+            return True
+        elif isinstance(record_data_or_message, AirbyteMessage):
+            return bool(record_data_or_message.type == MessageType.RECORD)
+        else:
+            return False

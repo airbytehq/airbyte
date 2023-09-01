@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-from unittest.mock import Mock, call
+from typing import Any, Iterable, List, Mapping, Optional, Union
+from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import (
@@ -22,11 +22,10 @@ from airbyte_cdk.models import (
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.stream_reader.concurrent.concurrent_full_refresh_reader import ConcurrentFullRefreshStreamReader
-from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SynchronousFullRefreshReader
-from airbyte_cdk.sources.streams import FullRefreshStreamReader
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
@@ -35,33 +34,58 @@ _DEFAULT_INTERNAL_CONFIG = InternalConfig()
 _STREAM_NAME = "STREAM"
 
 
-def _synchronous_reader():
-    return SynchronousFullRefreshReader(DebugSliceLogger())
+class _MockStream(Stream):
+    def __init__(self, slice_to_records: Mapping[str, List[Mapping[str, Any]]]):
+        self._slice_to_records = slice_to_records
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return None
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for partition in self._slice_to_records.keys():
+            yield {"partition": partition}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._slice_to_records[stream_slice["partition"]]
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
 
 
-def _concurrent_reader():
-    reader = ConcurrentFullRefreshStreamReader(PartitionGenerator, PartitionReader, 5, DebugSliceLogger())
-    return reader
+def _legacy_stream(slice_to_partition_mapping):
+    return _MockStream(slice_to_partition_mapping)
+
+
+def _concurrent_stream(slice_to_partition_mapping):
+    legacy_stream = _legacy_stream(slice_to_partition_mapping)
+    return ConcurrentStream.create_from_legacy_stream(legacy_stream, 1)
 
 
 @pytest.mark.parametrize(
-    "reader",
+    "constructor",
     [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
+        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
-def test_full_refresh_read_a_single_slice_with_debug(reader):
-    logger = _mock_logger(True)
-
-    partition = {"partition": 1}
-    partitions = [partition]
-
+def test_full_refresh_read_a_single_slice_with_debug(constructor):
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
     ]
-    records_per_partition = [records]
+    slice_to_partition = {1: records}
+    stream = constructor(slice_to_partition)
+    logger = _mock_logger(True)
+    slice_logger = DebugSliceLogger()
 
     expected_records = [
         AirbyteMessage(
@@ -74,58 +98,46 @@ def test_full_refresh_read_a_single_slice_with_debug(reader):
         *records,
     ]
 
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-
-    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, _DEFAULT_INTERNAL_CONFIG))
 
     assert expected_records == actual_records
 
 
 @pytest.mark.parametrize(
-    "reader",
+    "constructor",
     [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
+        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
-def test_full_refresh_read_a_single_slice(reader):
+def test_full_refresh_read_a_single_slice(constructor):
     logger = _mock_logger()
-
-    partition = {"partition": 1}
-    partitions = [partition]
+    slice_logger = DebugSliceLogger()
 
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
     ]
-    records_per_partition = [records]
+    slice_to_partition = {1: records}
+    stream = constructor(slice_to_partition)
 
     expected_records = [*records]
 
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-
-    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, _DEFAULT_INTERNAL_CONFIG))
 
     assert expected_records == actual_records
 
-    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
-
-    stream.read_records.assert_has_calls(expected_read_records_calls)
-
 
 @pytest.mark.parametrize(
-    "reader",
+    "constructor",
     [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
+        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
-def test_full_refresh_read_a_two_slices(reader):
+def test_full_refresh_read_a_two_slices(constructor):
     logger = _mock_logger()
-
-    partition1 = {"partition": 1}
-    partition2 = {"partition": 2}
-    partitions = [partition1, partition2]
+    slice_logger = DebugSliceLogger()
 
     records_partition_1 = [
         {"id": 1, "partition": 1},
@@ -135,80 +147,60 @@ def test_full_refresh_read_a_two_slices(reader):
         {"id": 3, "partition": 2},
         {"id": 4, "partition": 2},
     ]
-    records_per_partition = [records_partition_1, records_partition_2]
+    slice_to_partition = {1: records_partition_1, 2: records_partition_2}
+    stream = constructor(slice_to_partition)
 
     expected_records = [
         *records_partition_1,
         *records_partition_2,
     ]
 
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-
-    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, _DEFAULT_INTERNAL_CONFIG))
 
     for record in expected_records:
         assert record in actual_records
     assert len(expected_records) == len(actual_records)
 
-    expected_read_records_calls = [
-        call(sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD, stream_slice=partition1),
-        call(sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD, stream_slice=partition2),
-    ]
-    actual_calls = stream.read_records.call_args_list
-
-    for expected_call in expected_read_records_calls:
-        assert expected_call in actual_calls
-    assert len(expected_read_records_calls) == len(actual_calls)
-
 
 @pytest.mark.parametrize(
-    "reader",
+    "constructor",
     [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
+        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
-def test_only_read_up_to_limit(reader):
+def test_only_read_up_to_limit(constructor):
     logger = _mock_logger()
+    slice_logger = DebugSliceLogger()
 
     internal_config = InternalConfig(_limit=1)
-
-    partition = {"partition": 1}
-    partitions = [partition]
 
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
     ]
-    records_per_partition = [records]
+    slice_to_partition = {1: records}
+    stream = constructor(slice_to_partition)
 
     expected_records = records[:-1]
 
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-
-    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, internal_config))
+    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, internal_config))
 
     assert expected_records == actual_records
 
-    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
-
-    stream.read_records.assert_has_calls(expected_read_records_calls)
-
 
 @pytest.mark.parametrize(
-    "reader",
+    "constructor",
     [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
+        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
-def test_limit_only_considers_data(reader):
+def test_limit_only_considers_data(constructor):
     logger = _mock_logger()
+    slice_logger = DebugSliceLogger()
 
     internal_config = InternalConfig(_limit=2)
-
-    partition = {"partition": 1}
-    partitions = [partition]
 
     records = [
         AirbyteMessage(
@@ -237,70 +229,13 @@ def test_limit_only_considers_data(reader):
         {"id": 2, "partition": 1},
     ]
 
-    records_per_partition = [records]
+    slice_to_partition = {1: records}
+    stream = constructor(slice_to_partition)
     expected_records = records[:-1]
 
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-
-    actual_records = list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, internal_config))
+    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, internal_config))
 
     assert expected_records == actual_records
-
-    expected_read_records_calls = [call(sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD, stream_slice=partition)]
-
-    stream.read_records.assert_has_calls(expected_read_records_calls)
-
-
-@pytest.mark.parametrize(
-    "reader",
-    [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
-    ],
-)
-def test_exception_is_raised_if_generate_partitions_fails(reader):
-    logger = _mock_logger()
-
-    partition = {"partition": 1}
-    partitions = [partition]
-
-    records = [
-        {"id": 1, "partition": 1},
-        {"id": 2, "partition": 1},
-    ]
-    records_per_partition = [records]
-
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-    stream.generate_partitions.side_effect = Mock(side_effect=RuntimeError("Test"))
-
-    with pytest.raises(RuntimeError):
-        list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
-
-
-@pytest.mark.parametrize(
-    "reader",
-    [
-        pytest.param(_synchronous_reader(), id="synchronous_reader"),
-        pytest.param(_concurrent_reader(), id="concurrent_reader"),
-    ],
-)
-def test_exception_is_raised_if_read_records_fails(reader):
-    logger = _mock_logger()
-
-    partition = {"partition": 1}
-    partitions = [partition]
-
-    records = [
-        {"id": 1, "partition": 1},
-        {"id": 2, "partition": 1},
-    ]
-    records_per_partition = [records]
-
-    stream = _mock_stream(_STREAM_NAME, partitions, records_per_partition)
-    stream.read_records.side_effect = Mock(side_effect=RuntimeError("Test"))
-
-    with pytest.raises(RuntimeError):
-        list(reader.read_stream(stream, _A_CURSOR_FIELD, logger, _DEFAULT_INTERNAL_CONFIG))
 
 
 @pytest.mark.parametrize(
@@ -346,15 +281,15 @@ def test_exception_is_raised_if_read_records_fails(reader):
     ],
 )
 def test_is_record(partition_record, expected_is_record):
-    actual_is_record = FullRefreshStreamReader.is_record(partition_record)
+    actual_is_record = AbstractStream.is_record(partition_record)
     assert actual_is_record == expected_is_record
 
 
-def _mock_stream(name: str, partitions, records_per_partition, *, available=True, debug_log=False):
+def _mock_partition_generator(name: str, slices, records_per_partition, *, available=True, debug_log=False):
     stream = Mock()
     stream.name = name
     stream.get_json_schema.return_value = {}
-    stream.generate_partitions.return_value = iter(partitions)
+    stream.generate_partitions.return_value = iter(slices)
     stream.read_records.side_effect = [iter(records) for records in records_per_partition]
     stream.logger.isEnabledFor.return_value = debug_log
     if available:

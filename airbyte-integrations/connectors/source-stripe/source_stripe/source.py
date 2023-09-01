@@ -8,7 +8,7 @@ import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import AvailabilityStrategyLegacyAdapter, ConcurrentStream
+from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
@@ -128,14 +128,4 @@ class SourceStripe(AbstractSource):
             Transfers(**incremental_args),
             UsageRecords(**args),
         ]
-        return [
-            ConcurrentStream(
-                name=stream.name,
-                partition_generator=stream.get_partition_generator(),
-                max_workers=10,
-                slice_logger=self._slice_logger,
-                json_schema=stream.get_json_schema(),
-                availability_strategy=AvailabilityStrategyLegacyAdapter(stream, stream.availability_strategy),
-            )
-            for stream in legacy_streams
-        ]
+        return [ConcurrentStream.create_from_legacy_stream(stream, 10) for stream in legacy_streams]
