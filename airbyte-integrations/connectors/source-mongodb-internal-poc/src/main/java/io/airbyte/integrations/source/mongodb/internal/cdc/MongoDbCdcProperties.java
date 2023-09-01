@@ -24,7 +24,11 @@ public class MongoDbCdcProperties {
   static final String SNAPSHOT_MODE_VALUE = "initial";
   static final String FIELD_EXCLUDE_LIST_KEY = "field.exclude.list";
 
-  public record ExcludedField(String database, String collection, String field) {}
+  public record ExcludedField(String database, String collection, String field) {
+    public String getFullyQualifiedName() {
+      return String.format("%s.%s.%s", database, collection, field);
+    }
+  }
 
   /**
    * Returns the common properties required to configure the Debezium MongoDB connector.
@@ -55,7 +59,7 @@ public class MongoDbCdcProperties {
 
   private static String createFieldsToExcludeString(final Set<ExcludedField> fieldsToExclude) {
     return fieldsToExclude.stream()
-        .map(excludedField -> excludedField.database + "." + excludedField.collection() + "." + excludedField.field())
+        .map(ExcludedField::getFullyQualifiedName)
         .collect(Collectors.joining(","));
   }
 
