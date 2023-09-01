@@ -131,6 +131,7 @@ public class MongoDbDebeziumStateUtil {
                                             final JsonNode cdcState,
                                             final JsonNode config,
                                             final MongoClient mongoClient) {
+    LOGGER.info("Initializing file offset backing store with state '{}'...", cdcState);
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
         config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
@@ -168,6 +169,8 @@ public class MongoDbDebeziumStateUtil {
       final MongoDbConnectorConfig mongoDbConnectorConfig = new MongoDbConnectorConfig(config);
       final ReplicaSets replicaSets = new ReplicaSetDiscovery(taskContext).getReplicaSets(mongoClient);
 
+      LOGGER.info("Parsing saved offset state for replica set '{}' and server ID '{}'...", replicaSets.all().get(0), properties.getProperty("name"));
+
       offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter, valueConverter);
 
       final MongoDbOffsetContext.Loader loader = new MongoDbCustomLoader(mongoDbConnectorConfig, replicaSets);
@@ -182,9 +185,11 @@ public class MongoDbDebeziumStateUtil {
           final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());
           return Optional.of(resumeToken);
         } else {
+          LOGGER.info("Offset data does not contain a resume token: {}", offset);
           return Optional.empty();
         }
       } else {
+        LOGGER.info("Loaded offset data is null or empty: {}", offsets);
         return Optional.empty();
       }
     } finally {
