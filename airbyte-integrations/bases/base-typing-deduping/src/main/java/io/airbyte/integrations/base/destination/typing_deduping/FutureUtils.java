@@ -15,14 +15,15 @@ public class FutureUtils {
   public static final int DEFAULT_TD_THREADS = 8;
 
   /**
-   * Allow for configuring the number of typing and deduping threads via an enviornment variable
-   * in the destination container.
+   * Allow for configuring the number of typing and deduping threads via an enviornment variable in
+   * the destination container.
+   *
    * @return the number of threads to use in the typing and deduping pool
    */
   public static int countOfTypingDedupingThreads() {
     return Optional.ofNullable(System.getenv("TD_THREADS"))
-                   .map(Integer::valueOf)
-                   .orElse(DEFAULT_TD_THREADS);
+        .map(Integer::valueOf)
+        .orElse(DEFAULT_TD_THREADS);
   }
 
   public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)
