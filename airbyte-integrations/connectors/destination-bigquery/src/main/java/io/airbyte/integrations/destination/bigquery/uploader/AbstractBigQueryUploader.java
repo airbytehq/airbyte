@@ -18,7 +18,6 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
@@ -29,9 +28,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,9 +82,9 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       LOGGER.error(airbyteMessage.toString());
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
-              "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
-              writer.toString(),
-              airbyteMessage.getRecord()));
+          "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
+          writer.toString(),
+          airbyteMessage.getRecord()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }

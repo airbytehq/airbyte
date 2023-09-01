@@ -33,10 +33,10 @@ class BigQueryAsyncStagingFlush implements DestinationFlushFunction {
   private final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer;
 
   public BigQueryAsyncStagingFlush(
-                            final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
-                            final BigQueryStagingOperations stagingOperations,
-                            final ConfiguredAirbyteCatalog catalog,
-                            final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer) {
+                                   final Map<StreamDescriptor, BigQueryWriteConfig> streamDescToWriteConfig,
+                                   final BigQueryStagingOperations stagingOperations,
+                                   final ConfiguredAirbyteCatalog catalog,
+                                   final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.catalog = catalog;

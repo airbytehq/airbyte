@@ -62,11 +62,11 @@ public class BigQueryStagingConsumerFactory {
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
         (hasFailed) -> {
-            try {
-                onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+          try {
+            onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false);
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
         },
         flusher,
         catalog,

@@ -77,7 +77,8 @@ class BigQueryDenormalizedDestinationTest {
   @BeforeEach
   void init() {
     uploaderFactoryMock = Mockito.mockStatic(BigQueryUploaderFactory.class, Mockito.CALLS_REAL_METHODS);
-    uploaderFactoryMock.when(() -> BigQueryUploaderFactory.getUploader(any(UploaderConfig.class), any())).thenReturn(mock(BigQueryDirectUploader.class));
+    uploaderFactoryMock.when(() -> BigQueryUploaderFactory.getUploader(any(UploaderConfig.class), any()))
+        .thenReturn(mock(BigQueryDirectUploader.class));
   }
 
   @AfterEach

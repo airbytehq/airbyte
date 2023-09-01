@@ -9,7 +9,6 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 
 /**
@@ -30,10 +29,10 @@ public class GcsCsvBigQueryRecordFormatter extends DefaultBigQueryRecordFormatte
   @Override
   public Schema getBigQuerySchema(JsonNode jsonSchema) {
     // if (TypingAndDedupingFlag.isDestinationV2()) {
-      return SCHEMA_V2;
-    /*} else {
-      return CSV_SCHEMA;
-    }*/
+    return SCHEMA_V2;
+    /*
+     * } else { return CSV_SCHEMA; }
+     */
   }
 
 }
