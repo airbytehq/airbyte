@@ -22,9 +22,7 @@ class UsernamePasswordAuth(BaseModel):
 
     class Config:
         title = "Username/Password"
-        schema_extra = {
-            "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
-        }
+        schema_extra = {"description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"}
 
 
 class TokenAuth(BaseModel):
@@ -33,9 +31,7 @@ class TokenAuth(BaseModel):
 
     class Config:
         title = "API Token"
-        schema_extra = {
-            "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
-        }
+        schema_extra = {"description": "Authenticate using an API token (suitable for Zilliz Cloud)"}
 
 
 class MilvusIndexingConfigModel(BaseModel):
