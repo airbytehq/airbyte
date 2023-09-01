@@ -5,26 +5,10 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteControlMessage,
-    AirbyteLogMessage,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteTraceMessage,
-    ConnectorSpecification,
-    Level,
-    OrchestratorType,
-    Status,
-    SyncMode,
-    TraceType,
-)
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
@@ -78,6 +62,8 @@ def _concurrent_stream(slice_to_partition_mapping):
     ],
 )
 def test_full_refresh_read_a_single_slice_with_debug(constructor):
+    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # It is done by running the same test cases on both streams
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
@@ -111,6 +97,8 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     ],
 )
 def test_full_refresh_read_a_single_slice(constructor):
+    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
 
@@ -136,6 +124,8 @@ def test_full_refresh_read_a_single_slice(constructor):
     ],
 )
 def test_full_refresh_read_a_two_slices(constructor):
+    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
 
@@ -170,6 +160,8 @@ def test_full_refresh_read_a_two_slices(constructor):
     ],
 )
 def test_only_read_up_to_limit(constructor):
+    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
 
@@ -197,6 +189,8 @@ def test_only_read_up_to_limit(constructor):
     ],
 )
 def test_limit_only_considers_data(constructor):
+    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
 
@@ -236,53 +230,6 @@ def test_limit_only_considers_data(constructor):
     actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, internal_config))
 
     assert expected_records == actual_records
-
-
-@pytest.mark.parametrize(
-    "partition_record, expected_is_record",
-    [
-        pytest.param({"id": 1}, True, id="a_dict_is_a_record"),
-        pytest.param(
-            AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream="S", data={}, emitted_at=1)),
-            True,
-            id="an_airbyte_record_is_a_record",
-        ),
-        pytest.param(
-            AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="A_MESSAGE")),
-            False,
-            id="an_airbyte_log_is_not_a_record",
-        ),
-        pytest.param(AirbyteMessage(type=MessageType.STATE, state=AirbyteStateMessage()), False, id="an_airbyte_state_is_not_a_record"),
-        pytest.param(
-            AirbyteMessage(type=MessageType.CATALOG, catalog=AirbyteCatalog(streams=[])), False, id="an_airbyte_catalog_is_not_a_record"
-        ),
-        pytest.param(
-            AirbyteMessage(type=MessageType.SPEC, spec=ConnectorSpecification(connectionSpecification={})),
-            False,
-            id="an_airbyte_spec_is_not_a_record",
-        ),
-        pytest.param(
-            AirbyteMessage(type=MessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.SUCCEEDED)),
-            False,
-            id="an_airbyte_connection_status_is_not_a_record",
-        ),
-        pytest.param(
-            AirbyteMessage(type=MessageType.CONTROL, control=AirbyteControlMessage(type=OrchestratorType.CONNECTOR_CONFIG, emitted_at=1.0)),
-            False,
-            id="an_airbyte_control_message_is_not_a_record",
-        ),
-        pytest.param(
-            AirbyteMessage(type=MessageType.TRACE, trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=1.0)),
-            False,
-            id="an_airbyte_trace_message_is_not_a_record",
-        ),
-        pytest.param("not a record", False, id="a_string_is_not_a_record"),
-        pytest.param(None, False, id="none_is_not_a_record"),
-    ],
-)
-def test_is_record(partition_record, expected_is_record):
-    actual_is_record = AbstractStream.is_record(partition_record)
-    assert actual_is_record == expected_is_record
 
 
 def _mock_partition_generator(name: str, slices, records_per_partition, *, available=True, debug_log=False):
