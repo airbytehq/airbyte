@@ -142,7 +142,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         """
-
+        stream_state = kwargs["stream_state"]
+        cursor_date = (stream_state or {}).get(self.cursor_field)
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
         for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
             # transform record into flat dict structure
@@ -157,6 +158,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             # convert timestamp to datetime string
             if "time" in item: # time is not always present in the response
                 item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
+                if cursor_date and item["time"] < cursor_date:
+                    continue
 
             yield item
 
@@ -185,15 +188,6 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        mapping = super().request_params(stream_state, stream_slice, next_page_token)
-        if stream_state and "date" in stream_state:
-            timestamp = int(pendulum.parse(stream_state["date"]).timestamp())
-            mapping["where"] = f'properties["$time"]>=datetime({timestamp})'
-        return mapping
 
     def request_kwargs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
