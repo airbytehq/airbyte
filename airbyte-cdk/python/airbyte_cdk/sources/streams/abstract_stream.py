@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
+from airbyte_cdk.sources.streams.partition import Partition
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger

@@ -7,9 +7,8 @@ from queue import Queue
 from typing import List, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import PartitionGenerator
+from airbyte_cdk.sources.streams.partition import Partition
 
 
 class ConcurrentPartitionGenerator:

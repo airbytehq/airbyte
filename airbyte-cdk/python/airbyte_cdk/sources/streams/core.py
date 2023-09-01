@@ -12,9 +12,9 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode
-from airbyte_cdk.sources.stream_reader.concurrent.record import Record
-from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.partition import Partition
+from airbyte_cdk.sources.streams.record import Record
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader

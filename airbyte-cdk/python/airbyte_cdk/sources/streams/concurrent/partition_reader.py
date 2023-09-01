@@ -5,8 +5,8 @@
 from queue import Queue
 from typing import Optional
 
-from airbyte_cdk.sources.stream_reader.concurrent.record import Record
-from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
+from airbyte_cdk.sources.streams.partition import Partition
+from airbyte_cdk.sources.streams.record import Record
 
 
 class PartitionReader:

@@ -7,8 +7,8 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger

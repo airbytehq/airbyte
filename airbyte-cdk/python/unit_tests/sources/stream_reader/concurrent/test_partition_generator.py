@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import ConcurrentPartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.core import LegacyPartition
 
 

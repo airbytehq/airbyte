@@ -10,13 +10,13 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import ConcurrentPartitionGenerator
-from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.core import PartitionGenerator
+from airbyte_cdk.sources.streams.partition import Partition
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import StreamData

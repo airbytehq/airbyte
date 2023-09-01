@@ -4,8 +4,8 @@
 
 from unittest.mock import Mock
 
-from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.stream_reader.concurrent.record import Record
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
+from airbyte_cdk.sources.streams.record import Record
 
 
 def test_partition_reader_initially_has_no_output():
