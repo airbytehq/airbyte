@@ -6,7 +6,7 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
-from airbyte_cdk.sources.streams.core import Stream, StreamData, LegacyPartition
+from airbyte_cdk.sources.streams.core import LegacyPartition, Stream, StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 
@@ -21,10 +21,13 @@ def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
     # We wrap the return output of stream_slices() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
     slices = iter(
-        [p.to_slice for p in stream.generate_partitions(
-            cursor_field=stream.cursor_field,
-            sync_mode=SyncMode.full_refresh,
-        )]
+        [
+            p.to_slice
+            for p in stream.generate_partitions(
+                cursor_field=stream.cursor_field,
+                sync_mode=SyncMode.full_refresh,
+            )
+        ]
     )
     return next(slices)
 

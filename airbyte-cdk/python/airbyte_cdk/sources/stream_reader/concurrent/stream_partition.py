@@ -14,4 +14,3 @@ class Partition(ABC):
     @abstractmethod
     def to_slice(self) -> Mapping[str, Any]:
         pass
-

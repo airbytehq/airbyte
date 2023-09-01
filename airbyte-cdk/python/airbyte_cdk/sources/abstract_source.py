@@ -294,9 +294,7 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        for data_or_message in stream_instance.read(
-            configured_stream.cursor_field, logger, self._slice_logger, internal_config
-        ):
+        for data_or_message in stream_instance.read(configured_stream.cursor_field, logger, self._slice_logger, internal_config):
             yield self._get_message(data_or_message, stream_instance)
 
     def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:

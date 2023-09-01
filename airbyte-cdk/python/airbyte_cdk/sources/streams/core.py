@@ -21,8 +21,8 @@ from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from deprecated.classic import deprecated
 from airbyte_cdk.sources.utils.types import StreamData
+from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -85,8 +85,11 @@ class Stream(AbstractStream, ABC):
     """
 
     def read(
-            self, cursor_field: Optional[List[str]], logger: logging.Logger, slice_logger: SliceLogger,
-            internal_config: InternalConfig = InternalConfig()
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        internal_config: InternalConfig = InternalConfig(),
     ) -> Iterable[StreamData]:
         slices = self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
         logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
@@ -118,14 +121,13 @@ class Stream(AbstractStream, ABC):
         """
         return casing.camel_to_snake(self.__class__.__name__)
 
-
     @abstractmethod
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
@@ -211,7 +213,7 @@ class Stream(AbstractStream, ABC):
         yield from self.get_partition_generator().generate(sync_mode, cursor_field)
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Override to define the slices for this stream. See the stream slicing section of the docs for more information.
@@ -239,7 +241,7 @@ class Stream(AbstractStream, ABC):
 
     @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
     def get_updated_state(
-            self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> MutableMapping[str, Any]:
         """Override to extract state from the latest record. Needed to implement incremental sync.
 
@@ -289,7 +291,10 @@ class LegacyPartitionGenerator(PartitionGenerator):
         self._stream = stream
 
     def generate(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
-        return [LegacyPartition(self._stream, _slice, cursor_field) for _slice in self._stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)]
+        return [
+            LegacyPartition(self._stream, _slice, cursor_field)
+            for _slice in self._stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field)
+        ]
 
 
 class LegacyPartition(Partition):
@@ -297,12 +302,12 @@ class LegacyPartition(Partition):
         self._stream = stream
         self._slice = _slice
         self._cursor_field = cursor_field
+
     def read(self) -> Iterable[Record]:
         for record_data in self._stream.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=self._cursor_field, stream_slice=self._slice
+            sync_mode=SyncMode.full_refresh, cursor_field=self._cursor_field, stream_slice=self._slice
         ):
             yield Record(record_data)
-
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, LegacyPartition):
@@ -316,8 +321,7 @@ class LegacyPartition(Partition):
 class FullRefreshStreamReader(ABC):
     @abstractmethod
     def read_stream(
-            self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger,
-            internal_config: InternalConfig = InternalConfig()
+        self, stream: Stream, cursor_field: Optional[List[str]], logger: logging.Logger, internal_config: InternalConfig = InternalConfig()
     ) -> Iterable[StreamData]:
         """
         Read a stream in full refresh mode
