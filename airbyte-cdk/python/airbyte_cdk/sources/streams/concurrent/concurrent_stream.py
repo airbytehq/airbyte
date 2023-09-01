@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 # import concurrent
 # import logging
 # from concurrent.futures import Future

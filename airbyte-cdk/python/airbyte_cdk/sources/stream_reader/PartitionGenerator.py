@@ -1,4 +1,8 @@
-from abc import abstractmethod, ABC
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode

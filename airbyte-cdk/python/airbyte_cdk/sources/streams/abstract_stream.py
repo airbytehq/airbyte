@@ -1,21 +1,29 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import logging
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Iterable, Optional, List, Tuple, Union, Any, Mapping
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
-from airbyte_cdk.sources.utils.types import StreamData
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.utils.types import StreamData
 
 
 class AbstractStream(ABC):
     @abstractmethod
     def read(
-            self, cursor_field: Optional[List[str]], logger: logging.Logger, slice_logger: SliceLogger, internal_config: InternalConfig = InternalConfig()
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        internal_config: InternalConfig = InternalConfig(),
     ) -> Iterable[StreamData]:
         """
         Read a stream in full refresh mode
@@ -30,7 +38,6 @@ class AbstractStream(ABC):
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.streams.{self.name}")
-
 
     @property
     def name(self) -> str:
@@ -71,7 +78,6 @@ class AbstractStream(ABC):
         :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
           If the stream has no primary keys, return None.
         """
-
 
     @property
     @abstractmethod

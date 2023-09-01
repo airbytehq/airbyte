@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import logging
 from typing import Any, Iterable, List, Mapping, Optional
 
@@ -9,7 +13,6 @@ from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 
 
 class LegacyStreamPartition(StreamPartition):
-
     def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]], cursor_field: Optional[List[str]]):
         self._stream = stream
         self._slice = _slice
@@ -26,7 +29,7 @@ class LegacyStreamPartition(StreamPartition):
     def read(self) -> Iterable[Record]:
         # FIXME: Only full refresh is supported for now
         for record_data in self._stream.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=self._cursor_field, stream_slice=self._slice
+            sync_mode=SyncMode.full_refresh, cursor_field=self._cursor_field, stream_slice=self._slice
         ):
             yield Record(record_data)
 
