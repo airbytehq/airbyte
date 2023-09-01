@@ -60,7 +60,7 @@ public class DefaultTyperDeduperTest {
             null,
             null)));
 
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 1);
   }
 
   /**

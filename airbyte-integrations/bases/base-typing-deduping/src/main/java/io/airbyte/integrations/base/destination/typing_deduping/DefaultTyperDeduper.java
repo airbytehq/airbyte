@@ -58,23 +58,24 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
-                             final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator) {
+                             final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator,
+                             final int defaultThreadCount) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
-    this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(),
+    this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   public DefaultTyperDeduper(
-                             final SqlGenerator<DialectTableDefinition> sqlGenerator,
-                             final DestinationHandler<DialectTableDefinition> destinationHandler,
-                             final ParsedCatalog parsedCatalog,
-                             final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator) {
-    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2RawTableMigrator<>());
+      final SqlGenerator<DialectTableDefinition> sqlGenerator,
+      final DestinationHandler<DialectTableDefinition> destinationHandler,
+      final ParsedCatalog parsedCatalog,
+      final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator, final int defaultThreadCount) {
+    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2RawTableMigrator<>(), defaultThreadCount);
   }
 
   /**

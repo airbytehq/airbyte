@@ -143,7 +143,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
     parsedCatalog = catalogParser.parseCatalog(catalog);
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, 1);
 
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,

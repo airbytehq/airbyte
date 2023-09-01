@@ -248,7 +248,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         new BigQueryDestinationHandler(bigquery, datasetLocation),
         parsedCatalog,
         migrator,
-        v2RawTableMigrator);
+        v2RawTableMigrator,
+        4
+    );
 
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {

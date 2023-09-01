@@ -12,18 +12,16 @@ import org.apache.commons.lang3.StringUtils;
 
 public class FutureUtils {
 
-  public static final int DEFAULT_TD_THREADS = 4;
-
   /**
    * Allow for configuring the number of typing and deduping threads via an enviornment variable in
    * the destination container.
    *
    * @return the number of threads to use in the typing and deduping pool
    */
-  public static int countOfTypingDedupingThreads() {
+  public static int countOfTypingDedupingThreads(final int defaultThreads) {
     return Optional.ofNullable(System.getenv("TD_THREADS"))
-        .map(Integer::valueOf)
-        .orElse(DEFAULT_TD_THREADS);
+                   .map(Integer::valueOf)
+                   .orElse(defaultThreads);
   }
 
   public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)
