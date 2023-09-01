@@ -11,11 +11,13 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 
 # list of all possible HTTP methods which can be used for sending of request bodies
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.types import StreamData
 from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
@@ -25,9 +27,9 @@ if typing.TYPE_CHECKING:
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
 # AirbyteMessage: An AirbyteMessage. Could be of any type
-StreamData = Union[Mapping[str, Any], AirbyteMessage]
 
 JsonSchema = Mapping[str, Any]
+StreamData = StreamData
 
 
 def package_name_from_class(cls: object) -> str:
@@ -73,18 +75,40 @@ class IncrementalMixin(ABC):
         """State setter, accept state serialized by state getter."""
 
 
-class Stream(ABC):
+class Stream(AbstractStream, ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
+
+    def read(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        internal_config: InternalConfig = InternalConfig(),
+    ) -> Iterable[StreamData]:
+        slices = self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
+        logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
+        total_records_counter = 0
+        for _slice in slices:
+            if slice_logger.should_log_slice_message(logger):
+                yield slice_logger.create_slice_log_message(_slice)
+            record_data_or_messages = self.read_records(
+                stream_slice=_slice,
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=cursor_field,
+            )
+            for record_data_or_message in record_data_or_messages:
+                yield record_data_or_message
+                if AbstractStream.is_record(record_data_or_message):
+                    total_records_counter += 1
+                    if internal_config and internal_config.is_limit_reached(total_records_counter):
+                        return
 
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self) -> logging.Logger:
         return logging.getLogger(f"airbyte.streams.{self.name}")
-
-    # TypeTransformer object to perform output data transformation
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     @property
     def name(self) -> str:
@@ -92,18 +116,6 @@ class Stream(ABC):
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
         """
         return casing.camel_to_snake(self.__class__.__name__)
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        return None
 
     @abstractmethod
     def read_records(
@@ -128,33 +140,6 @@ class Stream(ABC):
         # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)
 
-    def as_airbyte_stream(self) -> AirbyteStream:
-        stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
-
-        if self.namespace:
-            stream.namespace = self.namespace
-
-        if self.supports_incremental:
-            stream.source_defined_cursor = self.source_defined_cursor
-            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
-            stream.default_cursor_field = self._wrapped_cursor_field()
-
-        keys = Stream._wrapped_primary_key(self.primary_key)
-        if keys and len(keys) > 0:
-            stream.source_defined_primary_key = keys
-
-        return stream
-
-    @property
-    def supports_incremental(self) -> bool:
-        """
-        :return: True if this stream supports incrementally reading data
-        """
-        return len(self._wrapped_cursor_field()) > 0
-
-    def _wrapped_cursor_field(self) -> List[str]:
-        return [self.cursor_field] if isinstance(self.cursor_field, str) else self.cursor_field
-
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         """
@@ -162,14 +147,6 @@ class Stream(ABC):
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
         return []
-
-    @property
-    def namespace(self) -> Optional[str]:
-        """
-        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
-        :return: A string containing the name of the namespace.
-        """
-        return None
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -199,14 +176,6 @@ class Stream(ABC):
         :return: The AvailabilityStrategy used to check whether this stream is available.
         """
         return None
-
-    @property
-    @abstractmethod
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        """
-        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
-          If the stream has no primary keys, return None.
-        """
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -251,26 +220,3 @@ class Stream(ABC):
         :return: An updated state object
         """
         return {}
-
-    @staticmethod
-    def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[List[List[str]]]:
-        """
-        :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
-        """
-        if not keys:
-            return None
-
-        if isinstance(keys, str):
-            return [[keys]]
-        elif isinstance(keys, list):
-            wrapped_keys = []
-            for component in keys:
-                if isinstance(component, str):
-                    wrapped_keys.append([component])
-                elif isinstance(component, list):
-                    wrapped_keys.append(component)
-                else:
-                    raise ValueError(f"Element must be either list or str. Got: {type(component)}")
-            return wrapped_keys
-        else:
-            raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
