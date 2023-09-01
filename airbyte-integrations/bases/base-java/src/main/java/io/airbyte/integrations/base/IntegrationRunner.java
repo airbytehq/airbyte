@@ -55,15 +55,17 @@ public class IntegrationRunner {
   public static final String TYPE_AND_DEDUPE_THREAD_NAME = "type-and-dedupe";
 
   /**
-   * Filters threads that should not be considered when looking for orphaned threads at shutdown of the integration runner.
+   * Filters threads that should not be considered when looking for orphaned threads at shutdown of
+   * the integration runner.
    * <p>
    * </p>
    * <b>N.B.</b> Daemon threads don't block the JVM if the main `currentThread` exits, so they are not
-   * problematic. Additionally, ignore database connection pool threads, which stay active so long as the database connection pool is open.
+   * problematic. Additionally, ignore database connection pool threads, which stay active so long as
+   * the database connection pool is open.
    */
   @VisibleForTesting
   static final Predicate<Thread> ORPHANED_THREAD_FILTER = runningThread -> !runningThread.getName().equals(Thread.currentThread().getName())
-                                                                           && !runningThread.isDaemon() && !TYPE_AND_DEDUPE_THREAD_NAME.equals(runningThread.getName());
+      && !runningThread.isDaemon() && !TYPE_AND_DEDUPE_THREAD_NAME.equals(runningThread.getName());
 
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
   public static final int EXIT_THREAD_DELAY_MINUTES = 70;

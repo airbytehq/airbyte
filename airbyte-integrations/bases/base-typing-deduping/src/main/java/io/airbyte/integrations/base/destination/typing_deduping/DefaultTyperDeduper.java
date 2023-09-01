@@ -68,7 +68,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.v2RawTableMigrator = v2RawTableMigrator;
     this.streamsWithSuccessfulSetup = new ConcurrentHashMap<>();
     this.executorService = Executors.newFixedThreadPool(MAX_THREADS,
-                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   public DefaultTyperDeduper(
@@ -176,8 +176,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
           // we should skip it.
           LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
-                      originalName
-          );
+              originalName);
           return Optional.empty();
         }
         final String suffix = getFinalTableSuffix(streamConfig.id());
@@ -251,4 +250,5 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Cleaning Up type-and-dedupe thread pool");
     this.executorService.shutdown();
   }
+
 }
