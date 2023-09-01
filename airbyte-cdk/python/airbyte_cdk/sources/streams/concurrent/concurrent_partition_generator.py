@@ -2,9 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from concurrent.futures import Future
 from queue import Queue
-from typing import List, Optional
+from typing import Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.partitions.partition import Partition
@@ -12,9 +11,8 @@ from airbyte_cdk.sources.streams.partitions.partition_generator import Partition
 
 
 class ConcurrentPartitionGenerator:
-    def __init__(self):
-        self._queue = Queue()
-        self._futures: List[Future[None]] = []
+    def __init__(self) -> None:
+        self._queue: Queue[Partition] = Queue()
         self._done = True
 
     def generate_partitions(self, partition_generator: PartitionGenerator, sync_mode: SyncMode) -> None:

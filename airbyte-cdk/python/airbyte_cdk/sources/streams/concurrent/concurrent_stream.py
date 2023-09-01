@@ -9,7 +9,7 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -23,11 +23,11 @@ from airbyte_cdk.sources.utils.types import StreamData
 
 
 class AvailabilityStrategyLegacyAdapter(AvailabilityStrategy):
-    def __init__(self, stream: Stream, availability_strategy: AvailabilityStrategy):
+    def __init__(self, stream: AbstractStream, availability_strategy: AvailabilityStrategy):
         self._stream = stream
         self._availability_strategy = availability_strategy
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: AbstractStream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         if stream.name != self._stream.name:
             raise ValueError(
                 f"AvailabilityStrategyLegacyAdapter can only be used with the stream it was initialized with. Expected {self._stream.name}, got {stream.name}"
@@ -44,7 +44,9 @@ class ConcurrentStream(AbstractStream):
             max_workers=max_workers,
             name=stream.name,
             json_schema=stream.get_json_schema(),
-            availability_strategy=AvailabilityStrategyLegacyAdapter(stream, stream.availability_strategy),
+            availability_strategy=AvailabilityStrategyLegacyAdapter(stream, stream.availability_strategy)
+            if stream.availability_strategy
+            else None,
             primary_key=stream.primary_key,
             cursor_field=stream.cursor_field,
         )
@@ -55,7 +57,7 @@ class ConcurrentStream(AbstractStream):
         max_workers: int,
         name: str,
         json_schema: Mapping[str, Any],
-        availability_strategy: AvailabilityStrategy,
+        availability_strategy: Optional[AvailabilityStrategy],
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         cursor_field: Union[str, List[str]],
     ):
@@ -121,7 +123,10 @@ class ConcurrentStream(AbstractStream):
         return self._name
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
-        return self._availability_strategy.check_availability(self, logger, source)
+        if self._availability_strategy:
+            return self._availability_strategy.check_availability(self, logger, source)
+        else:
+            return True, None
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:

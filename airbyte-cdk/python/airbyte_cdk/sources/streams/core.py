@@ -166,14 +166,6 @@ class Stream(AbstractStream, ABC):
         return []
 
     @property
-    def namespace(self) -> Optional[str]:
-        """
-        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
-        :return: A string containing the name of the namespace.
-        """
-        return None
-
-    @property
     def source_defined_cursor(self) -> bool:
         """
         Return False if the cursor can be configured by the user.

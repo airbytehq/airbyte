@@ -148,6 +148,14 @@ class AbstractStream(ABC):
         except requests.exceptions.JSONDecodeError:
             return None
 
+    @property
+    def namespace(self) -> Optional[str]:
+        """
+        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+        :return: A string containing the name of the namespace.
+        """
+        return None
+
     @staticmethod
     def is_record(record_data_or_message: StreamData) -> bool:
         if isinstance(record_data_or_message, dict):

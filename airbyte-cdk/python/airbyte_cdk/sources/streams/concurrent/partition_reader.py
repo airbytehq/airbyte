@@ -10,8 +10,8 @@ from airbyte_cdk.sources.streams.record import Record
 
 
 class PartitionReader:
-    def __init__(self):
-        self._output_queue = Queue()
+    def __init__(self) -> None:
+        self._output_queue: Queue[Record] = Queue()
         self._done = True
 
     def process_partition(self, partition: Partition) -> None:
