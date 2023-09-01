@@ -425,7 +425,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // ARRAY_CONCAT doesn't like having an empty argument list, so handle that case separately
       columnErrors = "[]";
     } else {
-      columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
+      columnErrors = "[" + streamColumns.entrySet().stream().map(
           col -> new StringSubstitutor(Map.of(
               "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
               "col_type", toDialectType(col.getValue()).name(),
@@ -437,10 +437,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                     WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
                       AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
                       AND (${json_extract} IS NULL)
-                      THEN ['Problem with `${raw_col_name}`']
-                    ELSE []
+                      THEN 'Problem with `${raw_col_name}`'
+                    ELSE NULL
                   END"""))
-          .collect(joining(",\n")) + ")";
+          .collect(joining(",\n")) + "]";
     }
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
@@ -472,7 +472,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             WITH intermediate_data AS (
               SELECT
             ${column_casts}
-              ${column_errors} as _airbyte_cast_errors,
+              ARRAY_AGG(column_errors IGNORE NULLS) as _airbyte_cast_errors
+              FROM UNNEST(${column_errors}) AS column_errors,
               _airbyte_raw_id,
               _airbyte_extracted_at
               FROM ${raw_table_id}
