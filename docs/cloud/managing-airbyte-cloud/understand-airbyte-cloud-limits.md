@@ -2,7 +2,7 @@
 
 Understanding the following limitations will help you more effectively manage Airbyte Cloud.
 
-* Max number of workspaces per user: 5*
+* Max number of workspaces per user: 3*
 * Max number of instances of the same source connector: 10*
 * Max number of destinations in a workspace: 20*
 * Max number of consecutive sync failures before a connection is paused: 100
