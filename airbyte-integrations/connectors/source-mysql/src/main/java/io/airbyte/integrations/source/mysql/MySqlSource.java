@@ -345,9 +345,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    //final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
+    // final MySqlFeatureFlags featureFlags = new MySqlFeatureFlags(sourceConfig);
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      if (true) {//featureFlags.isCdcInitialSyncViaPkEnabled()) {
+      if (true) {// featureFlags.isCdcInitialSyncViaPkEnabled()) {
         LOGGER.info("Using PK + CDC");
         return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
       }
