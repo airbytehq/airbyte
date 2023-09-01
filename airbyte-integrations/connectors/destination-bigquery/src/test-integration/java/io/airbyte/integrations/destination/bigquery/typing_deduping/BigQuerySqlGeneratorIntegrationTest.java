@@ -22,7 +22,6 @@ import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.FormatOptions;
-import com.google.cloud.bigquery.InsertAllRequest;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
@@ -44,7 +43,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
-import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.ByteBuffer;
@@ -455,8 +453,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         DestinationSyncMode.APPEND_DEDUP,
         primaryKey,
         Optional.of(cursor),
-        columns
-    );
+        columns);
 
     createRawTable(streamId);
     final String createTable = generator.createTable(stream, "", false);
