@@ -4,8 +4,8 @@
 
 
 import pytest
-from qa_engine import main
 from click.testing import CliRunner
+from qa_engine import main
 
 
 @pytest.mark.parametrize("create_prs", [False, True])

@@ -11,13 +11,11 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -26,11 +24,6 @@ import java.util.concurrent.TimeUnit;
  * formatter is used inside Direct uploader.
  */
 public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
-
-  public static final com.google.cloud.bigquery.Schema SCHEMA = com.google.cloud.bigquery.Schema.of(
-      Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-      Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
-      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
   public static final com.google.cloud.bigquery.Schema SCHEMA_V2 = com.google.cloud.bigquery.Schema.of(
       Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
@@ -44,20 +37,13 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
 
   @Override
   public JsonNode formatRecord(final AirbyteRecordMessage recordMessage) {
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      // Map.of has a @NonNull requirement, so creating a new Hash map
-      final HashMap<String, Object> destinationV2record = new HashMap<>();
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
-      destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
-      return Jsons.jsonNode(destinationV2record);
-    } else {
-      return Jsons.jsonNode(Map.of(
-          JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString(),
-          JavaBaseConstants.COLUMN_NAME_EMITTED_AT, getEmittedAtField(recordMessage),
-          JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage)));
-    }
+    // Map.of has a @NonNull requirement, so creating a new Hash map
+    final HashMap<String, Object> destinationV2record = new HashMap<>();
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString());
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, getEmittedAtField(recordMessage));
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
+    destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
+    return Jsons.jsonNode(destinationV2record);
   }
 
   @Override
@@ -104,11 +90,7 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
 
   @Override
   public Schema getBigQuerySchema(final JsonNode jsonSchema) {
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      return SCHEMA_V2;
-    } else {
-      return SCHEMA;
-    }
+    return SCHEMA_V2;
   }
 
 }

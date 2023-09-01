@@ -18,7 +18,6 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
@@ -26,12 +25,6 @@ import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import org.checkerframework.checker.units.qual.N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,16 +46,9 @@ public class BigQueryUploaderFactory {
                                                  More details:
                                                    """;
 
-  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig, final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair)
+  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String dataset;
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      dataset = uploaderConfig.getParsedStream().id().rawNamespace();
-    } else {
-      // This previously needed to handle null namespaces. That's now happening at the top of the
-      // connector, so we can assume namespace is non-null here.
-      dataset = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
-    }
+    final String dataset = uploaderConfig.getParsedStream().id().rawNamespace();
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingDatasets = new HashSet<>();
 
@@ -90,8 +76,7 @@ public class BigQueryUploaderFactory {
         uploaderConfig.getBigQuery(),
         syncMode,
         datasetLocation,
-        recordFormatter,
-            airbyteStreamNameNamespacePair);
+        recordFormatter);
   }
 
   private static BigQueryDirectUploader getBigQueryDirectUploader(
@@ -101,23 +86,18 @@ public class BigQueryUploaderFactory {
                                                                   final BigQuery bigQuery,
                                                                   final JobInfo.WriteDisposition syncMode,
                                                                   final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter,
-                                                                  final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair) {
+                                                                  final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    final TableId tableToWriteRawData = TypingAndDedupingFlag.isDestinationV2() ? targetTable : tmpTable;
-    LOGGER.info("is v2: {}", TypingAndDedupingFlag.isDestinationV2());
-    LOGGER.info("Will write to dataset " + tableToWriteRawData.getDataset() + " in table " + tableToWriteRawData.getTable() + " in project " + tableToWriteRawData.getProject());
-    LOGGER.info("Will write raw data to {} with schema {}", tableToWriteRawData, formatter.getBigQuerySchema());
+    LOGGER.info("Will write raw data to {} with schema {}", targetTable, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
-        WriteChannelConfiguration.newBuilder(tableToWriteRawData)
+        WriteChannelConfiguration.newBuilder(targetTable)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
             .setSchema(formatter.getBigQuerySchema())
             .setFormatOptions(FormatOptions.json())
             .build(); // new-line delimited json.
 
-
     final JobId job = JobId.newBuilder()
-            .setRandomJob()
+        .setRandomJob()
         .setLocation(datasetLocation)
         .setProject(bigQuery.getOptions().getProjectId())
         .build();
@@ -140,8 +120,6 @@ public class BigQueryUploaderFactory {
     if (bigQueryClientChunkSizeFomConfig != null) {
       writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
     }
-
-    LOGGER.error("----------------- " + writer.toString());
 
     return new BigQueryDirectUploader(
         targetTable,

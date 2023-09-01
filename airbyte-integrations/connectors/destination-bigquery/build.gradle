@@ -19,7 +19,10 @@ application {
 }
 
 dependencies {
-    implementation 'io.airbyte:airbyte-cdk:0.0.1'
+    implementation project(':airbyte-commons')
+    implementation ('io.airbyte:airbyte-cdk:0.0.1') {
+        exclude group: 'io.airbyte', module: 'airbyte-commons'
+    }
 
     implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
     implementation 'org.apache.commons:commons-lang3:3.11'
@@ -31,7 +34,9 @@ dependencies {
 
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
+    implementation (libs.airbyte.protocol) {
+        exclude group: 'io.airbyte', module: 'airbyte-commons'
+    }
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
@@ -42,7 +47,7 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
-
+    integrationTestJavaImplementation project(':airbyte-commons')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 

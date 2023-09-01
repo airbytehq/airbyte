@@ -2,21 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
-    AirbyteLogMessage,
     AirbyteMessage,
     AirbyteStateMessage,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
-    Level,
     Status,
     SyncMode,
 )
@@ -29,6 +26,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -39,8 +37,6 @@ class AbstractSource(Source, ABC):
     Abstract base class for an Airbyte Source. Consumers should implement any abstract methods
     in this class to create an Airbyte Specification compliant Source.
     """
-
-    SLICE_LOG_PREFIX = "slice:"
 
     @abstractmethod
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -65,6 +61,7 @@ class AbstractSource(Source, ABC):
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, Stream] = {}
+    _slice_logger: SliceLogger = DebugSliceLogger()
 
     @property
     def name(self) -> str:
@@ -92,7 +89,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -206,19 +203,6 @@ class AbstractSource(Source, ABC):
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
 
-    @staticmethod
-    def _limit_reached(internal_config: InternalConfig, records_counter: int) -> bool:
-        """
-        Check if record count reached limit set by internal config.
-        :param internal_config - internal CDK configuration separated from user defined config
-        :records_counter - number of records already red
-        :return True if limit reached, False otherwise
-        """
-        if internal_config.limit:
-            if records_counter >= internal_config.limit:
-                return True
-        return False
-
     def _read_incremental(
         self,
         logger: logging.Logger,
@@ -240,7 +224,7 @@ class AbstractSource(Source, ABC):
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
         if stream_state and "state" in dir(stream_instance):
-            stream_instance.state = stream_state
+            stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {stream_name} stream to {stream_state}")
 
         slices = stream_instance.stream_slices(
@@ -254,8 +238,8 @@ class AbstractSource(Source, ABC):
         has_slices = False
         for _slice in slices:
             has_slices = True
-            if self.should_log_slice_message(logger):
-                yield self._create_slice_log_message(_slice)
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -279,12 +263,12 @@ class AbstractSource(Source, ABC):
                     # This functionality should ideally live outside of this method
                     # but since state is managed inside this method, we keep track
                     # of it here.
-                    if self._limit_reached(internal_config, total_records_counter):
+                    if internal_config.is_limit_reached(total_records_counter):
                         # Break from slice loop to save state and exit from _read_incremental function.
                         break
 
             yield self._checkpoint_state(stream_instance, stream_state, state_manager)
-            if self._limit_reached(internal_config, total_records_counter):
+            if internal_config.is_limit_reached(total_records_counter):
                 return
 
         if not has_slices:
@@ -292,15 +276,7 @@ class AbstractSource(Source, ABC):
             checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
             yield checkpoint
 
-    def should_log_slice_message(self, logger: logging.Logger):
-        """
-
-        :param logger:
-        :return:
-        """
-        return logger.isEnabledFor(logging.DEBUG)
-
-    def _emit_queued_messages(self):
+    def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
             yield from self.message_repository.consume_queue()
         return
@@ -318,8 +294,8 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
-            if self.should_log_slice_message(logger):
-                yield self._create_slice_log_message(_slice)
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
@@ -330,33 +306,22 @@ class AbstractSource(Source, ABC):
                 yield message
                 if message.type == MessageType.RECORD:
                     total_records_counter += 1
-                    if self._limit_reached(internal_config, total_records_counter):
+                    if internal_config.is_limit_reached(total_records_counter):
                         return
 
-    def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
-        """
-        Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
-        the slice is a class implementing Mapping. Therefore, we want to cast this as a dict before passing this to json.dump
-        """
-        printable_slice = dict(_slice) if _slice else _slice
-        return AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
-        )
-
-    def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
+    def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
         # instance's deprecated get_updated_state() method.
         try:
-            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)
+            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)  # type: ignore # we know the field might not exist...
 
         except AttributeError:
             state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
         return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @staticmethod
-    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream):
+    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream) -> None:
         """
         Necessary because we use different loggers at the source and stream levels. We must
         apply the source's log level to each stream's logger.
@@ -364,7 +329,7 @@ class AbstractSource(Source, ABC):
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
 
-    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream):
+    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """

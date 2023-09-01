@@ -29,12 +29,11 @@ public class GcsCsvBigQueryRecordFormatter extends DefaultBigQueryRecordFormatte
 
   @Override
   public Schema getBigQuerySchema(JsonNode jsonSchema) {
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      // not sure if this needs overridden :|
+    // if (TypingAndDedupingFlag.isDestinationV2()) {
       return SCHEMA_V2;
-    } else {
+    /*} else {
       return CSV_SCHEMA;
-    }
+    }*/
   }
 
 }

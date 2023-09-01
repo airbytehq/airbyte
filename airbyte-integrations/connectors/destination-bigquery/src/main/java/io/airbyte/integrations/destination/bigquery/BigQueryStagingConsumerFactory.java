@@ -9,12 +9,9 @@ import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INT
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
@@ -24,7 +21,6 @@ import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -51,7 +47,6 @@ public class BigQueryStagingConsumerFactory {
                                                       final BigQueryStagingOperations bigQueryGcsOperations,
                                                       final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                                       final Function<String, String> tmpTableNameTransformer,
-                                                      final Function<String, String> targetTableNameTransformer,
                                                       final TyperDeduper typerDeduper,
                                                       final ParsedCatalog parsedCatalog,
                                                       final String defaultNamespace) {
@@ -60,66 +55,35 @@ public class BigQueryStagingConsumerFactory {
         catalog,
         parsedCatalog,
         recordFormatterCreator,
-        tmpTableNameTransformer,
-        targetTableNameTransformer);
+        tmpTableNameTransformer);
 
-    final CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> typeAndDedupeStreamFunction =
-        incrementalTypingAndDedupingStreamConsumer(typerDeduper);
-
-    final var flusher = new BigQueryAsyncStagingFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog, typeAndDedupeStreamFunction);
+    final var flusher = new BigQueryAsyncFlush(writeConfigsByDescriptor, bigQueryGcsOperations, catalog);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper),
-        (hasFailed) -> {
-          try {
-            onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false);
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
-        },
+        () -> onCloseFunction(bigQueryGcsOperations, writeConfigsByDescriptor, typerDeduper).accept(false),
         flusher,
         catalog,
         new BufferManager(),
         defaultNamespace);
   }
 
-  private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
-    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
-    return (streamId) -> {
-      if (!valve.containsKey(streamId)) {
-        valve.addStream(streamId);
-      }
-      if (valve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        valve.updateTimeAndIncreaseInterval(streamId);
-      }
-    };
-  }
-
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final ParsedCatalog parsedCatalog,
                                                                         final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                                        final Function<String, String> tmpTableNameTransformer,
-                                                                        final Function<String, String> targetTableNameTransformer) {
+                                                                        final Function<String, String> tmpTableNameTransformer) {
     return catalog.getStreams().stream()
         .map(configuredStream -> {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");
 
           final AirbyteStream stream = configuredStream.getStream();
-          final StreamConfig streamConfig;
-          if (TypingAndDedupingFlag.isDestinationV2()) {
-            streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
-          } else {
-            streamConfig = null;
-          }
+          final StreamConfig streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace =
-              TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : BigQueryUtils.sanitizeDatasetId(stream.getNamespace());
-          final var targetTableName =
-              TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
+          final var internalTableNamespace = streamConfig.id().rawNamespace();
+          final var targetTableName = streamConfig.id().rawName();
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
@@ -155,14 +119,12 @@ public class BigQueryStagingConsumerFactory {
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
-      if (TypingAndDedupingFlag.isDestinationV2()) {
-        typerDeduper.prepareTables();
-      }
+      typerDeduper.prepareTables();
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
             writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
-        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
+        final String rawDatasetId = DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
         // Regardless, ensure the schema the customer wants to write to exists
         bigQueryGcsOperations.createSchemaIfNotExists(writeConfig.datasetId(), writeConfig.datasetLocation());
         // Schema used for raw and airbyte internal tables

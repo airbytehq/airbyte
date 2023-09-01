@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_openweather import SourceOpenWeather
+from source_openweather import SourceOpenweather
 
 if __name__ == "__main__":
-    source = SourceOpenWeather()
+    source = SourceOpenweather()
     launch(source, sys.argv[1:])
