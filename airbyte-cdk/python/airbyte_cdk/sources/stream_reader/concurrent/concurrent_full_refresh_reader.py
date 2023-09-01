@@ -40,11 +40,7 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
         partition_generator = self._partitions_generator_provider()
         partition_reader = self._partition_reader_provider()
         # Submit partition generation tasks
-        futures.append(
-            self._threadpool.submit(
-                PartitionGenerator.generate_partitions, partition_generator, stream, SyncMode.full_refresh, cursor_field
-            )
-        )
+        futures.append(self._threadpool.submit(partition_generator.generate_partitions, stream, SyncMode.full_refresh, cursor_field))
         # While partitions are still being generated
         while partition_generator.has_next() or partition_reader.has_next() or not self._is_done(futures):
             self._check_for_errors(stream, futures)
@@ -57,7 +53,7 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
                     if internal_config and internal_config.is_limit_reached(total_records_counter):
                         return
             for partition in partition_generator:
-                futures.append(self._threadpool.submit(PartitionReader.process_partition, partition_reader, partition))
+                futures.append(self._threadpool.submit(partition_reader.process_partition, partition))
                 if self._slice_logger.should_log_slice_message(logger):
                     # FIXME: This is creating slice log messages for parity with the synchronous implementation
                     # but these cannot be used by the connector builder to build slices because they can be unordered
