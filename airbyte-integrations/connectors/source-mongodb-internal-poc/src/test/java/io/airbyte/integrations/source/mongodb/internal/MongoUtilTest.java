@@ -8,8 +8,10 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUE
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MIN_QUEUE_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,9 +33,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.bson.BsonDocument;
 import org.bson.Document;
@@ -152,6 +156,101 @@ public class MongoUtilTest {
     assertEquals(MIN_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooSmallQueueSizeConfiguration).getAsInt());
     assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooLargeQueueSizeConfiguration).getAsInt());
     assertEquals(MAX_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(missingQueueSizeConfiguration).getAsInt());
+  }
+
+  @Test
+  void testGetCollectionStatistics() throws IOException {
+    final String collectionName = "test-collection";
+    final String databaseName = "test-database";
+    final String collStats = MoreResources.readResource("coll_stats_response.json");
+    final List<Map<String, Object>> collStatsList = Jsons.deserialize(collStats, new TypeReference<>() {});
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    final AirbyteStream stream = new AirbyteStream().withName(collectionName).withNamespace(databaseName);
+    final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withStream(stream);
+
+    when(cursor.hasNext()).thenReturn(true);
+    when(cursor.next()).thenReturn(new Document(collStatsList.get(0)));
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(collectionName)).thenReturn(mongoCollection);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+
+    assertTrue(statistics.isPresent());
+    assertEquals(746, statistics.get().count());
+    assertEquals(67771, statistics.get().size());
+  }
+
+  @Test
+  void testGetCollectionStatisticsNoResult() {
+    final String collectionName = "test-collection";
+    final String databaseName = "test-database";
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    final AirbyteStream stream = new AirbyteStream().withName(collectionName).withNamespace(databaseName);
+    final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withStream(stream);
+
+    when(cursor.hasNext()).thenReturn(false);
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(collectionName)).thenReturn(mongoCollection);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+
+    assertFalse(statistics.isPresent());
+  }
+
+  @Test
+  void testGetCollectionStatisticsEmptyResult() {
+    final String collectionName = "test-collection";
+    final String databaseName = "test-database";
+    final List<Map<String, Object>> collStatsList = List.of(Map.of());
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    final AirbyteStream stream = new AirbyteStream().withName(collectionName).withNamespace(databaseName);
+    final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withStream(stream);
+
+    when(cursor.hasNext()).thenReturn(true);
+    when(cursor.next()).thenReturn(new Document(collStatsList.get(0)));
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(collectionName)).thenReturn(mongoCollection);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+
+    assertFalse(statistics.isPresent());
+  }
+
+  @Test
+  void testGetCollectionStatisticsException() {
+    final String collectionName = "test-collection";
+    final String databaseName = "test-database";
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    final AirbyteStream stream = new AirbyteStream().withName(collectionName).withNamespace(databaseName);
+    final ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withStream(stream);
+
+    when(mongoClient.getDatabase(databaseName)).thenThrow(new IllegalArgumentException("test"));
+
+    final Optional<MongoUtil.CollectionStatistics> statistics = MongoUtil.getCollectionStatistics(mongoClient, configuredAirbyteStream);
+
+    assertFalse(statistics.isPresent());
   }
 
 }

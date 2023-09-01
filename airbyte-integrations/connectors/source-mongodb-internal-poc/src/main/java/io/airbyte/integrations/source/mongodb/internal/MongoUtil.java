@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.COLLECTION_STATISTICS_COUNT_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.COUNT_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.STORAGE_STATS_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -15,16 +19,19 @@ import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -152,6 +159,44 @@ public class MongoUtil {
     return OptionalInt.of(MAX_QUEUE_SIZE);
   }
 
+  /**
+   * Retrieves the statistics for the collection represented by the provided stream.
+   *
+   * @param mongoClient The {@link MongoClient} used to retrieve statistics from MongoDB.
+   * @param stream The stream that represents the collection.
+   * @return The {@link CollectionStatistics} of the collection or an empty {@link Optional} if the
+   *         statistics cannot be retrieved.
+   */
+  public static Optional<CollectionStatistics> getCollectionStatistics(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {
+    try {
+      final Map<String, Object> collStats = Map.of(STORAGE_STATS_KEY, Map.of(), COUNT_KEY, Map.of());
+      final MongoDatabase mongoDatabase = mongoClient.getDatabase(stream.getStream().getNamespace());
+      final MongoCollection<Document> collection = mongoDatabase.getCollection(stream.getStream().getName());
+      final AggregateIterable<Document> output = collection.aggregate(List.of(new Document("$collStats", collStats)));
+
+      try (final MongoCursor<Document> cursor = output.cursor()) {
+        if (cursor.hasNext()) {
+          final Document stats = cursor.next();
+          final Map<String, Object> storageStats = (Map<String, Object>) stats.get(STORAGE_STATS_KEY);
+          if (storageStats != null && !storageStats.isEmpty()) {
+            return Optional.of(new CollectionStatistics((Number) storageStats.get(COLLECTION_STATISTICS_COUNT_KEY),
+                (Number) storageStats.get(COLLECTION_STATISTICS_STORAGE_SIZE_KEY)));
+          } else {
+            LOGGER.warn("Unable to estimate sync size:  statistics for {}.{} are missing.", stream.getStream().getNamespace(),
+                stream.getStream().getName());
+          }
+        } else {
+          LOGGER.warn("Unable to estimate sync size:  statistics for {}.{} are missing.", stream.getStream().getNamespace(),
+              stream.getStream().getName());
+        }
+      }
+    } catch (final Exception e) {
+      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
+    }
+
+    return Optional.empty();
+  }
+
   private static AirbyteStream createAirbyteStream(final String collectionName, final String databaseName, final List<Field> fields) {
     return MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
   }
@@ -202,5 +247,13 @@ public class MongoUtil {
   private static boolean isSupportedCollection(final String collectionName) {
     return IGNORED_COLLECTIONS.stream().noneMatch(collectionName::startsWith);
   }
+
+  /**
+   * Represents statistics of a MongoDB collection.
+   *
+   * @param count The number of documents in the collection.
+   * @param size The size (in bytes) of the collection.
+   */
+  public record CollectionStatistics(Number count, Number size) {}
 
 }

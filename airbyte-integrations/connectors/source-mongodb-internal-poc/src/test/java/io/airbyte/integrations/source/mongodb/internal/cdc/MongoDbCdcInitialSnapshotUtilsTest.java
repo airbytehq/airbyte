@@ -63,8 +63,6 @@ class MongoDbCdcInitialSnapshotUtilsTest {
         new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE, IdType.OBJECT_ID),
         new AirbyteStreamNameNamespacePair(IN_PROGRESS_NAME, NAMESPACE),
         new MongoDbStreamState("2", InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID)));
-    when(mongoDatabase.runCommand(any()))
-        .thenReturn(new Document(Map.of(COLLECTION_STATISTICS_STORAGE_SIZE_KEY, 1000000L, COLLECTION_STATISTICS_COUNT_KEY, 10000)));
     when(cursor.hasNext()).thenReturn(true);
     when(cursor.next()).thenReturn(new Document(collStatsList.get(0)));
     when(aggregateIterable.cursor()).thenReturn(cursor);

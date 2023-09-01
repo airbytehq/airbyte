@@ -5,19 +5,12 @@
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.COLLECTION_STATISTICS_COUNT_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.COUNT_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.STORAGE_STATS_KEY;
 
 import com.google.common.collect.Sets;
-import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
@@ -29,10 +22,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,38 +112,15 @@ public class MongoDbCdcInitialSnapshotUtils {
   }
 
   private static void estimateInitialSnapshotSyncSize(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {
-    try {
-      final Map<String, Object> collStats = Map.of(STORAGE_STATS_KEY, Map.of(), COUNT_KEY, Map.of());
-      final MongoDatabase mongoDatabase = mongoClient.getDatabase(stream.getStream().getNamespace());
-      final MongoCollection<Document> collection = mongoDatabase.getCollection(stream.getStream().getName());
-      final AggregateIterable<Document> output = collection.aggregate(List.of(new Document("$collStats", collStats)));
-
-      try (final MongoCursor<Document> cursor = output.cursor()) {
-        if (cursor.hasNext()) {
-          final Document stats = cursor.next();
-          final Map<String, Object> storageStats = (Map<String, Object>) stats.get(STORAGE_STATS_KEY);
-          if (storageStats != null && !storageStats.isEmpty()) {
-            final Number documentCount = (Number) storageStats.get(COLLECTION_STATISTICS_COUNT_KEY);
-            final Number collectionSize = (Number) storageStats.get(COLLECTION_STATISTICS_STORAGE_SIZE_KEY);
-
-            AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * collectionSize.intValue(),
-                AirbyteEstimateTraceMessage.Type.STREAM, documentCount.longValue(), stream.getStream().getName(), stream.getStream().getNamespace());
-            LOGGER
-                .info(String.format(
-                    "Estimate for table: %s.%s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
-                    stream.getStream().getNamespace(), stream.getStream().getName(), documentCount, collectionSize, documentCount, collectionSize));
-          } else {
-            LOGGER.warn("Unable to estimate sync size:  statistics for {}.{} are missing.", stream.getStream().getNamespace(),
-                stream.getStream().getName());
-          }
-        } else {
-          LOGGER.warn("Unable to estimate sync size:  statistics for {}.{} are missing.", stream.getStream().getNamespace(),
-              stream.getStream().getName());
-        }
-      }
-    } catch (final Exception e) {
-      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
-    }
+    final Optional<MongoUtil.CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(mongoClient, stream);
+    collectionStatistics.ifPresent(c -> {
+      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * c.size().intValue(),
+          AirbyteEstimateTraceMessage.Type.STREAM, c.count().longValue(), stream.getStream().getName(), stream.getStream().getNamespace());
+      LOGGER
+          .info(String.format(
+              "Estimate for table: %s.%s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+              stream.getStream().getNamespace(), stream.getStream().getName(), c.count(), c.size(), c.count(), c.size()));
+    });
   }
 
 }
