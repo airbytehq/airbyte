@@ -8,8 +8,8 @@ import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.stream_reader.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
     Accounts,
