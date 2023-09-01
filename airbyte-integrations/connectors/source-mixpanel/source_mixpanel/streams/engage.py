@@ -101,6 +101,8 @@ class Engage(IncrementalMixpanelStream):
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._skip_stream:
+            return None
         decoded_response = response.json()
         page_number = decoded_response.get("page")
         total = decoded_response.get("total")  # exist only on first page
