@@ -9,11 +9,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Timestamp;
 import java.time.Instant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DebeziumEventUtils {
 
