@@ -57,7 +57,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     final ConfiguredAirbyteStream newStream = createConfiguredAirbyteStream(NEW_NAME, NAMESPACE);
     final List<ConfiguredAirbyteStream> configuredStreams = List.of(completedStream, inProgressStream, newStream);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(configuredStreams);
-    final boolean savedOffsetAfterResumeToken = true;
+    final boolean savedOffsetIsValid = true;
 
     when(stateManager.getStreamStates()).thenReturn(Map.of(
         new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE, IdType.OBJECT_ID),
@@ -73,7 +73,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     when(mongoClient.getDatabase(NAMESPACE)).thenReturn(mongoDatabase);
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
-        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetAfterResumeToken);
+        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
     assertEquals(2, initialSnapshotStreams.size());
     assertTrue(initialSnapshotStreams.contains(inProgressStream));
     assertTrue(initialSnapshotStreams.contains(newStream));
@@ -89,14 +89,14 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     final ConfiguredAirbyteStream newStream = createConfiguredAirbyteStream(NEW_NAME, NAMESPACE);
     final List<ConfiguredAirbyteStream> configuredStreams = List.of(completedStream, inProgressStream, newStream);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(configuredStreams);
-    final boolean isSavedOffsetValid = false;
+    final boolean savedOffsetIsValid = false;
 
     when(mongoDatabase.runCommand(any()))
         .thenReturn(new Document(Map.of(COLLECTION_STATISTICS_STORAGE_SIZE_KEY, 1000000L, COLLECTION_STATISTICS_COUNT_KEY, 10000)));
     when(mongoClient.getDatabase(NAMESPACE)).thenReturn(mongoDatabase);
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
-        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, isSavedOffsetValid);
+        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
 
     assertEquals(3, initialSnapshotStreams.size());
     assertTrue(initialSnapshotStreams.contains(completedStream));
@@ -113,7 +113,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     final ConfiguredAirbyteStream newStream = createConfiguredAirbyteStream(NEW_NAME, NAMESPACE);
     final List<ConfiguredAirbyteStream> configuredStreams = List.of(completedStream, inProgressStream, newStream);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(configuredStreams);
-    final boolean savedOffsetAfterResumeToken = true;
+    final boolean savedOffsetIsValid = true;
 
     when(stateManager.getStreamStates()).thenReturn(Map.of(
         new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE, IdType.OBJECT_ID),
@@ -122,7 +122,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     when(mongoClient.getDatabase(NAMESPACE)).thenThrow(new IllegalArgumentException("test"));
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
-        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetAfterResumeToken);
+        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
     assertEquals(2, initialSnapshotStreams.size());
     assertTrue(initialSnapshotStreams.contains(inProgressStream));
     assertTrue(initialSnapshotStreams.contains(newStream));
@@ -138,7 +138,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     final ConfiguredAirbyteStream newStream = createConfiguredAirbyteStream(NEW_NAME, NAMESPACE);
     final List<ConfiguredAirbyteStream> configuredStreams = List.of(completedStream, inProgressStream, newStream);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(configuredStreams);
-    final boolean savedOffsetAfterResumeToken = true;
+    final boolean savedOffsetIsValid = true;
 
     when(stateManager.getStreamStates()).thenReturn(Map.of(
         new AirbyteStreamNameNamespacePair(COMPLETED_NAME, NAMESPACE), new MongoDbStreamState("1", InitialSnapshotStatus.COMPLETE, IdType.OBJECT_ID),
@@ -147,7 +147,7 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     when(mongoClient.getDatabase(NAMESPACE)).thenReturn(mongoDatabase);
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
-        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetAfterResumeToken);
+        MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
     assertEquals(2, initialSnapshotStreams.size());
     assertTrue(initialSnapshotStreams.contains(inProgressStream));
     assertTrue(initialSnapshotStreams.contains(newStream));
