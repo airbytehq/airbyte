@@ -45,7 +45,7 @@ class OpenAIEmbedder(Embedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel):
         super().__init__()
         # Client is set internally
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191)  # type: ignore
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15)  # type: ignore
 
     def check(self) -> Optional[str]:
         try:

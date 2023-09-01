@@ -97,26 +97,15 @@
       },
       "replication_method": {
         "type": "object",
-        "title": "Replication Method",
-        "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
-        "default": "STANDARD",
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
+        "default": "CDC",
+        "display_type": "radio",
         "order": 8,
         "oneOf": [
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "STANDARD",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "Logical Replication (CDC)",
-            "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "title": "Read Changes using Change Data Capture (CDC)",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the SQL Server's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\">change data capture feature</a>. This must be enabled on your database.",
             "required": ["method"],
             "properties": {
               "method": {
@@ -148,6 +137,18 @@
                 "min": 120,
                 "max": 1200,
                 "order": 3
+              }
+            }
+          },
+          {
+            "title": "Scan Changes with User Defined Cursor",
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "STANDARD",
+                "order": 0
               }
             }
           }

@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { parseMarkdownContentTitle, parseFrontMatter } = require('@docusaurus/utils');
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -10,11 +11,30 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("postgres.md"))
+        !(fileName.endsWith(".inapp.md") || fileName.endsWith("postgres.md") || fileName.endsWith("-migrations.md"))
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
+      // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
+      const migrationDocPath = path.join(dir, `${filename}-migrations.md`);
+      if(fs.existsSync(migrationDocPath)) {
+        // Get the first header of the markdown document
+        const { contentTitle } = parseMarkdownContentTitle(parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`))).content);
+        if (!contentTitle) {
+          throw new Error(`Could not parse title from ${path.join(prefix, filename)}. Make sure there's no content above the first heading!`);
+        }
+
+        return {
+          type: "category",
+          label: contentTitle,
+          link: { type: "doc", id: path.join(prefix, filename) },
+          items: [
+            { type: "doc", id: path.join(prefix, `${filename}-migrations`), label: "Migration Guide" }
+          ]
+        };
+      }
+
       return { type: "doc", id: path.join(prefix, filename) };
     });
 }
@@ -275,16 +295,17 @@ const airbyteCloud = [
       type: "generated-index",
     },
     items: [
-      "cloud/managing-airbyte-cloud/edit-stream-configuration",
+      "cloud/managing-airbyte-cloud/configuring-connections",
+      "cloud/managing-airbyte-cloud/review-connection-status",
+      "cloud/managing-airbyte-cloud/review-sync-history",
       "cloud/managing-airbyte-cloud/manage-schema-changes",
-      "cloud/managing-airbyte-cloud/manage-data-residency",
-      "cloud/managing-airbyte-cloud/manage-credits",
-      "cloud/managing-airbyte-cloud/review-sync-summary",
       "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+      "cloud/managing-airbyte-cloud/manage-data-residency",
       "cloud/managing-airbyte-cloud/dbt-cloud-integration",
+      "cloud/managing-airbyte-cloud/manage-credits",
+      "cloud/managing-airbyte-cloud/manage-connection-state",
       "cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace",
       "cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits",
-      "cloud/managing-airbyte-cloud/review-connection-state",
     ],
   },
 ];
@@ -464,9 +485,13 @@ module.exports = {
       id: "airbyte-enterprise",
     },
     sectionHeader("Developer Guides"),
+     {
+      type: 'doc',
+      id: "api-documentation",
+    },
     {
       type: "doc",
-      id: "api-documentation",
+      id: "terraform-documentation",
     },
     {
       type: "doc",
