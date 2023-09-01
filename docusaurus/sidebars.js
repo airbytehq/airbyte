@@ -485,9 +485,13 @@ module.exports = {
       id: "airbyte-enterprise",
     },
     sectionHeader("Developer Guides"),
+     {
+      type: 'doc',
+      id: "api-documentation",
+    },
     {
       type: "doc",
-      id: "api-documentation",
+      id: "terraform-documentation",
     },
     {
       type: "doc",
