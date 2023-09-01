@@ -23,7 +23,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
-import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabase;
@@ -290,7 +289,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   /**
-   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key and a custom error message
+   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key and
+   * a custom error message
    */
   @Override
   @Test
@@ -414,4 +414,5 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
       DIFFER.diffFinalTableRecords(List.of(originalData), List.of(migratedData));
     });
   }
+
 }
