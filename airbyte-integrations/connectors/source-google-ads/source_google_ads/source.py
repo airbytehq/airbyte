@@ -154,12 +154,6 @@ class SourceGoogleAds(AbstractSource):
             ):
                 message = f"Failed to access the customer '{exception.customer_id}'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-
-            query_errors = [x for x in exception.failure.errors if x.error_code.query_error]
-            if query_errors:
-                message = f"Incorrect queries :{[x.message for x in query_errors]}"
-                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-
             error_messages = ", ".join([error.message for error in exception.failure.errors])
             logger.error(traceback.format_exc())
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
@@ -189,6 +183,7 @@ class SourceGoogleAds(AbstractSource):
             Audience(google_api, customers=customers),
             CampaignBiddingStrategies(**incremental_config),
             CampaignCriterion(**incremental_events_config),
+            CampaignBudget(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
             Labels(google_api, customers=customers),
@@ -198,7 +193,6 @@ class SourceGoogleAds(AbstractSource):
         if non_manager_accounts:
             streams.extend(
                 [
-                    CampaignBudget(**incremental_config),
                     Campaigns(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),

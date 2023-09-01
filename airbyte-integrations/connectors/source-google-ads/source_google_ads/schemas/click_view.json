@@ -27,8 +27,7 @@
       "type": ["null", "integer"]
     },
     "segments.date": {
-      "type": ["null", "string"],
-      "format": "date"
+      "type": ["null", "string"]
     },
     "customer.id": {
       "type": ["null", "integer"]
