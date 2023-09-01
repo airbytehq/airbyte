@@ -9,7 +9,7 @@ from typing import Dict, Optional, Tuple
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record, get_first_stream_slice
+from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
 from requests import HTTPError
 
 if typing.TYPE_CHECKING:
@@ -47,7 +47,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return is_available, reason
 
         try:
-            get_first_record(stream)
+            get_first_record_for_slice(stream, stream_slice)
             return True, None
         except StopIteration:
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")

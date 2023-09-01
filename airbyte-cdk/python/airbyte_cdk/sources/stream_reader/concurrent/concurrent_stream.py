@@ -4,21 +4,36 @@
 
 import concurrent
 import logging
-from abc import abstractmethod
 from concurrent.futures import Future
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.stream_reader.concurrent.partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.stream_reader.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import FullRefreshStreamReader, PartitionGenerator, package_name_from_class
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
+from airbyte_cdk.sources.streams.core import FullRefreshStreamReader, PartitionGenerator
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import StreamData
+
+
+class AvailabilityStrategyLegacyAdapter(AvailabilityStrategy):
+    def __init__(self, stream: Stream, availability_strategy: AvailabilityStrategy):
+        self._stream = stream
+        self._availability_strategy = availability_strategy
+
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+        if stream.name != self._stream.name:
+            raise ValueError(
+                f"AvailabilityStrategyLegacyAdapter can only be used with the stream it was initialized with. Expected {self._stream.name}, got {stream.name}"
+            )
+
+        return self._availability_strategy.check_availability(self._stream, logger, source)
 
 
 class ConcurrentStream(AbstractStream):

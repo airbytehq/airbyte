@@ -7,13 +7,15 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
+import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.stream_reader.concurrent.stream_partition import Partition
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.sources.utils.types import StreamData
+from airbyte_cdk.sources.utils.types import JsonType, StreamData
 
 
 class AbstractStream(ABC):
@@ -59,7 +61,7 @@ class AbstractStream(ABC):
         return None
 
     @abstractmethod
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks whether this stream is available.
 
@@ -113,3 +115,39 @@ class AbstractStream(ABC):
     @abstractmethod
     def generate_partitions(self, sync_mode: SyncMode, cursor_field: Optional[List[str]]) -> Iterable[Partition]:
         pass
+
+    @classmethod
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
+        # default logic to grab error from common fields
+        def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, list):
+                errors_in_value = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in errors_in_value if v is not None)
+            elif isinstance(value, dict):
+                new_value = (
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
+                    or value.get("detail")
+                )
+                return _try_get_error(new_value)
+            return None
+
+        try:
+            body = response.json()
+            return _try_get_error(body)
+        except requests.exceptions.JSONDecodeError:
+            return None

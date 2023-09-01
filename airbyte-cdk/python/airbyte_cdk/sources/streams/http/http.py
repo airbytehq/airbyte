@@ -23,7 +23,6 @@ from ...utils.types import JsonType
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
-from .utils import parse_response_error_message
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -390,6 +389,42 @@ class HttpStream(Stream, ABC):
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
+    @classmethod
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
+        # default logic to grab error from common fields
+        def _try_get_error(value: Optional[JsonType]) -> Optional[str]:
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, list):
+                errors_in_value = [_try_get_error(v) for v in value]
+                return ", ".join(v for v in errors_in_value if v is not None)
+            elif isinstance(value, dict):
+                new_value = (
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
+                    or value.get("detail")
+                )
+                return _try_get_error(new_value)
+            return None
+
+        try:
+            body = response.json()
+            return _try_get_error(body)
+        except requests.exceptions.JSONDecodeError:
+            return None
+
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         """
         Retrieves the user-friendly display message that corresponds to an exception.
@@ -402,7 +437,7 @@ class HttpStream(Stream, ABC):
         :return: A user-friendly message that indicates the cause of the error
         """
         if isinstance(exception, requests.HTTPError):
-            return parse_response_error_message(exception.response)
+            return self.parse_response_error_message(exception.response)
         return None
 
     def read_records(

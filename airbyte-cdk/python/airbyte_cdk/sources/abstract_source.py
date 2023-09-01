@@ -21,8 +21,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.stream_reader.synchronous_full_refresh_reader import SynchronousFullRefreshReader
-from airbyte_cdk.sources.streams import FullRefreshStreamReader, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -59,7 +58,7 @@ class AbstractSource(Source, ABC):
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, Stream] = {}
@@ -116,7 +115,6 @@ class AbstractSource(Source, ABC):
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
-                    print(f"stream_is_available: {stream_is_available}")
                     if not stream_is_available:
                         logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
                         continue
@@ -294,9 +292,7 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        for data_or_message in stream_instance.read(
-            configured_stream.cursor_field, logger, self._slice_logger, internal_config
-        ):
+        for data_or_message in stream_instance.read(configured_stream.cursor_field, logger, self._slice_logger, internal_config):
             yield self._get_message(data_or_message, stream_instance)
 
     def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
