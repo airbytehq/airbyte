@@ -323,7 +323,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         () -> destinationHandler.execute(sql));
 
     assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
-    assertTrue(exception.getMessage().contains("\"users_raw\"` has rows missing a primary key"));
+    assertTrue(exception.getMessage().contains("\"users_raw\" has rows missing a primary key"));
 
     DIFFER.diffFinalTableRecords(
         emptyList(),
