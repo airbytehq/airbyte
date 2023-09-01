@@ -87,7 +87,7 @@ class SourceGoogleAds(AbstractSource):
             api=google_api,
             customers=customers,
             conversion_window_days=config["conversion_window_days"],
-            start_date=config["start_date"],
+            start_date=config.get("start_date"),
             end_date=end_date,
         )
         return incremental_stream_config

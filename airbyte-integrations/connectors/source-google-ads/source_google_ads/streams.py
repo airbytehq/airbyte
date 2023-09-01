@@ -59,7 +59,7 @@ def chunk_date_range(
     """
     today = pendulum.today(tz=time_zone)
     end_date = min(pendulum.parse(end_date, tz=time_zone), today) if end_date else today
-    start_date = pendulum.parse(start_date, tz=time_zone)
+    start_date = pendulum.parse(start_date, tz=time_zone) if start_date else pendulum.now().subtract(years=2)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
     if days_of_data_storage:
