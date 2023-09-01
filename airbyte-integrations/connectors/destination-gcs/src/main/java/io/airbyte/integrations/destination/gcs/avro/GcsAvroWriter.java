@@ -63,7 +63,7 @@ public class GcsAvroWriter extends BaseGcsWriter implements DestinationFileWrite
     super(config, s3Client, configuredStream);
 
     final Schema schema = jsonSchema == null
-        ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true)
+        ? GcsUtils.getDefaultAvroSchema(stream.getName(), stream.getNamespace(), true, false)
         : new JsonToAvroSchemaConverter().getAvroSchema(jsonSchema, stream.getName(),
             stream.getNamespace(), true, false, false, true);
     LOGGER.info("Avro schema for stream {}: {}", stream.getName(), schema.toString(false));

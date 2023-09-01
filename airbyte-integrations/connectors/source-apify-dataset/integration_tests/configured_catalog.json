@@ -1,24 +1,31 @@
 {
   "streams": [
     {
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
       "stream": {
-        "name": "DatasetItems",
-        "supported_sync_modes": ["full_refresh"],
-        "destination_sync_mode": "overwrite",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {
-            "data": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "additionalProperties": true
-        }
-      }
+        "name": "datasets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dataset",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "item_collection",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
