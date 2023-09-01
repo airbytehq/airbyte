@@ -121,9 +121,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void close(final boolean hasFailed) throws Exception {
     LOGGER.info("Started closing all connections");
     final List<Exception> exceptionsThrown = new ArrayList<>();
-    typerDeduper.typeAndDedupe();
-    typerDeduper.commitFinalTables();
-    typerDeduper.cleanup();
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
@@ -132,6 +129,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }
     });
+    typerDeduper.typeAndDedupe();
+    typerDeduper.commitFinalTables();
+    typerDeduper.cleanup();
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
     }
