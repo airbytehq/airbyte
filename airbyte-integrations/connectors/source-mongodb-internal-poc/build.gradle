@@ -11,6 +11,18 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations {
+    debeziumTest.extendsFrom testImplementation
+}
+
+sourceSets {
+    debeziumTest {
+        kotlin {
+            srcDirs('src/test/debezium')
+        }
+    }
+}
+
 dependencies {
     implementation libs.slf4j.api
     implementation libs.jackson.databind
@@ -29,6 +41,9 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-internal-poc')
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    debeziumTestImplementation libs.bundles.debezium.bundle
+    debeziumTestImplementation project(':airbyte-commons')
 }
 
 /*
@@ -64,6 +79,26 @@ tasks.register('generateTestData', JavaExec) {
 
     classpath = sourceSets.test.runtimeClasspath
     main 'io.airbyte.integrations.source.mongodb.internal.MongoDbInsertClient'
+    standardInput = System.in
+    args arguments
+}
+
+/**
+ * Executes the Debezium MongoDB Connector test harness.
+ *
+ * To execute this task, use the following command:
+ *
+ * ./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:debeziumTest -Pusername=<username>
+ */
+tasks.register('debeziumTest', JavaExec) {
+    def arguments = []
+
+    if(project.hasProperty('username')) {
+        arguments.add(username)
+    }
+
+    classpath = sourceSets.debeziumTest.runtimeClasspath
+    main 'io.airbyte.integrations.source.mongodb.internal.DebeziumMongoDbConnectorTest'
     standardInput = System.in
     args arguments
 }
