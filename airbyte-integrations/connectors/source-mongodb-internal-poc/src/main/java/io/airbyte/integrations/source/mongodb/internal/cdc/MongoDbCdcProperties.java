@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.Set;
@@ -27,21 +25,20 @@ public class MongoDbCdcProperties {
   static final String SNAPSHOT_MODE_VALUE = "initial";
   static final String FIELD_EXCLUDE_LIST_KEY = "field.exclude.list";
 
-  public record CollectionAndField(String collection, String field) {}
+  public record ExcludedField(String database, String collection, String field) {}
 
   /**
    * Returns the common properties required to configure the Debezium MongoDB connector.
    *
    * @return The common Debezium CDC properties for the Debezium MongoDB connector.
    */
-  public static Properties getDebeziumProperties(final JsonNode config, final Set<CollectionAndField> fieldsToExclude) {
+  public static Properties getDebeziumProperties(final Set<ExcludedField> fieldsToExclude) {
     final Properties props = new Properties();
 
     props.setProperty(CONNECTOR_CLASS_KEY, CONNECTOR_CLASS_VALUE);
     props.setProperty(SNAPSHOT_MODE_KEY, SNAPSHOT_MODE_VALUE);
     props.setProperty(CAPTURE_MODE_KEY, CAPTURE_MODE_VALUE);
     props.setProperty(HEARTBEAT_INTERVAL_KEY, HEARTBEAT_FREQUENCY_MS);
-    final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
 
     /**
      * //https://debezium.io/documentation/reference/2.2/connectors/mongodb.html#mongodb-property-field-exclude-list
@@ -52,14 +49,14 @@ public class MongoDbCdcProperties {
      * debezium adds support for an include list, we should move this property to
      * {@link MongoDbDebeziumPropertiesManager}.
      */
-    props.setProperty(FIELD_EXCLUDE_LIST_KEY, createFieldsToExcludeString(fieldsToExclude, databaseName));
+    props.setProperty(FIELD_EXCLUDE_LIST_KEY, createFieldsToExcludeString(fieldsToExclude));
 
     return props;
   }
 
-  private static String createFieldsToExcludeString(final Set<CollectionAndField> fieldsToExclude, final String databaseName) {
+  private static String createFieldsToExcludeString(final Set<ExcludedField> fieldsToExclude) {
     return fieldsToExclude.stream()
-        .map(field -> databaseName + "." + field.collection() + "." + field.field())
+        .map(excludedField -> excludedField.database + "." + excludedField.collection() + "." + excludedField.field())
         .collect(Collectors.joining(","));
   }
 

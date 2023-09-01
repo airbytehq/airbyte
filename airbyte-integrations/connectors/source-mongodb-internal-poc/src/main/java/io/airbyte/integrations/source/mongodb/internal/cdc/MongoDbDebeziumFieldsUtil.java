@@ -8,7 +8,7 @@ import autovalue.shaded.com.google.common.collect.Sets;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
 import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
-import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.CollectionAndField;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.ExcludedField;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -24,33 +24,32 @@ public class MongoDbDebeziumFieldsUtil {
    * in the configuredCatalog, we need to get the list of all fields in the source database and
    * subtract the list of fields in the configuredCatalog
    */
-  public Set<CollectionAndField> getFieldsNotIncludedInCatalog(final ConfiguredAirbyteCatalog configuredCatalog,
-                                                               final String databaseName,
-                                                               final MongoClient mongoClient) {
+  public Set<ExcludedField> getFieldsNotIncludedInCatalog(final ConfiguredAirbyteCatalog configuredCatalog,
+                                                          final String databaseName,
+                                                          final MongoClient mongoClient) {
     final List<AirbyteStream> sourceAirbyteStreams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
 
     return getFieldsNotIncludedInConfiguredStreams(configuredCatalog, sourceAirbyteStreams);
   }
 
   @VisibleForTesting
-  static Set<CollectionAndField> getFieldsNotIncludedInConfiguredStreams(final ConfiguredAirbyteCatalog configuredCatalog,
-                                                                         final List<AirbyteStream> sourceAirbyteStreams) {
+  static Set<ExcludedField> getFieldsNotIncludedInConfiguredStreams(final ConfiguredAirbyteCatalog configuredCatalog,
+                                                                    final List<AirbyteStream> sourceAirbyteStreams) {
 
-    final List<AirbyteStream> configuredAirbyteStreams =
-        configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
-    final Set<CollectionAndField> fieldsToInclude =
+    final List<AirbyteStream> configuredAirbyteStreams = configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
+    final Set<ExcludedField> fieldsToInclude =
         configuredAirbyteStreams.stream().map(MongoDbDebeziumFieldsUtil::getCollectionAndFields).flatMap(Set::stream)
             .collect(Collectors.toSet());
 
-    final Set<CollectionAndField> allFields =
+    final Set<ExcludedField> allFields =
         sourceAirbyteStreams.stream().map(MongoDbDebeziumFieldsUtil::getCollectionAndFields).flatMap(Set::stream)
             .collect(Collectors.toSet());
 
     return Sets.difference(allFields, fieldsToInclude);
   }
 
-  private static Set<CollectionAndField> getCollectionAndFields(final AirbyteStream stream) {
-    return getTopLevelFieldNames(stream).stream().map(fieldName -> new CollectionAndField(stream.getName(), fieldName)).collect(Collectors.toSet());
+  private static Set<ExcludedField> getCollectionAndFields(final AirbyteStream stream) {
+    return getTopLevelFieldNames(stream).stream().map(fieldName -> new ExcludedField(stream.getNamespace(), stream.getName(), fieldName)).collect(Collectors.toSet());
   }
 
   private static Set<String> getTopLevelFieldNames(final AirbyteStream stream) {

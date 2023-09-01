@@ -20,7 +20,7 @@ import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPositi
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
-import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.CollectionAndField;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.ExcludedField;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -92,16 +92,13 @@ public class MongoDbCdcInitializer {
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config);
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
-    // WARNING!!! debezium's mongodb connector doesn't let you specify a list of fields to include, so
-    // we can't
-    // filter fields solely using the configured catalog. Instead, debezium only lets you specify a list
-    // of fields to exclude.
-    // If the fields to exclude we specify are not equal to all the fields in the source that are not in
-    // the configured catalog then
-    // we will be outputting incorrect data.
-    final Set<CollectionAndField> fieldsNotIncludedInCatalog =
-        mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
-    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(config, fieldsNotIncludedInCatalog);
+    // WARNING!!! debezium's mongodb connector doesn't let you specify a list of fields to
+    // include, so we can't filter fields solely using the configured catalog. Instead,
+    // debezium only lets you specify a list of fields to exclude. If the fields to exclude
+    // we specify are not equal to all the fields in the source that are not in the
+    // configured catalog then we will be outputting incorrect data.
+    final Set<ExcludedField> fieldsNotIncludedInCatalog = mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
+    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState

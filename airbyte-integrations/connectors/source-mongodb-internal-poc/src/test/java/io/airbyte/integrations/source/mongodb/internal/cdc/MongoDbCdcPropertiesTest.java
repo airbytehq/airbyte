@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
 import static com.mongodb.internal.connection.tlschannel.util.Util.assertTrue;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.CAPTURE_MODE_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.CAPTURE_MODE_VALUE;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.CONNECTOR_CLASS_KEY;
@@ -17,12 +16,9 @@ import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProp
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.CollectionAndField;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.ExcludedField;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -46,14 +42,14 @@ class MongoDbCdcPropertiesTest {
 
   @Test
   void testDebeziumProperties() {
-    final JsonNode config = Jsons.jsonNode(Map.of(DATABASE_CONFIGURATION_KEY, DATABASE));
-    final Set<CollectionAndField> fieldsToExclude = Set.of(
-        new CollectionAndField(COLLECTION1, FIELD1),
-        new CollectionAndField(COLLECTION2, FIELD2),
-        new CollectionAndField(COLLECTION3, FIELD3),
-        new CollectionAndField(COLLECTION3, FIELD1));
+    final Set<ExcludedField>  fieldsToExclude = Set.of(
+        new ExcludedField(DATABASE, COLLECTION1, FIELD1),
+        new ExcludedField(DATABASE, COLLECTION2, FIELD2),
+        new ExcludedField(DATABASE, COLLECTION3, FIELD3),
+        new ExcludedField(DATABASE, COLLECTION3, FIELD1)
+    );
 
-    final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(config, fieldsToExclude);
+    final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsToExclude);
     assertEquals(5, debeziumProperties.size());
     assertEquals(CONNECTOR_CLASS_VALUE, debeziumProperties.get(CONNECTOR_CLASS_KEY));
     assertEquals(SNAPSHOT_MODE_VALUE, debeziumProperties.get(SNAPSHOT_MODE_KEY));
