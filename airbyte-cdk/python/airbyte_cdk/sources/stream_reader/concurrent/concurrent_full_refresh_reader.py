@@ -51,8 +51,8 @@ class ConcurrentFullRefreshStreamReader(FullRefreshStreamReader):
 
             # While there is a partition to process
             for record in partition_reader:
-                yield record._stream_data
-                if FullRefreshStreamReader.is_record(record._stream_data):
+                yield record.stream_data
+                if FullRefreshStreamReader.is_record(record.stream_data):
                     total_records_counter += 1
                     if internal_config and internal_config.is_limit_reached(total_records_counter):
                         return

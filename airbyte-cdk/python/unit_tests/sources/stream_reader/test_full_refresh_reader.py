@@ -151,8 +151,8 @@ def test_full_refresh_read_a_two_slices(reader):
     assert len(expected_records) == len(actual_records)
 
     expected_read_records_calls = [
-        call(stream_slice=partition1, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD),
-        call(stream_slice=partition2, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD),
+        call(sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD, stream_slice=partition1),
+        call(sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD, stream_slice=partition2),
     ]
     actual_calls = stream.read_records.call_args_list
 
@@ -246,7 +246,7 @@ def test_limit_only_considers_data(reader):
 
     assert expected_records == actual_records
 
-    expected_read_records_calls = [call(stream_slice=partition, sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD)]
+    expected_read_records_calls = [call(sync_mode=SyncMode.full_refresh, cursor_field=_A_CURSOR_FIELD, stream_slice=partition)]
 
     stream.read_records.assert_has_calls(expected_read_records_calls)
 

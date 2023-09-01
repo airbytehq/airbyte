@@ -18,8 +18,8 @@ def test_partition_reader():
 
     stream_partition = Mock()
     records = [
-        {"id": 1, "name": "Jack"},
-        {"id": 2, "name": "John"},
+        Record({"id": 1, "name": "Jack"}),
+        Record({"id": 2, "name": "John"}),
     ]
     stream_partition.read.return_value = iter(records)
 
@@ -29,5 +29,4 @@ def test_partition_reader():
     actual_records = list(r for r in partition_reader)
     assert not partition_reader.has_next()
 
-    expected_records = [Record(d, stream_partition) for d in records]
-    assert expected_records == actual_records
+    assert records == actual_records

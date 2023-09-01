@@ -15,8 +15,7 @@ class PartitionReader:
 
     def process_partition(self, partition: StreamPartition) -> None:
         partition.get_logger().debug(f"Processing partition={partition}")
-        for record_data in partition.read():
-            record = Record(record_data, partition)
+        for record in partition.read():
             self._output_queue.put(record)
 
     def has_next(self) -> bool:
