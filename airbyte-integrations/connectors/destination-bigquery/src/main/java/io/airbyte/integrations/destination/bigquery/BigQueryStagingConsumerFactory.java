@@ -9,11 +9,9 @@ import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INT
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
@@ -23,7 +21,6 @@ import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -42,7 +39,7 @@ import org.slf4j.LoggerFactory;
 public class BigQueryStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryStagingConsumerFactory.class);
-  
+
   public SerializedAirbyteMessageConsumer createAsync(
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
