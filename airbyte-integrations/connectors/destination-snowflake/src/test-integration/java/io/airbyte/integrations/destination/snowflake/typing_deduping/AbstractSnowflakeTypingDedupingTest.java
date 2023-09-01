@@ -112,7 +112,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
    * lowercased+quoted names). Then run a sync using our current version.
    */
   @Test
-  public void testFinalTableUppercasingMigration() throws Exception {
+  public void testFinalTableUppercasingMigration_append() throws Exception {
     try {
       final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
           new ConfiguredAirbyteStream()
@@ -135,6 +135,38 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
       final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
       final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    } finally {
+      // manually drop the lowercased schema, since we no longer have the code to do it automatically
+      // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
+      // handles it fine)
+      database.execute("DROP SCHEMA IF EXISTS \"" + streamNamespace + "\" CASCADE");
+    }
+  }
+  @Test
+  public void testFinalTableUppercasingMigration_overwrite() throws Exception {
+    try {
+      final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.FULL_REFRESH)
+              .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+              .withStream(new AirbyteStream()
+                  .withNamespace(streamNamespace)
+                  .withName(streamName)
+                  .withJsonSchema(SCHEMA))));
+
+      // First sync
+      final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+      runSync(catalog, messages1, "airbyte/destination-snowflake:3.0.0");
+      // We no longer have the code to dump a lowercased table, so just move on directly to the new sync
+
+      // Second sync
+      final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
+
+      runSync(catalog, messages2);
+
+      final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
+      final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
       verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically

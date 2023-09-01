@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -45,15 +46,17 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
         rawNamespace);
+    final boolean syncModeRequiresMigration = streamConfig.destinationSyncMode() != DestinationSyncMode.OVERWRITE;
     final boolean existingTableLowercaseExists = findExistingTable_lowercase(lowercasedStreamId).isPresent();
     final boolean existingTableUppercaseDoesNotExist = !handler.findExistingTable(streamConfig.id()).isPresent();
     LOGGER.info(
-        "Checking whether upcasing migration is necessary for {}.{}. Existing lowercased table exists: {}; existing uppercased table does not exist: {}",
+        "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing lowercased table exists: {}; existing uppercased table does not exist: {}",
+        syncModeRequiresMigration,
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
         existingTableLowercaseExists,
         existingTableUppercaseDoesNotExist);
-    if (existingTableLowercaseExists && existingTableUppercaseDoesNotExist) {
+    if (syncModeRequiresMigration && existingTableLowercaseExists && existingTableUppercaseDoesNotExist) {
       LOGGER.info(
           "Executing upcasing migration for {}.{}",
           streamConfig.id().originalNamespace(),
