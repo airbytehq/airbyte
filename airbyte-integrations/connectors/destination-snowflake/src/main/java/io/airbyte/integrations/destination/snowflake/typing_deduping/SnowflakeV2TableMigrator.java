@@ -51,9 +51,9 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
     final boolean existingTableUppercaseDoesNotExist = !handler.findExistingTable(streamConfig.id()).isPresent();
     LOGGER.info(
         "Checking whether upcasing migration is necessary for {}.{}. Sync mode requires migration: {}; existing lowercased table exists: {}; existing uppercased table does not exist: {}",
-        syncModeRequiresMigration,
         streamConfig.id().originalNamespace(),
         streamConfig.id().originalName(),
+        syncModeRequiresMigration,
         existingTableLowercaseExists,
         existingTableUppercaseDoesNotExist);
     if (syncModeRequiresMigration && existingTableLowercaseExists && existingTableUppercaseDoesNotExist) {
