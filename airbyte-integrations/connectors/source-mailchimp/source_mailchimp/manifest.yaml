@@ -6,167 +6,97 @@ check:
   stream_names:
     - lists
 
-streams:
-  - type: DeclarativeStream
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - '{{ parameters.field_path }}'
+  requester:
+    type: HttpRequester
+    url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
+    http_method: GET
+    request_headers: {}
+    path: '{{ parameters.path }}'
+    request_parameters:
+      sort_dir: ASC
+      sort_field: '{{ parameters.cursor_field }}'
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config[''password''] }}'
+      username: '{{ config[''username''] }}'
+    request_body_json: {}
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: offset
+    page_size_option:
+      type: RequestOption
+      field_name: count
+      inject_into: request_parameter
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 1000
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: '{{ parameters.cursor_field }}'
+    cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%S+00:00'
+    datetime_format: '%Y-%m-%dT%H:%M:%S+00:00'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: '{{ config[''start_date''] }}'
+      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_time_option:
+      type: RequestOption
+      field_name: since_{{ parameters.cursor_field }}
+      inject_into: request_parameter
+  base_stream:
+    type: DeclarativeStream
+    primary_key: id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/paginator"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+  lists_stream:
+    $ref: "#/definitions/base_stream"
     name: lists
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
-        path: lists
-        http_method: GET
-        request_parameters:
-          sort_dir: ASC
-          sort_field: date_created
-        request_headers: {}
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - lists
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          type: RequestOption
-          field_name: count
-          inject_into: request_parameter
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 1000
-    incremental_sync:
-      type: DatetimeBasedCursor
+    $parameters:
+      path: lists
+      field_path: lists
       cursor_field: date_created
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%S+00:00'
-      datetime_format: '%Y-%m-%dT%H:%M:%S+00:00'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        type: RequestOption
-        field_name: since_date_created
-        inject_into: request_parameter
-  - type: DeclarativeStream
+  campaigns_stream:
+    $ref: "#/definitions/base_stream"
     name: campaigns
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
-        path: campaigns
-        http_method: GET
-        request_parameters:
-          sort_dir: ASC
-          sort_field: create_time
-        request_headers: {}
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - campaigns
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          type: RequestOption
-          field_name: count
-          inject_into: request_parameter
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 1000
-    incremental_sync:
-      type: DatetimeBasedCursor
+    $parameters:
+      path: campaigns
+      field_path: campaigns
       cursor_field: create_time
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        type: RequestOption
-        field_name: since_create_time
-        inject_into: request_parameter
-  - type: DeclarativeStream
+  automations_stream:
+    $ref: "#/definitions/base_stream"
     name: automations
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
-        path: automations
-        http_method: GET
-        request_parameters:
-          sort_dir: ASC
-          sort_field: create_time
-        request_headers: {}
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - automations
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          type: RequestOption
-          field_name: count
-          inject_into: request_parameter
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 1000
-    incremental_sync:
-      type: DatetimeBasedCursor
+    $parameters:
+      path: automations
+      field_path: automations
       cursor_field: create_time
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        type: RequestOption
-        field_name: since_create_time
-        inject_into: request_parameter
-  - type: DeclarativeStream
+  reports_stream:
+    $ref: "#/definitions/base_stream"
+    name: reports
+    $parameters:
+      path: reports
+      field_path: reports
+      cursor_field: send_time
+  email_activity_stream:
+    type: DeclarativeStream
     name: email_activity
     primary_key:
       - timestamp
@@ -175,100 +105,21 @@ streams:
     retriever:
       type: SimpleRetriever
       requester:
-        type: HttpRequester
-        url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
-        path: reports/{{ stream_partition.campaign_id }}/email-activity
-        http_method: GET
-        request_parameters:
-          sort_dir: ASC
-          sort_field: create_time
-        request_headers: {}
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
-        request_body_json: {}
+        $ref: "#/definitions/requester"
       record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - emails
+        $ref: "#/definitions/selector"
       paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          type: RequestOption
-          field_name: count
-          inject_into: request_parameter
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 1000
+        $ref: "#/definitions/paginator"
       partition_router:
-        - type: SubstreamPartitionRouter
+        - type: CustomPartitionRouter
+          class_name:
+            source_mailchimp.components.CampaignIdPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: campaign_id
               stream:
-                type: DeclarativeStream
-                name: campaigns
-                primary_key:
-                  - id
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: >-
-                      https://{{ config.password.split('-')[-1]
-                      }}.api.mailchimp.com/3.0/
-                    path: campaigns
-                    http_method: GET
-                    request_parameters:
-                      sort_dir: ASC
-                      sort_field: create_time
-                    request_headers: {}
-                    authenticator:
-                      type: BasicHttpAuthenticator
-                      password: '{{ config[''password''] }}'
-                      username: '{{ config[''username''] }}'
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - campaigns
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestOption
-                      inject_into: request_parameter
-                      field_name: offset
-                    page_size_option:
-                      type: RequestOption
-                      field_name: count
-                      inject_into: request_parameter
-                    pagination_strategy:
-                      type: OffsetIncrement
-                      page_size: 1000
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: create_time
-                  cursor_datetime_formats:
-                    - '%Y-%m-%dT%H:%M:%SZ'
-                  datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-                  start_time_option:
-                    type: RequestOption
-                    field_name: since_create_time
-                    inject_into: request_parameter
+                $ref: "#/definitions/campaigns_stream"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timestamp
@@ -283,59 +134,14 @@ streams:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
-  - type: DeclarativeStream
-    name: reports
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://{{ config.password.split('-')[-1] }}.api.mailchimp.com/3.0/
-        path: reports
-        http_method: GET
-        request_parameters:
-          sort_dir: ASC
-          sort_field: send_time
-        request_headers: {}
-        authenticator:
-          type: BasicHttpAuthenticator
-          password: '{{ config[''password''] }}'
-          username: '{{ config[''username''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - reports
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: offset
-        page_size_option:
-          type: RequestOption
-          field_name: count
-          inject_into: request_parameter
-        pagination_strategy:
-          type: OffsetIncrement
-          page_size: 1000
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: send_time
-      cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-      start_time_option:
-        type: RequestOption
-        field_name: since_send_time
-        inject_into: request_parameter
+    $parameters:
+      field_path: emails
+streams:
+  - "#/definitions/lists_stream"
+  - "#/definitions/campaigns_stream"
+  - "#/definitions/automations_stream"
+  - "#/definitions/reports_stream"
+  - "#/definitions/email_activity_stream"
 
 spec:
   type: Spec
@@ -350,47 +156,47 @@ spec:
         type: object
         title: Authentication
         oneOf:
-        - title: OAuth2.0
-          type: object
-          required:
-          - auth_type
-          - access_token
-          properties:
-            auth_type:
-              type: string
-              const: oauth2.0
-              order: 0
-            client_id:
-              title: Client ID
-              type: string
-              description: The Client ID of your OAuth application.
-              airbyte_secret: true
-            client_secret:
-              title: Client Secret
-              type: string
-              description: The Client Secret of your OAuth application.
-              airbyte_secret: true
-            access_token:
-              title: Access Token
-              type: string
-              description: An access token generated using the above client ID and secret.
-              airbyte_secret: true
-        - type: object
-          title: API Key
-          required:
-          - auth_type
-          - apikey
-          properties:
-            auth_type:
-              type: string
-              const: apikey
-              order: 1
-            apikey:
-              type: string
-              title: API Key
-              description: Mailchimp API Key. See the <a href="https://docs.airbyte.com/integrations/sources/mailchimp">docs</a>
-                for information on how to generate this key.
-              airbyte_secret: true
+          - title: OAuth2.0
+            type: object
+            required:
+              - auth_type
+              - access_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                title: Client ID
+                type: string
+                description: The Client ID of your OAuth application.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: The Client Secret of your OAuth application.
+                airbyte_secret: true
+              access_token:
+                title: Access Token
+                type: string
+                description: An access token generated using the above client ID and secret.
+                airbyte_secret: true
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - apikey
+            properties:
+              auth_type:
+                type: string
+                const: apikey
+                order: 1
+              apikey:
+                type: string
+                title: API Key
+                description: Mailchimp API Key. See the <a href="https://docs.airbyte.com/integrations/sources/mailchimp">docs</a>
+                  for information on how to generate this key.
+                airbyte_secret: true
       campaign_id:
         type: string
         title: ID of a campaign to sync email activities
@@ -398,8 +204,8 @@ spec:
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
-    - credentials
-    - auth_type
+      - credentials
+      - auth_type
     predicate_value: oauth2.0
     oauth_config_specification:
       complete_oauth_output_specification:
@@ -426,10 +232,10 @@ spec:
           client_id:
             type: string
             path_in_connector_config:
-            - credentials
-            - client_id
+              - credentials
+              - client_id
           client_secret:
             type: string
             path_in_connector_config:
-            - credentials
-            - client_secret
+              - credentials
+              - client_secret
