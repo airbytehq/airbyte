@@ -73,6 +73,11 @@ class GoogleSearchConsole(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
                 setattr(self, "raise_on_http_errors", False)
                 return False
+            # handle the `HTTP-400` - Bad query params with `aggregationType`
+            if error.get("code", 0) == 400:
+                self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
+                self.aggregation_type = QueryAggregationType.auto
+                setattr(self, "raise_on_http_errors", False)
         return super().should_retry(response)
 
 
@@ -214,6 +219,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "rowLimit": ROW_LIMIT,
             "dataState": stream_slice.get("data_state"),
         }
+
         return data
 
     def _get_end_date(self) -> pendulum.date:
@@ -342,6 +348,7 @@ class SearchAppearance(SearchAnalytics):
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
     """
 
+    primary_key = None
     dimensions = ["searchAppearance"]
 
 
@@ -362,7 +369,6 @@ class SearchByKeyword(SearchAnalytics):
         stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
         keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
         keywords = {record["searchAppearance"] for record in keywords_records}
-
         filters = []
         for keyword in keywords:
             filters.append({"dimension": "searchAppearance", "operator": "equals", "expression": keyword})
@@ -374,38 +380,38 @@ class SearchByKeyword(SearchAnalytics):
 
 class SearchAnalyticsKeywordPageReport(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
-    dimensions = ["date", "country", "device", "query", "page", "search_type"]
+    dimensions = ["date", "country", "device", "query", "page"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
-    dimensions = ["date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
     primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
-    dimensions = ["date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
     primary_key = ["site_url", "date", "country", "device", "search_type"]
-    dimensions = ["date", "country", "device", "search_type"]
+    dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportByPage(SearchAnalytics):
     primary_key = ["site_url", "date", "country", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device", "search_type"]
+    dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsPageReport(SearchAnalytics):
     primary_key = ["site_url", "date", "country", "device", "search_type", "page"]
     search_types = ["web", "news", "image", "video", "googleNews"]
-    dimensions = ["date", "country", "device", "page", "search_type"]
+    dimensions = ["date", "country", "device", "page"]
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):

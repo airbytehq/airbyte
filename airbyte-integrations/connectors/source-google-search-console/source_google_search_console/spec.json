@@ -135,7 +135,7 @@
             },
             "dimensions": {
               "title": "Dimensions",
-              "description": "A list of dimensions (country, date, device, page, query, search_type)",
+              "description": "A list of dimensions (country, date, device, page, query)",
               "type": "array",
               "items": {
                 "title": "ValidEnums",
@@ -145,8 +145,7 @@
                   "date",
                   "device",
                   "page",
-                  "query",
-                  "search_type"
+                  "query"
                 ]
               },
               "minItems": 1

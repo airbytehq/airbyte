@@ -41,7 +41,7 @@ def config_service_account_fixture(requests_mock):
 
 
 @fixture(name="forbidden_error_message_json")
-def forbidden_error_message_json(requests_mock):
+def forbidden_error_message_json():
     return {
         "error": {
             "code": 403,
@@ -51,6 +51,25 @@ def forbidden_error_message_json(requests_mock):
                     "message": "User does not have sufficient permission for site 'https://test-site-test.com/'. See also: https://support.google.com/webmasters/answer/9999999.",
                     "domain": "global",
                     "reason": "forbidden"
+                }
+            ]
+        }
+    }
+
+
+@fixture(name="bad_aggregation_type")
+def bad_aggregation_type():
+    return {
+        "error": {
+            "code": 400,
+            "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
+            "errors": [
+                {
+                    "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
+                    "domain": "global",
+                    "reason": "invalidParameter",
+                    "location": "aggregation_type",
+                    "locationType": "parameter"
                 }
             ]
         }
