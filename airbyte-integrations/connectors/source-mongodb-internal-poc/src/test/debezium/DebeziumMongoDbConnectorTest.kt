@@ -27,10 +27,12 @@ import java.util.stream.Collectors
 import kotlin.collections.Map
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.system.exitProcess
+import kotlinx.cli.ArgParser
+import kotlinx.cli.ArgType
+import kotlinx.cli.required
 
 
-class DebeziumMongoDbConnectorTest internal constructor(private val username: String, private val password: String) {
+class DebeziumMongoDbConnectorTest internal constructor(private val connectionString: String, private val databaseName: String, private val collectionName: String, private val username: String, private val password: String) {
 
     @Throws(InterruptedException::class, IOException::class)
     fun startTest() {
@@ -79,7 +81,7 @@ class DebeziumMongoDbConnectorTest internal constructor(private val username: St
         val thrownError = AtomicReference<Throwable?>()
         val engineLatch = CountDownLatch(1)
         val engine: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> = DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
-                .using(getDebeziumProperties(path, COLLECTIONS.stream().collect(Collectors.joining(","))))
+                .using(getDebeziumProperties(path, listOf("$databaseName\\.$collectionName").stream().collect(Collectors.joining(","))))
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying(Consumer<io.debezium.engine.ChangeEvent<String, String>> { e: io.debezium.engine.ChangeEvent<String, String> ->
                     // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
@@ -121,7 +123,7 @@ class DebeziumMongoDbConnectorTest internal constructor(private val username: St
         val thrownError2 = AtomicReference<Throwable?>()
         val engineLatch2 = CountDownLatch(1)
         val engine2: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> = DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
-                .using(getDebeziumProperties(path, COLLECTIONS.stream().collect(Collectors.joining(","))))
+                .using(getDebeziumProperties(path, listOf("$databaseName\\.$collectionName").stream().collect(Collectors.joining(","))))
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
                 .notifying(Consumer<io.debezium.engine.ChangeEvent<String, String>> { e: io.debezium.engine.ChangeEvent<String, String> ->
                     // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
@@ -162,19 +164,19 @@ class DebeziumMongoDbConnectorTest internal constructor(private val username: St
         LOGGER.info("Included collection names regular expression: '{}'.", collectionNames)
         props.setProperty("connector.class", MongoDbConnector::class.java.getName())
         props.setProperty("snapshot.mode", "initial")
-        props.setProperty("name", DATABASE_NAME.replace("_".toRegex(), "-"))
-        props.setProperty("mongodb.connection.string", "mongodb+srv://cluster0.iqgf8.mongodb.net/")
+        props.setProperty("name", databaseName.replace("_".toRegex(), "-"))
+        props.setProperty("mongodb.connection.string", connectionString)
         props.setProperty("mongodb.connection.mode", "replica_set")
         props.setProperty("mongodb.user", username)
         props.setProperty("mongodb.password", password)
         props.setProperty("mongodb.authsource", "admin")
         props.setProperty("mongodb.ssl.enabled", "true")
-        props.setProperty("topic.prefix", DATABASE_NAME)
+        props.setProperty("topic.prefix", databaseName)
         props.setProperty("capture.mode", "change_streams_update_full")
 
         // Database/collection selection
         props.setProperty("collection.include.list", collectionNames)
-        props.setProperty("database.include.list", DATABASE_NAME)
+        props.setProperty("database.include.list", databaseName)
 
         // Offset storage configuration
         props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore")
@@ -228,21 +230,21 @@ class DebeziumMongoDbConnectorTest internal constructor(private val username: St
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(DebeziumMongoDbConnectorTest::class.java)
-        private const val COLLECTION_NAME = "listingsAndReviews"
-        const val DATABASE_NAME = "sample_airbnb"
-        val COLLECTIONS: List<String> = listOf("$DATABASE_NAME\\.$COLLECTION_NAME")
         @Throws(IOException::class, InterruptedException::class)
         @JvmStatic
         fun main(args: Array<String>) {
-            if (args.isEmpty()) {
-                LOGGER.error("Must provide <username> argument!")
-                exitProcess(-1)
-            }
+            val parser = ArgParser("Debezium MongoDb Connector Test Harness")
+            val connectionString by parser.option(ArgType.String, fullName = "connection-string", shortName = "cs", description = "MongoDB Connection String").required()
+            val databaseName by parser.option(ArgType.String, fullName = "database-name", shortName = "d", description = "Database Name").required()
+            val collectionName by parser.option(ArgType.String, fullName = "collection-name", shortName = "cn", description = "Collection Name").required()
+            val username by parser.option(ArgType.String, fullName = "username", shortName = "u", description = "Username").required()
+
+            parser.parse(args)
 
             println("Enter password: ")
             val password = readln()
 
-            val debeziumEngineTest = DebeziumMongoDbConnectorTest(args[0], password)
+            val debeziumEngineTest = DebeziumMongoDbConnectorTest(connectionString, databaseName, collectionName, username, password)
             debeziumEngineTest.startTest()
         }
     }

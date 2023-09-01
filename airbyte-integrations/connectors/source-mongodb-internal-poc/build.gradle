@@ -43,6 +43,9 @@ dependencies {
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     debeziumTestImplementation libs.bundles.debezium.bundle
+    debeziumTestImplementation libs.bundles.slf4j
+    debeziumTestImplementation "org.slf4j:slf4j-simple:1.7.36"
+    debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
 }
 
 /*
@@ -87,13 +90,22 @@ tasks.register('generateTestData', JavaExec) {
  *
  * To execute this task, use the following command:
  *
- * ./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:debeziumTest -Pusername=<username>
+ * ./gradlew :airbyte-integrations:connectors:source-mongodb-internal-poc:debeziumTest -PconnectionString=<connection string> -PdatabaseName=<database name> -PcollectionName=<collection name> -Pusername=<username>
  */
 tasks.register('debeziumTest', JavaExec) {
     def arguments = []
 
+    if(project.hasProperty('collectionName')) {
+        arguments.addAll(['--collection-name', collectionName])
+    }
+    if(project.hasProperty('connectionString')) {
+        arguments.addAll(['--connection-string', connectionString])
+    }
+    if(project.hasProperty('databaseName')) {
+        arguments.addAll(['--database-name', databaseName])
+    }
     if(project.hasProperty('username')) {
-        arguments.add(username)
+        arguments.addAll(['--username', username])
     }
 
     classpath = sourceSets.debeziumTest.runtimeClasspath
