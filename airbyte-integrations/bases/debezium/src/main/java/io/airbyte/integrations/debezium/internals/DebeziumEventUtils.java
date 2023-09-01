@@ -9,10 +9,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Timestamp;
 import java.time.Instant;
 
 public class DebeziumEventUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumEventUtils.class);
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -25,6 +30,8 @@ public class DebeziumEventUtils {
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
+
+    LOGGER.info("Debezium record = {}, (before = {}, after = {}, source = {}).", debeziumRecord, before, after, source);
 
     final JsonNode data = formatDebeziumData(before, after, source, cdcMetadataInjector);
     final String schemaName = cdcMetadataInjector.namespace(source);
