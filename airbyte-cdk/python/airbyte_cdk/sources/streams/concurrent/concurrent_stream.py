@@ -153,4 +153,4 @@ class ConcurrentStream(AbstractStream):
 
     @property
     def source_defined_cursor(self) -> bool:
-        return False
+        return True
