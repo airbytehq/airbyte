@@ -115,7 +115,10 @@ definitions:
     retriever:
       type: SimpleRetriever
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
       paginator:
         type: DefaultPaginator
         pagination_strategy:
@@ -147,7 +150,6 @@ definitions:
         inject_into: request_parameter
     $parameters:
       path: "balances"
-      field_path: []
 
 streams:
   - "#/definitions/transactions_stream"
