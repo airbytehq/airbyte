@@ -17,6 +17,16 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: []
+  token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  oauth2:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: https://api.typeform.com/oauth/token
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    grant_type: refresh_token
   requester:
     type: HttpRequester
     url_base: https://api.typeform.com/
@@ -25,8 +35,9 @@ definitions:
     request_parameters: {}
     request_headers: {}
     authenticator:
-      type: BearerAuthenticator
-      api_token: '{{ config[''api_key''] }}'
+      class_name: source_typeform.components.TypeformAuthenticator
+      token_auth: "#/definitions/token_auth"
+      oauth2: "#/definitions/oauth2"
     request_body_json: {}
   paginator:
     type: DefaultPaginator
