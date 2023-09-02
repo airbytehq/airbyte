@@ -130,7 +130,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     bastion.initAndStartBastion(network);
     startAndInitJdbcContainer();
   }
@@ -148,7 +148,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
 

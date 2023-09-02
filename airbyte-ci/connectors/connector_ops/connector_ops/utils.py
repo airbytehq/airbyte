@@ -11,12 +11,12 @@ from enum import Enum
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Set, Tuple, Union
-from pydash.objects import get
 
 import git
 import requests
 import yaml
 from ci_credentials import SecretsManager
+from pydash.objects import get
 from rich.console import Console
 
 console = Console()
@@ -130,8 +130,8 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
     dependencies_block = get_gradle_dependencies_block(build_file)
 
-    project_dependencies: List[Tuple[str, Path]] = []
-    test_dependencies: List[Tuple[str, Path]] = []
+    project_dependencies: List[Path] = []
+    test_dependencies: List[Path] = []
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
@@ -149,6 +149,8 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
                 test_dependencies.append(path)
             else:
                 project_dependencies.append(path)
+
+    project_dependencies.append(Path("airbyte-cdk", "java", "airbyte-cdk"))
     return project_dependencies, test_dependencies
 
 

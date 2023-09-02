@@ -227,6 +227,18 @@ flowchart TD
     static-->report
 ```
 
+#### Options
+
+| Option              | Multiple | Default value | Description                                                                                                                                                                                             |
+| ------------------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                     |
+| `--fast-tests-only` | True     | False         | Run unit tests only, skipping integration tests or any tests explicitly tagged as slow. Use this for more frequent checks, when it is not feasible to run the entire test suite.                        |
+| `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development.|
+
+Note:
+
+* The above options are implemented for Java connectors but may not be available for Python connectors. If an option is not supported, the pipeline will not fail but instead the 'default' behavior will be executed.
+
 ### <a id="connectors-build-command"></a>`connectors build` command
 Run a build pipeline for one or multiple connectors and export the built docker image to the local docker host.
 It's mainly purposed for local use.

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
@@ -38,11 +42,11 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
   private final String pkFieldName;
 
   public MySqlInitialSyncStateIterator(final Iterator<AirbyteMessage> messageIterator,
-      final AirbyteStreamNameNamespacePair pair,
-      final MySqlInitialLoadStateManager stateManager,
-      final JsonNode streamStateForIncrementalRun,
-      final Duration checkpointDuration,
-      final Long checkpointRecords) {
+                                       final AirbyteStreamNameNamespacePair pair,
+                                       final MySqlInitialLoadStateManager stateManager,
+                                       final JsonNode streamStateForIncrementalRun,
+                                       final Duration checkpointDuration,
+                                       final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.stateManager = stateManager;
@@ -95,4 +99,5 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       return endOfData();
     }
   }
+
 }

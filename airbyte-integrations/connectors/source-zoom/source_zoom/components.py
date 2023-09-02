@@ -1,11 +1,14 @@
-import base64
-import requests
-import time
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import base64
+import time
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Any, Mapping, Union
 
+import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
@@ -54,20 +57,14 @@ class ServerToServerOauthAuthenticator(NoAuth):
         if self._access_token is None or ((time.time() - self._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
             self._generate_token_time = time.time()
             self._access_token = self.generate_access_token()
-        headers = {
-            "Authorization": f"Bearer {self._access_token}",
-            'Content-type': 'application/json'
-        }
+        headers = {"Authorization": f"Bearer {self._access_token}", "Content-type": "application/json"}
         request.headers.update(headers)
 
         return request
 
     @property
     def auth_header(self) -> dict[str, str]:
-        return {
-            "Authorization": f"Bearer {self.token}",
-            'Content-type': 'application/json'
-        }
+        return {"Authorization": f"Bearer {self.token}", "Content-type": "application/json"}
 
     @property
     def token(self) -> str:
@@ -76,12 +73,10 @@ class ServerToServerOauthAuthenticator(NoAuth):
     def generate_access_token(self) -> str:
         self._generate_token_time = time.time()
         try:
-            token = base64.b64encode(f'{self._client_id}:{self._client_secret}'.encode('ascii')).decode('utf-8')
-            headers = {'Authorization': f'Basic {token}',
-                       'Content-type': 'application/json'}
+            token = base64.b64encode(f"{self._client_id}:{self._client_secret}".encode("ascii")).decode("utf-8")
+            headers = {"Authorization": f"Basic {token}", "Content-type": "application/json"}
             rest = requests.post(
-                url=f"{self._authorization_endpoint}?grant_type={self._grant_type}&account_id={self._account_id}",
-                headers=headers
+                url=f"{self._authorization_endpoint}?grant_type={self._grant_type}&account_id={self._account_id}", headers=headers
             )
             if rest.status_code != HTTPStatus.OK:
                 raise HTTPError(rest.text)

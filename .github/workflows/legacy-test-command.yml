@@ -116,6 +116,9 @@ jobs:
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      - name: Build Java CDK Snapshot if Needed
+        # If a snapshot version is specified for the Java CDK, build publish locally. Otherwise, do nothing.
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded
       - name: Test ${{ github.event.inputs.connector }}
         id: test
         env:

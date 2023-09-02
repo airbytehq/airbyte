@@ -13,4 +13,5 @@ public class IcebergRESTCatalogS3AvroIntegrationTest extends BaseIcebergRESTCata
   public static void startCompose() {
     startCompose(DataFileFormat.AVRO);
   }
+
 }

@@ -1016,40 +1016,123 @@ def test_nested_group(mocker, connector_spec, should_fail):
 @pytest.mark.parametrize(
     "connector_spec, should_fail",
     (
-        ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
-        ({"type": "object", "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}}}, False),
+        # SUCCESS: no display_type specified
         (
             {
-                "type": "object",
-                "required": ["prop"],
-                "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}},
-            },
-            True,
-        ),
-        (
-            {"type": "object", "properties": {"jwt": {"type": "object", "properties": {"a": {"type": "string", "always_show": True}}}}},
+                "type": "object", 
+                "properties": {
+                    "select_type": {
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                    "something": {"type": "string"},
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                    "some_field": {"type": "boolean"},
+                                },
+                            },
+                        ],
+                    },
+                },
+            }, 
             False,
         ),
+        # SUCCESS: display_type is set to a valid value on a field with oneOf set
         (
             {
-                "type": "object",
-                "properties": {"jwt": {"type": "object", "required": ["a"], "properties": {"a": {"type": "string", "always_show": True}}}},
-            },
+                "type": "object", 
+                "properties": {
+                    "select_type": {
+                        "type": "object",
+                        "display_type": "radio",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                    "something": {"type": "string"},
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                    "some_field": {"type": "boolean"},
+                                },
+                            },
+                        ],
+                    },
+                },
+            }, 
+            False,
+        ),
+        # SUCCESS: display_type is the name of the property
+        (
+            {
+                "type": "object", 
+                "properties": {
+                    "display_type": {
+                        "type": "string",
+                    },
+                },
+            }, 
+            False,
+        ),
+        # FAILURE: display_type is set to an invalid value
+        (
+            {
+                "type": "object", 
+                "properties": {
+                    "select_type": {
+                        "type": "object",
+                        "display_type": "invalid",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                    "something": {"type": "string"},
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                    "some_field": {"type": "boolean"},
+                                },
+                            },
+                        ],
+                    },
+                },
+            }, 
             True,
         ),
+        # FAILURE: display_type is set on a non-oneOf field
         (
             {
-                "type": "object",
-                "properties": {"jwt": {"type": "object", "required": ["always_show"], "properties": {"always_show": {"type": "string"}}}},
-            },
-            False,
+                "type": "object", 
+                "properties": {
+                    "select_type": {
+                        "type": "string",
+                        "display_type": "dropdown",
+                    },
+                },
+            }, 
+            True,
         ),
     ),
 )
-def test_required_always_show(mocker, connector_spec, should_fail):
+def test_display_type(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
-    t.test_required_always_show(ConnectorSpecification(connectionSpecification=connector_spec))
+    t.test_display_type(ConnectorSpecification(connectionSpecification=connector_spec))
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:

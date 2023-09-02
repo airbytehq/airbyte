@@ -24,5 +24,5 @@ ENV APPLICATION source-alloydb
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=3.1.3
+LABEL io.airbyte.version=3.1.5
 LABEL io.airbyte.name=airbyte/source-alloydb

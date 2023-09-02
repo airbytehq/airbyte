@@ -15,6 +15,7 @@ import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
@@ -169,7 +170,7 @@ public class MySqlDebeziumStateUtil {
       return Optional.empty();
     }
 
-    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
+    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty()),
         Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
@@ -256,8 +257,12 @@ public class MySqlDebeziumStateUtil {
         Optional.empty());
     final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties, database.getSourceConfig(), catalog, offsetManager,
-        Optional.of(schemaHistoryStorage))) {
+    try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
+        database.getSourceConfig(),
+        catalog,
+        offsetManager,
+        Optional.of(schemaHistoryStorage),
+        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
       publisher.start(queue);
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);

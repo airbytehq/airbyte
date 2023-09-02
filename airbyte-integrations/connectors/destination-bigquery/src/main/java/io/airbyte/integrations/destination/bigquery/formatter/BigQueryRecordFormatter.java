@@ -46,16 +46,6 @@ public abstract class BigQueryRecordFormatter {
     return jsonSchema;
   };
 
-  /***
-   * To write to a JSON type, Standard inserts needs the Json to be an object. For Avro however, it
-   * needs to be a string. The column in the schema remains JSON regardless.
-   *
-   * @return whether to use an object for the formatting of the record.
-   */
-  protected boolean useObjectForData() {
-    return true;
-  }
-
   public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
   public Schema getBigQuerySchema() {
