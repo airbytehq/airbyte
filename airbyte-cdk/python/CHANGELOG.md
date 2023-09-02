@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.51.10
+Vector DB CDK adjustments: Fix id generation, improve config spec, add base test case
+
+## 0.51.9
+[Issue #29660] Support empty keys with record selection
+
+## 0.51.8
+Add vector db CDK helpers
+
+## 0.51.7
+File-based CDK: allow user to provided column names for CSV files
+
 ## 0.51.6
 File-based CDK: allow for extension mismatch
 

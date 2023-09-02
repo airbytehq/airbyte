@@ -28,7 +28,7 @@ from .utils import ShopifyWrongShopNameError
 
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
-    api_version = "2022-10"
+    api_version = "2023-07"
     # Page size
     limit = 250
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
@@ -56,7 +56,7 @@ class ShopifyStream(HttpStream, ABC):
         # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
         # but many other use `str` values for this, we determine what to use based on `filter_field` value
         # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
-        return 0 if self.filter_field == "since_id" else self.config["start_date"]
+        return 0 if self.filter_field == "since_id" else (self.config.get("start_date") or "")
 
     @staticmethod
     def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
