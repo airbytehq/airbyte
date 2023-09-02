@@ -3,11 +3,14 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @dataclass
@@ -20,4 +23,20 @@ class TypeformAuthenticator(DeclarativeAuthenticator):
         if config["credentials"]["access_token"]:
             return token_auth
         return oauth2
-        
+
+
+@dataclass
+class FormIdPartitionRouter(SubstreamPartitionRouter):
+    
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        form_ids = self.config.get("form_ids", [])
+
+        if form_ids:
+            for item in form_ids:
+                yield {"form_id": item}
+        else:
+            for parent_stream_config in self.parent_stream_configs:
+                for item in parent_stream_config.stream.read_records(sync_mode=SyncMode.full_refresh):
+                    yield {"form_id": item["id"]}
+
+        yield from []

@@ -70,7 +70,8 @@ definitions:
     $parameters:
       path: forms
   form_id_partition_router:
-    - type: SubstreamPartitionRouter
+    - type: CustomPartitionRouter
+      class_name: source_typeform.components.FormIdPartitionRouter
       parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: id
