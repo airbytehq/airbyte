@@ -35,4 +35,4 @@ This is how the components interact:
 └────────┘                             
 ```
 
-Normally, only the `MyDestination` class and the `MyIndexer` calss has to be implemented specifically for the destination. The other classes are provided as is by the helpers.
+Normally, only the `MyDestination` class and the `MyIndexer` class has to be implemented specifically for the destination. The other classes are provided as is by the helpers.

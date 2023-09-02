@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.10
+Vector DB CDK adjustments: Fix id generation, improve config spec, add base test case
+
+## 0.51.9
+[Issue #29660] Support empty keys with record selection
+
 ## 0.51.8
 Add vector db CDK helpers
 
