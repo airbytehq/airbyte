@@ -20,10 +20,7 @@
     "creationTimeUnix": 1614852753746,
     "id": "b7b1cfbe-20da-496c-b932-008d35805f26",
     "properties": {},
-    "vector": [
-      -0.05244319,
-      0.076136276
-    ],
+    "vector": [-0.05244319, 0.076136276],
     "deprecations": null,
     "result": {}
   }

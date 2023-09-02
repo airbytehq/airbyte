@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The class mainly categorises the streams based on the state type into two categories:
- * 1. Streams that need to be synced via ctid iterator: These are streams that are either newly added or did
+ * The class mainly categorises the streams based on the state type into two categories: 1. Streams
+ * that need to be synced via ctid iterator: These are streams that are either newly added or did
  * not complete their initial sync. 2. Streams that need to be synced via xmin iterator: These are
  * streams that have completed their initial sync and are not syncing data incrementally.
  */
@@ -81,7 +81,8 @@ public class XminCtidUtils {
       });
     }
 
-    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams = identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
+    final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams =
+        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
@@ -104,7 +105,8 @@ public class XminCtidUtils {
 
   }
 
-  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams, AirbyteStreamNameNamespacePair streamPair) {
+  public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams,
+                                                     AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -130,7 +132,10 @@ public class XminCtidUtils {
       categorisedStreams.ctidStreams().statesFromCtidSync().remove(m);
     });
   }
-  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams, List<AirbyteStreamNameNamespacePair> streamPairs) {
+
+  public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams,
+                                                      List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
+
 }

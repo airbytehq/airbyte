@@ -81,8 +81,8 @@ connectionSpecification:
       title: "Look Back Window"
       description: "The amount of days to go back in time to get the updated data from Amazon Ads"
       examples:
-      - 3
-      - 10
+        - 3
+        - 10
       type: "integer"
       default: 3
       order: 8

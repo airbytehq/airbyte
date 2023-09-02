@@ -11,6 +11,7 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
+from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
@@ -23,7 +24,6 @@ from unit_tests.sources.file_based.scenarios.avro_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
-    error_extension_mismatch_scenario,
     error_listing_files_scenario,
     error_multi_stream_scenario,
     error_reading_file_scenario,
@@ -49,6 +49,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_skip_after_header_scenario,
     csv_skip_before_and_after_header_scenario,
     csv_skip_before_header_scenario,
+    csv_string_are_not_null_if_strings_can_be_null_is_false_scenario,
     csv_string_can_be_null_with_input_schemas_scenario,
     csv_string_not_null_if_no_null_values_scenario,
     csv_strings_can_be_null_not_quoted_scenario,
@@ -176,6 +177,7 @@ discover_scenarios = [
     schemaless_jsonl_scenario,
     schemaless_jsonl_multi_stream_scenario,
     csv_string_can_be_null_with_input_schemas_scenario,
+    csv_string_are_not_null_if_strings_can_be_null_is_false_scenario,
     csv_string_not_null_if_no_null_values_scenario,
     csv_strings_can_be_null_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
@@ -232,6 +234,7 @@ read_scenarios = discover_scenarios + [
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
 def test_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+    caplog.handler.setFormatter(AirbyteLogFormatter())
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
     else:
@@ -305,7 +308,6 @@ def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
 
 check_scenarios = [
     error_empty_stream_scenario,
-    error_extension_mismatch_scenario,
     error_listing_files_scenario,
     error_reading_file_scenario,
     error_record_validation_user_provided_schema_scenario,
@@ -371,23 +373,23 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
 
 
 def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
-    launch(
-        scenario.source,
-        [
-            "read",
-            "--config",
-            make_file(tmp_path / "config.json", scenario.config),
-            "--catalog",
-            make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
-        ],
-    )
-    captured = capsys.readouterr().out.splitlines()
-    logs = caplog.records
-    return {
-        "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
-        "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"]
-        + [{"level": log.levelname, "message": log.message} for log in logs],
-    }
+    with caplog.handler.stream as logger_stream:
+        launch(
+            scenario.source,
+            [
+                "read",
+                "--config",
+                make_file(tmp_path / "config.json", scenario.config),
+                "--catalog",
+                make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
+            ],
+        )
+        captured = capsys.readouterr().out.splitlines() + logger_stream.getvalue().split("\n")[:-1]
+
+        return {
+            "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
+            "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"],
+        }
 
 
 def read_with_state(

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -24,20 +28,20 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
 
   @Override
   public Optional<SnowflakeTableDefinition> findExistingTable(StreamId id) throws SQLException {
-    // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates VARIANT as VARCHAR
+    // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
+    // VARIANT as VARCHAR
     LinkedHashMap<String, String> columns = database.queryJsons(
         """
-            SELECT column_name, data_type
-            FROM information_schema.columns
-            WHERE table_catalog = ?
-              AND table_schema = ?
-              AND table_name = ?
-            ORDER BY ordinal_position;
-            """,
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_catalog = ?
+          AND table_schema = ?
+          AND table_name = ?
+        ORDER BY ordinal_position;
+        """,
         databaseName,
         id.finalNamespace(),
-        id.finalName()
-        ).stream()
+        id.finalName()).stream()
         .collect(LinkedHashMap::new,
             (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
             LinkedHashMap::putAll);
@@ -54,12 +58,12 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   public boolean isFinalTableEmpty(StreamId id) throws SQLException {
     int rowCount = database.queryInt(
         """
-            SELECT row_count
-            FROM information_schema.tables
-            WHERE table_catalog = ?
-              AND table_schema = ?
-              AND table_name = ?
-            """,
+        SELECT row_count
+        FROM information_schema.tables
+        WHERE table_catalog = ?
+          AND table_schema = ?
+          AND table_name = ?
+        """,
         databaseName,
         id.finalNamespace(),
         id.finalName());

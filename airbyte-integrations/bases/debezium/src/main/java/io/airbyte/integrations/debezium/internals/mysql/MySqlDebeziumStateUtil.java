@@ -129,7 +129,7 @@ public class MySqlDebeziumStateUtil {
       } else if (gtidSets.size() == 1) {
         return Optional.of(gtidSets.get(0));
       } else {
-        throw new RuntimeException("Not expecting gtid set size to br greater than 1");
+        throw new RuntimeException("Not expecting gtid set size to be greater than 1");
       }
     } catch (final SQLException e) {
       throw new RuntimeException(e);

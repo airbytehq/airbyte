@@ -22,8 +22,9 @@ connectionSpecification:
     start_date:
       type: string
       title: Start Date
-      description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+      description:
+        UTC date and time in the format 2017-01-25T00:00:00Z. Any data
         before this date will not be replicated.
       examples:
-        - '2023-07-30T03:43:59.244Z'
+        - "2023-07-30T03:43:59.244Z"
       airbyte_secret: false

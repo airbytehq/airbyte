@@ -12,9 +12,9 @@ import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -50,7 +50,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                                 final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String defaultDatasetId,
-                                TyperDeduper typerDeduper,
+                                final TyperDeduper typerDeduper,
                                 final ParsedCatalog catalog) {
     this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
@@ -65,14 +65,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   @Override
-  protected void startTracked() throws Exception {
+  protected void startTracked() {
     // todo (cgardens) - move contents of #write into this method.
-
-    typerDeduper.prepareFinalTables();
     if (use1s1t) {
       // Set up our raw tables
       uploaderMap.forEach((streamId, uploader) -> {
-        StreamConfig stream = catalog.getStream(streamId);
+        final StreamConfig stream = catalog.getStream(streamId);
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
           // For streams in overwrite mode, truncate the raw table.
           // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
@@ -86,8 +84,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       });
     }
   }
-
-
 
   /**
    * Processes STATE and RECORD {@link AirbyteMessage} with all else logged as unexpected

@@ -9,6 +9,11 @@ from pydantic import AnyUrl, Field, ValidationError, root_validator
 
 
 class Config(AbstractFileBasedSpec):
+    """
+    NOTE: When this Spec is changed, legacy_config_transformer.py must also be modified to uptake the changes
+    because it is responsible for converting legacy S3 v3 configs into v4 configs using the File-Based CDK.
+    """
+
     @classmethod
     def documentation_url(cls) -> AnyUrl:
         return AnyUrl("https://docs.airbyte.com/integrations/sources/s3", scheme="https")
@@ -41,14 +46,8 @@ class Config(AbstractFileBasedSpec):
     def validate_optional_args(cls, values):
         aws_access_key_id = values.get("aws_access_key_id")
         aws_secret_access_key = values.get("aws_secret_access_key")
-        endpoint = values.get("endpoint")
-        if aws_access_key_id or aws_secret_access_key:
-            if not (aws_access_key_id and aws_secret_access_key):
-                raise ValidationError(
-                    "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
-                )
-            if endpoint:
-                raise ValidationError(
-                    "Either `aws_access_key_id` and `aws_secret_access_key` or `endpoint` must be set, but not both.", model=Config
-                )
+        if (aws_access_key_id or aws_secret_access_key) and not (aws_access_key_id and aws_secret_access_key):
+            raise ValidationError(
+                "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
+            )
         return values

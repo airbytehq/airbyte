@@ -230,7 +230,17 @@ Run integration tests using `python -m pytest -s integration_tests`.
 The template fills in most of the information for the readme for you. Unless there is a special case, the only piece of information you need to add is how one can get the credentials required to run the source. e.g. Where one can find the relevant API key, etc.
 
 ### Step 11: Add the connector to the API/UI
-# TODO ben link to metadata doc and create generator
+There are multiple ways to use the connector you have built.
+
+If you are self hosting Airbyte (OSS) you are able to use the Custom Connector feature. This feature allows you to run any Docker container that implements the Airbye protocol. You can read more about it [here](https://docs.airbyte.com/integrations/custom-connectors/).
+
+If you are using Airbyte Cloud (or OSS), you can submit a PR to add your connector to the Airbyte repository. Once the PR is merged, the connector will be available to all Airbyte Cloud users. You can read more about it [here](https://docs.airbyte.com/contributing-to-airbyte/submit-new-connector).
+
+Note that when submitting an Airbyte connector, you will need to ensure that
+1. The connector passes the standard test suite. See [Set up Standard Tests](#step-8-set-up-standard-tests).
+2. The metadata.yaml file (created by our generator) is filed out and valid. See [Connector Metadata File](https://docs.airbyte.com/connector-development/connector-metadata-file).
+3. You have created appropriate documentation for the connector. See [Add docs](#step-12-add-docs).
+
 
 ### Step 12: Add docs
 

@@ -59,9 +59,9 @@ public interface CdcTargetPosition<T> {
    *
    * @param offset DB CDC offset
    * @param event Event from the CDC load
-   * @return Returns `true` when the record is behind the offset. Otherwise, it returns `false`
+   * @return Returns `true` when the event is ahead of the offset. Otherwise, it returns `false`
    */
-  default boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+  default boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
     return false;
   }
 

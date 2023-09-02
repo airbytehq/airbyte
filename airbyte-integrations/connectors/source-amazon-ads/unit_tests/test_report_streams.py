@@ -29,6 +29,7 @@ from source_amazon_ads.streams import (
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
+from source_amazon_ads.streams.report_streams.display_report import TACTICS
 from source_amazon_ads.streams.report_streams.report_streams import (
     RecordType,
     ReportGenerationFailure,
@@ -196,14 +197,14 @@ def test_display_report_stream(config):
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"profile": profiles[0], "reportDate": "20210725"}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+    assert len(metrics) == METRICS_COUNT * len(stream.metrics_map) * len(TACTICS)
 
     profiles = make_profiles(profile_type="vendor")
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice["profile"] = profiles[0]
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     # Skip asins record for vendor profiles
-    assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1)
+    assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1) * len(TACTICS)
 
 
 @pytest.mark.parametrize(
@@ -376,15 +377,15 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
     [
         (
             [
-                (lambda x: x <= 5, "SUCCESS", None),
+                (lambda x: x <= 10, "SUCCESS", None),
             ],
-            5,
+            10,
         ),
         (
             [
-                (lambda x: x > 5, "SUCCESS", None),
+                (lambda x: x > 10, "SUCCESS", None),
             ],
-            10,
+            20,
         ),
         (
             [
@@ -398,7 +399,7 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
                 (lambda x: x >= 6 and x <= 10, None, "2021-01-02 03:23:05"),
                 (lambda x: x >= 11, "SUCCESS", "2021-01-02 03:24:06"),
             ],
-            15,
+            20,
         ),
         (
             [

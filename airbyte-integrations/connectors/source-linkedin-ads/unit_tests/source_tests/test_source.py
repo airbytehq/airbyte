@@ -3,12 +3,10 @@
 #
 
 
-from unittest.mock import patch
-
 import pytest
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from source_linkedin_ads.source import (
     Accounts,
     AccountUsers,
@@ -42,6 +40,29 @@ TEST_CONFIG: dict = {
     },
 }
 
+TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
+  "start_date": "2021-01-01",
+  "account_ids": [],
+  "credentials": {
+    "auth_method": "oAuth2.0",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token"
+  },
+  "ad_analytics_reports": [
+    {
+      "name": "ShareAdByMonth",
+      "pivot_by": "COMPANY",
+      "time_granularity": "MONTHLY"
+    },
+    {
+      "name": "ShareAdByMonth",
+      "pivot_by": "COMPANY",
+      "time_granularity": "MONTHLY"
+    }
+  ]
+}
+
 
 class TestAllStreams:
     _instance: SourceLinkedinAds = SourceLinkedinAds()
@@ -60,20 +81,6 @@ class TestAllStreams:
     def test_get_authenticator(self, config: dict):
         test = self._instance.get_authenticator(config)
         assert isinstance(test, (Oauth2Authenticator, TokenAuthenticator))
-
-    @pytest.mark.parametrize(
-        "response, check_passed",
-        [
-            (iter({"id": 123}), True),
-            (requests.HTTPError(), False),
-        ],
-        ids=["Success", "Fail"],
-    )
-    def test_check(self, response, check_passed):
-        with patch.object(Accounts, "read_records", return_value=response) as mock_method:
-            result = self._instance.check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
-            mock_method.assert_called()
-            assert check_passed == result[0]
 
     @pytest.mark.parametrize(
         "stream_cls",
@@ -124,7 +131,7 @@ class TestAllStreams:
         ],
     )
     def test_path(self, stream_cls, stream_slice, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.path(stream_slice=stream_slice)
         assert result == expected
 
@@ -174,7 +181,7 @@ class TestAccountUsers:
     stream: AccountUsers = AccountUsers(TEST_CONFIG)
 
     def test_state_checkpoint_interval(self):
-        assert self.stream.state_checkpoint_interval == 500
+        assert self.stream.state_checkpoint_interval == 100
 
     def test_get_updated_state(self):
         state = self.stream.get_updated_state(
@@ -249,7 +256,7 @@ class TestLinkedInAdsAnalyticsStream:
         ],
     )
     def test_base_analytics_params(self, stream_cls, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.base_analytics_params
         assert result == expected
 
@@ -290,7 +297,7 @@ class TestLinkedInAdsAnalyticsStream:
         ],
     )
     def test_request_params(self, stream_cls, slice, expected):
-        stream = stream_cls(TEST_CONFIG)
+        stream = stream_cls(config=TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
         assert expected == result
 
@@ -326,3 +333,10 @@ def test_date_time_to_rfc3339(record, expected):
     stream = Accounts(TEST_CONFIG)
     result = stream._date_time_to_rfc3339(record)
     assert result == expected
+
+
+def test_duplicated_custom_ad_analytics_report():
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceLinkedinAds().streams(TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS)
+    expected_message = "Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {'ShareAdByMonth'}"
+    assert e.value.message == expected_message

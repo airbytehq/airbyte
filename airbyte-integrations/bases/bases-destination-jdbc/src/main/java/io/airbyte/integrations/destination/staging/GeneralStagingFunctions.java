@@ -10,7 +10,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,7 @@ public class GeneralStagingFunctions {
                                                 final TyperDeduper typerDeduper) {
     return () -> {
       log.info("Preparing raw tables in destination started for {} streams", writeConfigs.size());
+      typerDeduper.prepareTables();
       final List<String> queryList = new ArrayList<>();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schema = writeConfig.getOutputSchemaName();
@@ -57,8 +57,6 @@ public class GeneralStagingFunctions {
       }
       log.info("Executing finalization of tables.");
       stagingOperations.executeTransaction(database, queryList);
-
-      typerDeduper.prepareFinalTables();
     };
   }
 
@@ -81,15 +79,6 @@ public class GeneralStagingFunctions {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
-
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamNamespace, streamName);
-      if (!typerDeduperValve.containsKey(streamId)) {
-        typerDeduperValve.addStream(streamId);
-      }
-      if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
-      }
     } catch (final Exception e) {
       stagingOperations.cleanUpStage(database, stageName, stagedFiles);
       log.info("Cleaning stage path {}", stagingPath);

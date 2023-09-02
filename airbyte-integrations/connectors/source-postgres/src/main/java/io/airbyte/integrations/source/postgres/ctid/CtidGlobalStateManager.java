@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,13 +37,16 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes, final CdcState cdcState, final ConfiguredAirbyteCatalog catalog) {
+                                final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+                                final CdcState cdcState,
+                                final ConfiguredAirbyteCatalog catalog) {
     super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodes));
     this.cdcState = cdcState;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(ctidStreams, catalog);
   }
 
-  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final CtidStreams ctidStreams, final ConfiguredAirbyteCatalog catalog) {
+  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final CtidStreams ctidStreams,
+                                                                                  final ConfiguredAirbyteCatalog catalog) {
     final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
     catalog.getStreams().forEach(configuredAirbyteStream -> {
       if (ctidStreams.streamsForCtidSync().contains(configuredAirbyteStream) || configuredAirbyteStream.getSyncMode() != SyncMode.INCREMENTAL) {
@@ -52,8 +59,8 @@ public class CtidGlobalStateManager extends CtidStateManager {
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> filterOutExpiredFileNodes(
-      final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+                                                                                           final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus,
+                                                                                           final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> filteredMap = new HashMap<>();
     pairToCtidStatus.forEach((pair, ctidStatus) -> {
       final AirbyteStreamNameNamespacePair updatedPair = new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
@@ -126,4 +133,5 @@ public class CtidGlobalStateManager extends CtidStateManager {
         .withCursorField(Collections.emptyList())
         .withCursor(null);
   }
+
 }

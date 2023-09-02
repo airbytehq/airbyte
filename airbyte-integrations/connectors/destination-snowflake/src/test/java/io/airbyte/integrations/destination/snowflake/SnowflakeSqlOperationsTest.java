@@ -39,11 +39,11 @@ class SnowflakeSqlOperationsTest {
   void createTableQuery() {
     String expectedQuery = String.format(
         """
-            CREATE TABLE IF NOT EXISTS %s.%s (
-              %s VARCHAR PRIMARY KEY,
-              %s VARIANT,
-              %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
-            ) data_retention_time_in_days = 0;""",
+        CREATE TABLE IF NOT EXISTS %s.%s (
+          %s VARCHAR PRIMARY KEY,
+          %s VARIANT,
+          %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
+        ) data_retention_time_in_days = 0;""",
         SCHEMA_NAME, TABLE_NAME, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     String actualQuery = snowflakeSqlOperations.createTableQuery(db, SCHEMA_NAME, TABLE_NAME);
     assertEquals(expectedQuery, actualQuery);

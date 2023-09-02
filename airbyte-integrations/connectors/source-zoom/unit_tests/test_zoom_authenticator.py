@@ -1,6 +1,11 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import base64
-from http import HTTPStatus
 import unittest
+from http import HTTPStatus
+
 import requests
 import requests_mock
 from source_zoom.components import ServerToServerOauthAuthenticator

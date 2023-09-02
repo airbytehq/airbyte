@@ -6,17 +6,28 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from source_linkedin_ads.streams import (
     Accounts,
     AccountUsers,
     AdCampaignAnalytics,
     AdCreativeAnalytics,
+    AdImpressionDeviceAnalytics,
+    AdMemberCompanyAnalytics,
+    AdMemberCompanySizeAnalytics,
+    AdMemberCountryAnalytics,
+    AdMemberIndustryAnalytics,
+    AdMemberJobFunctionAnalytics,
+    AdMemberJobTitleAnalytics,
+    AdMemberRegionAnalytics,
+    AdMemberSeniorityAnalytics,
     CampaignGroups,
     Campaigns,
+    Conversions,
     Creatives,
 )
 
@@ -59,14 +70,11 @@ class SourceLinkedinAds(AbstractSource):
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
-
+        self._validate_ad_analytics_reports(config)
         config["authenticator"] = self.get_authenticator(config)
         stream = Accounts(config)
-        # need to load the first item only
-        stream.records_limit = 1
         try:
-            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-            return True, None
+            return stream.check_availability(logger)
         except Exception as e:
             return False, e
 
@@ -75,13 +83,47 @@ class SourceLinkedinAds(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Passing config to the streams.
         """
+        self._validate_ad_analytics_reports(config)
         config["authenticator"] = self.get_authenticator(config)
-        return [
+        streams = [
             Accounts(config),
             AccountUsers(config),
-            AdCampaignAnalytics(config),
-            AdCreativeAnalytics(config),
-            CampaignGroups(config),
-            Campaigns(config),
-            Creatives(config),
+            AdCampaignAnalytics(config=config),
+            AdCreativeAnalytics(config=config),
+            AdImpressionDeviceAnalytics(config=config),
+            AdMemberCompanySizeAnalytics(config=config),
+            AdMemberCountryAnalytics(config=config),
+            AdMemberJobFunctionAnalytics(config=config),
+            AdMemberJobTitleAnalytics(config=config),
+            AdMemberIndustryAnalytics(config=config),
+            AdMemberSeniorityAnalytics(config=config),
+            AdMemberRegionAnalytics(config=config),
+            AdMemberCompanyAnalytics(config=config),
+            CampaignGroups(config=config),
+            Campaigns(config=config),
+            Creatives(config=config),
+            Conversions(config=config),
         ]
+
+        return streams + self.get_custom_ad_analytics_reports(config)
+
+    def get_custom_ad_analytics_reports(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = []
+
+        for ad_report in config.get("ad_analytics_reports", []):
+            stream = AdCampaignAnalytics(
+                name=f"Custom{ad_report.get('name')}",
+                pivot_by=ad_report.get("pivot_by"),
+                time_granularity=ad_report.get("time_granularity"),
+                config=config,
+            )
+            streams.append(stream)
+
+        return streams
+
+    def _validate_ad_analytics_reports(self, config: Mapping[str, Any]) -> None:
+        report_names = [x["name"] for x in config.get("ad_analytics_reports", [])]
+        if len(report_names) != len(set(report_names)):
+            report_names = [x["name"] for x in config.get("ad_analytics_reports")]
+            message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {set(name for name in report_names if report_names.count(name) > 1)}"
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)

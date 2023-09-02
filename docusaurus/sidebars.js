@@ -10,7 +10,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md"))
+        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md") || fileName.endsWith("postgres.md"))
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -28,6 +28,27 @@ function getDestinationConnectors() {
     "readme",
   ]);
 }
+
+const sourcePostgres = {
+   type: 'category',
+   label: 'Postgres',
+   link: {
+       type: 'doc',
+       id: 'integrations/sources/postgres',
+   },
+   items: [
+        {
+          type: "doc",
+          label: "Cloud SQL for Postgres",
+          id: "integrations/sources/postgres/cloud-sql-postgres",
+        },
+        {
+        type: "doc",
+        label: "Troubleshooting",
+        id: "integrations/sources/postgres/postgres-troubleshooting",
+        }
+   ],
+};
 
 const sectionHeader = (title) => ({
   type: "html",
@@ -196,7 +217,7 @@ const connectorCatalog = {
       link: {
         type: "generated-index",
       },
-      items: getSourceConnectors(),
+      items: [sourcePostgres, getSourceConnectors()],
     },
     {
       type: "category",
@@ -309,11 +330,6 @@ const deployAirbyte = {
       type: "doc",
       label: "On Google (GCP)",
       id: "deploying-airbyte/on-gcp-compute-engine",
-    },
-    {
-      type: "doc",
-      label: "On Kubernetes using Kustomize",
-      id: "deploying-airbyte/on-kubernetes",
     },
     {
       type: "doc",
@@ -443,6 +459,10 @@ module.exports = {
       type: "doc",
       id: "troubleshooting",
     },
+    {
+      type: 'doc',
+      id: 'airbyte-enterprise',
+    },
     sectionHeader("Developer Guides"),
     {
       type: "doc",
@@ -497,19 +517,8 @@ module.exports = {
         type: "generated-index",
       },
       items: [
-        /*
-        {
-              type: 'category',
-              label: 'May 2023',
-              link: {
-                  type: 'doc',
-                  id: 'release_notes/may_2023',
-              },
-              items: [
-                'release_notes/upgrading_to_destinations_v2'
-              ],
-        },
-        */
+        "release_notes/upgrading_to_destinations_v2",
+        "release_notes/july_2023",
         "release_notes/june_2023",
         "release_notes/may_2023",
         "release_notes/april_2023",

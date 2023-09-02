@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
@@ -15,12 +17,11 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class CatalogParser {
 
-  public static final String DEFAULT_RAW_TABLE_NAMESPACE = "airbyte_internal";
   private final SqlGenerator<?> sqlGenerator;
   private final String rawNamespace;
 
   public CatalogParser(final SqlGenerator<?> sqlGenerator) {
-    this(sqlGenerator, DEFAULT_RAW_TABLE_NAMESPACE);
+    this(sqlGenerator, DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
   }
 
   public CatalogParser(final SqlGenerator<?> sqlGenerator, final String rawNamespace) {
