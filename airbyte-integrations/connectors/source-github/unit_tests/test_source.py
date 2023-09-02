@@ -130,7 +130,7 @@ def test_get_org_repositories():
     )
 
     config = {
-        "api_url": "https://api.github.com",
+        "api_url": "https://api.github.com/",
         "repository": "airbytehq/integration-test docker/*"
     }
     organisations, repositories = source._get_org_repositories(config, authenticator=None)

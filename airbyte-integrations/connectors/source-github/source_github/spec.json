@@ -67,12 +67,12 @@
       "api_url": {
         "type": "string",
         "examples": [
-          "https://api.github.com",
-          "https://source.selfhosted.com/api/v3"
+          "https://api.github.com/",
+          "https://source.selfhosted.com/api/v3/"
         ],
-        "pattern": "^https?:\\\/\\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\\/=]*)$",
+        "pattern": "^https?:\\\/\\\/[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\\/=]*)\\\/$",
         "title": "API URL",
-        "default": "https://api.github.com",
+        "default": "https://api.github.com/",
         "description": "The API URL to your self-hosted Github instance.",
         "order": 99
       },

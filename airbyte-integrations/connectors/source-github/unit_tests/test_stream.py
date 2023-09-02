@@ -56,7 +56,7 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 @responses.activate
 @patch("time.sleep")
 def test_internal_server_error_retry(time_mock):
-    args = {"api_url": "https://api.github.com", "authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    args = {"api_url": "https://api.github.com/", "authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = CommitCommentReactions(**args)
     stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
@@ -929,7 +929,7 @@ def test_stream_team_members_full_refresh():
     repository_args = {
         "repositories": [], 
         "page_size_for_large_streams": 100,
-        "api_url": "https://api.github.com"
+        "api_url": "https://api.github.com/"
     }
 
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"slug": "team1"}, {"slug": "team2"}])
@@ -966,7 +966,7 @@ def test_stream_commit_comment_reactions_incremental_read():
     repository_args = {
         "repositories": ["airbytehq/integration-test"], 
         "page_size_for_large_streams": 100,
-        "api_url": "https://api.github.com"
+        "api_url": "https://api.github.com/"
     }
     stream = CommitCommentReactions(**repository_args)
 
@@ -1051,7 +1051,7 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
         "repositories": ["org/repos"],
         "page_size_for_large_streams": 30,
         "start_date": "2022-01-01T00:00:00Z",
-        "api_url": "https://api.github.com"
+        "api_url": "https://api.github.com/"
     }
 
     monkeypatch.setattr(constants, "DEFAULT_PAGE_SIZE", 1)
@@ -1170,7 +1170,7 @@ def test_stream_workflow_jobs_read():
     repository_args = {
         "repositories": ["org/repo"],
         "page_size_for_large_streams": 100,
-        "api_url": "https://api.github.com"
+        "api_url": "https://api.github.com/"
     }
     repository_args_with_start_date = {**repository_args, "start_date": "2022-09-02T09:05:00Z"}
 
@@ -1273,7 +1273,7 @@ def test_stream_pull_request_comment_reactions_read():
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 2,
         "repositories": ["airbytehq/airbyte"],
-        "api_url": "https://api.github.com"
+        "api_url": "https://api.github.com/"
     }
     stream = PullRequestCommentReactions(**repository_args_with_start_date)
     stream.page_size = 2

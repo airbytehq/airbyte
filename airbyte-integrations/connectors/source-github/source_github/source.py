@@ -54,7 +54,7 @@ from .streams import (
 )
 from .utils import read_full_refresh
 
-GITHUB_API_DEFAULT = "https://api.github.com"
+GITHUB_API_DEFAULT = "https://api.github.com/"
 
 class SourceGithub(AbstractSource):
     @staticmethod
