@@ -5,77 +5,38 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-import dpath.util
-from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
+from airbyte_cdk.sources.streams.core import Stream
+
+
+
+def read_all_boards(stream_boards: Stream, stream_organizations: Stream):
+    board_ids = set()
+
+    for record in stream_boards.read_records(sync_mode=SyncMode.full_refresh):
+        if record["id"] not in board_ids:
+            board_ids.add(record["id"])
+            yield record["id"]
+
+    for record in stream_organizations.read_records(sync_mode=SyncMode.full_refresh):
+        for board_id in record["idBoards"]:
+            if board_id not in board_ids:
+                board_ids.add(board_id)
+                yield board_id
 
 @dataclass
 class OrdersIdPartitionRouter(SubstreamPartitionRouter):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        """
-        Iterate over each parent stream's record and create a StreamSlice for each record.
 
-        For each stream, iterate over its stream_slices.
-        For each stream slice, iterate over each record.
-        yield a stream slice for each such records.
+        stream_map = {stream_config.stream.name:stream_config.stream for stream_config in self.parent_stream_configs}
 
-        If a parent slice contains no record, emit a slice with parent_record=None.
+        board_ids = set(self.config.get("board_ids", []))
 
-        The template string can interpolate the following values:
-        - parent_stream_slice: mapping representing the parent's stream slice
-        - parent_record: mapping representing the parent record
-        - parent_stream_name: string representing the parent stream name
-        """
-        yielded_board_ids = set() # to track the board ids
-        config_board_ids = set(self.config.get("board_ids", [])) # board ids specified in config
-        for parent_stream_config in self.parent_stream_configs:
-            parent_stream = parent_stream_config.stream
-            parent_stream_name = parent_stream.name
-            parent_field = parent_stream_config.parent_key.eval(self.config)
-            stream_state_field = parent_stream_config.partition_field.eval(self.config)
-            for parent_stream_slice in parent_stream.stream_slices(
-                sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
-            ):
-                empty_parent_slice = True
-                parent_slice = parent_stream_slice
+        for board_id in read_all_boards(stream_boards=stream_map["boards"], stream_organizations=stream_map["organizations"]):
+            if not board_ids or board_id in board_ids:
+                yield {"id": board_id}
 
-                for parent_record in parent_stream.read_records(
-                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
-                ):
-                    # Skip non-records (eg AirbyteLogMessage)
-                    if isinstance(parent_record, AirbyteMessage):
-                        if parent_record.type == Type.RECORD:
-                            parent_record = parent_record.record.data
-                        else:
-                            continue
-                    elif isinstance(parent_record, Record):
-                        parent_record = parent_record.data
-                    try:
-                        board_id_value_or_list = dpath.util.get(parent_record, parent_field)
-                    except KeyError:
-                        pass
-                    else:
-                        empty_parent_slice = False
-                        # iterate idBoards list for organizations stream
-                        if parent_stream_name == 'organizations':
-                            for board_id in board_id_value_or_list:
-                                # skip seen board id
-                                if board_id not in yielded_board_ids:
-                                    # yield id only if specified in config or no ids are specified
-                                    if not config_board_ids or board_id in config_board_ids:
-                                        yielded_board_ids.add(board_id)
-                                        yield {stream_state_field: board_id, "parent_slice": parent_slice}
-                        # skip seen board id
-                        else:
-                            board_id = board_id_value_or_list
-                            if board_id not in yielded_board_ids:
-                                # yield id only if specified in config or no ids are specified
-                                if not config_board_ids or board_id in config_board_ids:
-                                    yielded_board_ids.add(board_id)
-                                    yield {stream_state_field: board_id, "parent_slice": parent_slice}
-                # If the parent slice contains no records,
-                if empty_parent_slice:
-                    yield from []
