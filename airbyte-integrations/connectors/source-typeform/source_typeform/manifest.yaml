@@ -30,7 +30,6 @@ definitions:
   requester:
     type: HttpRequester
     url_base: https://api.typeform.com/
-    path: '{{ parameters.path }}'
     http_method: GET
     request_parameters: {}
     request_headers: {}
@@ -55,54 +54,21 @@ definitions:
       start_from_page: 1
   paginated_stream:
     type: DeclarativeStream
-    name: '{{ parameters.name }}'
     primary_key: id
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
+        path: '{{ parameters.path }}'
       record_selector:
         $ref: "#/definitions/items_selector"
       paginator:
         $ref: "#/definitions/paginator"
   trim_forms_stream:
-    type: DeclarativeStream
+    $ref: "#/definitions/paginated_stream"
     name: trim_forms
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: https://api.typeform.com/
-        path: forms
-        http_method: GET
-        request_parameters: {}
-        request_headers: {}
-        authenticator:
-          type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
-        request_body_json: {}
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - items
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestOption
-          inject_into: request_parameter
-          field_name: page
-        page_size_option:
-          type: RequestOption
-          field_name: page_size
-          inject_into: request_parameter
-        pagination_strategy:
-          type: PageIncrement
-          page_size: 200
-          start_from_page: 1
+    $parameters:
+      path: forms
   form_id_partition_router:
     - type: SubstreamPartitionRouter
       parent_stream_configs:
@@ -119,12 +85,11 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
+        path: forms/{{ stream_partition.form_id }}
       record_selector:
         $ref: "#/definitions/no_selector"
       partition_router:
         $ref: "#/definitions/form_id_partition_router"
-    $parameters:
-      path: forms/{{ stream_partition.form_id }}
   responses_stream:
     type: DeclarativeStream
     name: responses
@@ -133,6 +98,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
+        path: forms/{{ stream_partition.form_id }}/responses
       record_selector:
         $ref: "#/definitions/items_selector"
       paginator:
@@ -172,8 +138,6 @@ definitions:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    $parameters:
-      path: forms/{{ stream_partition.form_id }}/responses
   webhooks_stream:
     type: DeclarativeStream
     name: webhooks
@@ -182,16 +146,15 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
+        path: forms/{{ stream_partition.form_id }}/webhooks
       record_selector:
         $ref: "#/definitions/items_selector"
       partition_router:
         $ref: "#/definitions/form_id_partition_router"
-    $parameters:
-      path: forms/{{ stream_partition.form_id }}/webhooks
   workspaces_stream:
     $ref: "#/definitions/paginated_stream"
+    name: workspaces
     $parameters:
-      name: workspaces
       path: workspaces
   images_stream:
     type: DeclarativeStream
@@ -207,8 +170,8 @@ definitions:
       path: images
   themes_stream:
     $ref: "#/definitions/paginated_stream"
+    name: themes
     $parameters:
-      name: themes
       path: themes
 
 streams:
