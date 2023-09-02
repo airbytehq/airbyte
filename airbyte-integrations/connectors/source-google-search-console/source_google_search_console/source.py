@@ -61,6 +61,7 @@ class SourceGoogleSearchConsole(AbstractSource):
         return parse_result.geturl()
 
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        # authorization checks
         authorization = config["authorization"]
         if authorization["auth_type"] == "Service":
             try:
@@ -68,6 +69,7 @@ class SourceGoogleSearchConsole(AbstractSource):
             except ValueError:
                 raise Exception("authorization.service_account_info is not valid JSON")
 
+        # custom report validation
         if "custom_reports" in config:
             try:
                 config["custom_reports"] = json.loads(config["custom_reports"])
@@ -79,14 +81,17 @@ class SourceGoogleSearchConsole(AbstractSource):
                     if dimension not in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map:
                         raise Exception(f"dimension: '{dimension}' not found")
 
-        pendulum.parse(config["start_date"])
+        # start date checks
+        pendulum.parse(config.get("start_date", "2021-01-01"))  # `2021-01-01` is the default value
+
+        # the `end_date` checks
         end_date = config.get("end_date")
         if end_date:
             pendulum.parse(end_date)
         config["end_date"] = end_date or pendulum.now().to_date_string()
-
+        # site  urls checks
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
-
+        # data state checks
         config["data_state"] = config.get("data_state", "final")
         return config
 
@@ -182,7 +187,7 @@ class SourceGoogleSearchConsole(AbstractSource):
     def get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             "site_urls": config["site_urls"],
-            "start_date": config["start_date"],
+            "start_date": config.get("start_date", "2021-01-01"),  # `2021-01-01` is the default value
             "end_date": config["end_date"],
             "authenticator": self.get_authenticator(config),
             "data_state": config["data_state"],

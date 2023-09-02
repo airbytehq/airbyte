@@ -177,7 +177,7 @@ definitions:
       $ref: "#/definitions/incremental_sync_base"
 
   products_stream:
-    $ref: "#/definitions/old_stream"    #Products endpoint has 422 error with 2021-11 API version
+    $ref: "#/definitions/old_stream" #Products endpoint has 422 error with 2021-11 API version
     name: "products"
     primary_key: "id"
     $parameters:
@@ -185,7 +185,7 @@ definitions:
       extractor_path: "products"
 
   shop_stream:
-    $ref: "#/definitions/old_stream_without_extractor"    #Products endpoint has 422 error with 2021-11 API version
+    $ref: "#/definitions/old_stream_without_extractor" #Products endpoint has 422 error with 2021-11 API version
     name: "shop"
     primary_key: "id"
     $parameters:

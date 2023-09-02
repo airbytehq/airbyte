@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
@@ -32,22 +31,12 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   private static final String NO_PRIVILEGES_ERROR_MESSAGE = "but current role has no privileges on it";
   private static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake";
 
-  private final boolean use1s1t;
-
-  public SnowflakeSqlOperations() {
-    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
-  }
-
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
       if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
-        if (use1s1t) {
-          // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
-          database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
-        } else {
-          database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
-        }
+        // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
+        database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
         schemaSet.add(schemaName);
       }
     } catch (final Exception e) {
@@ -57,41 +46,26 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (use1s1t) {
-      return String.format(
-          """
-          CREATE TABLE IF NOT EXISTS "%s"."%s" (
-            "%s" VARCHAR PRIMARY KEY,
-            "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
-            "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-            "%s" VARIANT
-          ) data_retention_time_in_days = 0;""",
-          schemaName,
-          tableName,
-          JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-          JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-          JavaBaseConstants.COLUMN_NAME_DATA);
-    } else {
-      return String.format(
-          """
-          CREATE TABLE IF NOT EXISTS %s.%s (
-            %s VARCHAR PRIMARY KEY,
-            %s VARIANT,
-            %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
-          ) data_retention_time_in_days = 0;""",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    }
+    return String.format(
+        """
+        CREATE TABLE IF NOT EXISTS "%s"."%s" (
+          "%s" VARCHAR PRIMARY KEY,
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          "%s" VARIANT
+        ) data_retention_time_in_days = 0;""",
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA);
   }
 
   @Override
   public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
-      if (use1s1t) {
-        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
-      } else {
-        return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
-      }
+      return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
     } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
@@ -99,20 +73,12 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   @Override
   public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (use1s1t) {
-      return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
-    } else {
-      return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName);
-    }
+    return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
   }
 
   @Override
   public String dropTableIfExistsQuery(final String schemaName, final String tableName) {
-    if (use1s1t) {
-      return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
-    } else {
-      return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName);
-    }
+    return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
   }
 
   @Override
@@ -130,18 +96,12 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     // (?, ?, ?),
     // ...
     final String insertQuery;
-    if (use1s1t) {
-      // Note that the column order is weird here - that's intentional, to avoid needing to change
-      // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
-      insertQuery = String.format(
-          "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
-    } else {
-      insertQuery = String.format(
-          "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    }
+    // Note that the column order is weird here - that's intentional, to avoid needing to change
+    // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
+    insertQuery = String.format(
+        "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
   }

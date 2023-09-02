@@ -8,19 +8,16 @@ import re
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-from urllib.parse import parse_qsl, urljoin, urlparse
+from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_zendesk_support.ZendeskSupportAvailabilityStrategy import ZendeskSupportAvailabilityStrategy
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -51,10 +48,6 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -148,10 +141,6 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return ZendeskSupportAvailabilityStrategy()
-
     def path(self, **kwargs):
         return self.name
 
@@ -163,26 +152,6 @@ class SourceZendeskSupportStream(BaseZendeskSupportStream):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
-
-    def get_api_records_count(self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
-        """
-        Count stream records before generating the future requests
-        to then correctly generate the pagination parameters.
-        """
-
-        count_url = urljoin(self.url_base, f"{self.path(stream_state=stream_state, stream_slice=stream_slice)}/count.json")
-
-        start_date = self._start_date
-        params = {}
-        if self.cursor_field and stream_state:
-            start_date = stream_state.get(self.cursor_field)
-        if start_date:
-            params["start_time"] = self.str2datetime(start_date)
-
-        response = self._session.request("get", count_url)
-        records_count = response.json().get("count", {}).get("value", 0)
-
-        return records_count
 
     def request_params(
         self,
@@ -413,10 +382,7 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         parsed_state = self.check_stream_state(stream_state)
-        if self.cursor_field:
-            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        else:
-            params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
@@ -469,10 +435,7 @@ class Users(SourceZendeskIncrementalExportStream):
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         parsed_state = self.check_stream_state(stream_state)
-        if self.cursor_field:
-            params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
-        else:
-            params = {"start_time": calendar.timegm(pendulum.parse(self._start_date).utctimetuple())}
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
         # check "start_time" is not in the future
         params["start_time"] = self.check_start_time_param(params["start_time"])
         if self.sideload_param:
@@ -482,8 +445,27 @@ class Users(SourceZendeskIncrementalExportStream):
         return params
 
 
-class Organizations(SourceZendeskSupportStream):
+class Organizations(SourceZendeskIncrementalExportStream):
     """Organizations stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/"""
+
+    response_list_name: str = "organizations"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {"start_time": next_page_token.get(self.cursor_field, parsed_state)}
+        # check "start_time" is not in the future
+        params["start_time"] = self.check_start_time_param(params["start_time"])
+        if self.sideload_param:
+            params["include"] = self.sideload_param
+        if next_page_token:
+            params.update(next_page_token)
+        return params
 
 
 class Posts(CursorPaginationZendeskSupportStream):
@@ -758,7 +740,7 @@ class AttributeDefinitions(FullRefreshZendeskSupportStream):
             definition["condition"] = "all"
             yield definition
         for definition in response.json()["definitions"]["conditions_any"]:
-            definition["confition"] = "any"
+            definition["condition"] = "any"
             yield definition
 
     def path(self, *args, **kwargs) -> str:
@@ -801,6 +783,13 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         return {}
+
+
+class UserFields(FullRefreshZendeskSupportStream):
+    """User Fields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "user_fields"
 
 
 class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):

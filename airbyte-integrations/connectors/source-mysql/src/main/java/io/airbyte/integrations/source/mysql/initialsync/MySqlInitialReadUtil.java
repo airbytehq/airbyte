@@ -18,6 +18,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
@@ -153,6 +154,7 @@ public class MySqlInitialReadUtil {
         new MySqlCdcStateHandler(stateManager),
         metadataInjector,
         MySqlCdcProperties.getDebeziumProperties(database),
+        DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
         emittedAt,
         false);
 
