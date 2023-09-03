@@ -86,7 +86,7 @@
           {
             "type": "object",
             "title": "Service Account Key Authentication",
-            "required": ["auth_type", "service_account_info", "email"],
+            "required": ["auth_type", "service_account_info"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -105,7 +105,7 @@
               "email": {
                 "title": "Admin Email",
                 "type": "string",
-                "description": "The email of the user which has permissions to access the Google Workspace Admin APIs."
+                "description": "The email of the user which has permissions to access the Google Workspace Admin APIs. To use domain-wide delegation is required for service account. If not provided, the service account email address must be given access permissions to view the Google Search Console project you choose."
               }
             }
           }

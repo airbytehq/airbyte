@@ -207,5 +207,5 @@ class SourceGoogleSearchConsole(AbstractSource):
         elif auth_type == "Service":
             return ServiceAccountAuthenticator(
                 service_account_info=authorization["service_account_info"],
-                email=authorization["email"],
+                email=authorization.get("email"),
             )
