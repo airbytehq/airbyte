@@ -3,7 +3,7 @@
 * An Active [Shopify store](https://www.shopify.com)
 * Granted permissions to [Access Client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners and mandatory for partners)
 
-::: note
+:::note
 
 If you previously used the `API Password` authentication method, please switch to the `OAuth2.0`, as the API Password will be deprecated shortly. If you prefer to continue using `API Password`, the option will remain available in `Airbyte Open-Source`.
 
