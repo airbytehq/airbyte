@@ -3,7 +3,7 @@
 #
 
 import logging
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -342,15 +342,6 @@ class AdGroupBiddingStrategies(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
 
 
-class AdGroupCriterions(GoogleAdsStream):
-    """
-    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id"]
-
-
 class AdGroupCriterionLabels(GoogleAdsStream):
     """
     Ad Group Criterion Labels stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label
@@ -475,16 +466,9 @@ class Labels(GoogleAdsStream):
 
 
 class ChangeStatus(IncrementalGoogleAdsStream):
-    primary_key = None
     cursor_field = "change_status.last_change_date_time"
-
-    def __init__(self, start_date: str = None, conversion_window_days: int = 14, end_date: str = None, **kwargs):
-        if start_date is None:
-            # default value of two month ago is used because Google Ads returns only data for last 90 days otherwise returns error
-            start_date = pendulum.now().subtract(months=2).to_date_string()
-        if end_date is None:
-            end_date = pendulum.now().add(days=1).to_date_string()
-        super().__init__(start_date, conversion_window_days, end_date, **kwargs)
+    range_days = 15
+    days_of_data_storage = 90
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
         query = GoogleAds.convert_schema_into_query(
@@ -500,11 +484,6 @@ class ChangeStatus(IncrementalGoogleAdsStream):
 
 
 class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
-    primary_key = None
-    id_field = None
-    parent_id_field = None
-    cursor_field = None
-
     def __init__(self, parent_stream=None, **kwargs):
         self.parent_stream = parent_stream
         self.parent_stream_name: str = self.parent_stream.name
@@ -515,6 +494,24 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         self.incremental_sieve_logger = cyclic_sieve(self.logger, 10)
 
         self._state = {self.parent_stream_name: {customer.id: None for customer in self.customers}}
+
+    @property
+    @abstractmethod
+    def id_field(self) -> str:
+        "Name of field used for getting records by id"
+        pass
+
+    @property
+    @abstractmethod
+    def parent_id_field(self) -> str:
+        "Field name of id from parent record"
+        pass
+
+    @property
+    @abstractmethod
+    def resource_type(self) -> str:
+        "Resource type used for filtering parent records"
+        pass
 
     @property
     def state(self) -> MutableMapping[str, Any]:
