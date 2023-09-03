@@ -410,6 +410,10 @@ class OrganizationMemberships(CursorPaginationZendeskSupportStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
 
 
+class OrganizationFields(CursorPaginationZendeskSupportStream):
+    """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields"""
+
+
 class AuditLogs(CursorPaginationZendeskSupportStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
 
@@ -848,3 +852,29 @@ class PostCommentVotes(AbstractVotes, HttpSubStream):
         post_id = stream_slice.get("parent").get("post_id")
         comment_id = stream_slice.get("parent").get("id")
         return f"community/posts/{post_id}/comments/{comment_id}/votes"
+
+
+class Articles(SourceZendeskIncrementalExportStream):
+    """Articles Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles"""
+
+    response_list_name: str = "articles"
+
+    def path(self, **kwargs) -> str:
+        return "help_center/incremental/articles"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {"sort_by": "updated_at", "sort_order": "asc", "start_time": next_page_token.get(self.cursor_field, parsed_state)}
+        # check "start_time" is not in the future
+        params["start_time"] = self.check_start_time_param(params["start_time"])
+        if self.sideload_param:
+            params["include"] = self.sideload_param
+        if next_page_token:
+            params.update(next_page_token)
+        return params
