@@ -14,15 +14,16 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.exceptions import FacebookRequestError
+from source_facebook_marketing.streams.common import traced_exception
 
 from .common import deep_merge
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
-logger = logging.getLogger("airbyte")
 
-FACEBOOK_BATCH_ERROR_CODE = 960
+logger = logging.getLogger("airbyte")
 
 
 class FBMarketingStream(Stream, ABC):
@@ -31,8 +32,6 @@ class FBMarketingStream(Stream, ABC):
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    # use batch API to retrieve details for each record in a stream
-    use_batch = True
     # this flag will override `include_deleted` option for streams that does not support it
     enable_deleted = True
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
@@ -64,12 +63,14 @@ class FBMarketingStream(Stream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-
-        for record in self.list_objects(params=self.request_params(stream_state=stream_state)):
-            if isinstance(record, AbstractObject):
-                yield record.export_all_data()  # convert FB object to dict
-            else:
-                yield record  # execute_in_batch will emmit dicts
+        try:
+            for record in self.list_objects(params=self.request_params(stream_state=stream_state)):
+                if isinstance(record, AbstractObject):
+                    yield record.export_all_data()  # convert FB object to dict
+                else:
+                    yield record  # execute_in_batch will emmit dicts
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
     @abstractmethod
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
@@ -218,16 +219,19 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         - update state only when we reach the end
         - stop reading when we reached the end
         """
-        records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
-        for record in records_iter:
-            record_cursor_value = pendulum.parse(record[self.cursor_field])
-            if self._cursor_value and record_cursor_value < self._cursor_value:
-                break
-            if not self._include_deleted and self.get_record_deleted_status(record):
-                continue
+        try:
+            records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
+            for record in records_iter:
+                record_cursor_value = pendulum.parse(record[self.cursor_field])
+                if self._cursor_value and record_cursor_value < self._cursor_value:
+                    break
+                if not self._include_deleted and self.get_record_deleted_status(record):
+                    continue
 
-            self._max_cursor_value = self._max_cursor_value or record_cursor_value
-            self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
-            yield record.export_all_data()
+                self._max_cursor_value = self._max_cursor_value or record_cursor_value
+                self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
+                yield record.export_all_data()
 
-        self._cursor_value = self._max_cursor_value
+            self._cursor_value = self._max_cursor_value
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)

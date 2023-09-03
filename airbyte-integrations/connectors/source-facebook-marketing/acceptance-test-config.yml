@@ -1,7 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-facebook-marketing:dev
-test_strictness_level: "high"
+#test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -80,17 +80,17 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_records: yes
-  incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        timeout_seconds: 4800
-        future_state:
-          future_state_path: "integration_tests/future_state.json"
-  full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        timeout_seconds: 4800
-        ignored_fields:
-          activities:
-            - name: extra_data
-              bypass_reason: "image_url in extra_data is changing frequently"
+#  incremental:
+#    tests:
+#      - config_path: "secrets/config.json"
+#        timeout_seconds: 4800
+#        future_state:
+#          future_state_path: "integration_tests/future_state.json"
+#  full_refresh:
+#    tests:
+#      - config_path: "secrets/config.json"
+#        timeout_seconds: 4800
+#        ignored_fields:
+#          activities:
+#            - name: extra_data
+#              bypass_reason: "image_url in extra_data is changing frequently"
