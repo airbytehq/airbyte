@@ -44,6 +44,7 @@ class SourceS3(FileBasedSource):
         for v3_property_key, v3_property_value in s3_spec["properties"].items():
             s4_spec["properties"][v3_property_key] = v3_property_value
             s4_spec["properties"][v3_property_key]["airbyte_hidden"] = True
+            s4_spec["properties"][v3_property_key]["order"] += 100
             s4_spec["properties"][v3_property_key]["description"] = (
                 SourceS3._create_description_with_deprecation_prefix(_V3_DEPRECATION_FIELD_MAPPING.get(v3_property_key, None))
                 + s4_spec["properties"][v3_property_key]["description"]
