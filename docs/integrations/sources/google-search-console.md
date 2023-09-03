@@ -15,52 +15,7 @@ This page contains the setup guide and reference information for the Google Sear
 
 To authenticate the Google Search Console connector, you will need to use one of the following methods:
 
-You can either:
-
-- Use the existing `Service Account` for your Google Project with granted Admin Permissions or permissions to view the Google Search Console project you choose
-- Use your personal Google User Account with oauth. If you choose this option, your account must have permissions to view the Google Search Console project you choose.
-- Create the new `Service Account` credentials for your Google Project, and grant Admin Permissions or permissions to view the Google Search Console project you choose 
-- Follow the `Delegating domain-wide authority` process to obtain the necessary permissions to your google account from the administrator of Workspace to grant Admin Permissions
-- Use e-mail address of `Service Account` to grant access permissions to view the Google Search Console project you choose
-
-### Creating a Google service account
-
-A service account's credentials include a generated email address that is unique and at least one public/private key pair. If domain-wide delegation is enabled, then a client ID is also part of the service account's credentials.
-
-1. Open the [Service accounts page](https://console.developers.google.com/iam-admin/serviceaccounts)
-2. If prompted, select an existing project, or create a new project.
-3. Click `+ Create service account`.
-4. Under Service account details, type a `name`, `ID`, and `description` for the service account, then click `Create`.
-   - Optional: Under `Service account permissions`, select the `IAM roles` to grant to the service account, then click `Continue`.
-   - Optional: Under `Grant users access to this service account`, add the `users` or `groups` that are allowed to use and manage the service account.
-5. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
-6. Optionally: Open `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation` to grant Admin Permissions 
-7. On `Keys` tab click `+ Add key`, then click `Create new key`.
-
-Your new public/private key pair should be now generated and downloaded to your machine as `<project_id>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely. If you lose this key pair, you will need to generate a new one!
-
-### Using the existing Service Account
-
-1. Go to [API Console/Credentials](https://console.cloud.google.com/apis/credentials), check the `Service Accounts` section, click on the Email address of service account you just created.
-3. On `Keys` tab click `+ Add key`, then click `Create new key`.
-3. To use Admin Permissions, click on `Details` tab and find `Show domain-wide delegation`, checkmark the `Enable Google Workspace Domain-wide Delegation`.
-4. Go to [Users and permissions](https://search.google.com/search-console/users) in Search console and add service account email as new user. Recommended role is "Full user".
-
-Your new public/private key pair should be now generated and downloaded to your machine as `<project_id>.json` you can find it in the `Downloads` folder or somewhere else if you use another default destination for downloaded files. This file serves as the only copy of the private key. You are responsible for storing it securely. If you lose this key pair, you will need to generate a new one!
-
-### Note
-
-You can return to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) at any time to view the email address, public key fingerprints, and other information, or to generate additional public/private key pairs. For more details about service account credentials in the API Console, see [Service accounts](https://cloud.google.com/iam/docs/understanding-service-accounts) in the API Console help file.
-
-### Create a Service Account with delegated domain-wide authority
-
-Follow the Google Documentation for performing [Delegating domain-wide authority](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to create a Service account with delegated domain-wide authority. This account must be created by an administrator of your Google Workspace. Please make sure to grant the following `OAuth scopes` to the service user:
-
-- `https://www.googleapis.com/auth/webmasters.readonly`
-
-At the end of this process, you should have JSON credentials to this Google Service Account.
-
-## Step 2: Set up the google search console connector in Airbyte
+#### I: OAuth (Recommended for Airbyte Cloud)
 
 <!-- env:cloud -->
 You can authenticate using your Google Account with OAuth if you are the owner of the Google Search Console property or have view permissions. Follow [Google's instructions](https://support.google.com/webmasters/answer/7687615?sjid=11103698321670173176-NA) to ensure that your account has the necessary permissions (**Owner** or **Full User**) to view the Google Search Console property. This option is recommended for **Airbyte Cloud** users, as it significantly simplifies the setup process and allows you to authenticate the connection [directly from the Airbyte UI](#step-2-set-up-the-google-search-console-connector-in-airbyte).
@@ -100,7 +55,7 @@ You can return to the [API Console/Credentials](https://console.cloud.google.com
 
 #### Note on delegating domain-wide authority to the service account
 
-Domain-wide delegation is a powerful feature that allows service accounts to access users' data across an organization's Google Workspace environment through 'impersonation'. This authority is necessary in certain use cases, such as when a service account needs broad access across multiple users and services within a domain.
+Domain-wide delegation is a powerful feature that allows service accounts to access users' data across an organization's Google Workspace environment through 'impersonation'. This authority is necessary in certain use cases, such as when a service account needs broad access across multiple users and services within a , domain, so when **Admin Email** is used in connection settings.
 
 :::note
 Only the super admin of your Google Workspace domain can enable domain-wide delegation of authority to a service account.
@@ -128,8 +83,9 @@ For more information on this topic, please refer to [this Google article](https:
    <!-- /env:cloud -->
    <!-- env:oss -->
    - **For Airbyte Open Source**:
-      - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then enter the **Admin Email** and **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`
+      - (Recommended) Select **Service Account Key Authorization** from the Authentication dropdown, then **Service Account JSON Key**. For the key, copy and paste the JSON key you obtained during the service account setup. It should begin with `{"type": "service account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ...}`. 
       - Select **Oauth** from the Authentication dropdown, then enter your **Client ID**, **Client Secret**, **Access Token** and **Refresh Token**.
+      - (Optionally) To leverage domain-wide delegation and impersonate another Google Workspace member, enter the **Admin Email**.
    <!-- /env:oss -->
 
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
@@ -221,7 +177,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
+|:-----------------|:-------------|:------|
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -230,11 +186,12 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 ## Changelog
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
-| :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
-| `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                     |
-| `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                     |
-| `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream |
-| `1.2.2`  | 2023-08-23 | [29741](https://github.com/airbytehq/airbyte/pull/29741)                                                      | Handle `HTTP-401`, `HTTP-403` errors |
+|:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| `1.3.3`  | 2023-09-04 | [29242](https://github.com/airbytehq/airbyte/pull/29242/files)                                                | Enable direct service account authentication (without domainw-wide delegation)                                                 |
+| `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                                         |
+| `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                                                                                                    |
+| `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream                                                                                   |
+| `1.2.2`  | 2023-08-23 | [29741](https://github.com/airbytehq/airbyte/pull/29741)                                                      | Handle `HTTP-401`, `HTTP-403` errors                                                                                           |
 | `1.2.1`  | 2023-07-04 | [27952](https://github.com/airbytehq/airbyte/pull/27952)                                                      | Removed deprecated `searchType`, added `discover`(Discover results) and `googleNews`(Results from news.google.com, etc.) types |
 | `1.2.0`  | 2023-06-29 | [27831](https://github.com/airbytehq/airbyte/pull/27831)                                                      | Add new streams                                                                                                                |
 | `1.1.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738)                                                      | License Update: Elv2                                                                                                           |
