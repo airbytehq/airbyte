@@ -35,7 +35,7 @@ acceptance_tests:
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
-              bypass_reason: "can be updated, also it is sometimes integer, sometimes float"
+              bypass_reason: "can be updated by platform"
             - name: customer.optimization_score
               bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
   full_refresh:
