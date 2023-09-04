@@ -17,6 +17,7 @@ public class Ctid {
   final Long page;
   final Long tuple;
   public static final Ctid ZERO = Ctid.of(0, 0);
+
   public static Ctid of(final long page, final long tuple) {
     return new Ctid(page, tuple);
   }

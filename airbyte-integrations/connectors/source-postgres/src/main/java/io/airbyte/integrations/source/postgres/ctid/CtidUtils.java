@@ -21,8 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CtidUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidUtils.class);
   public static final int POSTGRESQL_VERSION_CTID_CAPABLE = 15; // TEMP 14;
+
   public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams,
                                                                         final SyncMode syncMode) {

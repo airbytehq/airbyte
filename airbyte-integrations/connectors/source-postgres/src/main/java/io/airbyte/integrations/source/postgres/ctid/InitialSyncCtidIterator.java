@@ -158,22 +158,22 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   private PreparedStatement getCtidStatement(final Connection connection,
-      final Ctid lowerBound,
-      final Ctid upperBound) {
-    final PreparedStatement ctidStatement = CtidUtils.isCtidCapableDBServer(database) ?
-        createCtidQueryStatement(connection, lowerBound, upperBound)
+                                             final Ctid lowerBound,
+                                             final Ctid upperBound) {
+    final PreparedStatement ctidStatement = CtidUtils.isCtidCapableDBServer(database) ? createCtidQueryStatement(connection, lowerBound, upperBound)
         : createCtidLegacyQueryStatement(connection, lowerBound, upperBound);
     return ctidStatement;
   }
 
   private List<Pair<Ctid, Ctid>> getQueryPlan(final CtidStatus currentCtidStatus) {
-    final List<Pair<Ctid, Ctid>> queryPlan = CtidUtils.isCtidCapableDBServer(database) ?
-        ctidQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
+    final List<Pair<Ctid, Ctid>> queryPlan = CtidUtils.isCtidCapableDBServer(database)
+        ? ctidQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
             tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE)
         : ctidLegacyQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
             tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE, TEMP_TUPLES_IN_PAGE);
     return queryPlan;
   }
+
   private void resetSubQueries(final Long latestFileNode) {
     LOGGER.warn(
         "The latest file node {} for stream {} is not equal to the last file node {} known to Airbyte. Airbyte will sync this table from scratch again",
@@ -231,11 +231,11 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   static List<Pair<Ctid, Ctid>> ctidLegacyQueryPlan(final Ctid startCtid,
-      final long relationSize,
-      final long blockSize,
-      final int chunkSize,
-      final double dataSize,
-      final int tuplesInPage) {
+                                                    final long relationSize,
+                                                    final long blockSize,
+                                                    final int chunkSize,
+                                                    final double dataSize,
+                                                    final int tuplesInPage) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
@@ -284,8 +284,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   public PreparedStatement createCtidLegacyQueryStatement(final Connection connection,
-      final Ctid lowerBound,
-      final Ctid upperBound) {
+                                                          final Ctid lowerBound,
+                                                          final Ctid upperBound) {
     return createCtidQueryStatement(connection, lowerBound, upperBound);
   }
 
