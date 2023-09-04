@@ -1,0 +1,655 @@
+{
+  "streams" : [
+    {
+      "stream" : {
+        "name" : "words_stat_stream",
+        "json_schema" : {
+          "title" : "AdsWordsStat",
+          "type" : "object",
+          "properties" : {
+            "words" : {
+              "title" : "Words",
+              "description" : "\u0411\u043b\u043e\u043a \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u043f\u043e \u043a\u043b\u044e\u0447\u0435\u0432\u044b\u043c \u0444\u0440\u0430\u0437\u0430\u043c",
+              "allOf" : [
+                {
+                  "$ref" : "#/definitions/AdsWord"
+                }
+              ]
+            },
+            "stat" : {
+              "title" : "Stat",
+              "description" : "\u041c\u0430\u0441\u0441\u0438\u0432 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u043f\u043e \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0435.\n            \u041f\u0435\u0440\u0432\u044b\u0439 \u044d\u043b\u0435\u043c\u0435\u043d\u0442 \u043c\u0430\u0441\u0441\u0438\u0432\u0430 \u0441 keyword: \"\u0412\u0441\u0435\u0433\u043e \u043f\u043e \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0438\" \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u0442 \u0441\u0443\u043c\u043c\u0430\u0440\u043d\u0443\u044e \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044e \u043f\u043e \u0432\u0441\u0435\u043c \u043a\u043b\u044e\u0447\u0435\u0432\u044b\u043c \u0444\u0440\u0430\u0437\u0430\u043c.\n            \u041a\u0430\u0436\u0434\u044b\u0439 \u0441\u043b\u0435\u0434\u0443\u044e\u0449\u0438\u0439 \u044d\u043b\u0435\u043c\u0435\u043d\u0442 \u043c\u0430\u0441\u0441\u0438\u0432\u0430 \u0441\u043e\u0434\u0435\u0440\u0436\u0438\u0442 \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044e \u043f\u043e \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e\u0439 \u043a\u043b\u044e\u0447\u0435\u0432\u043e\u0439 \u0444\u0440\u0430\u0437\u0435.\n            \u041e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f 60 \u043a\u043b\u044e\u0447\u0435\u0432\u044b\u0445 \u0444\u0440\u0430\u0437 \u0441 \u043d\u0430\u0438\u0431\u043e\u043b\u044c\u0448\u0438\u043c \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e\u043c \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432.",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/AdsStat"
+              }
+            }
+          },
+          "required" : [
+            "words",
+            "stat"
+          ],
+          "definitions" : {
+            "AdsWordKeyword" : {
+              "title" : "AdsWordKeyword",
+              "type" : "object",
+              "properties" : {
+                "keyword" : {
+                  "title" : "Keyword",
+                  "description" : "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0444\u0440\u0430\u0437\u0430",
+                  "type" : "string"
+                },
+                "count" : {
+                  "title" : "Count",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432 \u043f\u043e \u043a\u043b\u044e\u0447\u0435\u0432\u043e\u0439 \u0444\u0440\u0430\u0437\u0435",
+                  "type" : "integer"
+                }
+              },
+              "required" : [
+                "keyword",
+                "count"
+              ]
+            },
+            "AdsWord" : {
+              "title" : "AdsWord",
+              "type" : "object",
+              "properties" : {
+                "phrase" : {
+                  "title" : "Phrase",
+                  "description" : "\u0424\u0440\u0430\u0437\u043e\u0432\u043e\u0435 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u0435 (\u043c\u0438\u043d\u0443\u0441 \u0444\u0440\u0430\u0437\u044b)",
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                },
+                "strong" : {
+                  "title" : "Strong",
+                  "description" : "\u0422\u043e\u0447\u043d\u043e\u0435 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u0435 (\u043c\u0438\u043d\u0443\u0441 \u0444\u0440\u0430\u0437\u044b)",
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                },
+                "excluded" : {
+                  "title" : "Excluded",
+                  "description" : "\u041c\u0438\u043d\u0443\u0441 \u0444\u0440\u0430\u0437\u044b \u0438\u0437 \u043f\u043e\u0438\u0441\u043a\u0430",
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                },
+                "pluse" : {
+                  "title" : "Pluse",
+                  "description" : "\u0424\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0444\u0440\u0430\u0437\u044b",
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                },
+                "keywords" : {
+                  "title" : "Keywords",
+                  "description" : "\u0411\u043b\u043e\u043a \u0441\u043e \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u043e\u0439 \u043f\u043e \u043a\u043b\u044e\u0447\u0435\u0432\u044b\u043c \u0444\u0440\u0430\u0437\u0430\u043c",
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/AdsWordKeyword"
+                  }
+                },
+                "fixed" : {
+                  "title" : "Fixed",
+                  "description" : "\u0424\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u043a\u043b\u044e\u0447\u0435\u0432\u044b\u0435 \u0444\u0440\u0430\u0437\u044b (true - \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u044b, false - \u0432\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u044b)",
+                  "type" : "boolean"
+                }
+              },
+              "required" : [
+                "fixed"
+              ]
+            },
+            "AdsStat" : {
+              "title" : "AdsStat",
+              "type" : "object",
+              "properties" : {
+                "advertId" : {
+                  "title" : "Advertid",
+                  "description" : "\u0418\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440 \u0420\u041a \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0435 Wildberries",
+                  "type" : "integer"
+                },
+                "keyword" : {
+                  "title" : "Keyword",
+                  "description" : "\u041a\u043b\u044e\u0447\u0435\u0432\u0430\u044f \u0444\u0440\u0430\u0437\u0430",
+                  "type" : "string"
+                },
+                "campaignName" : {
+                  "title" : "Campaignname",
+                  "description" : "\u041d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0420\u041a",
+                  "type" : "string"
+                },
+                "begin" : {
+                  "title" : "Begin",
+                  "description" : "\u0414\u0430\u0442\u0430 \u0437\u0430\u043f\u0443\u0441\u043a\u0430 \u0420\u041a",
+                  "type" : "string",
+                  "format" : "date-time"
+                },
+                "end" : {
+                  "title" : "End",
+                  "description" : "\u0414\u0430\u0442\u0430 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u044f \u0420\u041a",
+                  "type" : "string",
+                  "format" : "date-time"
+                },
+                "views" : {
+                  "title" : "Views",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432",
+                  "type" : "integer"
+                },
+                "clicks" : {
+                  "title" : "Clicks",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432",
+                  "type" : "integer"
+                },
+                "frq" : {
+                  "title" : "Frq",
+                  "description" : "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 (\u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439)",
+                  "type" : "number"
+                },
+                "ctr" : {
+                  "title" : "Ctr",
+                  "description" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c \u043a\u043b\u0438\u043a\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438 (\u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u0447\u0438\u0441\u043b\u0430 \u043a\u043b\u0438\u043a\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u043a\u0430\u0437\u043e\u0432. \u0412\u044b\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0432 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u0445)",
+                  "type" : "number"
+                },
+                "cpc" : {
+                  "title" : "Cpc",
+                  "description" : "\u0421\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043a\u043b\u0438\u043a\u0430, \u20bd",
+                  "type" : "number"
+                },
+                "duration" : {
+                  "title" : "Duration",
+                  "description" : "\u0414\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0420\u041a, \u0432 \u0441\u0435\u043a\u0443\u043d\u0434\u0430\u0445",
+                  "type" : "integer"
+                },
+                "sum" : {
+                  "title" : "Sum",
+                  "description" : "\u0417\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd",
+                  "type" : "number"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "full_stat_stream",
+        "json_schema" : {
+          "title" : "AdsFullStat",
+          "type" : "object",
+          "properties" : {
+            "advertId" : {
+              "title" : "Advertid",
+              "description" : "ID \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0438",
+              "type" : "integer"
+            },
+            "begin" : {
+              "title" : "Begin",
+              "description" : "\u0414\u0430\u0442\u0430 \u0437\u0430\u043f\u0443\u0441\u043a\u0430 \u0420\u041a",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "end" : {
+              "title" : "End",
+              "description" : "\u0414\u0430\u0442\u0430 \u043e\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0438 \u0420\u041a",
+              "type" : "string",
+              "format" : "date-time"
+            },
+            "days" : {
+              "title" : "Days",
+              "description" : "\u0411\u043b\u043e\u043a \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0438 \u043f\u043e \u0434\u043d\u044f\u043c",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/AdsDayStat"
+              }
+            },
+            "views" : {
+              "title" : "Views",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "integer"
+            },
+            "clicks" : {
+              "title" : "Clicks",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "integer"
+            },
+            "frq" : {
+              "title" : "Frq",
+              "description" : "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 (\u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439). \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "number"
+            },
+            "unique_users" : {
+              "title" : "Unique Users",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u0435\u0432\u0448\u0438\u0445 \u0442\u043e\u0432\u0430\u0440. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "integer"
+            },
+            "ctr" : {
+              "title" : "Ctr",
+              "description" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c \u043a\u043b\u0438\u043a\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438. \u041e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u0447\u0438\u0441\u043b\u0430 \u043a\u043b\u0438\u043a\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u043a\u0430\u0437\u043e\u0432. \u0412\u044b\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0432 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u0445. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "number"
+            },
+            "cpc" : {
+              "title" : "Cpc",
+              "description" : "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043a\u043b\u0438\u043a\u0430, \u20bd. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "number"
+            },
+            "sum" : {
+              "title" : "Sum",
+              "description" : "\u0417\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "number"
+            },
+            "atbs" : {
+              "title" : "Atbs",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0439 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "integer"
+            },
+            "orders" : {
+              "title" : "Orders",
+              "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0442\u043e\u0432\u0430\u0440\u0430. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "integer"
+            },
+            "cr" : {
+              "title" : "Cr",
+              "description" : "CR(conversion rate) \u2014 \u044d\u0442\u043e \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043a \u043e\u0431\u0449\u0435\u043c\u0443 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u0441\u0435\u0449\u0435\u043d\u0438\u0439 \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0438. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "number"
+            },
+            "shks" : {
+              "title" : "Shks",
+              "description" : "\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043e \u0442\u043e\u0432\u0430\u0440\u043e\u0432, \u0448\u0442. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "integer"
+            },
+            "sum_price" : {
+              "title" : "Sum Price",
+              "description" : "\u0417\u0430\u043a\u0430\u0437\u043e\u0432 \u043d\u0430 \u0441\u0443\u043c\u043c\u0443, \u20bd. \u0417\u0430 \u0432\u0441\u0435 \u0434\u043d\u0438, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+              "type" : "number"
+            },
+            "boosterStats" : {
+              "title" : "Boosterstats",
+              "description" : "\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u043f\u043e \u0441\u0440\u0435\u0434\u043d\u0435\u0439 \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u0442\u043e\u0432\u0430\u0440\u0430 \u043d\u0430 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430\u0445 \u043f\u043e\u0438\u0441\u043a\u043e\u0432\u043e\u0439 \u0432\u044b\u0434\u0430\u0447\u0438 \u0438 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430 (\u0434\u043b\u044f \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0445 \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0439).",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/AdsFullBoosterStat"
+              }
+            }
+          },
+          "definitions" : {
+            "AdsDayAppNmStat" : {
+              "title" : "AdsDayAppNmStat",
+              "type" : "object",
+              "properties" : {
+                "nmId" : {
+                  "title" : "Nmid",
+                  "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+                  "type" : "integer"
+                },
+                "name" : {
+                  "title" : "Name",
+                  "description" : "\u041d\u0430\u0438\u043c\u0435\u043d\u043e\u0432\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430",
+                  "type" : "string"
+                },
+                "views" : {
+                  "title" : "Views",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432",
+                  "type" : "integer"
+                },
+                "clicks" : {
+                  "title" : "Clicks",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432",
+                  "type" : "integer"
+                },
+                "frq" : {
+                  "title" : "Frq",
+                  "description" : "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 (\u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439)",
+                  "type" : "number"
+                },
+                "unique_users" : {
+                  "title" : "Unique Users",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u0435\u0432\u0448\u0438\u0445 \u0442\u043e\u0432\u0430\u0440",
+                  "type" : "integer"
+                },
+                "ctr" : {
+                  "title" : "Ctr",
+                  "description" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c \u043a\u043b\u0438\u043a\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438. \u041e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u0447\u0438\u0441\u043b\u0430 \u043a\u043b\u0438\u043a\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u043a\u0430\u0437\u043e\u0432. \u0412\u044b\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0432 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u0445.",
+                  "type" : "number"
+                },
+                "cpc" : {
+                  "title" : "Cpc",
+                  "description" : "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043a\u043b\u0438\u043a\u0430, \u20bd",
+                  "type" : "number"
+                },
+                "sum" : {
+                  "title" : "Sum",
+                  "description" : "\u0417\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd",
+                  "type" : "number"
+                },
+                "atbs" : {
+                  "title" : "Atbs",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0439 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443",
+                  "type" : "integer"
+                },
+                "orders" : {
+                  "title" : "Orders",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0442\u043e\u0432\u0430\u0440\u0430",
+                  "type" : "integer"
+                },
+                "cr" : {
+                  "title" : "Cr",
+                  "description" : "CR(conversion rate) \u2014 \u044d\u0442\u043e \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043a \u043e\u0431\u0449\u0435\u043c\u0443 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u0441\u0435\u0449\u0435\u043d\u0438\u0439 \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0438.",
+                  "type" : "number"
+                },
+                "shks" : {
+                  "title" : "Shks",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043e \u0442\u043e\u0432\u0430\u0440\u043e\u0432, \u0448\u0442",
+                  "type" : "integer"
+                },
+                "sum_price" : {
+                  "title" : "Sum Price",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u043e\u0432 \u043d\u0430 \u0441\u0443\u043c\u043c\u0443, \u20bd",
+                  "type" : "integer"
+                }
+              }
+            },
+            "AdsDayAppStat" : {
+              "title" : "AdsDayAppStat",
+              "type" : "object",
+              "properties" : {
+                "appType" : {
+                  "title" : "Apptype",
+                  "description" : "\u0422\u0438\u043f \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u044b (1 - \u0441\u0430\u0439\u0442, 32 - Android, 64 - IOS)",
+                  "type" : "integer"
+                },
+                "nm" : {
+                  "title" : "Nm",
+                  "description" : "\u0411\u043b\u043e\u043a \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0438 \u043f\u043e \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB",
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/AdsDayAppNmStat"
+                  }
+                },
+                "views" : {
+                  "title" : "Views",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "integer"
+                },
+                "clicks" : {
+                  "title" : "Clicks",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "integer"
+                },
+                "frq" : {
+                  "title" : "Frq",
+                  "description" : "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 (\u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439). \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "number"
+                },
+                "unique_users" : {
+                  "title" : "Unique Users",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u0435\u0432\u0448\u0438\u0445 \u0442\u043e\u0432\u0430\u0440. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "integer"
+                },
+                "ctr" : {
+                  "title" : "Ctr",
+                  "description" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c \u043a\u043b\u0438\u043a\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438. \u041e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u0447\u0438\u0441\u043b\u0430 \u043a\u043b\u0438\u043a\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u043a\u0430\u0437\u043e\u0432. \u0412\u044b\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0432 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u0445. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "number"
+                },
+                "cpc" : {
+                  "title" : "Cpc",
+                  "description" : "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043a\u043b\u0438\u043a\u0430, \u20bd. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "number"
+                },
+                "sum" : {
+                  "title" : "Sum",
+                  "description" : "\u0417\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "number"
+                },
+                "atbs" : {
+                  "title" : "Atbs",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0439 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "integer"
+                },
+                "orders" : {
+                  "title" : "Orders",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0442\u043e\u0432\u0430\u0440\u0430. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "integer"
+                },
+                "cr" : {
+                  "title" : "Cr",
+                  "description" : "CR(conversion rate) \u2014 \u044d\u0442\u043e \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043a \u043e\u0431\u0449\u0435\u043c\u0443 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u0441\u0435\u0449\u0435\u043d\u0438\u0439 \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0438. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "number"
+                },
+                "shks" : {
+                  "title" : "Shks",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043e \u0442\u043e\u0432\u0430\u0440\u043e\u0432, \u0448\u0442. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "integer"
+                },
+                "sum_price" : {
+                  "title" : "Sum Price",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u043e\u0432 \u043d\u0430 \u0441\u0443\u043c\u043c\u0443, \u20bd. \u0412 \u0446\u0435\u043b\u043e\u043c \u043f\u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435.",
+                  "type" : "number"
+                }
+              }
+            },
+            "AdsDayStat" : {
+              "title" : "AdsDayStat",
+              "type" : "object",
+              "properties" : {
+                "date" : {
+                  "title" : "Date",
+                  "description" : "\u0414\u0430\u0442\u0430 \u0433\u0435\u043d\u0435\u0440\u0430\u0446\u0438\u0438 \u0431\u043b\u043e\u043a\u0430 \u0434\u0430\u043d\u043d\u044b\u0445. \u0412 \u0431\u043b\u043e\u043a\u0435 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0430\u044e\u0442\u0441\u044f \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0435 \u0434\u0430\u043d\u043d\u044b\u0435 \u0437\u0430 \u044d\u0442\u0443 \u0434\u0430\u0442\u0443.",
+                  "type" : "string",
+                  "format" : "date-time"
+                },
+                "apps" : {
+                  "title" : "Apps",
+                  "description" : "\u0411\u043b\u043e\u043a \u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u0438 \u043e \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0435",
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/definitions/AdsDayAppStat"
+                  }
+                },
+                "views" : {
+                  "title" : "Views",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "integer"
+                },
+                "clicks" : {
+                  "title" : "Clicks",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "integer"
+                },
+                "frq" : {
+                  "title" : "Frq",
+                  "description" : "\u0427\u0430\u0441\u0442\u043e\u0442\u0430 (\u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439). \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "number"
+                },
+                "unique_users" : {
+                  "title" : "Unique Users",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0445 \u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u0435\u043b\u0435\u0439 \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u0435\u0432\u0448\u0438\u0445 \u0442\u043e\u0432\u0430\u0440. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "integer"
+                },
+                "ctr" : {
+                  "title" : "Ctr",
+                  "description" : "\u041f\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c \u043a\u043b\u0438\u043a\u0430\u0431\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u0438. \u041e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u0447\u0438\u0441\u043b\u0430 \u043a\u043b\u0438\u043a\u043e\u0432 \u043a \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u043a\u0430\u0437\u043e\u0432. \u0412\u044b\u0440\u0430\u0436\u0430\u0435\u0442\u0441\u044f \u0432 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430\u0445. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "number"
+                },
+                "cpc" : {
+                  "title" : "Cpc",
+                  "description" : "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043a\u043b\u0438\u043a\u0430, \u20bd. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "number"
+                },
+                "sum" : {
+                  "title" : "Sum",
+                  "description" : "\u0417\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "number"
+                },
+                "atbs" : {
+                  "title" : "Atbs",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0434\u043e\u0431\u0430\u0432\u043b\u0435\u043d\u0438\u0439 \u0442\u043e\u0432\u0430\u0440\u043e\u0432 \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "integer"
+                },
+                "orders" : {
+                  "title" : "Orders",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0442\u043e\u0432\u0430\u0440\u0430. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "integer"
+                },
+                "cr" : {
+                  "title" : "Cr",
+                  "description" : "CR(conversion rate) \u2014 \u044d\u0442\u043e \u043e\u0442\u043d\u043e\u0448\u0435\u043d\u0438\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0430 \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043a \u043e\u0431\u0449\u0435\u043c\u0443 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u0443 \u043f\u043e\u0441\u0435\u0449\u0435\u043d\u0438\u0439 \u0440\u0435\u043a\u043b\u0430\u043c\u043d\u043e\u0439 \u043a\u0430\u043c\u043f\u0430\u043d\u0438\u0438. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "number"
+                },
+                "shks" : {
+                  "title" : "Shks",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u0430\u043d\u043e \u0442\u043e\u0432\u0430\u0440\u043e\u0432, \u0448\u0442. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "integer"
+                },
+                "sum_price" : {
+                  "title" : "Sum Price",
+                  "description" : "\u0417\u0430\u043a\u0430\u0437\u043e\u0432 \u043d\u0430 \u0441\u0443\u043c\u043c\u0443, \u20bd. \u0417\u0430 \u0434\u0435\u043d\u044c, \u043f\u043e \u0432\u0441\u0435\u043c \u0430\u0440\u0442\u0438\u043a\u0443\u043b\u0430\u043c WB \u0438 \u043f\u043b\u0430\u0442\u0444\u043e\u0440\u043c\u0430\u043c.",
+                  "type" : "number"
+                }
+              }
+            },
+            "AdsFullBoosterStat" : {
+              "title" : "AdsFullBoosterStat",
+              "type" : "object",
+              "properties" : {
+                "date" : {
+                  "title" : "Date",
+                  "description" : "\u0414\u0430\u0442\u0430, \u0437\u0430 \u043a\u043e\u0442\u043e\u0440\u0443\u044e \u043f\u0440\u0435\u0434\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u044b \u0434\u0430\u043d\u043d\u044b\u0435.",
+                  "type" : "string",
+                  "format" : "date-time"
+                },
+                "nm" : {
+                  "title" : "Nm",
+                  "description" : "\u0410\u0440\u0442\u0438\u043a\u0443\u043b WB",
+                  "type" : "integer"
+                },
+                "avg_position" : {
+                  "title" : "Avg Position",
+                  "description" : "\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043f\u043e\u0437\u0438\u0446\u0438\u044f \u0442\u043e\u0432\u0430\u0440\u0430 \u043d\u0430 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0430\u0445 \u043f\u043e\u0438\u0441\u043a\u043e\u0432\u043e\u0439 \u0432\u044b\u0434\u0430\u0447\u0438 \u0438 \u043a\u0430\u0442\u0430\u043b\u043e\u0433\u0430.",
+                  "type" : "integer"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    },
+    {
+      "stream" : {
+        "name" : "sea_cat_stat_stream",
+        "json_schema" : {
+          "title" : "AdsSeaCatStat",
+          "type" : "object",
+          "properties" : {
+            "totalViews" : {
+              "title" : "Totalviews",
+              "description" : "\u0421\u0443\u043c\u043c\u0430\u0440\u043d\u043e\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432",
+              "type" : "integer"
+            },
+            "totalClicks" : {
+              "title" : "Totalclicks",
+              "description" : "\u0421\u0443\u043c\u043c\u0430\u0440\u043d\u043e\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432",
+              "type" : "integer"
+            },
+            "totalOrders" : {
+              "title" : "Totalorders",
+              "description" : "\u0421\u0443\u043c\u043c\u0430\u0440\u043d\u043e\u0435 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432",
+              "type" : "integer"
+            },
+            "totalSum" : {
+              "title" : "Totalsum",
+              "description" : "\u0421\u0443\u043c\u043c\u0430\u0440\u043d\u044b\u0435 \u0437\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd",
+              "type" : "number"
+            },
+            "dates" : {
+              "title" : "Dates",
+              "description" : "\u0411\u043b\u043e\u043a \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0438",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/AdsSeaCatDayStat"
+              }
+            }
+          },
+          "definitions" : {
+            "AdsSeaCatDaySeaCatStat" : {
+              "title" : "AdsSeaCatDaySeaCatStat",
+              "type" : "object",
+              "properties" : {
+                "views" : {
+                  "title" : "Views",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043f\u0440\u043e\u0441\u043c\u043e\u0442\u0440\u043e\u0432",
+                  "type" : "integer"
+                },
+                "clicks" : {
+                  "title" : "Clicks",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043a\u043b\u0438\u043a\u043e\u0432",
+                  "type" : "integer"
+                },
+                "orders" : {
+                  "title" : "Orders",
+                  "description" : "\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0437\u0430\u043a\u0430\u0437\u043e\u0432",
+                  "type" : "integer"
+                },
+                "sum" : {
+                  "title" : "Sum",
+                  "description" : "\u0417\u0430\u0442\u0440\u0430\u0442\u044b, \u20bd",
+                  "type" : "number"
+                }
+              }
+            },
+            "AdsSeaCatDayStat" : {
+              "title" : "AdsSeaCatDayStat",
+              "type" : "object",
+              "properties" : {
+                "date" : {
+                  "title" : "Date",
+                  "description" : "\u0414\u0430\u0442\u0430",
+                  "type" : "string",
+                  "format" : "date"
+                },
+                "search" : {
+                  "title" : "Search",
+                  "description" : "\u041f\u043e\u0438\u0441\u043a",
+                  "allOf" : [
+                    {
+                      "$ref" : "#/definitions/AdsSeaCatDaySeaCatStat"
+                    }
+                  ]
+                },
+                "catalog" : {
+                  "title" : "Catalog",
+                  "description" : "\u041a\u0430\u0442\u0430\u043b\u043e\u0433",
+                  "allOf" : [
+                    {
+                      "$ref" : "#/definitions/AdsSeaCatDaySeaCatStat"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    }
+  ]
+}

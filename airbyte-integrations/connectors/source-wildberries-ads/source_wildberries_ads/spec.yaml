@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - credentials
+    - campaign_id
   additionalProperties: false
   properties:
     credentials:
@@ -39,27 +40,29 @@ connectionSpecification:
               description: StaticToken ID in CredentialsCraft for Wildberries
               examples:
                 - 100
+    campaign_id:
+      title: Campaign ID
+      description: The ID of the advertising campaign
+      minimum: 1
+      type: integer
     date_from:
       title: Date from
       type: string
-      description: Start replication date in format YYYY-MM-DD
+      description: Start replication date in format YYYY-MM-DD. Is used only in FullStatStream.
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - 2023-08-01
-    strict_date_from:
-      title: Download data only for one day
-      type: boolean
-      description: Information about all orders or sales with a date EQUAL to the passed "Date from" parameter will be downloaded
     date_to:
       title: Date to
       type: string
-      description: End replication date in format YYYY-MM-DD. Is used only in ReportDetailByPeriodStream!
+      description: End replication date in format YYYY-MM-DD. Is used only in FullStatStream.
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - 2023-08-01
     last_days:
       title: Load last N days
       type: integer
+      description: Is used only in FullStatStream
       minimum: 1
       examples:
         - 7

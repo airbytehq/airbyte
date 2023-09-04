@@ -56,7 +56,7 @@ connectionSpecification:
     last_days:
       title: Load last N days
       type: integer
-      minimum: 0
+      minimum: 1
       examples:
         - 7
     brand_names:

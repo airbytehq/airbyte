@@ -74,7 +74,7 @@ class StatisticsStream(Stream, ABC):
                 if attempts_count < 3:
                     time.sleep(60)  # Wildberries allows 1 request per minute
                 else:
-                    raise Exception(f"Failed to load data from Wildberries API after 3 attempts due 408 error")
+                    raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to 408 error")
             else:
                 raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
 
