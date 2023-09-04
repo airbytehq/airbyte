@@ -42,7 +42,7 @@ def create_index_description(dimensions=3, pod_type="p1"):
 
 @pytest.fixture(scope="module", autouse=True)
 def mock_describe_index():
-    with patch('pinecone.describe_index') as mock:
+    with patch("pinecone.describe_index") as mock:
         mock.return_value = create_index_description()
         yield mock
 
@@ -79,7 +79,9 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(
+        vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000
+    )
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -167,7 +169,7 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer.pinecone_index.query.return_value = MagicMock(matches=[MagicMock(id="doc_id1"), MagicMock(id="doc_id2")])
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_ab_stream": "example_stream2"}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(vector=[0, 0, 0], filter={"_ab_stream": "example_stream2"}, top_k=10_000)
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
 
 
@@ -192,3 +194,29 @@ def test_pinecone_check(describe_mock, describe_throws, reported_dimensions, che
         assert result is None
     else:
         assert result is not None
+
+
+def test_metadata_normalization():
+    indexer = create_pinecone_indexer()
+
+    indexer._pod_type = "p1"
+    indexer.index(
+        [
+            Document(
+                page_content="test",
+                metadata={
+                    "_ab_stream": "abc",
+                    "id": 1,
+                    "a_complex_field": {"a_nested_field": "a_nested_value"},
+                    "too_big": "a" * 40_000,
+                    "small": "a",
+                },
+            ),
+        ],
+        [],
+    )
+    indexer.pinecone_index.upsert.assert_called_with(
+        vectors=((ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test", "small": "a", "id": 1}),),
+        async_req=True,
+        show_progress=False,
+    )

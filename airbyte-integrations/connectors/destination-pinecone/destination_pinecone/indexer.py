@@ -4,10 +4,13 @@
 
 import itertools
 import uuid
-from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Optional
 
 import pinecone
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
+from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -17,36 +20,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     Type,
 )
 from destination_pinecone.config import PineconeIndexingModel
-from destination_pinecone.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
-from destination_pinecone.embedder import Embedder
 from destination_pinecone.measure_time import measure_time
-from destination_pinecone.utils import format_exception
-from langchain.schema import Document
-
-
-class Indexer(ABC):
-    def __init__(self, config: Any, embedder: Embedder):
-        self.config = config
-        self.embedder = embedder
-        pass
-
-    def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
-        pass
-
-    def post_sync(self) -> List[AirbyteMessage]:
-        return []
-
-    @abstractmethod
-    def index(self, document_chunks: List[Document], delete_ids: List[str]):
-        pass
-
-    @abstractmethod
-    def check(self) -> Optional[str]:
-        pass
-
-    @property
-    def max_metadata_size(self) -> Optional[int]:
-        return None
 
 
 def chunks(iterable, batch_size):
@@ -61,6 +35,8 @@ def chunks(iterable, batch_size):
 # large enough to speed up processing, small enough to not hit pinecone request limits
 PINECONE_BATCH_SIZE = 40
 
+MAX_METADATA_SIZE = 40_960 - 10_000
+
 
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
@@ -70,7 +46,7 @@ class PineconeIndexer(Indexer):
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
 
         self.pinecone_index = pinecone.GRPCIndex(config.index)
-        self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
+        self.embed_fn = measure_time(self.embedder.embed_texts)
         self.embedding_dimensions = embedder.embedding_dimensions
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
@@ -98,6 +74,25 @@ class PineconeIndexer(Indexer):
         if len(vector_ids) > 0:
             self.pinecone_index.delete(ids=vector_ids)
 
+    def _truncate_metadata(self, metadata: dict) -> dict:
+        """
+        Normalize metadata to ensure it is within the size limit and doesn't contain complex objects.
+        """
+        result = {}
+        current_size = 0
+
+        for key, value in metadata.items():
+            if isinstance(value, (str, int, float, bool)) or (isinstance(value, list) and all(isinstance(item, str) for item in value)):
+                # Calculate the size of the key and value
+                item_size = len(str(key)) + len(str(value))
+
+                # Check if adding the item exceeds the size limit
+                if current_size + item_size <= MAX_METADATA_SIZE:
+                    result[key] = value
+                    current_size += item_size
+
+        return result
+
     def index(self, document_chunks, delete_ids):
         if len(delete_ids) > 0:
             self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
@@ -105,7 +100,7 @@ class PineconeIndexer(Indexer):
         pinecone_docs = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
-            metadata = chunk.metadata
+            metadata = self._truncate_metadata(chunk.metadata)
             metadata["text"] = chunk.page_content
             pinecone_docs.append((str(uuid.uuid4()), embedding_vectors[i], metadata))
         async_results = [
@@ -124,8 +119,3 @@ class PineconeIndexer(Indexer):
         except Exception as e:
             return format_exception(e)
         return None
-
-    @property
-    def max_metadata_size(self) -> int:
-        # leave some space for the text field
-        return 40_960 - 10_000
