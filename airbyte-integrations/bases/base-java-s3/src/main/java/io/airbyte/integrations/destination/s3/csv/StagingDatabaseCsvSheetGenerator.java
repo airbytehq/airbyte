@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.s3.csv;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -30,12 +29,16 @@ import java.util.UUID;
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
-  private final boolean use1s1t;
+  private final boolean useDestinationsV2Columns;
   private final List<String> header;
 
   public StagingDatabaseCsvSheetGenerator() {
-    use1s1t = TypingAndDedupingFlag.isDestinationV2();
-    this.header = use1s1t ? JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES : JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+    this(false);
+  }
+
+  public StagingDatabaseCsvSheetGenerator(final boolean useDestinationsV2Columns) {
+    this.useDestinationsV2Columns = useDestinationsV2Columns;
+    this.header = this.useDestinationsV2Columns ? JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES : JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
   }
 
   // TODO is this even used anywhere?
@@ -56,7 +59,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
-    if (use1s1t) {
+    if (useDestinationsV2Columns) {
       return List.of(
           id,
           Timestamp.from(Instant.ofEpochMilli(emittedAt)),

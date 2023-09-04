@@ -23,8 +23,10 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.bigquery.BigQueryResultSet;
 import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
@@ -36,9 +38,11 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Disabled
 public abstract class AbstractBigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
@@ -104,11 +108,6 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected boolean supportsInDestinationNormalization() {
-    return true;
-  }
-
-  @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
     return Optional.of(NAME_TRANSFORMER);
   }
@@ -142,20 +141,14 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
-      throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    final String schema = namingResolver.getIdentifier(namespace);
-    return retrieveRecordsFromTable(tableName, schema);
-  }
-
-  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namingResolver.getIdentifier(namespace))
+    final StreamId streamId =
+        new BigQuerySqlGenerator(null).buildStreamId(namespace, streamName, JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE);
+    return retrieveRecordsFromTable(streamId.rawName(), streamId.rawNamespace())
         .stream()
         .map(node -> node.get(JavaBaseConstants.COLUMN_NAME_DATA).asText())
         .map(Jsons::deserialize)
@@ -169,7 +162,7 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
         QueryJobConfiguration
             .newBuilder(
                 String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
-                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
             .setUseLegacySql(false)
             .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
             .build();

@@ -688,6 +688,10 @@ class IssueWatchers(StartDateJiraStream):
 
     # extract_field = "watchers"
     primary_key = None
+    skip_http_status_codes = [
+        # Issue is not found or the user does not have permission to view it.
+        requests.codes.NOT_FOUND
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
