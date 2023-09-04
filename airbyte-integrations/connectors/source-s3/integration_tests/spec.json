@@ -478,7 +478,7 @@
               },
               "batch_size": {
                 "title": "Record batch size",
-                "description": "Maximum number of records per batch read from the input files. Batches may be smaller if there aren't enough rows in the file. This option can help avoid out-of-memory errors if your data is particularly wide.",
+                "description": "Maximum number of records per batch read from the input files. Batches may be smaller if there aren’t enough rows in the file. This option can help avoid out-of-memory errors if your data is particularly wide.",
                 "default": 65536,
                 "order": 1,
                 "type": "integer"
