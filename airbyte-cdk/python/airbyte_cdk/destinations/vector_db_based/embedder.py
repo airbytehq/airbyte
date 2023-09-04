@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
@@ -115,6 +116,9 @@ class FakeEmbedder(Embedder):
         return OPEN_AI_VECTOR_SIZE
 
 
+CLOUD_DEPLOYMENT_MODE = "cloud"
+
+
 class OpenAICompatibleEmbedder(Embedder):
     def __init__(self, config: OpenAICompatibleEmbeddingConfigModel):
         super().__init__()
@@ -123,6 +127,10 @@ class OpenAICompatibleEmbedder(Embedder):
         self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key, openai_api_base=config.base_url, chunk_size=8191, max_retries=15)  # type: ignore
 
     def check(self) -> Optional[str]:
+        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self.config.base_url.startswith("https://"):
+            return "Base URL must start with https://"
+
         try:
             self.embeddings.embed_query("test")
         except Exception as e:
