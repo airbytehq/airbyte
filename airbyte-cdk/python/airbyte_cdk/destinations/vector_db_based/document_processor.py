@@ -68,8 +68,8 @@ class DocumentProcessor:
         doc = self._generate_document(record)
         if doc is None:
             raise AirbyteTracedException(
-                internal_message="No streams available. Please check permissions",
-                message=f"Record {str(record.data)[:250]}... does not contain any text fields.",
+                internal_message="No text fields found in record",
+                message=f"Record {str(record.data)[:250]}... does not contain any text fields, please check your processing configuration",
                 failure_type=FailureType.config_error,
             )
         chunks = [
