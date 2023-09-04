@@ -5,7 +5,12 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from airbyte_cdk.destinations.vector_db_based.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
+from airbyte_cdk.destinations.vector_db_based.config import (
+    AzureOpenAIEmbeddingConfigModel,
+    CohereEmbeddingConfigModel,
+    FakeEmbeddingConfigModel,
+    OpenAIEmbeddingConfigModel,
+)
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
@@ -106,4 +111,26 @@ class FakeEmbedder(Embedder):
     @property
     def embedding_dimensions(self) -> int:
         # use same vector size as for OpenAI embeddings to keep it realistic
+        return OPEN_AI_VECTOR_SIZE
+
+
+class AzureOpenAIEmbedder(Embedder):
+    def __init__(self, config: AzureOpenAIEmbeddingConfigModel):
+        super().__init__()
+        # Client is set internally
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base)  # type: ignore
+
+    def check(self) -> Optional[str]:
+        try:
+            self.embeddings.embed_query("test")
+        except Exception as e:
+            return format_exception(e)
+        return None
+
+    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+        return self.embeddings.embed_documents(texts)
+
+    @property
+    def embedding_dimensions(self) -> int:
+        # vector size produced by text-embedding-ada-002 model
         return OPEN_AI_VECTOR_SIZE
