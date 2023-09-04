@@ -75,6 +75,9 @@
         "manage_user_fields": {
           "type": ["null", "boolean"]
         },
+        "manage_team_members": {
+          "type": ["null", "string"]
+        },
         "moderate_forums": {
           "type": ["null", "boolean"]
         },

@@ -278,7 +278,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
-      final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+                                                            final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
@@ -361,11 +361,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
-                MODELS_STREAM_NAME + "_2",
-                MODELS_SCHEMA,
-                Field.of(COL_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_MODEL, JsonSchemaType.STRING))
+            MODELS_STREAM_NAME + "_2",
+            MODELS_SCHEMA,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MODEL, JsonSchemaType.STRING))
             .withSupportedSyncModes(
                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
@@ -433,7 +433,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final Set<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
-            .collect(Collectors.toSet()),
+        .collect(Collectors.toSet()),
         recordMessages1,
         names,
         names,
@@ -459,7 +459,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
       if (i <= 3) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first time
+          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first
+          // time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
@@ -848,7 +849,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   protected void assertLsnPositionForSyncShouldIncrementLSN(final Long lsnPosition1,
-      final Long lsnPosition2, final int syncNumber) {
+                                                            final Long lsnPosition2,
+                                                            final int syncNumber) {
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
@@ -859,9 +861,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   /**
-   * This test verifies that multiple states are sent during the CDC process based on number of records.
-   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert
-   * the exact number of messages sent as depends on Debezium.
+   * This test verifies that multiple states are sent during the CDC process based on number of
+   * records. We can ensure that more than one `STATE` type of message is sent, but we are not able to
+   * assert the exact number of messages sent as depends on Debezium.
    *
    * @throws Exception Exception happening in the test.
    */

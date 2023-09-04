@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import os
 
 CONNECTOR_TEST_SUMMARY_URL = "https://connectors.airbyte.com/files/generated_reports/test_summary"

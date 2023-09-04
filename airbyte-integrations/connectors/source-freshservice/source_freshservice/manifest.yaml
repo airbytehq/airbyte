@@ -139,7 +139,7 @@ definitions:
     $parameters:
       path_extractor: "products"
       path: "/products"
-    
+
   vendors_stream:
     $ref: "#/definitions/base_stream"
     name: "vendors"
@@ -171,7 +171,6 @@ definitions:
     $parameters:
       path_extractor: "purchase_orders"
       path: "/purchase_orders"
-
 
 streams:
   - "#/definitions/tickets_stream"

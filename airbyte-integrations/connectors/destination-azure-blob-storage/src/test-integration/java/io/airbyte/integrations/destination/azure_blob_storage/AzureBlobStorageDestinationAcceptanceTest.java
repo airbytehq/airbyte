@@ -80,19 +80,19 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
         .buildAppendBlobClient();
 
     final BlobContainerClient containerClient = streamAppendBlobClient.getContainerClient();
-    var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
+    final var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
         .collect(Collectors.toList());
-    var filteredBlobList = blobItemList.stream()
+    final var filteredBlobList = blobItemList.stream()
         .filter(blob -> blob.getName().startsWith(streamName + "/"))
         .toList();
     if (!filteredBlobList.isEmpty()) {
-      List<AppendBlobClient> clobClientList = new ArrayList<>();
+      final List<AppendBlobClient> clobClientList = new ArrayList<>();
       filteredBlobList.forEach(blobItem -> {
         clobClientList.add(specializedBlobClientBuilder.blobName(blobItem.getName()).buildAppendBlobClient());
       });
       return clobClientList;
     } else {
-      var errorText = String.format("Can not find blob started with: %s/", streamName);
+      final var errorText = String.format("Can not find blob started with: %s/", streamName);
       LOGGER.error(errorText);
       throw new Exception(errorText);
     }
@@ -126,7 +126,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * <li>Construct the Azure Blob client.</li>
    */
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final JsonNode baseConfigJson = getBaseConfigJson();
 
     configJson = Jsons.jsonNode(ImmutableMap.builder()
@@ -160,7 +160,7 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
    * Remove all the Container output from the tests.
    */
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     final BlobServiceClient storageClient =
         new BlobServiceClientBuilder()
             .endpoint(azureBlobStorageDestinationConfig.getEndpointUrl())

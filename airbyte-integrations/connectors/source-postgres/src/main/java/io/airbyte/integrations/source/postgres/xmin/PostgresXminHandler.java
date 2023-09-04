@@ -193,7 +193,7 @@ public class PostgresXminHandler {
   static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
     // Detect whether the source Postgres DB has undergone a single wraparound event.
     return prevRunXminStatus != null && currentXminStatus != null
-      && currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
+        && currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
   }
 
   public static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {

@@ -87,6 +87,9 @@ class CustomAudiences(FBMarketingStream):
 
     entity_prefix = "customaudience"
     enable_deleted = False
+    # The `rule` field is excluded from the list because it caused the error message "Please reduce the amount of data" for certain connections.
+    # https://github.com/airbytehq/oncall/issues/2765
+    fields_exceptions = ["rule"]
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_custom_audiences(params=params)
