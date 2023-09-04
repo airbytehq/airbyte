@@ -97,12 +97,9 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-#### Change Status
-Only provide events for recent 3 months.
-
-
 #### Incremental Campaign Criterion and Ad Group Criterion
 This streams offer support for incremental deletions and is built using the Change Status stream. However, it only provides updates for the most recent three months.
+First sync is full refresh, but the following sync is done by at first reading updates from change_status stream and then syncing records by id. 
 
 ## Supported Streams
 
@@ -198,6 +195,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.9.0`  | 2023-09-14 | [28970](https://github.com/airbytehq/airbyte/pull/28970) | Add incremental deletes for Campaign and Ad Group Criterion streams                                                                  |
 | `0.8.1`  | 2023-09-13 | [30376](https://github.com/airbytehq/airbyte/pull/30376) | Revert pagination changes from 0.8.0                                                                                                 |
 | `0.8.0`  | 2023-09-01 | [30071](https://github.com/airbytehq/airbyte/pull/30071) | Delete start_date from required parameters and fix pagination                                                                        |
 | `0.7.4`  | 2023-07-28 | [28832](https://github.com/airbytehq/airbyte/pull/28832) | Update field descriptions                                                                                                            |
