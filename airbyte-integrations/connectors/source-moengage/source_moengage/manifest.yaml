@@ -59,6 +59,20 @@ definitions:
       inject_into: "request_parameter"
       field_name: "page"
 
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    cursor_field: "{{ parameters.incremental_cursor }}"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P31D"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1M"
+
   email_templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -91,6 +105,7 @@ definitions:
       name: "content_blocks"
       extractor_path: data
       primary_key: "id"
+      incremental_cursor: "updated_at"
       path: "external/campaigns/content-blocks/search"
     retriever:
       $ref: "#/definitions/retriever"
@@ -98,6 +113,8 @@ definitions:
         $ref: "#/definitions/requester_v1"
         request_headers:
           MOE-APPKEY: "{{ config['app_id'] }}"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"  
 
 streams:
   - "#/definitions/email_templates_stream"

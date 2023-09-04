@@ -6,5 +6,6 @@
   "api_secret": "WithSpace",
   "filter": {
     "unknown": ["abc@gmail.com"]
-  }
+  },
+  "start_date": "2099-09-04T00:00:00Z"
 }

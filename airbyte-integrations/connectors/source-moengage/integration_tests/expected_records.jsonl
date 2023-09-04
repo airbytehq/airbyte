@@ -1,0 +1,1 @@
+{"stream":"accounts","data":[{"id": "64f6080c8584d96ee51fd780", "name": "test", "label": "test", "description": "test", "content_type": "HTML", "status": "ACTIVE", "created_by": "test", "created_at": "2023-09-04T16:38:36.939000", "updated_by": "abc@gmail.com", "updated_at": "2023-09-04T16:56:39.615000", "tag_ids": [], "team_ids": ["0"]}],"emitted_at":1691579980301}

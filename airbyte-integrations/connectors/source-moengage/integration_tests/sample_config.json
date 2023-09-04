@@ -6,5 +6,6 @@
   "api_secret": "XXXXXXXXXXXXXX",
   "filter": {
     "updated_by": ["abc@gmail.com"]
-  }
+  },
+  "start_date": "2023-09-04T00:00:00Z"
 }
