@@ -566,9 +566,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 # full refresh sync without parent stream
                 self._state = {
                     self.parent_stream_name: {
-                        customer_id: {
-                            self.parent_cursor_field: pendulum.today().start_of("day").format("YYYY-MM-DD HH:mm:ss.SSSSSS")
-                        }
+                        customer_id: {self.parent_cursor_field: pendulum.today().start_of("day").format("YYYY-MM-DD HH:mm:ss.SSSSSS")}
                     }
                 }
 

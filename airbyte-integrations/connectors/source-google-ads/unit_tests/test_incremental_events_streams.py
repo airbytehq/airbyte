@@ -7,7 +7,7 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import SyncMode
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ChangeStatus, CampaignCriterion, cyclic_sieve
+from source_google_ads.streams import CampaignCriterion, ChangeStatus, cyclic_sieve
 
 from .common import MockGoogleAdsClient as MockGoogleAdsClient
 
