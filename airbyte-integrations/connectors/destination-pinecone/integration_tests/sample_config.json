@@ -1,6 +1,5 @@
 {
   "indexing": {
-    "mode": "pinecone",
     "pinecone_key": "mykey",
     "pinecone_environment": "myenv",
     "index": "myindex"
@@ -13,6 +12,9 @@
     "chunk_size": 1000,
     "text_fields": [
       "str_col"
+    ],
+    "metadata_fields": [
+      "int_col"
     ]
   }
 }
