@@ -71,6 +71,11 @@ acceptance_tests:
           ads_insights_region:
             - name: cost_per_estimated_ad_recallers
               bypass_reason: can be missing
+          custom_audiences:
+            - name: approximate_count_lower_bound
+              bypass_reason: is changeable
+            - name: approximate_count_upper_bound
+              bypass_reason: is changeable
         empty_streams:
           - name: "ads_insights_action_product_id"
             bypass_reason: "Data not permanent"
