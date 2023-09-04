@@ -1,0 +1,52 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/moengage
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Moengage Spec
+  type: object
+  required:
+    - data_center
+    - data_api_id
+    - data_api_key
+    - app_id
+    - api_secret
+  properties:
+    data_center:
+      type: string
+      title: Nearest Data Center
+      description: >-
+        As per the data center allocated to your destination. Login your dashboard and see the url
+        https://dashboard-{{DATA_CENTER}}.moengage.com
+      airbyte_secret: true
+      examples: 
+        - "01"
+        - "02"
+        - "03"
+        - "04"
+    data_api_id:
+      type: string
+      title: DATA API ID
+      description: >-
+       API ID can be found at settings from dashboard
+       https://dashboard-01.moengage.com/v3/#/settings/api/general
+      airbyte_secret: true
+    data_api_key:
+      type: string
+      title: DATA API KEY
+      description: >-
+       API ID can be found at settings from dashboard
+       https://dashboard-01.moengage.com/v3/#/settings/api/general
+      airbyte_secret: true
+    app_id:
+      type: string
+      title: APP ID
+      description: >-
+       APP ID can be found at settings from dashboard (Mostly same/similar to DATA API ID)
+       https://dashboard-01.moengage.com/v3/#/settings/api/general
+      airbyte_secret: true
+    api_secret:
+      type: string
+      title: DATA API KEY
+      description: >-
+       API SECRET can be found at settings from dashboard, (You may need to generate one and save)
+       https://dashboard-01.moengage.com/v3/#/settings/api/general
+      airbyte_secret: true

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Email_templates schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "template_id": {
+      "type": ["null", "string"]
+    },
+    "template_name": {
+      "type": ["null", "string"]
+    },
+    "is_archived": {
+      "type": ["null", "boolean"]
+    },
+    "builder_supported": {
+      "type": ["null", "boolean"]
+    },
+    "editor": {
+      "type": ["null", "string"]
+    },
+    "created_date": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    }
+  }
+}
