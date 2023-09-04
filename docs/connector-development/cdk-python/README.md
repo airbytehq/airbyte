@@ -1,5 +1,18 @@
 # Connector Development Kit
 
+:::warning
+The project is not accepting new connector contributions using the Python CDK; instead, 
+we are only accepting contributions using Low-Code or Connector Builder. 
+This decision is aimed at improving maintenance and providing a larger connector catalog with higher quality.
+
+The Python CDK offers all the tools and flexibility needed to build any type of connector, 
+but for the scale of the current Airbyte catalog, this flexibility sometimes results in 
+complexity and a lack of testing. For this reason, connectors built using Low-Code or 
+Connector Builder will help us achieve our goal.
+
+You can continue to use the Python CDK to build connectors to help your company or projects.
+:::
+
 :::info
 Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
 :::
