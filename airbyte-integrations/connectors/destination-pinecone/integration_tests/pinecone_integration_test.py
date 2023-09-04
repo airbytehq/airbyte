@@ -63,7 +63,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
         result = self.pinecone_index.query(
-            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_ab_record_id": "2"}, include_metadata=True
+            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_ab_record_id": "mystream_2"}, include_metadata=True
         )
         assert len(result.matches) == 1
         assert (
@@ -76,4 +76,4 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         self._init_pinecone()
         vector_store = Pinecone(self.pinecone_index, embeddings.embed_query, "text")
         result = vector_store.similarity_search("feline animals", 1)
-        assert result[0].metadata["_ab_record_id"] == "2"
+        assert result[0].metadata["_ab_record_id"] == "mystream_2"
