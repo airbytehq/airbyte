@@ -7,6 +7,7 @@ import logging
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from requests import Response
 
@@ -29,7 +30,8 @@ def test_bearer_token_authenticator(test_name, token, expected_header_value):
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token_auth = BearerAuthenticator(token, config, parameters=parameters)
+    token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
+    token_auth = BearerAuthenticator(token_provider, config, parameters=parameters)
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
 
@@ -79,13 +81,14 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
+    token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
     token_auth = ApiKeyAuthenticator(
         request_option=RequestOption(
             inject_into=RequestOptionType.header,
             field_name=header,
             parameters={}
         ),
-        api_token=token,
+        token_provider=token_provider,
         config=config,
         parameters=parameters
     )
@@ -119,13 +122,14 @@ def test_api_key_authenticator_inject(test_name, field_name, token, expected_fie
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
+    token_provider = InterpolatedStringTokenProvider(config=config, api_token=token, parameters=parameters)
     token_auth = ApiKeyAuthenticator(
         request_option=RequestOption(
             inject_into=inject_type,
             field_name=field_name,
             parameters={}
         ),
-        api_token=token,
+        token_provider=token_provider,
         config=config,
         parameters=parameters
     )

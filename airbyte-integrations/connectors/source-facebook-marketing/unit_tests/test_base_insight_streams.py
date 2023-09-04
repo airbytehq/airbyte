@@ -55,6 +55,7 @@ class TestBaseInsightsStream:
         assert stream.action_breakdowns == ["action_type", "action_target_id", "action_destination"]
         assert stream.name == "ads_insights"
         assert stream.primary_key == ["date_start", "account_id", "ad_id"]
+        assert stream.action_report_time == "mixed"
 
     def test_init_override(self, api):
         stream = AdsInsights(

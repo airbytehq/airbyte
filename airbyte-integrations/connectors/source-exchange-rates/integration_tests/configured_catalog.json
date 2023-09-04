@@ -6,6 +6,12 @@
         "json_schema": {
           "type": "object",
           "properties": {
+            "success": {
+              "type": ["null", "boolean"]
+            },
+            "timestamp": {
+              "type": ["null", "integer"]
+            },
             "base": {
               "type": "string"
             },

@@ -3,19 +3,20 @@
 #
 
 from abc import abstractmethod
-from functools import cached_property
+from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, UndefinedParserError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError, UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.types import StreamSlice, StreamState
+from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class AbstractFileBasedStream(Stream):
@@ -37,15 +38,17 @@ class AbstractFileBasedStream(Stream):
     def __init__(
         self,
         config: FileBasedStreamConfig,
-        catalog_schema: Optional[ConfiguredAirbyteCatalog],
+        catalog_schema: Optional[Mapping[str, Any]],
         stream_reader: AbstractFileBasedStreamReader,
-        availability_strategy: AvailabilityStrategy,
+        availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
         parsers: Dict[str, FileTypeParser],
+        validation_policy: AbstractSchemaValidationPolicy,
     ):
         super().__init__()
         self.config = config
-        self._catalog_schema = catalog_schema
+        self.catalog_schema = catalog_schema
+        self.validation_policy = validation_policy
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
@@ -66,15 +69,17 @@ class AbstractFileBasedStream(Stream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         This method acts as an adapter between the generic Stream interface and the file-based's
         stream since file-based streams manage their own states.
         """
+        if stream_slice is None:
+            raise ValueError("stream_slice must be set")
         return self.read_records_from_slice(stream_slice)
 
     @abstractmethod
@@ -85,7 +90,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: StreamState = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This method acts as an adapter between the generic Stream interface and the file-based's
@@ -102,6 +107,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @abstractmethod
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         Return the JSON Schema for a stream.
@@ -122,10 +128,15 @@ class AbstractFileBasedStream(Stream):
             raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
 
     def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
-        return self.config.validation_policy.record_passes_validation_policy(record, self._catalog_schema)
+        if self.validation_policy:
+            return self.validation_policy.record_passes_validation_policy(record=record, schema=self.catalog_schema)
+        else:
+            raise RecordParseError(
+                FileBasedSourceError.UNDEFINED_VALIDATION_POLICY, stream=self.name, validation_policy=self.config.validation_policy
+            )
 
     @cached_property
-    def availability_strategy(self):
+    def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._availability_strategy
 
     @property

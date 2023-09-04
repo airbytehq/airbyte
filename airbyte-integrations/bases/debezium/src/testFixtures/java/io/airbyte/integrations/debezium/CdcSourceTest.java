@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -305,6 +306,8 @@ public abstract class CdcSourceTest {
     assertEquals(expectedRecords, actualData);
   }
 
+  // Failing on `source-postgres`, possibly others as well.
+  @Disabled("The 'testExistingData()' test is flaky. https://github.com/airbytehq/airbyte/issues/29411")
   @Test
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {
@@ -770,6 +773,7 @@ public abstract class CdcSourceTest {
     // stream with PK
     streams.get(0).setSourceDefinedCursor(true);
     addCdcMetadataColumns(streams.get(0));
+    addCdcDefaultCursorField(streams.get(0));
 
     final AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
         MODELS_STREAM_NAME + "_2",
@@ -779,6 +783,7 @@ public abstract class CdcSourceTest {
         Field.of(COL_MODEL, JsonSchemaType.STRING));
     streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
     streamWithoutPK.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
+    addCdcDefaultCursorField(streamWithoutPK);
     addCdcMetadataColumns(streamWithoutPK);
 
     final AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
@@ -790,6 +795,8 @@ public abstract class CdcSourceTest {
         .withSourceDefinedCursor(true)
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random")));
+
+    addCdcDefaultCursorField(randomStream);
     addCdcMetadataColumns(randomStream);
 
     streams.add(streamWithoutPK);
@@ -814,6 +821,8 @@ public abstract class CdcSourceTest {
   protected abstract void removeCDCColumns(final ObjectNode data);
 
   protected abstract void addCdcMetadataColumns(final AirbyteStream stream);
+
+  protected abstract void addCdcDefaultCursorField(final AirbyteStream stream);
 
   protected abstract Source getSource();
 

@@ -22,18 +22,18 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 Each stream will be output into its own table `_airbyte_raw_{stream_name}`. Each table will contain 3 columns:
 
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
-* `_airbyte_data`: a json blob representing with the event data.
+- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
+- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_data`: a json blob representing with the event data.
 
 #### Features
 
-| Feature | Supported |  |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | No |  |
+| Feature                        | Supported |     |
+| :----------------------------- | :-------- | :-- |
+| Full Refresh Sync              | Yes       |     |
+| Incremental - Append Sync      | Yes       |     |
+| Incremental - Append + Deduped | No        |     |
+| Namespaces                     | No        |     |
 
 #### Performance considerations
 
@@ -49,13 +49,13 @@ The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` 
 
 ### Example:
 
-* If `destination_path` is set to `/local/sqlite.db`
-* the local mount is using the `/tmp/airbyte_local` default
-* then all data will be written to `/tmp/airbyte_local/sqlite.db`.
+- If `destination_path` is set to `/local/sqlite.db`
+- the local mount is using the `/tmp/airbyte_local` default
+- then all data will be written to `/tmp/airbyte_local/sqlite.db`.
 
 ## Access Replicated Data Files
 
-If your Airbyte instance is running on the same computer that you are navigating with, you can open your browser and enter [file:///tmp/airbyte\_local](file:///tmp/airbyte_local) to look at the replicated data locally. If the first approach fails or if your Airbyte instance is running on a remote server, follow the following steps to access the replicated files:
+If your Airbyte instance is running on the same computer that you are navigating with, you can open your browser and enter [file:///tmp/airbyte_local](file:///tmp/airbyte_local) to look at the replicated data locally. If the first approach fails or if your Airbyte instance is running on a remote server, follow the following steps to access the replicated files:
 
 1. Access the scheduler container using `docker exec -it airbyte-server bash`
 2. Navigate to the default local mount using `cd /tmp/airbyte_local`
@@ -72,6 +72,6 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-07-25 | [15018](https://github.com/airbytehq/airbyte/pull/15018) | New SQLite destination |
+| Version | Date       | Pull Request                                             | Subject                |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.1.0   | 2022-07-25 | [15018](https://github.com/airbytehq/airbyte/pull/15018) | New SQLite destination |

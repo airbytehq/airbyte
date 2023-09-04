@@ -432,6 +432,23 @@ class Executions(TwilioNestedStream):
         return {"flow_sid": record["sid"]}
 
 
+class Step(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
+    """
+
+    parent_stream = Executions
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+    data_field = "steps"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -626,3 +643,28 @@ class ConversationMessages(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"conversation_sid": record["sid"]}
+
+
+class Users(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/user-resource"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class UserConversations(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations"""
+
+    parent_stream = Users
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "conversations"
+    primary_key = ["account_sid"]
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Users/{stream_slice['user_sid']}/Conversations"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"user_sid": record["sid"]}

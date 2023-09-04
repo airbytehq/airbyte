@@ -4798,14 +4798,6 @@ containing the updated stream needs to be sent.</div>
     "predicateKey" : [ "predicateKey", "predicateKey" ],
     "authFlowType" : "oauth2.0"
   },
-  "authSpecification" : {
-    "auth_type" : "oauth2.0",
-    "oauth2Specification" : {
-      "oauthFlowOutputParameters" : [ [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ], [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ] ],
-      "rootObject" : [ "path", 1 ],
-      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
-    }
-  },
   "jobInfo" : {
     "createdAt" : 0,
     "connectorConfigurationUpdated" : false,
@@ -4894,14 +4886,6 @@ containing the updated stream needs to be sent.</div>
     "oauthConfigSpecification" : { },
     "predicateKey" : [ "predicateKey", "predicateKey" ],
     "authFlowType" : "oauth2.0"
-  },
-  "authSpecification" : {
-    "auth_type" : "oauth2.0",
-    "oauth2Specification" : {
-      "oauthFlowOutputParameters" : [ [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ], [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ] ],
-      "rootObject" : [ "path", 1 ],
-      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
-    }
   },
   "jobInfo" : {
     "createdAt" : 0,
@@ -9931,14 +9915,6 @@ containing the updated stream needs to be sent.</div>
     "predicateKey" : [ "predicateKey", "predicateKey" ],
     "authFlowType" : "oauth2.0"
   },
-  "authSpecification" : {
-    "auth_type" : "oauth2.0",
-    "oauth2Specification" : {
-      "oauthFlowOutputParameters" : [ [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ], [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ] ],
-      "rootObject" : [ "path", 1 ],
-      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
-    }
-  },
   "jobInfo" : {
     "createdAt" : 0,
     "connectorConfigurationUpdated" : false,
@@ -10026,14 +10002,6 @@ containing the updated stream needs to be sent.</div>
     "oauthConfigSpecification" : { },
     "predicateKey" : [ "predicateKey", "predicateKey" ],
     "authFlowType" : "oauth2.0"
-  },
-  "authSpecification" : {
-    "auth_type" : "oauth2.0",
-    "oauth2Specification" : {
-      "oauthFlowOutputParameters" : [ [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ], [ "oauthFlowOutputParameters", "oauthFlowOutputParameters" ] ],
-      "rootObject" : [ "path", 1 ],
-      "oauthFlowInitParameters" : [ [ "oauthFlowInitParameters", "oauthFlowInitParameters" ], [ "oauthFlowInitParameters", "oauthFlowInitParameters" ] ]
-    }
   },
   "jobInfo" : {
     "createdAt" : 0,
@@ -13042,7 +13010,6 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#AttemptStatus"><code>AttemptStatus</code> - </a></li>
     <li><a href="#AttemptStreamStats"><code>AttemptStreamStats</code> - </a></li>
     <li><a href="#AttemptSyncConfig"><code>AttemptSyncConfig</code> - </a></li>
-    <li><a href="#AuthSpecification"><code>AuthSpecification</code> - </a></li>
     <li><a href="#CatalogDiff"><code>CatalogDiff</code> - </a></li>
     <li><a href="#CheckConnectionRead"><code>CheckConnectionRead</code> - </a></li>
     <li><a href="#CheckOperationRead"><code>CheckOperationRead</code> - </a></li>
@@ -13152,7 +13119,6 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#NotificationRead"><code>NotificationRead</code> - </a></li>
     <li><a href="#NotificationSettings"><code>NotificationSettings</code> - </a></li>
     <li><a href="#NotificationType"><code>NotificationType</code> - </a></li>
-    <li><a href="#OAuth2Specification"><code>OAuth2Specification</code> - </a></li>
     <li><a href="#OAuthConfigSpecification"><code>OAuthConfigSpecification</code> - </a></li>
     <li><a href="#OAuthConsentRead"><code>OAuthConsentRead</code> - </a></li>
     <li><a href="#OperationCreate"><code>OperationCreate</code> - </a></li>
@@ -13418,16 +13384,6 @@ containing the updated stream needs to be sent.</div>
       <div class="param">sourceConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">destinationConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">state (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionState">ConnectionState</a></span>  </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
-    <h3><a name="AuthSpecification"><code>AuthSpecification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'></div>
-    <div class="field-items">
-      <div class="param">auth_type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-        <div class="param-enum-header">Enum:</div>
-        <div class="param-enum">oauth2.0</div>
-<div class="param">oauth2Specification (optional)</div><div class="param-desc"><span class="param-type"><a href="#OAuth2Specification">OAuth2Specification</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -13955,7 +13911,6 @@ containing the updated stream needs to be sent.</div>
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationDefinitionSpecification">DestinationDefinitionSpecification</a></span>  </div>
-<div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
 <div class="param">advancedAuth (optional)</div><div class="param-desc"><span class="param-type"><a href="#AdvancedAuth">AdvancedAuth</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
 <div class="param">supportedDestinationSyncModes (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationSyncMode">array[DestinationSyncMode]</a></span>  </div>
@@ -14447,17 +14402,6 @@ containing the updated stream needs to be sent.</div>
           </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="OAuth2Specification"><code>OAuth2Specification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'>An object containing any metadata needed to describe this connector's Oauth flow</div>
-    <div class="field-items">
-      <div class="param">rootObject </div><div class="param-desc"><span class="param-type"><a href="#AnyType">array[oas_any_type_not_mapped]</a></span> A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.
-Examples:
-if oauth parameters were contained inside the top level, rootObject=[] If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials'] If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0] </div>
-<div class="param">oauthFlowInitParameters </div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the rootObject of the referenced field. For example. Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token. If they are not nested in the rootObject, then the array would look like this [['app_secret'], ['app_id']] If they are nested inside an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']] </div>
-<div class="param">oauthFlowOutputParameters </div><div class="param-desc"><span class="param-type"><a href="#array">array[array[String]]</a></span> Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters. This is typically a refresh/access token. Each inner array represents the path in the rootObject of the referenced field. </div>
-    </div>  <!-- field-items -->
-  </div>
-  <div class="model">
     <h3><a name="OAuthConfigSpecification"><code>OAuthConfigSpecification</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -14848,7 +14792,6 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">documentationUrl (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">connectionSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceDefinitionSpecification">SourceDefinitionSpecification</a></span>  </div>
-<div class="param">authSpecification (optional)</div><div class="param-desc"><span class="param-type"><a href="#AuthSpecification">AuthSpecification</a></span>  </div>
 <div class="param">advancedAuth (optional)</div><div class="param-desc"><span class="param-type"><a href="#AdvancedAuth">AdvancedAuth</a></span>  </div>
 <div class="param">jobInfo </div><div class="param-desc"><span class="param-type"><a href="#SynchronousJobRead">SynchronousJobRead</a></span>  </div>
     </div>  <!-- field-items -->

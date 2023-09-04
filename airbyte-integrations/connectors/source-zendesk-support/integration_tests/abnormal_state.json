@@ -30,7 +30,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2222-07-20T10:05:18Z" },
+      "stream_state": { "generated_timestamp": 8001820514 },
       "stream_descriptor": { "name": "tickets" }
     }
   },
@@ -107,6 +107,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "updated_at": "2222-12-11T19:34:06Z" },
+      "stream_descriptor": { "name": "topics" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
       "stream_descriptor": { "name": "organization_memberships" }
     }
@@ -116,6 +123,27 @@
     "stream": {
       "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
       "stream_descriptor": { "name": "ticket_skips" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "custom_roles" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "schedules" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "sla_policies" }
     }
   }
 ]

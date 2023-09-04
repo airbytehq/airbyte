@@ -58,11 +58,11 @@ def buildAirbyteDocker(String customConnector) {
         arch = 'linux/arm64'
     }
 
-    def baseCommand = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
-    // println("Building normalization container: " + baseCommand.join(" "))
+    def cmdArray = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
+    // println("Building normalization container: " + cmdArray.join(" "))
 
     return {
-        commandLine baseCommand
+        commandLine cmdArray
     }
 }
 

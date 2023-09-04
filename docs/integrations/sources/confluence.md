@@ -1,21 +1,23 @@
 # Confluence
 
-This page contains the setup guide and reference information for the 
+This page contains the setup guide and reference information for the
 [Confluence](https://www.atlassian.com/software/confluence) source connector.
 
 ## Prerequisites
 
-* Atlassian API Token
-* Your Confluence domain name
-* Your Confluence login email
+- Atlassian API Token
+- Your Confluence domain name
+- Your Confluence login email
 
 ## Setup guide
-### Step 1: Create an API Token 
 
-For detailed instructions on creating an Atlassian API Token, please refer to the 
+### Step 1: Create an API Token
+
+For detailed instructions on creating an Atlassian API Token, please refer to the
 [official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
 
 ### Step 2: Set up the Confluence connector in Airbyte
+
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
 3. Enter a **Source name** of your choosing.
@@ -27,7 +29,7 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 ## Supported sync modes
 
 | Feature                   | Supported? |
-|:--------------------------|:-----------|
+| :------------------------ | :--------- |
 | Full Refresh Sync         | Yes        |
 | Incremental - Append Sync | No         |
 | Incremental - Dedupe Sync | No         |
@@ -36,19 +38,18 @@ For detailed instructions on creating an Atlassian API Token, please refer to th
 
 ## Supported streams
 
-* [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
-* [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-* [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
-* [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-* [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
-
-
+- [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
+- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
+- [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
 
 :::note
 The `audit` stream requires a Standard or Premium plan.
 :::
 
 ## Data type mapping
+
 The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ## Performance considerations
@@ -58,7 +59,8 @@ The Confluence connector should not run into Confluence API limitations under no
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
 | 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec           |
 | 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831)   | Fix: Spec was not pushed to cache                              |

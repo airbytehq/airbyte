@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Dict
 
 import jsonschema
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test.utils import SecretDict
 from deepdiff import DeepDiff
 from hypothesis import HealthCheck, Verbosity, given, settings

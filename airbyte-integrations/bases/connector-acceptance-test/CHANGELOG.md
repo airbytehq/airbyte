@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.0.3
+Add tests for display_type property
+
+## 1.0.2
+Fix bug in skip_backward_compatibility_tests_fixture, the previous connector version could not be retrieved.
+
+## 1.0.1
+Pin airbyte-protocol-model to <1.0.0.
+
+## 1.0.0
+Bump to Python 3.10, use dagger instead of docker-py in the ConnectorRunner.
+
+## 0.11.5
+Changing test output and adding diff to test_read
+
+## 0.11.4
+Relax checking of `oneOf` common property and allow optional `default` keyword additional to `const` keyword.
+
+## 0.11.3
+Refactor test_oauth_flow_parameters to validate advanced_auth instead of the deprecated authSpecification
+
+## 0.11.2
+Do not enforce spec.json/spec.yaml
+
 ## 0.11.1
 Test connector image labels and make sure they are set correctly and match metadata.yaml.
 

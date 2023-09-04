@@ -12,11 +12,11 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class S3GlueJsonlDestinationAcceptanceTest extends S3BaseJsonlDestinationAcceptanceTest {
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     super.tearDown(testEnv);
 
-    GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
-    try (var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
+    final GlueDestinationConfig glueDestinationConfig = GlueDestinationConfig.getInstance(configJson);
+    try (final var glueTestClient = new GlueTestClient(glueDestinationConfig.getAWSGlueInstance())) {
 
       glueTestClient.purgeDatabase(glueDestinationConfig.getDatabase());
 

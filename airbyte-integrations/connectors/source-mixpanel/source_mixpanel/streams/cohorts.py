@@ -40,6 +40,7 @@ class Cohorts(IncrementalMixpanelStream):
     primary_key: str = "id"
 
     cursor_field = "created"
+    use_cache = True
 
     def path(self, **kwargs) -> str:
         return "cohorts/list"

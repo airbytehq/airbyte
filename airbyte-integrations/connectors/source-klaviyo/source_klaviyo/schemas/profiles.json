@@ -26,7 +26,7 @@
       }
     },
     "links": { "type": ["null", "object"] },
-    "relationships":  { "type": ["null", "object"] },
-    "segments":  { "type": ["null", "object"] }
+    "relationships": { "type": ["null", "object"] },
+    "segments": { "type": ["null", "object"] }
   }
 }

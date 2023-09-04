@@ -4,9 +4,9 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Mapping, Optional
 
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 @dataclass
@@ -18,11 +18,11 @@ class RecordTransformation:
     @abstractmethod
     def transform(
         self,
-        record: Record,
+        record: Mapping[str, Any],
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> Record:
+    ) -> Mapping[str, Any]:
         """
         Transform a record by adding, deleting, or mutating fields.
 
@@ -33,5 +33,5 @@ class RecordTransformation:
         :return: The transformed record
         """
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return other.__dict__ == self.__dict__

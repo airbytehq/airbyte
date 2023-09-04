@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.csv.CSVFormat;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class CsvSerializedBufferTest {
@@ -54,6 +56,11 @@ public class CsvSerializedBufferTest {
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
   private static final String CSV_FILE_EXTENSION = ".csv";
   private static final CSVFormat csvFormat = CSVFormat.newFormat(',');
+
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
+  }
 
   @Test
   public void testUncompressedDefaultCsvFormatWriter() throws Exception {

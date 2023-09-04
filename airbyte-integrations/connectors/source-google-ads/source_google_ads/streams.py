@@ -57,13 +57,13 @@ def chunk_date_range(
     After 2 hours next page tokens will be expired, finally resulting in page token expired error
     Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
-    yesterday = pendulum.yesterday(tz=time_zone)
-    end_date = min(pendulum.parse(end_date), yesterday) if end_date else yesterday
-    start_date = pendulum.parse(start_date)
+    today = pendulum.today(tz=time_zone)
+    end_date = min(pendulum.parse(end_date, tz=time_zone), today) if end_date else today
+    start_date = pendulum.parse(start_date, tz=time_zone)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
     if days_of_data_storage:
-        start_date = max(start_date, pendulum.now().subtract(days=days_of_data_storage - conversion_window))
+        start_date = max(start_date, pendulum.now(tz=time_zone).subtract(days=days_of_data_storage - conversion_window))
 
     # As in to return some state when state in abnormal
     if start_date > end_date:
@@ -203,7 +203,9 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         date_in_latest_record = pendulum.parse(record[self.cursor_field])
                         cursor_value = (max(date_in_current_stream, date_in_latest_record)).to_date_string()
                         self.state = {customer_id: {self.cursor_field: cursor_value}}
-                        self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
+                        # When large amount of data this log produces so much records so the enire log is not usable
+                        # See: https://github.com/airbytehq/oncall/issues/2460
+                        # self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
                         yield record
                         continue
                     self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
@@ -258,6 +260,14 @@ class Accounts(IncrementalGoogleAdsStream):
     primary_key = ["customer.id", "segments.date"]
 
 
+class AccountLabels(GoogleAdsStream):
+    """
+    Account Labels stream: https://developers.google.com/google-ads/api/fields/v14/customer_label
+    """
+
+    primary_key = ["customer_label.resource_name"]
+
+
 class ServiceAccounts(GoogleAdsStream):
     """
     This stream is intended to be used as a service class, not exposed to a user
@@ -285,6 +295,15 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     primary_key = ["campaign_budget.id", "segments.date"]
 
 
+class CampaignBiddingStrategies(IncrementalGoogleAdsStream):
+    """
+    Campaign Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v14/campaign
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
+
+
 class CampaignLabels(GoogleAdsStream):
     """
     Campaign labels stream: https://developers.google.com/google-ads/api/fields/v11/campaign_label
@@ -309,6 +328,42 @@ class AdGroupLabels(GoogleAdsStream):
 
     # Note that this is a string type. Google doesn't return a more convenient identifier.
     primary_key = ["ad_group_label.resource_name"]
+
+
+class AdGroupBiddingStrategies(IncrementalGoogleAdsStream):
+    """
+    Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v14/ad_group
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
+
+
+class AdGroupCriterions(GoogleAdsStream):
+    """
+    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id"]
+
+
+class AdGroupCriterionLabels(GoogleAdsStream):
+    """
+    Ad Group Criterion Labels stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["ad_group_criterion_label.resource_name"]
+
+
+class AdListingGroupCriterions(GoogleAdsStream):
+    """
+    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    """
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id"]
 
 
 class AdGroupAds(IncrementalGoogleAdsStream):
@@ -406,3 +461,11 @@ class Audience(GoogleAdsStream):
     """
 
     primary_key = ["audience.id"]
+
+
+class Labels(GoogleAdsStream):
+    """
+    Labels stream: https://developers.google.com/google-ads/api/fields/v14/label
+    """
+
+    primary_key = ["label.id"]

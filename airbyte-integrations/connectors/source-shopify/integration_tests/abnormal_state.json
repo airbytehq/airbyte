@@ -461,7 +461,7 @@
       }
     }
   },
-    {
+  {
     "type": "STREAM",
     "stream": {
       "stream_state": {
@@ -483,6 +483,17 @@
       },
       "stream_descriptor": {
         "name": "customer_saved_search"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 99999999999999
+      },
+      "stream_descriptor": {
+        "name": "disputes"
       }
     }
   }
