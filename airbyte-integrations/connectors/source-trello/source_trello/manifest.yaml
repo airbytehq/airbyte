@@ -54,7 +54,7 @@ definitions:
   board_id_partition_router:
     - type: CustomPartitionRouter
       class_name:
-        source_trello.components.OrdersIdPartitionRouter
+        source_trello.components.OrderIdsPartitionRouter
       parent_stream_configs:
         - type: ParentStreamConfig
           parent_key: id
