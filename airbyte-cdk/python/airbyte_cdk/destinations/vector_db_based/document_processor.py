@@ -24,6 +24,7 @@ class Chunk:
     metadata: Dict[str, Any]
     stream: str
     namespace: Optional[str] = None
+    embedding: Optional[List[float]] = None
 
 
 class DocumentProcessor:
