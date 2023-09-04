@@ -61,6 +61,8 @@ To get started, create a new collection in your Milvus instance. Make sure that
 * The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
 * There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
 
+### Setting up a collection
+
 When using the Zilliz cloud, this can be done using the UI - in this case only the colleciton name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
 ```
 POST /v1/vector/collections/create
@@ -71,6 +73,17 @@ POST /v1/vector/collections/create
   "vectorField": "vector",
   “primaryField”: “pk”
 }
+```
+
+When using a self-hosted Milvus clustger, the collection needs to be created using the Milvus CLI or Python client. The following commands will create a collection set up for loading data via Airbyte:
+```python
+from pymilvus import CollectionSchema, FieldSchema, DataType
+
+pk = FieldSchema(name="pk",dtype=DataType.INT64, is_primary=True, auto_id=True)
+vector = FieldSchema(name="vector",dtype=DataType.FLOAT_VECTOR,dim=1536)
+schema = CollectionSchema(fields=[id, vector], enable_dynamic_field=True)
+collection = Collection(name="test_collection", schema=schema)
+collection.create_index(field_name="vector", index_params={ "metric_type":"L2", "index_type":"IVF_FLAT", "params":{"nlist":1024} })
 ```
 
 ### Langchain integration

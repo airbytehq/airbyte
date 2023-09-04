@@ -50,6 +50,7 @@ class MilvusIndexer(Indexer):
         self._connect()
 
         self._collection = Collection(self.config.collection)
+        self._collection.load()
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")

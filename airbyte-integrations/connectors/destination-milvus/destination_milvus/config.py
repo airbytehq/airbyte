@@ -25,6 +25,16 @@ class UsernamePasswordAuth(BaseModel):
         schema_extra = {"description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"}
 
 
+class NoAuth(BaseModel):
+    mode: Literal["no_auth"] = Field("no_auth", const=True)
+
+    class Config:
+        title = "No auth"
+        schema_extra = {
+            "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
+        }
+
+
 class TokenAuth(BaseModel):
     mode: Literal["token"] = Field("token", const=True)
     token: str = Field(..., title="API Token", description="API Token for the Milvus instance", airbyte_secret=True)
@@ -44,7 +54,7 @@ class MilvusIndexingConfigModel(BaseModel):
     )
     db: Optional[str] = Field(title="Database Name", description="The database to connect to", default="")
     collection: str = Field(..., title="Collection Name", description="The collection to load data into", order=3)
-    auth: Union[TokenAuth, UsernamePasswordAuth] = Field(
+    auth: Union[TokenAuth, UsernamePasswordAuth, NoAuth] = Field(
         ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2
     )
     vector_field: str = Field(title="Vector Field", description="The field in the entity that contains the vector", default="vector")

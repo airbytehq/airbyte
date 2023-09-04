@@ -30,7 +30,7 @@ class TestMilvusIndexer(unittest.TestCase):
         self.mock_embedder = Mock()
         self.mock_embedder.embedding_dimensions = 128
         self.milvus_indexer = MilvusIndexer(self.mock_config, self.mock_embedder)
-        self.milvus_indexer._create_client = Mock()
+        self.milvus_indexer._create_client = Mock()  # This is mocked out because testing separate processes is hard
         self.milvus_indexer._collection = Mock()
 
     def test_check_returns_expected_result(self):
