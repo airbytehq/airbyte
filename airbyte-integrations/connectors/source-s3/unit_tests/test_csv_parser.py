@@ -444,3 +444,19 @@ class TestCsvParser(AbstractTestParser):
                 [record for record in parser.stream_records(f, FileInfo(key=filepath, size=1, last_modified=pendulum.now()))]
         expected_message = "Unable to parse the csv file. Please check your format options. Please validate delimiter option, looks like some rows have delimiter symbol in its data so we receive more columns than expected."
         assert expected_message == e.value.message
+
+    def test_stream_records_conversation_error(self):
+        filepath = os.path.join(SAMPLE_DIRECTORY, "csv/test_file_invalid_conversation.csv")
+        parser = CsvParser(
+                    format={"filetype": "csv", "delimiter": ",", "newlines_in_values": False},
+                    master_schema={
+                        "id": "integer",
+                        "name": "string",
+                        "value": "integer",
+                    },
+                )
+        with smart_open(filepath, self._get_readmode({"AbstractFileParser": parser})) as f:
+            with pytest.raises(AirbyteTracedException) as e:
+                list(parser.stream_records(f, FileInfo(key=filepath, size=1, last_modified=pendulum.now())))
+        expected_message = "Unable to parse the csv file. Please check your format options. Please validate or provide a data schema, looks like some types cannot be converted. In CSV column #2: CSV conversion error to int64: invalid value '44.2'"
+        assert expected_message == e.value.message
