@@ -42,7 +42,7 @@
       "type": ["null", "number"]
     },
     "customer.optimization_score_weight": {
-      "type": ["null", "number"]
+      "type": ["null", "number", "integer"]
     },
     "customer.pay_per_conversion_eligibility_failure_reasons": {
       "type": ["null", "array"],
