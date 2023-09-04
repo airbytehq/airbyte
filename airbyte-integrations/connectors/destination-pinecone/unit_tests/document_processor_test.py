@@ -221,11 +221,11 @@ def test_process_multiple_chunks_with_relevant_fields():
 @pytest.mark.parametrize(
     "primary_key_value, stringified_primary_key, primary_key",
     [
-        ({"id": 99}, "99", [["id"]]),
-        ({"id": 99, "name": "John Doe"}, "99_John Doe", [["id"], ["name"]]),
-        ({"id": 99, "name": "John Doe", "age": 25}, "99_John Doe_25", [["id"], ["name"], ["age"]]),
-        ({"nested": {"id": "abc"}, "name": "John Doe"}, "abc_John Doe", [["nested", "id"], ["name"]]),
-        ({"nested": {"id": "abc"}}, "abc___not_found__", [["nested", "id"], ["name"]]),
+        ({"id": 99}, "namespace1_stream1_99", [["id"]]),
+        ({"id": 99, "name": "John Doe"}, "namespace1_stream1_99_John Doe", [["id"], ["name"]]),
+        ({"id": 99, "name": "John Doe", "age": 25}, "namespace1_stream1_99_John Doe_25", [["id"], ["name"], ["age"]]),
+        ({"nested": {"id": "abc"}, "name": "John Doe"}, "namespace1_stream1_abc_John Doe", [["nested", "id"], ["name"]]),
+        ({"nested": {"id": "abc"}}, "namespace1_stream1_abc___not_found__", [["nested", "id"], ["name"]]),
     ]
 )
 def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str, Any], stringified_primary_key: str, primary_key: List[List[str]]):
