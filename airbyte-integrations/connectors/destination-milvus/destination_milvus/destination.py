@@ -7,7 +7,6 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
@@ -24,7 +23,6 @@ embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": Fake
 
 class DestinationMilvus(Destination):
     indexer: Indexer
-    processor: DocumentProcessor
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
