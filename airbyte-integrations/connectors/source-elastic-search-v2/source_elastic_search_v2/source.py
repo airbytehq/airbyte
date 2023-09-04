@@ -36,6 +36,16 @@ There are additional required TODOs in the files within the integration_tests fo
 class ElasticSearchV2Stream(HttpStream, ABC):
     url_base = "http://aes-statistic01.prod.dld:9200"
     doc_count = 0
+    date_start = ""
+
+    def __init__(self, date_start):
+        super().__init__()
+        self.date_start = date_start
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "/_search"
 
     @property
     def http_method(self) -> str:
@@ -46,8 +56,8 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         docs = response.json()["hits"]["hits"]
-        self.doc_count += len(docs)
         pit_id = response.json()["pit_id"]
+        self.doc_count += len(docs)
         if response.status_code == 200 and docs != []:
             search_after = docs[len(docs) - 1].get("sort")
             return {"search_after": search_after, "pit_id": pit_id}
@@ -78,92 +88,10 @@ class ElasticSearchV2Stream(HttpStream, ABC):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
 
-        if stream_state == {}:
-            date_filter_start = "2020-01-01"
-        else:
-            date_filter_start = stream_state.get("date")
 
-        self.logger.info("Date filter : {}".format(date_filter_start))
-
-        if next_page_token is None:
-            payload = {
-                "query": {
-                    "bool": {
-                        "filter": [
-                            {
-                                "range": {
-                                    "date": {
-                                        "gte": date_filter_start
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                },
-                "size": 10000,
-                "sort": [
-                    "date"
-                ]
-            }
-
-        else:
-            payload = {
-                "query": {
-                    "query_string": {
-                        "query": "*"
-                    }
-                },
-                "size": 10000,
-                "search_after": next_page_token,
-                "sort": [
-                    "date"
-                ]
-            }
-
-        return json.dumps(payload)
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-
-        hits = response.json()["hits"]["hits"]
-
-        for hit in hits:
-            data = hit["_source"]
-            yield data
-
-
-# Basic incremental stream
-class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, ABC):
-    state_checkpoint_interval = 10
-    _cursor_value = ""
-    pit = ""
-    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "/_search"
-
-    def request_body_data(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: int = 0,
-    ) -> Optional[Union[Mapping, str]]:
-        """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
-
-        If returns a ready text that it will be sent as is.
-        If returns a dict that it will be converted to a urlencoded form.
-        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
-
-        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
-        """
 
         if stream_state == {}:
-            date_filter_start = "2023-08-30"
+            date_filter_start = self.date_start
         else:
             date_filter_start = stream_state.get("date")
 
@@ -214,6 +142,37 @@ class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, ABC):
 
         return payload
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+
+        hits = response.json()["hits"]["hits"]
+
+        try:
+            last_day = hits[len(hits) - 1].get("_source").get("date")
+            # Use day before date to not miss any documents
+            date_day_before = datetime.fromisoformat(last_day) - timedelta(days=1)
+            self._cursor_value = datetime.strftime(date_day_before, "%Y-%m-%d")
+
+        except IndexError as e:
+            self.logger.info("No document found")
+
+        for hit in hits:
+            data = hit["_source"]
+            yield data
+
+
+# Basic incremental stream
+class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, ABC):
+    # point in time
+    pit = ""
+    client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
+    date_start = ""
+
+    def __init__(self, date_start):
+        super().__init__(date_start)
+
     @property
     def cursor_field(self) -> str:
         """
@@ -245,62 +204,6 @@ class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, ABC):
         """State setter, accept state serialized by state getter."""
         self._cursor_value = value[self.cursor_field]
 
-    def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        pagination_complete = False
-
-        next_page_token = None
-        while not pagination_complete:
-            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            request = self._create_prepared_request(
-                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            )
-            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-            logging.getLogger("Request : " + str(request) + ", request args : " + str(request_kwargs))
-
-            if self.use_cache:
-                # use context manager to handle and store cassette metadata
-                with self.cache_file as cass:
-                    self.cassete = cass
-                    # vcr tries to find records based on the request, if such records exist, return from cache file
-                    # else make a request and save record in cache file
-                    response = self._send_request(request, request_kwargs)
-
-            else:
-                response = self._send_request(request, request_kwargs)
-
-            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
-
-            next_page_token = self.next_page_token(response)
-
-            if not next_page_token:
-                pagination_complete = True
-
-                try:
-                    last_day = hits[len(hits) - 1].get("_source").get("date")
-                    # Use day before date to not miss any documents
-                    date_day_before = datetime.fromisoformat(last_day) - timedelta(days=1)
-                    self._cursor_value = datetime.strftime(date_day_before, "%Y-%m-%d")
-
-                except UnboundLocalError as e:
-                    self.logger.info("No document found")
-
-            hits = response.json().get("hits").get("hits")
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
-
 
 # Source
 class SourceElasticSearchV2(AbstractSource):
@@ -324,19 +227,22 @@ class SourceElasticSearchV2(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Creatives(), Campaigns(), Accounts()]
+
+        date_start = config["date_start"]
+
+        return [Creatives(date_start), Campaigns(date_start), Accounts(date_start)]
 
 
 class Creatives(IncrementalElasticSearchV2Stream):
     cursor_field = "date"
     primary_key = "_id"
+    date_start = ""
 
-    def __init__(self):
+    def __init__(self, date_start):
 
+        super().__init__(date_start)
         pit = self.client.open_point_in_time(index="statistics_ad_creative*", keep_alive="1m")
         self.pit = pit
-
-        super().__init__()
 
     def request_body_data(
             self,
@@ -362,12 +268,11 @@ class Campaigns(IncrementalElasticSearchV2Stream):
     pit = ""
     client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
 
-    def __init__(self):
+    def __init__(self, date_start):
 
+        super().__init__(date_start)
         pit = self.client.open_point_in_time(index="statistics_campaign*", keep_alive="1m")
         self.pit = pit
-
-        super().__init__()
 
     def request_body_data(
             self,
@@ -392,74 +297,11 @@ class Accounts(IncrementalElasticSearchV2Stream):
     pit = ""
     client: Elasticsearch = Elasticsearch("http://aes-statistic01.prod.dld:9200")
 
-    def __init__(self):
+    def __init__(self, date_start):
 
+        super().__init__(date_start)
         pit = self.client.open_point_in_time(index="statistics_account*", keep_alive="1m")
         self.pit = pit
-
-        super().__init__()
-
-    def request_body_data(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: int = 0,
-    ) -> Optional[Union[Mapping, str]]:
-        """
-        Override when creating POST/PUT/PATCH requests to populate the body of the request with a non-JSON payload.
-
-        If returns a ready text that it will be sent as is.
-        If returns a dict that it will be converted to a urlencoded form.
-        E.g. {"key1": "value1", "key2": "value2"} => "key1=value1&key2=value2"
-
-        At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
-        """
-
-        if stream_state == {}:
-            date_filter_start = "2023-08-30"
-        else:
-            date_filter_start = stream_state.get("date")
-
-        self.logger.info("Date filter : {}".format(date_filter_start))
-
-        if next_page_token is None:
-            payload = {
-                "query": {
-                    "bool": {
-                        "filter": [
-                            {
-                                "range": {
-                                    "date": {
-                                        "gte": date_filter_start
-                                    }
-                                }
-                            }
-                        ]
-                    }
-                },
-                "size": 10000,
-                "sort": [
-                    "date",
-                    "account"
-                ]
-            }
-
-        else:
-            payload = {
-                "query": {
-                    "query_string": {
-                        "query": "*"
-                    }
-                },
-                "size": 10000,
-                "search_after": next_page_token,
-                "sort": [
-                    "date",
-                    "account"
-                ]
-            }
-
-        return json.dumps(payload)
 
     def request_body_data(
             self,
