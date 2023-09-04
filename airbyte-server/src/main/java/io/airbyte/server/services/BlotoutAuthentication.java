@@ -71,6 +71,7 @@ public class BlotoutAuthentication {
                 .header("origin", origin) // validate edgetag origin
                 .header("token", token) // validate token
                 .build();
+        LOGGER.info(" url " + configs.getBlotoutBaseUrl() + configs.getBlotoutAuthEndpoint());
         HttpResponse response = httpClient.send(request, BodyHandlers.ofString());
         LOGGER.info(" response " + response.body());
         if (response.statusCode() == 200) {
