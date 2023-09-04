@@ -44,7 +44,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             if (isEdgeTagBasedAuthentication(originHeader)) {
                 try {
                     if (!validateEdgeBasedToken(originHeader, token)) {
-                        LOGGER.info(" inside first if ");
                         abortWithUnauthorized(requestContext);
                         LOGGER.error(" return from validateEdgeBasedToken ");
                         return;
