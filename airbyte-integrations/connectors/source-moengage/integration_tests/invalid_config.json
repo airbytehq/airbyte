@@ -3,5 +3,8 @@
   "data_api_id": "wrong",
   "data_api_key": "wrongone",
   "app_id": "lowercase",
-  "api_secret": "WithSpace"
+  "api_secret": "WithSpace",
+  "filter": {
+    "unknown": ["abc@gmail.com"]
+  }
 }

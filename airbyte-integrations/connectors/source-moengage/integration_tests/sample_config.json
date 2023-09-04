@@ -3,5 +3,8 @@
   "data_api_id": "XXXXXXXXXXXXXXXXXXX",
   "data_api_key": "XXXXXXXXXXXXXXXXXXXXXX",
   "app_id": "XXXXXXXXXXXXXXXX",
-  "api_secret": "XXXXXXXXXXXXXX"
+  "api_secret": "XXXXXXXXXXXXXX",
+  "filter": {
+    "updated_by": ["abc@gmail.com"]
+  }
 }
