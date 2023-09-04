@@ -9,7 +9,7 @@
       "type" : "string"
     },
     "value__block_results__height" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block__block__data__txs" : {
       "type" : "array",
@@ -18,14 +18,63 @@
       }
     },
     "value__block__block__header__time" : {
-      "type" : "string"
+      "type" : "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "value__block_results__txs_results" : {
       "type" : "array",
-      "items" : {}
+      "items" : {
+        "type": "object",
+        "properties" : {
+          "code": {
+            "type" : "integer"
+          },
+          "data": {
+            "type" : ["string", "null"]
+          },
+          "info": {
+            "type": "string"
+          },
+          "events": {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "type": {
+                  "type" : "string"
+                },
+                "attributes": {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "properties" : {
+                      "key": {
+                        "type" : "string"
+                      },
+                      "value": {
+                        "type" : "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "gas_used": {
+            "type" : "integer"
+          },
+          "codespace": {
+            "type" : "string"
+          },
+          "gas_wanted": {
+            "type" : "integer"
+          }
+        }
+      }
     },
     "value__block__block__header__height" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block__block_id__parts__hash" : {
       "type" : "string"
@@ -44,7 +93,29 @@
     },
     "value__block_results__end_block_events" : {
       "type" : "array",
-      "items" : {}
+      "id" : "event",
+      "items" : {
+        "type": "object",
+        "properties" : {
+          "type": {
+            "type" : "string"
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type" : "object",
+              "properties" : {
+                "key": {
+                  "type" : "string"
+                },
+                "value": {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "value__block__block__evidence__evidence" : {
       "type" : "array",
@@ -54,14 +125,47 @@
       "type" : "integer"
     },
     "value__block_results__validator_updates" : {
-      "type" : "null"
+      "type" : ["array","null"],
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "power": {
+            "type": "integer"
+          },
+          "pub_key": {
+            "type" : "object"
+          }
+        }
+      }
     },
     "value__block__block__last_commit__height" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block_results__begin_block_events" : {
       "type" : "array",
-      "items" : {}
+      "id" : "event",
+      "items" : {
+        "type": "object",
+        "properties" : {
+          "type": {
+            "type" : "string"
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "type" : "object",
+              "properties" : {
+                "key": {
+                  "type" : "string"
+                },
+                "value": {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "value__block__block__header__evidence_hash" : {
       "type" : "string"
@@ -70,14 +174,32 @@
       "type" : "string"
     },
     "value__block__block__header__version__block" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block__block__header__validators_hash" : {
       "type" : "string"
     },
     "value__block__block__last_commit__signatures" : {
       "type" : "array",
-      "items" : {}
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "signature": {
+            "type" : "string"
+          },
+          "timestamp": {
+            "type" : "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "block_id_flag": {
+            "type" : "integer"
+          },
+          "validator_address": {
+            "type" : "string"
+          }
+        }
+      }
     },
     "value__block__block__header__last_commit_hash" : {
       "type" : "string"
@@ -110,23 +232,23 @@
       "type" : "integer"
     },
     "value__block_results__consensus_param_updates__block__max_gas" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block_results__consensus_param_updates__block__max_bytes" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block_results__consensus_param_updates__evidence__max_bytes" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block_results__consensus_param_updates__validator__pub_key_types" : {
       "type" : "array",
       "items" : {}
     },
     "value__block_results__consensus_param_updates__evidence__max_age_duration" : {
-      "type" : "string"
+      "type" : "integer"
     },
     "value__block_results__consensus_param_updates__evidence__max_age_num_blocks" : {
-      "type" : "string"
+      "type" : "integer"
     }
   },
   "required" : [
