@@ -50,3 +50,27 @@ connectionSpecification:
        API SECRET can be found at settings from dashboard, (You may need to generate one and save)
        https://dashboard-01.moengage.com/v3/#/settings/api/general
       airbyte_secret: true
+    filter:
+      type: object
+      title: Content block stream filter
+      description: >-
+        Pass the Json object as filter to pass to body of content-block stream
+      properties:
+        team_ids:
+          type: array
+          items:
+            type: string
+        updated_by:
+          type: array
+          items:
+            type: string
+        content_type:
+          type: array
+          items:
+            type: string
+        tag_ids:
+          type: array
+          items:
+            type: string
+        search_text:
+            type: string

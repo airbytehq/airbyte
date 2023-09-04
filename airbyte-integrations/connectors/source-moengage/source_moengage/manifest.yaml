@@ -16,6 +16,21 @@ definitions:
       username: "{{ config['data_api_id'] }}"
       password: "{{ config['data_api_key'] }}"
 
+  requester_v1:
+    $ref: "#/definitions/requester"
+    http_method: "POST"
+    request_body_json: 
+      filters: "{{ config['filter'] }}"
+    url_base: "https://api-{{ config['data_center'] }}.moengage.com/v1/"
+    authenticator:
+      type: "BasicHttpAuthenticator"
+      username: "{{ config['app_id'] }}"
+      password: "{{ config['api_secret'] }}"
+
+  requester_v3:
+    $ref: "#/definitions/requester"
+    url_base: "https://api-{{ config['data_center'] }}.moengage.com/v3/"
+
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -56,10 +71,42 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
 
+  custom_segments_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "custom_segments"
+      extractor_path: data
+      primary_key: "id"
+      path: "custom-segments"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester_v3"
+        request_headers:
+          MOE-APPKEY: "{{ config['app_id'] }}"
+
+  content_blocks_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "content_blocks"
+      extractor_path: data
+      primary_key: "id"
+      path: "external/campaigns/content-blocks/search"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester_v1"
+        request_headers:
+          MOE-APPKEY: "{{ config['app_id'] }}"
+
 streams:
   - "#/definitions/email_templates_stream"
+  - "#/definitions/custom_segments_stream"
+  - "#/definitions/content_blocks_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "email_templates"
+    - "custom_segments"
+    - "content_blocks"
