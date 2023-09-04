@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",
     "type": "object",
-    "required": ["credentials", "start_date", "customer_id"],
+    "required": ["credentials", "customer_id"],
     "additionalProperties": true,
     "properties": {
       "credentials": {

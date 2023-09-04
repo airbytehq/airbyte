@@ -27,13 +27,11 @@ acceptance_tests:
           - name: "unhappytable"
             bypass_reason: "Empty testing stream"
           - name: "shopping_performance_report"
-            bypass_reason: "Stream not filled yet."
+            bypass_reason: "No shopping campaign, need item for sale "
           - name: "display_topics_performance_report"
-            bypass_reason: "Next config"
+            bypass_reason: "No data for this date range, tested in next config"
           - name: "click_view"
-            bypass_reason: "Next config"
-          - name: "change_status"
-            bypass_reason: "Next config"
+            bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
@@ -43,147 +41,22 @@ acceptance_tests:
       - config_path: "secrets/config_click_view.json"
         expect_records:
           path: "integration_tests/expected_records_click.jsonl"
-        timeout_seconds: 600
+        timeout_seconds: 3600
         empty_streams:
-          - name: "account_performance_report"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "accounts"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_ad_labels"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_ad_report"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_ads"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_bidding_strategies"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_criterion_labels"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_criterions"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_custom"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_labels"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'ad_groups'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'ad_listing_group_criterions'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'audience'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'campaign_bidding_strategies'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'campaign_budget'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'campaign_labels'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'campaigns'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'custom_audience'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'display_keyword_performance_report'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'geographic_report'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'happytable'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'keyword_report'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "labels"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'user_interest'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: 'user_location_report'
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "display_topics_performance_report"
-            bypass_reason: "Config only for testing click_view stream"
           - name: "account_labels"
-            bypass_reason: "Config only for testing click_view stream"
+            bypass_reason: "Unsufficient permissions"
           - name: "unhappytable"
-            bypass_reason: "Config only for testing click_view stream"
+            bypass_reason: "Empty testing stream"
           - name: "shopping_performance_report"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "ad_group_ad_report"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "campaign_criterion"
-            bypass_reason: "Config only for testing click_view stream"
-          - name: "change_status"
-            bypass_reason: "Config only for testing click_view stream"
-      - config_path: "secrets/config_change_status.json"
-        expect_records:
-          path: "integration_tests/expected_records_change_status.jsonl"
-        timeout_seconds: 600
-        empty_streams:
-          - name: "account_performance_report"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "accounts"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_ad_labels"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_ad_report"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_ads"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_bidding_strategies"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_criterion_labels"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_criterions"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_custom"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_labels"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'ad_groups'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'ad_listing_group_criterions'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'audience'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'campaign_bidding_strategies'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'campaign_budget'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'campaign_labels'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'campaigns'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'custom_audience'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'display_keyword_performance_report'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'geographic_report'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'happytable'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'keyword_report'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "labels"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'user_interest'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: 'user_location_report'
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "account_labels"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "unhappytable"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "shopping_performance_report"
-            bypass_reason: "Stream not filled yet."
-          - name: "ad_group_ad_report"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
+            bypass_reason: "No shopping campaign, need item for sale "
           - name: "click_view"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "campaign_criterion"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
-          - name: "ad_group_criterions"
-            bypass_reason: "Config only for testing incremental streams based on change_status stream"
+            bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
-              bypass_reason: "Value can be updated by Google Ads"
+              bypass_reason: "can be updated, also it is sometimes integer, sometimes float"
             - name: customer.optimization_score
-              bypass_reason: "Value can be updated by Google Ads"
+              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

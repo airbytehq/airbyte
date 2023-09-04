@@ -470,6 +470,10 @@ class ChangeStatus(IncrementalGoogleAdsStream):
     range_days = 15
     days_of_data_storage = 90
 
+    def __init__(self, **kwargs):
+        # date range is not used for these streams, only state is used to sync recent records, otherwise full refresh
+        super().__init__(start_date=None, conversion_window_days=1, end_date=None, **kwargs)
+
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
         query = GoogleAds.convert_schema_into_query(
             schema=self.get_json_schema(),
@@ -562,7 +566,9 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 # full refresh sync without parent stream
                 self._state = {
                     self.parent_stream_name: {
-                        self.parent_cursor_field: pendulum.today().start_of("day").format("YYYY-MM-DD HH:mm:ss.SSSSSS")
+                        customer_id: {
+                            self.parent_cursor_field: pendulum.today().start_of("day").format("YYYY-MM-DD HH:mm:ss.SSSSSS")
+                        }
                     }
                 }
 
