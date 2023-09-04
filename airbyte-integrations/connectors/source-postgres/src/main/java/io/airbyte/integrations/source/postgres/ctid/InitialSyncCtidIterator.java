@@ -231,11 +231,11 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   static List<Pair<Ctid, Ctid>> ctidLegacyQueryPlan(final Ctid startCtid,
-      final long relationSize,
-      final long blockSize,
-      final int chunkSize,
-      final double dataSize,
-      final int tuplesInPage) {
+                                                    final long relationSize,
+                                                    final long blockSize,
+                                                    final int chunkSize,
+                                                    final double dataSize,
+                                                    final int tuplesInPage) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
     long lowerBound = startCtid.page;
     long upperBound;
@@ -284,15 +284,17 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   }
 
   public PreparedStatement createCtidLegacyQueryStatement(final Connection connection,
-      final Ctid lowerBound,
-      final Ctid upperBound) {
+                                                          final Ctid lowerBound,
+                                                          final Ctid upperBound) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
-      final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', i, j)::tid FROM generate_series(?, ?) as gs(i), generate_series(?,?) as gs2(j)))".formatted(
-          wrappedColumnNames, fullTableName);
+      final String sql =
+          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', i, j)::tid FROM generate_series(?, ?) as gs(i), generate_series(?,?) as gs2(j)))"
+              .formatted(
+                  wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setLong(1, lowerBound.page);
       preparedStatement.setLong(2, upperBound.page);
