@@ -171,6 +171,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "articles" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
       "stream_descriptor": { "name": "article_votes" }
     }
   },
