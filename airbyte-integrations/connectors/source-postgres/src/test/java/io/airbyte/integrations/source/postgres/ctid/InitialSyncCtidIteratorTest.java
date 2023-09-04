@@ -11,13 +11,13 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 
-public class PostgresCtidHandlerTest {
+public class InitialSyncCtidIteratorTest {
 
   @Test
   void testCtidQueryBounds() {
-    var chunks = InitialSyncCtidIterator.ctidQueryPlan(new Ctid(0, 0), 380545032192L, 8192L, 50, GIGABYTE);
+    var chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.ZERO, 380545032192L, 8192L, 50, GIGABYTE);
     var expected = List.of(
-        Pair.of(Ctid.of(0, 0), Ctid.of(6553600, 0)),
+        Pair.of(Ctid.ZERO, Ctid.of(6553600, 0)),
         Pair.of(Ctid.of(6553600, 0), Ctid.of(13107200, 0)),
         Pair.of(Ctid.of(13107200, 0), Ctid.of(19660800, 0)),
         Pair.of(Ctid.of(19660800, 0), Ctid.of(26214400, 0)),
@@ -36,7 +36,7 @@ public class PostgresCtidHandlerTest {
     assertEquals(expected, chunks);
 
     chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(0, 0), 380545L, 8192L, 45, GIGABYTE);
-    expected = List.of(Pair.of(Ctid.of(0, 0), null));
+    expected = List.of(Pair.of(Ctid.ZERO, null));
     assertEquals(expected, chunks);
 
     chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(9876, 5432), 380545L, 8192L, 45, GIGABYTE);
@@ -44,9 +44,9 @@ public class PostgresCtidHandlerTest {
         Pair.of(Ctid.of(9876, 5432), null));
     assertEquals(expected, chunks);
 
-    chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(0, 0), 4096L, 8192L, 45, GIGABYTE);
+    chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.ZERO, 4096L, 8192L, 45, GIGABYTE);
     expected = List.of(
-        Pair.of(Ctid.of(0, 0), null));
+        Pair.of(Ctid.ZERO, null));
     assertEquals(expected, chunks);
   }
 

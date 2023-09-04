@@ -6,18 +6,23 @@ package io.airbyte.integrations.source.postgres.ctid;
 
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CtidUtils {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(CtidUtils.class);
+  public static final int POSTGRESQL_VERSION_CTID_CAPABLE = 15; // TEMP 14;
   public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams,
                                                                         final SyncMode syncMode) {
@@ -51,6 +56,15 @@ public class CtidUtils {
   public record StreamsCategorised<T> (CtidStreams ctidStreams,
                                        T remainingStreams) {
 
+  }
+
+  public static boolean isCtidCapableDBServer(final JdbcDatabase database) {
+    try {
+      return database.getMetaData().getDatabaseMajorVersion() >= POSTGRESQL_VERSION_CTID_CAPABLE;
+    } catch (final SQLException e) {
+      LOGGER.warn("Failed to get db server version", e);
+    }
+    return true;
   }
 
 }
