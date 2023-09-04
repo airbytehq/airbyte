@@ -8,7 +8,7 @@ import logging
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_milvus.destination import DestinationMilvus
-from integration_tests.base_integration_test import BaseIntegrationTest
+from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Milvus
 from pymilvus import Collection, connections
@@ -89,7 +89,7 @@ class MilvusIntegrationTest(BaseIntegrationTest):
             param={},
             data=[[0] * OPEN_AI_VECTOR_SIZE],
             limit=10,
-            expr='_ab_record_id == "2"',
+            expr='_ab_record_id == "mystream_2"',
             output_fields=["text"],
         )
         assert len(result[0]) == 1
@@ -107,4 +107,4 @@ class MilvusIntegrationTest(BaseIntegrationTest):
         # call  vs.fields.append() for all fields you need in the metadata
 
         result = vs.similarity_search("feline animals", 1)
-        assert result[0].metadata["_ab_record_id"] == "2"
+        assert result[0].metadata["_ab_record_id"] == "mystream_2"
