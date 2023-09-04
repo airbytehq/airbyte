@@ -1,4 +1,4 @@
-version: 0.51.2
+version: 0.50.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -23,6 +23,9 @@ definitions:
   oauth2:
     type: OAuthAuthenticator
     token_refresh_endpoint: https://api.typeform.com/oauth/token
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
   requester:
     type: HttpRequester
     url_base: https://api.typeform.com/
@@ -55,7 +58,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        path: '{{ parameters.path }}'
+        path: "{{ parameters.path }}"
       record_selector:
         $ref: "#/definitions/items_selector"
       paginator:
@@ -74,6 +77,7 @@ definitions:
           partition_field: form_id
           stream:
             $ref: "#/definitions/trim_forms_stream"
+
   forms_stream:
     type: DeclarativeStream
     name: forms
@@ -87,6 +91,7 @@ definitions:
         $ref: "#/definitions/no_selector"
       partition_router:
         $ref: "#/definitions/form_id_partition_router"
+
   responses_stream:
     type: DeclarativeStream
     name: responses
@@ -114,27 +119,28 @@ definitions:
         fields:
           - path:
               - form_id
-            value: '{{ stream_partition.form_id }}'
+            value: "{{ stream_partition.form_id }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: submitted_at
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
           {{ format_datetime((config.start_date if config.start_date else
           now_utc() - duration('P1Y')), '%Y-%m-%dT%H:%M:%SZ') }}
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
   webhooks_stream:
     type: DeclarativeStream
     name: webhooks
@@ -236,23 +242,26 @@ spec:
               access_token:
                 type: string
                 title: Private Token
-                description: Log into your Typeform account and then generate a personal
+                description:
+                  Log into your Typeform account and then generate a personal
                   Access Token.
                 airbyte_secret: true
       start_date:
         type: string
         title: Start Date
-        description: The date from which you'd like to replicate data for Typeform API,
+        description:
+          The date from which you'd like to replicate data for Typeform API,
           in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will
           be replicated.
         examples:
-          - '2021-03-01T00:00:00Z'
+          - "2021-03-01T00:00:00Z"
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         order: 2
         format: date-time
       form_ids:
         title: Form IDs to replicate
-        description: When this parameter is set, the connector will replicate data only
+        description:
+          When this parameter is set, the connector will replicate data only
           from the input forms. Otherwise, all forms in your Typeform account will be
           replicated. You can find form IDs in your form URLs. For example, in the URL
           "https://mysite.typeform.com/to/u6nXL7" the form_id is u6nXL7. You can find
@@ -308,8 +317,6 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-
-
 # accounts:read+forms:write+forms:read+forms:write+forms:read+forms:write+forms:read+forms:write+images:write+images:read+images:read+images:write+images:read+images:read+images:read+themes:write+themes:read+themes:read+themes:write+themes:write+responses:read+responses:write+webhooks:read+webhooks:read+webhooks:write+webhooks:write+webhooks:read+webhooks:read+workspaces:read+workspaces:write+workspaces:read+workspaces:write+workspaces:write
 
 # https://docs.airbyte.com/?code=&state=

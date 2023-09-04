@@ -36,6 +36,7 @@ class FormIdPartitionRouter(SubstreamPartitionRouter):
                 yield {"form_id": item}
         else:
             for parent_stream_config in self.parent_stream_configs:
+                print(parent_stream_config)
                 for item in parent_stream_config.stream.read_records(sync_mode=SyncMode.full_refresh):
                     yield {"form_id": item["id"]}
 
