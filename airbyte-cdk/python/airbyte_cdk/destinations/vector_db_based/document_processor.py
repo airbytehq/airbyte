@@ -67,9 +67,10 @@ class DocumentProcessor:
         """
         doc = self._generate_document(record)
         if doc is None:
+            text_fields = ", ".join(self.text_fields) if self.text_fields else "all fields"
             raise AirbyteTracedException(
                 internal_message="No text fields found in record",
-                message=f"Record {str(record.data)[:250]}... does not contain any text fields, please check your processing configuration",
+                message=f"Record {str(record.data)[:250]}... does not contain any of the configured text fields: {text_fields}. Please check your processing configuration, there has to be at least one text field set in each record.",
                 failure_type=FailureType.config_error,
             )
         chunks = [
