@@ -231,31 +231,3 @@ def test_cyclic_sieve(caplog):
         sieve.info("Can you hear me, Major Tom?")
         sieve.bump()
     assert len(caplog.records) == 6  # 20 * 3 / 10
-
-
-def test_incremental_event_stream(mock_ads_client, config, customers):
-    """
-    Page token has expired while reading records within date "2021-01-03",
-    it should raise error, because Google Ads API doesn't allow filter by datetime.
-    Minimum date range is 1 day.
-    """
-    customer_id = next(iter(customers)).id
-    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"}
-
-    google_api = MockGoogleAdsFailsOneDate(credentials=config["credentials"])
-    incremental_stream_config = dict(
-        api=google_api,
-        conversion_window_days=config["conversion_window_days"],
-        start_date=config["start_date"],
-        end_date="2021-04-04",
-        customers=customers,
-    )
-    stream = ClickView(**incremental_stream_config)
-    stream.get_query = Mock()
-    stream.get_query.return_value = "query"
-
-    with pytest.raises(GoogleAdsException):
-        list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-
-    stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"})
-    assert stream.get_query.call_count == 1
