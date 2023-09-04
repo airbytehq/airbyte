@@ -35,7 +35,6 @@ There are additional required TODOs in the files within the integration_tests fo
 # Basic full refresh stream
 class ElasticSearchV2Stream(HttpStream, ABC):
     url_base = "http://aes-statistic01.prod.dld:9200"
-    doc_count = 0
     date_start = ""
 
     def __init__(self, date_start):
@@ -57,7 +56,6 @@ class ElasticSearchV2Stream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         docs = response.json()["hits"]["hits"]
         pit_id = response.json()["pit_id"]
-        self.doc_count += len(docs)
         if response.status_code == 200 and docs != []:
             search_after = docs[len(docs) - 1].get("sort")
             return {"search_after": search_after, "pit_id": pit_id}
@@ -160,6 +158,7 @@ class ElasticSearchV2Stream(HttpStream, ABC):
 
         for hit in hits:
             data = hit["_source"]
+            data["_id"] = hit["_id"]
             yield data
 
 
