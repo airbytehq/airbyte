@@ -8,7 +8,7 @@ To use Airbyte Cloud:
 
 1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.com/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
 
-   Airbyte Cloud offers a 14-day free trial. For more information, see [Pricing](https://airbyte.com/pricing).
+   Airbyte Cloud offers a 14-day free trial that begins after your first successful sync. For more information, see [Pricing](https://airbyte.com/pricing).
 
    :::note
    If you are invited to a workspace, you cannot use your Google login to create a new Airbyte account.
@@ -35,7 +35,7 @@ Set your [default data residency](https://docs.airbyte.com/cloud/managing-airbyt
 :::
 
 1. On the Airbyte Cloud dashboard, click **Sources** and then click **+ New source**.
-2. On the Set up the source page, select the source you want to set up from the **Source type** dropdown.
+2. On the Set up the source page, select the source you want to set up from the **Source** catalog.
 
    The fields relevant to your source are displayed. The Setup Guide provides information to help you fill out the fields for your selected source.
 
@@ -50,7 +50,7 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 To set up a destination:
 
 1. On the Airbyte Cloud dashboard, click **Destinations** and then click **+ New destination**.
-2. On the Set up the destination page, select the destination you want to set up from the **Destination type** dropdown.
+2. On the Set up the destination page, select the destination you want to set up from the **Destination** catalog.
 
    The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected destination.
 
@@ -68,10 +68,10 @@ Setting up a connection involves configuring the following parameters:
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Replication frequency                                                                                                                    | How often should the data sync?                                                                         |
 | [Data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-the-data-residency-for-a-connection) | Where should the data be processed?                                                                     |
-| Destination Namespace and stream names                                                                                                   | Where should the replicated data be written?                                                            |
+| Destination Namespace and stream prefix                                                                                                   | Where should the replicated data be written?                                                            |
 | Catalog selection                                                                                                                        | Which streams and fields should be replicated from the source to the destination?                       |
 | Sync mode                                                                                                                                | How should the streams be replicated (read and written)?                                                |
-| Optional transformations                                                                                                                 | How should Airbyte protocol messages (raw JSON blob) data be converted into other data representations? |
+| 
 
 For more information, see [Connections and Sync Modes](../understanding-airbyte/connections/README.md) and [Namespaces](../understanding-airbyte/namespaces.md)
 
@@ -84,7 +84,6 @@ If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentati
 
 - Only one sync per connection can run at a time.
 - If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
-- Cloud does not allow schedules that sync more than once per hour.
 
 :::
 
@@ -99,14 +98,13 @@ Set your [default data residency](https://docs.airbyte.com/cloud/managing-airbyt
 1. On the Airbyte Cloud dashboard, click **Connections** and then click **+ New connection**.
 2. On the New connection page, select a source:
 
-   - To use an existing source, select your desired source from the **Source** dropdown. Click **Use existing source**.
-
-   - To set up a new source, select the source you want to set up from the **Source type** dropdown. The fields relevant to your source are displayed. The Setup Guide provides information to help you fill out the fields for your selected source. Click **Set up source**.
+   - To use an existing source, select your desired source from the **Sources**. Click the source to use it.
+   - To set up a new source, select "+ New source". Select a destination from the catalog. The fields relevant to your source are displayed. The Setup Guide provides information to help you fill out the fields for your selected source. Click **Set up source**.
 
 3. Select a destination:
 
-   - To use an existing destination, select your desired destination from the **Destination** dropdown. Click **Use existing destination**.
-   - To set up a new destination, select the destination you want to set up from the **Destination type** dropdown. The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected destination. Click **Set up destination**.
+   - To use an existing destination, select your desired destination from the existing destinations. Click the destination to use it. 
+   - To set up a new destination, select "+ New destination". Select a destination from the catalog. The fields relevant to your destination are displayed. The Setup Guide provides information to help you fill out the fields for your selected destination. Click **Set up destination**.
 
    The Set up the connection page is displayed.
 
@@ -150,16 +148,12 @@ To better understand the destination namespace configurations, see [Destination 
 :::
 
 6. (Optional) In the **Destination Stream Prefix (Optional)** field, add a prefix to stream names (for example, adding a prefix `airbyte_` renames `projects` to `airbyte_projects`).
-7. (Optional) Click **Refresh schema** if you had previously triggered a sync with a subset of tables in the stream and now want to see all the tables in the stream.
-8. Activate the streams you want to sync:
-   - (Optional) If your source has multiple tables, type the name of the stream you want to enable in the **Search stream name** search box.
-   - (Optional) To configure the sync settings for multiple streams, select the checkbox next to the desired streams, configure the settings in the purple box, and click **Apply**.
-9. Configure the sync settings:
+7. Activate the streams you want to sync:
+   - (Optional) If your source has many tables, type the name of the stream you want to enable in the **Search stream name** search box.
+8. Configure the sync settings:
 
    1. Toggle the **Sync** button to enable sync for the stream.
-   2. **Source:**
-      1. **Namespace**: The database schema of your source tables (auto-populated for your source)
-      2. **Stream name**: The table name in the source (auto-populated for your source)
+   2. **Source stream name**: The table name in the source
    3. **Sync mode**: Select how you want the data to be replicated from the source to the destination:
 
       For the source:
@@ -174,13 +168,11 @@ To better understand the destination namespace configurations, see [Destination 
         **Note:** This creates duplicate records
       - Select **Append + Deduped** to mirror your source while keeping records unique
 
-        **Note:** Some sync modes may not yet be available for your source or destination
+        **Note:** Some sync modes may not yet be available for the source or destination.
 
    4. **Cursor field**: Used in **Incremental** sync mode to determine which records to sync. Airbyte pre-selects the cursor field for you (example: updated date). If you have multiple cursor fields, select the one you want.
    5. **Primary key**: Used in **Append + Deduped** sync mode to determine the unique identifier.
-   6. **Destination**:
-      - **Namespace:** The database schema of your destination tables.
-      - **Stream name:** The final table name in destination.
+   6. Choose which fields to sync. By default, all fields are synced.
 
 10. Click **Set up connection**.
 11. Airbyte tests the connection. If the sync is successful, the Connection page is displayed.
@@ -190,7 +182,7 @@ To better understand the destination namespace configurations, see [Destination 
 Verify the sync by checking the logs:
 
 1. On the Airbyte Cloud dashboard, click **Connections**. The list of connections is displayed. Click on the connection you just set up.
-2. The Sync History is displayed. Click on the first log in the sync history.
+2. The Sync History is displayed. Click on the first log in the sync history to view the log details.
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
 ## Allowlist IP addresses

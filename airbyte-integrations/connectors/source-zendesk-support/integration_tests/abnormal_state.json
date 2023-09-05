@@ -124,5 +124,26 @@
       "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
       "stream_descriptor": { "name": "ticket_skips" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "custom_roles" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "schedules" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2222-07-19T22:21:26Z" },
+      "stream_descriptor": { "name": "sla_policies" }
+    }
   }
 ]

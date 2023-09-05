@@ -3,14 +3,16 @@
 #
 
 from pydantic import BaseModel, Field
-from typing_extensions import Literal
 
 
 class AvroFormat(BaseModel):
     class Config:
         title = "Avro Format"
 
-    filetype: Literal["avro"] = "avro"
+    filetype: str = Field(
+        "avro",
+        const=True,
+    )
 
     double_as_string: bool = Field(
         title="Convert Double Fields to Strings",
