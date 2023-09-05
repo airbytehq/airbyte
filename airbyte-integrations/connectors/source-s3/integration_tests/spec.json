@@ -8,9 +8,7 @@
       "start_date": {
         "title": "Start Date",
         "description": "UTC date and time in the format 2017-01-25T00:00:00.000000Z. Any file modified before this date will not be replicated.",
-        "examples": [
-          "2021-01-01T00:00:00.000000Z"
-        ],
+        "examples": ["2021-01-01T00:00:00.000000Z"],
         "format": "date-time",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}Z$",
         "pattern_descriptor": "YYYY-MM-DDTHH:mm:ss.SSSSSSZ",
@@ -54,11 +52,7 @@
               "title": "Validation Policy",
               "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
               "default": "Emit Record",
-              "enum": [
-                "Emit Record",
-                "Skip Record",
-                "Wait for Discover"
-              ]
+              "enum": ["Emit Record", "Skip Record", "Wait for Discover"]
             },
             "input_schema": {
               "title": "Input Schema",
@@ -216,9 +210,7 @@
                               }
                             }
                           },
-                          "required": [
-                            "column_names"
-                          ]
+                          "required": ["column_names"]
                         }
                       ],
                       "type": "object"
@@ -226,14 +218,7 @@
                     "true_values": {
                       "title": "True Values",
                       "description": "A set of case-sensitive strings that should be interpreted as true values.",
-                      "default": [
-                        "y",
-                        "yes",
-                        "t",
-                        "true",
-                        "on",
-                        "1"
-                      ],
+                      "default": ["y", "yes", "t", "true", "on", "1"],
                       "type": "array",
                       "items": {
                         "type": "string"
@@ -243,14 +228,7 @@
                     "false_values": {
                       "title": "False Values",
                       "description": "A set of case-sensitive strings that should be interpreted as false values.",
-                      "default": [
-                        "n",
-                        "no",
-                        "f",
-                        "false",
-                        "off",
-                        "0"
-                      ],
+                      "default": ["n", "no", "f", "false", "off", "0"],
                       "type": "array",
                       "items": {
                         "type": "string"
@@ -262,10 +240,7 @@
                       "description": "How to infer the types of the columns. If none, inference default to strings.",
                       "default": "None",
                       "airbyte_hidden": true,
-                      "enum": [
-                        "None",
-                        "Primitive Types Only"
-                      ]
+                      "enum": ["None", "Primitive Types Only"]
                     }
                   }
                 },
@@ -308,10 +283,7 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "name",
-            "file_type"
-          ]
+          "required": ["name", "file_type"]
         }
       },
       "bucket": {
@@ -439,9 +411,7 @@
               "advanced_options": {
                 "title": "Advanced Options",
                 "description": "Optionally add a valid JSON string here to provide additional <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html#pyarrow.csv.ReadOptions\" target=\"_blank\">Pyarrow ReadOptions</a>. Specify 'column_names' here if your CSV doesn't have header, or if you want to use custom column names. 'block_size' and 'encoding' are already used above, specify them again here will override the values above.",
-                "examples": [
-                  "{\"column_names\": [\"column1\", \"column2\"]}"
-                ],
+                "examples": ["{\"column_names\": [\"column1\", \"column2\"]}"],
                 "order": 8,
                 "type": "string"
               },
@@ -526,17 +496,9 @@
                 "title": "Unexpected field behavior",
                 "description": "How JSON fields outside of explicit_schema (if given) are treated. Check <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.json.ParseOptions.html\" target=\"_blank\">PyArrow documentation</a> for details",
                 "default": "infer",
-                "examples": [
-                  "ignore",
-                  "infer",
-                  "error"
-                ],
+                "examples": ["ignore", "infer", "error"],
                 "order": 1,
-                "enum": [
-                  "ignore",
-                  "infer",
-                  "error"
-                ]
+                "enum": ["ignore", "infer", "error"]
               },
               "block_size": {
                 "title": "Block Size",
@@ -602,9 +564,7 @@
           "start_date": {
             "title": "Start Date",
             "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
-            "examples": [
-              "2021-01-01T00:00:00Z"
-            ],
+            "examples": ["2021-01-01T00:00:00Z"],
             "format": "date-time",
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "order": 5,
@@ -617,9 +577,6 @@
         "airbyte_hidden": true
       }
     },
-    "required": [
-      "streams",
-      "bucket"
-    ]
+    "required": ["streams", "bucket"]
   }
 }
