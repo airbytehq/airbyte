@@ -45,7 +45,7 @@
     "calendarIds": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null","string"]
+        "type": ["null", "string"]
       }
     },
     "isApprover": {
