@@ -4,19 +4,20 @@
 
 
 import pytest
-
 from airbyte_cdk.sources.streams.core import Stream
-
 from source_trello.components import OrderIdsPartitionRouter
 
 
 class MockStream(Stream):
     def __init__(self, records):
         self.records = records
+
     def primary_key(self):
         return
+
     def read_records(self, sync_mode):
         return self.records
+
 
 # test cases as a list of tuples (boards_records, organizations_records, expected_board_ids)
 test_cases = [
@@ -35,7 +36,7 @@ test_cases = [
     (
         # test different ids in multiple boards and organizations
         [{"id": "b11111111111111111111111", "name": "board_1"}, {"id": "b22222222222222222222222", "name": "board_2"}],
-        [{"id": "org111111111111111111111", "idBoards": ["b11111111111111111111111", "b33333333333333333333333"]}, 
+        [{"id": "org111111111111111111111", "idBoards": ["b11111111111111111111111", "b33333333333333333333333"]},
          {"id": "org222222222222222222222", "idBoards": ["b00000000000000000000000", "b44444444444444444444444"]}],
         ["b11111111111111111111111", "b22222222222222222222222", "b33333333333333333333333", "b00000000000000000000000", "b44444444444444444444444"]
     ),
@@ -46,6 +47,7 @@ test_cases = [
         []
     )
 ]
+
 
 @pytest.mark.parametrize("boards_records, organizations_records, expected_board_ids", test_cases)
 def test_read_all_boards(boards_records, organizations_records, expected_board_ids):
