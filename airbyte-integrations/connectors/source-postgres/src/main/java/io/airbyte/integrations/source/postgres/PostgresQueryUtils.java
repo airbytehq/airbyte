@@ -107,6 +107,17 @@ public class PostgresQueryUtils {
       """;
 
   /**
+   * Query estimates the max tuple in a page.
+   * We are estimating in two ways and selecting the greatest value.
+   */
+  public static final String CTID_ESTIMATE_MAX_TUPLE =
+      """
+      WITH est1 AS (SELECT MAX((ctid::text::point)[1]::int) FROM "%s"."%s" TABLESAMPLE SYSTEM (0.1)),
+      est2 AS (SELECT (reltuples / relpages)::int FROM pg_class WHERE oid = to_regclass('%s')::oid)
+      SELECT GREATEST(est1, est2) AS estimate_max_tuple FROM est1, est2
+      """;
+
+  /**
    * Logs the current xmin status : 1. The number of wraparounds the source DB has undergone. (These
    * are the epoch bits in the xmin snapshot). 2. The 32-bit xmin value associated with the xmin
    * snapshot. This is the value that is ultimately written and recorded on every row. 3. The raw
@@ -311,4 +322,36 @@ public class PostgresQueryUtils {
             .toList();
   }
 
+  public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleEstimateForStreams(final JdbcDatabase database,
+      final List<ConfiguredAirbyteStream> streams,
+      final String quoteString) {
+    final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
+    streams.forEach(stream -> {
+      final AirbyteStreamNameNamespacePair namespacePair =
+          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final int maxTuple = getTableMaxTupleEstimateForStream(database, namespacePair, quoteString);
+      tableMaxTupleEstimates.put(namespacePair, maxTuple);
+    });
+    return tableMaxTupleEstimates;
+  }
+
+  public static int getTableMaxTupleEstimateForStream(final JdbcDatabase database,
+      final AirbyteStreamNameNamespacePair stream,
+      final String quoteString) {
+    try {
+      final String streamName = stream.getName();
+      final String schemaName = stream.getNamespace();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+          conn -> conn.prepareStatement(CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName, fullTableName)).executeQuery(),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      Preconditions.checkState(jsonNodes.size() == 1);
+      final int maxTuple = jsonNodes.get(0).get("estimate_max_tuple").asInt();
+      LOGGER.info("Stream {} estimated max tuple is {}", fullTableName, maxTuple);
+      return maxTuple;
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

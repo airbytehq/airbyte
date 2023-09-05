@@ -245,11 +245,12 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         5_000_000 / tuplesInPage);
     LOGGER.info("Will read {} pages on each query", eachStep);
     final long theoreticalLastPage = relationSize / blockSize;
-    LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
+    final long lastPage =  (long)((double)theoreticalLastPage * 1.1);
+    LOGGER.info("Theoretical last page {}. will read until {}", theoreticalLastPage, lastPage);
     upperBound = lowerBound + eachStep;
     chunks.add((Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0))));
-    while (upperBound < theoreticalLastPage) {
-      lowerBound = upperBound;
+    while (upperBound < lastPage) {
+      lowerBound = upperBound + 1;
       upperBound += eachStep;
       chunks.add(Pair.of(Ctid.of(lowerBound, 0), Ctid.of(upperBound, 0)));
     }
@@ -299,7 +300,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       preparedStatement.setLong(1, lowerBound.page);
       preparedStatement.setLong(2, upperBound.page);
       preparedStatement.setLong(3, lowerBound.tuple);
-      preparedStatement.setLong(4, upperBound.tuple);
+      preparedStatement.setLong(4, TEMP_TUPLES_IN_PAGE);
       LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
       return preparedStatement;
     } catch (final SQLException e) {
