@@ -9,8 +9,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from pendulum import Date
 
 
@@ -22,8 +24,6 @@ class MixpanelStream(HttpStream, ABC):
     """
 
     DEFAULT_REQS_PER_HOUR_LIMIT = 60
-
-    raise_on_http_errors = True
 
     @property
     def url_base(self):
@@ -63,7 +63,6 @@ class MixpanelStream(HttpStream, ABC):
         self.project_id = project_id
         self.retries = 0
         self._reqs_per_hour_limit = reqs_per_hour_limit
-        self._skip_stream = False
         super().__init__(authenticator=authenticator)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -93,8 +92,6 @@ class MixpanelStream(HttpStream, ABC):
         stream_state: Mapping[str, Any],
         **kwargs,
     ) -> Iterable[Mapping]:
-        if self._skip_stream:
-            return []
         # parse the whole response
         yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
@@ -123,10 +120,11 @@ class MixpanelStream(HttpStream, ABC):
             self.logger.warning(f"Unable to perform a request. Payment Required: {response.json()['error']}")
             return False
         if response.status_code == 400 and "Unable to authenticate request" in response.text:
-            self.logger.warning("Your credentials might have expired. Please update your config with valid credentials.")
-            setattr(self, "raise_on_http_errors", False)
-            self._skip_stream = True
-            return False
+            message = (
+                f"Your credentials might have expired. Please update your config with valid credentials."
+                f" See more details: {response.text}"
+            )
+            raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return super().should_retry(response)
 
     def get_stream_params(self) -> Mapping[str, Any]:
