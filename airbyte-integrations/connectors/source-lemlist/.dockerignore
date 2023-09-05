@@ -1,5 +1,6 @@
 *
 !Dockerfile
+!Dockerfile.test
 !main.py
 !source_lemlist
 !setup.py

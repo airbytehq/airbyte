@@ -148,14 +148,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """);
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      if (dialectType == StandardSQLTypeName.STRING) {
-        // json_value implicitly returns a string, so we don't need to cast it.
-        // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
-        return "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
-      } else {
-        return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"') as " + dialectType.name()
-            + ")";
-      }
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"') as " + dialectType.name()
+          + ")";
     }
   }
 

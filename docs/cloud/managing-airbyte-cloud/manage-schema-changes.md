@@ -51,13 +51,11 @@ A connection will automatically be disabled if:
 
 If the breaking change is due to a new version, the connection will alert you of a breaking change but continue to sync until the cutoff date. On the cutoff date, the connection will automatically be disabled on that date to prevent failure or unexpected behavior. These breaking changes  include: 
 
-| Type of Change   | Description                                                                                                         |
-|------------------|---------------------------------------------------------------------------------------------------------------------|
-| Spec Change         | The configuration required by users of this connector has been changed and syncs will fail until users reconfigure or re-authenticate.              |
-| Schema Change            | The type of property previously present within a record has changed
-| Stream or Property Removal          | Data that was previously being synced is no longer going to be synced              |
-| Destination Format / Normalization Change          | The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full refresh                |
-| State Changes          | The format of the source’s state has changed, and the full dataset will need to be re-synced                |
+* **Spec Change** The configuration required by users of this connector has been changed and syncs will fail until users reconfigure or re-authenticate. 
+* Schema Change** The type of property previously present within a record has changed
+* **Stream or Property Removal** Data that was previously being synced is no longer going to be synced.  
+* **Destination Format / Normalization Change** The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full refresh.
+* **State Changes** The format of the source’s state has changed, and the full dataset will need to be re-synced
 
 To review and fix breaking schema changes:
 1. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection with breaking changes (indicated by a **red exclamation mark** icon).
@@ -67,7 +65,9 @@ To review and fix breaking schema changes:
 3. Update the source or destination to the new version to continue syncing. 
 
 :::note 
+    
 If a connection’s source schema has breaking changes (an existing cursor or primary key is removed), it will stop syncing immediately. You must review and fix the changes before editing the connection or resuming syncs.
+    
 :::
 
 ### Manually refresh the source schema

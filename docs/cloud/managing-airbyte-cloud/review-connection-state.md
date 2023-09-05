@@ -1,4 +1,4 @@
-# Manage the connection state
+# Review the connection state
 
 The connection state provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next sync. 
 
@@ -13,9 +13,11 @@ To review the connection state:
 
 To edit the connection state:
 
-:::warning
-Updates to connection state should be handled with extreme care. Updates may break your syncs, requiring a reset to fix. Make changes only as directed by the Airbyte team.
-:::
+    :::note 
+    
+    Updates to connection state should be handled with extreme care. Updates may break your syncs, requiring a reset to fix. Make changes only as directed by the Airbyte team.
+    
+    :::
 
 1. Click anywhere in the Connection state to start editing.
 

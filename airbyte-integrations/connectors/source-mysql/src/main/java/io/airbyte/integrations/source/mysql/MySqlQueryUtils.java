@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -86,7 +85,7 @@ public class MySqlQueryUtils {
     final String fullTableName =
         getFullyQualifiedTableNameWithQuoting(namespace, name, quoteString);
     final String maxPkQuery = String.format(MAX_PK_VALUE_QUERY,
-        getIdentifierWithQuoting(pkFieldName, quoteString),
+        pkFieldName,
         MAX_PK_COL,
         fullTableName);
     LOGGER.info("Querying for max pk value: {}", maxPkQuery);
@@ -135,6 +134,7 @@ public class MySqlQueryUtils {
     // Construct the table estimate query.
     final String tableEstimateQuery =
         String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
+    LOGGER.info("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);

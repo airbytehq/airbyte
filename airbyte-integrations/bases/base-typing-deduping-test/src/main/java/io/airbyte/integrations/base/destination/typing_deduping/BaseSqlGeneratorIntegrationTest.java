@@ -926,7 +926,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertTrue(destinationHandler.findExistingTable(streamId).isPresent());
   }
 
-  protected void createFinalTable(final StreamConfig stream, final String suffix) throws Exception {
+  private void createFinalTable(final StreamConfig stream, final String suffix) throws Exception {
     final String createTable = generator.createTable(stream, suffix, false);
     destinationHandler.execute(createTable);
   }
