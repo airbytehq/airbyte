@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_notion.streams import Blocks, IncrementalNotionStream, Pages
+from source_notion.streams import Blocks, IncrementalNotionStream, Pages, Comments
 
 
 @fixture
@@ -35,6 +35,11 @@ def stream(patch_incremental_base_class, args):
 @fixture
 def blocks(parent, args):
     return Blocks(parent=parent, **args)
+
+
+@fixture
+def comments(blocks, args):
+    return Comments(parent=blocks, **args)
 
 
 def test_cursor_field(stream):
@@ -203,3 +208,42 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
         list(stream.read_records(**inputs))
         assert search_endpoint.call_count == 6
         assert f"Skipping stream pages, error message: {error_message}" in caplog.messages
+
+
+def test_comments_path(comments):
+    assert comments.path() == 'comments'
+
+
+def test_comments_request_params(comments):
+    params = comments.request_params(next_page_token=None, stream_slice={'block_id': 'block1'})
+    assert params == {'block_id': 'block1', 'page_size': comments.page_size}
+
+
+def test_comments_stream_slices(comments):
+
+    comments.parent.block_id_cache = ['aaa', 'bbb', 'ccc', 'ddd']
+    inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': {}}
+
+    expected_stream_slice = [
+        {'block_id': 'aaa'}, 
+        {'block_id': 'bbb'}, 
+        {"block_id": "ccc"}, 
+        {"block_id": "ddd"}
+    ]
+
+    actual_stream_slices = list(comments.stream_slices(**inputs))
+
+    assert actual_stream_slices == expected_stream_slice
+
+
+def test_comments_should_retry(comments):
+
+    mock_response = MagicMock()
+    mock_response.status_code = 403
+
+    result = comments.should_retry(mock_response)
+
+    assert result is False
+    assert getattr(comments, "raise_on_http_errors") is False
+
+    

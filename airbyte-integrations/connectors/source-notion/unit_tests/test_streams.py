@@ -100,6 +100,7 @@ def test_should_not_retry_with_not_found_block(requests_mock):
 
 def test_empty_blocks_results(requests_mock):
     stream = Blocks(parent=None, config=MagicMock())
+    # stream._session.cache.clear()
     requests_mock.get(
         "https://api.notion.com/v1/blocks/aaa/children",
         json={

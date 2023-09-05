@@ -11,6 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from requests.exceptions import HTTPError
 
 from .utils import transform_properties
 
@@ -219,9 +220,14 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     """
 
     http_method = "GET"
+    # use_cache = True
 
     # block id stack for block hierarchy traversal
     block_id_stack = []
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.block_id_cache = set()
 
     def path(self, **kwargs) -> str:
         return f"blocks/{self.block_id_stack[-1]}/children"
@@ -245,6 +251,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         for page in slices:
             page_id = page["parent"]["id"]
             self.block_id_stack.append(page_id)
+            self.block_id_cache.add(page_id)
 
             # stream sync is finished when it is on the last slice
             self.is_finished = page_id == slices[-1]["parent"]["id"]
@@ -271,6 +278,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             if record.get("has_children", False):
                 # do the depth first traversal recursive call, get children blocks
                 self.block_id_stack.append(record["id"])
+                self.block_id_cache.add(record["id"])
                 yield from self.read_records(**kwargs)
             yield record
 
@@ -297,4 +305,37 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
                 return False
             else:
                 return super().should_retry(response)
+        return super().should_retry(response)
+
+class Comments(HttpSubStream, IncrementalNotionStream):
+
+    http_method = "GET"
+
+    def path(self, **kwargs) -> str:
+        return f"comments"
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        block_id = stream_slice.get("block_id")  # Get block_id from the current stream slice
+        params = {"block_id": block_id, "page_size": self.page_size}
+        if next_page_token:
+            params["start_cursor"] = next_page_token["next_cursor"]
+        return params
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        return IncrementalNotionStream.read_records(self, **kwargs)
+    
+    def stream_slices(self, **kwargs) -> MutableMapping[str, Any]:        
+        for block_id in self.parent.block_id_cache:
+            yield {"block_id": block_id}
+
+    def should_retry(self, response: requests.Response) -> bool:
+        # Since the Notion API requires permissions to be set on a page-by-page basis for integrations, it is possible that the integration does not have permission to read comments for a particular block.
+        if response.status_code == 403:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.error(
+                f"Stream {self.name}: The API returned a 403 Forbidden error. Please ensure the correct permissions have been granted to read comments for all desired pages."
+            )
+            return False  # Do not retry
+
+        # Handle other status codes using the parent class's implementation
         return super().should_retry(response)

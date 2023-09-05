@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .streams import Blocks, Databases, Pages, Users
+from .streams import Blocks, Databases, Pages, Users, Comments
 
 
 class NotionAuthenticator:
@@ -64,5 +64,6 @@ class SourceNotion(AbstractSource):
         args = {"authenticator": authenticator, "config": config}
         pages = Pages(**args)
         blocks = Blocks(parent=pages, **args)
+        comments = Comments(parent=blocks, **args)
 
-        return [Users(**args), Databases(**args), pages, blocks]
+        return [Users(**args), Databases(**args), pages, blocks, comments]
