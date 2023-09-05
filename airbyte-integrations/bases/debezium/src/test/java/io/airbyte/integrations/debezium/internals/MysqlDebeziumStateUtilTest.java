@@ -35,6 +35,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class MysqlDebeziumStateUtilTest {
 
@@ -61,7 +62,7 @@ public class MysqlDebeziumStateUtilTest {
 
   @Test
   public void debeziumInitialStateConstructTest() throws SQLException {
-    try (final MySQLContainer<?> container = new MySQLContainer<>("mysql:8.0")) {
+    try (final MySQLContainer<?> container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))) {
       container.start();
       initDB(container);
       final JdbcDatabase database = getJdbcDatabase(container);

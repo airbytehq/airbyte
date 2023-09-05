@@ -52,6 +52,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -78,7 +79,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   private void init() {
-    container = new MySQLContainer<>("mysql:8.0");
+    container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"));
     container.start();
     source = new MySqlSource();
     database = new Database(DSLContextFactory.create(

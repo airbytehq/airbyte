@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @Disabled
 class MySqlStressTest extends JdbcStressTest {
@@ -41,7 +42,7 @@ class MySqlStressTest extends JdbcStressTest {
 
   @BeforeAll
   static void init() throws Exception {
-    container = new MySQLContainer<>("mysql:8.0")
+    container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD.call())
         .withEnv("MYSQL_ROOT_HOST", "%")

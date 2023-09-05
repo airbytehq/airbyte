@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class MySqlSourceOperationsTest {
 
@@ -42,7 +43,7 @@ public class MySqlSourceOperationsTest {
 
   @BeforeEach
   public void init() {
-    container = new MySQLContainer<>("mysql:8.0");
+    container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"));
     container.start();
     database = new Database(DSLContextFactory.create(
         "root",

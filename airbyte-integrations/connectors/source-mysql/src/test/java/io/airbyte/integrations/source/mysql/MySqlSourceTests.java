@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.utility.DockerImageName;
 
 public class MySqlSourceTests {
 
@@ -54,7 +55,7 @@ public class MySqlSourceTests {
   @Test
   public void testSettingTimezones() throws Exception {
     // start DB
-    try (final MySQLContainer<?> container = new MySQLContainer<>("mysql:8.0")
+    try (final MySQLContainer<?> container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD)
         .withEnv("MYSQL_ROOT_HOST", "%")
@@ -110,7 +111,7 @@ public class MySqlSourceTests {
   @Test
   @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void testTableWithNullCursorValueShouldThrowException() throws SQLException {
-    try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
+    try (final MySQLContainer<?> db = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD)
         .withEnv("MYSQL_ROOT_HOST", "%")
@@ -153,7 +154,7 @@ public class MySqlSourceTests {
   @Test
   @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
-    try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0")
+    try (final MySQLContainer<?> db = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD)
         .withEnv("MYSQL_ROOT_HOST", "%")
@@ -211,7 +212,7 @@ public class MySqlSourceTests {
   @Test
   public void testJDBCSessionVariable() throws Exception {
     // start DB
-    try (final MySQLContainer<?> container = new MySQLContainer<>("mysql:8.0")
+    try (final MySQLContainer<?> container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD)
         .withEnv("MYSQL_ROOT_HOST", "%")

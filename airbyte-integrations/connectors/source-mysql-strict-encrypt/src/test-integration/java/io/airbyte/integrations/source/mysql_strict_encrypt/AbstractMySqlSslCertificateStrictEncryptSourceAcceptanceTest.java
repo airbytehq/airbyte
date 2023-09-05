@@ -14,9 +14,11 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTest extends MySqlStrictEncryptSourceAcceptanceTest {
 
@@ -26,7 +28,7 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
 
-    container = new MySQLContainer<>("mysql:8.0");
+    container = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"));
     container.start();
     addTestData(container);
     certs = MySqlUtils.getCertificate(container, true);
@@ -37,8 +39,8 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
         .put("method", "STANDARD")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, innerContainerAddress.left)
-        .put(JdbcUtils.PORT_KEY, innerContainerAddress.right)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -51,14 +53,13 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
   public abstract ImmutableMap getSslConfig();
 
   private void addTestData(final MySQLContainer container) throws Exception {
-    final var outerContainerAddress = SshHelpers.getOuterContainerAddress(container);
     try (final DSLContext dslContext = DSLContextFactory.create(
         container.getUsername(),
         container.getPassword(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s",
-            outerContainerAddress.left,
-            outerContainerAddress.right,
+            container.getHost(),
+            container.getFirstMappedPort(),
             container.getDatabaseName()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);

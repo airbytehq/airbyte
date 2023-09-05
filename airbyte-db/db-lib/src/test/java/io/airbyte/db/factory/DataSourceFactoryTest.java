@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
+
 
 /**
  * Test suite for the {@link DataSourceFactory} class.
@@ -77,7 +79,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingMySQLDataSourceWithConnectionTimeoutSetBelowDefault() {
-    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
+    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))) {
       mySQLContainer.start();
       final Map<String, String> connectionProperties = Map.of(
           CONNECT_TIMEOUT, "30");
@@ -124,7 +126,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingMySQLDataSourceWithConnectionTimeoutNotSet() {
-    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
+    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))) {
       mySQLContainer.start();
       final Map<String, String> connectionProperties = Map.of();
       final DataSource dataSource = DataSourceFactory.create(
