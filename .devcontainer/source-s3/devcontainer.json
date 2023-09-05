@@ -20,7 +20,8 @@
 				"ms-python.python",
 				"ms-python.black-formatter",
 				"matangover.mypy",
-				"charliermarsh.ruff"
+				"charliermarsh.ruff",
+				"tamasfe.even-better-toml"
 			],
             "settings": {
                 "extensions.ignoreRecommendations": true,

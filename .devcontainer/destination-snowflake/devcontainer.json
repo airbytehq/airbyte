@@ -22,7 +22,8 @@
     "customizations": {
         "vscode": {
             "extensions": [
-				"vscjava.vscode-gradle"
+				"vscjava.vscode-gradle",
+				"tamasfe.even-better-toml"
 			],
             "settings": {
                 "extensions.ignoreRecommendations": true,
@@ -41,7 +42,8 @@
     // 2. Map the devcontainer.json file to it.
     // 3. Mark the root directory as 'safe' for git.
     // 4. Install the Python/Poetry dependencies.
-    // "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/destination-snowflake/devcontainer.json ./.symlinks/destination-snowflake-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/snowflake.md ./.symlinks/${CONNECTOR_NAME}-docs.md && ln -sf /workspaces/airbyte/airbyte-cdk/python/ ./.symlinks/airbyte_cdk && git config --add safe.directory /workspaces/airbyte"
+    "postCreateCommand": "git config --add safe.directory /workspaces/airbyte"
+    // && mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/destination-snowflake/devcontainer.json ./.symlinks/destination-snowflake-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/snowflake.md ./.symlinks/${CONNECTOR_NAME}-docs.md && ln -sf /workspaces/airbyte/airbyte-cdk/python/ ./.symlinks/airbyte_cdk"
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
