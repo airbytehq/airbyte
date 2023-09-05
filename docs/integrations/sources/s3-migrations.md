@@ -8,7 +8,7 @@ We have revamped the implementation to use the File-Based CDK. The goal is to in
 * [CSV] `decimal_point` option is deprecated: It is not possible anymore to use another character than `.` to separate the integer part from non-integer part. Given that the float is format with another character than this, it will be considered as a string.
 * [Parquet] `columns` option is deprecated: You can use Airbyte column selection in order to have the same behavior. We don't expect it, but this could have impact on the performance as payload could be bigger.
 
-Given that you are not affected by the above, the migration should be fairly straightforward as the code has integrated migration. To leverage this:
+Given that you are not affected by the above, your migration should proceed automatically once you run a sync with the new connector. To leverage this:
 * Upgrade source-s3 to use v4.0.0
 * Run at least one sync for all your source-s3 connectors
   * Migration will be performed and an AirbyteControlMessage will be emitted to the platform so that the migrated config is persisted
