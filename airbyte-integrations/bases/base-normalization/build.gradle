@@ -97,7 +97,7 @@ def buildAirbyteDocker(String customConnector) {
     }
     task.configure {
         dependsOn checkSshScriptCopy
-        dependsOn assemble
+        dependsOn tasks.named('assemble')
     }
     tasks.named('airbyteDocker').configure {
         dependsOn task

@@ -199,7 +199,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 file -> !file.toString().contains(".venv")
             }
 
-            project.tasks.register(taskName, AirbyteDockerTask) {
+            def airbyteDockerTask = project.tasks.register(taskName, AirbyteDockerTask) {
                 def dockerPath = Paths.get(project.projectDir.absolutePath, dockerFile)
                 def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
                 dockerfileName = dockerFile
@@ -213,8 +213,11 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                     return isUpToDate(logger, idFileOutput, project, dockerFile, dockerPath)
                 }
             }
-            project.tasks.named(taskName).configure {
+            airbyteDockerTask.configure {
                 dependsOn project.tasks.named('assemble')
+            }
+            project.tasks.named('build').configure {
+                dependsOn airbyteDockerTask
             }
         } else {
             project.tasks.register(taskName) {
@@ -247,9 +250,5 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
         createTask(project, 'airbyteDocker', 'Dockerfile')
         createTask(project, 'airbyteDockerTest', 'Dockerfile.test')
-
-        project.tasks.named('build').configure {
-            dependsOn project.tasks.named('airbyteDocker')
-        }
     }
 }

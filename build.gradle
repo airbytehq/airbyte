@@ -131,7 +131,17 @@ static def getCDKSnapshotRequirement(dependenciesList) {
     }
 }
 
+// Common configurations for 'assemble'.
+allprojects {
 
+    tasks.withType(Tar).configureEach {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+
+    tasks.withType(Zip).configureEach {
+        duplicatesStrategy DuplicatesStrategy.INCLUDE
+    }
+}
 
 // Java projects common configurations.
 subprojects { subproj ->
@@ -308,14 +318,6 @@ subprojects { subproj ->
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
         implementation libs.spotbugs.annotations
-    }
-
-    tasks.withType(Tar).configureEach {
-        duplicatesStrategy DuplicatesStrategy.INCLUDE
-    }
-
-    tasks.withType(Zip).configureEach {
-        duplicatesStrategy DuplicatesStrategy.INCLUDE
     }
 
     tasks.withType(SpotBugsTask).configureEach {
