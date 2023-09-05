@@ -75,6 +75,8 @@ public class MongoDbCdcInitializer {
    * applicable.
    *
    * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
+   * @param cdcMetadataInjector The {@link MongoDbCdcConnectorMetadataInjector} used to add metadata
+   *        to generated records.
    * @param catalog The configured Airbyte catalog of streams for the source.
    * @param stateManager The {@link MongoDbStateManager} that provides state information used for
    *        iterator selection.
@@ -85,6 +87,7 @@ public class MongoDbCdcInitializer {
    */
   public List<AutoCloseableIterator<AirbyteMessage>> createCdcIterators(
                                                                         final MongoClient mongoClient,
+                                                                        final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector,
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
@@ -134,12 +137,12 @@ public class MongoDbCdcInitializer {
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
-        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), emittedAt);
+        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
+            emittedAt);
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
         MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
-    final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,

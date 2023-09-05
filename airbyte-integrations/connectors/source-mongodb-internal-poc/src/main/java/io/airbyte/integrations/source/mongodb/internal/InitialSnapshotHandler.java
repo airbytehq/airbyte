@@ -18,6 +18,7 @@ import com.mongodb.client.model.Sorts;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
@@ -52,6 +53,7 @@ public class InitialSnapshotHandler {
                                                                   final List<ConfiguredAirbyteStream> streams,
                                                                   final MongoDbStateManager stateManager,
                                                                   final MongoDatabase database,
+                                                                  final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
                                                                   final Instant emittedAt) {
     return streams
         .stream()
@@ -95,7 +97,8 @@ public class InitialSnapshotHandler {
               .cursor();
 
           final var stateIterator =
-              new MongoDbStateIterator(cursor, stateManager, airbyteStream, emittedAt, CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
+              new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
+                      airbyteStream, emittedAt, CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

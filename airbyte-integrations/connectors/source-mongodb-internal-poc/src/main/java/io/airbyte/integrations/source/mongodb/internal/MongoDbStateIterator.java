@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.mongodb.MongoUtils;
+import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
@@ -21,6 +24,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +41,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbStateIterator.class);
 
   private final MongoCursor<Document> iter;
+  private final Optional<CdcMetadataInjector<?>> cdcMetadataInjector;
   private final MongoDbStateManager stateManager;
   private final ConfiguredAirbyteStream stream;
   private final List<String> fields;
@@ -71,6 +77,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    *
    * @param iter {@link MongoCursor} that iterates over Mongo documents
    * @param stateManager {@link MongoDbStateManager} that manages global and per-stream state
+   * @param cdcMetadataInjector The {@link CdcMetadataInjector} used to add metadata to a published
+   *        record.
    * @param stream the stream that this iterator represents
    * @param emittedAt when this iterator was started
    * @param checkpointInterval how often a state message should be emitted based on number of
@@ -79,6 +87,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    */
   public MongoDbStateIterator(final MongoCursor<Document> iter,
                               final MongoDbStateManager stateManager,
+                              final Optional<CdcMetadataInjector<?>> cdcMetadataInjector,
                               final ConfiguredAirbyteStream stream,
                               final Instant emittedAt,
                               final int checkpointInterval,
@@ -92,6 +101,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
     this.lastId =
         stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
+    this.cdcMetadataInjector = cdcMetadataInjector;
   }
 
   @Override
@@ -160,7 +170,15 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
-            .withData(jsonNode));
+            .withData(injectMetadata(jsonNode)));
+  }
+
+  private JsonNode injectMetadata(final JsonNode jsonNode) {
+    if (Objects.nonNull(cdcMetadataInjector) && cdcMetadataInjector.isPresent() && jsonNode instanceof ObjectNode) {
+      cdcMetadataInjector.get().addMetaDataToRowsFetchedOutsideDebezium((ObjectNode) jsonNode, emittedAt.toString(), null);
+    }
+
+    return jsonNode;
   }
 
 }
