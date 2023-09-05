@@ -22,8 +22,7 @@ METADATA_RECORD_ID_FIELD = "_ab_record_id"
 class Chunk:
     page_content: str
     metadata: Dict[str, Any]
-    stream: str
-    namespace: Optional[str] = None
+    record: AirbyteRecordMessage
     embedding: Optional[List[float]] = None
 
 
@@ -75,9 +74,7 @@ class DocumentProcessor:
                 failure_type=FailureType.config_error,
             )
         chunks = [
-            Chunk(
-                page_content=chunk_document.page_content, metadata=chunk_document.metadata, stream=record.stream, namespace=record.namespace
-            )
+            Chunk(page_content=chunk_document.page_content, metadata=chunk_document.metadata, record=record)
             for chunk_document in self._split_document(doc)
         ]
         id_to_delete = doc.metadata[METADATA_RECORD_ID_FIELD] if METADATA_RECORD_ID_FIELD in doc.metadata else None

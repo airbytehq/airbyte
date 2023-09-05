@@ -36,7 +36,11 @@ class Embedder(ABC):
         pass
 
     @abstractmethod
-    def embed_texts(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_texts(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
+        """
+        Embed the text of each chunk and return the resulting embedding vectors.
+        If a chunk cannot be embedded or is configured to not be embedded, return None for that chunk.
+        """
         pass
 
     @property
@@ -131,24 +135,25 @@ class FromFieldEmbedder(Embedder):
         """
         embeddings = []
         for chunk in chunks:
-            if self.config.field_name not in chunk.metadata:
+            data = chunk.record.data
+            if self.config.field_name not in data:
                 raise AirbyteTracedException(
                     internal_message="Embedding vector field not found",
                     failure_type=FailureType.config_error,
-                    message=f"Record {str(chunk.metadata)[:250]}...  does not contain embedding vector field {self.config.field_name}. Please check your embedding configuration, the embedding vector field has to be set correctly on every record.",
+                    message=f"Record {str(data)[:250]}...  does not contain embedding vector field {self.config.field_name}. Please check your embedding configuration, the embedding vector field has to be set correctly on every record.",
                 )
-            field = chunk.metadata[self.config.field_name]
+            field = data[self.config.field_name]
             if not isinstance(field, list) or not all(isinstance(x, (int, float)) for x in field):
                 raise AirbyteTracedException(
                     internal_message="Embedding vector field not a list of numbers",
                     failure_type=FailureType.config_error,
-                    message=f"Record {str(chunk.metadata)[:250]}...  does  contain embedding vector field {self.config.field_name}, but it is not a list of numbers. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
+                    message=f"Record {str(data)[:250]}...  does  contain embedding vector field {self.config.field_name}, but it is not a list of numbers. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
                 )
             if len(field) != self.config.dimensions:
                 raise AirbyteTracedException(
                     internal_message="Embedding vector field has wrong length",
                     failure_type=FailureType.config_error,
-                    message=f"Record {str(chunk.metadata)[:250]}...  does  contain embedding vector field {self.config.field_name}, but it has length {len(field)} instead of the configured {self.config.dimensions}. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
+                    message=f"Record {str(data)[:250]}...  does  contain embedding vector field {self.config.field_name}, but it has length {len(field)} instead of the configured {self.config.dimensions}. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
                 )
             embeddings.append(field)
 
