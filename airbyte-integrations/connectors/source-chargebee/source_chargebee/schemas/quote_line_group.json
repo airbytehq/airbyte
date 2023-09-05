@@ -27,8 +27,12 @@
     "charge_event": {
       "type": ["string", "null"],
       "enum": [
-        "immediate", "subscription_creation", "trial_start",
-        "subscription_change", "subscription_renewal", "subscription_cancel"
+        "immediate",
+        "subscription_creation",
+        "trial_start",
+        "subscription_change",
+        "subscription_renewal",
+        "subscription_cancel"
       ]
     },
     "billing_cycle_number": {
@@ -99,13 +103,25 @@
           },
           "entity_type": {
             "type": ["string", "null"],
-            "enum": ["adhoc", "plan_item_price", "addon_item_price", "charge_item_price"]
+            "enum": [
+              "adhoc",
+              "plan_item_price",
+              "addon_item_price",
+              "charge_item_price"
+            ]
           },
           "tax_exempt_reason": {
             "type": ["string", "null"],
             "enum": [
-              "tax_not_configured", "region_non_taxable", "export", "customer_exempt", "product_exempt",
-              "zero_rated", "reverse_charge", "high_value_physical_goods", "zero_value_item"
+              "tax_not_configured",
+              "region_non_taxable",
+              "export",
+              "customer_exempt",
+              "product_exempt",
+              "zero_rated",
+              "reverse_charge",
+              "high_value_physical_goods",
+              "zero_value_item"
             ]
           },
           "entity_id": {
@@ -134,8 +150,12 @@
           "entity_type": {
             "type": ["string", "null"],
             "enum": [
-              "item_level_coupon", "document_level_coupon", "promotional_credits",
-              "prorated_credits", "item_level_discount", "document_level_discount"
+              "item_level_coupon",
+              "document_level_coupon",
+              "promotional_credits",
+              "prorated_credits",
+              "item_level_discount",
+              "document_level_discount"
             ]
           },
           "discount_type": {
@@ -162,8 +182,12 @@
           "discount_type": {
             "type": ["string", "null"],
             "enum": [
-              "item_level_coupon", "document_level_coupon", "promotional_credits",
-              "prorated_credits", "item_level_discount", "document_level_discount"
+              "item_level_coupon",
+              "document_level_coupon",
+              "promotional_credits",
+              "prorated_credits",
+              "item_level_discount",
+              "document_level_discount"
             ]
           },
           "entity_id": {
@@ -220,7 +244,16 @@
           },
           "tax_juris_type": {
             "type": ["string", "null"],
-            "enum": ["country", "federal", "state", "county", "city", "special", "unincorporated", "other"]
+            "enum": [
+              "country",
+              "federal",
+              "state",
+              "county",
+              "city",
+              "special",
+              "unincorporated",
+              "other"
+            ]
           },
           "tax_juris_name": {
             "type": ["string", "null"]

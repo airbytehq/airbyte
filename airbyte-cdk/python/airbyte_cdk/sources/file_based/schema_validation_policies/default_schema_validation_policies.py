@@ -4,6 +4,7 @@
 
 from typing import Any, Mapping, Optional
 
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import ValidationPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, StopSyncPerValidationPolicy
 from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
@@ -34,7 +35,7 @@ class WaitForDiscoverPolicy(AbstractSchemaValidationPolicy):
 
 
 DEFAULT_SCHEMA_VALIDATION_POLICIES = {
-    "emit_record": EmitRecordPolicy(),
-    "skip_record": SkipRecordPolicy(),
-    "wait_for_discover": WaitForDiscoverPolicy(),
+    ValidationPolicy.emit_record: EmitRecordPolicy(),
+    ValidationPolicy.skip_record: SkipRecordPolicy(),
+    ValidationPolicy.wait_for_discover: WaitForDiscoverPolicy(),
 }

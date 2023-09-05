@@ -62,7 +62,6 @@ def test_backoff_time(patch_base_class):
     expected_backoff_time = 1
     assert stream.backoff_time(response_mock) == expected_backoff_time
 
-    
 def test_url_base(patch_base_class):
     api_base_url = "https://dummy.url"
     stream = GenesysStream(api_base_url=api_base_url)

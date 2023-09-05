@@ -1,82 +1,73 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
-  "type" : "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
   "additionalProperties": true,
-  "properties" : {
-    "hash" : {
-      "type" : ["null", "string"]
+  "properties": {
+    "hash": {
+      "type": ["null", "string"]
     },
-    "miner" : {
-      "type" : ["null", "string"]
+    "miner": {
+      "type": ["null", "string"]
     },
-    "number" : {
-      "type" : ["null", "integer"]
+    "number": {
+      "type": ["null", "integer"]
     },
-    "gasUsed" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "hex" : {
-          "type" : ["null", "string"]
+    "gasUsed": {
+      "type": ["null", "object"],
+      "properties": {
+        "hex": {
+          "type": ["null", "string"]
         },
-        "type" : {
-          "type" : ["null", "string"]
+        "type": {
+          "type": ["null", "string"]
         }
       },
-      "required" : [
-        "hex",
-        "type"
-      ]
+      "required": ["hex", "type"]
     },
-    "gasLimit" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "hex" : {
-          "type" : ["null", "string"]
+    "gasLimit": {
+      "type": ["null", "object"],
+      "properties": {
+        "hex": {
+          "type": ["null", "string"]
         },
-        "type" : {
-          "type" : ["null", "string"]
+        "type": {
+          "type": ["null", "string"]
         }
       },
-      "required" : [
-        "hex",
-        "type"
-      ]
+      "required": ["hex", "type"]
     },
-    "extraData" : {
-      "type" : ["null", "string"]
+    "extraData": {
+      "type": ["null", "string"]
     },
-    "timestamp" : {
-      "type" : ["null", "integer"]
+    "timestamp": {
+      "type": ["null", "integer"]
     },
-    "difficulty" : {
-      "type" : ["null", "integer"]
+    "difficulty": {
+      "type": ["null", "integer"]
     },
-    "parentHash" : {
-      "type" : ["null", "string"]
+    "parentHash": {
+      "type": ["null", "string"]
     },
-    "_difficulty" : {
-      "type" : ["null", "object"],
-      "properties" : {
-        "hex" : {
-          "type" : ["null", "string"]
+    "_difficulty": {
+      "type": ["null", "object"],
+      "properties": {
+        "hex": {
+          "type": ["null", "string"]
         },
-        "type" : {
-          "type" : ["null", "string"]
+        "type": {
+          "type": ["null", "string"]
         }
       },
-      "required" : [
-        "hex",
-        "type"
-      ]
+      "required": ["hex", "type"]
     },
-    "transactions" : {
-      "type" : ["null", "array"],
-      "items" : {
-        "$ref" : "evm/transaction.json"
+    "transactions": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "evm/transaction.json"
       }
     }
   },
-  "required" : [
+  "required": [
     "hash",
     "miner",
     "number",

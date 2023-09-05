@@ -20,6 +20,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import org.slf4j.Logger;
 
@@ -40,7 +41,7 @@ public class StarburstGalaxyS3DestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     JsonNode baseConfigJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
 
     // Set a random s3 bucket path and database schema for each integration test
@@ -55,7 +56,7 @@ public class StarburstGalaxyS3DestinationAcceptanceTest
     S3DestinationConfig s3Config = galaxyDestinationConfig.storageConfig().getS3DestinationConfigOrThrow();
     LOGGER.info("Test full path: s3://{}/{}", s3Config.getBucketName(), s3Config.getBucketPath());
 
-    super.setup(testEnv); // Create a database
+    super.setup(testEnv, TEST_SCHEMAS); // Create a database
   }
 
   @Override

@@ -11,12 +11,12 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -63,7 +63,8 @@ public class CursorManager<S> {
                        final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
                        final boolean onlyIncludeIncrementalStreams) {
     pairToCursorInfo = createCursorInfoMap(
-        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction, onlyIncludeIncrementalStreams);
+        catalog, streamSupplier, cursorFunction, cursorFieldFunction, cursorRecordCountFunction, namespacePairFunction,
+        onlyIncludeIncrementalStreams);
   }
 
   /**
@@ -106,7 +107,7 @@ public class CursorManager<S> {
         .collect(Collectors.toSet());
     allStreamNames.addAll(streamSupplier.get().stream().map(namespacePairFunction).filter(Objects::nonNull).collect(Collectors.toSet()));
 
-    final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new HashMap<>();
+    final Map<AirbyteStreamNameNamespacePair, CursorInfo> localMap = new ConcurrentHashMap<>();
     final Map<AirbyteStreamNameNamespacePair, S> pairToState = streamSupplier.get()
         .stream()
         .collect(Collectors.toMap(namespacePairFunction, Function.identity()));

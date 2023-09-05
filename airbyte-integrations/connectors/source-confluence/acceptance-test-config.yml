@@ -4,7 +4,7 @@ connector_image: airbyte/source-confluence:dev
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_confluence/spec.json"
+    - spec_path: "source_confluence/spec.yaml"
   connection:
     tests:
     - config_path: "secrets/config.json"

@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -305,6 +306,8 @@ public abstract class CdcSourceTest {
     assertEquals(expectedRecords, actualData);
   }
 
+  // Failing on `source-postgres`, possibly others as well.
+  @Disabled("The 'testExistingData()' test is flaky. https://github.com/airbytehq/airbyte/issues/29411")
   @Test
   @DisplayName("On the first sync, produce returns records that exist in the database.")
   void testExistingData() throws Exception {

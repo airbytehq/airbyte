@@ -22,6 +22,7 @@ DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE = (
     "_EXPERIMENTAL_DAGGER_CLOUD_TOKEN",
     "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k",
 )
+ARGS_DISABLING_TUI = ["--no-tui", "publish"]
 
 
 def get_dagger_path() -> Optional[str]:
@@ -89,8 +90,8 @@ def check_dagger_cli_install() -> str:
 def main():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     exit_code = 0
-    if sys.argv[1] == "--no-tui":
-        command = ["airbyte-ci-internal"] + sys.argv[2:]
+    if len(sys.argv) > 1 and any([arg in ARGS_DISABLING_TUI for arg in sys.argv]):
+        command = ["airbyte-ci-internal"] + [arg for arg in sys.argv[1:] if arg != "--no-tui"]
     else:
         dagger_path = check_dagger_cli_install()
         command = [dagger_path, "run", "airbyte-ci-internal"] + sys.argv[1:]

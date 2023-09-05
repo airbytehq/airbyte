@@ -5,6 +5,7 @@
 The Airbyte MQTT destination allows you to sync data to any MQTT system compliance with version 3.1.X. Each stream is written to the corresponding MQTT topic.
 
 ## Prerequisites
+
 - For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your MQTT connector to the latest version
 
 ### Sync overview
@@ -17,19 +18,19 @@ This connector writes data with JSON format (in bytes).
 
 Each record will contain in its payload these 4 fields:
 
-* `_airbyte_ab_id`: an uuid assigned by Airbyte to each event that is processed.
-* `_airbyte_emitted_at`:  a timestamp representing when the event was pulled from the data source.
-* `_airbyte_data`: a json blob representing with the event data.
-* `_airbyte_stream`: the name of each record's stream.
+- `_airbyte_ab_id`: an uuid assigned by Airbyte to each event that is processed.
+- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_data`: a json blob representing with the event data.
+- `_airbyte_stream`: the name of each record's stream.
 
 #### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | No |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | Yes |  |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | No                   |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ## Getting started
 
@@ -37,7 +38,7 @@ Each record will contain in its payload these 4 fields:
 
 To use the MQTT destination, you'll need:
 
-* A MQTT broker implementing MQTT protocol version 3.1.X.
+- A MQTT broker implementing MQTT protocol version 3.1.X.
 
 ### Setup guide
 
@@ -61,30 +62,29 @@ To define the output topics dynamically, you can leverage the `{namespace}` and 
 
 You should now have all the requirements needed to configure MQTT as a destination in the UI. You can configure the following parameters on the MQTT destination \(though many of these are optional or have default values\):
 
-* **MQTT broker host**
-* **MQTT broker port**
-* **Use TLS**
-* **Username**
-* **Password**
-* **Topic pattern**
-* **Test topic**
-* **Client ID**
-* **Sync publisher**
-* **Connect timeout**
-* **Automatic reconnect**
-* **Clean session**
-* **Message retained**
-* **Message QoS**
+- **MQTT broker host**
+- **MQTT broker port**
+- **Use TLS**
+- **Username**
+- **Password**
+- **Topic pattern**
+- **Test topic**
+- **Client ID**
+- **Sync publisher**
+- **Connect timeout**
+- **Automatic reconnect**
+- **Clean session**
+- **Message retained**
+- **Message QoS**
 
 More info about this can be found in the [OASIS MQTT standard site](http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html).
 
 _NOTE_: MQTT version 5 is not supported yet.
 
-
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2022-09-02 | [16263](https://github.com/airbytehq/airbyte/pull/16263) | Marked password field in spec as airbyte_secret |
-| 0.1.2 | 2022-07-12 | [14648](https://github.com/airbytehq/airbyte/pull/14648) | Include lifecycle management |
-| 0.1.1 | 2022-05-24 | [13099](https://github.com/airbytehq/airbyte/pull/13099) | Fixed build's tests |
+| Version | Date       | Pull Request                                             | Subject                                         |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.3   | 2022-09-02 | [16263](https://github.com/airbytehq/airbyte/pull/16263) | Marked password field in spec as airbyte_secret |
+| 0.1.2   | 2022-07-12 | [14648](https://github.com/airbytehq/airbyte/pull/14648) | Include lifecycle management                    |
+| 0.1.1   | 2022-05-24 | [13099](https://github.com/airbytehq/airbyte/pull/13099) | Fixed build's tests                             |

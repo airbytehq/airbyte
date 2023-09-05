@@ -4,7 +4,7 @@
 
 import logging
 import uuid
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
@@ -12,6 +12,7 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
@@ -39,18 +40,20 @@ AVRO_LOGICAL_TYPE_TO_JSON = {
 
 
 class AvroParser(FileTypeParser):
+    ENCODING = None
+
     async def infer_schema(
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
-        avro_format = config.format[config.file_type] if config.format else AvroFormat()
+    ) -> SchemaType:
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)
             avro_schema = avro_reader.writer_schema
         if not avro_schema["type"] == "record":
@@ -66,7 +69,7 @@ class AvroParser(FileTypeParser):
     def _convert_avro_type_to_json(cls, avro_format: AvroFormat, field_name: str, avro_field: str) -> Mapping[str, Any]:
         if isinstance(avro_field, str) and avro_field in AVRO_TYPE_TO_JSON_TYPE:
             # Legacy behavior to retain backwards compatibility. Long term we should always represent doubles as strings
-            if avro_field == "double" and avro_format.decimal_as_float:
+            if avro_field == "double" and not avro_format.double_as_string:
                 return {"type": "number"}
             return {"type": AVRO_TYPE_TO_JSON_TYPE[avro_field]}
         if isinstance(avro_field, Mapping):
@@ -130,12 +133,13 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format[config.file_type] if config.format else AvroFormat()
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
-        with stream_reader.open_file(file, self.file_read_mode, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             avro_reader = fastavro.reader(fp)
             schema = avro_reader.writer_schema
             schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}
@@ -152,10 +156,18 @@ class AvroParser(FileTypeParser):
     @staticmethod
     def _to_output_value(avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
         if not isinstance(record_type, Mapping):
-            if record_type == "double" and not avro_format.decimal_as_float:
+            if record_type == "double" and avro_format.double_as_string:
                 return str(record_value)
             return record_value
         if record_type.get("logicalType") == "uuid":
             return uuid.UUID(bytes=record_value)
+        elif record_type.get("logicalType") == "decimal":
+            return str(record_value)
+        elif record_type.get("logicalType") == "date":
+            return record_value.isoformat()
+        elif record_type.get("logicalType") == "local-timestamp-millis":
+            return record_value.isoformat(sep="T", timespec="milliseconds")
+        elif record_type.get("logicalType") == "local-timestamp-micros":
+            return record_value.isoformat(sep="T", timespec="microseconds")
         else:
             return record_value

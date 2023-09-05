@@ -14,6 +14,18 @@
     },
     {
       "stream": {
+        "name": "custom_roles",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "group_memberships",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -158,6 +170,18 @@
     },
     {
       "stream": {
+        "name": "topics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "users",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -183,6 +207,30 @@
     {
       "stream": {
         "name": "organization_memberships",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "schedules",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "sla_policies",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

@@ -11,7 +11,7 @@ from unittest.mock import Mock
 import pyarrow as pa
 import pytest
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.file_types import ParquetParser
@@ -170,7 +170,7 @@ def test_value_dictionary() -> None:
 def test_wrong_file_format(file_format: Union[CsvFormat, JsonlFormat]) -> None:
     parser = ParquetParser()
     config = FileBasedStreamConfig(name="test.parquet", file_type=file_format.filetype, format={file_format.filetype: file_format},
-                                   validation_policy="a_validtion_policy")
+                                   validation_policy=ValidationPolicy.emit_record)
     file = RemoteFile(uri="s3://mybucket/test.parquet", last_modified=datetime.datetime.now())
     stream_reader = Mock()
     logger = Mock()

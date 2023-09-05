@@ -28,7 +28,7 @@ from .utils import ShopifyWrongShopNameError
 
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
-    api_version = "2022-10"
+    api_version = "2023-07"
     # Page size
     limit = 250
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
@@ -56,7 +56,7 @@ class ShopifyStream(HttpStream, ABC):
         # certain streams are using `since_id` field as `filter_field`, which requires to use `int` type,
         # but many other use `str` values for this, we determine what to use based on `filter_field` value
         # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
-        return 0 if self.filter_field == "since_id" else self.config["start_date"]
+        return 0 if self.filter_field == "since_id" else (self.config.get("start_date") or "")
 
     @staticmethod
     def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -375,6 +375,16 @@ class Orders(IncrementalShopifyStream):
         if not next_page_token:
             params["status"] = "any"
         return params
+
+
+class Disputes(IncrementalShopifyStream):
+    data_field = "disputes"
+    filter_field = "since_id"
+    cursor_field = "id"
+    order_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"shopify_payments/{self.data_field}.json"
 
 
 class MetafieldOrders(MetafieldShopifySubstream):
@@ -828,6 +838,7 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
+        config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
 
@@ -836,6 +847,7 @@ class SourceShopify(AbstractSource):
         Mapping a input config of the user input configuration as defined in the connector spec.
         Defining streams to run.
         """
+        config["shop"] = self.get_shop_name(config)
         config["authenticator"] = ShopifyAuthenticator(config)
         user_scopes = self.get_user_scopes(config)
         always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
@@ -857,6 +869,7 @@ class SourceShopify(AbstractSource):
             CustomCollections(config),
             Customers(config),
             DiscountCodes(config),
+            Disputes(config),
             DraftOrders(config),
             FulfillmentOrders(config),
             Fulfillments(config),
@@ -916,6 +929,12 @@ class SourceShopify(AbstractSource):
             return access_scopes
         else:
             raise ShopifyAccessScopesError(response)
+
+    @staticmethod
+    def get_shop_name(config):
+        split_pattern = ".myshopify.com"
+        shop_name = config.get("shop")
+        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
 
     @staticmethod
     def format_name(name):
