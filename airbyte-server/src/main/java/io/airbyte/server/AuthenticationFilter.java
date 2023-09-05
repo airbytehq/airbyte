@@ -40,8 +40,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Validate origin based authentication
             String originHeader =
                     requestContext.getHeaderString("origin");
-            LOGGER.info(" token " + token);
-            LOGGER.info(" originHeader " + originHeader);
             if (isEdgeTagBasedAuthentication(originHeader)) {
                 try {
                     if (!validateEdgeBasedToken(originHeader, token)) {
@@ -50,7 +48,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                         return;
                     }
                 } catch (Exception e) {
-                    LOGGER.info(" inside first catch ");
                     try {
                         if (!validateEdgeBasedToken(originHeader, token)) {
                             abortWithUnauthorized(requestContext);
@@ -95,7 +92,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         // Check if the Authorization header is valid
         // It must not be null and must be prefixed with "Bearer" plus a whitespace
         // The authentication scheme comparison must be case-insensitive
-        LOGGER.info(" inside isTokenBasedAuthentication ");
         return authorizationHeader != null && authorizationHeader.toLowerCase()
                 .startsWith(AUTHENTICATION_SCHEME.toLowerCase() + " ");
     }
@@ -108,7 +104,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
         // Abort the filter chain with a 401 status code response
         // The WWW-Authenticate header is sent along with the response
-        LOGGER.info(" inside abortWithUnauthorized ");
         requestContext.abortWith(
                 Response.status(Response.Status.UNAUTHORIZED)
                         .header(HttpHeaders.WWW_AUTHENTICATE,
@@ -122,7 +117,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     private boolean validateEdgeBasedToken(String origin, String token) throws Exception {
-        LOGGER.info(" inside validateEdgeBasedToken ");
         return blotoutAuthentication.validateEdgeTagBasedAuthentication(origin, token);
     }
 
