@@ -42,7 +42,7 @@ connectionSpecification:
                 - 100
     campaign_id:
       title: Campaign ID
-      description: The ID of the advertising campaign
+      description: "The ID of the advertising campaign. ВАЖНО: Для использования AutoStatStream кампания должна быть автоматической, иначе коннектор будет падать!"
       minimum: 1
       type: integer
     date_from:
