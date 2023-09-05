@@ -133,6 +133,17 @@ public class MongoDbStateManager {
   }
 
   /**
+   * Resets the state stored in this manager by overwriting the CDC state and clearing the stream
+   * state.
+   *
+   * @param cdcState The new CDC state.
+   */
+  public void resetState(final MongoDbCdcState cdcState) {
+    updateCdcState(cdcState);
+    pairToStreamState.clear();
+  }
+
+  /**
    * Generates an {@link AirbyteStateMessage} from the state tracked by this manager. The resulting
    * state message contains a global state object with the CDC state as the "shared state" and the
    * individual stream states as the "stream states".

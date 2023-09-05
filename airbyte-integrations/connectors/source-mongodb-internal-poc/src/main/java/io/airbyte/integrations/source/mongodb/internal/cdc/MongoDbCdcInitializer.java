@@ -126,6 +126,10 @@ public class MongoDbCdcInitializer {
 
     if (!savedOffsetIsValid) {
       LOGGER.warn("Saved offset is not valid. Airbyte will trigger a full refresh.");
+      // If the offset in the state is invalid, reset the state to the initial state
+      stateManager.resetState(Jsons.object(initialDebeziumState, MongoDbCdcState.class));
+    } else {
+      stateManager.updateCdcState(Jsons.object(cdcState, MongoDbCdcState.class));
     }
 
     final MongoDbCdcState stateToBeUsed =
