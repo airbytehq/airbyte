@@ -152,16 +152,4 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
     return String.format(COPY_QUERY_EXTERNAL_STAGE + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
   }
 
-  /**
-   * Creates a SQL query used to remove staging files that were just staged See
-   * https://docs.snowflake.com/en/sql-reference/sql/remove.html for more context
-   *
-   * @param stageName name of staging folder
-   * @return SQL query string
-   */
-  protected String getRemoveQuery(final String stageName) {
-    // Should be a no-op. We are using external stage, managed by user.
-    return "";
-  }
-
 }
