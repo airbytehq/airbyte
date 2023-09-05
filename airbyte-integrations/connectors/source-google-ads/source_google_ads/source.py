@@ -193,7 +193,6 @@ class SourceGoogleAds(AbstractSource):
             Audience(google_api, customers=customers),
             CampaignBiddingStrategies(**incremental_config),
             CampaignCriterion(**incremental_events_config),
-            CampaignBudget(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
             Labels(google_api, customers=customers),
@@ -204,6 +203,7 @@ class SourceGoogleAds(AbstractSource):
             streams.extend(
                 [
                     Campaigns(**non_manager_incremental_config),
+                    CampaignBudget(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     DisplayTopicsPerformanceReport(**non_manager_incremental_config),

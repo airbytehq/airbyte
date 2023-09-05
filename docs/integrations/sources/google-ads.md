@@ -43,6 +43,11 @@ If you are using Airbyte Open Source, you will need to obtain the following OAut
 
 Please refer to [Google's documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions on how to obtain these credentials.
 
+A single access token can grant varying degrees of access to multiple APIs. A variable parameter called scope controls the set of resources and operations that an access token permits. During the access token request, your app sends one or more values in the scope parameter.
+
+The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
+
+Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
 ### Step 3: Set up the Google Ads connector in Airbyte
 
 <!-- /env:oss -->
