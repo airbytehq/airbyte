@@ -32,7 +32,7 @@ class SourceApplovin(AbstractSource):
     def get_access_token(self, config) -> Tuple[any, any]:
         body = {
             "grant_type": "client_credentials",
-            "scope" : "campaigns:read source_bids:read creatives:read",
+            "scope" : "campaigns:read creatives:read",
             "client_id" : config["client_id"],
             "client_secret" : config["client_secret"]
         }
