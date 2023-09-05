@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - graph.facebook.com
@@ -7,6 +10,7 @@ data:
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-facebook-pages
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
   icon: facebook.svg
   license: ELv2
@@ -17,12 +21,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
+  supportLevel: community
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"
