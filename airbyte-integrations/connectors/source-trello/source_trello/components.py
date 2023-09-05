@@ -27,7 +27,7 @@ class OrderIdsPartitionRouter(SubstreamPartitionRouter):
         for board_id in board_ids:
                 yield {"id": board_id}
 
-    def read_all_boards(stream_boards: Stream, stream_organizations: Stream):
+    def read_all_boards(self, stream_boards: Stream, stream_organizations: Stream):
         """
         Method to get id of each board in the boards stream, 
         get ids of boards associated with each organization in the organizations stream 
