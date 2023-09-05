@@ -20,38 +20,18 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOperations {
+public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
-  private static final String CREATE_STAGE_QUERY =
-      "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   private static final String PUT_FILE_QUERY = "PUT file://%s @%s/%s PARALLEL = %d;";
   private static final String LIST_STAGE_QUERY = "LIST @%s/%s/%s;";
   // the 1s1t copy query explicitly quotes the raw table+schema name.
-  private static final String COPY_QUERY_1S1T =
+  private static final String COPY_QUERY_EXTERNAL_STAGE =
       """
       COPY INTO "%s"."%s" FROM '@%s/%s'
-      file_format = (
-        type = csv
-        compression = auto
-        field_delimiter = ','
-        skip_header = 0
-        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-        NULL_IF=('')
-      )""";
-  private static final String COPY_QUERY = """
-                                           COPY INTO %s.%s FROM '@%s/%s'
-                                           file_format = (
-                                             type = csv
-                                             compression = auto
-                                             field_delimiter = ','
-                                             skip_header = 0
-                                             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-                                             NULL_IF=('')
-                                           )""";
-  private static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
-  private static final String REMOVE_QUERY = "REMOVE @%s;";
+      file_format = %2;
+      """;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
@@ -64,16 +44,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
   }
 
   @Override
-  public String getStageName(final String namespace, final String streamName) {
-    if (use1s1t) {
-      return String.join(".",
-          '"' + nameTransformer.convertStreamName(namespace) + '"',
-          '"' + nameTransformer.convertStreamName(streamName) + '"');
-    } else {
-      return nameTransformer.applyDefaultCase(String.join(".",
-          nameTransformer.convertStreamName(namespace),
-          nameTransformer.convertStreamName(streamName)));
-    }
+  public String getStageName(final JsonNode config) {
+    // Return stage name from config.
+    // TODO: Use a constant with the config key name:
+    return config["stage_name"]
   }
 
   @Override
@@ -120,15 +94,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
                                      final String stageName,
                                      final String stagingPath,
                                      final SerializableBuffer recordsData)
-      throws Exception {
-    final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
-    LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
-    if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
-      LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
-          (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
-      throw new RuntimeException("Upload failed");
-    }
+    // No-op;
+    return;
   }
 
   protected String getPutQuery(final String stageName, final String stagingPath, final String filePath) {
@@ -158,27 +125,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
     return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename).replaceAll("/+", "/");
   }
 
-  @Override
-  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String query = getCreateStageQuery(stageName);
-    LOGGER.debug("Executing query: {}", query);
-    try {
-      database.execute(query);
-    } catch (final Exception e) {
-      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
-    }
-  }
-
-  /**
-   * Creates a SQL query to create a staging folder. This query will create a staging folder if one
-   * previously did not exist
-   *
-   * @param stageName name of the staging folder
-   * @return SQL query string
-   */
-  protected String getCreateStageQuery(final String stageName) {
-    return String.format(CREATE_STAGE_QUERY, stageName);
-  }
 
   @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
@@ -213,43 +159,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
-    if (use1s1t) {
-      return String.format(COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
-    } else {
-      return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
-    }
-  }
-
-  @Override
-  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    try {
-      final String query = getDropQuery(stageName);
-      LOGGER.debug("Executing query: {}", query);
-      database.execute(query);
-    } catch (final SQLException e) {
-      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
-    }
-  }
-
-  /**
-   * Creates a SQL query to drop staging area and all associated files within the staged area
-   *
-   * @param stageName name of staging folder
-   * @return SQL query string
-   */
-  protected String getDropQuery(final String stageName) {
-    return String.format(DROP_STAGE_QUERY, stageName);
-  }
-
-  @Override
-  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    try {
-      final String query = getRemoveQuery(stageName);
-      LOGGER.debug("Executing query: {}", query);
-      database.execute(query);
-    } catch (final SQLException e) {
-      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
-    }
+    return String.format(COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
   }
 
   /**
@@ -260,7 +170,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
    * @return SQL query string
    */
   protected String getRemoveQuery(final String stageName) {
-    return String.format(REMOVE_QUERY, stageName);
+    // Should be a no-op. We are using external stage, managed by user.
+    return "";
   }
 
 }

@@ -10,16 +10,15 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
@@ -30,39 +29,44 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
+/* 
+ * This destination type expects data files already loaded to an external stage.
+ * 
+ * The stage name and file format name will be provided by the user.
+ */
+public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
-  private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeBulkLoadDestination.class);
+  private static final String BULK_FILE_FORMAT = "bulk_file_format";
+  private static final String BULK_S3_STAGES = "bulk_s3_stages";
+
   private final String airbyteEnvironment;
 
-  public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
+  public SnowflakeBulkLoadDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
 
-  public SnowflakeInternalStagingDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
-    super("", nameTransformer, new SnowflakeInternalStagingSqlOperations(nameTransformer));
+  public SnowflakeBulkLoadDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
+    super("", nameTransformer, new SnowflakeExternalStagingSqlOperations(nameTransformer));
     this.airbyteEnvironment = airbyteEnvironment;
   }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final SnowflakeInternalStagingSqlOperations snowflakeInternalStagingSqlOperations = new SnowflakeInternalStagingSqlOperations(nameTransformer);
+    final SnowflakeBulkLoadSqlOperations snowflakeBulkLoadSqlOperations = new SnowflakeBulkLoadSqlOperations(nameTransformer);
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
       attemptTableOperations(outputSchema, database, nameTransformer,
-          snowflakeInternalStagingSqlOperations, true);
-      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
+          snowflakeBulkLoadSqlOperations, true);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -75,26 +79,6 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
       } catch (final Exception e) {
         LOGGER.warn("Unable to close data source.", e);
       }
-    }
-  }
-
-  private static void attemptStageOperations(final String outputSchema,
-                                             final JdbcDatabase database,
-                                             final NamingConventionTransformer namingResolver,
-                                             final SnowflakeInternalStagingSqlOperations sqlOperations)
-      throws Exception {
-
-    // verify we have permissions to create/drop stage
-    final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
-    final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
-    sqlOperations.createStageIfNotExists(database, stageName);
-
-    // try to make test write to make sure we have required role
-    try {
-      sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
-    } finally {
-      // drop created tmp stage
-      sqlOperations.dropStageIfExists(database, stageName);
     }
   }
 
@@ -154,7 +138,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         database,
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+        new SnowflakeBulkLoadSqlOperations(getNamingResolver()),
         getNamingResolver(),
         config,
         catalog,
