@@ -40,18 +40,20 @@ gradleEnterprise {
 
 
 ext.isCiServer = System.getenv().containsKey("CI")
+ext.isAirbyteCI = System.getenv().containsKey("AIRBYTE_CI")
 
 buildCache {
     local {
         // Local build cache is dangerous as it might produce inconsistent results
         // in case developer modifies files while the build is running
-        enabled = false
+        enabled = isAirbyteCI
     }
     remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
         region = 'us-east-2'
         bucket = 'airbyte-buildcache'
         prefix = 'cache/'
         push = isCiServer
+        enabled = !isAirbyteCI
         // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
         // anonymous access will be used if environment variables are missing
     }

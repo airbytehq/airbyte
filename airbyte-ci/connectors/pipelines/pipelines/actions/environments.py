@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -543,9 +543,8 @@ def with_gradle(
 
     if sources_to_include:
         include += sources_to_include
-    # TODO re-enable once we have fixed the over caching issue
-    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+
+    gradle_cache: CacheVolume = context.dagger_client.cache_volume("gradle-cache")
 
     openjdk_with_docker = (
         context.dagger_client.container()
@@ -554,21 +553,20 @@ def with_gradle(
         .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
         .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_env_variable("GRADLE_HOME", "/root/.gradle")
-        .with_exec(["mkdir", "/airbyte"])
-        .with_workdir("/airbyte")
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
-        .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        # TODO (ben) reenable once we have fixed the over caching issue
-        # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
-        # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
-        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
     )
 
-    if bind_to_docker_host:
-        return with_bound_docker_host(context, openjdk_with_docker)
-    else:
-        return openjdk_with_docker
+    openjdk_with_docker = with_bound_docker_host(context, openjdk_with_docker)
+
+    return (
+        openjdk_with_docker.with_exec(["mkdir", "-p", "/root/.gradle"])
+        .with_env_variable("GRADLE_HOME", "/root/.gradle")
+        .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
+        .with_workdir("/airbyte")
+        .with_env_variable("AIRBYTE_CI", "True")
+        .with_mounted_cache("/root/gradle-cache", gradle_cache, sharing=CacheSharingMode.LOCKED)
+        .with_exec(["rsync", "-az", "/root/gradle-cache/", "/root/.gradle"])
+        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+    )
 
 
 async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):

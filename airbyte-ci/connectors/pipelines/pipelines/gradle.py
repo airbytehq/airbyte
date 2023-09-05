@@ -5,12 +5,11 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar, Tuple
+from typing import ClassVar, List, Tuple
 
-from dagger import CacheVolume, Container, Directory, QueryError
-from pipelines import consts
+from dagger import CacheVolume, Directory
 from pipelines.actions import environments
-from pipelines.bases import Step, StepResult
+from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.contexts import PipelineContext
 
 
@@ -28,7 +27,7 @@ class GradleTask(Step, ABC):
     gradle_task_name: ClassVar
     gradle_task_options: Tuple[str, ...] = ()
 
-    def __init__(self, context: PipelineContext, with_java_cdk_snapshot: bool = True) -> None:
+    def __init__(self, context: PipelineContext, with_java_cdk_snapshot: bool = False) -> None:
         super().__init__(context)
         self.with_java_cdk_snapshot = with_java_cdk_snapshot
 
@@ -66,7 +65,15 @@ class GradleTask(Step, ABC):
         )
         return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", contents=cat_gradle_plugin_content)
 
-    def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
+    def _get_gradle_command(
+        self,
+        extra_options: Tuple[str, ...] = (
+            "--scan",
+            "--build-cache",
+            "--no-daemon",
+            "--no-watch-fs",
+        ),
+    ) -> List:
         command = (
             ["./gradlew"]
             + list(extra_options)
@@ -93,40 +100,10 @@ class GradleTask(Step, ABC):
         if self.with_java_cdk_snapshot:
             connector_under_test = connector_under_test.with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"])
         connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
+        result = await self.get_step_result(connector_under_test)
+        if result.status is StepStatus.SUCCESS:
+            await self.export_cache_to_volume(result.output_artifact)
+        return result
 
-        results = await self.get_step_result(connector_under_test)
-
-        await self._export_gradle_dependency_cache(connector_under_test)
-        return results
-
-    async def _export_gradle_dependency_cache(self, gradle_container: Container) -> Container:
-        """Export the Gradle writable dependency cache to the read-only dependency cache path.
-        The read-only dependency cache is persisted thanks to mounted cache volumes in environments.with_gradle().
-        You can read more about Shared readonly cache here: https://docs.gradle.org/current/userguide/dependency_resolution.html#sub:shared-readonly-cache
-        Args:
-            gradle_container (Container): The Gradle container.
-
-        Returns:
-            Container: The Gradle container, with the updated cache.
-        """
-        try:
-            cache_dirs = await gradle_container.directory(consts.GRADLE_CACHE_PATH).entries()
-        except QueryError:
-            cache_dirs = []
-        if "modules-2" in cache_dirs:
-            with_cache = gradle_container.with_exec(
-                [
-                    "rsync",
-                    "--archive",
-                    "--quiet",
-                    "--times",
-                    "--exclude",
-                    "*.lock",
-                    "--exclude",
-                    "gc.properties",
-                    f"{consts.GRADLE_CACHE_PATH}/modules-2/",
-                    f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
-                ]
-            )
-            return await with_cache
-        return gradle_container
+    async def export_cache_to_volume(self, container):
+        await container.with_exec(["rsync", "-az", "/root/.gradle/", "/root/gradle-cache"])
