@@ -38,7 +38,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
   private final NamingConventionTransformer nameTransformer;
   private final boolean use1s1t;
 
-  public SnowflakeInternalStagingSqlOperations(final NamingConventionTransformer nameTransformer) {
+  public SnowflakeBulkLoadSqlOperations(final NamingConventionTransformer nameTransformer) {
     this.nameTransformer = nameTransformer;
     this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
   }
