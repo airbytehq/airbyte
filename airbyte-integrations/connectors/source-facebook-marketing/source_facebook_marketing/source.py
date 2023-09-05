@@ -89,6 +89,8 @@ class SourceFacebookMarketing(AbstractSource):
             logger.info(f"Select account {api.account}")
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, f"error: {repr(e)}"
+        except AirbyteTracedException as traced_exc:
+            return False, traced_exc.message
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
