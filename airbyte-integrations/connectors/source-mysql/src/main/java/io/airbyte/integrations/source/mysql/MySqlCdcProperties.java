@@ -28,9 +28,9 @@ public class MySqlCdcProperties {
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
   private static final Duration HEARTBEAT_FREQUENCY = Duration.ofSeconds(10);
 
-  public static Properties getDebeziumProperties(final JdbcDatabase database) {
+  public static Properties getDebeziumProperties(final JdbcDatabase database, final boolean onlyCaptureSchemaOfTablesToSync) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    final Properties props = commonProperties(database);
+    final Properties props = commonProperties(database, onlyCaptureSchemaOfTablesToSync);
     // snapshot config
     if (sourceConfig.has("snapshot_mode")) {
       // The parameter `snapshot_mode` is passed in test to simulate reading the binlog directly and skip
@@ -44,7 +44,7 @@ public class MySqlCdcProperties {
     return props;
   }
 
-  private static Properties commonProperties(final JdbcDatabase database) {
+  private static Properties commonProperties(final JdbcDatabase database, final boolean onlyCaptureSchemaOfTablesToSync) {
     final Properties props = new Properties();
     final JsonNode sourceConfig = database.getSourceConfig();
     final JsonNode dbConfig = database.getDatabaseConfig();
@@ -111,12 +111,18 @@ public class MySqlCdcProperties {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
     props.setProperty("binary.handling.mode", "base64");
     props.setProperty("database.include.list", sourceConfig.get("database").asText());
+    if (onlyCaptureSchemaOfTablesToSync) {
+      // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-database-history-store-only-captured-tables-ddl
+      props.setProperty("schema.history.internal.store.only.captured.tables.ddl", "true");
+      // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-database-history-store-only-captured-databases-ddl
+      props.setProperty("schema.history.internal.store.only.captured.databases.ddl", "true");
+    }
 
     return props;
   }
 
   static Properties getSnapshotProperties(final JdbcDatabase database) {
-    final Properties props = commonProperties(database);
+    final Properties props = commonProperties(database, false);
     props.setProperty("snapshot.mode", "initial_only");
     return props;
   }

@@ -367,7 +367,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new MySqlCdcSavedInfoFetcher(cdcState.orElse(null)),
           new MySqlCdcStateHandler(stateManager),
           mySqlCdcConnectorMetadataInjector,
-          MySqlCdcProperties.getDebeziumProperties(database),
+          MySqlCdcProperties.getDebeziumProperties(database, false),
           DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt,
           false);

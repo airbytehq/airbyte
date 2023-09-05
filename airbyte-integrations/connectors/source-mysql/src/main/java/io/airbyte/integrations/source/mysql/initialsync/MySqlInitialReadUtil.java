@@ -5,11 +5,13 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
@@ -23,6 +25,7 @@ import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.DebeziumStateAttributes;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.MySqlCdcProperties;
@@ -53,6 +56,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -91,7 +95,7 @@ public class MySqlInitialReadUtil {
     // state associated with the initial sync.
     final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
     final JsonNode initialDebeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(
-        MySqlCdcProperties.getDebeziumProperties(database), catalog, database);
+        MySqlCdcProperties.getDebeziumProperties(database, true), catalog, database);
 
     final JsonNode state =
         (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
@@ -99,7 +103,7 @@ public class MySqlInitialReadUtil {
             : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
 
     final Optional<MysqlDebeziumStateAttributes> savedOffset = mySqlDebeziumStateUtil.savedOffset(
-        MySqlCdcProperties.getDebeziumProperties(database), catalog, state.get(MYSQL_CDC_OFFSET), sourceConfig);
+        MySqlCdcProperties.getDebeziumProperties(database, true), catalog, state.get(MYSQL_CDC_OFFSET), sourceConfig);
 
     final boolean savedOffsetStillPresentOnServer =
         savedOffset.isPresent() && mySqlDebeziumStateUtil.savedOffsetStillPresentOnServer(database, savedOffset.get());
@@ -111,9 +115,8 @@ public class MySqlInitialReadUtil {
     final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog,
         savedOffsetStillPresentOnServer);
 
-    final CdcState stateToBeUsed = (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
-        || stateManager.getCdcStateManager().getCdcState().getState() == null)) ? new CdcState().withState(initialDebeziumState)
-            : stateManager.getCdcStateManager().getCdcState();
+    final CdcState stateToBeUsed = stateToBeUsed(savedOffsetStillPresentOnServer, initialLoadStreams.newTablesInCatalog(), mySqlDebeziumStateUtil,
+        stateManager, initialDebeziumState, database, catalog);
 
     final MySqlCdcConnectorMetadataInjector metadataInjector = MySqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
@@ -153,7 +156,7 @@ public class MySqlInitialReadUtil {
         new MySqlCdcSavedInfoFetcher(stateToBeUsed),
         new MySqlCdcStateHandler(stateManager),
         metadataInjector,
-        MySqlCdcProperties.getDebeziumProperties(database),
+        MySqlCdcProperties.getDebeziumProperties(database, true),
         DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
         emittedAt,
         false);
@@ -171,6 +174,30 @@ public class MySqlInitialReadUtil {
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
   }
 
+  private static CdcState stateToBeUsed(final boolean savedOffsetStillPresentOnServer, final boolean newTablesInCatalog,
+      final MySqlDebeziumStateUtil mySqlDebeziumStateUtil, final StateManager stateManager, final JsonNode initialDebeziumState,
+      final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+    if (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
+      return new CdcState().withState(initialDebeziumState);
+    }
+
+    if (!newTablesInCatalog) {
+      return stateManager.getCdcStateManager().getCdcState();
+    }
+
+    // Need to refresh the stored db history cause new tables have been added
+    final CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    final JsonNode binlogOffset = cdcState.getState().get(MYSQL_CDC_OFFSET);
+    assert Objects.nonNull(binlogOffset);
+    final DebeziumStateAttributes debeziumStateAttributes = mySqlDebeziumStateUtil.debeziumStateAttributes(
+        MySqlCdcProperties.getDebeziumProperties(database, true), catalog, database, binlogOffset);
+
+    ((ObjectNode) cdcState.getState()).replace(MYSQL_DB_HISTORY, Jsons.jsonNode(debeziumStateAttributes.dbHistory()));
+    stateManager.getCdcStateManager().setCdcState(cdcState);
+    return cdcState;
+  }
+
   /**
    * Determines the streams to sync for initial primary key load. These include streams that are (i)
    * currently in primary key load (ii) newly added incremental streams.
@@ -184,7 +211,8 @@ public class MySqlInitialReadUtil {
               .stream()
               .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
               .collect(Collectors.toList()),
-          new HashMap<>());
+          new HashMap<>(),
+          true);
     }
 
     final AirbyteStateMessage airbyteStateMessage = stateManager.getRawStateMessage();
@@ -221,7 +249,7 @@ public class MySqlInitialReadUtil {
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog, stateManager.getInitialStreamsSynced());
     streamsForPkSync.addAll(newlyAddedStreams);
 
-    return new InitialLoadStreams(streamsForPkSync, pairToInitialLoadStatus);
+    return new InitialLoadStreams(streamsForPkSync, pairToInitialLoadStatus, !newlyAddedStreams.isEmpty());
   }
 
   private static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
@@ -283,7 +311,8 @@ public class MySqlInitialReadUtil {
   }
 
   public record InitialLoadStreams(List<ConfiguredAirbyteStream> streamsForInitialLoad,
-                                   Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToInitialLoadStatus) {
+                                   Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToInitialLoadStatus,
+                                   boolean newTablesInCatalog) {
 
   }
 

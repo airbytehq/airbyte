@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.STATE_TYPE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -118,11 +120,16 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
   protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size());
+    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
-      assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-          stateMessage.getGlobal().getSharedState());
+      assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET),
+          stateMessage.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+      assertNotNull(stateMessage.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
+      assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY),
+          stateMessage.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
       final Set<StreamDescriptor> streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
           .stream()
           .map(AirbyteStreamState::getStreamDescriptor)
@@ -146,8 +153,11 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     final AirbyteStateMessage secondLastSateMessage = stateMessages.get(5);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        secondLastSateMessage.getGlobal().getSharedState());
+    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET),
+        secondLastSateMessage.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+    assertNotNull(secondLastSateMessage.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY),
+        secondLastSateMessage.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
     final Set<StreamDescriptor> streamsInSnapshotState = secondLastSateMessage.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
@@ -163,8 +173,12 @@ public class InitialPkLoadEnabledCdcMysqlSourceTest extends CdcMysqlSourceTest {
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+    assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+    assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
     final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)

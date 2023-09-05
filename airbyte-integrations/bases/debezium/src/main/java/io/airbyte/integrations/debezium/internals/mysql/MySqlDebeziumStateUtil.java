@@ -248,12 +248,26 @@ public class MySqlDebeziumStateUtil {
   public JsonNode constructInitialDebeziumState(final Properties properties,
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
+    final JsonNode binLogOffset = constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText());
+    final DebeziumStateAttributes debeziumStateAttributes = debeziumStateAttributes(properties, catalog, database, binLogOffset);
+    final Map<String, Object> state = new HashMap<>();
+    state.put(MYSQL_CDC_OFFSET, debeziumStateAttributes.offset());
+    state.put(MYSQL_DB_HISTORY, debeziumStateAttributes.dbHistory());
+
+    final JsonNode asJson = Jsons.jsonNode(state);
+    LOGGER.info("Initial Debezium state constructed: {}", asJson);
+
+    return asJson;
+  }
+
+  public DebeziumStateAttributes debeziumStateAttributes(final Properties properties, final ConfiguredAirbyteCatalog catalog,
+      final JdbcDatabase database, final JsonNode binLogOffset) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
     // We use the schema_only_recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
     properties.setProperty("snapshot.mode", "schema_only_recovery");
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-        constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
+        binLogOffset,
         Optional.empty());
     final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
@@ -283,14 +297,10 @@ public class MySqlDebeziumStateUtil {
     assert !offset.isEmpty();
     assert Objects.nonNull(dbHistory);
 
-    final Map<String, Object> state = new HashMap<>();
-    state.put(MYSQL_CDC_OFFSET, offset);
-    state.put(MYSQL_DB_HISTORY, dbHistory);
+    return new DebeziumStateAttributes(offset, dbHistory);
+  }
 
-    final JsonNode asJson = Jsons.jsonNode(state);
-    LOGGER.info("Initial Debezium state constructed: {}", asJson);
-
-    return asJson;
+  public record DebeziumStateAttributes(Map<String, String> offset, String dbHistory) {
   }
 
   /**
