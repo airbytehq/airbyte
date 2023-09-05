@@ -33,7 +33,7 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
 
   private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
 
-  private ConcurrentHashMap<AirbyteStreamNameNamespacePair, Integer> incrementalIndex;
+  private final ConcurrentHashMap<AirbyteStreamNameNamespacePair, Integer> incrementalIndex;
 
   private final Supplier<Long> nowness;
 
@@ -46,7 +46,7 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    *
    * @param nownessSupplier Supplier which will return a long value representing now
    */
-  public TypeAndDedupeOperationValve(Supplier<Long> nownessSupplier) {
+  public TypeAndDedupeOperationValve(final Supplier<Long> nownessSupplier) {
     super();
     incrementalIndex = new ConcurrentHashMap<>();
     this.nowness = nownessSupplier;
@@ -68,6 +68,11 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
    */
   public void addStream(final AirbyteStreamNameNamespacePair key) {
     put(key, nowness.get());
+  }
+
+  public void addStreamIfAbsent(final AirbyteStreamNameNamespacePair key) {
+    putIfAbsent(key, nowness.get());
+    incrementalIndex.putIfAbsent(key, 0);
   }
 
   /**

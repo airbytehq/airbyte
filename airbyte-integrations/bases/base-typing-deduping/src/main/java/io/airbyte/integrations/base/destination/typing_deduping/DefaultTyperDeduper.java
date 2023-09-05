@@ -10,13 +10,18 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 
 import autovalue.shaded.kotlin.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -50,7 +55,17 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
-  private final Set<Pair<String, String>> streamsWithSuccessfulSetup;
+  // We only want to run a single instance of T+D per stream at a time. These objects are used for
+  // synchronization per stream.
+  // Use a read-write lock because we need the same semantics:
+  // * any number of threads can insert to the raw tables at the same time, as long as T+D isn't
+  // running (i.e. "read lock")
+  // * T+D must run in complete isolation (i.e. "write lock")
+  private final Map<StreamId, ReadWriteLock> tdLocks;
+  // These locks are used to prevent multiple simultaneous attempts to T+D the same stream.
+  // We use tryLock with these so that we don't queue up multiple T+D runs for the same stream.
+  private final Map<StreamId, Lock> internalTdLocks;
+  private final Set<StreamId> streamsWithSuccesfulSetup;
 
   private final ExecutorService executorService;
 
@@ -65,9 +80,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2RawTableMigrator = v2RawTableMigrator;
-    this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
+    this.streamsWithSuccesfulSetup = new HashSet<>();
     this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+    this.tdLocks = new HashMap<>();
+    this.internalTdLocks = new HashMap<>();
   }
 
   public DefaultTyperDeduper(
@@ -79,12 +96,6 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2RawTableMigrator<>(), defaultThreadCount);
   }
 
-  /**
-   * Create the tables that T+D will write to during the sync. In OVERWRITE mode, these might not be
-   * the true final tables. Specifically, other than an initial sync (i.e. table does not exist, or is
-   * empty) we write to a temporary final table, and swap it into the true final table at the end of
-   * the sync. This is to prevent user downtime during a sync.
-   */
   public void prepareTables() throws Exception {
     if (overwriteStreamsWithTmpTable != null) {
       throw new IllegalStateException("Tables were already prepared.");
@@ -97,6 +108,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }
     CompletableFuture.allOf(prepareTablesTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(prepareTablesTasks, "The following exceptions were thrown attempting to prepare tables:\n");
+  }
+
+  public Lock getRawTableInsertLock(final String originalNamespace, final String originalName) {
+    final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
+    return tdLocks.get(streamConfig.id()).readLock();
   }
 
   private CompletableFuture<Optional<Exception>> prepareTablesFuture(final StreamConfig stream) {
@@ -136,7 +152,15 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           // The table doesn't exist. Create it. Don't force.
           destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
         }
-        streamsWithSuccessfulSetup.add(new Pair<>(stream.id().originalNamespace(), stream.id().originalName()));
+        // Use fair locking. This slows down lock operations, but that performance hit is by far dwarfed
+        // by our IO costs. This lock needs to be fair because the raw table writers are running almost
+        // constantly,
+        // and we don't want them to starve T+D.
+        tdLocks.put(stream.id(), new ReentrantReadWriteLock(true));
+        // This lock doesn't need to be fair; any T+D instance is equivalent and we'll skip T+D if we can't
+        // immediately acquire the lock.
+        internalTdLocks.put(stream.id(), new ReentrantLock());
+        streamsWithSuccesfulSetup.add(stream.id());
         return Optional.empty();
       } catch (Exception e) {
         LOGGER.error("Exception occurred while preparing tables for stream " + stream.id().originalName(), e);
@@ -145,44 +169,66 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }, this.executorService);
   }
 
-  /**
-   * Execute typing and deduping for a single stream (i.e. fetch new raw records into the final table,
-   * etc.).
-   * <p>
-   * This method is thread-safe; multiple threads can call it concurrently.
-   *
-   * @param originalNamespace The stream's namespace, as declared in the configured catalog
-   * @param originalName The stream's name, as declared in the configured catalog
-   */
-  public void typeAndDedupe(final String originalNamespace, final String originalName) throws Exception {
-    LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
-    final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
-    if (!streamsWithSuccessfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
-      // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
-      // we should skip it.
-      LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace, originalName);
-      return;
-    }
-    final String suffix = getFinalTableSuffix(streamConfig.id());
-    final String sql = sqlGenerator.updateTable(streamConfig, suffix);
-    destinationHandler.execute(sql);
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) throws Exception {
+    CompletableFuture.runAsync(() -> {
+      try {
+        final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
+        if (!streamsWithSuccesfulSetup.contains(streamConfig.id())) {
+          // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
+          // we should skip it.
+          LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace, originalName);
+          return;
+        }
+        final String suffix = getFinalTableSuffix(streamConfig.id());
+        final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+        destinationHandler.execute(sql);
+      } catch (Exception e) {
+        LOGGER.error("Exception Encountered Typing and Deduping stream " + originalName, e);
+      }
+    }, this.executorService);
   }
 
-  public CompletableFuture<Optional<Exception>> typeAndDedupeTask(StreamConfig streamConfig) {
+  public CompletableFuture<Optional<Exception>> typeAndDedupeTask(StreamConfig streamConfig, final boolean mustRun) {
     return CompletableFuture.supplyAsync(() -> {
       final var originalNamespace = streamConfig.id().originalNamespace();
       final var originalName = streamConfig.id().originalName();
       try {
-        if (!streamsWithSuccessfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
+        if (!streamsWithSuccesfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
           // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
           // we should skip it.
           LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
               originalName);
           return Optional.empty();
         }
-        final String suffix = getFinalTableSuffix(streamConfig.id());
-        final String sql = sqlGenerator.updateTable(streamConfig, suffix);
-        destinationHandler.execute(sql);
+
+        final boolean run;
+        final Lock internalLock = internalTdLocks.get(streamConfig.id());
+        if (mustRun) {
+          // If we must run T+D, then wait until we acquire the lock.
+          internalLock.lock();
+          run = true;
+        } else {
+          // Otherwise, try and get the lock. If another thread already has it, then we should noop here.
+          run = internalLock.tryLock();
+        }
+
+        if (run) {
+          LOGGER.info("Waiting for raw table writes to pause for {}.{}", originalNamespace, originalName);
+          final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
+          externalLock.lock();
+          try {
+            LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
+            final String suffix = getFinalTableSuffix(streamConfig.id());
+            final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+            destinationHandler.execute(sql);
+          } finally {
+            LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
+            externalLock.unlock();
+            internalLock.unlock();
+          }
+        } else {
+          LOGGER.info("Another thread is already trying to run typing and deduping for {}.{}. Skipping it here.", originalNamespace, originalName);
+        }
         return Optional.empty();
       } catch (Exception e) {
         LOGGER.error("Exception occurred while typing and deduping stream " + originalName, e);
@@ -196,23 +242,17 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Typing and deduping all tables");
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().forEach(streamConfig -> {
-      typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig));
+      typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true));
     });
     CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(typeAndDedupeTasks, "The Following Exceptions were thrown while typing and deduping tables:\n");
   }
 
-  /**
-   * Does any "end of sync" work. For most streams, this is a noop.
-   * <p>
-   * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table
-   * into the final table.
-   */
   public void commitFinalTables() throws Exception {
     LOGGER.info("Committing final tables");
     final Set<CompletableFuture<Optional<Exception>>> tableCommitTasks = new HashSet<>();
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
-      if (!streamsWithSuccessfulSetup.contains(new Pair<>(streamConfig.id().originalNamespace(), streamConfig.id().originalName()))) {
+      if (!streamsWithSuccesfulSetup.contains(streamConfig.id())) {
         LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
             streamConfig.id().originalNamespace(), streamConfig.id().originalName());
         continue;
