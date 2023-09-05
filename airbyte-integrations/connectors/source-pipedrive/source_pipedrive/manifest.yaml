@@ -34,12 +34,12 @@ definitions:
     paginator:
       type: "DefaultPaginator"
       pagination_strategy:
-        type: "PageIncrement"
-        page_size: 50
+        type: "CursorPagination"
+        cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
-        field_name: "page"
+        field_name: "start"
     requester:
       $ref: "#/definitions/requester"
 
@@ -107,8 +107,13 @@ definitions:
       path: "/recents"
 
   lead_labels_stream:
+  # Does not support pagination
     $ref: "#/definitions/base_stream"
     name: "lead_labels"
+    retriever:
+        $ref: "#/definitions/retriever"
+        paginator:
+          type: NoPagination
     $parameters:
       path: "/leadLabels"
 
@@ -142,6 +147,13 @@ definitions:
       path_extractor: "activity"
       path: "/recents"
 
+  activity_types_stream:
+# This stream didnt have limit as query_parameter
+    $ref: "#/definitions/base_stream"
+    name: "activity_types"
+    $parameters:
+      path: "/activityTypes"
+
   activity_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "activity_fields"
@@ -151,10 +163,6 @@ definitions:
   currencies_stream:
     $ref: "#/definitions/base_stream"
     name: "currencies"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        type: NoPagination
     $parameters:
       path: "/currencies"
  
@@ -293,6 +301,7 @@ streams:
   - "#/definitions/leads_stream"
   - "#/definitions/notes_stream"
   - "#/definitions/activities_stream"
+  - "#/definitions/activity_types_stream"
   - "#/definitions/activity_fields_stream"
   - "#/definitions/currencies_stream"
   - "#/definitions/organization_stream"
