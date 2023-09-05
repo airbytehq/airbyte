@@ -4,11 +4,11 @@
 
 | Feature                        | Supported?\(Yes/No\) | Notes |
 | :----------------------------- | :------------------- | :---- |
-| Full Refresh Sync              | No                   |       |
+| Full Refresh Sync              | Yes                   |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | No                   |       |
+| Incremental - Append + Deduped | Yes                   |       |
 | Namespaces                     | No                   |       |
-| Provide vector                 | Yes                  |       |
+| Provide vector                 | Yes                  | Either from field are calculated during the load process |
 
 #### Output Schema
 
@@ -71,6 +71,18 @@ You should now have all the requirements needed to configure Weaviate as a desti
 - **Vectors** a comma separated list of `<stream_name.vector_field_name>` to specify the field
 - **ID Schema** a comma separated list of `<stream_name.id_field_name>` to specify the field
   name that contains the ID of a record
+
+### Set up a class in Weaviate
+
+To set up a class ready to load data into, you can use the Python client:
+
+```python
+from weaviate import Client
+
+client = weaviate.Client(url="https://my-cluster-url",auth_client_secret=weaviate.AuthApiKey(api_key="my-key")) # or use username and password: auth_client_secret=weaviate.AuthClientPassword("my-username", "my-password")
+
+client.schema.create_class({"class": "MyClass", "vectorizer": "none"}) # Set vectorizer to none if you are calculating the vectors in Airbyte
+```
 
 ## Changelog
 

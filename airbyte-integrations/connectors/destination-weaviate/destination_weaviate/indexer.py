@@ -13,7 +13,6 @@ from typing import Any, List, Mapping, MutableMapping, Optional
 
 import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -45,14 +44,15 @@ class WeaviateIndexer(Indexer):
         self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
     def _create_client(self):
+        headers = {self.config.additional_headers[i].key: self.config.additional_headers[i].value for i in range(len(self.config.additional_headers))}
         if self.config.auth.mode == "username_password":
             credentials = weaviate.auth.AuthClientPassword(self.config.auth.username, self.config.auth.password)
-            self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials)
+            self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
         elif self.config.auth.mode == "token":
             credentials = weaviate.auth.AuthApiKey(self.config.auth.token)
-            self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials)
+            self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
         else:
-            self.client = weaviate.Client(url=self.config.host)
+            self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
         schema = self.client.schema.get(self.config.class_name)
         self.has_stream_metadata = any(prop.get("name") == METADATA_STREAM_FIELD for prop in schema.get("properties", {}))

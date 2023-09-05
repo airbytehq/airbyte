@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
@@ -45,6 +45,10 @@ class TokenAuth(BaseModel):
         schema_extra = {"description": "Authenticate using an API token (suitable for Weaviate Cloud)"}
 
 
+class Header(BaseModel):
+    key: str = Field(..., title="Header Key")
+    value: str = Field(..., title="Header Value", airbyte_secret=True)
+
 class WeaviateIndexingConfigModel(BaseModel):
     host: str = Field(
         ...,
@@ -59,6 +63,7 @@ class WeaviateIndexingConfigModel(BaseModel):
     )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")
+    additional_headers: List[Header] = Field(title="Additional headers", description="Additional HTTP headers to send with every request.", default=[], examples=[{"key": "X-OpenAI-Api-Key", "value": "my-openai-api-key"}])
 
     class Config:
         title = "Indexing"
