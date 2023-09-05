@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: ba588f7a-60b4-4845-805f-3955ded364c2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-partnerstack
+  githubIssueLabel: destination-partnerstack
+  icon: partnerstack.svg
+  license: MIT
+  name: Partnerstack
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/partnerstack
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

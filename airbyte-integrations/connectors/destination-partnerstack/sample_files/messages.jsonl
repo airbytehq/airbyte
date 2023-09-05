@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "airbyte_table_customer", "emitted_at": 1664705198575, "data": { "customer_key": "123test", "email": "test@gmail.com", "partner_key": "partner01", "metadata": { "key": "test" }}}}
