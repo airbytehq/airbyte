@@ -7,14 +7,27 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.writer import Writer
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, ConfiguredAirbyteCatalog, DestinationSyncMode, Status
 
-from .chroma_client import ChromaClient
-from .utils import get_schema_from_catalog
+from destination_chroma.config import ConfigModel
+from destination_chroma.indexer import ChromaIndexer
 
+BATCH_SIZE = 128
 
+embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
 
 class DestinationChroma(Destination):
+
+    indexer: Indexer
+    embedder: Embedder
+
+    def _init_indexer(self, config: ConfigModel):
+        self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.indexer = ChromaIndexer(config.indexing, self.embedder)
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -34,24 +47,11 @@ class DestinationChroma(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
-        client = ChromaClient(config, get_schema_from_catalog(configured_catalog))
-        for configured_stream in configured_catalog.streams:
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                client.delete_collection_data(stream_name=configured_stream.stream.name)
+        config_model = ConfigModel.parse_obj(config)
+        self._init_indexer(config_model)
+        writer = Writer(config_model.processing, self.indexer, batch_size=BATCH_SIZE)
+        yield from writer.write(configured_catalog, input_messages)
 
-        for message in input_messages:
-            if message.type == Type.STATE:
-                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
-                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
-                client.flush()
-                yield message
-            elif message.type == Type.RECORD:
-                record = message.record
-                client.write_data(record.stream, record.data)
-            else:
-                # ignore other message types for now
-                continue
-        pass
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -65,13 +65,19 @@ class DestinationChroma(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        try:
-
-            client = ChromaClient(config=config).get_client()
-            client.heartbeat()
-
+        self._init_indexer(ConfigModel.parse_obj(config))
+        embedder_error = self.embedder.check()
+        indexer_error = self.indexer.check()
+        errors = [error for error in [embedder_error, indexer_error] if error is not None]
+        if len(errors) > 0:
+            return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
+        else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        
-        except Exception as e:
 
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.com/integrations/destinations/chroma",
+            supportsIncremental=True,
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            connectionSpecification=ConfigModel.schema()
+        )

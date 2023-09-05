@@ -3,9 +3,6 @@
 #
 
 import re
-from typing import Mapping
-
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
 def convert_to_valid_collection_name(stream_name):
     if is_valid_collection_name(stream_name):
@@ -46,40 +43,3 @@ def is_valid_collection_name(stream_name):
     if re.match(r'^(?:(?!\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:(?:(?!\-|\.)[a-z0-9_\-\.])+[a-z0-9])?)$', stream_name):
         return False
     return True
-
-def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, Mapping[str, str]]:
-    schema = {}
-    for stream in configured_catalog.streams:
-        stream_schema = {}
-        for k, v in stream.stream.json_schema.get("properties").items():
-            stream_schema[k] = "default"
-            if "array" in v.get("type", []) and (
-                "object" in v.get("items", {}).get("type", []) or "array" in v.get("items", {}).get("type", []) or v.get("items", {}) == {}
-            ):
-                stream_schema[k] = "jsonify"
-            if "object" in v.get("type", []):
-                stream_schema[k] = "jsonify"
-        schema[stream.stream.name] = stream_schema
-    return schema
-
-def parse_id_schema(id_schema_config: str) -> Mapping[str, str]:
-    id_schema = {}
-    if not id_schema_config:
-        return id_schema
-
-    id_schema_list = id_schema_config.replace(" ", "").split(",")
-    for schema_id in id_schema_list:
-        stream_name, id_field_name = schema_id.split(".")
-        id_schema[stream_name] = id_field_name
-    return id_schema
-
-def parse_embedding_schema(embeddings_config: str) -> Mapping[str, str]:
-    embeddings = {}
-    if not embeddings_config:
-        return embeddings
-
-    embeddings_list = embeddings_config.replace(" ", "").split(",")
-    for embedding in embeddings_list:
-        stream_name, embedding_column_name = embedding.split(".")
-        embeddings[stream_name] = embedding_column_name
-    return embeddings
