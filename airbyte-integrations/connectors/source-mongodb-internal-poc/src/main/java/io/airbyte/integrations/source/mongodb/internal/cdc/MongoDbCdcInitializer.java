@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
@@ -142,7 +144,7 @@ public class MongoDbCdcInitializer {
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
-            emittedAt);
+            emittedAt, getCheckpointInterval(config));
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
         MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
@@ -162,6 +164,11 @@ public class MongoDbCdcInitializer {
         .of(initialSnapshotIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
+  }
+
+  private Integer getCheckpointInterval(final JsonNode config) {
+    return config.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY) != null ? config.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt()
+        : CHECKPOINT_INTERVAL;
   }
 
 }
