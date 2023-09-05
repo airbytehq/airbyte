@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.5
+Changing `format` or `airbyte_type` in a field definition of a schema or specification is now a breaking change.
+
 ## 1.0.4
 Fix edge case in skip_backward_compatibility_tests_fixture on discovery: if the current config structure is not compatible with the previous connector version, the discovery command failing and the previous connector version catalog could not be retrieved.
 
