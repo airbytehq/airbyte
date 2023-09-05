@@ -44,7 +44,10 @@ class WeaviateIndexer(Indexer):
         self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
     def _create_client(self):
-        headers = {self.config.additional_headers[i].key: self.config.additional_headers[i].value for i in range(len(self.config.additional_headers))}
+        headers = {
+            self.config.additional_headers[i].key: self.config.additional_headers[i].value
+            for i in range(len(self.config.additional_headers))
+        }
         if self.config.auth.mode == "username_password":
             credentials = weaviate.auth.AuthClientPassword(self.config.auth.username, self.config.auth.password)
             self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
