@@ -140,6 +140,7 @@ Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a M
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.0   | 2023-09-01 | [#30080](https://github.com/airbytehq/airbyte/pull/30080)     | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade.  | 
 | 0.0.8   | 2023-08-21 | [#29515](https://github.com/airbytehq/airbyte/pull/29515)     | Clean up generated schema spec  |
 | 0.0.7   | 2023-08-18 | [#29513](https://github.com/airbytehq/airbyte/pull/29513)     | Fix for starter pods  |
 | 0.0.6   | 2023-08-02 | [#28977](https://github.com/airbytehq/airbyte/pull/28977)     | Validate pinecone index dimensions during check  |
