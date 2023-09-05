@@ -53,7 +53,6 @@ def test_embedder(embedder_class, config_model, config_data, dimensions):
     mock_embedding_instance.embed_documents.assert_called_with(["a", "b"])
 
 
-
 @pytest.mark.parametrize(
     "field_name, dimensions, metadata, expected_embedding, expected_error",
     (
@@ -73,4 +72,3 @@ def test_from_field_embedder(field_name, dimensions, metadata, expected_embeddin
             embedder.embed_texts(chunks)
     else:
         assert embedder.embed_texts(chunks) == [expected_embedding]
-
