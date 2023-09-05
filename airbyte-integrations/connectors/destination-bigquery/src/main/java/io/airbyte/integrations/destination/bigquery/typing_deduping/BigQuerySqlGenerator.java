@@ -476,7 +476,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             )
             SELECT
             ${column_list}
-              to_json(struct((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors) AS errors)) AS _airbyte_meta,
+              to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
               _airbyte_raw_id,
               _airbyte_extracted_at
             FROM intermediate_data;""");
