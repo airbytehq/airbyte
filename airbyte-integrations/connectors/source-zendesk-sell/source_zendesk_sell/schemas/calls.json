@@ -21,7 +21,7 @@
       "type": ["null", "number"]
     },
     "phone_number": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "incoming": {
       "type": ["null", "boolean"]
