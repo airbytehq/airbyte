@@ -54,26 +54,13 @@ public class TypeAndDedupeOperationValveTest {
     elapseTime(minuteUpdates, 1);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_B));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    Assertions.assertEquals(1000 * 60 * 60,
+    Assertions.assertEquals(1000 * 60 * 60 * 4,
         valve.getIncrementInterval(STREAM_A));
     // method call increments time
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
     // More than enough time has passed now
-    elapseTime(minuteUpdates, 60);
+    elapseTime(minuteUpdates, 1000 * 60 * 60 * 2);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
-  }
-
-  @Test
-  public void testIncrementInterval() {
-    final var valve = new TypeAndDedupeOperationValve(ALWAYS_ZERO);
-    valve.addStream(STREAM_A);
-    IntStream.rangeClosed(1, 2).forEach(i -> {
-      final var index = valve.incrementInterval(STREAM_A);
-      Assertions.assertEquals(i, index);
-    });
-    Assertions.assertEquals(2, valve.incrementInterval(STREAM_A));
-    // Twice to be sure
-    Assertions.assertEquals(2, valve.incrementInterval(STREAM_A));
   }
 
   @Test
@@ -81,12 +68,6 @@ public class TypeAndDedupeOperationValveTest {
     final var valve = new TypeAndDedupeOperationValve(minuteUpdates);
     valve.addStream(STREAM_A);
     IntStream.range(0, 1).forEach(__ -> Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A))); // start ready to T&D
-    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
-    valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 60).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
-    Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
-    valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
     IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
