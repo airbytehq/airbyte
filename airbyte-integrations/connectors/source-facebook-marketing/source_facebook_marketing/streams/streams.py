@@ -30,8 +30,8 @@ def fetch_thumbnail_data_url(url: str) -> Optional[str]:
             return f"data:{_type};base64,{data.decode('ascii')}"
         else:
             logger.warning(f"Got {repr(response)} while requesting thumbnail image.")
-    except requests.exceptions.RequestException as exc:
-        logger.warning(f"Got {str(exc)} while requesting thumbnail image.")
+    except Exception as exc:
+        logger.warning(f"Got {str(exc)} while requesting thumbnail image: {url}.")
     return None
 
 
