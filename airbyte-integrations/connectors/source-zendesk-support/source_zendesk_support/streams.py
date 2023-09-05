@@ -679,7 +679,7 @@ class Topics(CursorPaginationZendeskSupportStream):
         return "community/topics"
 
 
-class SlaPolicies(FullRefreshZendeskSupportStream):
+class SlaPolicies(IncrementalZendeskSupportStream):
     """SlaPolicies stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/sla_policies/"""
 
     def path(self, *args, **kwargs) -> str:
@@ -698,7 +698,7 @@ class Brands(FullRefreshZendeskSupportStream):
     """Brands stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands"""
 
 
-class CustomRoles(FullRefreshZendeskSupportStream):
+class CustomRoles(IncrementalZendeskSupportStream):
     """CustomRoles stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles"""
 
     def request_params(
@@ -710,7 +710,7 @@ class CustomRoles(FullRefreshZendeskSupportStream):
         return {}
 
 
-class Schedules(FullRefreshZendeskSupportStream):
+class Schedules(IncrementalZendeskSupportStream):
     """Schedules stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules"""
 
     def path(self, *args, **kwargs) -> str:
