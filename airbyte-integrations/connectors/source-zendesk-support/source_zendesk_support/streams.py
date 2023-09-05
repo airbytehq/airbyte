@@ -796,7 +796,9 @@ class UserFields(FullRefreshZendeskSupportStream):
         return "user_fields"
 
 
-class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):
+class PostComments(CursorPaginationZendeskSupportStream, HttpSubStream):
+    """Post Comments Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/"""
+
     response_list_name = "comments"
 
     def __init__(self, **kwargs):
@@ -814,7 +816,7 @@ class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):
         return f"community/posts/{post_id}/comments"
 
 
-class AbstractVotes(FullRefreshZendeskSupportStream, ABC):
+class AbstractVotes(CursorPaginationZendeskSupportStream, ABC):
     response_list_name = "votes"
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -878,3 +880,54 @@ class Articles(SourceZendeskIncrementalExportStream):
         if next_page_token:
             params.update(next_page_token)
         return params
+
+
+class ArticleVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = Articles(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        article_id = stream_slice.get("parent").get("id")
+        return f"help_center/articles/{article_id}/votes"
+
+
+class ArticleComments(CursorPaginationZendeskSupportStream, HttpSubStream):
+    response_list_name = "comments"
+
+    def __init__(self, **kwargs):
+        parent = Articles(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        article_id = stream_slice.get("parent").get("id")
+        return f"help_center/articles/{article_id}/comments"
+
+
+class ArticleCommentVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = ArticleComments(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        article_id = stream_slice.get("parent").get("source_id")
+        comment_id = stream_slice.get("parent").get("id")
+        return f"help_center/articles/{article_id}/comments/{comment_id}/votes"

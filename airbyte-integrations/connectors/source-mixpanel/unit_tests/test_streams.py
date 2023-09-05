@@ -436,6 +436,17 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
+def test_handle_time_zone_mismatch(requests_mock, config, caplog):
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="to_date cannot be later than today")
+    records = []
+    for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+    assert list(records) == []
+    assert "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. " \
+           "Stopping current stream sync." in caplog.text
+
+
 def test_export_stream_request_params(config):
     stream = Export(authenticator=MagicMock(), **config)
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
