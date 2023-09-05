@@ -173,14 +173,14 @@
         "title": "Destinations V2 Raw Table Schema (Early Access)",
         "order": 11
       },
-      "bulk_file_format": {
+      "bulk_load_file_format": {
         "description": "Enter the default file format name to use in 'FileRead' mode.",
         "examples": ["MY_FILE_FORMAT"],
         "type": "string",
         "title": "File Format (Bulk Mode)",
         "order": 10
       },
-      "bulk_s3_stages": {
+      "bulk_load_s3_stages": {
         "description": "Enter a map of S3 file prefixes to Snowflake external stages, for use in 'FileRead' mode.",
         "examples": [{"MY_STAGE_NAME": "s3://my-bucket/my-prefix/"}],
         "type": "object",
