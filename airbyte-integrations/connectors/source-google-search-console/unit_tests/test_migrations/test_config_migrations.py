@@ -6,6 +6,7 @@
 import json
 from typing import Any, Mapping
 
+from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources import Source
 from source_google_search_console.config_migrations import MigrateCustomReports
 from source_google_search_console.source import SourceGoogleSearchConsole
@@ -33,35 +34,38 @@ def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
 
 
 def test_migrate_config():
+    migration_instance = MigrateCustomReports()
+    original_config = load_config()
     # migrate the test_config
-    MigrateCustomReports.migrate(SOURCE_INPUT_ARGS, SOURCE)
+    migration_instance.migrate(SOURCE_INPUT_ARGS, SOURCE)
     # load the updated config
-    test_config = load_config()
+    test_migrated_config = load_config()
     # check migrated property
-    assert "custom_reports_array" in test_config
-    assert isinstance(test_config["custom_reports_array"], list)
+    assert "custom_reports_array" in test_migrated_config
+    assert isinstance(test_migrated_config["custom_reports_array"], list)
     # check the old property is in place
-    assert "custom_reports" in test_config
-    assert isinstance(test_config["custom_reports"], str)
-
-
-def test_migrated_report_values_are_the_same():
-    test_config = load_config()
-    # load the old custom reports
-    old_custom_reports = json.loads(test_config["custom_reports"])
-    # load new custom reports
-    migrated_custom_reports = test_config["custom_reports_array"]
-    # compare
-    assert old_custom_reports == migrated_custom_reports
-
-
-def test_should_migrate_after_migration():
-    assert not MigrateCustomReports.should_migrate(load_config())
+    assert "custom_reports" in test_migrated_config
+    assert isinstance(test_migrated_config["custom_reports"], str)
+    # check the migration should be skipped, once already done
+    assert not migration_instance.should_migrate(test_migrated_config)
+    # load the old custom reports VS migrated
+    assert json.loads(original_config["custom_reports"]) == test_migrated_config["custom_reports_array"]
+    # test CONTROL MESSAGE was emitted
+    control_msg = migration_instance.message_repository._message_queue[0]
+    assert control_msg.type == Type.CONTROL
+    assert control_msg.control.type == OrchestratorType.CONNECTOR_CONFIG
+    # old custom_reports are stil type(str)
+    assert isinstance(control_msg.control.connectorConfig.config["custom_reports"], str)
+    # new custom_reports are type(list)
+    assert isinstance(control_msg.control.connectorConfig.config["custom_reports_array"], list)
+    # check the migrated values
+    assert control_msg.control.connectorConfig.config["custom_reports_array"][0]["name"] == "custom_dimensions"
+    assert control_msg.control.connectorConfig.config["custom_reports_array"][0]["dimensions"] == ["date", "country", "device"]
+    # revert the test_config to the starting point
+    revert_migration()
 
 
 def test_config_is_reverted():
-    # revert the test_config to the starting point
-    revert_migration()
     # check the test_config state, it has to be the same as before tests
     test_config = load_config()
     # check the config no longer has the migarted property
