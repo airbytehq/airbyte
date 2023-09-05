@@ -9,6 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
@@ -19,14 +20,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.integrations.destination.staging.StagingOperations;
+import io.airbyte.protocol.models.v0.*;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -44,18 +45,50 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeBulkLoadDestination.class);
   private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
-  private static final String BULK_FILE_FORMAT = "bulk_file_format";
-  private static final String BULK_S3_STAGES = "bulk_s3_stages";
+  private static final String BULK_LOAD_FILE_FORMAT = "bulk_load_file_format";
+  private static final String BULK_LOAD_S3_STAGES = "bulk_load_s3_stages";
 
   private final String airbyteEnvironment;
 
   public SnowflakeBulkLoadDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
+  class StageNotFoundException extends Exception {
+    public StageNotFoundException(String message) {
+      super(message);
+    }
+  }
+
+  class InvalidValueException extends Exception {
+    public InvalidValueException(String message) {
+      super(message);
+    }
+  }
+
+  public String findMatchingStageName(Map<String, String> s3StageMap, String s3Path) throws StageNotFoundException{
+    for (Map.Entry<String, String> entry : s3StageMap.entrySet()) {
+      if (s3Path.startsWith(entry.getValue())) {
+        return entry.getKey();
+      }
+    }
+    throw new StageNotFoundException("No matching Snowflake stage name found for S3 path: " + s3Path);
+  }
+
+  public String getRelativePath(String rootPath, String fullS3Path) throws InvalidValueException {
+    if (fullS3Path.startsWith(rootPath)) {
+      return fullS3Path.substring(rootPath.length());
+    }
+    throw new InvalidValueException("S3 path " + fullS3Path + " does not start with root path " + rootPath);
+  }
 
   public SnowflakeBulkLoadDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
-    super("", nameTransformer, new SnowflakeExternalStagingSqlOperations(nameTransformer));
+    super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer));
     this.airbyteEnvironment = airbyteEnvironment;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    return null;
   }
 
   @Override
@@ -105,6 +138,11 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
   }
 
   @Override
+  public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+    return (AirbyteMessageConsumer) getSerializedMessageConsumer(config, catalog, outputRecordCollector);
+  }
+
+  @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector) {
@@ -139,7 +177,7 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         database,
-        new SnowflakeBulkLoadSqlOperations(getNamingResolver()),
+        (StagingOperations) new SnowflakeBulkLoadSqlOperations(getNamingResolver()),
         getNamingResolver(),
         config,
         catalog,

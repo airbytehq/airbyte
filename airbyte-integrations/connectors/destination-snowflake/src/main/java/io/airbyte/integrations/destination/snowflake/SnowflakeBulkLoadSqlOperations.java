@@ -43,14 +43,6 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
     this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
   }
 
-  @Override
-  public String getStageName(final JsonNode config) {
-    // Return stage name from config.
-    // TODO: Use a constant with the config key name:
-    return config["stage_name"]
-  }
-
-  @Override
   public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
     return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
@@ -61,7 +53,6 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
         connectionId));
   }
 
-  @Override
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final SerializableBuffer recordsData,
                                      final String namespace,
@@ -93,7 +84,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
   private void uploadRecordsToBucket(final JdbcDatabase database,
                                      final String stageName,
                                      final String stagingPath,
-                                     final SerializableBuffer recordsData)
+                                     final SerializableBuffer recordsData) {
     // No-op;
     return;
   }
@@ -126,7 +117,6 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
   }
 
 
-  @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
                                      final String stageName,
                                      final String stagingPath,
@@ -159,7 +149,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
-    return String.format(COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+    return String.format(COPY_QUERY_EXTERNAL_STAGE + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
   }
 
   /**
