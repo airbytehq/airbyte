@@ -88,7 +88,7 @@ class SourceFacebookMarketing(AbstractSource):
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
-            return False, e
+            return False, f"error: {repr(e)}"
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
