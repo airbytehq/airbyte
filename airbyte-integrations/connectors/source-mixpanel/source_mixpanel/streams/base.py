@@ -5,7 +5,7 @@
 import time
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -24,6 +24,13 @@ class MixpanelStream(HttpStream, ABC):
     """
 
     DEFAULT_REQS_PER_HOUR_LIMIT = 60
+
+    @property
+    def state_checkpoint_interval(self) -> int:
+        # to meet the requirement of emitting state at least once per 15 minutes,
+        # we assume there's at least 10 records per request returned in average. Given that each request is followed by a 60 seconds
+        # sleep, we'll have to emit state once per 150 records
+        return 150
 
     @property
     def url_base(self):
@@ -101,10 +108,14 @@ class MixpanelStream(HttpStream, ABC):
             self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
             time.sleep(3600 / self.reqs_per_hour_limit)
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        # we want to limit the max sleeping time by 2^3 * 60 = 8 minutes
+        return 3
+
     def backoff_time(self, response: requests.Response) -> float:
         """
         Some API endpoints do not return "Retry-After" header.
-        https://developer.mixpanel.com/reference/import-events#rate-limits (exponential backoff)
         """
 
         retry_after = response.headers.get("Retry-After")

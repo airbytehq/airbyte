@@ -14,7 +14,9 @@ def start_date():
 @pytest.fixture
 def config(start_date):
     return {
-        "api_secret": "unexisting-secret",
+        "credentials": {
+            "api_secret": "unexisting-secret"
+        },
         "attribution_window": 5,
         "project_timezone": pendulum.timezone("UTC"),
         "select_properties_by_default": True,
