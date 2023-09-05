@@ -4,7 +4,6 @@
 
 We have revamped the implementation to use the File-Based CDK. The goal is to increase resiliency and reduce development time. Here are the breaking changes:
 * [CSV] Mapping of type `array` and `object`: before, they were mapped as `large_string` and hence casted as strings. Given the new changes, if `array` or `object` is specified, the value will be casted as `array` and `object` respectively.
-* [CSV] Before, a string value would not be considered as `null_values` if the column type was a string. We will now start to cast string columns with values matching `null_values` to null.  
 * [CSV] `decimal_point` option is deprecated: It is not possible anymore to use another character than `.` to separate the integer part from non-integer part. Given that the float is format with another character than this, it will be considered as a string.
 * [Parquet] `columns` option is deprecated: You can use Airbyte column selection in order to have the same behavior. We don't expect it, but this could have impact on the performance as payload could be bigger.
 
