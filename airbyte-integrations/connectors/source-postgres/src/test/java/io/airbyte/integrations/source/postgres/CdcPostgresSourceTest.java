@@ -956,12 +956,17 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   protected void ctidIteratorPageSizeTest() throws Exception {
     final int recordsToCreate = 25_000;
+    final Set<Integer> expectedIds = new HashSet<>();
+    MODEL_RECORDS.forEach(c -> expectedIds.add(c.get(COL_ID).asInt()));
+
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final int id = 200 + recordsCreated;
       final JsonNode record =
           Jsons.jsonNode(ImmutableMap
-              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+              .of(COL_ID, id, COL_MAKE_ID, 1, COL_MODEL,
                   "F-" + recordsCreated));
       writeModelRecord(record);
+      expectedIds.add(id);
     }
 
     /**
@@ -979,6 +984,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Set<AirbyteRecordMessage> airbyteRecordMessages = extractRecordMessages(dataFromFirstBatch);
     assertEquals(recordsToCreate + MODEL_RECORDS.size(), airbyteRecordMessages.size());
+
+    airbyteRecordMessages.forEach(c -> {
+      assertTrue(expectedIds.contains(c.getData().get(COL_ID).asInt()));
+      expectedIds.remove(c.getData().get(COL_ID).asInt());
+    });
   }
 
 }
