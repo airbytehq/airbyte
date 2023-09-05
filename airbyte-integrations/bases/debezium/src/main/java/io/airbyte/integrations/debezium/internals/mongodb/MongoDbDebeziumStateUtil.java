@@ -22,7 +22,7 @@ import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +78,7 @@ public class MongoDbDebeziumStateUtil {
 
     final List<Object> key = generateOffsetKey(serverId, replicaSet);
 
-    final Map<String, Object> value = new HashMap<>();
+    final Map<String, Object> value = new LinkedHashMap<>();
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
@@ -211,7 +211,7 @@ public class MongoDbDebeziumStateUtil {
      * data from the offset file. See the "partition(String replicaSetName)" method of the
      * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
      */
-    final Map<String, String> sourceInfoMap = new HashMap<>();
+    final Map<String, String> sourceInfoMap = new LinkedHashMap<>();
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, serverId);
 

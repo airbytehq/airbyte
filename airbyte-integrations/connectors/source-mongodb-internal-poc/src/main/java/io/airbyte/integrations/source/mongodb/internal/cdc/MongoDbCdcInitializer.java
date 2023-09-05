@@ -118,7 +118,8 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
-    final boolean savedOffsetIsValid = savedOffset.isPresent() ? mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset.get(), mongoClient) : false;
+    final boolean savedOffsetIsValid =
+        savedOffset.filter(resumeToken -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
       LOGGER.warn("Saved offset is not valid. Airbyte will trigger a full refresh.");

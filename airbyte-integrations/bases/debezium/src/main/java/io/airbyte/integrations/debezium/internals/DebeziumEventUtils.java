@@ -13,12 +13,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.Timestamp;
 import java.time.Instant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DebeziumEventUtils {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumEventUtils.class);
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
