@@ -7,11 +7,16 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.MySqlSeeding;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,13 +26,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
 
 public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractMySqlSourceDatatypeTest.class);
+  protected MySqlSeeding mySqlSeeding;
 
-  protected MySQLContainer<?> container;
   protected JsonNode config;
 
   @Override
@@ -40,12 +44,28 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     return "airbyte/source-mysql:dev";
   }
 
+  protected abstract Path getConfigFilePath();
+
+
   @Override
-  protected abstract Database setupDatabase() throws Exception;
+  protected Database setupDatabase() throws Exception {
+    final Path configFilePath = Path.of("secrets/mysql-source-datatype-test-config.json");
+    mySqlSeeding = new MySqlSeeding(configFilePath);
+    config = mySqlSeeding.getConfig();
+    mySqlSeeding.disableStrictMode();
+    mySqlSeeding.seed(false);
+    return mySqlSeeding.getDatabase();
+  };
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) throws SQLException {
+    mySqlSeeding.tearDown();
+  }
+
 
   @Override
   protected String getNameSpace() {
-    return container.getDatabaseName();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override

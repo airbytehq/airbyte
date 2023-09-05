@@ -8,21 +8,11 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
+import java.nio.file.Path;
 
-public class MySqlSslCaCertificateSourceAcceptanceTest extends AbstractMySqlSslCertificateSourceAcceptanceTest {
+public class MySqlSslCaCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
-  @Override
-  public MySqlUtils.Certificate getCertificates() throws IOException, InterruptedException {
-    return MySqlUtils.getCertificate(container, false);
+  public Path getConfigFilePath() {
+    return Path.of("secrets/mysql-ssl-ca-certificate-source-acceptance-test-config.json");
   }
-
-  @Override
-  public ImmutableMap getSslConfig() {
-    return ImmutableMap.builder()
-        .put(JdbcUtils.MODE_KEY, "verify_ca")
-        .put("ca_certificate", certs.getCaCertificate())
-        .put("client_key_password", PASSWORD)
-        .build();
-  }
-
 }

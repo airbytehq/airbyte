@@ -13,16 +13,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public class SshKeyMySqlSourceAcceptanceTest extends AbstractSshMySqlSourceAcceptanceTest {
-
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-
-  @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    super.setupEnvironment(environment);
-  }
+public class SshKeyMySqlSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   @Override
   public Path getConfigFilePath() {

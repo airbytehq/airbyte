@@ -20,21 +20,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.utility.DockerImageName;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSourceAcceptanceTest {
+public class SshPasswordMySqlSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
 
-  @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    super.setupEnvironment(environment);
-  }
 
   @Override
   public Path getConfigFilePath() {
@@ -64,7 +58,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
   }
 
   private MySQLContainer initAndStartJdbcContainer(final Network network) {
-    final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0").withNetwork(network);
+    final MySQLContainer<?> db = new MySQLContainer<>(DockerImageName.parse("mysql:8.0")).withNetwork(network);
     db.start();
     return db;
   }
