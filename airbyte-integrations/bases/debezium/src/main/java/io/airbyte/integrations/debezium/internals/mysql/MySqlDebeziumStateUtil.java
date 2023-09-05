@@ -260,8 +260,10 @@ public class MySqlDebeziumStateUtil {
     return asJson;
   }
 
-  public DebeziumStateAttributes debeziumStateAttributes(final Properties properties, final ConfiguredAirbyteCatalog catalog,
-      final JdbcDatabase database, final JsonNode binLogOffset) {
+  public DebeziumStateAttributes debeziumStateAttributes(final Properties properties,
+                                                         final ConfiguredAirbyteCatalog catalog,
+                                                         final JdbcDatabase database,
+                                                         final JsonNode binLogOffset) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
     // We use the schema_only_recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
@@ -300,8 +302,7 @@ public class MySqlDebeziumStateUtil {
     return new DebeziumStateAttributes(offset, dbHistory);
   }
 
-  public record DebeziumStateAttributes(Map<String, String> offset, String dbHistory) {
-  }
+  public record DebeziumStateAttributes(Map<String, String> offset, String dbHistory) {}
 
   /**
    * Method to construct initial Debezium state which can be passed onto Debezium engine to make it

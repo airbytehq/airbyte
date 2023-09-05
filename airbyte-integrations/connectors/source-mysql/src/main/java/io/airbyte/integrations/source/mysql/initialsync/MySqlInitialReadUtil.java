@@ -174,9 +174,13 @@ public class MySqlInitialReadUtil {
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
   }
 
-  private static CdcState stateToBeUsed(final boolean savedOffsetStillPresentOnServer, final boolean newTablesInCatalog,
-      final MySqlDebeziumStateUtil mySqlDebeziumStateUtil, final StateManager stateManager, final JsonNode initialDebeziumState,
-      final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+  private static CdcState stateToBeUsed(final boolean savedOffsetStillPresentOnServer,
+                                        final boolean newTablesInCatalog,
+                                        final MySqlDebeziumStateUtil mySqlDebeziumStateUtil,
+                                        final StateManager stateManager,
+                                        final JsonNode initialDebeziumState,
+                                        final JdbcDatabase database,
+                                        final ConfiguredAirbyteCatalog catalog) {
     if (!savedOffsetStillPresentOnServer || (stateManager.getCdcStateManager().getCdcState() == null
         || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
       return new CdcState().withState(initialDebeziumState);
