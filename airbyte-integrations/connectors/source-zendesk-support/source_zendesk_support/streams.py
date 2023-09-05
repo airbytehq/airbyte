@@ -136,7 +136,9 @@ class BaseZendeskSupportStream(HttpStream, ABC):
                 sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
         except requests.exceptions.JSONDecodeError:
-            self.logger.error(f"Skipping stream {self.name}: Please Check permissions: Non-JSON response received")
+            self.logger.error(
+                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+            )
 
 
 class SourceZendeskSupportStream(BaseZendeskSupportStream):
