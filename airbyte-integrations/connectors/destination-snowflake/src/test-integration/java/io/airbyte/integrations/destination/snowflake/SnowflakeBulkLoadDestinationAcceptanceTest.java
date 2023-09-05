@@ -30,33 +30,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class SnowflakeBulkLoadDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
-    return Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
-  }
-
-  @Disabled("See README for why this test is disabled")
-  @Test
-  public void testCheckWithNoProperStagingPermissionConnection() throws Exception {
-    // Config to user (creds) that has no permission to write
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/copy_insufficient_staging_roles_config.json")));
-
-    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
-
-    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
-    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
-  }
-
-  @Disabled("See README for why this test is disabled")
-  @Test
-  public void testCheckWithNoActiveWarehouseConnection() throws Exception {
-    // Config to user(creds) that has no warehouse assigned
-    final JsonNode config = Jsons.deserialize(IOs.readFile(
-        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
-
-    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
-
-    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
-    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/bulk_load_config.json")));
   }
 
   @ParameterizedTest
