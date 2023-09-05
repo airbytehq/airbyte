@@ -1,0 +1,74 @@
+{
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/planhat-analytics",
+    "supported_destination_sync_modes": [
+        "append"
+    ],
+    "supportsIncremental": true,
+    "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Destination Planhat Analytics",
+        "type": "object",
+        "required": [
+            "tenant_uuid",
+            "api_method"
+        ],
+        "additionalProperties": false,
+        "properties": {
+            "tenant_uuid": {
+                "title": "Tenant UUID",
+                "type": "string",
+                "description": "Your tenant UUID",
+                "order": 1
+            },
+            "batch_size": {
+                "title": "Batch Size",
+                "type": "integer",
+                "description": "Your tenant UUID",
+                "order": 2,
+                "default": 10000,
+                "minumum": 1,
+                "maximum": 100000
+            },
+            "api_method": {
+                "title": "API Method",
+                "type": "object",
+                "description": "the API you want to use",
+                "oneOf": [
+                    {
+                        "title": "Metrics",
+                        "additionalProperties": false,
+                        "required": [
+                            "url",
+                            "api_token"
+                        ],
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "const": "https://analytics.planhat.com/dimensiondata"
+                            },
+                            "api_token": {
+                                "title": "API Token",
+                                "type": "string",
+                                "description": "your api token",
+                                "airbyte_secret": true
+                            }
+                        }
+                    },
+                    {
+                        "title": "User Activities",
+                        "additionalProperties": false,
+                        "required": [
+                            "url"
+                        ],
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "const": "https://analytics.planhat.com/analytics/bulk"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

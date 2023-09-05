@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"stream": "append_stream_metric", "emitted_at": 1664705198575, "data": { "dimensionId": "flightTime", "value": 1, "externalId": "airbus", "model": "Company", "date": "2022-06-20T18:56:18"}}}
+{"type": "RECORD", "record": {"stream": "append_stream_metric", "emitted_at": 1664705198575, "data": { "value": 1, "externalId": "airbus", "model": "Company", "date": "2022-06-20T18:56:18"}}}

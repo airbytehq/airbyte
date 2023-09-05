@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 9abb9f14-7dd4-448e-b518-d5764a0ab6c2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-planhat-analytics
+  githubIssueLabel: destination-planhat-analytics
+  icon: planhat-analytics.svg
+  license: MIT
+  name: Planhat Analytics
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/planhat-analytics
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
