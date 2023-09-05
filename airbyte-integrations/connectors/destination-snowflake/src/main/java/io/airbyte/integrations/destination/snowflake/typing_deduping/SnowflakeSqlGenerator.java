@@ -245,6 +245,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               ELSE "_airbyte_data":"${column_name}"
             END
             """);
+        case "TEXT" -> "(\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"::text)"; // we don't need TRY_CAST on strings.
         default -> "TRY_CAST(\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"::text as " + dialectType + ")";
       };
     }
