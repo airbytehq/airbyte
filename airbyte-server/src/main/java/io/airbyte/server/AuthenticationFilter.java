@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.airbyte.server.enums.EdgeTagClient;
 
 public class AuthenticationFilter implements ContainerRequestFilter {
 
@@ -100,8 +101,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     private boolean isEdgeTagBasedAuthentication(String originHeader) {
-        return originHeader != null && originHeader.toLowerCase()
-                .equalsIgnoreCase(EDGETAG_ORIGIN);
+        return originHeader != null &&
+                EdgeTagClient.getEdgeTagOrigins().contains(originHeader);
     }
 
     private void abortWithUnauthorized(ContainerRequestContext requestContext) {
