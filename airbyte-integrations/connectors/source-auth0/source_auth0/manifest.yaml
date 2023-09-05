@@ -85,17 +85,13 @@ definitions:
         request_parameters:
           sort: "updated_at:1"
           include_totals: "false"
-          # q: "updated_at:[{{stream_interval.get('updated_at') }} TO *]"
+          q: "updated_at:[{{stream_interval.stream_state['updated_at'] }} TO *]"
         request_headers: {}
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: "updated_at"
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: "PT0.000001S"
-      start_time_option:
-        inject_into: request_parameter
-        field_name: q
-        type: RequestOption
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] if config.get('start_date') else '1900-01-01T00:00:00.000Z' }}"
