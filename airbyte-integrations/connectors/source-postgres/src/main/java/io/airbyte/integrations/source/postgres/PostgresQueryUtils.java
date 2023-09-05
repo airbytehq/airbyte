@@ -107,8 +107,8 @@ public class PostgresQueryUtils {
       """;
 
   /**
-   * Query estimates the max tuple in a page.
-   * We are estimating in two ways and selecting the greatest value.
+   * Query estimates the max tuple in a page. We are estimating in two ways and selecting the greatest
+   * value.
    */
   public static final String CTID_ESTIMATE_MAX_TUPLE =
       """
@@ -323,8 +323,8 @@ public class PostgresQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleEstimateForStreams(final JdbcDatabase database,
-      final List<ConfiguredAirbyteStream> streams,
-      final String quoteString) {
+                                                                                                final List<ConfiguredAirbyteStream> streams,
+                                                                                                final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -336,8 +336,8 @@ public class PostgresQueryUtils {
   }
 
   public static int getTableMaxTupleEstimateForStream(final JdbcDatabase database,
-      final AirbyteStreamNameNamespacePair stream,
-      final String quoteString) {
+                                                      final AirbyteStreamNameNamespacePair stream,
+                                                      final String quoteString) {
     try {
       final String streamName = stream.getName();
       final String schemaName = stream.getNamespace();
@@ -354,4 +354,5 @@ public class PostgresQueryUtils {
       throw new RuntimeException(e);
     }
   }
+
 }

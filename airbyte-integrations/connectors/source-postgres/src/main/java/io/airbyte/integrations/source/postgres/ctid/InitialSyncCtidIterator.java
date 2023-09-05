@@ -245,7 +245,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         5_000_000 / tuplesInPage);
     LOGGER.info("Will read {} pages on each query", eachStep);
     final long theoreticalLastPage = relationSize / blockSize;
-    final long lastPage =  (long)((double)theoreticalLastPage * 1.1);
+    final long lastPage = (long) ((double) theoreticalLastPage * 1.1);
     LOGGER.info("Theoretical last page {}. will read until {}", theoreticalLastPage, lastPage);
     upperBound = lowerBound + eachStep;
     chunks.add((Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0))));
