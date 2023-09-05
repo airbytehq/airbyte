@@ -36,7 +36,9 @@ publishing {
 }
 
 // Adds publishToMavenLocal as final command in the list of 'build' tasks.
-build.dependsOn(publishToMavenLocal)
+tasks.named('build').configure {
+    dependsOn tasks.named('publishToMavenLocal')
+}
 
 publishToMavenLocal {
     // Always re-publish the artifact to MavenLocal
@@ -50,12 +52,15 @@ publishToMavenLocal {
     }
 }
 
+
 // This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
-task publishSnapshotIfNeeded {}
+def publishSnapshotIfNeeded = tasks.register('publishSnapshotIfNeeded') {}
 
 if (version.endsWith("-SNAPSHOT")) {
     logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
-    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
+    publishSnapshotIfNeeded.configure {
+        dependsOn publishToMavenLocal
+    }
 } else {
     logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
 }
