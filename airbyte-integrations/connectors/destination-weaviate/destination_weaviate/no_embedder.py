@@ -1,6 +1,9 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from destination_weaviate.config import NoEmbeddingConfigModel
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
@@ -9,9 +12,11 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
 )
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
+from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
+from destination_weaviate.config import NoEmbeddingConfigModel
+
 
 class NoEmbedder(Embedder):
     def __init__(self, config: NoEmbeddingConfigModel):

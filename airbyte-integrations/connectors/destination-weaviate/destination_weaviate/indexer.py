@@ -3,15 +3,15 @@
 #
 
 
-from dataclasses import dataclass
 import json
-import time
-import os
-from typing import Any, List, Mapping, MutableMapping, Optional
-import uuid
 import logging
+import os
+import time
+import uuid
+from dataclasses import dataclass
+from typing import Any, List, Mapping, MutableMapping, Optional
 
-
+import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
@@ -20,7 +20,6 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_weaviate.config import WeaviateIndexingConfigModel
 
-import weaviate
 
 class WeaviatePartialBatchError(Exception):
     pass
@@ -28,12 +27,14 @@ class WeaviatePartialBatchError(Exception):
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
+
 @dataclass
 class BufferedObject:
     id: str
     properties: Mapping[str, Any]
     vector: Optional[List[Any]]
     class_name: str
+
 
 class WeaviateIndexer(Indexer):
     config: WeaviateIndexingConfigModel
@@ -52,10 +53,10 @@ class WeaviateIndexer(Indexer):
             self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials)
         else:
             self.client = weaviate.Client(url=self.config.host)
-        
+
         schema = self.client.schema.get(self.config.class_name)
-        self.has_stream_metadata = any(prop.get("name") == METADATA_STREAM_FIELD  for prop in schema.get("properties", {}))
-        self.has_record_id_metadata = any(prop.get("name") == METADATA_RECORD_ID_FIELD  for prop in schema.get("properties", {}))
+        self.has_stream_metadata = any(prop.get("name") == METADATA_STREAM_FIELD for prop in schema.get("properties", {}))
+        self.has_record_id_metadata = any(prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {}))
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
@@ -79,7 +80,7 @@ class WeaviateIndexer(Indexer):
             # if stream metadata is not set, this means the field is not created yet and we can skip deleting
             if stream.destination_sync_mode == DestinationSyncMode.overwrite and self.has_stream_metadata:
                 self._delete_for_filter({"path": [METADATA_STREAM_FIELD], "operator": "Equal", "valueText": stream.stream.name})
-    
+
     def _has_ab_metadata(self) -> bool:
         self.schema.get("properties")
 
@@ -89,11 +90,7 @@ class WeaviateIndexer(Indexer):
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         # if record id metadata is not set, this means the field is not created yet and we can skip deleting
         if len(delete_ids) > 0 and self.has_record_id_metadata:
-            self._delete_for_filter({
-                "path": [METADATA_RECORD_ID_FIELD],
-                "operator": "ContainsAny",
-                "valueStringArray": delete_ids
-            })
+            self._delete_for_filter({"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids})
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             weaviate_object = {**self._normalize(chunk.metadata), self.config.text_field: chunk.page_content}
@@ -101,7 +98,7 @@ class WeaviateIndexer(Indexer):
             self.client.batch.add_data_object(weaviate_object, self.config.class_name, object_id, vector=chunk.embedding)
             self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, self.config.class_name)
         self.flush()
-    
+
     def _normalize(self, metadata: dict) -> dict:
         result = {}
 
@@ -118,7 +115,6 @@ class WeaviateIndexer(Indexer):
                 result[normalized_key] = json.dumps(value)
 
         return result
-
 
     def flush(self, retries: int = 3):
         if len(self.objects_with_error) > 0 and retries == 0:
