@@ -39,7 +39,7 @@ class Writer:
             documents.extend(record_documents)
             if record_id_to_delete is not None:
                 ids_to_delete.append(record_id_to_delete)
-        embeddings = self.embedder.embed_texts(documents)
+        embeddings = self.embedder.embed_chunks(documents)
         for i, document in enumerate(documents):
             document.embedding = embeddings[i]
         self.indexer.index(documents, ids_to_delete)
