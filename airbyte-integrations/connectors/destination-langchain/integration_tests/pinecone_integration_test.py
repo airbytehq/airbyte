@@ -77,7 +77,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             # Documents might not be available right away because Pinecone is handling them async
             sleep(20)
         result = self._index.query(
-            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "2"}, include_metadata=True
+            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "mystream_2"}, include_metadata=True
         )
         assert len(result.matches) == 1
         assert result.matches[0].metadata["text"] == "str_col: Cats are nice"
@@ -87,4 +87,4 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         pinecone.init(api_key=self.config["indexing"]["pinecone_key"], environment=self.config["indexing"]["pinecone_environment"])
         vector_store = Pinecone(self._index, embeddings.embed_query, "text")
         result = vector_store.similarity_search("feline animals", 1)
-        assert result[0].metadata["_record_id"] == "2"
+        assert result[0].metadata["_record_id"] == "mystream_2"

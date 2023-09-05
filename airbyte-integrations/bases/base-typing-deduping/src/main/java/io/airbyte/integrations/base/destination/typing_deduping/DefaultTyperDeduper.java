@@ -47,7 +47,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
 
   private final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator;
-  private final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator;
+  private final V2TableMigrator<DialectTableDefinition> v2TableMigrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
   private final Set<Pair<String, String>> streamsWithSuccessfulSetup;
@@ -58,13 +58,13 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
-                             final V2RawTableMigrator<DialectTableDefinition> v2RawTableMigrator,
+                             final V2TableMigrator<DialectTableDefinition> v2TableMigrator,
                              final int defaultThreadCount) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
-    this.v2RawTableMigrator = v2RawTableMigrator;
+    this.v2TableMigrator = v2TableMigrator;
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
     this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
@@ -76,7 +76,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
                              final int defaultThreadCount) {
-    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2RawTableMigrator<>(), defaultThreadCount);
+    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator<>(), defaultThreadCount);
   }
 
   /**
@@ -107,7 +107,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       try {
         // Migrate the Raw Tables if this is the first v2 sync after a v1 sync
         v1V2Migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream);
-        v2RawTableMigrator.migrateIfNecessary(stream);
+        v2TableMigrator.migrateIfNecessary(stream);
 
         final Optional<DialectTableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isPresent()) {
