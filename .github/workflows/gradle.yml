@@ -141,12 +141,12 @@ jobs:
       - name: Remove any files that have been gitignored
         run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
-      - name: Commit Formatting Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Automated Commit - Formatting Changes
-          commit_user_name: Octavia Squidington III
-          commit_user_email: octavia-squidington-iii@users.noreply.github.com
+      # - name: Commit Formatting Changes
+      #   uses: stefanzweifel/git-auto-commit-action@v4
+      #   with:
+      #     commit_message: Automated Commit - Formatting Changes
+      #     commit_user_name: Octavia Squidington III
+      #     commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
   ## BUILDS
   octavia-cli-build:
@@ -398,7 +398,7 @@ jobs:
       - name: Generate Template scaffold
         uses: Wandalen/wretry.action@v1.0.42
         with:
-          command: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
+          command: ./gradlew :airbyte-integrations:connector-templates:generator:generateScaffolds --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 

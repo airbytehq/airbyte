@@ -254,6 +254,10 @@ class CsvParser(AbstractFileParser):
                     f"{user_message} Please validate delimiter option, "
                     f"looks like some rows have delimiter symbol in its data so we receive more columns than expected."
                 )
+            if "CSV conversion error to" in error_message:
+                user_message = (
+                    f"{user_message} Please validate or provide a data schema, looks like some types cannot be converted. {error_message}"
+                )
             raise AirbyteTracedException(message=user_message, internal_message=error_message, failure_type=FailureType.config_error) from e
 
         still_reading = True
