@@ -22,7 +22,6 @@ acceptance_tests:
               bypass_reason: "Order features return randomly"
             - name: organization/features
               bypass_reason: "Order features return randomly"
-        fail_on_extra_columns: false
   connection:
     tests:
       - config_path: secrets/config.json

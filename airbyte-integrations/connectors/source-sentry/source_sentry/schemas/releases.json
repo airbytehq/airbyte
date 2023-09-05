@@ -83,6 +83,12 @@
     },
     "version": {
       "type": ["null", "string"]
-    }
+    },
+    "currentProjectMeta": {
+      "type" : ["null", "object"]
+    },
+    "status": {"type" : ["null", "string"]},
+    "userAgent": {"type" : ["null", "string"]},
+    "versionInfo": {"type" : ["null", "string"]}
   }
 }
