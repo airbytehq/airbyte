@@ -106,6 +106,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public boolean hasNext() {
+    LOGGER.debug("Checking hasNext() for stream {}...", getStream());
     try {
       if (iter.hasNext()) {
         return true;
@@ -113,11 +114,12 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     } catch (final MongoException e) {
       // If hasNext throws an exception, log it and then treat it as if hasNext returned false.
       iterThrewException = true;
-      LOGGER.info("hasNext threw an exception: {}", e.getMessage(), e);
+      LOGGER.info("hasNext threw an exception for stream {}: {}", getStream(), e.getMessage(), e);
     }
 
     if (!finalStateNext) {
       finalStateNext = true;
+      LOGGER.debug("Final state is now true for stream {}...", getStream());
       return true;
     }
 
@@ -126,26 +128,14 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
   @Override
   public AirbyteMessage next() {
+    LOGGER.debug("Getting next message from stream {}...", getStream());
     // Should a state message be emitted based on the number of messages we've seen?
     final var emitStateDueToMessageCount = count > 0 && count % checkpointInterval == 0;
     // Should a state message be emitted based on then last time a state message was emitted?
     final var emitStateDueToDuration = count > 0 && Duration.between(lastCheckpoint, Instant.now()).compareTo(checkpointDuration) > 0;
 
-    if (emitStateDueToMessageCount || emitStateDueToDuration) {
-      count = 0;
-      lastCheckpoint = Instant.now();
-
-      if (lastId != null) {
-        final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-            .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
-        final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
-        stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
-      }
-
-      return new AirbyteMessage()
-          .withType(Type.STATE)
-          .withState(stateManager.toState());
-    } else if (finalStateNext) {
+    if (finalStateNext) {
+      LOGGER.debug("Emitting final state status for stream {}:{}...", stream.getStream().getNamespace(), stream.getStream().getName());
       final var finalStateStatus = iterThrewException ? InitialSnapshotStatus.IN_PROGRESS : InitialSnapshotStatus.COMPLETE;
       final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
           .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
@@ -156,6 +146,20 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
+    } else if (emitStateDueToMessageCount || emitStateDueToDuration) {
+      count = 0;
+      lastCheckpoint = Instant.now();
+
+      if (lastId != null) {
+        final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
+                .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+        final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
+        stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
+      }
+
+      return new AirbyteMessage()
+              .withType(Type.STATE)
+              .withState(stateManager.toState());
     }
 
     count++;
@@ -181,4 +185,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     return jsonNode;
   }
 
+  private String getStream() {
+    return String.format("%s:%s", stream.getStream().getNamespace(), stream.getStream().getName());
+  }
 }
