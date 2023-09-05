@@ -69,7 +69,7 @@ class PineconeIndexer(Indexer):
         super().__init__(config, embedder)
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
 
-        self.pinecone_index = pinecone.Index(config.index, pool_threads=10)
+        self.pinecone_index = pinecone.GRPCIndex(config.index)
         self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
         self.embedding_dimensions = embedder.embedding_dimensions
 
@@ -113,7 +113,7 @@ class PineconeIndexer(Indexer):
             for ids_vectors_chunk in chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE)
         ]
         # Wait for and retrieve responses (this raises in case of error)
-        [async_result.get() for async_result in async_results]
+        [async_result.result() for async_result in async_results]
 
     def check(self) -> Optional[str]:
         try:
