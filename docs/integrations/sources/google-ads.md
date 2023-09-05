@@ -183,6 +183,23 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
 :::
 
+
+## Difference between manager and client accounts
+
+A manager account isn't an "upgrade" of your Google Ads account. Instead, it's an entirely new Google Ads account you create. Think of a manager account as an umbrella Google Ads account with several individual Google Ads accounts linked to it. You can link new and existing Google Ads accounts, as well as other manager accounts.
+
+You can then monitor ad performance, update campaigns, and manage other account tasks for those client accounts. Your manager account can also be given ownership of a client account. This allows you to manage user access for the client account.
+
+[Link](https://support.google.com/google-ads/answer/6139186?hl=en#) for more details on how it works and how you can create it. 
+
+**Manager Accounts (MCC)** primarily focus on account management and oversight. They can access and manage multiple client accounts, view shared resources, and handle invitations to link with client accounts.
+
+**Client Accounts** are more operationally focused. They deal with campaign management, bidding, keywords, targeting, extensions, metrics, reporting, billing, and other ad-specific functionalities.
+
+While both types of accounts can access a wide range of resources in the API, the difference lies in their scope and purpose. Manager accounts have a broader oversight, while client accounts delve into the specifics of advertising operations.
+
+For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v14/overview)
+
 ## Note on Conversion Windows
 
 In digital advertising, a 'conversion' typically refers to a user undertaking a desired action after viewing or interacting with an ad. This could be anything from clicking through to the advertiser's website, signing up for a newsletter, making a purchase, and so on. The conversion window is the period of time after a user sees or clicks on an ad during which their actions can still be credited to that ad.
