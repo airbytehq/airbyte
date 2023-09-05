@@ -1,0 +1,29 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "append_stream",
+                "supported_sync_modes": [
+                    "full_refresh"
+                ],
+                "source_defined_cursor": false,
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "Id": {
+                            "type": "string"
+                        },
+                        "Name": {
+                            "type": "string"
+                        },
+                        "phone_number_4__c": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "append"
+        }
+    ]
+}

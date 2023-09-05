@@ -1,0 +1,61 @@
+documentationUrl: https://docs.airbyte.com/integrations/destinations/salesforce
+supported_destination_sync_modes:
+  - append
+supportsIncremental: false
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Destination Salesforce
+  type: object
+  required:
+    - client_id
+    - client_secret
+    - refresh_token
+  additionalProperties: false
+  properties:
+    client_id:
+      title: Client ID
+      description: Enter your Salesforce developer application's <a
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+      type: string
+    client_secret:
+      title: Client Secret
+      description: Enter your Salesforce developer application's <a
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+      type: string
+      airbyte_secret: true
+    refresh_token:
+      title: Refresh Token
+      description: >-
+        Enter your application's <a
+        href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
+      type: string
+      airbyte_secret: true
+    is_sandbox:
+      title: Sandbox
+      description: >-
+        Toggle if you're using a <a
+        href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
+      type: boolean
+      default: false
+    batch_size:
+      title: Batch Size
+      description: Number of records sent as the same time
+      type: integer
+      default: 10000
+      minumum: 1
+      maximum: 10000
+    sobject:
+      title: Salesforce Object
+      type: string
+      description: Select your Salesforce Object you want to create/update
+      enum:
+        - Account
+        - Case
+        - Contact
+        - Event
+        - Lead
+        - Oppportunity
+        - Profile
+        - User
+        - Task
+      default: Account

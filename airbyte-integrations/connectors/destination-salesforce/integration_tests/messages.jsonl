@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "append_stream", "emitted_at": 1664705198575, "data": { "Id": "0016900003BTkScAAL", "Name": "Data test", "phone_number_4__c":"06", "ceci_est_test": "un_test"}}}
