@@ -41,8 +41,6 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
   private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
-  private static final String BULK_FILE_FORMAT = "bulk_file_format";
-  private static final String BULK_S3_STAGES = "bulk_s3_stages";
   private final String airbyteEnvironment;
 
   public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
