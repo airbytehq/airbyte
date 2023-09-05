@@ -57,6 +57,9 @@ class WeaviateIndexer(Indexer):
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
+        classes = self.client.schema.get()
+        if self.config.class_name not in [c.get("class") for c in classes]:
+            self.client.schema.create_class({"class": self.config.class_name, "vectorizer": "none"})
         schema = self.client.schema.get(self.config.class_name)
         self.has_stream_metadata = any(prop.get("name") == METADATA_STREAM_FIELD for prop in schema.get("properties", {}))
         self.has_record_id_metadata = any(prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {}))

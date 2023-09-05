@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-weaviate
   githubIssueLabel: destination-weaviate
   icon: weaviate.svg
@@ -21,4 +21,9 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  breakingChanges:
+    0.2.0:
+      message: >
+        This version changes the way object classes are managed. Instead of automatically creating a new class for each stream, the connector now loads all records in a single class. If you are syncing multiple streams into a single Weaviate cluster, you will need to configure separate destinations per object class. For more details check out the migration guide.
+      upgradeDeadline: "2023-10-01"
 metadataSpecVersion: "1.0"

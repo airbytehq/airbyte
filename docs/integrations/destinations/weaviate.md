@@ -77,7 +77,7 @@ You should now have all the requirements needed to configure Weaviate as a desti
 To set up a class ready to load data into, you can use the Python client:
 
 ```python
-from weaviate import Client
+import weaviate
 
 client = weaviate.Client(url="https://my-cluster-url",auth_client_secret=weaviate.AuthApiKey(api_key="my-key")) # or use username and password: auth_client_secret=weaviate.AuthClientPassword("my-username", "my-password")
 
@@ -88,5 +88,6 @@ client.schema.create_class({"class": "MyClass", "vectorizer": "none"}) # Set vec
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.0   | 2023-09-17 | [#30151](https://github.com/airbytehq/airbyte/pull/30151) | Add embedding capabilities, overwrite and dedup support and API key auth mode. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
 | 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                         |
