@@ -68,13 +68,15 @@ public class InitialSnapshotHandler {
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           final var idTypes = aggregateIdField(collection);
-          if (idTypes.size() != 1) {
+          if (idTypes.size() > 1) {
             throw new ConfigErrorException("The _id fields in a collection must be consistently typed.");
           }
 
-          if (IdType.findByBsonType(idTypes.get(0)).isEmpty()) {
-            throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED);
-          }
+          idTypes.stream().findFirst().ifPresent(idType -> {
+            if (IdType.findByBsonType(idType).isEmpty()) {
+              throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED);
+            }
+          });
 
           // find the existing state, if there is one, for this stream
           final Optional<MongoDbStreamState> existingState =
