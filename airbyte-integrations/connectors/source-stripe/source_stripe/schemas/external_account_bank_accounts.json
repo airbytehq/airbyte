@@ -43,6 +43,9 @@
     },
     "account": {
       "type": ["string", "null"]
+    },
+    "updated": {
+      "type": ["null", "integer"]
     }
   }
 }
