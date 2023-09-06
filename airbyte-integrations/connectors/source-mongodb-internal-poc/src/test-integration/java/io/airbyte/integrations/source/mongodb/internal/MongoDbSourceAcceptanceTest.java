@@ -236,11 +236,8 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     assertNotNull(lastStateMessage.getGlobal().getSharedState());
     assertFalse(lastStateMessage.getGlobal().getSharedState().isEmpty());
-    assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst()
-        .isPresent());
-    assertTrue(
-        lastStateMessage.getGlobal().getStreamStates().stream().filter(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)).findFirst()
-            .isPresent());
+    assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)));
+    assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)));
     assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage.getGlobal().getStreamStates().stream()
         .filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class).status());
 
@@ -258,11 +255,9 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage lastStateMessage2 = Iterables.getLast(stateMessages2);
     assertNotNull(lastStateMessage2.getGlobal().getSharedState());
     assertFalse(lastStateMessage2.getGlobal().getSharedState().isEmpty());
-    assertTrue(lastStateMessage2.getGlobal().getStreamStates().stream().filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst()
-        .isPresent());
+    assertTrue(lastStateMessage2.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)));
     assertTrue(
-        lastStateMessage2.getGlobal().getStreamStates().stream().filter(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)).findFirst()
-            .isPresent());
+        lastStateMessage2.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)));
     assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage2.getGlobal().getStreamStates().stream()
         .filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class).status());
     assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage2.getGlobal().getStreamStates().stream()
@@ -328,7 +323,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   void testReachedTargetPosition() {
-    final Long eventTimestamp = Long.MAX_VALUE;
+    final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
     final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);

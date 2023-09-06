@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.internal.cdc;
 import autovalue.shaded.com.google.common.collect.Sets;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.ExcludedField;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -37,7 +38,7 @@ public class MongoDbDebeziumFieldsUtil {
                                                                     final List<AirbyteStream> sourceAirbyteStreams) {
 
     final List<AirbyteStream> configuredAirbyteStreams =
-        configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).collect(Collectors.toList());
+        configuredCatalog.getStreams().stream().map(ConfiguredAirbyteStream::getStream).toList();
     final Set<ExcludedField> fieldsToInclude =
         configuredAirbyteStreams.stream().map(MongoDbDebeziumFieldsUtil::getCollectionAndFields).flatMap(Set::stream)
             .collect(Collectors.toSet());
@@ -55,7 +56,7 @@ public class MongoDbDebeziumFieldsUtil {
   }
 
   private static Set<String> getTopLevelFieldNames(final AirbyteStream stream) {
-    final Map<String, Object> object = (Map) io.airbyte.protocol.models.Jsons.object(stream.getJsonSchema().get("properties"), Map.class);
+    final Map<String, Object> object = Jsons.object(stream.getJsonSchema().get("properties"), Map.class);
     return object.keySet();
   }
 
