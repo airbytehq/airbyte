@@ -50,25 +50,14 @@ To fill out the required information:
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
+<!-- env:cloud -->
 #### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
 
-If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. These are:
-
-```roomsql
-34.106.109.131
-34.106.196.165
-34.106.60.246
-34.106.229.69
-34.106.127.139
-34.106.218.58
-34.106.115.240
-34.106.225.141
-13.37.4.46
-13.37.142.60
-35.181.124.238
-```
+If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
+our [Airbyte Security docs](../../../operator-guides/security#network-security-1).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
+<!-- /env:cloud -->
 
 ## Advanced Configuration
 
@@ -302,8 +291,10 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.7   | 2023-09-05 | [29672](https://github.com/airbytehq/airbyte/pull/29672) | Handle VACUUM happening during initial sync                                                                                                                                |
+| 3.1.6   | 2023-08-24 | [29821](https://github.com/airbytehq/airbyte/pull/29821) | Set replication_method display_type to radio, update titles and descriptions, and make CDC the default choice                                                              |
 | 3.1.5   | 2023-08-22 | [29534](https://github.com/airbytehq/airbyte/pull/29534) | Support "options" JDBC URL parameter                                                                                                                                       |
-| 3.1.4   | 2023-08-21 | [28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.2.                                                                                                                          |
+| 3.1.4   | 2023-08-21 | [28687](https://github.com/airbytehq/airbyte/pull/28687) | Under the hood: Add dependency on Java CDK v0.0.2.                                                                                                                         |
 | 3.1.3   | 2023-08-03 | [28708](https://github.com/airbytehq/airbyte/pull/28708) | Enable checkpointing snapshots in CDC connections                                                                                                                          |
 | 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                                                          |
 | 3.1.1   | 2023-07-31 | [28892](https://github.com/airbytehq/airbyte/pull/28892) | Fix an issue that prevented use of cursor columns with names containing uppercase letters                                                                                  |

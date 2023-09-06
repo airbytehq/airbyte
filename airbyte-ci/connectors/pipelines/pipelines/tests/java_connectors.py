@@ -53,7 +53,7 @@ class UnitTests(GradleTask):
     """A step to run unit tests for Java connectors."""
 
     title = "Java Connector Unit Tests"
-    gradle_task_name = "test"
+    gradle_task_name = "check"
     context: ConnectorContext
 
     @property

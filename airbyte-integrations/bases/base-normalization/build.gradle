@@ -10,30 +10,48 @@ airbytePython {
 }
 
 dependencies {
-    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
-task copySshScript(type: Copy, dependsOn: [project(':airbyte-connector-test-harnesses:acceptance-test-harness').processResources]) {
+def copySshScript = tasks.register('copySshScript', Copy) {
     from "${project(':airbyte-connector-test-harnesses:acceptance-test-harness').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
+copySshScript.configure {
+    dependsOn project(':airbyte-connector-test-harnesses:acceptance-test-harness').tasks.named('processResources')
+}
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)
-task checkSshScriptCopy(type: Task, dependsOn: copySshScript) {
+def checkSshScriptCopy = tasks.register('checkSshScriptCopy') {
     doFirst {
         assert file("${buildDir}/sshtunneling.sh").exists() :
                 "Copy of sshtunneling.sh failed, check that it is present in airbyte-workers."
     }
 }
+checkSshScriptCopy.configure {
+    dependsOn copySshScript
+}
 
-airbyteDocker.dependsOn(checkSshScriptCopy)
-assemble.dependsOn(checkSshScriptCopy)
-test.dependsOn(checkSshScriptCopy)
+tasks.named('airbyteDocker').configure {
+    dependsOn checkSshScriptCopy
+}
+tasks.named('assemble').configure {
+    dependsOn checkSshScriptCopy
+}
+tasks.named('check').configure {
+    dependsOn checkSshScriptCopy
+}
 
-integrationTest.dependsOn(build)
-
+def customIntegrationTestPython = tasks.register('customIntegrationTestPython', PythonTask) {
+    module = "pytest"
+    command = "-s integration_tests"
+}
+customIntegrationTestPython.configure {
+    dependsOn tasks.named('installTestReqs')
+    dependsOn tasks.named('airbyteDocker')
+}
 
 static def getDockerfile(String customConnector) {
     return "${customConnector}.Dockerfile"
@@ -46,7 +64,6 @@ static def getDockerImageName(String customConnector) {
 static def getImageNameWithTag(String customConnector) {
     return "${getDockerImageName(customConnector)}:dev"
 }
-
 
 def buildAirbyteDocker(String customConnector) {
     // def baseCommand = ['docker', 'build', '.', '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector)]
@@ -66,78 +83,54 @@ def buildAirbyteDocker(String customConnector) {
     }
 }
 
-task airbyteDockerMSSql(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('mssql')
-    dependsOn assemble
-}
-task airbyteDockerMySql(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('mysql')
-    dependsOn assemble
-}
-task airbyteDockerOracle(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('oracle')
-    dependsOn assemble
-}
-task airbyteDockerClickhouse(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('clickhouse')
-    dependsOn assemble
-}
-task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('snowflake')
-    dependsOn assemble
-}
-task airbyteDockerRedshift(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('redshift')
-    dependsOn assemble
-}
-task airbyteDockerTiDB(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('tidb')
-    dependsOn assemble
-}
-task airbyteDockerDuckDB(type: Exec, dependsOn: checkSshScriptCopy) {
-    configure buildAirbyteDocker('duckdb')
-    dependsOn assemble
+[ 'airbyteDockerMSSql': 'mssql',
+  'airbyteDockerMySql': 'mysql',
+  'airbyteDockerOracle': 'oracle',
+  'airbyteDockerClickhouse': 'clickhouse',
+  'airbyteDockerSnowflake': 'snowflake',
+  'airbyteDockerRedshift': 'redshift',
+  'airbyteDockerTiDB': 'tidb',
+  'airbyteDockerDuckDB': 'duckdb'
+].forEach {taskName, customConnector ->
+    def task = tasks.register(taskName, Exec) {
+        configure buildAirbyteDocker(customConnector)
+    }
+    task.configure {
+        dependsOn checkSshScriptCopy
+        dependsOn tasks.named('assemble')
+    }
+    tasks.named('airbyteDocker').configure {
+        dependsOn task
+    }
 }
 
-airbyteDocker.dependsOn(airbyteDockerMSSql)
-airbyteDocker.dependsOn(airbyteDockerMySql)
-airbyteDocker.dependsOn(airbyteDockerOracle)
-airbyteDocker.dependsOn(airbyteDockerClickhouse)
-airbyteDocker.dependsOn(airbyteDockerSnowflake)
-airbyteDocker.dependsOn(airbyteDockerRedshift)
-airbyteDocker.dependsOn(airbyteDockerTiDB)
-airbyteDocker.dependsOn(airbyteDockerDuckDB)
-
-task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
-    module = "pytest"
-    command = "-s integration_tests"
-
-    dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
+def customIntegrationTestsCoverage = tasks.named('_customIntegrationTestsCoverage')
+customIntegrationTestsCoverage.configure {
+    dependsOn tasks.named('airbyteDocker')
 }
 
-// not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
-// and as such it depends on the docker images.
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
-project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
+[
+        'bigquery',
+        'mysql',
+        'postgres',
+        'redshift',
+        'snowflake',
+        'oracle',
+        'mssql',
+        'clickhouse',
+        'tidb',
+        'duckdb',
+].each {destinationName ->
+    def destinationProject = project(":airbyte-integrations:connectors:destination-$destinationName")
+    customIntegrationTestPython.configure {
+        dependsOn destinationProject.tasks.named('airbyteDocker')
+    }
+    // Not really sure what this task does differently from customIntegrationTestPython,
+    // but it seems to also run integration tests and as such it depends on the docker images.
+    customIntegrationTestsCoverage.configure {
+        dependsOn destinationProject.tasks.named('airbyteDocker')
+    }
+}
 
 // DATs have some additional tests that exercise normalization code paths,
 // so we want to run these in addition to the base-normalization integration tests.
@@ -148,14 +141,13 @@ project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-
 // integrationTest.dependsOn(":airbyte-integrations:connectors:destination-postgres:integrationTest")
 // integrationTest.dependsOn(":airbyte-integrations:connectors:destination-snowflake:integrationTest")
 
-integrationTest.dependsOn("customIntegrationTestPython")
-customIntegrationTests.dependsOn("customIntegrationTestPython")
+tasks.named('customIntegrationTests').configure {
+    dependsOn customIntegrationTestPython
+}
 
 // TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
-task('mypyCheck', type: PythonTask) {
+def mypyCheck = tasks.register('mypyCheck', PythonTask) {
     module = "mypy"
     command = "normalization --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-
-    dependsOn 'blackFormat'
 }
-check.dependsOn mypyCheck
+tasks.named('airbytePythonChecks').configure { dependsOn mypyCheck }
