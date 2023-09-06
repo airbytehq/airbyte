@@ -24,15 +24,12 @@ This is how the components interact:
 ┌─────────────┐                        
 │MyDestination│                        
 └┬────────────┘                        
-┌▽────────────────────┐                
-│Writer               │                
-└┬──────────┬────────┬┘                
-┌▽────────┐┌▽──────┐┌▽────────────────┐
-│MyIndexer││Batcher││DocumentProcessor│
-└┬────────┘└───────┘└─────────────────┘
-┌▽───────┐                             
-│Embedder│                             
-└────────┘                             
+┌▽───────────────────────────────┐                
+│Writer                          │                
+└┬─────────┬──────────┬────────┬─┘                
+┌▽───────┐┌▽────────┐┌▽──────┐┌▽────────────────┐
+│Embedder││MyIndexer││Batcher││DocumentProcessor│
+└────────┘└─────────┘└───────┘└─────────────────┘
 ```
 
 Normally, only the `MyDestination` class and the `MyIndexer` class has to be implemented specifically for the destination. The other classes are provided as is by the helpers.
