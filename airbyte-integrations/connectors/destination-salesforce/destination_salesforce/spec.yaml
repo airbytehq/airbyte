@@ -10,6 +10,7 @@ connectionSpecification:
     - client_id
     - client_secret
     - refresh_token
+    - sobject
   additionalProperties: false
   properties:
     client_id:
@@ -17,12 +18,14 @@ connectionSpecification:
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
       type: string
+      order: 1
     client_secret:
       title: Client Secret
       description: Enter your Salesforce developer application's <a
         href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
       type: string
       airbyte_secret: true
+      order: 2
     refresh_token:
       title: Refresh Token
       description: >-
@@ -30,6 +33,7 @@ connectionSpecification:
         href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
       type: string
       airbyte_secret: true
+      order: 3
     is_sandbox:
       title: Sandbox
       description: >-
@@ -37,6 +41,7 @@ connectionSpecification:
         href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce Sandbox</a>
       type: boolean
       default: false
+      order: 4
     batch_size:
       title: Batch Size
       description: Number of records sent as the same time
@@ -44,18 +49,9 @@ connectionSpecification:
       default: 10000
       minumum: 1
       maximum: 10000
+      order: 5
     sobject:
       title: Salesforce Object
       type: string
       description: Select your Salesforce Object you want to create/update
-      enum:
-        - Account
-        - Case
-        - Contact
-        - Event
-        - Lead
-        - Oppportunity
-        - Profile
-        - User
-        - Task
       default: Account

@@ -44,9 +44,10 @@ Otherwise, the API will create a new record.**
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request                                       | Subject                       |
-| :------ | :--------- | :------------------------------------------------- | :---------------------------- |
-| 0.1.0   | 2023-09-05 | [#3](https://github.com/sendinblue/airbyte/pull/3) | 🎉 New Destination: Salesforce |
+| Version | Date       | Pull Request                                       | Subject                         |
+| :------ | :--------- | :------------------------------------------------- | :------------------------------ |
+| 0.1.0   | 2023-09-05 | [#3](https://github.com/sendinblue/airbyte/pull/3) | 🎉 New Destination: Salesforce   |
+| 0.1.1   | 2023-09-06 | [#4](https://github.com/sendinblue/airbyte/pull/4) | Simplify SF Object in spec.yaml |
 
 
 
