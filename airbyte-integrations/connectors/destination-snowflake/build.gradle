@@ -63,8 +63,8 @@ dependencies {
 }
 
 tasks.named('airbyteDocker').configure {
-    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
+    // this is really inefficent (because base-normalization:assemble builds 9 docker images)
     // but it's also just simple to implement.
     // this also goes away once airbyte-ci becomes a reality.
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDocker')
+    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('assemble')
 }

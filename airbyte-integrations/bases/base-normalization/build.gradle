@@ -47,7 +47,7 @@ def customIntegrationTestPython = tasks.register('customIntegrationTestPython', 
 }
 customIntegrationTestPython.configure {
     dependsOn tasks.named('installTestReqs')
-    dependsOn tasks.named('airbyteDocker')
+    dependsOn tasks.named('assemble')
 }
 
 static def getDockerfile(String customConnector) {
@@ -95,14 +95,14 @@ def buildAirbyteDocker(String customConnector) {
     task.configure {
         dependsOn checkSshScriptCopy
     }
-    tasks.named('airbyteDocker').configure {
+    tasks.named('assemble').configure {
         dependsOn task
     }
 }
 
 def customIntegrationTestsCoverage = tasks.named('_customIntegrationTestsCoverage')
 customIntegrationTestsCoverage.configure {
-    dependsOn tasks.named('airbyteDocker')
+    dependsOn tasks.named('assemble')
 }
 
 [
@@ -119,12 +119,12 @@ customIntegrationTestsCoverage.configure {
 ].each {destinationName ->
     def destinationProject = project(":airbyte-integrations:connectors:destination-$destinationName")
     customIntegrationTestPython.configure {
-        dependsOn destinationProject.tasks.named('airbyteDocker')
+        dependsOn destinationProject.tasks.named('assemble')
     }
     // Not really sure what this task does differently from customIntegrationTestPython,
     // but it seems to also run integration tests and as such it depends on the docker images.
     customIntegrationTestsCoverage.configure {
-        dependsOn destinationProject.tasks.named('airbyteDocker')
+        dependsOn destinationProject.tasks.named('assemble')
     }
 }
 
