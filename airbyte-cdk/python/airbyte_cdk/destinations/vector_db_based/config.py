@@ -59,6 +59,22 @@ class FakeEmbeddingConfigModel(BaseModel):
         }
 
 
+class FromFieldEmbeddingConfigModel(BaseModel):
+    mode: Literal["from_field"] = Field("from_field", const=True)
+    field_name: str = Field(
+        ..., title="Field name", description="Name of the field in the record that contains the embedding", examples=["embedding", "vector"]
+    )
+    dimensions: int = Field(
+        ..., title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
+    )
+
+    class Config:
+        title = "From Field"
+        schema_extra = {
+            "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
+        }
+
+
 class CohereEmbeddingConfigModel(BaseModel):
     mode: Literal["cohere"] = Field("cohere", const=True)
     cohere_key: str = Field(..., title="Cohere API key", airbyte_secret=True)
