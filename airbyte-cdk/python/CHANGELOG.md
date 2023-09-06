@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.13
+File-based CDK: migrated parsing error to config error to avoid sentry alerts
+
 ## 0.51.12
 Add from-field embedder to vector db CDK
 
