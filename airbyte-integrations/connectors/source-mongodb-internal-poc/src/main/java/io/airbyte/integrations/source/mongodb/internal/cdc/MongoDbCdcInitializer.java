@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
+import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 
@@ -17,6 +19,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
@@ -27,16 +30,12 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
 import org.slf4j.Logger;
@@ -74,6 +73,8 @@ public class MongoDbCdcInitializer {
    * applicable.
    *
    * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
+   * @param cdcMetadataInjector The {@link MongoDbCdcConnectorMetadataInjector} used to add metadata
+   *        to generated records.
    * @param catalog The configured Airbyte catalog of streams for the source.
    * @param stateManager The {@link MongoDbStateManager} that provides state information used for
    *        iterator selection.
@@ -84,6 +85,7 @@ public class MongoDbCdcInitializer {
    */
   public List<AutoCloseableIterator<AirbyteMessage>> createCdcIterators(
                                                                         final MongoClient mongoClient,
+                                                                        final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector,
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
@@ -100,7 +102,8 @@ public class MongoDbCdcInitializer {
     final Set<ExcludedField> fieldsNotIncludedInCatalog = mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
-    final JsonNode initialDebeziumState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
+    final JsonNode initialDebeziumState =
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, MongoDbDebeziumPropertiesManager.normalizeName(databaseName), replicaSet);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
         : Jsons.clone(stateManager.getCdcState().state());
     final Optional<BsonDocument> savedOffset = mongoDbDebeziumStateUtil.savedOffset(
@@ -116,10 +119,16 @@ public class MongoDbCdcInitializer {
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
-    final boolean savedOffsetIsValid = savedOffset.isPresent() ? mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset.get(), mongoClient) : false;
+    final boolean savedOffsetIsValid =
+        savedOffset.filter(resumeToken -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
-      LOGGER.warn("Saved offset is not valid. Airbyte will trigger a full refresh.");
+      LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
+      // If the offset in the state is invalid, reset the state to the initial state
+      stateManager.resetState(new MongoDbCdcState(initialDebeziumState));
+    } else {
+      LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
+      stateManager.updateCdcState(new MongoDbCdcState(cdcState));
     }
 
     final MongoDbCdcState stateToBeUsed =
@@ -131,12 +140,12 @@ public class MongoDbCdcInitializer {
         MongoDbCdcInitialSnapshotUtils.getStreamsForInitialSnapshot(mongoClient, stateManager, catalog, savedOffsetIsValid);
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
-        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), emittedAt);
+        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
+            emittedAt, getCheckpointInterval(config));
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
         MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
-    final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
     final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
@@ -148,10 +157,17 @@ public class MongoDbCdcInitializer {
         emittedAt,
         false);
 
-    return Stream
-        .of(initialSnapshotIterators, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
-        .flatMap(Collection::stream)
-        .collect(Collectors.toList());
+    // We can close the client after the initial snapshot is complete, incremental
+    // iterator does not make use of the client.
+    final AutoCloseableIterator<AirbyteMessage> initialSnapshotIterator = AutoCloseableIterators.appendOnClose(
+        AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
+
+    return List.of(initialSnapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null));
+  }
+
+  private Integer getCheckpointInterval(final JsonNode config) {
+    return config.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY) != null ? config.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt()
+        : CHECKPOINT_INTERVAL;
   }
 
 }

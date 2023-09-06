@@ -16,6 +16,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcInitializer;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
@@ -91,17 +92,15 @@ public class MongoDbSource extends BaseConnector implements Source {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state) {
     final var emittedAt = Instant.now();
+    final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final var stateManager = MongoDbStateManager.createStateManager(state);
     // WARNING: do not close the client here since it needs to be used by the iterator
     final MongoClient mongoClient = createMongoClient(config);
 
     try {
 
-      final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, catalog, stateManager, emittedAt, config);
-      return AutoCloseableIterators
-          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList,
-              AirbyteTraceMessageUtility::emitStreamStatusTrace),
-              mongoClient::close);
+      final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog, stateManager, emittedAt, config);
+      return AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace);
     } catch (final Exception e) {
       mongoClient.close();
       throw e;

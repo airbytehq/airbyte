@@ -72,7 +72,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   @Override
   protected String getName(final JsonNode config) {
-    return config.get(DATABASE_CONFIGURATION_KEY).asText().replaceAll("_", "-");
+    return normalizeName(config.get(DATABASE_CONFIGURATION_KEY).asText());
   }
 
   @Override
@@ -90,6 +90,16 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     return streams.stream()
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
         .collect(Collectors.joining(","));
+  }
+
+  /**
+   * Ensure that the name property is formatted correctly for use by Debezium.
+   *
+   * @param name The name to be associated with the Debezium connector.
+   * @return The normalized name.
+   */
+  public static String normalizeName(final String name) {
+    return name != null ? name.replaceAll("_", "-") : null;
   }
 
 }

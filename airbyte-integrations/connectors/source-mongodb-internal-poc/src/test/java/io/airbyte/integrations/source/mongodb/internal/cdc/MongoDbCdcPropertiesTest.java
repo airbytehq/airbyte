@@ -15,9 +15,11 @@ import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProp
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.ExcludedField;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -63,4 +65,11 @@ class MongoDbCdcPropertiesTest {
     assertTrue(actualFullyQualifiedExcludedFields.contains(FULLY_QUALIFIED_FIELD4));
   }
 
+
+  @Test
+  void testEmptyExcludeFieldList() {
+    final Set<ExcludedField> fieldsToExclude = Collections.emptySet();
+    final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsToExclude);
+    assertFalse(debeziumProperties.containsKey(FIELD_EXCLUDE_LIST_KEY));
+  }
 }

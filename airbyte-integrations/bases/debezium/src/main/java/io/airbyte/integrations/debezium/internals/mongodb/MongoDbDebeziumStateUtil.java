@@ -21,8 +21,8 @@ import io.debezium.connector.mongodb.MongoDbTaskContext;
 import io.debezium.connector.mongodb.ReplicaSetDiscovery;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,14 +49,14 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
    * after an initial snapshot sync.
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
-   * @param database The database associated with the sync.
+   * @param serverId The ID of the target server.
    * @param replicaSet The replication set associated with the sync.
    * @return The initial Debezium offset state storage document as a {@link JsonNode}.
    */
-  public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String database, final String replicaSet) {
+  public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String serverId, final String replicaSet) {
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
 
-    final JsonNode state = formatState(database, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
+    final JsonNode state = formatState(serverId, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
   }
@@ -64,17 +64,17 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
   /**
    * Formats the Debezium initial state into a format suitable for storage in the offset data file.
    *
-   * @param database The name of the target MongoDB database.
+   * @param serverId The ID target MongoDB database.
    * @param replicaSet The name of the target MongoDB replica set.
    * @param resumeTokenData The MongoDB resume token that represents the offset state.
    * @return The offset state as a {@link JsonNode}.
    */
-  public static JsonNode formatState(final String database, final String replicaSet, final String resumeTokenData) {
+  public static JsonNode formatState(final String serverId, final String replicaSet, final String resumeTokenData) {
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(ResumeTokens.fromData(resumeTokenData));
 
-    final List<Object> key = generateOffsetKey(database, replicaSet);
+    final List<Object> key = generateOffsetKey(serverId, replicaSet);
 
-    final Map<String, Object> value = new HashMap<>();
+    final Map<String, Object> value = new LinkedHashMap<>();
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS, timestamp.getTime());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT, timestamp.getInc());
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_TRANSACTION_ID, null);
@@ -127,7 +127,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
                                             final JsonNode cdcState,
                                             final JsonNode config,
                                             final MongoClient mongoClient) {
-    LOGGER.info("Initializing file offset backing store with state '{}'...", cdcState);
+    LOGGER.debug("Initializing file offset backing store with state '{}'...", cdcState);
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
         config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
@@ -156,7 +156,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
       final MongoDbConnectorConfig mongoDbConnectorConfig = new MongoDbConnectorConfig(config);
       final ReplicaSets replicaSets = new ReplicaSetDiscovery(taskContext).getReplicaSets(mongoClient);
 
-      LOGGER.info("Parsing saved offset state for replica set '{}' and server ID '{}'...", replicaSets.all().get(0), properties.getProperty("name"));
+      LOGGER.debug("Parsing saved offset state for replica set '{}' and server ID '{}'...", replicaSets.all().get(0), properties.getProperty("name"));
 
       final MongoDbOffsetContext.Loader loader = new MongoDbCustomLoader(mongoDbConnectorConfig, replicaSets);
       final Collection<Map<String, String>> partitions = loader.getPartitions();
@@ -170,11 +170,11 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
           final BsonDocument resumeToken = ResumeTokens.fromData(resumeTokenData.toString());
           return Optional.of(resumeToken);
         } else {
-          LOGGER.info("Offset data does not contain a resume token: {}", offset);
+          LOGGER.warn("Offset data does not contain a resume token: {}", offset);
           return Optional.empty();
         }
       } else {
-        LOGGER.info("Loaded offset data is null or empty: {}", offsets);
+        LOGGER.warn("Loaded offset data is null or empty: {}", offsets);
         return Optional.empty();
       }
     } finally {
@@ -189,19 +189,19 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     }
   }
 
-  private static List<Object> generateOffsetKey(final String database, final String replicaSet) {
+  private static List<Object> generateOffsetKey(final String serverId, final String replicaSet) {
     /*
      * N.B. The order of the keys in the sourceInfoMap and key list matters! DO NOT CHANGE the order
      * unless you have verified that Debezium has changed its order of the key it builds when retrieving
      * data from the offset file. See the "partition(String replicaSetName)" method of the
      * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
      */
-    final Map<String, String> sourceInfoMap = new HashMap<>();
+    final Map<String, String> sourceInfoMap = new LinkedHashMap<>();
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
-    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, database);
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, serverId);
 
     final List<Object> key = new LinkedList<>();
-    key.add(database);
+    key.add(serverId);
     key.add(sourceInfoMap);
     return key;
   }

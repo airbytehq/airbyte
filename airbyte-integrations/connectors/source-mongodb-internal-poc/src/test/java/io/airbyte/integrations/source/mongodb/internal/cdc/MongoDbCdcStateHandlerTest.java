@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mongodb.internal.cdc;
 import static io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.GLOBAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
@@ -47,11 +48,7 @@ class MongoDbCdcStateHandlerTest {
 
   @Test
   void testSaveStateAfterCompletionOfSnapshotOfNewStreams() {
-    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveStateAfterCompletionOfSnapshotOfNewStreams();
-    assertNotNull(airbyteMessage);
-    assertEquals(AirbyteMessage.Type.STATE, airbyteMessage.getType());
-    assertNotNull(airbyteMessage.getState());
-    assertEquals(GLOBAL, airbyteMessage.getState().getType());
+    assertThrows(RuntimeException.class, () -> mongoDbCdcStateHandler.saveStateAfterCompletionOfSnapshotOfNewStreams());
   }
 
 }

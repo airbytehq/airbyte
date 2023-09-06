@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -20,13 +21,14 @@ public class DebeziumEventUtils {
 
   public static AirbyteMessage toAirbyteMessage(final ChangeEventWithMetadata event,
                                                 final CdcMetadataInjector cdcMetadataInjector,
-                                                final Instant emittedAt) {
+                                                final Instant emittedAt,
+                                                final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
     final JsonNode debeziumRecord = event.eventValueAsJson();
     final JsonNode before = debeziumRecord.get("before");
     final JsonNode after = debeziumRecord.get("after");
     final JsonNode source = debeziumRecord.get("source");
 
-    final JsonNode data = formatDebeziumData(before, after, source, cdcMetadataInjector);
+    final JsonNode data = formatDebeziumData(before, after, source, cdcMetadataInjector, debeziumConnectorType);
     final String schemaName = cdcMetadataInjector.namespace(source);
     final String streamName = cdcMetadataInjector.name(source);
 
@@ -45,8 +47,9 @@ public class DebeziumEventUtils {
   private static JsonNode formatDebeziumData(final JsonNode before,
                                              final JsonNode after,
                                              final JsonNode source,
-                                             final CdcMetadataInjector cdcMetadataInjector) {
-    final ObjectNode base = (ObjectNode) (after.isNull() ? before : after);
+                                             final CdcMetadataInjector cdcMetadataInjector,
+                                             final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
+    final ObjectNode base = getBaseNode(after, before, debeziumConnectorType);
 
     final long transactionMillis = source.get("ts_ms").asLong();
     final String transactionTimestamp = new Timestamp(transactionMillis).toInstant().toString();
@@ -61,6 +64,30 @@ public class DebeziumEventUtils {
     }
 
     return base;
+  }
+
+  /**
+   * Selects the proper node from the Debezium change event that represents the modified document.
+   * <p />
+   * <p />
+   * Some data sources actually store their record data as JSON. This method handles nested JSON
+   * documents in the change event to ensure that the changed document can be added to the
+   * {@link AirbyteMessage} as a JSON document.
+   *
+   * @param after The state of the record after the change.
+   * @param before The state of the record before the change.
+   * @return The record that represents the change.
+   */
+  private static ObjectNode getBaseNode(
+      final JsonNode after,
+      final JsonNode before,
+      final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
+    final JsonNode baseNode = after.isNull() ? before : after;
+    return switch (debeziumConnectorType) {
+      case MONGODB -> (ObjectNode) Jsons.deserialize(baseNode.asText());
+      case RELATIONALDB -> (ObjectNode) baseNode;
+      default -> throw new IllegalArgumentException("Unknown debezium connector type: " + debeziumConnectorType);
+    };
   }
 
 }
