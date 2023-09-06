@@ -2,6 +2,8 @@ data:
   allowedHosts:
     hosts:
       - "*.${indexing.pinecone_environment}.pinecone.io"
+      - api.openai.com
+      - api.cohere.ai
   registries:
     cloud:
       enabled: true
