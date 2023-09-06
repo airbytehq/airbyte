@@ -10,10 +10,7 @@ import pinecone
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from airbyte_cdk.models.airbyte_protocol import (
-    ConfiguredAirbyteCatalog,
-    DestinationSyncMode,
-)
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_pinecone.config import PineconeIndexingModel
 
 
