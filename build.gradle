@@ -140,6 +140,8 @@ allprojects {
 
     tasks.withType(Zip).configureEach {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+        // Disabling distZip causes the build to break for some reason, so: instead of disabling it, make it fast.
+        entryCompression ZipEntryCompression.STORED
     }
 }
 
