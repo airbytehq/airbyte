@@ -49,4 +49,4 @@ The Moengage connector supports **forms** as the streams.
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
-| 0.1.0   | 2023-09-16 | [](https://github.com/airbytehq/airbyte/pull/) | Initial Release |
+| 0.1.0   | 2023-09-06 | [30143](https://github.com/airbytehq/airbyte/pull/30143) | Initial Release |

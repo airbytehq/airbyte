@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - "api-0*.moengage.com"
   registries:
     oss:
       enabled: false
@@ -16,7 +16,7 @@ data:
   icon: moengage.svg
   license: MIT
   name: Moengage
-  releaseDate: TODO
+  releaseDate: 2023-09-06
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/moengage
