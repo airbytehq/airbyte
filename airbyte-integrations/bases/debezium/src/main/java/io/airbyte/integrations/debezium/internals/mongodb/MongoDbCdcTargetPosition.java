@@ -98,6 +98,8 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
   @Override
   public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
     LOGGER.info("Comparing offsets {} and {}", offsetA, offsetB);
+    LOGGER.info("Comparing resume tokens {} and {}", offsetA.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN),
+        offsetB.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN);
     return offsetA.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN)
         .equals(offsetB.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN));
   }
