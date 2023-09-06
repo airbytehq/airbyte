@@ -53,8 +53,11 @@ public class MongoDbCdcProperties {
      * only allows to specify an exclude list of fields (as opposed to an include list). If/when
      * debezium adds support for an include list, we should move this property to
      * {@link MongoDbDebeziumPropertiesManager}.
+     *
+     * Also, when there are no fields to exclude we do not set this property. If we set this property to an
+     * empty string then we would get an error from debezium.
      */
-    props.setProperty(FIELD_EXCLUDE_LIST_KEY, createFieldsToExcludeString(fieldsToExclude));
+    if(!fieldsToExclude.isEmpty()) props.setProperty(FIELD_EXCLUDE_LIST_KEY, createFieldsToExcludeString(fieldsToExclude));
 
     return props;
   }
