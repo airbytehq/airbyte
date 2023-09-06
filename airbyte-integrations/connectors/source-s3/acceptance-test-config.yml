@@ -163,41 +163,26 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalogs/csv.json
-        cursor_paths:
-          test:
-            - _ab_source_file_last_modified
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
       - config_path: secrets/v4_parquet_config.json
         configured_catalog_path: integration_tests/configured_catalogs/parquet.json
-        cursor_paths:
-          test:
-            - _ab_source_file_last_modified
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
       - config_path: secrets/v4_avro_config.json
         configured_catalog_path: integration_tests/configured_catalogs/avro.json
-        cursor_paths:
-          test:
-            - _ab_source_file_last_modified
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
       - config_path: secrets/v4_jsonl_config.json
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
-        cursor_paths:
-          test:
-            - _ab_source_file_last_modified
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
       - config_path: secrets/v4_jsonl_newlines_config.json
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
-        cursor_paths:
-          test:
-            - _ab_source_file_last_modified
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800

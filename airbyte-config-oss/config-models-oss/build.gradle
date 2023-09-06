@@ -39,7 +39,7 @@ test {
     }
 }
 
-task log4j2IntegrationTest(type: Test) {
+tasks.register('log4j2IntegrationTest', Test) {
     useJUnitPlatform {
         includeTags 'log4j2-config'
     }
@@ -48,7 +48,7 @@ task log4j2IntegrationTest(type: Test) {
     }
 }
 
-task logClientsIntegrationTest(type: Test) {
+tasks.register('logClientsIntegrationTest', Test) {
     useJUnitPlatform {
         includeTags 'logger-client'
     }
@@ -56,5 +56,3 @@ task logClientsIntegrationTest(type: Test) {
         events "passed", "skipped", "failed"
     }
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

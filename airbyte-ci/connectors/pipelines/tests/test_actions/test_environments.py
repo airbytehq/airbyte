@@ -30,7 +30,7 @@ def context(dagger_client):
 
 
 async def test_with_installed_python_package(context, python_connector):
-    python_environment = context.dagger_client.container().from_("python:3.9")
+    python_environment = context.dagger_client.container().from_("python:3.10")
     installed_connector_package = await environments.with_installed_python_package(
         context,
         python_environment,

@@ -134,8 +134,9 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ### bigquery
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.4   | 2023-08-31 | [\#30020](https://github.com/airbytehq/airbyte/pull/30020) | Run typing and deduping tasks in parallel                                                                                                                       |
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.5   | 2023-08-31 | [\#30020](https://github.com/airbytehq/airbyte/pull/30020) | Run typing and deduping tasks in parallel                                                                                                                       |
+| 2.0.4   | 2023-09-05 | [30117](https://github.com/airbytehq/airbyte/pull/30117)   | Type and Dedupe at sync start and then every 6 hours                                                                                                            |
 | 2.0.3   | 2023-09-01 | [30056](https://github.com/airbytehq/airbyte/pull/30056)   | Internal refactor, no behavior change                                                                                                                           |
 | 2.0.2   | 2023-09-01 | [30120](https://github.com/airbytehq/airbyte/pull/30120)   | Improve performance on very wide streams by skipping SAFE_CAST on strings                                                                                       |
 | 2.0.1   | 2023-08-29 | [29972](https://github.com/airbytehq/airbyte/pull/29972)   | Publish a new version to supersede old v2.0.0                                                                                                                   |
