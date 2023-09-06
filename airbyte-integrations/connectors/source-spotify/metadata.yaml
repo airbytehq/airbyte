@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8676ea86-b4de-4ed0-9d73-ec1dff2f9007
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-spotify
+  githubIssueLabel: source-spotify
+  icon: spotify.svg
+  license: MIT
+  name: Spotify
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/spotify
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"
