@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5d297ac7-355e-4a04-be75-a5e7e175fc4e
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-avni
+  githubIssueLabel: source-avni
+  icon: avni.svg
+  license: MIT
+  name: Avni
+  releaseDate: TODO
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/avni
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"
