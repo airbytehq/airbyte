@@ -71,6 +71,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String EMPTY_TEST_FIELD = "empty_test";
   private static final String ID_FIELD = "id";
   private static final String INT_TEST_FIELD = "int_test";
+  private static final String INVALID_RESUME_TOKEN = "820000000000000000000000296E04";
   private static final String NAME_FIELD = "name";
   private static final String OBJECT_TEST_FIELD = "object_test";
   private static final String OTHER_COLLECTION_NAME = "acceptance_test2";
@@ -311,7 +312,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
         MongoDbDebeziumStateUtil.formatState(DATABASE_NAME,
-            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), "820000000000000000000000296E04"));
+            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
     System.out.println(state);
