@@ -57,5 +57,3 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.30'
 
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
