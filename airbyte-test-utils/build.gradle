@@ -27,5 +27,3 @@ dependencies {
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation libs.platform.testcontainers.cockroachdb
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

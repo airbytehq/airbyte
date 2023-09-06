@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
-  dockerImageTag: 0.0.8
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-langchain
   githubIssueLabel: destination-langchain
   icon: langchain.svg
@@ -22,4 +22,9 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  breakingChanges:
+    0.1.0:
+      message: >
+        This version changes the way record ids are tracked internally. If you are using a stream in **append-dedup** mode, you need to reset the connection after doing the upgrade to avoid duplicates.
+      upgradeDeadline: "2023-09-18"
 metadataSpecVersion: "1.0"

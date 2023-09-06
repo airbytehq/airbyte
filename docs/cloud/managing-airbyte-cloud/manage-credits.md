@@ -15,11 +15,11 @@ To buy credits:
 4. The Stripe payment page displays. If you want to change the amount of credits, click the **Qty 200** dropdown. The **Update quantity** dialog displays, and you can either type the amount or use minus (**–**) or plus (**+**) to change the quantity. Click **Update**. 
 
     :::note 
-    
+
     Purchase limits:
     * Minimum: 100 credits
     * Maximum: 2,500 credits
-    
+
     :::
 
     To buy more credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
@@ -35,9 +35,9 @@ To buy credits:
     A receipt for your purchase is sent to your email. 
 
     :::note 
-    
+
     Credits expire after one year if they are not used.
-    
+
     :::
 
 ## View invoice history
