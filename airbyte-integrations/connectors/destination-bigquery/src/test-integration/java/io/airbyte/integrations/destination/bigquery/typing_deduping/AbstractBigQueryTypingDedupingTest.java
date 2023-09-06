@@ -13,6 +13,7 @@ import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableResult;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils;
@@ -77,6 +78,11 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     // so we don't need to do any existence checks here.
     bq.delete(TableId.of(getRawDataset(), StreamId.concatenateRawTableName(streamNamespace, streamName)));
     bq.delete(DatasetId.of(streamNamespace), BigQuery.DatasetDeleteOption.deleteContents());
+  }
+
+  @Override
+  protected SqlGenerator<?> getSqlGenerator() {
+    return new BigQuerySqlGenerator(null);
   }
 
   /**
