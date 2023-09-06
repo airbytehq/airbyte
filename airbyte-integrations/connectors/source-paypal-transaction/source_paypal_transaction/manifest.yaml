@@ -71,9 +71,9 @@ definitions:
       - type: AddFields
         fields:
           - path:
-              - transaction_initiation_date
+              - transaction_updated_date
             value: >-
-              {{ format_datetime(record['transaction_info']['transaction_initiation_date'], '%Y-%m-%dT%H:%M:%SZ') }}
+              {{ format_datetime(record['transaction_info']['transaction_updated_date'], '%Y-%m-%dT%H:%M:%SZ') }}
       - type: AddFields
         fields:
           - path:
@@ -81,7 +81,7 @@ definitions:
             value: '{{ record[''transaction_info''][''transaction_id''] }}'
     incremental_sync:
       type: DatetimeBasedCursor
-      cursor_field: transaction_initiation_date
+      cursor_field: transaction_updated_date
       cursor_datetime_formats:
         - '%Y-%m-%dT%H:%M:%SZ'
       datetime_format: '%Y-%m-%dT%H:%M:%SZ'
