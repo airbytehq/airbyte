@@ -10,11 +10,7 @@
   },
   "processing": {
     "chunk_size": 1000,
-    "text_fields": [
-      "str_col"
-    ],
-    "metadata_fields": [
-      "int_col"
-    ]
+    "text_fields": ["str_col"],
+    "metadata_fields": ["int_col"]
   }
 }
