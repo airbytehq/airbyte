@@ -74,8 +74,8 @@ class MailchimpAuthenticator(DeclarativeAuthenticator):
 
 @dataclass
 class MailchimpRequester(HttpRequester):
-    basic_auth: BasicHttpAuthenticator
-    oauth: BearerAuthenticator
+    # basic_auth: BasicHttpAuthenticator
+    # oauth: BearerAuthenticator
     url_base = None
 
     @staticmethod
@@ -99,11 +99,11 @@ class MailchimpRequester(HttpRequester):
 
         return f"https://{data_center}.api.mailchimp.com/3.0/"
     
-    def get_authenticator(self) -> DeclarativeAuthenticator:
-        auth_type = self.config.credentials.auth_type
-        if auth_type == "apikey":
-            return self.basic_auth
-        elif auth_type == "oauth2.0":
-            return self.oauth
-        else:
-            raise Exception(f"Invalid auth type: {auth_type}")
+    # def get_authenticator(self) -> DeclarativeAuthenticator:
+    #     auth_type = self.config.credentials.auth_type
+    #     if auth_type == "apikey":
+    #         return self.basic_auth
+    #     elif auth_type == "oauth2.0":
+    #         return self.oauth
+    #     else:
+    #         raise Exception(f"Invalid auth type: {auth_type}")
