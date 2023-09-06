@@ -169,7 +169,7 @@ class AzureOpenAIEmbedder(Embedder):
     def __init__(self, config: AzureOpenAIEmbeddingConfigModel):
         super().__init__()
         # Client is set internally
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base)  # type: ignore
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment)  # type: ignore
 
     def check(self) -> Optional[str]:
         try:

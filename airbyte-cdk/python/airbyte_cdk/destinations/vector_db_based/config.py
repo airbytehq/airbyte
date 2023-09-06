@@ -55,13 +55,20 @@ class AzureOpenAIEmbeddingConfigModel(BaseModel):
         ...,
         title="Azure OpenAI API key",
         airbyte_secret=True,
-        description="The API key for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+        description="The API key for your Azure OpenAI resource. You can find this in the Azure portal under your Azure OpenAI resource",
     )
     api_base: str = Field(
         ...,
         title="Resource base URL",
-        description="The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+        description="The base URL for your Azure OpenAI resource. You can find this in the Azure portal under your Azure OpenAI resource",
         examples=["https://your-resource-name.openai.azure.com"],
+    )
+
+    deployment: str = Field(
+        ...,
+        title="Deployment name",
+        description="The name of the deployment you want to use. You can find this in the Azure portal under your Azure OpenAI resource",
+        examples=["your-deployment-name"],
     )
 
     class Config:
