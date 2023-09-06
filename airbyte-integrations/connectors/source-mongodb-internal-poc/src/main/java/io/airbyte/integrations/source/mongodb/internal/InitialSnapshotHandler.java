@@ -98,7 +98,7 @@ public class InitialSnapshotHandler {
 
           final var stateIterator =
               new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                      airbyteStream, emittedAt, CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
+                  airbyteStream, emittedAt, CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();

@@ -145,7 +145,7 @@ class MongoDbCdcInitializerTest {
     when(findIterable.sort(any())).thenReturn(findIterable);
     when(findIterable.cursor()).thenReturn(findCursor);
     when(findCursor.hasNext()).thenReturn(true);
-    when(findCursor.next()).thenReturn(new Document("_id",  new ObjectId(ID)));
+    when(findCursor.next()).thenReturn(new Document("_id", new ObjectId(ID)));
 
     mongoDbDebeziumStateUtil = spy(new MongoDbDebeziumStateUtil());
     mongoDbDebeziumFieldsUtil = mock(MongoDbDebeziumFieldsUtil.class);
@@ -159,7 +159,8 @@ class MongoDbCdcInitializerTest {
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertTrue(iterators.get(0).hasNext(), "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+    assertTrue(iterators.get(0).hasNext(),
+        "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
   }
 
   @Test
@@ -170,7 +171,8 @@ class MongoDbCdcInitializerTest {
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertFalse(iterators.get(0).hasNext(), "Initial snapshot iterator should have no messages if there's no initial snapshot state and collections are empty");
+    assertFalse(iterators.get(0).hasNext(),
+        "Initial snapshot iterator should have no messages if there's no initial snapshot state and collections are empty");
   }
 
   @Test
