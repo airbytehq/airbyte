@@ -7,7 +7,6 @@ from abc import ABC, abstractmethod
 from typing import Any, Generator, Iterable, List, Optional, Tuple, TypeVar
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 
 
@@ -19,9 +18,8 @@ class Indexer(ABC):
     In a destination connector, implement a custom indexer by extending this class and implementing the abstract methods.
     """
 
-    def __init__(self, config: Any, embedder: Embedder):
+    def __init__(self, config: Any):
         self.config = config
-        self.embedder = embedder
         pass
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
