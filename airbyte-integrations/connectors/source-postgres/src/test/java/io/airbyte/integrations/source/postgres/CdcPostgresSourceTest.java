@@ -909,7 +909,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception Exception happening in the test.
    */
-//  @Disabled("Disabled 'verifyCheckpointStatesBySeconds' test as flaky. https://github.com/airbytehq/airbyte/issues/29411")
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
