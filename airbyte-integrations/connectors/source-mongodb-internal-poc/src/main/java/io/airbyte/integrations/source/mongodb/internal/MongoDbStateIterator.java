@@ -117,6 +117,12 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       LOGGER.info("hasNext threw an exception for stream {}: {}", getStream(), e.getMessage(), e);
     }
 
+    //no more records in cursor + no record messages have been emitted => collection is empty
+    if(lastId == null) {
+      return false;
+    }
+
+    //no more records in cursor + record messages have been emitted => we should emit a final state message.
     if (!finalStateNext) {
       finalStateNext = true;
       LOGGER.debug("Final state is now true for stream {}...", getStream());
