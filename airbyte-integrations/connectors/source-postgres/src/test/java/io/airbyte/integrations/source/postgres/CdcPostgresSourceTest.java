@@ -8,6 +8,7 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -945,6 +946,49 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+  }
+
+  /**
+   * This test is setup to force
+   * {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} create multiple
+   * pages
+   */
+  @Test
+  protected void ctidIteratorPageSizeTest() throws Exception {
+    final int recordsToCreate = 25_000;
+    final Set<Integer> expectedIds = new HashSet<>();
+    MODEL_RECORDS.forEach(c -> expectedIds.add(c.get(COL_ID).asInt()));
+
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final int id = 200 + recordsCreated;
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, id, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+      expectedIds.add(id);
+    }
+
+    /**
+     * Setting the property to make the
+     * {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} use smaller page
+     * size of 8KB instead of default 1GB This allows us to make sure that the iterator logic works with
+     * multiple pages (sub queries)
+     */
+    final JsonNode config = getConfig();
+    ((ObjectNode) config).put(USE_TEST_CHUNK_SIZE, true);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+
+    final Set<AirbyteRecordMessage> airbyteRecordMessages = extractRecordMessages(dataFromFirstBatch);
+    assertEquals(recordsToCreate + MODEL_RECORDS.size(), airbyteRecordMessages.size());
+
+    airbyteRecordMessages.forEach(c -> {
+      assertTrue(expectedIds.contains(c.getData().get(COL_ID).asInt()));
+      expectedIds.remove(c.getData().get(COL_ID).asInt());
+    });
   }
 
 }

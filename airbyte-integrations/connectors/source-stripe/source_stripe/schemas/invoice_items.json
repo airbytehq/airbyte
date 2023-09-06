@@ -121,6 +121,9 @@
     "date": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "object": {
       "type": ["null", "string"]
     },
