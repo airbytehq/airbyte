@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Holidays schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "observed": {
+      "type": ["null", "string"]
+    },
+    "public": {
+      "type": ["null", "boolean"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    },
+    "weekday": {
+      "type": ["null", "object"],
+      "properties": {
+        "date": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "numeric": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "observed": {
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": ["null", "string"]
+            },
+            "numeric": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

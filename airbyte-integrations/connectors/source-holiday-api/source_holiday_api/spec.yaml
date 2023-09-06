@@ -1,0 +1,24 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Holiday Api Spec
+  type: object
+  additionalProperties: true
+  required:
+    - api_key
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: API Key available at the dashboard, ref - https://holidayapi.com/dashboard
+      airbyte-secret: true
+    country:
+      title: Country
+      type: string
+      description: Country code to pass as parameter for different streams (ref - https://holidayapi.com/countries)
+      default: "IN"
+    year:
+      title: Year
+      type: string
+      description: Year to pass as parameter for different streams, which is 4 digit year in ISO 8601 format (ref - https://en.wikipedia.org/wiki/ISO_8601#Years).
+      default: "2022"

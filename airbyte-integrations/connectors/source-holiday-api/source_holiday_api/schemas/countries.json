@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Countries Schema",
+  "type": ["null", "object"],
+  "properties": {
+    "code": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "codes": {
+      "type": ["null", "object"],
+      "properties": {
+        "alpha-2": {
+          "type": ["null", "string"]
+        },
+        "alpha-3": {
+          "type": ["null", "string"]
+        },
+        "numeric": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "languages": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "currencies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "alpha": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "flag": {
+      "type": ["null", "string"]
+    },
+    "subdivisions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "code": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "languages": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "weekend": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "numeric": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    }
+  }
+}
