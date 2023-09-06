@@ -22,7 +22,10 @@ def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     is_truncated = len(result_df) > MAX_PREVIEW_ROWS
     preview_result_df = result_df.head(MAX_PREVIEW_ROWS)
 
-    return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(preview_result_df.to_markdown()), "is_truncated": is_truncated})
+    return Output(
+        result_df,
+        metadata={"count": len(result_df), "preview": MetadataValue.md(preview_result_df.to_markdown()), "is_truncated": is_truncated},
+    )
 
 
 def string_array_to_hash(strings: List[str]) -> str:
