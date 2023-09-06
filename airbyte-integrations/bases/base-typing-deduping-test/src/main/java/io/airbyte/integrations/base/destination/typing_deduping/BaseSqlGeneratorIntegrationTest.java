@@ -84,10 +84,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
-  protected static final RecordDiffer DIFFER = new RecordDiffer(
-      Pair.of("id1", AirbyteProtocolType.INTEGER),
-      Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+  protected RecordDiffer DIFFER;
 
   /**
    * Subclasses may use these four StreamConfigs in their tests.
@@ -119,6 +116,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
 
   /**
+   * Subclasses should override this method if they need to make changes to the stream ID. For
+   * example, you could upcase the final table name here.
+   */
+  protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
+    return new StreamId(namespace, finalTableName, namespace, rawTableName, namespace, finalTableName);
+  }
+
+  /**
    * Do any setup work to create a namespace for this test run. For example, this might create a
    * BigQuery dataset, or a Snowflake schema.
    */
@@ -133,14 +138,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Creates a raw table in the v1 format
    */
   protected abstract void createV1RawTable(StreamId v1RawTable) throws Exception;
-
-  /**
-   * Create a final table usingi the StreamId's finalTableId. Subclasses are recommended to hardcode
-   * the columns from {@link #FINAL_TABLE_COLUMN_NAMES} or {@link #FINAL_TABLE_COLUMN_NAMES_CDC}. The
-   * only difference between those two column lists is the inclusion of the _ab_cdc_deleted_at column,
-   * which is controlled by the includeCdcDeletedAt parameter.
-   */
-  protected abstract void createFinalTable(boolean includeCdcDeletedAt, StreamId streamId, String suffix) throws Exception;
 
   protected abstract void insertRawTableRecords(StreamId streamId, List<JsonNode> records) throws Exception;
 
@@ -206,12 +203,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final LinkedHashMap<ColumnId, AirbyteType> cdcColumns = new LinkedHashMap<>(COLUMNS);
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
+    DIFFER = new RecordDiffer(
+        Pair.of(id1, AirbyteProtocolType.INTEGER),
+        Pair.of(id2, AirbyteProtocolType.INTEGER),
+        Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+
     namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
     // airbyte_internal.testDataset_raw__stream_users.
-    streamId = new StreamId(namespace, "users_final", namespace, "users_raw", namespace, "users_final");
+    streamId = buildStreamId(namespace, "users_final", "users_raw");
 
     incrementalDedupStream = new StreamConfig(
         streamId,
@@ -341,7 +343,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void incrementalDedupInvalidPrimaryKey() throws Exception {
     createRawTable(streamId);
-    createFinalTable(false, streamId, "");
+    createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         List.of(
@@ -387,7 +389,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void allTypes() throws Exception {
     createRawTable(streamId);
-    createFinalTable(false, streamId, "_foo");
+    createFinalTable(incrementalDedupStream, "_foo");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/alltypes_inputrecords.jsonl"));
@@ -405,7 +407,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void timestampFormats() throws Exception {
     createRawTable(streamId);
-    createFinalTable(false, streamId, "");
+    createFinalTable(incrementalAppendStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/timestampformats_inputrecords.jsonl"));
@@ -421,7 +423,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void incrementalDedup() throws Exception {
     createRawTable(streamId);
-    createFinalTable(false, streamId, "");
+    createFinalTable(incrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
@@ -442,8 +444,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void incrementalDedupNoCursor() throws Exception {
+    final StreamConfig streamConfig = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        primaryKey,
+        Optional.empty(),
+        COLUMNS);
     createRawTable(streamId);
-    createFinalTable(false, streamId, "");
+    createFinalTable(streamConfig, "");
     insertRawTableRecords(
         streamId,
         List.of(
@@ -471,13 +480,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                   }
                 }
                 """)));
-    final StreamConfig streamConfig = new StreamConfig(
-        streamId,
-        SyncMode.INCREMENTAL,
-        DestinationSyncMode.APPEND_DEDUP,
-        primaryKey,
-        Optional.empty(),
-        COLUMNS);
 
     final String sql = generator.updateTable(streamConfig, "");
     destinationHandler.execute(sql);
@@ -491,13 +493,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         actualFinalRecords);
     assertAll(
         () -> assertEquals("bar", actualRawRecords.get(0).get("_airbyte_data").get("string").asText()),
-        () -> assertEquals("bar", actualFinalRecords.get(0).get("string").asText()));
+        () -> assertEquals("bar", actualFinalRecords.get(0).get(generator.buildColumnId("string").name()).asText()));
   }
 
   @Test
   public void incrementalAppend() throws Exception {
     createRawTable(streamId);
-    createFinalTable(false, streamId, "");
+    createFinalTable(incrementalAppendStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/incrementaldedup_inputrecords.jsonl"));
@@ -518,7 +520,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    */
   @Test
   public void overwriteFinalTable() throws Exception {
-    createFinalTable(false, streamId, "_tmp");
+    createFinalTable(incrementalAppendStream, "_tmp");
     final List<JsonNode> records = singletonList(Jsons.deserialize(
         """
         {
@@ -542,7 +544,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void cdcImmediateDeletion() throws Exception {
     createRawTable(streamId);
-    createFinalTable(true, streamId, "");
+    createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         singletonList(Jsons.deserialize(
@@ -576,7 +578,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void cdcIdempotent() throws Exception {
     createRawTable(streamId);
-    createFinalTable(true, streamId, "");
+    createFinalTable(cdcIncrementalAppendStream, "");
     insertRawTableRecords(
         streamId,
         singletonList(Jsons.deserialize(
@@ -608,7 +610,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void cdcComplexUpdate() throws Exception {
     createRawTable(streamId);
-    createFinalTable(true, streamId, "");
+    createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_raw.jsonl"));
@@ -645,7 +647,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void testCdcOrdering_updateAfterDelete() throws Exception {
     createRawTable(streamId);
-    createFinalTable(true, streamId, "");
+    createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
@@ -677,7 +679,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void testCdcOrdering_insertAfterDelete() throws Exception {
     createRawTable(streamId);
-    createFinalTable(true, streamId, "");
+    createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_raw.jsonl"));
@@ -704,7 +706,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   @Test
   public void softReset() throws Exception {
     createRawTable(streamId);
-    createFinalTable(true, streamId, "");
+    createFinalTable(cdcIncrementalAppendStream, "");
     insertRawTableRecords(
         streamId,
         singletonList(Jsons.deserialize(
@@ -799,15 +801,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
     final String str = namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
-    final StreamId modifiedStreamId = new StreamId(
+    final StreamId modifiedStreamId = buildStreamId(
         originalStreamId.finalNamespace(),
         originalStreamId.finalName(),
-        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup
-        // easier.
-        originalStreamId.finalNamespace(),
-        "raw_table",
-        null,
-        null);
+        "raw_table");
     final ColumnId columnId = generator.buildColumnId(str);
     try {
       createNamespace(modifiedStreamId.finalNamespace());
@@ -932,6 +929,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     destinationHandler.execute(createTableForce);
 
     assertTrue(destinationHandler.findExistingTable(streamId).isPresent());
+  }
+
+  protected void createFinalTable(final StreamConfig stream, final String suffix) throws Exception {
+    final String createTable = generator.createTable(stream, suffix, false);
+    destinationHandler.execute(createTable);
   }
 
   private void verifyRecords(final String expectedRawRecordsFile,

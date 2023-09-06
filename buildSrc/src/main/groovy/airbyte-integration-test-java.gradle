@@ -14,16 +14,16 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.test.dependsOn('compileIntegrationTestJavaJava')
+        project.tasks.named('test').configure {
+            dependsOn project.tasks.named('compileIntegrationTestJavaJava')
+        }
 
         project.configurations {
             integrationTestJavaImplementation.extendsFrom testImplementation
             integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
-        project.task('integrationTestJava', type: Test) {
-            mustRunAfter project.test
-
+        def integrationTestJava = project.tasks.register('integrationTestJava', Test) {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
@@ -41,10 +41,6 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             outputs.upToDateWhen { false }
 
-            if(project.hasProperty('airbyteDocker')) {
-                dependsOn project.airbyteDocker
-            }
-
             //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
             //Specially useful for connectors that shares resources (like Redshift or Snowflake).
             ext.numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') as int : Runtime.runtime.availableProcessors() ?: 1
@@ -59,13 +55,10 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 'junit.jupiter.execution.parallel.enabled': 'true'
             ]
         }
-
-        // make sure we create the integrationTest task once in case a standard source test was already initialized
-        if(!project.hasProperty('integrationTest')) {
-            project.task('integrationTest')
+        integrationTestJava.configure {
+            mustRunAfter project.tasks.named('test')
+            dependsOn project.tasks.matching { it.name == 'airbyteDocker' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsMain' }
         }
-
-        project.integrationTest.dependsOn(project.integrationTestJava)
-        project.integrationTest.dependsOn(project.spotbugsMain)
     }
 }
