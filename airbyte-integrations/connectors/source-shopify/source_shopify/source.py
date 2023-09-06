@@ -411,6 +411,7 @@ class Products(IncrementalShopifyStream):
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
+    limit = 100
     filter_field = "updatedAt"
     cursor_field = "updatedAt"
     data_field = "graphql"
