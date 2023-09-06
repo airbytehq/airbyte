@@ -49,7 +49,7 @@ def test_embedder(embedder_class, config_model, config_data, dimensions):
     mock_embedding_instance.embed_documents.return_value = [[0] * dimensions] * 2
 
     chunks = [Chunk(page_content="a", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)),Chunk(page_content="b", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0))]
-    assert embedder.embed_texts(chunks) == mock_embedding_instance.embed_documents.return_value
+    assert embedder.embed_chunks(chunks) == mock_embedding_instance.embed_documents.return_value
     mock_embedding_instance.embed_documents.assert_called_with(["a", "b"])
 
 
@@ -69,6 +69,6 @@ def test_from_field_embedder(field_name, dimensions, metadata, expected_embeddin
     chunks = [Chunk(page_content="a", metadata=metadata, record=AirbyteRecordMessage(stream="mystream", data=metadata, emitted_at=0))]
     if expected_error:
         with pytest.raises(AirbyteTracedException):
-            embedder.embed_texts(chunks)
+            embedder.embed_chunks(chunks)
     else:
-        assert embedder.embed_texts(chunks) == [expected_embedding]
+        assert embedder.embed_chunks(chunks) == [expected_embedding]
