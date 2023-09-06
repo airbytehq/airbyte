@@ -117,6 +117,7 @@ public class MongoDbStateManager {
    * @param cdcState The new global, CDC state as an {@link MongoDbCdcState} instance.
    */
   public void updateCdcState(final MongoDbCdcState cdcState) {
+    LOGGER.debug("Updating CDC state to {}...", cdcState);
     this.cdcState = cdcState;
   }
 
@@ -129,7 +130,20 @@ public class MongoDbStateManager {
    */
   public void updateStreamState(final String streamName, final String streamNamespace, final MongoDbStreamState streamState) {
     final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
+    LOGGER.debug("Updating stream state for stream {}:{} to {}...", streamNamespace, streamName, streamState);
     pairToStreamState.put(airbyteStreamNameNamespacePair, streamState);
+  }
+
+  /**
+   * Resets the state stored in this manager by overwriting the CDC state and clearing the stream
+   * state.
+   *
+   * @param cdcState The new CDC state.
+   */
+  public void resetState(final MongoDbCdcState cdcState) {
+    LOGGER.debug("Resetting state with CDC state {}...", cdcState);
+    updateCdcState(cdcState);
+    pairToStreamState.clear();
   }
 
   /**

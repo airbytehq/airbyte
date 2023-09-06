@@ -143,4 +143,29 @@ class MongoDbStateManagerTest {
         Jsons.object(generated3.getGlobal().getStreamStates().get(0).getStreamState(), MongoDbStreamState.class).id());
   }
 
+  @Test
+  void testReset() {
+    final StreamDescriptor streamDescriptor = new StreamDescriptor().withNamespace(STREAM_NAMESPACE).withName(STREAM_NAME);
+    final int seconds = 123456789;
+    final int order = 1;
+    final Map<String, String> offset = Map.of(SOURCE_SECONDS, String.valueOf(seconds),
+        SOURCE_ORDER, String.valueOf(order),
+        SOURCE_RESUME_TOKEN, RESUME_TOKEN);
+    final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
+    final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID, InitialSnapshotStatus.IN_PROGRESS, IdType.OBJECT_ID);
+    final JsonNode sharedState = Jsons.jsonNode(cdcState);
+    final JsonNode streamState = Jsons.jsonNode(mongoDbStreamState);
+    final AirbyteStreamState airbyteStreamState = new AirbyteStreamState().withStreamDescriptor(streamDescriptor).withStreamState(streamState);
+    final AirbyteGlobalState airbyteGlobalState = new AirbyteGlobalState().withSharedState(sharedState).withStreamStates(List.of(airbyteStreamState));
+    final AirbyteStateMessage airbyteStateMessage =
+        new AirbyteStateMessage().withType(AirbyteStateMessage.AirbyteStateType.GLOBAL).withGlobal(airbyteGlobalState);
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(Jsons.jsonNode(List.of(airbyteStateMessage)));
+    final MongoDbCdcState newCdcState = new MongoDbCdcState(Jsons.jsonNode(Map.of()));
+
+    stateManager.resetState(newCdcState);
+    assertEquals(newCdcState, stateManager.getCdcState());
+    assertEquals(0, stateManager.getStreamStates().size());
+  }
+
 }

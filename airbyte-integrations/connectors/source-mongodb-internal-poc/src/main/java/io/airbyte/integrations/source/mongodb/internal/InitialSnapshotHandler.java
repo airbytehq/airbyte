@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_DURATION;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.ID_FIELD;
 
 import com.mongodb.client.MongoCollection;
@@ -54,7 +53,8 @@ public class InitialSnapshotHandler {
                                                                   final MongoDbStateManager stateManager,
                                                                   final MongoDatabase database,
                                                                   final MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector,
-                                                                  final Instant emittedAt) {
+                                                                  final Instant emittedAt,
+                                                                  final int checkpointInterval) {
     return streams
         .stream()
         .peek(airbyteStream -> {
@@ -98,7 +98,7 @@ public class InitialSnapshotHandler {
 
           final var stateIterator =
               new MongoDbStateIterator(cursor, stateManager, Optional.ofNullable(cdcConnectorMetadataInjector),
-                  airbyteStream, emittedAt, CHECKPOINT_INTERVAL, CHECKPOINT_DURATION);
+                  airbyteStream, emittedAt, checkpointInterval, CHECKPOINT_DURATION);
           return AutoCloseableIterators.fromIterator(stateIterator, cursor::close, null);
         })
         .toList();
