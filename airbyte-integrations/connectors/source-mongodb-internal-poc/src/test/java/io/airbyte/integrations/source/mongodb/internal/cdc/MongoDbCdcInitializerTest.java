@@ -64,6 +64,7 @@ import java.util.function.Consumer;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -101,6 +102,7 @@ class MongoDbCdcInitializerTest {
   private MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor;
   private AggregateIterable<Document> aggregateIterable;
   private MongoCursor<Document> aggregateCursor;
+  private MongoCursor<Document> findCursor;
   private ChangeStreamIterable<BsonDocument> changeStreamIterable;
   private MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector;
 
@@ -115,8 +117,8 @@ class MongoDbCdcInitializerTest {
     mongoClient = mock(MongoClient.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
     final MongoCollection mongoCollection = mock(MongoCollection.class);
-    final FindIterable<BsonDocument> findIterable = mock(FindIterable.class);
-    final MongoCursor<BsonDocument> findCursor = mock(MongoCursor.class);
+    final FindIterable<Document> findIterable = mock(FindIterable.class);
+    findCursor = mock(MongoCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     aggregateIterable = mock(AggregateIterable.class);
@@ -142,6 +144,8 @@ class MongoDbCdcInitializerTest {
     when(findIterable.projection(any())).thenReturn(findIterable);
     when(findIterable.sort(any())).thenReturn(findIterable);
     when(findIterable.cursor()).thenReturn(findCursor);
+    when(findCursor.hasNext()).thenReturn(true);
+    when(findCursor.next()).thenReturn(new Document("_id",  new ObjectId(ID)));
 
     mongoDbDebeziumStateUtil = spy(new MongoDbDebeziumStateUtil());
     mongoDbDebeziumFieldsUtil = mock(MongoDbDebeziumFieldsUtil.class);
@@ -155,7 +159,18 @@ class MongoDbCdcInitializerTest {
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertTrue(iterators.get(0).hasNext(), "Initial snapshot iterator should at least have one message if there's no initial snapshot state");
+    assertTrue(iterators.get(0).hasNext(), "Initial snapshot iterator should at least have one message if there's no initial snapshot state and collections are not empty");
+  }
+
+  @Test
+  void testCreateCdcIteratorsEmptyInitialStateEmptyCollections() {
+    when(findCursor.hasNext()).thenReturn(false);
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null);
+    final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG, stateManager, EMITTED_AT, CONFIG);
+    assertNotNull(iterators);
+    assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
+    assertFalse(iterators.get(0).hasNext(), "Initial snapshot iterator should have no messages if there's no initial snapshot state and collections are empty");
   }
 
   @Test
@@ -166,7 +181,7 @@ class MongoDbCdcInitializerTest {
     assertNotNull(iterators);
     assertEquals(2, iterators.size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
     assertTrue(iterators.get(0).hasNext(),
-        "Initial snapshot iterator should at least have one message if the initial snapshot state is set as progress");
+        "Initial snapshot iterator should at least have one message if the initial snapshot state is set as in progress");
   }
 
   @Test
