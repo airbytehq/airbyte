@@ -88,7 +88,7 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
       LOGGER.info("Target table is not created yet. The default destination processing will be used.");
     }
 
-    final AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig);
+    AbstractBigQueryUploader<?> uploader = BigQueryUploaderFactory.getUploader(uploaderConfig, null);
     uploaderMap.put(
         AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         uploader);
