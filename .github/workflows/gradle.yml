@@ -102,10 +102,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-format
+      # Caching causes occasional failure of the checkPython step which can't find the venv
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}-format
 
       - uses: actions/setup-java@v3
         with:
