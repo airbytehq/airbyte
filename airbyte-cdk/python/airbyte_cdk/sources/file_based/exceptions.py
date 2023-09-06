@@ -54,6 +54,10 @@ class MissingSchemaError(BaseFileBasedSourceError):
     pass
 
 
+class NoFilesMatchingError(BaseFileBasedSourceError):
+    pass
+
+
 class RecordParseError(BaseFileBasedSourceError):
     pass
 
