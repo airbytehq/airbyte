@@ -7,12 +7,14 @@ package io.airbyte.integrations.destination.snowflake;
 import static java.util.stream.Collectors.joining;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeTestUtils {
@@ -25,7 +27,9 @@ public class SnowflakeTestUtils {
             timestampToString(quote(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
             quote(JavaBaseConstants.COLUMN_NAME_DATA)),
         database,
-        tableIdentifier);
+        tableIdentifier,
+        // Raw tables still have lowercase names
+        false);
   }
 
   public static List<JsonNode> dumpFinalTable(final JdbcDatabase database, final String databaseName, final String schema, final String table)
@@ -41,9 +45,9 @@ public class SnowflakeTestUtils {
           AND table_name = ?
         ORDER BY ordinal_position;
         """,
-        unescapeIdentifier(databaseName),
-        unescapeIdentifier(schema),
-        unescapeIdentifier(table)).stream()
+        unescapeIdentifier(databaseName).toUpperCase(),
+        unescapeIdentifier(schema).toUpperCase(),
+        unescapeIdentifier(table).toUpperCase()).stream()
         .map(column -> {
           final String quotedName = quote(column.get("COLUMN_NAME").asText());
           final String type = column.get("DATA_TYPE").asText();
@@ -59,7 +63,7 @@ public class SnowflakeTestUtils {
           };
         })
         .toList();
-    return dumpTable(columns, database, quote(schema) + "." + quote(table));
+    return dumpTable(columns, database, quote(schema) + "." + quote(table), true);
   }
 
   /**
@@ -71,14 +75,34 @@ public class SnowflakeTestUtils {
    *
    * @param tableIdentifier Table identifier (e.g. "schema.table"), with quotes if necessary.
    */
-  public static List<JsonNode> dumpTable(final List<String> columns, final JdbcDatabase database, final String tableIdentifier) throws SQLException {
+  public static List<JsonNode> dumpTable(final List<String> columns,
+                                         final JdbcDatabase database,
+                                         final String tableIdentifier,
+                                         final boolean upcaseExtractedAt)
+      throws SQLException {
     return database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery(new StringSubstitutor(Map.of(
         "columns", columns.stream().collect(joining(",")),
-        "table", tableIdentifier)).replace(
+        "table", tableIdentifier,
+        "extracted_at", upcaseExtractedAt ? "_AIRBYTE_EXTRACTED_AT" : "\"_airbyte_extracted_at\"")).replace(
             """
-            SELECT ${columns} FROM ${table} ORDER BY "_airbyte_extracted_at" ASC
+            SELECT ${columns} FROM ${table} ORDER BY ${extracted_at} ASC
             """)),
-        new SnowflakeTestSourceOperations()::rowToJson);
+        new SnowflakeTestSourceOperations()::rowToJson)
+        .stream().peek(row -> {
+          // Downcase the airbyte_* fields so that our test framework can recognize them.
+          Stream.of(
+              JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+              JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+              JavaBaseConstants.COLUMN_NAME_DATA,
+              JavaBaseConstants.COLUMN_NAME_AB_META).forEach(columnName -> {
+                final JsonNode value = row.get(columnName.toUpperCase());
+                if (value != null) {
+                  ((ObjectNode) row).set(columnName, value);
+                  ((ObjectNode) row).remove(columnName.toUpperCase());
+                }
+              });
+        }).toList();
   }
 
   private static String quote(final String name) {
