@@ -157,7 +157,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         }
         try:
             schema = self._get_raw_json_schema()
-        except (InvalidSchemaError, NoFilesMatchingError, RecordParseError) as config_exception:
+        except (InvalidSchemaError, NoFilesMatchingError) as config_exception:
             raise AirbyteTracedException(
                 message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
                 exception=config_exception,
@@ -252,9 +252,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # number of concurrent tasks drops below the number allowed.
             done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in done:
-                if task.exception():
-                    raise task.exception()  # type: ignore  # we validate that task.exception() is not None so we are safe to assume the type
-
                 try:
                     base_schema = merge_schemas(base_schema, task.result())
                 except Exception as exc:
@@ -265,8 +262,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
             return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader, self.logger)
-        except RecordParseError:
-            raise
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
