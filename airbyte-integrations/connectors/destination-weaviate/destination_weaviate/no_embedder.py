@@ -25,7 +25,7 @@ class NoEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_texts(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[None]:
         return [None for _ in chunks]
 
     @property

@@ -57,7 +57,7 @@ class WeaviateIndexer(Indexer):
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
-        classes = self.client.schema.get()
+        classes = self.client.schema.get().get("classes", [])
         if self.config.class_name not in [c.get("class") for c in classes]:
             self.client.schema.create_class({"class": self.config.class_name, "vectorizer": "none"})
         schema = self.client.schema.get(self.config.class_name)
@@ -70,9 +70,6 @@ class WeaviateIndexer(Indexer):
             return "Host must start with https://"
         try:
             self._create_client()
-
-            # TODO validate collection is set up correctly. Embedding dimensions of -1 means that the cluster will take care of embedding
-
         except Exception as e:
             return format_exception(e)
         return None
@@ -122,7 +119,7 @@ class WeaviateIndexer(Indexer):
 
         return result
 
-    def flush(self, retries: int = 3):
+    def _flush(self, retries: int = 3):
         if len(self.objects_with_error) > 0 and retries == 0:
             error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys()}"
             raise WeaviatePartialBatchError(error_msg)
