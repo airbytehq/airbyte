@@ -46,9 +46,6 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        cursor_paths:
-          ticket_comments: ["created_at"]
-        threshold_days: 100
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

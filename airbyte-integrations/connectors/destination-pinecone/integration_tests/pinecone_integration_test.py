@@ -70,7 +70,6 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             result.matches[0].metadata["text"] == "str_col: Cats are nice"
         ), 'Ensure that "str_col" is included in the "text_fields" array under the "processing" section of /secrets/config.json.'
 
-
         # test langchain integration
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         self._init_pinecone()

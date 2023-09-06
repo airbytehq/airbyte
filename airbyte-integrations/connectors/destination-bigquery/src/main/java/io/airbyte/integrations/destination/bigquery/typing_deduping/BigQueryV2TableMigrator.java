@@ -15,19 +15,19 @@ import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.V2RawTableMigrator;
+import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
 import java.util.Map;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryV2RawTableMigrator implements V2RawTableMigrator<TableDefinition> {
+public class BigQueryV2TableMigrator implements V2TableMigrator<TableDefinition> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryV2RawTableMigrator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryV2TableMigrator.class);
 
   private final BigQuery bq;
 
-  public BigQueryV2RawTableMigrator(final BigQuery bq) {
+  public BigQueryV2TableMigrator(final BigQuery bq) {
     this.bq = bq;
   }
 
