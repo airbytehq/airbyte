@@ -229,7 +229,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected Set<String> getExcludedViews() {
-    return Set.of("pg_stat_statements", "pg_stat_statements_info");
+    return Set.of("pg_stat_statements", "pg_stat_statements_info", "pg_buffercache");
   }
 
   @Override
