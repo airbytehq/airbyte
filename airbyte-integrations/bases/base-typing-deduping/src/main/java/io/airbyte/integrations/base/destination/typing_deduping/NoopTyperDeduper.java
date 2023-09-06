@@ -21,4 +21,14 @@ public class NoopTyperDeduper implements TyperDeduper {
 
   }
 
+  @Override
+  public void typeAndDedupe() throws Exception {
+
+  }
+
+  @Override
+  public void cleanup() {
+
+  }
+
 }

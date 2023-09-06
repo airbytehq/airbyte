@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - ${domain}
@@ -7,6 +10,7 @@ data:
   definitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
   dockerImageTag: 0.2.3
   dockerRepository: airbyte/source-woocommerce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
   githubIssueLabel: source-woocommerce
   icon: woocommerce.svg
   license: MIT
@@ -17,12 +21,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
+  supportLevel: community
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"
