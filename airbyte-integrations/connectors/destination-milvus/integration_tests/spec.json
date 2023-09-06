@@ -105,6 +105,33 @@
               }
             },
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+          },
+          {
+            "title": "From Field",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "from_field",
+                "const": "from_field",
+                "enum": ["from_field"],
+                "type": "string"
+              },
+              "field_name": {
+                "title": "Field name",
+                "description": "Name of the field in the record that contains the embedding",
+                "examples": ["embedding", "vector"],
+                "type": "string"
+              },
+              "dimensions": {
+                "title": "Embedding dimensions",
+                "description": "The number of dimensions the embedding model is generating",
+                "examples": [1536, 384],
+                "type": "integer"
+              }
+            },
+            "required": ["field_name", "dimensions"],
+            "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           }
         ]
       },
