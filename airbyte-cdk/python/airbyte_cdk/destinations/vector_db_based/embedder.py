@@ -36,7 +36,7 @@ class Embedder(ABC):
         pass
 
     @abstractmethod
-    def embed_texts(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
         """
         Embed the text of each chunk and return the resulting embedding vectors.
         If a chunk cannot be embedded or is configured to not be embedded, return None for that chunk.
@@ -65,7 +65,7 @@ class OpenAIEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
@@ -90,7 +90,7 @@ class CohereEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
@@ -111,7 +111,7 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
@@ -128,7 +128,7 @@ class FromFieldEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_texts(self, chunks: List[Chunk]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         """
         From each chunk, pull the embedding from the field specified in the config.
         Check that the field exists, is a list of numbers and is the correct size. If not, raise an AirbyteTracedException explaining the problem.
@@ -140,20 +140,20 @@ class FromFieldEmbedder(Embedder):
                 raise AirbyteTracedException(
                     internal_message="Embedding vector field not found",
                     failure_type=FailureType.config_error,
-                    message=f"Record {str(data)[:250]}...  does not contain embedding vector field {self.config.field_name}. Please check your embedding configuration, the embedding vector field has to be set correctly on every record.",
+                    message=f"Record {str(data)[:250]}... in stream {chunk.record.stream}  does not contain embedding vector field {self.config.field_name}. Please check your embedding configuration, the embedding vector field has to be set correctly on every record.",
                 )
             field = data[self.config.field_name]
             if not isinstance(field, list) or not all(isinstance(x, (int, float)) for x in field):
                 raise AirbyteTracedException(
                     internal_message="Embedding vector field not a list of numbers",
                     failure_type=FailureType.config_error,
-                    message=f"Record {str(data)[:250]}...  does  contain embedding vector field {self.config.field_name}, but it is not a list of numbers. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
+                    message=f"Record {str(data)[:250]}...  in stream {chunk.record.stream} does contain embedding vector field {self.config.field_name}, but it is not a list of numbers. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
                 )
             if len(field) != self.config.dimensions:
                 raise AirbyteTracedException(
                     internal_message="Embedding vector field has wrong length",
                     failure_type=FailureType.config_error,
-                    message=f"Record {str(data)[:250]}...  does  contain embedding vector field {self.config.field_name}, but it has length {len(field)} instead of the configured {self.config.dimensions}. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
+                    message=f"Record {str(data)[:250]}...  in stream {chunk.record.stream} does contain embedding vector field {self.config.field_name}, but it has length {len(field)} instead of the configured {self.config.dimensions}. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
                 )
             embeddings.append(field)
 

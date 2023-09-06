@@ -56,11 +56,4 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        cohorts: ["created"]
-        export: ["time"]
-        funnels: ["41833532", "date"]
-        revenue: ["date"]
-        engage: [ "last_seen" ]
-        cohort_members: [ "last_seen" ]
       timeout_seconds: 9000
