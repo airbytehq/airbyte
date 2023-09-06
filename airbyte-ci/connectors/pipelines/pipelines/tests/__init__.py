@@ -111,12 +111,15 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
         async with context:
             async with asyncer.create_task_group() as task_group:
                 tasks = [
-                    task_group.soonify(run_metadata_validation)(context),
-                    task_group.soonify(run_version_checks)(context),
-                    task_group.soonify(run_qa_checks)(context),
-                    task_group.soonify(run_code_format_checks)(context),
                     task_group.soonify(run_all_tests)(context),
+                    task_group.soonify(run_code_format_checks)(context),
                 ]
+                if not context.code_tests_only:
+                    tasks += [
+                        task_group.soonify(run_metadata_validation)(context),
+                        task_group.soonify(run_version_checks)(context),
+                        task_group.soonify(run_qa_checks)(context),
+                    ]
             results = list(itertools.chain(*(task.value for task in tasks)))
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 

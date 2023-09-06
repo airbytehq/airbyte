@@ -4,14 +4,10 @@ connector_image: airbyte/source-retently:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_retently/spec.json"
+      - spec_path: "source_retently/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "secrets/old_config.json"
-        status: "succeed"
-      - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -19,13 +15,15 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.5"
+          disable_for_version: "0.1.6"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams:
-          - name: reports
+          - name: templates
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

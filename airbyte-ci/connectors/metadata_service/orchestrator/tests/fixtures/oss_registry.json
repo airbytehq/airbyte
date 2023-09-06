@@ -19942,7 +19942,7 @@
               "oneOf": [
                 {
                   "title": "Read Changes using Binary Log (CDC)",
-                  "description": "Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
+                  "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
                   "required": ["method"],
                   "properties": {
                     "method": {

@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
@@ -7,6 +10,7 @@ data:
   definitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
   dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-yandex-metrica
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
   githubIssueLabel: source-yandex-metrica
   icon: yandexmetrica.svg
   license: MIT
@@ -17,11 +21,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -22,7 +22,7 @@ from pipelines.utils import (
 
 from .groups.connectors import connectors
 from .groups.metadata import metadata
-from .groups.tests import tests
+from .groups.tests import test
 
 # HELPERS
 
@@ -140,7 +140,7 @@ def airbyte_ci(
 
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
-airbyte_ci.add_command(tests)
+airbyte_ci.add_command(test)
 
 if __name__ == "__main__":
     airbyte_ci()

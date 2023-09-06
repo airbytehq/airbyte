@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from pathlib import Path
 from unittest import mock
 
 import pytest
-from connector_ops.utils import ConnectorLanguage
+from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines import utils
 from tests.utils import pick_a_random_connector
 
@@ -165,3 +166,18 @@ def test_no_modified_files_in_connector_directory():
 
     result = utils.get_connector_modified_files(connector, all_modified_files)
     assert result == frozenset()
+
+
+@pytest.mark.anyio
+async def test_check_path_in_workdir(dagger_client):
+    connector = Connector("source-openweather")
+    container = (
+        dagger_client.container()
+        .from_("bash")
+        .with_mounted_directory(str(connector.code_directory), dagger_client.host().directory(str(connector.code_directory)))
+        .with_workdir(str(connector.code_directory))
+    )
+    assert await utils.check_path_in_workdir(container, "metadata.yaml")
+    assert await utils.check_path_in_workdir(container, "setup.py")
+    assert await utils.check_path_in_workdir(container, "requirements.txt")
+    assert await utils.check_path_in_workdir(container, "not_existing_file") is False

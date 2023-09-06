@@ -40,14 +40,25 @@ dependencies {
  * Optionally, you can provide -PnumberOfDocuments to change the number of generated documents from the default (10,000).
  */
 tasks.register('generateTestData', JavaExec) {
-    def arguments = ['--connection-string', connectionString,
-                     '--database-name', databaseName,
-                     '--collection-name', collectionName,
-                     '--replica-set', replicaSet,
-                     '--username', username]
+    def arguments = []
 
+    if(project.hasProperty('collectionName')) {
+        arguments.addAll(['--collection-name', collectionName])
+    }
+    if(project.hasProperty('connectionString')) {
+        arguments.addAll(['--connection-string', connectionString])
+    }
+    if(project.hasProperty('databaseName')) {
+        arguments.addAll(['--database-name', databaseName])
+    }
     if (project.hasProperty('numberOfDocuments')) {
         arguments.addAll(['--number', numberOfDocuments])
+    }
+    if(project.hasProperty('replicaSet')) {
+        arguments.addAll(['--replica-set', replicaSet])
+    }
+    if(project.hasProperty('username')) {
+        arguments.addAll(['--username', username])
     }
 
     classpath = sourceSets.test.runtimeClasspath

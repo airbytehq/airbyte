@@ -205,7 +205,7 @@ single_avro_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -268,7 +268,7 @@ multiple_avro_combine_schema_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -279,7 +279,7 @@ multiple_avro_combine_schema_scenario = (
         [
             {
                 "data": {
-                    "col_double": "20.02",
+                    "col_double": 20.02,
                     "col_string": "Robbers",
                     "col_album": {"album": "The 1975"},
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
@@ -289,7 +289,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": "20.23",
+                    "col_double": 20.23,
                     "col_string": "Somebody Else",
                     "col_album": {"album": "I Like It When You Sleep, for You Are So Beautiful yet So Unaware of It"},
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
@@ -299,7 +299,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": "1975.1975",
+                    "col_double": 1975.1975,
                     "col_string": "It's Not Living (If It's Not with You)",
                     "col_song": {"title": "Love It If We Made It"},
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
@@ -309,7 +309,7 @@ multiple_avro_combine_schema_scenario = (
             },
             {
                 "data": {
-                    "col_double": "5791.5791",
+                    "col_double": 5791.5791,
                     "col_string": "The 1975",
                     "col_song": {"title": "About You"},
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
@@ -327,7 +327,7 @@ multiple_avro_combine_schema_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col_double": {"type": ["null", "string"]},
+                            "col_double": {"type": ["null", "number"]},
                             "col_string": {"type": ["null", "string"]},
                             "col_album": {
                                 "properties": {
@@ -364,7 +364,7 @@ avro_all_types_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -379,7 +379,7 @@ avro_all_types_scenario = (
                     "col_int": 27,
                     "col_long": 1992,
                     "col_float": 999.09723456,
-                    "col_double": "9123456.12394",
+                    "col_double": 9123456.12394,
                     "col_bytes": "\x00\x01\x02\x03",
                     "col_string": "Love It If We Made It",
                     "col_record": {"artist": "The 1975", "song": "About You", "year": 2022},
@@ -398,15 +398,13 @@ avro_all_types_scenario = (
                         "drummer": "George Daniel",
                     },
                     "col_fixed": "\x12\x34\x56\x78",
-                    "col_decimal": 1234.56789,
+                    "col_decimal": "1234.56789",
                     "col_uuid": "123e4567-e89b-12d3-a456-426655440000",
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
                     "col_timestamp_millis": "2022-05-29T00:00:00.456000+00:00",
                     "col_timestamp_micros": "2022-05-30T00:00:00.456789+00:00",
-                    "col_local_timestamp_millis": "2022-05-29T00:00:00.456000",
-                    "col_local_timestamp_micros": "2022-05-30T00:00:00.456789",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.avro",
                 },
@@ -425,7 +423,7 @@ avro_all_types_scenario = (
                             "col_array": {"items": {"type": ["null", "string"]}, "type": ["null", "array"]},
                             "col_bool": {"type": ["null", "boolean"]},
                             "col_bytes": {"type": ["null", "string"]},
-                            "col_double": {"type": ["null", "string"]},
+                            "col_double": {"type": ["null", "number"]},
                             "col_enum": {"enum": ["POP_ROCK", "INDIE_ROCK", "ALTERNATIVE_ROCK"], "type": ["null", "string"]},
                             "col_fixed": {"pattern": "^[0-9A-Fa-f]{8}$", "type": ["null", "string"]},
                             "col_float": {"type": ["null", "number"]},
@@ -467,13 +465,13 @@ multiple_streams_avro_scenario = (
                     "name": "songs_stream",
                     "file_type": "avro",
                     "globs": ["*_songs.avro"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "festivals_stream",
                     "file_type": "avro",
                     "globs": ["*_festivals.avro"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
             ]
         }
@@ -623,9 +621,9 @@ multiple_streams_avro_scenario = (
     )
 ).build()
 
-avro_file_with_decimal_as_float_scenario = (
+avro_file_with_double_as_number_scenario = (
     TestScenarioBuilder()
-    .set_name("avro_file_with_decimal_as_float_stream")
+    .set_name("avro_file_with_double_as_number_stream")
     .set_config(
         {
             "streams": [
@@ -633,12 +631,10 @@ avro_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "file_type": "avro",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "format": {
-                        "avro": {
-                            "filetype": "avro",
-                            "decimal_as_float": True
-                        }
+                        "filetype": "avro",
+                        "double_as_string": False
                     }
                 }
             ]

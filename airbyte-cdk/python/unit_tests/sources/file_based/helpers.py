@@ -43,7 +43,7 @@ class TestErrorListMatchingFilesInMemoryFilesStreamReader(InMemoryFilesStreamRea
 
 
 class TestErrorOpenFileInMemoryFilesStreamReader(InMemoryFilesStreamReader):
-    def open_file(self, file: RemoteFile, file_read_mode: FileReadMode, logger: logging.Logger) -> IOBase:
+    def open_file(self, file: RemoteFile, file_read_mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         raise Exception("Error opening file")
 
 

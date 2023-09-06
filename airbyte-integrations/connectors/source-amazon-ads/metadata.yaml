@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.1.2
   dockerRepository: airbyte/source-amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
@@ -30,6 +30,6 @@ data:
         upgradeDeadline: "2023-07-24"
   ab_internal:
     sl: 300
-    ql: 300
+    ql: 400
   supportLevel: certified
 metadataSpecVersion: "1.0"

@@ -41,6 +41,8 @@ acceptance_tests:
             bypass_reason: Unable to populate
           - name: deals_archived
             bypass_reason: Unable to populate
+          - name: owners_archived
+            bypass_reason: unable to populate
         ignored_fields:
           contact_lists:
             - name: ilsFilterBranch

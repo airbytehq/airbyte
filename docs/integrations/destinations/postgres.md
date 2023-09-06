@@ -139,12 +139,12 @@ characters.
 The Postgres destination connector supports the
 following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | Yes                  |       |
-| Namespaces                    | Yes                  |       |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 
 ## Schema map
 

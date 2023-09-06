@@ -125,7 +125,7 @@ class SponsoredBrandsReportStream(ReportStream):
         body = {
             "reportDate": report_date,
         }
-        return {**body, "metrics": ",".join(metrics_list)}
+        yield {**body, "metrics": ",".join(metrics_list)}
 
 
 METRICS_MAP_V3 = {
@@ -187,4 +187,4 @@ class SponsoredBrandsV3ReportStream(SponsoredProductsReportStream):
             },
         }
 
-        return body
+        yield body
