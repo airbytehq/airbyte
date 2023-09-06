@@ -9,6 +9,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
+    FromFieldEmbeddingConfigModel,
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
@@ -70,7 +71,7 @@ class MilvusIndexingConfigModel(BaseModel):
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
+    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, FromFieldEmbeddingConfigModel] = Field(
         ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
     )
     indexing: MilvusIndexingConfigModel
