@@ -81,13 +81,14 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   private final DebeziumConnectorType debeziumConnectorType;
 
   /**
-   * @param changeEventIterator   Base iterator that we want to enrich with checkpoint messages
-   * @param cdcStateHandler       Handler to save the offset and schema history
-   * @param offsetManager         Handler to read and write debezium offset file
-   * @param trackSchemaHistory    Set true if the schema needs to be tracked
-   * @param schemaHistoryManager  Handler to write schema. Needs to be initialized if trackSchemaHistory is set to true
-   * @param checkpointDuration    Duration object with time between syncs
-   * @param checkpointRecords     Number of records between syncs
+   * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
+   * @param cdcStateHandler Handler to save the offset and schema history
+   * @param offsetManager Handler to read and write debezium offset file
+   * @param trackSchemaHistory Set true if the schema needs to be tracked
+   * @param schemaHistoryManager Handler to write schema. Needs to be initialized if
+   *        trackSchemaHistory is set to true
+   * @param checkpointDuration Duration object with time between syncs
+   * @param checkpointRecords Number of records between syncs
    * @param debeziumConnectorType type of connector that debezium will be capturing changes from
    */
   public DebeziumStateDecoratingIterator(final Iterator<ChangeEventWithMetadata> changeEventIterator,

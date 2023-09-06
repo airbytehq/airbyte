@@ -324,7 +324,8 @@ class InitialSnapshotHandlerTest {
 
     assertFalse(collection1.hasNext());
 
-    //collection2
+    // collection2
     assertFalse(collection2.hasNext());
   }
+
 }

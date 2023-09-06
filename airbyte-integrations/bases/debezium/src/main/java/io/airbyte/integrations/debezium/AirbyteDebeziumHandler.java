@@ -132,8 +132,7 @@ public class AirbyteDebeziumHandler<T> {
         schemaHistoryManager.orElse(null),
         syncCheckpointDuration,
         syncCheckpointRecords,
-        debeziumConnectorType
-        ));
+        debeziumConnectorType));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
