@@ -315,7 +315,6 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
             config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
-    System.out.println(state);
 
     // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
     final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
