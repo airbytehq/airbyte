@@ -37,19 +37,39 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 public class RecordDiffer {
 
-  private final Comparator<JsonNode> recordIdentityComparator;
-  private final Comparator<JsonNode> recordSortComparator;
-  private final Function<JsonNode, String> recordIdentityExtractor;
+  private final Comparator<JsonNode> rawRecordIdentityComparator;
+  private final Comparator<JsonNode> rawRecordSortComparator;
+  private final Function<JsonNode, String> rawRecordIdentityExtractor;
+
+  private final Comparator<JsonNode> finalRecordIdentityComparator;
+  private final Comparator<JsonNode> finalRecordSortComparator;
+  private final Function<JsonNode, String> finalRecordIdentityExtractor;
 
   /**
    * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do _not_
    *        include extracted_at; it is handled automatically.
    */
   @SafeVarargs
-  public RecordDiffer(final Pair<String, AirbyteType>... identifyingColumns) {
-    this.recordIdentityComparator = buildIdentityComparator(identifyingColumns);
-    this.recordSortComparator = recordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-    this.recordIdentityExtractor = buildIdentityExtractor(identifyingColumns);
+  public RecordDiffer(final Pair<ColumnId, AirbyteType>... identifyingColumns) {
+    final Pair<String, AirbyteType>[] rawTableIdentifyingColumns = Arrays.stream(identifyingColumns)
+        .map(p -> Pair.of(
+            // Raw tables always retain the original column names
+            p.getLeft().originalName(),
+            p.getRight()))
+        .toArray(Pair[]::new);
+    this.rawRecordIdentityComparator = buildIdentityComparator(rawTableIdentifyingColumns);
+    this.rawRecordSortComparator = rawRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
+    this.rawRecordIdentityExtractor = buildIdentityExtractor(rawTableIdentifyingColumns);
+
+    final Pair<String, AirbyteType>[] finalTableIdentifyingColumns = Arrays.stream(identifyingColumns)
+        .map(p -> Pair.of(
+            // Final tables may have modified the column names, so use the final name here.
+            p.getLeft().name(),
+            p.getRight()))
+        .toArray(Pair[]::new);
+    this.finalRecordIdentityComparator = buildIdentityComparator(finalTableIdentifyingColumns);
+    this.finalRecordSortComparator = finalRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
+    this.finalRecordIdentityExtractor = buildIdentityExtractor(finalTableIdentifyingColumns);
   }
 
   /**
@@ -70,9 +90,9 @@ public class RecordDiffer {
     final String diff = diffRecords(
         expectedRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
         actualRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
-        recordIdentityComparator,
-        recordSortComparator,
-        recordIdentityExtractor);
+        rawRecordIdentityComparator,
+        rawRecordSortComparator,
+        rawRecordIdentityExtractor);
 
     if (!diff.isEmpty()) {
       fail("Raw table was incorrect.\n" + diff);
@@ -83,9 +103,9 @@ public class RecordDiffer {
     final String diff = diffRecords(
         expectedRecords,
         actualRecords,
-        recordIdentityComparator,
-        recordSortComparator,
-        recordIdentityExtractor);
+        finalRecordIdentityComparator,
+        finalRecordSortComparator,
+        finalRecordIdentityExtractor);
 
     if (!diff.isEmpty()) {
       fail("Final table was incorrect.\n" + diff);
