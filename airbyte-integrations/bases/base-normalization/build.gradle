@@ -37,9 +37,6 @@ checkSshScriptCopy.configure {
 tasks.named('airbyteDocker').configure {
     dependsOn checkSshScriptCopy
 }
-tasks.named('assemble').configure {
-    dependsOn checkSshScriptCopy
-}
 tasks.named('check').configure {
     dependsOn checkSshScriptCopy
 }
@@ -97,7 +94,6 @@ def buildAirbyteDocker(String customConnector) {
     }
     task.configure {
         dependsOn checkSshScriptCopy
-        dependsOn tasks.named('assemble')
     }
     tasks.named('airbyteDocker').configure {
         dependsOn task
@@ -150,4 +146,4 @@ def mypyCheck = tasks.register('mypyCheck', PythonTask) {
     module = "mypy"
     command = "normalization --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
 }
-tasks.named('airbytePythonChecks').configure { dependsOn mypyCheck }
+tasks.named('check').configure { dependsOn mypyCheck }
