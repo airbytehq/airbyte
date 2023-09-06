@@ -71,7 +71,7 @@ class MongoDbStateIteratorTest {
       private int count = 0;
 
       @Override
-      public Boolean answer(InvocationOnMock invocation) {
+      public Boolean answer(final InvocationOnMock invocation) {
         count++;
         // hasNext will be called for each doc plus for each state message
         return count <= (docs.size() + (docs.size() % CHECKPOINT_INTERVAL));
@@ -326,6 +326,16 @@ class MongoDbStateIteratorTest {
         "state status should be final");
 
     assertFalse(iter.hasNext(), "should have no more records");
+  }
+
+  @Test
+  void hasNextNoInitialStateAndNoMoreRecordsInCursor() {
+    when(mongoCursor.hasNext()).thenReturn(false);
+    final var stream = catalog().getStreams().stream().findFirst().orElseThrow();
+    final var iter = new MongoDbStateIterator(mongoCursor, stateManager, Optional.of(cdcConnectorMetadataInjector), stream, Instant.now(), 1000000,
+        Duration.of(1, SECONDS));
+
+    assertFalse(iter.hasNext());
   }
 
   private ConfiguredAirbyteCatalog catalog() {
