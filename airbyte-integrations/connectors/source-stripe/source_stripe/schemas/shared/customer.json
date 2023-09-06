@@ -833,6 +833,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "tax_info": {
       "type": ["null", "string"]
     },
