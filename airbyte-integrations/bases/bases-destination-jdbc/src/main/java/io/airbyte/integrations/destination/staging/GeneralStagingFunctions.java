@@ -119,6 +119,7 @@ public class GeneralStagingFunctions {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       log.info("Cleaning up destination started for {} streams", writeConfigs.size());
+      typerDeduper.typeAndDedupe();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
@@ -127,15 +128,9 @@ public class GeneralStagingFunctions {
               stageName);
           stagingOperations.dropStageIfExists(database, stageName);
         }
-
-        // Force run here. This is the final invocation of the sync, so we need to get all the data.
-        // TODO future enhancement: track whether any new raw records were written for this stream after the
-        // last T+D run
-        // and skip this T+D run if there were no new records.
-        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName(), true);
       }
-
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       log.info("Cleaning up destination completed.");
     };
   }

@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - api.chartmogul.com
@@ -7,6 +10,7 @@ data:
   definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
   dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-chartmogul
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   githubIssueLabel: source-chartmogul
   icon: chartmogul.svg
   license: MIT
@@ -17,12 +21,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
+  supportLevel: community
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

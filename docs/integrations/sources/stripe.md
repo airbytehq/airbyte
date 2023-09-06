@@ -114,6 +114,7 @@ The Stripe source connector supports the following streams:
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
+Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode.
 :::
 
 ### Data type mapping
@@ -128,7 +129,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.17.4  | 2023-08-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Revert 3.17.3                                                                                                                                        |
+| 4.0.0   | 2023-08-15 | [29330](https://github.com/airbytehq/airbyte/pull/29330) | Implement incremental syncs based on date of update                                                                                                  |
+| 3.17.4  | 2023-08-15 | [29425](https://github.com/airbytehq/airbyte/pull/29425) | Revert 3.17.3                                                                                                                                        |
 | 3.17.3  | 2023-08-01 | [28911](https://github.com/airbytehq/airbyte/pull/28911) | Revert 3.17.2 and fix atm_fee property                                                                                                               |
 | 3.17.2  | 2023-08-01 | [28911](https://github.com/airbytehq/airbyte/pull/28911) | Fix stream schemas, remove custom 403 error handling                                                                                                 |
 | 3.17.1  | 2023-08-01 | [28887](https://github.com/airbytehq/airbyte/pull/28887) | Fix `Invoices` schema                                                                                                                                |

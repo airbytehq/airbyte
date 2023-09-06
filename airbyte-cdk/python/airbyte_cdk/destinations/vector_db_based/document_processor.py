@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
@@ -21,8 +22,8 @@ METADATA_RECORD_ID_FIELD = "_ab_record_id"
 class Chunk:
     page_content: str
     metadata: Dict[str, Any]
-    stream: str
-    namespace: Optional[str] = None
+    record: AirbyteRecordMessage
+    embedding: Optional[List[float]] = None
 
 
 class DocumentProcessor:
@@ -66,11 +67,14 @@ class DocumentProcessor:
         """
         doc = self._generate_document(record)
         if doc is None:
-            raise ValueError(f"Record {str(record.data)[:250]}... does not contain any text fields.")
-        chunks = [
-            Chunk(
-                page_content=chunk_document.page_content, metadata=chunk_document.metadata, stream=record.stream, namespace=record.namespace
+            text_fields = ", ".join(self.text_fields) if self.text_fields else "all fields"
+            raise AirbyteTracedException(
+                internal_message="No text fields found in record",
+                message=f"Record {str(record.data)[:250]}... does not contain any of the configured text fields: {text_fields}. Please check your processing configuration, there has to be at least one text field set in each record.",
+                failure_type=FailureType.config_error,
             )
+        chunks = [
+            Chunk(page_content=chunk_document.page_content, metadata=chunk_document.metadata, record=record)
             for chunk_document in self._split_document(doc)
         ]
         id_to_delete = doc.metadata[METADATA_RECORD_ID_FIELD] if METADATA_RECORD_ID_FIELD in doc.metadata else None
@@ -102,7 +106,7 @@ class DocumentProcessor:
         metadata[METADATA_STREAM_FIELD] = stream_identifier
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
         if current_stream.primary_key and current_stream.destination_sync_mode == DestinationSyncMode.append_dedup:
-            metadata[METADATA_RECORD_ID_FIELD] = self._extract_primary_key(record, current_stream)
+            metadata[METADATA_RECORD_ID_FIELD] = f"{stream_identifier}_{self._extract_primary_key(record, current_stream)}"
         return metadata
 
     def _extract_primary_key(self, record: AirbyteRecordMessage, stream: ConfiguredAirbyteStream) -> str:

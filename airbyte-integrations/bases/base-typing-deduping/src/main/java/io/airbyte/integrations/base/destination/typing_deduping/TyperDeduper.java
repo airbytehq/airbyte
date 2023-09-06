@@ -52,6 +52,10 @@ public interface TyperDeduper {
    * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table
    * into the final table.
    */
+  void typeAndDedupe() throws Exception;
+
   void commitFinalTables() throws Exception;
+
+  void cleanup();
 
 }

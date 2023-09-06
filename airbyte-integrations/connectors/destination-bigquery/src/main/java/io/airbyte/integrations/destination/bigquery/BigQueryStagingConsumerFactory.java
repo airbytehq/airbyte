@@ -81,6 +81,7 @@ public class BigQueryStagingConsumerFactory {
         defaultNamespace);
   }
 
+  // TODO Commenting this out for now since it slows down syncs
   private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
     final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
     return (streamId) -> {
@@ -235,13 +236,13 @@ public class BigQueryStagingConsumerFactory {
        * however, with the changes to checkpointing this will no longer be necessary since despite partial
        * successes, we'll be committing the target table (aka airbyte_raw) table throughout the sync
        */
-
+      typerDeduper.typeAndDedupe();
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName(), true);
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       LOGGER.info("Cleaning up destination completed.");
     };
   }

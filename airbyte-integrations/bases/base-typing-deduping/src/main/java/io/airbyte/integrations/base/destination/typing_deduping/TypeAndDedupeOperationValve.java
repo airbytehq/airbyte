@@ -16,10 +16,7 @@ import java.util.function.Supplier;
 public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStreamNameNamespacePair, Long> {
 
   private static final long NEGATIVE_MILLIS = -1;
-  private static final long FIFTEEN_MINUTES_MILLIS = 1000 * 60 * 15;
-  private static final long ONE_HOUR_MILLIS = 1000 * 60 * 60 * 1;
-  private static final long TWO_HOURS_MILLIS = 1000 * 60 * 60 * 2;
-  private static final long FOUR_HOURS_MILLIS = 1000 * 60 * 60 * 4;
+  private static final long SIX_HOURS_MILLIS = 1000 * 60 * 60 * 6;
 
   // New users of airbyte likely want to see data flowing into their tables as soon as possible, and
   // we want to catch new errors which might appear early within an incremental sync.
@@ -28,8 +25,7 @@ public class TypeAndDedupeOperationValve extends ConcurrentHashMap<AirbyteStream
   // To strike a balance between showing data quickly and not slowing down the entire sync, we use an
   // increasing interval based approach, from 0 up to 4 hours.
   // This is not fancy, just hard coded intervals.
-  private static final List<Long> typeAndDedupeIncreasingIntervals =
-      List.of(NEGATIVE_MILLIS, FIFTEEN_MINUTES_MILLIS, ONE_HOUR_MILLIS, TWO_HOURS_MILLIS, FOUR_HOURS_MILLIS);
+  public static final List<Long> typeAndDedupeIncreasingIntervals = List.of(NEGATIVE_MILLIS, SIX_HOURS_MILLIS);
 
   private static final Supplier<Long> SYSTEM_NOW = () -> System.currentTimeMillis();
 
