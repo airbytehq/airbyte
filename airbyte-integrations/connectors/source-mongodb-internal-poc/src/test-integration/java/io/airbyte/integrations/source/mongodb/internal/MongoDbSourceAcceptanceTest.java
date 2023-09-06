@@ -297,7 +297,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Test
-  void syncShouldHandlePurgedLogsGracefully() throws Exception {
+  void testSyncShouldHandlePurgedLogsGracefully() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
 
     // Run the sync to establish the next resume token value
