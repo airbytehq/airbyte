@@ -68,7 +68,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
     } else {
       final BsonTimestamp eventResumeTokenTimestamp =
           MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEventWithMetadata.eventValueAsJson());
-      boolean isEventResumeTokenAfter = resumeTokenTimestamp.compareTo(eventResumeTokenTimestamp) <= 0;
+      final boolean isEventResumeTokenAfter = resumeTokenTimestamp.compareTo(eventResumeTokenTimestamp) <= 0;
       if (isEventResumeTokenAfter) {
         LOGGER.info("Signalling close because record's event timestamp {} is after target event timestamp {}.",
             eventResumeTokenTimestamp, resumeTokenTimestamp);
@@ -97,6 +97,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
 
   @Override
   public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
+    LOGGER.info("Comparing offsets {} and {}", offsetA, offsetB);
     return offsetA.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN)
         .equals(offsetB.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN));
   }
@@ -107,7 +108,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    MongoDbCdcTargetPosition that = (MongoDbCdcTargetPosition) o;
+    final MongoDbCdcTargetPosition that = (MongoDbCdcTargetPosition) o;
     return Objects.equals(resumeTokenTimestamp, that.resumeTokenTimestamp);
   }
 
