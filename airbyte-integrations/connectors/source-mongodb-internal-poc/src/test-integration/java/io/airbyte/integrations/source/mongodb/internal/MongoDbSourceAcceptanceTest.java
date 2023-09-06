@@ -26,6 +26,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcState;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
@@ -62,7 +63,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
-public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
+class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String DATABASE_NAME = "test";
   private static final String COLLECTION_NAME = "acceptance_test1";
@@ -97,10 +98,16 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     ((ObjectNode) config).put(CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
 
     mongoClient = MongoConnectionUtils.createMongoClient(config);
+    createTestCollections(mongoClient);
+    insertTestData(mongoClient);
+  }
+
+  private void createTestCollections(final MongoClient mongoClient) {
+    mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).drop();
+    mongoClient.getDatabase(DATABASE_NAME).getCollection(OTHER_COLLECTION_NAME).drop();
     mongoClient.getDatabase(DATABASE_NAME).createCollection(COLLECTION_NAME);
     mongoClient.getDatabase(DATABASE_NAME).createCollection(OTHER_COLLECTION_NAME);
 
-    insertTestData(mongoClient);
   }
 
   private void insertTestData(final MongoClient mongoClient) {
@@ -131,6 +138,7 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   protected void tearDown(final TestDestinationEnv testEnv) {
     mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).drop();
     mongoClient.getDatabase(DATABASE_NAME).getCollection(OTHER_COLLECTION_NAME).drop();
+    mongoClient.getDatabase(DATABASE_NAME).drop();
     mongoClient.close();
     recordCount = 0;
   }
@@ -344,7 +352,9 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
     when(changeEventWithMetadata.eventValueAsJson()).thenReturn(Jsons.jsonNode(
-        Map.of("source", Map.of("ts_ms", eventTimestamp, "ord", order))));
+        Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE,
+                Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, eventTimestamp,
+                        MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, order))));
 
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
