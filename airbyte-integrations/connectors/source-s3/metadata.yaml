@@ -23,7 +23,7 @@ data:
   releases:
     breakingChanges:
       4.0.0:
-        message: "UX improvement and multi-stream support"
+        message: "UX improvement, multi-stream support and deprecation of some parsing features"
         upgradeDeadline: "2023-10-05"
   ab_internal:
     sl: 300
