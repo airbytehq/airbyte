@@ -14,6 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.debezium.engine.ChangeEvent;
@@ -32,9 +33,9 @@ class DebeziumEventUtilsTest {
     final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("update_change_event.json");
     final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("delete_change_event.json");
 
-    final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
-    final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
-    final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt);
+    final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.RELATIONALDB);
+    final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.RELATIONALDB);
+    final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.RELATIONALDB);
 
     final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
     final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");
@@ -53,7 +54,7 @@ class DebeziumEventUtilsTest {
     final ChangeEventWithMetadata changeEventWithMetadata = mockChangeEvent("mongodb/change_event_after.json");
     final AirbyteMessage expectedMessage = createAirbyteMessage(stream, emittedAt, "mongodb/after_airbyte_message.json");
 
-    final AirbyteMessage airbyteMessage = DebeziumEventUtils.toAirbyteMessage(changeEventWithMetadata, cdcMetadataInjector, emittedAt);
+    final AirbyteMessage airbyteMessage = DebeziumEventUtils.toAirbyteMessage(changeEventWithMetadata, cdcMetadataInjector, emittedAt, DebeziumConnectorType.MONGODB);
     deepCompare(expectedMessage, airbyteMessage);
   }
 
@@ -99,7 +100,7 @@ class DebeziumEventUtilsTest {
     }
 
     @Override
-    public String name(JsonNode source) {
+    public String name(final JsonNode source) {
       return source.has("table") ? source.get("table").asText() : source.get("collection").asText();
     }
 
