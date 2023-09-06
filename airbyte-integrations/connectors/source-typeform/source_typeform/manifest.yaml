@@ -317,16 +317,3 @@ spec:
             path_in_connector_config:
               - credentials
               - client_secret
-# accounts:read+forms:write+forms:read+forms:write+forms:read+forms:write+forms:read+forms:write+images:write+images:read+images:read+images:write+images:read+images:read+images:read+themes:write+themes:read+themes:read+themes:write+themes:write+responses:read+responses:write+webhooks:read+webhooks:read+webhooks:write+webhooks:write+webhooks:read+webhooks:read+workspaces:read+workspaces:write+workspaces:read+workspaces:write+workspaces:write
-
-# https://docs.airbyte.com/?code=&state=
-
-# curl --request POST \
-#   --url https://api.typeform.com/oauth/token \
-#   --data-urlencode 'grant_type=authorization_code' \
-#   --data-urlencode 'code=BJJ2PZT9C7a8wcRMGfG5RoFXt2Xkp2zbhDzDK9KHMpgn' \
-#   --data-urlencode 'client_id=2sQ4TMgt5NtnoUbvM91ZVFSWx6iaxuZT9TqgV7S926fs' \
-#   --data-urlencode 'client_secret=Ctf9SLySrmDoZoMXXYstKREbHA85eFubkXbixKoPxDFs' \
-#   --data-urlencode 'redirect_uri=https://docs.airbyte.com/'
-
-#   {"access_token":"77RvcgpntZedbuHQFJbqhhdBQMakquHuZziXMCyT8RDW","state":"","token_type":"bearer","expires_in":604800}
