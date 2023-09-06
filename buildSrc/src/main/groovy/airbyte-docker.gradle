@@ -199,7 +199,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 file -> !file.toString().contains(".venv")
             }
 
-            project.task(taskName, type: AirbyteDockerTask) {
+            def airbyteDockerTask = project.tasks.register(taskName, AirbyteDockerTask) {
                 def dockerPath = Paths.get(project.projectDir.absolutePath, dockerFile)
                 def hash = MessageDigest.getInstance("MD5").digest(dockerPath.getBytes()).encodeHex().toString()
                 dockerfileName = dockerFile
@@ -208,14 +208,19 @@ class AirbyteDockerPlugin implements Plugin<Project> {
                 projectFiles = filteredProjectFiles
                 idFileOutput = project.file(Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', hash).toString())
                 baseImageHashes = getBaseImageHashes(project.rootProject.imageToHash, dockerPath.toFile())
-                dependsOn project.assemble
 
                 outputs.upToDateWhen {
                     return isUpToDate(logger, idFileOutput, project, dockerFile, dockerPath)
                 }
             }
+            airbyteDockerTask.configure {
+                dependsOn project.tasks.named('assemble')
+            }
+            project.tasks.named('build').configure {
+                dependsOn airbyteDockerTask
+            }
         } else {
-            project.task(taskName) {
+            project.tasks.register(taskName) {
                 logger.info "Skipping ${taskName} because ${dockerFile} does not exist."
             }
         }
@@ -245,7 +250,5 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
         createTask(project, 'airbyteDocker', 'Dockerfile')
         createTask(project, 'airbyteDockerTest', 'Dockerfile.test')
-
-        project.build.dependsOn project.airbyteDocker
     }
 }
