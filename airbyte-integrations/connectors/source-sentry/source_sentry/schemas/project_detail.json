@@ -418,7 +418,7 @@
           "id": {"type" : ["null", "string"]},
           "active": {"type" : ["null", "boolean"]}
         }
-      },
+      }
     },
     "eventProcessing": {
       "type" : ["null", "object"],

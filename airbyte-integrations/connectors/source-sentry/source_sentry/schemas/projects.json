@@ -125,6 +125,7 @@
     "hasMonitors": {"type" : ["null", "boolean"]},
     "hasProfiles": {"type" : ["null", "boolean"]},
     "hasReplays": {"type" : ["null", "boolean"]},
-    "hasSessions": {"type" : ["null", "boolean"]}
+    "hasSessions": {"type" : ["null", "boolean"]},
+    "hasMinifiedStackTrace": {"type" : ["null", "boolean"]}
   }
 }
