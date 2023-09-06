@@ -179,6 +179,7 @@ public class MySqlInitialReadUtil {
                                                                    final ConfiguredAirbyteCatalog fullCatalog,
                                                                    final boolean savedOffsetStillPresentOnServer) {
     if (!savedOffsetStillPresentOnServer) {
+      LOGGER.info("FULL RESYNC DUE TO SAVED OFFSET ISSUE");
       return new InitialLoadStreams(
           fullCatalog.getStreams()
               .stream()
@@ -213,6 +214,9 @@ public class MySqlInitialReadUtil {
       });
     }
 
+    if (streamsStillinPkSync.isEmpty()) {
+      LOGGER.info("No streams still in pk sync");
+    }
     final List<ConfiguredAirbyteStream> streamsForPkSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillinPkSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
@@ -227,7 +231,10 @@ public class MySqlInitialReadUtil {
   private static List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog,
                                                                          final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+    LOGGER.info("All streams : " + allStreams.toString());
+    LOGGER.info("Already synced streams : " + alreadySyncedStreams.toString());
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+    LOGGER.info("Newly added streams : " + newlyAddedStreams.toString());
     return catalog.getStreams().stream()
         .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))).map(Jsons::clone)

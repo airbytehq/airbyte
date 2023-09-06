@@ -74,6 +74,8 @@ public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessa
       try {
         final AirbyteMessage message = messageIterator.next();
         if (Objects.nonNull(message)) {
+          LOGGER.info("Json representation of row (airbytemessage) is: " +  message.getRecord().getData().toPrettyString());
+          LOGGER.info("Primary Key field name: " + pkFieldName);
           final String lastPk = message.getRecord().getData().get(pkFieldName).asText();
           pkStatus = new PrimaryKeyLoadStatus()
               .withVersion(MYSQL_STATUS_VERSION)
