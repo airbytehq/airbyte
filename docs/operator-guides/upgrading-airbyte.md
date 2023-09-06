@@ -12,7 +12,7 @@ If you need help from our team for your upgrades, we offer premium support to ou
 
 Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
 
-If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes.md), you will need to use one of the two processes defined [here](#upgrading-on-k8s-0270-alpha-and-above) that differ based on your Airbyte version.
+If you are running [Airbyte on Kubernetes](../deploying-airbyte/on-kubernetes-via-helm.md), you will need to use one of the two processes defined [here](#upgrading-on-k8s-0270-alpha-and-above) that differ based on your Airbyte version.
 
 ## Mandatory Intermediate Upgrade
 
@@ -117,7 +117,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.50.16 --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.50.27 --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

@@ -35,7 +35,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private boolean hasEmittedFinalState;
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
-  private final long relationFileNode;
+  private final FileNodeHandler fileNodeHandler;
   private final CtidStateManager stateManager;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
@@ -44,14 +44,14 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
 
   public CtidStateIterator(final Iterator<AirbyteMessageWithCtid> messageIterator,
                            final AirbyteStreamNameNamespacePair pair,
-                           final long relationFileNode,
+                           final FileNodeHandler fileNodeHandler,
                            final CtidStateManager stateManager,
                            final JsonNode streamStateForIncrementalRun,
                            final Duration checkpointDuration,
                            final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
-    this.relationFileNode = relationFileNode;
+    this.fileNodeHandler = fileNodeHandler;
     this.stateManager = stateManager;
     this.streamStateForIncrementalRun = streamStateForIncrementalRun;
     this.syncCheckpointDuration = checkpointDuration;
@@ -65,12 +65,14 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
           && Objects.nonNull(lastCtid)
           && StringUtils.isNotBlank(lastCtid)) {
+        final Long fileNode = fileNodeHandler.getFileNode(pair);
+        assert fileNode != null;
         final CtidStatus ctidStatus = new CtidStatus()
             .withVersion(CTID_STATUS_VERSION)
             .withStateType(StateType.CTID)
             .withCtid(lastCtid)
             .withIncrementalState(streamStateForIncrementalRun)
-            .withRelationFilenode(relationFileNode);
+            .withRelationFilenode(fileNode);
         LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();

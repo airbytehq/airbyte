@@ -31,6 +31,7 @@ import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -62,12 +63,17 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final MongoCollection<Document> collection = mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
     final var objectDocument = new Document("testObject", new Document("name", "subName").append("testField1", "testField1").append("testInt", 10)
         .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
-    final var doc1 = new Document("id", "0001").append("name", "Test")
+
+    final var doc1 = new Document("_id", new ObjectId("64c0029d95ad260d69ef28a0"))
+        .append("id", "0001").append("name", "Test")
         .append("test", 10).append("test_array", new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
         .append("double_test", 100.12).append("int_test", 100).append("object_test", objectDocument);
-    final var doc2 =
-        new Document("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
-    final var doc3 = new Document("id", "0003").append("name", "Source").append("test", null)
+
+    final var doc2 = new Document("_id", new ObjectId("64c0029d95ad260d69ef28a1"))
+        .append("id", "0002").append("name", "Mongo").append("test", "test_value").append("int_test", 201).append("object_test", objectDocument);
+
+    final var doc3 = new Document("_id", new ObjectId("64c0029d95ad260d69ef28a2"))
+        .append("id", "0003").append("name", "Source").append("test", null)
         .append("double_test", 212.11).append("int_test", 302).append("object_test", objectDocument);
 
     collection.insertMany(List.of(doc1, doc2, doc3));
@@ -106,14 +112,11 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         Field.of("double_test", JsonSchemaType.NUMBER),
         Field.of("int_test", JsonSchemaType.NUMBER),
         Field.of("object_test", JsonSchemaType.OBJECT));
-    final List<AirbyteStream> airbyteStreams = List.of(
-        MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields),
-        MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields));
 
-    return new ConfiguredAirbyteCatalog().withStreams(
-        List.of(
-            convertToConfiguredAirbyteStream(airbyteStreams.get(0), SyncMode.INCREMENTAL),
-            convertToConfiguredAirbyteStream(airbyteStreams.get(1), SyncMode.FULL_REFRESH)));
+    final AirbyteStream airbyteStream = MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, fields);
+    final ConfiguredAirbyteStream configuredIncrementalAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream, SyncMode.INCREMENTAL);
+
+    return new ConfiguredAirbyteCatalog().withStreams(List.of(configuredIncrementalAirbyteStream));
   }
 
   @Override

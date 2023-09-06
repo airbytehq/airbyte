@@ -40,7 +40,7 @@ class RedisDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv) {
     redisCache.flushAll();
   }
 

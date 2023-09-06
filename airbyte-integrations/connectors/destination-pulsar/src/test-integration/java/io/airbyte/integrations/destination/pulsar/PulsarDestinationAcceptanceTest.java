@@ -186,7 +186,7 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     PULSAR.close();
   }
 

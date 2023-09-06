@@ -34,8 +34,7 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        "responses": ["SdMKQYkv", "submitted_at"]
+      skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

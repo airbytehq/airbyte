@@ -1,31 +1,31 @@
-import yaml
-import json
-import pandas as pd
-import os
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import copy
-import sentry_sdk
-
-from pydantic import ValidationError
-from google.cloud import storage
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue, AutoMaterializePolicy
-from pydash.objects import get
-
-from metadata_service.spec_cache import get_cached_spec, list_cached_specs
-from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
-from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
-
-from orchestrator.utils.object_helpers import deep_copy_params
-from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
-from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
-from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
-from orchestrator.logging import sentry
+import json
+import os
+from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
-
-from typing import List, Optional, Tuple, Union
+import pandas as pd
+import sentry_sdk
+import yaml
+from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from google.cloud import storage
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.spec_cache import get_cached_spec, list_cached_specs
+from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
+from orchestrator.logging import sentry
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.dagster_helpers import OutputDataFrame
+from orchestrator.utils.object_helpers import deep_copy_params
+from pydantic import ValidationError
+from pydash.objects import get
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
@@ -121,6 +121,29 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
 
 @deep_copy_params
+def apply_ab_internal_defaults(metadata_data: dict) -> dict:
+    """Apply ab_internal defaults to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+
+    Returns:
+        dict: The metadata data field with the ab_internal defaults applied.
+    """
+    default_ab_internal_values = {
+        "sl": 100,
+        "ql": 100,
+    }
+
+    existing_ab_internal_values = metadata_data.get("ab_internal") or {}
+    ab_internal_values = {**default_ab_internal_values, **existing_ab_internal_values}
+
+    metadata_data["ab_internal"] = ab_internal_values
+
+    return metadata_data
+
+
+@deep_copy_params
 @sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
@@ -160,9 +183,12 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["custom"] = False
     overridden_metadata_data["public"] = True
 
-    # if there is no releaseStage, set it to "alpha"
-    if not overridden_metadata_data.get("releaseStage"):
-        overridden_metadata_data["releaseStage"] = "alpha"
+    # if there is no supportLevel, set it to "community"
+    if not overridden_metadata_data.get("supportLevel"):
+        overridden_metadata_data["supportLevel"] = "community"
+
+    # apply ab_internal defaults
+    overridden_metadata_data = apply_ab_internal_defaults(overridden_metadata_data)
 
     # apply generated fields
     overridden_metadata_data["iconUrl"] = metadata_entry.icon_url

@@ -15,6 +15,10 @@ from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskExcepti
 
 from .streams import (
     AccountAttributes,
+    ArticleComments,
+    ArticleCommentVotes,
+    Articles,
+    ArticleVotes,
     AttributeDefinitions,
     AuditLogs,
     Brands,
@@ -22,6 +26,7 @@ from .streams import (
     GroupMemberships,
     Groups,
     Macros,
+    OrganizationFields,
     OrganizationMemberships,
     Organizations,
     PostComments,
@@ -41,6 +46,7 @@ from .streams import (
     Tickets,
     TicketSkips,
     Topics,
+    UserFields,
     Users,
     UserSettingsStream,
 )
@@ -121,11 +127,16 @@ class SourceZendeskSupport(AbstractSource):
         """
         args = self.convert_config2stream_args(config)
         streams = [
+            Articles(**args),
+            ArticleComments(**args),
+            ArticleCommentVotes(**args),
+            ArticleVotes(**args),
             AuditLogs(**args),
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),
             Organizations(**args),
+            OrganizationFields(**args),
             OrganizationMemberships(**args),
             Posts(**args),
             PostComments(**args),
@@ -146,6 +157,7 @@ class SourceZendeskSupport(AbstractSource):
             Brands(**args),
             CustomRoles(**args),
             Schedules(**args),
+            UserFields(**args),
         ]
         ticket_forms_stream = TicketForms(**args)
         account_attributes = AccountAttributes(**args)

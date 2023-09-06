@@ -1,12 +1,16 @@
-import semver
-import pathlib
-import yaml
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+import pathlib
 from dataclasses import dataclass
-from pydantic import ValidationError
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from typing import Optional, Tuple, Union, List, Callable
+from typing import Callable, List, Optional, Tuple, Union
+
+import semver
+import yaml
 from metadata_service.docker_hub import is_image_on_docker_hub
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from pydantic import ValidationError
 from pydash.objects import get
 
 
@@ -98,7 +102,7 @@ def validate_all_tags_are_keyvalue_pairs(
 def is_major_version(version: str) -> bool:
     """Check whether the version is of format N.0.0"""
     semver_version = semver.Version.parse(version)
-    return semver_version.minor == 0 and semver_version.patch == 0
+    return semver_version.minor == 0 and semver_version.patch == 0 and semver_version.prerelease is None
 
 
 def validate_major_version_bump_has_breaking_change_entry(

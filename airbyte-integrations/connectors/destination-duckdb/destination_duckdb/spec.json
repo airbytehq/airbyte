@@ -30,7 +30,6 @@
         "description": "database schema, default for duckdb is main",
         "example": "main"
       }
-
     }
   }
 }

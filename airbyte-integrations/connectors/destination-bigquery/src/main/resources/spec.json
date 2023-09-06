@@ -207,17 +207,11 @@
         "examples": ["15"],
         "order": 6
       },
-      "use_1s1t_format": {
-        "type": "boolean",
-        "description": "(Early Access) Use <a href=\"https://docs.airbyte.com/understanding-airbyte/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
-        "title": "Use Destinations V2 (Early Access)",
-        "order": 7
-      },
       "raw_data_dataset": {
         "type": "string",
-        "description": "(Early Access) The dataset to write raw tables into",
-        "title": "Destinations V2 Raw Table Dataset (Early Access)",
-        "order": 8
+        "description": "The dataset to write raw tables into",
+        "title": "Destinations V2 Raw Table Dataset",
+        "order": 7
       }
     }
   }
