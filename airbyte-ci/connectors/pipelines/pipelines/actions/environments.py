@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -502,71 +502,6 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
     return with_bound_docker_host(context, docker_cli)
-
-
-def with_gradle(
-    context: ConnectorContext,
-    sources_to_include: List[str] = None,
-    bind_to_docker_host: bool = True,
-) -> Container:
-    """Create a container with Gradle installed and bound to a persistent docker host.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
-        bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-
-    Returns:
-        Container: A container with Gradle installed and Java sources from the repository.
-    """
-
-    include = [
-        ".root",
-        ".env",
-        "build.gradle",
-        "deps.toml",
-        "gradle.properties",
-        "gradle",
-        "gradlew",
-        "LICENSE_SHORT",
-        "publish-repositories.gradle",
-        "settings.gradle",
-        "build.gradle",
-        "tools/gradle",
-        "spotbugs-exclude-filter-file.xml",
-        "buildSrc",
-        "tools/bin/build_image.sh",
-        "tools/lib/lib.sh",
-        "tools/gradle/codestyle",
-        "pyproject.toml",
-    ]
-
-    if sources_to_include:
-        include += sources_to_include
-
-    gradle_cache: CacheVolume = context.dagger_client.cache_volume("gradle-cache")
-
-    openjdk_with_docker = (
-        context.dagger_client.container()
-        .from_("openjdk:17.0.1-jdk-slim")
-        .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
-        .with_env_variable("VERSION", consts.DOCKER_VERSION)
-        .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-    )
-
-    openjdk_with_docker = with_bound_docker_host(context, openjdk_with_docker)
-
-    return (
-        openjdk_with_docker.with_exec(["mkdir", "-p", "/root/.gradle"])
-        .with_env_variable("GRADLE_HOME", "/root/.gradle")
-        .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
-        .with_workdir("/airbyte")
-        .with_env_variable("AIRBYTE_CI", "True")
-        .with_mounted_cache("/root/gradle-cache", gradle_cache, sharing=CacheSharingMode.LOCKED)
-        .with_exec(["rsync", "-az", "/root/gradle-cache/", "/root/.gradle"])
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
-    )
 
 
 async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):

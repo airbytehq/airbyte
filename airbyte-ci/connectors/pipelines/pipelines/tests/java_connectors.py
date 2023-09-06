@@ -55,6 +55,7 @@ class UnitTests(GradleTask):
     title = "Java Connector Unit Tests"
     gradle_task_name = "test"
     context: ConnectorContext
+    mount_connector_secrets = False
 
     @property
     def gradle_task_options(self) -> tuple[str, ...]:
@@ -79,12 +80,10 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the tests steps.
     """
-    context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
 
     unit_tests_results = await UnitTests(context).run()
     step_results.append(unit_tests_results)
-
     if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
         return step_results
 
@@ -113,6 +112,8 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         normalization_tar_file = None
 
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
+
+    context.connector_secrets = await secrets.get_connector_secrets(context)
 
     integration_tests_results = await IntegrationTests(context).run(connector_image_tar_file, normalization_tar_file)
     step_results.append(integration_tests_results)
