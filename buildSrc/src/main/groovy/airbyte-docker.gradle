@@ -224,9 +224,9 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             }
         }
         airbyteDockerTask.configure {
-            dependsOn project.tasks.named('assemble')
+            dependsOn project.tasks.matching { it.name == 'distTar' }
         }
-        project.tasks.named('build').configure {
+        project.tasks.named('assemble').configure {
             dependsOn airbyteDockerTask
         }
     }

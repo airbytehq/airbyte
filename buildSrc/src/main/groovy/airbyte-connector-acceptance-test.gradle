@@ -47,7 +47,6 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
         connectorAcceptanceTest.configure {
-            dependsOn project.tasks.named('build')
             dependsOn project.tasks.named('airbyteDocker')
             if (project.connectorAcceptanceTestVersion == 'dev') {
                 dependsOn project(':airbyte-integrations:bases:connector-acceptance-test').tasks.named('airbyteDocker')
