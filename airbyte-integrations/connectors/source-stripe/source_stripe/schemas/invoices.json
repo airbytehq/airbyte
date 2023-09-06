@@ -4,6 +4,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "next_payment_attempt": {
       "type": ["null", "number"]
     },
@@ -235,6 +238,14 @@
     },
     "subscription": {
       "type": ["null", "string"]
+    },
+    "subscription_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "metadata": {
+          "type": ["null", "object"]
+        }
+      }
     },
     "status": {
       "type": ["null", "string"]
