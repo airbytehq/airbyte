@@ -39,7 +39,7 @@ class StripeAvailabilityStrategy(HttpAvailabilityStrategy):
         return False, reason
 
 
-class StripeSubStreamAvailabilityStrategy(HttpAvailabilityStrategy):
+class StripeSubStreamAvailabilityStrategy(StripeAvailabilityStrategy):
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """Traverse through all the parents of a given stream and run availability strategy on each of them"""
         try:
@@ -47,7 +47,7 @@ class StripeSubStreamAvailabilityStrategy(HttpAvailabilityStrategy):
         except AttributeError:
             return super().check_availability(stream, logger, source)
         if parent_stream:
-            parent_stream_instance = getattr(current_stream, "get_parent_stream_instance")()
+            parent_stream_instance = getattr(current_stream, "parent")
             # Accessing the `availability_strategy` property will instantiate AvailabilityStrategy under the hood
             availability_strategy = parent_stream_instance.availability_strategy
             if availability_strategy:

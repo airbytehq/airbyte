@@ -23,8 +23,8 @@ data:
   releases:
     breakingChanges:
       4.0.0:
-        message: "New release using file-based CDK"
-        upgradeDeadline: "2023-08-25"
+        message: "UX improvement, multi-stream support and deprecation of some parsing features"
+        upgradeDeadline: "2023-10-05"
   ab_internal:
     sl: 300
     ql: 400
