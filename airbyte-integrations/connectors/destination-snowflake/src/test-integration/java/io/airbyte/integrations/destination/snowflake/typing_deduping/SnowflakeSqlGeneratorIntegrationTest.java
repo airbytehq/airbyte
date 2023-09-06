@@ -74,8 +74,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
+  protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
+    return new StreamId(namespace.toUpperCase(), finalTableName.toUpperCase(), namespace.toUpperCase(), rawTableName, namespace, finalTableName);
+  }
+
+  @Override
   protected void createNamespace(final String namespace) throws SQLException {
-    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace + '"');
+    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace.toUpperCase() + '"');
   }
 
   @Override
@@ -103,12 +108,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         database,
         databaseName,
         streamId.finalNamespace(),
-        streamId.finalName() + suffix);
+        streamId.finalName() + suffix.toUpperCase());
   }
 
   @Override
   protected void teardownNamespace(final String namespace) throws SQLException {
-    database.execute("DROP SCHEMA IF EXISTS \"" + namespace + '"');
+    database.execute("DROP SCHEMA IF EXISTS \"" + namespace.toUpperCase() + '"');
   }
 
   @Override
@@ -118,7 +123,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                          final List<JsonNode> records)
       throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
+    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_AB_CDC_DELETED_AT\"" : "";
     final String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
     final String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
@@ -131,7 +136,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     database.execute(new StringSubstitutor(
         Map.of(
-            "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
+            "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix.toUpperCase()),
             "cdc_deleted_at_name", cdcDeletedAtName,
             "cdc_deleted_at_extract", cdcDeletedAtExtract,
             "records", recordsText),
@@ -141,24 +146,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             // parse_json().
             """
             INSERT INTO #{final_table_id} (
-              "_airbyte_raw_id",
-              "_airbyte_extracted_at",
-              "_airbyte_meta",
-              "id1",
-              "id2",
-              "updated_at",
-              "struct",
-              "array",
-              "string",
-              "number",
-              "integer",
-              "boolean",
-              "timestamp_with_timezone",
-              "timestamp_without_timezone",
-              "time_with_timezone",
-              "time_without_timezone",
-              "date",
-              "unknown"
+              "_AIRBYTE_RAW_ID",
+              "_AIRBYTE_EXTRACTED_AT",
+              "_AIRBYTE_META",
+              "ID1",
+              "ID2",
+              "UPDATED_AT",
+              "STRUCT",
+              "ARRAY",
+              "STRING",
+              "NUMBER",
+              "INTEGER",
+              "BOOLEAN",
+              "TIMESTAMP_WITH_TIMEZONE",
+              "TIMESTAMP_WITHOUT_TIMEZONE",
+              "TIME_WITH_TIMEZONE",
+              "TIME_WITHOUT_TIMEZONE",
+              "DATE",
+              "UNKNOWN"
               #{cdc_deleted_at_name}
             )
             SELECT
@@ -237,9 +242,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     final String sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
-        .stream().map(record -> record.get("kind").asText())
-        .findFirst();
+    // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
+    // identifiers.
+    final Optional<String> tableKind =
+        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
+            .stream().map(record -> record.get("kind").asText())
+            .findFirst();
     final Map<String, String> columns = database.queryJsons(
         """
         SELECT column_name, data_type, numeric_precision, numeric_scale
@@ -250,8 +258,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         ORDER BY ordinal_position;
         """,
         databaseName,
-        namespace,
-        "users_final").stream()
+        namespace.toUpperCase(),
+        "USERS_FINAL").stream()
         .collect(toMap(
             record -> record.get("COLUMN_NAME").asText(),
             record -> {
@@ -266,24 +274,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         () -> assertEquals(Optional.of("TABLE"), tableKind, "Table should be permanent, not transient"),
         () -> assertEquals(
             ImmutableMap.builder()
-                .put("_airbyte_raw_id", "TEXT")
-                .put("_airbyte_extracted_at", "TIMESTAMP_TZ")
-                .put("_airbyte_meta", "VARIANT")
-                .put("id1", "NUMBER(38, 0)")
-                .put("id2", "NUMBER(38, 0)")
-                .put("updated_at", "TIMESTAMP_TZ")
-                .put("struct", "OBJECT")
-                .put("array", "ARRAY")
-                .put("string", "TEXT")
-                .put("number", "FLOAT")
-                .put("integer", "NUMBER(38, 0)")
-                .put("boolean", "BOOLEAN")
-                .put("timestamp_with_timezone", "TIMESTAMP_TZ")
-                .put("timestamp_without_timezone", "TIMESTAMP_NTZ")
-                .put("time_with_timezone", "TEXT")
-                .put("time_without_timezone", "TIME")
-                .put("date", "DATE")
-                .put("unknown", "VARIANT")
+                .put("_AIRBYTE_RAW_ID", "TEXT")
+                .put("_AIRBYTE_EXTRACTED_AT", "TIMESTAMP_TZ")
+                .put("_AIRBYTE_META", "VARIANT")
+                .put("ID1", "NUMBER(38, 0)")
+                .put("ID2", "NUMBER(38, 0)")
+                .put("UPDATED_AT", "TIMESTAMP_TZ")
+                .put("STRUCT", "OBJECT")
+                .put("ARRAY", "ARRAY")
+                .put("STRING", "TEXT")
+                .put("NUMBER", "FLOAT")
+                .put("INTEGER", "NUMBER(38, 0)")
+                .put("BOOLEAN", "BOOLEAN")
+                .put("TIMESTAMP_WITH_TIMEZONE", "TIMESTAMP_TZ")
+                .put("TIMESTAMP_WITHOUT_TIMEZONE", "TIMESTAMP_NTZ")
+                .put("TIME_WITH_TIMEZONE", "TEXT")
+                .put("TIME_WITHOUT_TIMEZONE", "TIME")
+                .put("DATE", "DATE")
+                .put("UNKNOWN", "VARIANT")
                 .build(),
             columns));
   }

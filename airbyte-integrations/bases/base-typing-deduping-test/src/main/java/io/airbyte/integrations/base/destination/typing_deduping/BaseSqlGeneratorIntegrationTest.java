@@ -84,10 +84,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         Stream.of("_ab_cdc_deleted_at")).toList();
   }
 
-  protected static final RecordDiffer DIFFER = new RecordDiffer(
-      Pair.of("id1", AirbyteProtocolType.INTEGER),
-      Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+  protected RecordDiffer DIFFER;
 
   /**
    * Subclasses may use these four StreamConfigs in their tests.
@@ -117,6 +114,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract SqlGenerator<DialectTableDefinition> getSqlGenerator();
 
   protected abstract DestinationHandler<DialectTableDefinition> getDestinationHandler();
+
+  /**
+   * Subclasses should override this method if they need to make changes to the stream ID. For
+   * example, you could upcase the final table name here.
+   */
+  protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
+    return new StreamId(namespace, finalTableName, namespace, rawTableName, namespace, finalTableName);
+  }
 
   /**
    * Do any setup work to create a namespace for this test run. For example, this might create a
@@ -198,12 +203,17 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final LinkedHashMap<ColumnId, AirbyteType> cdcColumns = new LinkedHashMap<>(COLUMNS);
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
+    DIFFER = new RecordDiffer(
+        Pair.of(id1, AirbyteProtocolType.INTEGER),
+        Pair.of(id2, AirbyteProtocolType.INTEGER),
+        Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+
     namespace = Strings.addRandomSuffix("sql_generator_test", "_", 5);
     // This is not a typical stream ID would look like, but SqlGenerator isn't allowed to make any
     // assumptions about StreamId structure.
     // In practice, the final table would be testDataset.users, and the raw table would be
     // airbyte_internal.testDataset_raw__stream_users.
-    streamId = new StreamId(namespace, "users_final", namespace, "users_raw", namespace, "users_final");
+    streamId = buildStreamId(namespace, "users_final", "users_raw");
 
     incrementalDedupStream = new StreamConfig(
         streamId,
@@ -483,7 +493,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         actualFinalRecords);
     assertAll(
         () -> assertEquals("bar", actualRawRecords.get(0).get("_airbyte_data").get("string").asText()),
-        () -> assertEquals("bar", actualFinalRecords.get(0).get("string").asText()));
+        () -> assertEquals("bar", actualFinalRecords.get(0).get(generator.buildColumnId("string").name()).asText()));
   }
 
   @Test
@@ -791,15 +801,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
     final String str = namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
-    final StreamId modifiedStreamId = new StreamId(
+    final StreamId modifiedStreamId = buildStreamId(
         originalStreamId.finalNamespace(),
         originalStreamId.finalName(),
-        // hack for testing simplicity: put the raw tables in the final namespace. This makes cleanup
-        // easier.
-        originalStreamId.finalNamespace(),
-        "raw_table",
-        null,
-        null);
+        "raw_table");
     final ColumnId columnId = generator.buildColumnId(str);
     try {
       createNamespace(modifiedStreamId.finalNamespace());
