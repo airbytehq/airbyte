@@ -27,9 +27,7 @@ class TestMilvusIndexer(unittest.TestCase):
                 "text_field": "text",
             }
         )
-        self.mock_embedder = Mock()
-        self.mock_embedder.embedding_dimensions = 128
-        self.milvus_indexer = MilvusIndexer(self.mock_config, self.mock_embedder)
+        self.milvus_indexer = MilvusIndexer(self.mock_config, 128)
         self.milvus_indexer._create_client = Mock()  # This is mocked out because testing separate processes is hard
         self.milvus_indexer._collection = Mock()
 
@@ -102,7 +100,7 @@ class TestMilvusIndexer(unittest.TestCase):
         }
         result = self.milvus_indexer.check()
         self.assertEqual(
-            result, f"Vector field {self.mock_config.vector_field} is not a {self.mock_embedder.embedding_dimensions}-dimensional vector"
+            result, f"Vector field {self.mock_config.vector_field} is not a 128-dimensional vector"
         )
 
     def test_pre_sync_calls_delete(self):
@@ -132,12 +130,10 @@ class TestMilvusIndexer(unittest.TestCase):
         self.milvus_indexer._collection.delete.assert_not_called()
 
     def test_index_calls_insert(self):
-        self.mock_embedder.embed_texts.return_value = [[1, 2, 3]]
-        self.milvus_indexer.index([Mock(metadata={"key": "value"}, page_content="some content")], [])
+        self.milvus_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1,2,3])], [])
 
-        self.mock_embedder.embed_texts.assert_called_with(["some content"])
         self.milvus_indexer._collection.insert.assert_called_with(
-            [{"key": "value", "vector": self.mock_embedder.embed_texts.return_value[0], "text": "some content"}]
+            [{"key": "value", "vector": [1,2,3], "text": "some content"}]
         )
 
     def test_index_calls_delete(self):
