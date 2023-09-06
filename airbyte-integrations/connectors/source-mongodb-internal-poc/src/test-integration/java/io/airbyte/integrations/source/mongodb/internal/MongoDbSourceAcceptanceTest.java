@@ -342,7 +342,8 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
     when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
-    when(changeEventWithMetadata.eventValueAsJson()).thenReturn(Jsons.jsonNode(Map.of("source", Map.of("ts_ms", eventTimestamp, "ord", order))));
+    when(changeEventWithMetadata.eventValueAsJson()).thenReturn(Jsons.jsonNode(
+            Map.of("source", Map.of("ts_ms", eventTimestamp, "ord", order))));
 
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
