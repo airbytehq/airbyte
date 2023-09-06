@@ -310,7 +310,8 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(DATABASE_NAME, config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), "820000000000000000000000296E04"));
+        MongoDbDebeziumStateUtil.formatState(DATABASE_NAME,
+            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), "820000000000000000000000296E04"));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
     System.out.println(state);
@@ -377,7 +378,11 @@ public class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     mongoClient.getDatabase(databaseName).createCollection(collectionName);
     final MongoCollection<Document> collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     collection
-        .insertMany(IntStream.range(0, numberOfDocuments).boxed().map(i -> new Document(NAME_FIELD, "value" + i).append(INT_TEST_FIELD, i)).toList());
+        .insertMany(IntStream.range(0, numberOfDocuments).boxed().map(this::createDocument).toList());
+  }
+
+  private Document createDocument(final Integer i) {
+    return new Document(NAME_FIELD, "value" + i).append(INT_TEST_FIELD, i);
   }
 
   private void validateStateMessages(final List<AirbyteStateMessage> stateMessages) {
