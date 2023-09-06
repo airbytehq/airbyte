@@ -4,21 +4,12 @@
       "stream": {
         "name": "accounts",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "application_fees_refunds",
-        "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
+      "primary_key": [["id"]],
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -26,13 +17,27 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "application_fees_refunds",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -40,13 +45,13 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -57,35 +62,24 @@
         "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
       "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "bank_accounts",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "cards",
-        "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -93,108 +87,27 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "external_account_bank_accounts",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "invoices",
+        "name": "cards",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "payment_intents",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "payouts",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "plans",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "prices",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "products",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -202,13 +115,13 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -216,13 +129,13 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["expires_at"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["expires_at"],
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -233,10 +146,10 @@
         "default_cursor_field": ["checkout_session_expires_at"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
       "cursor_field": ["checkout_session_expires_at"],
-      "primary_key": [["id"]]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -244,38 +157,27 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "shipping_rates",
+        "name": "credit_notes",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "subscription_items",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -284,51 +186,93 @@
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
+      "primary_key": [["id"]],
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "files",
+        "name": "customers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "disputes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "early_fraud_warnings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "events",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
       "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "persons",
+        "name": "external_account_bank_accounts",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "products",
+        "name": "external_account_cards",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -339,24 +283,203 @@
         "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
       "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "top_ups",
+        "name": "files",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
       "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "invoice_items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "invoice_line_items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "invoices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "payment_intents",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "payment_methods",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "payouts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "persons",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "plans",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "prices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "products",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "promotion_codes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "refunds",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "reviews",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
@@ -367,17 +490,103 @@
         "default_cursor_field": ["created"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]],
       "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "usage_records",
+        "name": "setup_intents",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
       },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "shipping_rates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["created"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "subscription_items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "subscriptions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "subscription_schedule",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "top_ups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "transactions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
@@ -388,27 +597,27 @@
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [["id"]]
       },
+      "primary_key": [["id"]],
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite",
-      "primary_key": [["id"]]
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "transactions",
+        "name": "transfers",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"],
-      "primary_key": [["id"]]
+      "primary_key": [["id"]],
+      "cursor_field": ["updated"],
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
-        "name": "credit_notes",
+        "name": "usage_records",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

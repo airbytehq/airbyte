@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.helpers import LowInferenceBytesJsonlParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -367,7 +368,7 @@ invalid_jsonl_scenario = (
         {"data": {"col1": "val1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                   "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
     ])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_logs(
         {
             "read": [

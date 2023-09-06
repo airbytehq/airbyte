@@ -8,13 +8,15 @@ import traceback
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
+
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
+    NoFilesMatchingError,
     RecordParseError,
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
@@ -27,6 +29,7 @@ from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
@@ -154,6 +157,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         }
         try:
             schema = self._get_raw_json_schema()
+        except (InvalidSchemaError, NoFilesMatchingError) as config_exception:
+            raise AirbyteTracedException(
+                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
+                exception=config_exception,
+                failure_type=FailureType.config_error
+            ) from config_exception
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
@@ -169,7 +178,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             total_n_files = len(files)
 
             if total_n_files == 0:
-                raise SchemaInferenceError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
+                raise NoFilesMatchingError(FileBasedSourceError.EMPTY_STREAM, stream=self.name)
 
             max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
             if total_n_files > max_n_files_for_schema_inference:
