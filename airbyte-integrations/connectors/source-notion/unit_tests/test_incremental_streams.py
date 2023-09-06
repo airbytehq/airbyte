@@ -234,16 +234,3 @@ def test_comments_stream_slices(comments):
     actual_stream_slices = list(comments.stream_slices(**inputs))
 
     assert actual_stream_slices == expected_stream_slice
-
-
-def test_comments_should_retry(comments):
-
-    mock_response = MagicMock()
-    mock_response.status_code = 403
-
-    result = comments.should_retry(mock_response)
-
-    assert result is False
-    assert getattr(comments, "raise_on_http_errors") is False
-
-    

@@ -327,17 +327,3 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     def stream_slices(self, **kwargs) -> MutableMapping[str, Any]:        
         for block_id in self.parent.block_id_cache:
             yield {"block_id": block_id}
-
-    def should_retry(self, response: requests.Response) -> bool:
-        # Since the Notion API requires permissions to be set on a page-by-page basis for integrations, it is possible that the integration does not have permission to read comments for a particular block.
-        if response.status_code == 403:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.error(
-                f"Stream {self.name}: The API returned a 403 Forbidden error. Please ensure the correct permissions have been granted to read comments for all desired pages."
-            )
-            return False  # Do not retry
-
-        # Handle other status codes using the parent class's implementation
-        return super().should_retry(response)
-
-
