@@ -79,9 +79,9 @@ public class DebeziumEventUtils {
    * @return The record that represents the change.
    */
   private static ObjectNode getBaseNode(
-      final JsonNode after,
-      final JsonNode before,
-      final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
+                                        final JsonNode after,
+                                        final JsonNode before,
+                                        final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
     final JsonNode baseNode = after.isNull() ? before : after;
     return switch (debeziumConnectorType) {
       case MONGODB -> (ObjectNode) Jsons.deserialize(baseNode.asText());

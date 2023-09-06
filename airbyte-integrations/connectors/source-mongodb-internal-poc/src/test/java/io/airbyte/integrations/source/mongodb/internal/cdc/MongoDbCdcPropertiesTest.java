@@ -65,11 +65,11 @@ class MongoDbCdcPropertiesTest {
     assertTrue(actualFullyQualifiedExcludedFields.contains(FULLY_QUALIFIED_FIELD4));
   }
 
-
   @Test
   void testEmptyExcludeFieldList() {
     final Set<ExcludedField> fieldsToExclude = Collections.emptySet();
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsToExclude);
     assertFalse(debeziumProperties.containsKey(FIELD_EXCLUDE_LIST_KEY));
   }
+
 }
