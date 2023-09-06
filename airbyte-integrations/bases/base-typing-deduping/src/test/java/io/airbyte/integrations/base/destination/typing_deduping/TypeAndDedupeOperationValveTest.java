@@ -59,7 +59,7 @@ public class TypeAndDedupeOperationValveTest {
     // method call increments time
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
     // More than enough time has passed now
-    elapseTime(minuteUpdates, 1000 * 60 * 60 * 6);
+    elapseTime(minuteUpdates, 60 * 6);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
   }
 
