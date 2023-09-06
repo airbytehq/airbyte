@@ -10,15 +10,17 @@ node {
     version = nodeVersion
 }
 
-assemble.dependsOn(npmInstall)
+tasks.named('assemble').configure {
+    dependsOn tasks.named('npmInstall')
+}
 
-task testScaffoldTemplates
+def generateScaffolds = tasks.register('generateScaffolds')
 
 def addScaffoldTemplateTask(name, packageName, outputDirName, scaffoldParams=[]) {
-    def taskName = "testScaffoldTemplate_${name}"
+    def taskName = "generateScaffold_${name}"
     def outputDir = "airbyte-integrations/connectors/${outputDirName}"
 
-   def task = tasks.create(taskName) {
+   def task = tasks.register(taskName) {
         inputs.files rootProject.fileTree("airbyte-integrations/connector-templates/")
 
         doLast {
@@ -28,7 +30,7 @@ def addScaffoldTemplateTask(name, packageName, outputDirName, scaffoldParams=[])
             }
             exec {
                 workingDir rootDir
-                def cmd = ['./tools/integrations/manage.sh', 'scaffold', name, packageName]
+                def cmd = [project.file('generate.sh'), name, packageName]
                 cmd.addAll(scaffoldParams)
                 commandLine cmd
             }
@@ -37,8 +39,9 @@ def addScaffoldTemplateTask(name, packageName, outputDirName, scaffoldParams=[])
         outputs.dir rootProject.file(outputDir)
     }
 
-    testScaffoldTemplates.dependsOn task
+    generateScaffolds.configure { dependsOn task }
 }
+
 
 addScaffoldTemplateTask('Python Source', 'scaffold-source-python', 'source-scaffold-source-python')
 addScaffoldTemplateTask('Python HTTP API Source', 'scaffold-source-http', 'source-scaffold-source-http')

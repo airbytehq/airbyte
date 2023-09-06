@@ -66,7 +66,9 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_ab_record_id": "mystream_2"}, include_metadata=True
         )
         assert len(result.matches) == 1
-        assert result.matches[0].metadata["text"] == "str_col: Cats are nice"
+        assert (
+            result.matches[0].metadata["text"] == "str_col: Cats are nice"
+        ), 'Ensure that "str_col" is included in the "text_fields" array under the "processing" section of /secrets/config.json.'
 
         # test langchain integration
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
