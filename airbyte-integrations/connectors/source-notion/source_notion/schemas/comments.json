@@ -1,52 +1,36 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "object": {
-      "type": "string",
       "enum": ["comment"]
     },
     "id": {
-      "type": "string",
-      "format": "uuid"
+      "type": "string"
     },
     "parent": {
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
           "enum": ["page_id"]
         },
         "page_id": {
-          "type": "string",
-          "format": "uuid"
+          "type": "string"
         }
       }
     },
     "discussion_id": {
-      "type": "string",
-      "format": "uuid"
+      "type": "string"
     },
     "created_time": {
-      "type": "string",
-      "format": "date-time"
+      "type": "string"
     },
     "last_edited_time": {
-      "type": "string",
-      "format": "date-time"
+      "type": "string"
     },
     "created_by": {
-      "type": "object",
-      "properties": {
-        "object": {
-          "type": "string",
-          "enum": ["user"]
-        },
-        "id": {
-          "type": "string",
-          "format": "uuid"
-        }
-      }
+      "$ref": "user.json"
     },
     "rich_text": {
       "type": "array",
@@ -54,8 +38,7 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "enum": ["text"]
+            "type": "string"
           },
           "text": {
             "type": "object",
@@ -71,12 +54,24 @@
           "annotations": {
             "type": "object",
             "properties": {
-              "bold": { "type": "boolean" },
-              "italic": { "type": "boolean" },
-              "strikethrough": { "type": "boolean" },
-              "underline": { "type": "boolean" },
-              "code": { "type": "boolean" },
-              "color": { "type": "string" }
+              "bold": {
+                "type": "boolean"
+              },
+              "italic": {
+                "type": "boolean"
+              },
+              "strikethrough": {
+                "type": "boolean"
+              },
+              "underline": {
+                "type": "boolean"
+              },
+              "code": {
+                "type": "boolean"
+              },
+              "color": {
+                "type": "string"
+              }
             }
           },
           "plain_text": {
