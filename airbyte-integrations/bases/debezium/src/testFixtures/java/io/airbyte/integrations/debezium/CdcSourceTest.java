@@ -324,7 +324,8 @@ public abstract class CdcSourceTest {
     assertExpectedStateMessages(stateMessages);
   }
 
-  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(CdcTargetPosition targetPosition, AirbyteRecordMessage record) {
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(CdcTargetPosition targetPosition,
+                                                                                         AirbyteRecordMessage record) {
     assertEquals(extractPosition(record.getData()), targetPosition);
   }
 
