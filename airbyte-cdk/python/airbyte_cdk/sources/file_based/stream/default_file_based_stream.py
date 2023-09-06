@@ -8,7 +8,6 @@ import traceback
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
-
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
@@ -159,9 +158,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             schema = self._get_raw_json_schema()
         except (InvalidSchemaError, NoFilesMatchingError) as config_exception:
             raise AirbyteTracedException(
-                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
-                exception=config_exception,
-                failure_type=FailureType.config_error
+                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exception=config_exception, failure_type=FailureType.config_error
             ) from config_exception
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
