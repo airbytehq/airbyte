@@ -16,7 +16,7 @@ data:
   icon: avni.svg
   license: MIT
   name: Avni
-  releaseDate: TODO
+  releaseDate: "2023-09-07"
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/avni

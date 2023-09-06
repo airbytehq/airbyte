@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-import base64 
 from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from dataclasses import dataclass
 import boto3
