@@ -1,0 +1,12 @@
+{
+    "properties": {
+        "total_sales": {
+            "type": [
+                "null",
+                "integer",
+                "string"
+              ],
+              "format": "integer"
+            }
+        }
+    }
