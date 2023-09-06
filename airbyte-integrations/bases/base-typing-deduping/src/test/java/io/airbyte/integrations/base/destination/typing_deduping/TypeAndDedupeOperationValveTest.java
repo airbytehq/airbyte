@@ -54,12 +54,12 @@ public class TypeAndDedupeOperationValveTest {
     elapseTime(minuteUpdates, 1);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_B));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    Assertions.assertEquals(1000 * 60 * 60 * 4,
+    Assertions.assertEquals(1000 * 60 * 60 * 6,
         valve.getIncrementInterval(STREAM_A));
     // method call increments time
     Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A));
     // More than enough time has passed now
-    elapseTime(minuteUpdates, 1000 * 60 * 60 * 2);
+    elapseTime(minuteUpdates, 1000 * 60 * 60 * 6);
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
   }
 
@@ -70,7 +70,7 @@ public class TypeAndDedupeOperationValveTest {
     IntStream.range(0, 1).forEach(__ -> Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A))); // start ready to T&D
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
     valve.updateTimeAndIncreaseInterval(STREAM_A);
-    IntStream.range(0, 240).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
+    IntStream.range(0, 360).forEach(__ -> Assertions.assertFalse(valve.readyToTypeAndDedupe(STREAM_A)));
     Assertions.assertTrue(valve.readyToTypeAndDedupe(STREAM_A));
   }
 
