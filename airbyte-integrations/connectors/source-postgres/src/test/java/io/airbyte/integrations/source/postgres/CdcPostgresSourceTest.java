@@ -992,7 +992,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(CdcTargetPosition targetPosition, AirbyteRecordMessage record) {
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition, final AirbyteRecordMessage record) {
     // The LSN from records should be either equal or grater than the position value before the sync started.
     // The current Write-Ahead Log (WAL) position can move ahead even without any data modifications (INSERT, UPDATE, DELETE)
     // The start and end of transactions, even read-only ones, are recorded in the WAL. So, simply starting and committing a transaction can cause the WAL location to move forward.
