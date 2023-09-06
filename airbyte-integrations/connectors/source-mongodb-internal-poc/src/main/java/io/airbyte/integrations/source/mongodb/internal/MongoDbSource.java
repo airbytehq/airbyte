@@ -100,10 +100,7 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
 
       final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog, stateManager, emittedAt, config);
-      return AutoCloseableIterators
-          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList,
-              AirbyteTraceMessageUtility::emitStreamStatusTrace),
-              mongoClient::close);
+      return AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace);
     } catch (final Exception e) {
       mongoClient.close();
       throw e;

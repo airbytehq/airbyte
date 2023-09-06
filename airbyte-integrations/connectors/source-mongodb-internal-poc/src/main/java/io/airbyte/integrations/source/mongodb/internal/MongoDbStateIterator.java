@@ -158,14 +158,14 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
       if (lastId != null) {
         final var idType = IdType.findByJavaType(lastId.getClass().getSimpleName())
-                .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
+            .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + lastId.getClass().getSimpleName()));
         final var state = new MongoDbStreamState(lastId.toString(), InitialSnapshotStatus.IN_PROGRESS, idType);
         stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
 
       return new AirbyteMessage()
-              .withType(Type.STATE)
-              .withState(stateManager.toState());
+          .withType(Type.STATE)
+          .withState(stateManager.toState());
     }
 
     count++;
@@ -194,4 +194,5 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private String getStream() {
     return String.format("%s:%s", stream.getStream().getNamespace(), stream.getStream().getName());
   }
+
 }
