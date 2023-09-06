@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
@@ -66,7 +67,12 @@ class DocumentProcessor:
         """
         doc = self._generate_document(record)
         if doc is None:
-            raise ValueError(f"Record {str(record.data)[:250]}... does not contain any text fields.")
+            text_fields = ", ".join(self.text_fields) if self.text_fields else "all fields"
+            raise AirbyteTracedException(
+                internal_message="No text fields found in record",
+                message=f"Record {str(record.data)[:250]}... does not contain any of the configured text fields: {text_fields}. Please check your processing configuration. There has to be at least one text field set in each record.",
+                failure_type=FailureType.config_error,
+            )
         chunks = [
             Chunk(
                 page_content=chunk_document.page_content, metadata=chunk_document.metadata, stream=record.stream, namespace=record.namespace
