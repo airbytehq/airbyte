@@ -100,7 +100,8 @@ class WeaviateIndexer(Indexer):
             object_id = uuid.uuid4()
             self.client.batch.add_data_object(weaviate_object, self.config.class_name, object_id, vector=chunk.embedding)
             self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, self.config.class_name)
-        self.flush()
+        if len(document_chunks) > 0:
+            self._flush()
 
     def _normalize(self, metadata: dict) -> dict:
         result = {}

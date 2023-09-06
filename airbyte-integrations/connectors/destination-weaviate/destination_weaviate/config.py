@@ -30,7 +30,7 @@ class NoAuth(BaseModel):
     mode: Literal["no_auth"] = Field("no_auth", const=True)
 
     class Config:
-        title = "No auth"
+        title = "No Authentication"
         schema_extra = {
             "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
         }
