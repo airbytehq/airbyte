@@ -59,7 +59,6 @@ class AppsflyerStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {
-            "api_token": self.api_token,
             "from": pendulum.yesterday(self.timezone).to_date_string(),
             "to": pendulum.today(self.timezone).to_date_string(),
             "timezone": self.timezone.name,
@@ -210,7 +209,7 @@ class RetargetingMixin:
 
 
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
-    intervals = 31
+    intervals = 1
     cursor_field = "event_time"
 
     def path(
