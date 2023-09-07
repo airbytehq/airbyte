@@ -3,10 +3,12 @@
 #
 
 import logging
+from contextlib import nullcontext as does_not_raise
 from unittest.mock import Mock, patch
 
 import pytest
 import source_stripe
+from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe import SourceStripe
 
 logger = logging.getLogger("airbyte")
@@ -20,7 +22,8 @@ def test_source_check_connection_ok(mocked_client, config):
 @patch.object(source_stripe.source, "stripe")
 def test_source_check_connection_failure(mocked_client, config):
     mocked_client.Account.retrieve = Mock(side_effect=Exception("Test"))
-    assert SourceStripe().check_connection(logger, config=config) == (False, "Test")
+    with pytest.raises(Exception, match="Test"):
+        SourceStripe().check_connection(logger, config=config)
 
 
 def test_streams_are_unique(config):
@@ -39,7 +42,6 @@ def test_streams_are_unique(config):
 )
 @patch.object(source_stripe.source, "stripe")
 def test_config_validation(mocked_client, input_config, is_success, expected_error_msg):
-    success, error = SourceStripe().check_connection(logger, config=input_config)
-    assert is_success is success
-    if not success:
-        assert error == expected_error_msg
+    context = pytest.raises(AirbyteTracedException, match=expected_error_msg) if expected_error_msg else does_not_raise()
+    with context:
+        SourceStripe().check_connection(logger, config=input_config)
