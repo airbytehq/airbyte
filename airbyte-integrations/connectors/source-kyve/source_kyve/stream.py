@@ -19,6 +19,24 @@ runtime_to_root_file_mapping = {
 }
 
 
+def flatten_bundle(bundle):
+    flattened_bundle = []
+    for data_item in bundle:
+        flattened_data_item = {}
+        flatten_data_item(data_item, flattened_data_item)
+        flattened_bundle.append(flattened_data_item)
+    return flattened_bundle
+
+
+def flatten_data_item(d, result, parent_key=''):
+    for key, value in d.items():
+        new_key = f"{parent_key}__{key}" if parent_key else key
+        if isinstance(value, dict):
+            flatten_data_item(value, result, new_key)
+        else:
+            result[new_key] = value
+
+
 class KYVEStream(HttpStream, IncrementalMixin):
     url_base = None
 
@@ -71,8 +89,8 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
         # we update the default schema in case there is a root_file
         if schema_root_file:
-            inlay_schema = CustomResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(schema_root_file)
-            schema['properties']['value'] = inlay_schema
+            schema = CustomResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(schema_root_file)
+
         return schema
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -145,6 +163,10 @@ class KYVEStream(HttpStream, IncrementalMixin):
             # local_hash = hmac.new(b"", msg=decompressed, digestmod=hashlib.sha256).digest().hex()
             # assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
             decompressed_as_json = json.loads(decompressed)
+
+            # If schema is supported, use flattened version
+            if runtime_to_root_file_mapping.get(self.runtime, None) is not None:
+                decompressed_as_json = flatten_bundle(decompressed_as_json)
 
             # extract the value from the key -> value mapping
             yield from decompressed_as_json

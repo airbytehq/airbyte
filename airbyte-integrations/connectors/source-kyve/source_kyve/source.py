@@ -10,7 +10,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .stream import KYVEStream
-from .integrations import TendermintStream
 
 
 class SourceKyve(AbstractSource):
@@ -47,6 +46,6 @@ class SourceKyve(AbstractSource):
             config_copy = dict(deepcopy(config))
             config_copy["start_ids"] = int(start_id)
             # add a new stream based on the pool_data
-            streams.append(TendermintStream(config=config_copy, pool_data=pool_data))
+            streams.append(KYVEStream(config=config_copy, pool_data=pool_data))
 
         return streams
