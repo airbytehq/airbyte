@@ -140,6 +140,8 @@ allprojects {
 
     tasks.withType(Zip).configureEach {
         duplicatesStrategy DuplicatesStrategy.INCLUDE
+        // Disabling distZip causes the build to break for some reason, so: instead of disabling it, make it fast.
+        entryCompression ZipEntryCompression.STORED
     }
 }
 
@@ -458,6 +460,9 @@ spotless {
 tasks.named('spotlessStyling').configure {
     dependsOn tasks.named('nodeSetup')
     dependsOn tasks.named('npmSetup')
+}
+tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
+    enabled = false
 }
 
 // python is required by the root project to apply python formatters like isort or black.

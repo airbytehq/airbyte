@@ -87,6 +87,17 @@
     },
     "tax_code": {
       "type": ["null", "string"]
+    },
+    "features": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }
