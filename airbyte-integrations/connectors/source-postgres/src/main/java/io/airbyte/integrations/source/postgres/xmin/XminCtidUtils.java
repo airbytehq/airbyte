@@ -106,7 +106,7 @@ public class XminCtidUtils {
   }
 
   public static void reclassifyCategorisedCtidStream(final StreamsCategorised<XminStreams> categorisedStreams,
-                                                     AirbyteStreamNameNamespacePair streamPair) {
+                                                     final AirbyteStreamNameNamespacePair streamPair) {
     final Optional<ConfiguredAirbyteStream> foundStream = categorisedStreams
         .ctidStreams()
         .streamsForCtidSync().stream().filter(c -> Objects.equals(
@@ -134,7 +134,7 @@ public class XminCtidUtils {
   }
 
   public static void reclassifyCategorisedCtidStreams(final StreamsCategorised<XminStreams> categorisedStreams,
-                                                      List<AirbyteStreamNameNamespacePair> streamPairs) {
+                                                      final List<AirbyteStreamNameNamespacePair> streamPairs) {
     streamPairs.forEach(c -> reclassifyCategorisedCtidStream(categorisedStreams, c));
   }
 
