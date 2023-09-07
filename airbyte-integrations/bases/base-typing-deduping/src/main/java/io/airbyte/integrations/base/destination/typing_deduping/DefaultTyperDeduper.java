@@ -7,9 +7,11 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import static io.airbyte.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
+import static java.util.Collections.singleton;
 
 import autovalue.shaded.kotlin.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -169,41 +171,15 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
   public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) throws Exception {
     final var streamConfig = parsedCatalog.getStream(originalNamespace, originalName);
-    if (!streamsWithSuccessfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
-      // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
-      // we should skip it.
-      LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace, originalName);
-      return;
-    }
-
-    final boolean run;
-    final Lock internalLock = internalTdLocks.get(streamConfig.id());
-    if (mustRun) {
-      // If we must run T+D, then wait until we acquire the lock.
-      internalLock.lock();
-      run = true;
-    } else {
-      // Otherwise, try and get the lock. If another thread already has it, then we should noop here.
-      run = internalLock.tryLock();
-    }
-
-    if (run) {
-      LOGGER.info("Waiting for raw table writes to pause for {}.{}", originalNamespace, originalName);
-      final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
-      externalLock.lock();
-      try {
-        LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
-        final String suffix = getFinalTableSuffix(streamConfig.id());
-        final String sql = sqlGenerator.updateTable(streamConfig, suffix);
-        destinationHandler.execute(sql);
-      } finally {
-        LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
-        externalLock.unlock();
-        internalLock.unlock();
-      }
-    } else {
-      LOGGER.info("Another thread is already trying to run typing and deduping for {}.{}. Skipping it here.", originalNamespace, originalName);
-    }
+    final CompletableFuture<Optional<Exception>> task = typeAndDedupeTask(streamConfig, mustRun);
+    reduceExceptions(
+        singleton(task),
+        String.format(
+            "The Following Exceptions were thrown while typing and deduping %s.%s:\n",
+            originalNamespace,
+            originalName
+        )
+    );
   }
 
   public Lock getRawTableInsertLock(final String originalNamespace, final String originalName) {
