@@ -7,4 +7,4 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 | Version | Date       | Pull Request                                           | Subject                                     |
 |:--------| :--------- | :----------------------------------------------------- |:--------------------------------------------|
 | 0.1.0   | 2021-03-22 | [2544](https://github.com/airbytehq/airbyte/pull/2544) | Adding the appsflyer singer based connector |
-| 0.1.1   | 2021-03-22 | [30132](https://github.com/airbytehq/airbyte/pull/30132) | Adding support of V2 JWT based auth         |
+| 1.0.0   | 2021-03-22 | [30132](https://github.com/airbytehq/airbyte/pull/30132) | Adding support of V2 JWT based auth         |
