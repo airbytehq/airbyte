@@ -47,6 +47,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "percent_off": {
       "type": ["null", "number"]
     }
