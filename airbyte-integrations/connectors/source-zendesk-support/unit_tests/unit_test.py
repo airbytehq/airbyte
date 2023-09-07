@@ -33,6 +33,7 @@ from source_zendesk_support.streams import (
     Organizations,
     PostCommentVotes,
     Posts,
+    PostVotes,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -144,18 +145,18 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 29, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 34, [], None),
         (
                 '{"error": "Not sufficient permissions"}',
                 403,
-                26,
+                31,
                 ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
                 None
         ),
         (
                 '',
                 404,
-                26,
+                31,
                 ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
                 'Not Found'
         ),
@@ -397,6 +398,35 @@ class TestSourceZendeskSupportStream:
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response, None))
         assert expected == output
+
+    def test_attribute_definition_parse_response(self, requests_mock):
+        stream = AttributeDefinitions(**STREAM_ARGS)
+        conditions_all = {
+                        "subject": "number_of_incidents",
+                        "title": "Number of incidents"
+                    }
+        conditions_any = {
+                        "subject": "brand",
+                        "title": "Brand"
+                    }
+        response_json = {
+            "definitions": {
+                "conditions_all": [
+                    conditions_all
+                ],
+                "conditions_any": [
+                    conditions_any
+                ]
+            }
+        }
+        requests_mock.get(STREAM_URL, json=response_json)
+        test_response = requests.get(STREAM_URL)
+        output = list(stream.parse_response(test_response, None))
+        expected_records = [
+            {"condition": "all", "subject": "number_of_incidents", "title": "Number of incidents"},
+            {"condition": "any", "subject": "brand", "title": "Brand"}
+        ]
+        assert expected_records == output
 
     @pytest.mark.parametrize(
         "stream_cls",
@@ -952,6 +982,27 @@ def test_read_tickets_stream(requests_mock):
     ]
 
 
+def test_read_post_votes_stream(requests_mock):
+    post_response = {
+        "posts": [
+            {"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
+
+    post_votes_response = {
+        "votes": [
+            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607,
+             "updated_at": "2023-01-02T00:00:00Z"}
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/votes", json=post_votes_response)
+
+    stream = PostVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == post_votes_response.get('votes')
+
+
 def test_read_post_comment_votes_stream(requests_mock):
     post_response = {
         "posts": [
@@ -962,12 +1013,13 @@ def test_read_post_comment_votes_stream(requests_mock):
 
     post_comments_response = {
         "comments": [
-            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607}
+            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607,
+             "updated_at": "2023-01-02T00:00:00Z"}
         ]
     }
     requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments", json=post_comments_response)
 
-    votes = [{"id": 35467, "user_id": 888887, "value": -1}]
+    votes = [{"id": 35467, "user_id": 888887, "value": -1, "updated_at": "2023-01-03T00:00:00Z"}]
     requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments/35467/votes",
                       json={"votes": votes})
     stream = PostCommentVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
