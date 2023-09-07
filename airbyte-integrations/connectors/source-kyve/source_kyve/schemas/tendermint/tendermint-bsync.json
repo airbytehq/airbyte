@@ -1,0 +1,133 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "key" : {
+      "type" : "string"
+    },
+    "value__data__txs" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "value__header__time" : {
+      "type" : "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "value__header__height" : {
+      "type" : "integer"
+    },
+    "value__header__app_hash" : {
+      "type" : "string"
+    },
+    "value__header__chain_id" : {
+      "type" : "string"
+    },
+    "value__header__data_hash" : {
+      "type" : "string"
+    },
+    "value__evidence__evidence" : {
+      "type" : "array",
+      "items" : {}
+    },
+    "value__last_commit__round" : {
+      "type" : "integer"
+    },
+    "value__last_commit__height" : {
+      "type" : "integer"
+    },
+    "value__header__evidence_hash" : {
+      "type" : "string"
+    },
+    "value__header__consensus_hash" : {
+      "type" : "string"
+    },
+    "value__header__version__block" : {
+      "type" : "integer"
+    },
+    "value__header__validators_hash" : {
+      "type" : "string"
+    },
+    "value__last_commit__signatures" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "signature": {
+            "type" : "string"
+          },
+          "timestamp": {
+            "type" : "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "block_id_flag": {
+            "type" : "integer"
+          },
+          "validator_address": {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "value__header__last_commit_hash" : {
+      "type" : "string"
+    },
+    "value__header__proposer_address" : {
+      "type" : "string"
+    },
+    "value__header__last_results_hash" : {
+      "type" : "string"
+    },
+    "value__header__last_block_id__hash" : {
+      "type" : "string"
+    },
+    "value__last_commit__block_id__hash" : {
+      "type" : "string"
+    },
+    "value__header__next_validators_hash" : {
+      "type" : "string"
+    },
+    "value__header__last_block_id__parts__hash" : {
+      "type" : "string"
+    },
+    "value__last_commit__block_id__parts__hash" : {
+      "type" : "string"
+    },
+    "value__header__last_block_id__parts__total" : {
+      "type" : "integer"
+    },
+    "value__last_commit__block_id__parts__total" : {
+      "type" : "integer"
+    }
+  },
+  "required" : [
+    "key",
+    "value__data__txs",
+    "value__header__time",
+    "value__header__height",
+    "value__header__app_hash",
+    "value__header__chain_id",
+    "value__header__data_hash",
+    "value__evidence__evidence",
+    "value__last_commit__round",
+    "value__last_commit__height",
+    "value__header__evidence_hash",
+    "value__header__consensus_hash",
+    "value__header__version__block",
+    "value__header__validators_hash",
+    "value__last_commit__signatures",
+    "value__header__last_commit_hash",
+    "value__header__proposer_address",
+    "value__header__last_results_hash",
+    "value__header__last_block_id__hash",
+    "value__last_commit__block_id__hash",
+    "value__header__next_validators_hash",
+    "value__header__last_block_id__parts__hash",
+    "value__last_commit__block_id__parts__hash",
+    "value__header__last_block_id__parts__total",
+    "value__last_commit__block_id__parts__total"
+  ]
+}
