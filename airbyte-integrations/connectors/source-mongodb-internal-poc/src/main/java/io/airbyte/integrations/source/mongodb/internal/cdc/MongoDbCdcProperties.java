@@ -21,7 +21,7 @@ public class MongoDbCdcProperties {
   static final String HEARTBEAT_FREQUENCY_MS = Long.toString(Duration.ofSeconds(10).toMillis());
   static final String HEARTBEAT_INTERVAL_KEY = "heartbeat.interval.ms";
   static final String SNAPSHOT_MODE_KEY = "snapshot.mode";
-  static final String SNAPSHOT_MODE_VALUE = "initial";
+  static final String SNAPSHOT_MODE_VALUE = "never";
   static final String FIELD_EXCLUDE_LIST_KEY = "field.exclude.list";
 
   public record ExcludedField(String database, String collection, String field) {
