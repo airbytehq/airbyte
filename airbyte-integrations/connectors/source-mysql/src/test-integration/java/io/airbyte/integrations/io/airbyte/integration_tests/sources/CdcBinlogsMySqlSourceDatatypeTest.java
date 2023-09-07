@@ -70,13 +70,6 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
     catalog.getStreams().add(dummyTableWithData);
 
     final List<AirbyteMessage> allMessages = super.runRead(catalog);
-    /*if (allMessages.size() != 2) {
-      throw new RuntimeException("First sync should only generate 2 records");
-    }
-    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(allMessages);
-    if (stateAfterFirstBatch == null || stateAfterFirstBatch.isEmpty()) {
-      throw new RuntimeException("stateAfterFirstBatch should not be null or empty");
-    }*/
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(allMessages);
     stateAfterFirstSync = Jsons.jsonNode(List.of(Iterables.getLast(stateAfterFirstBatch)));
     if (stateAfterFirstSync == null) {
