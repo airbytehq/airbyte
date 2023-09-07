@@ -229,7 +229,7 @@ class SFTPClient:
                 elif file_type == "json":
                     df = pd.read_json(f, lines=True)
                 else:
-                    raise Exception("Unsupported file type: %s" % file_type)
+                    raise ValueError("Unsupported file type: %s" % file_type)
 
                 # Replace nan with None for correct
                 # json serialization when emitting records

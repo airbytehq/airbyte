@@ -105,3 +105,6 @@ scan-journal.log
 
 # connectors' cache
 *.sqlite
+# to define local pyenv environment
+.python-version
+
