@@ -48,72 +48,6 @@ class WalmartStream(HttpStream, ABC):
                         next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
         return get_header(self.config_param)
 
-class Inventory(WalmartStream):
-    name = "INVENTORY_MULTIPLE_ITEM"
-
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__(config, **kwargs)
-        self.config_param = config
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        param = f"?limit=50"
-        if self.nextCursor is not None:
-            param += f"&nextCursor={self.nextCursor}"
-        return f"/v3/inventories{param}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == 200:
-            respJson = response.json()
-            results = respJson.get("elements").get("inventories")
-            if "nextCursor" not in respJson.get("meta"):
-                self.nextCursor = None
-            elif respJson.get("meta").get("nextCursor") is not None:
-                self.nextCursor = respJson.get("meta").get("nextCursor")
-            if results is None:
-                return []
-            for item in results:
-                item["source_name"] = self.config_param["source_name"]
-            yield from results
-        else:
-            raise Exception([{"message": "Failed to obtain data."}])
-
-class Requests(WalmartStream):
-
-    def __init__(self, config: Mapping[str, Any], **kwargs):
-        super().__init__(config, **kwargs)
-        self.config_param = config
-
-    @property
-    def type(self) -> str:
-        pass
-
-    def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"/v3/getReport?type={self.type}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == 200:
-            try:
-                zip_file = zipfile.ZipFile(BytesIO(response.content))
-            except zipfile.BadZipFile as e:
-                self.logger.exception(e)
-                self.logger.error(
-                    f"Received an invalid zip file in response to URL: {response.request.url}."
-                    f"The size of the response body is: {len(response.content)}"
-                )
-                return []
-            for gzip_filename in zip_file.namelist():
-                document = parse_document(zip_file.read(gzip_filename))
-                results = []
-                for item in document:
-                    item["source_name"] = self.config_param["source_name"]
-                    results.append(item)
-                yield from results
-        else:
-            raise Exception([{"message": "Failed to obtain data."}])
 
 class Inventory(WalmartStream):
     name = "INVENTORY_MULTIPLE_ITEM"
@@ -373,38 +307,6 @@ class InboundShipments(Shipments):
     requsetPath = "/v3/fulfillment/inbound-shipments"
     name = "GET_SHIPMENTS"
 
-class ItemRequests(Requests):
-    name = "REQUESTS_ITEM"
-    type = "item"
-
-class BuyboxRequests(Requests):
-    name = "REQUESTS_BUYBOX"
-    type = "buybox"
-
-class CpaRequests(Requests):
-    name = "REQUESTS_CPA"
-    type = "cpa"
-
-class ShippingProgramRequests(Requests):
-    name = "REQUESTS_SHIPPING_PROGRAM"
-    type = "shippingProgram"
-
-class ShippingConfigurationRequests(Requests):
-    name = "REQUESTS_SHIPPING_CONFIGURATION"
-    type = "shippingConfiguration"
-
-class ItemPerformanceRequests(Requests):
-    name = "REQUESTS_ITEM_PERFORMANCE"
-    type = "itemPerformance"
-
-class ReturnOverridesRequests(Requests):
-    name = "REQUESTS_RETURN_OVERRIDES"
-    type = "returnOverrides"
-
-class PromoRequests(Requests):
-    name = "REQUESTS_PROMO"
-    type = "promo"
-
 def parse_document(document: bytes):
     return csv.DictReader(StringIO(document.decode()))
 
@@ -482,14 +384,6 @@ class SourceWalmart(AbstractSource):
                 OrdersWFSFulfilled(config),
                 Orders3PLFulfilled(config),
                 Departments(config),
-                ItemRequests(config),
-                BuyboxRequests(config),
-                CpaRequests(config),
-                # ShippingProgramRequests(config),
-                # ShippingConfigurationRequests(config),
-                ItemPerformanceRequests(config),
-                ReturnOverridesRequests(config),
-                PromoRequests(config),
                 InboundShipments(config),
                 InboundShipmentItems(config),
                 Items(config),
