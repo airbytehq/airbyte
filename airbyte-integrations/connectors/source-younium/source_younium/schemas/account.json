@@ -1,0 +1,338 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Accounts schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "parentAccountId": {
+      "type": ["null", "string"]
+    },
+    "accountNumber": {
+      "type": ["null", "string"]
+    },
+    "accountType": {
+      "type": ["null", "object"],
+      "properties": {
+        "accountNumber": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "inactive": {
+      "type": ["null", "boolean"]
+    },
+    "invoiceDeliveryMethod": {
+      "type": ["null", "object"],
+      "properties": {
+        "invoice": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountsReceivable": {
+      "type": ["null", "string"]
+    },
+    "currencyCode": {
+      "type": ["null", "string"]
+    },
+    "defaultPaymentTerm": {
+      "type": ["null", "string"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "electronicInvoiceAddress": {
+      "type": ["null", "string"]
+    },
+    "electronicInvoiceAddressScheme": {
+      "type": ["null", "string"]
+    },
+    "imageUrl": {
+      "type": ["null", "string"]
+    },
+    "invoiceEmailAddress": {
+      "type": ["null", "string"]
+    },
+    "invoiceEmailCcAddresses": {
+      "type": ["null", "string"]
+    },
+    "reminderEmailAddress": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "organizationNumber": {
+      "type": ["null", "string"]
+    },
+    "ourReference": {
+      "type": ["null", "string"]
+    },
+    "taxRegistrationNumber": {
+      "type": ["null", "string"]
+    },
+    "taxTemplate": {
+      "type": ["null", "string"]
+    },
+    "yourReference": {
+      "type": ["null", "string"]
+    },
+    "invoiceTemplateId": {
+      "type": ["null", "string"]
+    },
+    "invoiceBatchGroupId": {
+      "type": ["null", "string"]
+    },
+    "invoiceSettingGroupId": {
+      "type": ["null", "string"]
+    },
+    "defaultInvoiceAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "street": {
+          "type": ["null", "string"]
+        },
+        "street2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "county": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "defaultDeliveryAddress": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "street": {
+          "type": ["null", "string"]
+        },
+        "street2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "county": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "street": {
+            "type": ["null", "string"]
+          },
+          "street2": {
+            "type": ["null", "string"]
+          },
+          "city": {
+            "type": ["null", "string"]
+          },
+          "county": {
+            "type": ["null", "string"]
+          },
+          "state": {
+            "type": ["null", "string"]
+          },
+          "zip": {
+            "type": ["null", "string"]
+          },
+          "country": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "customFields": {
+      "type": ["null", "object"],
+      "properties": {
+        "custom": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "onlinePaymentDetails": {
+      "type": ["null", "object"],
+      "properties": {
+        "created": {
+          "type": ["null", "string"]
+        },
+        "modified": {
+          "type": ["null", "string"]
+        },
+        "stripeCustomerId": {
+          "type": ["null", "string"]
+        },
+        "stripePaymentMethodId": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "externalERPId": {
+      "type": ["null", "string"]
+    },
+    "externalCRMId": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
+    "cmrr": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyConversionDate": {
+          "type": ["null", "string"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "acv": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyConversionDate": {
+          "type": ["null", "string"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "emrr": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyConversionDate": {
+          "type": ["null", "string"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "oneTimeFees": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyConversionDate": {
+          "type": ["null", "string"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tcv": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyConversionDate": {
+          "type": ["null", "string"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

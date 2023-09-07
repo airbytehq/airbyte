@@ -1,0 +1,315 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bookings Schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "bookingType": {
+      "type": ["null", "object"],
+      "properties": {
+        "typer": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "accountCategory": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "changeType": {
+      "type": ["null", "object"],
+      "properties": {
+        "typer": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "cmrr": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "acv": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "emrr": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "oneTimeFees": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "tcv": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "fmrr": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "effectiveDate": {
+      "type": ["null", "string"]
+    },
+    "bookingLines": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "charge": {
+            "type": ["null", "object"],
+            "properties": {
+              "name": {
+                "type": ["null", "string"]
+              },
+              "chargeNumber": {
+                "type": ["null", "string"]
+              },
+              "description": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "externalERPId": {
+                "type": ["null", "string"]
+              },
+              "externalCRMId": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "cmrr": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currencyCode": {
+                "type": ["null", "string"]
+              },
+              "currencyConversionDate": {
+                "type": ["null", "string"]
+              },
+              "baseCurrencyAmount": {
+                "type": ["null", "number"]
+              },
+              "baseCurrencyCode": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "acv": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currencyCode": {
+                "type": ["null", "string"]
+              },
+              "currencyConversionDate": {
+                "type": ["null", "string"]
+              },
+              "baseCurrencyAmount": {
+                "type": ["null", "number"]
+              },
+              "baseCurrencyCode": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "emrr": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currencyCode": {
+                "type": ["null", "string"]
+              },
+              "currencyConversionDate": {
+                "type": ["null", "string"]
+              },
+              "baseCurrencyAmount": {
+                "type": ["null", "number"]
+              },
+              "baseCurrencyCode": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "oneTimeFees": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currencyCode": {
+                "type": ["null", "string"]
+              },
+              "currencyConversionDate": {
+                "type": ["null", "string"]
+              },
+              "baseCurrencyAmount": {
+                "type": ["null", "number"]
+              },
+              "baseCurrencyCode": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "tcv": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currencyCode": {
+                "type": ["null", "string"]
+              },
+              "currencyConversionDate": {
+                "type": ["null", "string"]
+              },
+              "baseCurrencyAmount": {
+                "type": ["null", "number"]
+              },
+              "baseCurrencyCode": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "fmrr": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currencyCode": {
+                "type": ["null", "string"]
+              },
+              "currencyConversionDate": {
+                "type": ["null", "string"]
+              },
+              "baseCurrencyAmount": {
+                "type": ["null", "number"]
+              },
+              "baseCurrencyCode": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "created": {
+            "type": ["null", "string"]
+          },
+          "modified": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "classification": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "chartColor": {
+          "type": ["null", "string"]
+        },
+        "isSystemClassification": {
+          "type": "boolean"
+        },
+        "classificationType": {
+          "type": ["null", "object"],
+          "properties": {
+            "chartColor": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
+    "order": {
+      "type": ["null", "object"],
+      "properties": {
+        "orderNumber": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "externalERPId": {
+          "type": ["null", "string"]
+        },
+        "externalCRMId": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "notes": {
+      "type": ["null", "string"]
+    }
+  }
+}

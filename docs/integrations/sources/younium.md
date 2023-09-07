@@ -36,9 +36,12 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 - [Subscriptions](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Subscriptions)
 - [Products](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Products)
 - [Invoices](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Invoices)
+- [Accounts](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Accounts)
+- [Bookings](https://developer.younium.com/api-details#api=Production_API2-0&operation=Get-Bookings)
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                             |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------- |
-| 0.1.0   | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk] |
+| Version | Date       | Pull Request                                             | Subject                              |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------- |
+| 0.2.0   | 2023-09-09 | [](https://github.com/airbytehq/airbyte/pull/) | 🎉 Add streams accounts and bookings |
+| 0.1.0   | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk]  |

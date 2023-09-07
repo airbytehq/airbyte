@@ -91,6 +91,24 @@ class Subscription(YouniumStream):
         return "Subscriptions"
 
 
+class Account(YouniumStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "Accounts"
+    
+
+class Booking(YouniumStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "Bookings"
+
+
 class SourceYounium(AbstractSource):
     def get_auth(self, config):
         scope = "openid youniumapi profile"
