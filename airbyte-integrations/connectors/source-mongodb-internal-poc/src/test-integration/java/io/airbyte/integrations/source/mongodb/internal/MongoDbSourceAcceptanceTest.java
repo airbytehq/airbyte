@@ -380,7 +380,6 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   void testSyncShouldHandlePurgedLogsGracefully() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
 
-    System.out.println("******* Run 1");
     // Run the sync to establish the next resume token value
     final List<AirbyteMessage> messages = runRead(configuredCatalog);
     final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
@@ -397,8 +396,6 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
-    System.out.println("******* Run 2");
-    System.out.println(state);
     // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
     final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
 
