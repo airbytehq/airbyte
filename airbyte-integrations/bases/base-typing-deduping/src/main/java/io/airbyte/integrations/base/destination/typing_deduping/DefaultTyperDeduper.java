@@ -211,7 +211,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     return tdLocks.get(streamConfig.id()).readLock();
   }
 
-  public CompletableFuture<Optional<Exception>> typeAndDedupeTask(final StreamConfig streamConfig) {
+  public CompletableFuture<Optional<Exception>> typeAndDedupeTask(final StreamConfig streamConfig, final boolean mustRun) {
     return CompletableFuture.supplyAsync(() -> {
       final var originalNamespace = streamConfig.id().originalNamespace();
       final var originalName = streamConfig.id().originalName();
@@ -223,9 +223,36 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
               originalName);
           return Optional.empty();
         }
-        final String suffix = getFinalTableSuffix(streamConfig.id());
-        final String sql = sqlGenerator.updateTable(streamConfig, suffix);
-        destinationHandler.execute(sql);
+
+        final boolean run;
+        final Lock internalLock = internalTdLocks.get(streamConfig.id());
+        if (mustRun) {
+          // If we must run T+D, then wait until we acquire the lock.
+          internalLock.lock();
+          run = true;
+        } else {
+          // Otherwise, try and get the lock. If another thread already has it, then we should noop here.
+          run = internalLock.tryLock();
+        }
+
+        if (run) {
+          LOGGER.info("Waiting for raw table writes to pause for {}.{}", originalNamespace, originalName);
+          final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
+          externalLock.lock();
+          try {
+            LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
+            final String suffix = getFinalTableSuffix(streamConfig.id());
+            final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+            destinationHandler.execute(sql);
+          } finally {
+            LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
+            externalLock.unlock();
+            internalLock.unlock();
+          }
+        } else {
+          LOGGER.info("Another thread is already trying to run typing and deduping for {}.{}. Skipping it here.", originalNamespace,
+              originalName);
+        }
         return Optional.empty();
       } catch (final Exception e) {
         LOGGER.error("Exception occurred while typing and deduping stream " + originalName, e);
@@ -239,7 +266,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Typing and deduping all tables");
     final Set<CompletableFuture<Optional<Exception>>> typeAndDedupeTasks = new HashSet<>();
     parsedCatalog.streams().forEach(streamConfig -> {
-      typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig));
+      typeAndDedupeTasks.add(typeAndDedupeTask(streamConfig, true));
     });
     CompletableFuture.allOf(typeAndDedupeTasks.toArray(CompletableFuture[]::new)).join();
     reduceExceptions(typeAndDedupeTasks, "The Following Exceptions were thrown while typing and deduping tables:\n");
