@@ -298,7 +298,7 @@ public abstract class JdbcSourceAcceptanceTest {
     dropSchemas();
   }
 
-//  @Test
+  @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final String resourceString = MoreResources.readResource("spec.json");
@@ -307,21 +307,21 @@ public abstract class JdbcSourceAcceptanceTest {
     assertEquals(expected, actual);
   }
 
-//  @Test
+  @Test
   void testCheckSuccess() throws Exception {
     final AirbyteConnectionStatus actual = source.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
-//  @Test
+  @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }
 
-//  @Test
+  @Test
   void testDiscover() throws Exception {
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     final AirbyteCatalog expected = getCatalog(getDefaultNamespace());
@@ -336,7 +336,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-//  @Test
+  @Test
   protected void testDiscoverWithNonCursorFields() throws Exception {
     database.execute(connection -> {
       connection.createStatement()
@@ -353,7 +353,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
   }
 
-//  @Test
+  @Test
   protected void testDiscoverWithNullableCursorFields() throws Exception {
     database.execute(connection -> {
       connection.createStatement()
@@ -386,7 +386,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-//  @Test
+  @Test
   void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
     String driverClass = getDriverClass().toLowerCase();
@@ -429,7 +429,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertEquals(expected, filterOutOtherSchemas(actual));
   }
 
-//  @Test
+  @Test
   void testReadSuccess() throws Exception {
     final List<AirbyteMessage> actualMessages =
         MoreIterators.toList(
@@ -441,7 +441,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
 
-//  @Test
+  @Test
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaType.NUMBER));
@@ -469,7 +469,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
-//  @Test
+  @Test
   void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
@@ -527,7 +527,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-//  @Test
+  @Test
   void testTablesWithQuoting() throws Exception {
     final ConfiguredAirbyteStream streamForTableWithSpaces = createTableWithSpaces();
 
@@ -564,7 +564,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
-//  @Test
+  @Test
   void testReadFailure() {
     final ConfiguredAirbyteStream spiedAbStream = spy(
         getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
@@ -575,7 +575,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
-//  @Test
+  @Test
   void testIncrementalNoPreviousState() throws Exception {
     incrementalCursorCheck(
         COL_ID,
@@ -584,7 +584,7 @@ public abstract class JdbcSourceAcceptanceTest {
         getTestMessages());
   }
 
-//  @Test
+  @Test
   void testIncrementalIntCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_ID,
@@ -593,7 +593,7 @@ public abstract class JdbcSourceAcceptanceTest {
         List.of(getTestMessages().get(2)));
   }
 
-//  @Test
+  @Test
   void testIncrementalStringCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_NAME,
@@ -602,7 +602,7 @@ public abstract class JdbcSourceAcceptanceTest {
         List.of(getTestMessages().get(0), getTestMessages().get(2)));
   }
 
-//  @Test
+  @Test
   void testIncrementalStringCheckCursorSpaceInColumnName() throws Exception {
     final ConfiguredAirbyteStream streamWithSpaces = createTableWithSpaces();
 
@@ -632,7 +632,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return List.of(firstMessage, secondMessage);
   }
 
-//  @Test
+  @Test
   void testIncrementalDateCheckCursor() throws Exception {
     incrementalDateCheck();
   }
@@ -645,7 +645,7 @@ public abstract class JdbcSourceAcceptanceTest {
         List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
-//  @Test
+  @Test
   void testIncrementalCursorChanges() throws Exception {
     incrementalCursorCheck(
         COL_ID,
@@ -658,7 +658,7 @@ public abstract class JdbcSourceAcceptanceTest {
         getTestMessages());
   }
 
-//  @Test
+  @Test
   void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
@@ -726,7 +726,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
-//  @Test
+  @Test
   void testReadMultipleTablesIncrementally() throws Exception {
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName + 2;
@@ -836,7 +836,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
-//  @Test
+  @Test
   public void testIncrementalWithConcurrentInsertion() throws Exception {
     final String driverName = getDriverClass().toLowerCase();
     final String namespace = getDefaultNamespace();
