@@ -74,7 +74,10 @@ class SourceStripe(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
-        stripe.Account.retrieve(config["account_id"])
+        try:
+            stripe.Account.retrieve(config["account_id"])
+        except stripe.error.AuthenticationError as e:
+            return False, str(e)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

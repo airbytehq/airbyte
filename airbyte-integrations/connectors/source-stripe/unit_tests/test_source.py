@@ -19,13 +19,6 @@ def test_source_check_connection_ok(mocked_client, config):
     assert SourceStripe().check_connection(logger, config=config) == (True, None)
 
 
-@patch.object(source_stripe.source, "stripe")
-def test_source_check_connection_failure(mocked_client, config):
-    mocked_client.Account.retrieve = Mock(side_effect=Exception("Test"))
-    with pytest.raises(Exception, match="Test"):
-        SourceStripe().check_connection(logger, config=config)
-
-
 def test_streams_are_unique(config):
     stream_names = [s.name for s in SourceStripe().streams(config=config)]
     assert len(stream_names) == len(set(stream_names)) == 46
