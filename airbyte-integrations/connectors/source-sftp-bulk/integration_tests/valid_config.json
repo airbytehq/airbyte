@@ -7,5 +7,10 @@
   "start_date": "2021-01-01T00:00:00Z",
   "folder_path": "/files",
   "stream_name": "test_stream",
-  "file_most_recent": false
+  "file_most_recent": false,
+  "max_depth": 0,
+  "column_names": null,
+  "column_names_separator": "|",
+  "autogenerate_column_names": false,
+  "autogenerate_column_names_prefix": "col_"
 }

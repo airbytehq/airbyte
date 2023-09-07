@@ -91,9 +91,9 @@
       },
 	  "column_names": {
 		"title": "Column names (Optional)",
-		"description": "A separable string of column names. If _None_ is passed, the header will be used as column names",
+		"description": "A separable string of column names. If null is passed, the first row will be used as column names",
 		"type": "string",
-		"default": "_None_",
+		"default": null,
 		"examples": ["some_col_A|some_col_B"],
 		"order": 10
 	  },

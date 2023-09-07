@@ -53,6 +53,13 @@ def config_fixture(docker_client: docker.client.DockerClient):
         "start_date": "2021-01-01T00:00:00Z",
         "folder_path": "/files",
         "stream_name": "overwrite_stream",
+        "file_most_recent": False,
+        "max_depth": 0,
+        "column_names": None,
+        "column_names_separator": "|",
+        "autogenerate_column_names": False,
+        "autogenerate_column_names_prefix": "col_"
+
     }
 
     container = docker_client.containers.run(
@@ -344,7 +351,7 @@ def test_get_files_empty_files(
     source = SourceFtp()
     result = source.read(
         logger,
-        {**config, "folder_path": "files/empty"},
+        {**config, "folder_path": "files/json_empty"},
         configured_catalog,
         None,
     )
@@ -358,7 +365,7 @@ def test_get_files_handle_null_values(
     source = SourceFtp()
     result_iter = source.read(
         logger,
-        {**config, "folder_path": "files/null_values", "file_type": "csv"},
+        {**config, "folder_path": "files/csv_null_values", "file_type": "csv"},
         configured_catalog,
         None,
     )
