@@ -16,6 +16,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
+from bingads.v13.reporting.exceptions import ReportingDownloadException
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
 
@@ -36,6 +37,9 @@ class Client:
     environment: str = "production"
     # The time interval in milliseconds between two status polling attempts.
     report_poll_interval: int = 15000
+    # Timeout of downloading report
+    _download_timeout = 300000
+    _max_download_timeout = 600000
 
     def __init__(
         self,
@@ -96,7 +100,7 @@ class Client:
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
-    def should_give_up(self, error: Union[WebFault, URLError]) -> bool:
+    def should_give_up(self, error: Union[WebFault, URLError, ReportingDownloadException]) -> bool:
         if isinstance(error, URLError):
             if (
                 isinstance(error.reason, socket.timeout)
@@ -104,6 +108,12 @@ class Client:
                 or isinstance(error.reason, socket.gaierror)  # temporary failure in name resolution
             ):
                 return False
+        if isinstance(error, ReportingDownloadException):
+            self.logger.info("Reporting file download tracking status timeout.")
+            if self._download_timeout < self._max_download_timeout:
+                self._download_timeout = self._download_timeout + 10000
+                self.logger.info(f"Increasing time of timeout to {self._download_timeout}")
+            return False
 
         error_code = str(errorcode_of_exception(error))
         give_up = error_code not in self.retry_on_codes
@@ -123,7 +133,7 @@ class Client:
     def request(self, **kwargs: Mapping[str, Any]) -> Mapping[str, Any]:
         return backoff.on_exception(
             backoff.expo,
-            (WebFault, URLError),
+            (WebFault, URLError, ReportingDownloadException),
             max_tries=self.max_retries,
             factor=self.retry_factor,
             jitter=None,
@@ -150,6 +160,8 @@ class Client:
             service = self._get_reporting_service(customer_id=customer_id, account_id=account_id)
         else:
             service = self.get_service(service_name=service_name, customer_id=customer_id, account_id=account_id)
+        if operation_name == "download_report":
+            params["download_parameters"].timeout_in_milliseconds = self._download_timeout
         return getattr(service, operation_name)(**params)
 
     @lru_cache(maxsize=4)
