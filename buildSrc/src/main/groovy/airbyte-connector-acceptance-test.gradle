@@ -6,16 +6,9 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
         
     void apply(Project project) {
         
-        project.task('connectorAcceptanceTest') {
-            dependsOn project.build
-            dependsOn project.airbyteDocker
-            
+        def connectorAcceptanceTest = project.tasks.register('connectorAcceptanceTest') {
             if (!project.hasProperty('connectorAcceptanceTestVersion')) {
                 project.ext.connectorAcceptanceTestVersion = 'latest'
-            }
-
-            if (project.connectorAcceptanceTestVersion == 'dev') {
-                project.connectorAcceptanceTest.dependsOn(':airbyte-integrations:bases:connector-acceptance-test:airbyteDocker')
             }
 
             doFirst {
@@ -53,19 +46,12 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
 
             outputs.upToDateWhen { false }
         }
-        
-
-
-        if (project.hasProperty('airbyteDockerTest')){
-            project.connectorAcceptanceTest.dependsOn(project.airbyteDockerTest)
+        connectorAcceptanceTest.configure {
+            dependsOn project.tasks.named('assemble')
+            if (project.connectorAcceptanceTestVersion == 'dev') {
+                dependsOn project(':airbyte-integrations:bases:connector-acceptance-test').tasks.named('assemble')
+            }
         }
-
-        // make sure we create the integrationTest task once
-        if (!project.tasks.findByName('integrationTest')) {
-            project.task('integrationTest')
-        }
-
-        project.integrationTest.dependsOn(project.connectorAcceptanceTest)
     }
 }
 

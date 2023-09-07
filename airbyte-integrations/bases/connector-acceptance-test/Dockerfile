@@ -14,7 +14,7 @@ RUN curl -fsSL https://get.docker.com | sh
 
 
 RUN pip install poetry==1.5.1
-RUN poetry config virtualenvs.create false 
+RUN poetry config virtualenvs.create false
 RUN echo "Etc/UTC" > /etc/timezone
 
 WORKDIR /app
@@ -24,7 +24,7 @@ RUN poetry install --no-root --only main --no-interaction --no-ansi
 COPY . /app
 RUN poetry install --only main --no-cache --no-interaction --no-ansi
 
-LABEL io.airbyte.version=1.0.4
+LABEL io.airbyte.version=2.0.0
 LABEL io.airbyte.name=airbyte/connector-acceptance-test
 WORKDIR /test_input
 ENTRYPOINT ["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx", "--show-capture=log"]

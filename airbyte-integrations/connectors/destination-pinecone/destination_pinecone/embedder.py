@@ -39,7 +39,7 @@ COHERE_VECTOR_SIZE = 1024
 class OpenAIEmbedder(Embedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel):
         super().__init__()
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191)
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15)
 
     def check(self) -> Optional[str]:
         try:

@@ -29,14 +29,12 @@ public interface TyperDeduper {
    * caller guards all raw table writes using {@code getRawTableInsertLock().lock()} and
    * {@code getRawTableInsertLock().unlock()}. While {@code typeAndDedupe} is executing, that lock
    * will be unavailable. However, callers are free to enforce this in other ways (for example,
-   * single- threaded callers do not need to use the lock).
+   * single-threaded callers do not need to use the lock).
    *
    * @param originalNamespace The stream's namespace, as declared in the configured catalog
    * @param originalName The stream's name, as declared in the configured catalog
    */
   void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) throws Exception;
-
-  void typeAndDedupe() throws Exception;
 
   /**
    * Get the lock that should be used to synchronize inserts to the raw table for a given stream. This
@@ -54,6 +52,8 @@ public interface TyperDeduper {
    * For OVERWRITE streams where we're writing to a temp table, this is where we swap the temp table
    * into the final table.
    */
+  void typeAndDedupe() throws Exception;
+
   void commitFinalTables() throws Exception;
 
   void cleanup();

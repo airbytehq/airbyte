@@ -37,8 +37,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new StreamId(
-        escapeIdentifier(namespace),
-        escapeIdentifier(name),
+        escapeIdentifier(namespace).toUpperCase(),
+        escapeIdentifier(name).toUpperCase(),
         escapeIdentifier(rawNamespaceOverride),
         escapeIdentifier(StreamId.concatenateRawTableName(namespace, name)),
         namespace,
@@ -48,7 +48,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public ColumnId buildColumnId(final String name) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(escapeIdentifier(name), name, name);
+    return new ColumnId(escapeIdentifier(name).toUpperCase(), name, name.toUpperCase());
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -97,16 +97,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     return new StringSubstitutor(Map.of(
         "final_namespace", stream.id().finalNamespace(QUOTE),
-        "final_table_id", stream.id().finalTableId(QUOTE, suffix),
+        "final_table_id", stream.id().finalTableId(QUOTE, suffix.toUpperCase()),
         "force_create_table", forceCreateTable,
         "column_declarations", columnDeclarations)).replace(
             """
             CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
             CREATE ${force_create_table} TABLE ${final_table_id} (
-              "_airbyte_raw_id" TEXT NOT NULL,
-              "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
-              "_airbyte_meta" VARIANT NOT NULL
+              "_AIRBYTE_RAW_ID" TEXT NOT NULL,
+              "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
+              "_AIRBYTE_META" VARIANT NOT NULL
               ${column_declarations}
             );
             """);
@@ -122,14 +122,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             (map, column) -> map.put(column.getKey().name(), toDialectType(column.getValue())),
             LinkedHashMap::putAll);
     final LinkedHashMap<String, String> actualColumns = existingTable.columns().entrySet().stream()
-        .filter(column -> !JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.contains(column.getKey()))
+        .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
+            .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
     final boolean sameColumns = actualColumns.equals(intendedColumns)
-        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID))
-        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META));
+        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()))
+        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()))
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()));
 
     return sameColumns;
   }
@@ -326,7 +327,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", stream.id().rawTableId(QUOTE),
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
@@ -335,9 +336,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             INSERT INTO ${final_table_id}
             (
             ${column_list}
-              "_airbyte_meta",
-              "_airbyte_raw_id",
-              "_airbyte_extracted_at"
+              "_AIRBYTE_META",
+              "_AIRBYTE_RAW_ID",
+              "_AIRBYTE_EXTRACTED_AT"
             )
             WITH intermediate_data AS (
               SELECT
@@ -352,9 +353,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             )
             SELECT
             ${column_list}
-              OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_airbyte_meta",
-              "_airbyte_raw_id",
-              "_airbyte_extracted_at"
+              OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
+              "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
+              "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
             FROM intermediate_data;""");
   }
 
@@ -369,15 +370,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .orElse("");
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "pk_list", pkList,
         "cursor_order_clause", cursorOrderClause)).replace(
             """
             DELETE FROM ${final_table_id}
-            WHERE "_airbyte_raw_id" IN (
-              SELECT "_airbyte_raw_id" FROM (
-                SELECT "_airbyte_raw_id", row_number() OVER (
-                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_airbyte_extracted_at" DESC
+            WHERE "_AIRBYTE_RAW_ID" IN (
+              SELECT "_AIRBYTE_RAW_ID" FROM (
+                SELECT "_AIRBYTE_RAW_ID", row_number() OVER (
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_AIRBYTE_EXTRACTED_AT" DESC
                 ) as row_number FROM ${final_table_id}
               )
               WHERE row_number != 1
@@ -404,7 +405,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "pk_list", pkList,
         "pk_extracts", pkCasts,
@@ -425,14 +426,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
+        "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
             // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
             // would be painful,
             // and it only matters in a few edge cases.
             """
             DELETE FROM ${raw_table_id}
             WHERE "_airbyte_raw_id" NOT IN (
-              SELECT "_airbyte_raw_id" FROM ${final_table_id}
+              SELECT "_AIRBYTE_RAW_ID" FROM ${final_table_id}
             );
             """);
   }
@@ -452,7 +453,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String overwriteFinalTable(final StreamId stream, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "final_table", stream.finalTableId(QUOTE),
-        "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix))).replace(
+        "tmp_final_table", stream.finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
             """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS ${final_table};
@@ -463,10 +464,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String softReset(final StreamConfig stream) {
-    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
+    final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
-    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), false);
+    final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX.toUpperCase());
     return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
 
@@ -524,10 +525,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return str
         .replace("\\", "\\\\")
         .replace("'", "\\'");
-  }
-
-  public static String escapeDollarString(final String str) {
-    return str.replace("$$", "\\$\\$");
   }
 
 }

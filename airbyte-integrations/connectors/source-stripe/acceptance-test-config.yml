@@ -14,7 +14,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "3.17.0" # invoices schema fix
+          # default cursor field changed
+          disable_for_version: "3.17.4"
   basic_read:
     tests:
       - config_path: "secrets/config.json"

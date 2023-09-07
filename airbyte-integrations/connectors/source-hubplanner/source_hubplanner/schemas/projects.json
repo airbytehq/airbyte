@@ -166,19 +166,19 @@
     "categoryGroups": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null","string"]
+        "type": ["null", "string"]
       }
     },
     "customers": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null","string"]
+        "type": ["null", "string"]
       }
     },
     "budgetCategories": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null","object"]
+        "type": ["null", "object"]
       }
     },
     "private": {

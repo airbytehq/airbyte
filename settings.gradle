@@ -23,7 +23,7 @@ pluginManagement {
 // Configure the gradle enterprise plugin to enable build scans. Enabling the plugin at the top of the settings file allows the build scan to record
 // as much information as possible.
 plugins {
-    id "com.gradle.enterprise" version "3.4.1"
+    id "com.gradle.enterprise" version "3.13.1"
     id 'com.github.burrunan.s3-build-cache' version "1.5"
 }
 
@@ -86,7 +86,7 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
 
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CDK" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     include ':airbyte-commons' // this wouldn't be necessary if it wasn't from https://github.com/airbytehq/airbyte/blob/645558b74aab0b91fda1b4628b37b7095d92b4cc/build.gradle
-    include ':tools:code-generator:airbyteDocker'
+    include ':tools:code-generator'
     include ':airbyte-cdk:python'
 }
 
