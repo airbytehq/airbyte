@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector_ops"
-version = "0.2.1"
+version = "0.2.2"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -20,12 +20,10 @@ rich = "^11.0.1"
 pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
-
-[tool.poetry.group.dev.dependencies]
-pyinstrument = "^0.24.4"
+pandas = "^2.0.3"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^6.2.5"
+pytest = "^7.4.0"
 pytest-mock = "^3.10.0"
 freezegun = "^1.1.0"
 

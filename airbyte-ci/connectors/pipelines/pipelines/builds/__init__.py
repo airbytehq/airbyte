@@ -8,11 +8,11 @@ from __future__ import annotations
 import platform
 
 import anyio
+from connector_ops.utils import ConnectorLanguage
+from dagger import Platform
 from pipelines.bases import ConnectorReport, StepResult
 from pipelines.builds import common, java_connectors, python_connectors
 from pipelines.contexts import ConnectorContext
-from connector_ops.utils import ConnectorLanguage
-from dagger import Platform
 
 
 class NoBuildStepForLanguageError(Exception):

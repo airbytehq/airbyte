@@ -146,14 +146,14 @@ def test_check_connector_https_url_only_all_connectors():
         if not qa_checks.check_connector_https_url_only(connector):
             failing_connectors.append(connector)
     if failing_connectors:
-        by_release_stage = {}
+        by_ab_internal_sl = {}
         for failing_connector in failing_connectors:
-            by_release_stage.setdefault(failing_connector.release_stage, [])
-            by_release_stage[failing_connector.release_stage].append(failing_connector)
+            by_ab_internal_sl.setdefault(failing_connector.ab_internal_sl, [])
+            by_ab_internal_sl[failing_connector.ab_internal_sl].append(failing_connector)
         failure_message = ""
-        for release_stage in by_release_stage.keys():
-            failure_message += f"\nFailing {release_stage} connectors:\n"
-            for connector in by_release_stage[release_stage]:
+        for ab_internal_sl in by_ab_internal_sl.keys():
+            failure_message += f"\nFailing SL {ab_internal_sl} connectors:\n"
+            for connector in by_ab_internal_sl[ab_internal_sl]:
                 failure_message += f"\t- {connector.technical_name}\n"
         pytest.fail(failure_message)
 

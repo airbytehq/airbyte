@@ -6,10 +6,14 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 public interface TyperDeduper {
 
-  void prepareFinalTables() throws Exception;
+  void prepareTables() throws Exception;
 
   void typeAndDedupe(String originalNamespace, String originalName) throws Exception;
 
+  void typeAndDedupe() throws Exception;
+
   void commitFinalTables() throws Exception;
+
+  void cleanup();
 
 }

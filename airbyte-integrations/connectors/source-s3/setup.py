@@ -6,8 +6,8 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "pyarrow==9.0.0",
+    "airbyte-cdk>=0.51.13",
+    "pyarrow==12.0.1",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
     "dill==0.3.4",
@@ -17,8 +17,10 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest-mock~=3.6.1",
     "pytest~=6.1",
-    "pandas==1.3.1",
+    "pandas==2.0.3",
     "psutil",
     "pytest-order",
     "netifaces~=0.11.0",

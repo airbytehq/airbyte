@@ -6,17 +6,15 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, List
 
 import requests
-import yaml
 from connector_ops.utils import ConnectorLanguage
 from dagger import DaggerError
 
 if TYPE_CHECKING:
+    from dagger import Client, Container, Directory
     from pipelines.contexts import ConnectorContext
-    from dagger import Client, Directory
 
 
 LINES_TO_REMOVE_FROM_GRADLE_FILE = [
@@ -57,36 +55,7 @@ async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory
     for line in gradle_file_content.splitlines():
         if not any(line_to_remove in line for line_to_remove in LINES_TO_REMOVE_FROM_GRADLE_FILE):
             patched_gradle_file.append(line)
-    return connector_dir.with_new_file("build.gradle", "\n".join(patched_gradle_file))
-
-
-def _patch_cat_config(context: ConnectorContext, connector_dir: Directory) -> Directory:
-    """
-    Patch the acceptance-test-config.yml file of the connector under test to use the connector image with git revision tag and not dev.
-
-
-    Underlying issue:
-        acceptance-test-config.yml targets the connector image with the dev tag by default
-        in order to make sure the correct connector image is used when running the acceptance tests we tag the connector under test image with the git revision.
-        we patch the acceptance-test-config.yml file to use the connector image with the git revision tag.
-
-    Hack:
-        This function is called by patch_connector_dir, which is called every time the connector source directory is read by the pipeline.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-        connector_dir (Directory): The directory containing the acceptance-test-config.yml file to patch.
-    """
-    if not context.connector.acceptance_test_config:
-        return connector_dir
-
-    context.logger.info("Patching acceptance-test-config.yml to use connector image with git revision tag and not dev.")
-
-    patched_cat_config = deepcopy(context.connector.acceptance_test_config)
-    patched_cat_config["connector_image"] = context.connector.acceptance_test_config["connector_image"].replace(
-        ":dev", f":{context.git_revision}"
-    )
-    return connector_dir.with_new_file("acceptance-test-config.yml", yaml.safe_dump(patched_cat_config))
+    return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
 
 
 async def patch_connector_dir(context: ConnectorContext, connector_dir: Directory) -> Directory:
@@ -99,7 +68,6 @@ async def patch_connector_dir(context: ConnectorContext, connector_dir: Director
         Directory: The directory containing the patched connector.
     """
     patched_connector_dir = await _patch_gradle_file(context, connector_dir)
-    patched_connector_dir = _patch_cat_config(context, patched_connector_dir)
     return patched_connector_dir.with_timestamps(1)
 
 
@@ -140,3 +108,28 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
         .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}"])
         .sync()
     )
+
+
+def never_fail_exec(command: List[str]) -> Callable:
+    """
+    Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
+
+    Underlying issue:
+        When a classic dagger with_exec is returning a >0 exit code an ExecError is raised.
+        It's OK for the majority of our container interaction.
+        But some execution, like running CAT, are expected to often fail.
+        In CAT we don't want ExecError to be raised on container interaction because CAT might write updated secrets that we need to pull from the container after the test run.
+        The bash trick below is a hack to always return a 0 exit code but write the actual exit code to a file.
+        The file is then read by the pipeline to determine the exit code of the container.
+
+    Args:
+        command (List[str]): The command to run in the container.
+
+    Returns:
+        Callable: _description_
+    """
+
+    def never_fail_exec_inner(container: Container):
+        return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
+
+    return never_fail_exec_inner

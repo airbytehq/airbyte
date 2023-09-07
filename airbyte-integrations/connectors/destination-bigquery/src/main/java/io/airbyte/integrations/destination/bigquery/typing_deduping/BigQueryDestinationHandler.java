@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.JobConfiguration;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatistics;
+import com.google.cloud.bigquery.JobStatus;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
@@ -56,12 +57,15 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     LOGGER.info("Executing sql {}: {}", queryId, sql);
 
     /*
-    If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery doesn't do a good job of
-    inferring the query location. Pass it in explicitly.
+     * If you run a query like CREATE SCHEMA ... OPTIONS(location=foo); CREATE TABLE ...;, bigquery
+     * doesn't do a good job of inferring the query location. Pass it in explicitly.
      */
     Job job = bq.create(JobInfo.of(JobId.newBuilder().setLocation(datasetLocation).build(), QueryJobConfiguration.newBuilder(sql).build()));
-    job = job.waitFor();
-    // waitFor() seems to throw an exception if the query failed, but javadoc says we're supposed to handle this case
+    // job.waitFor() gets stuck forever in some failure cases, so manually poll the job instead.
+    while (!JobStatus.State.DONE.equals(job.getStatus().getState())) {
+      Thread.sleep(1000L);
+      job = job.reload();
+    }
     if (job.getStatus().getError() != null) {
       throw new RuntimeException(job.getStatus().getError().toString());
     }

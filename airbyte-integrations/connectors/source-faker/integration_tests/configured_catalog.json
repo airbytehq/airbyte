@@ -7,7 +7,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {
-            "id": { "type": "number" },
+            "id": { "type": "integer" },
             "created_at": {
               "type": "string",
               "format": "date-time",
@@ -45,9 +45,9 @@
         "name": "purchases",
         "json_schema": {
           "properties": {
-            "id": { "type": "number" },
-            "user_id": { "type": "number" },
-            "product_id": { "type": "number" },
+            "id": { "type": "integer" },
+            "user_id": { "type": "integer" },
+            "product_id": { "type": "integer" },
             "created_at": {
               "type": "string",
               "format": "date-time",
@@ -87,10 +87,10 @@
         "name": "products",
         "json_schema": {
           "properties": {
-            "id": { "type": "number" },
+            "id": { "type": "integer" },
             "make": { "type": "string" },
             "model": { "type": "string" },
-            "year": { "type": "number" },
+            "year": { "type": "integer" },
             "price": { "type": "number" },
             "created_at": {
               "type": "string",

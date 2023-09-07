@@ -7,6 +7,7 @@
 from typing import List
 
 import click
+from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.utils import (
@@ -16,11 +17,12 @@ from pipelines.utils import (
     get_modified_files_in_branch,
     get_modified_files_in_commit,
     get_modified_files_in_pull_request,
+    transform_strs_to_paths,
 )
-from github import PullRequest
 
 from .groups.connectors import connectors
 from .groups.metadata import metadata
+from .groups.tests import test
 
 # HELPERS
 
@@ -119,7 +121,9 @@ def airbyte_ci(
     else:
         ctx.obj["pull_request"] = None
 
-    ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
+    ctx.obj["modified_files"] = transform_strs_to_paths(
+        get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
+    )
 
     if not is_local:
         main_logger.info("Running airbyte-ci in CI mode.")
@@ -133,8 +137,10 @@ def airbyte_ci(
         main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
+
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
+airbyte_ci.add_command(test)
 
 if __name__ == "__main__":
     airbyte_ci()

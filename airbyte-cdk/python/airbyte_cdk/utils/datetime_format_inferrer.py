@@ -24,18 +24,23 @@ class DatetimeFormatInferrer:
             "%Y-%m-%d %H:%M:%S.%f%z",
             "%Y-%m-%dT%H:%M:%S.%f%z",
             "%s",
+            "%ms",
             "%d/%m/%Y %H:%M",
             "%Y-%m",
             "%d-%m-%Y",
         ]
-        self._timestamp_heuristic_range = range(1_000_000_000, 2_000_000_000)
+        self._timestamp_heuristic_ranges = [range(1_000_000_000, 2_000_000_000), range(1_000_000_000_000, 2_000_000_000_000)]
 
     def _can_be_datetime(self, value: Any) -> bool:
-        """Checks if the value can be a datetime. This is the case if the value is a string or an integer between 1_000_000_000 and 2_000_000_000. This is separate from the format check for performance reasons"""
-        if isinstance(value, str) and (not value.isdecimal() or int(value) in self._timestamp_heuristic_range):
-            return True
-        if isinstance(value, int) and value in self._timestamp_heuristic_range:
-            return True
+        """Checks if the value can be a datetime.
+        This is the case if the value is a string or an integer between 1_000_000_000 and 2_000_000_000 for seconds
+        or between 1_000_000_000_000 and 2_000_000_000_000 for milliseconds.
+        This is separate from the format check for performance reasons"""
+        for timestamp_range in self._timestamp_heuristic_ranges:
+            if isinstance(value, str) and (not value.isdecimal() or int(value) in timestamp_range):
+                return True
+            if isinstance(value, int) and value in timestamp_range:
+                return True
         return False
 
     def _matches_format(self, value: Any, format: str) -> bool:

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "0.1.0"
+version = "1.1.1"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -28,5 +28,11 @@ sentry-sdk = "^1.28.1"
 pytest = "^6.2.5"
 pytest-mock = "^3.10.0"
 
+
+[tool.poetry.group.dev.dependencies]
+freezegun = "^1.2.2"
+pytest-cov = "^4.1.0"
+
 [tool.poetry.scripts]
-airbyte-ci = "pipelines.commands.airbyte_ci:airbyte_ci"
+airbyte-ci-internal = "pipelines.commands.airbyte_ci:airbyte_ci"
+airbyte-ci =  "pipelines.dagger_run:main"

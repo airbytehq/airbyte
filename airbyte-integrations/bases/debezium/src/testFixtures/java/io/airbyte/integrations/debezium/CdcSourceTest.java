@@ -317,11 +317,16 @@ public abstract class CdcSourceTest {
 
     assertNotNull(targetPosition);
     recordMessages.forEach(record -> {
-      assertEquals(extractPosition(record.getData()), targetPosition);
+      compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(targetPosition, record);
     });
 
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
     assertExpectedStateMessages(stateMessages);
+  }
+
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
+                                                                                         final AirbyteRecordMessage record) {
+    assertEquals(extractPosition(record.getData()), targetPosition);
   }
 
   @Test

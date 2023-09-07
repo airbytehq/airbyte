@@ -10,8 +10,6 @@ from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
 import pendulum
-import requests
-from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.exceptions import ReadException
@@ -53,19 +51,8 @@ class SessionTokenProvider(TokenProvider):
             self._refresh()
 
     def _refresh(self) -> None:
-        response = self.login_requester.send_request()
-        if response is None:
-            raise ReadException("Failed to get session token, response got ignored by requester")
-        self._log_response(response)
-        session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
-        if self.expiration_duration is not None:
-            self._next_expiration_time = pendulum.now() + self.expiration_duration
-        self._token = session_token
-
-    def _log_response(self, response: requests.Response) -> None:
-        self.message_repository.log_message(
-            Level.DEBUG,
-            lambda: format_http_message(
+        response = self.login_requester.send_request(
+            log_formatter=lambda response: format_http_message(
                 response,
                 "Login request",
                 "Obtains session token",
@@ -73,6 +60,12 @@ class SessionTokenProvider(TokenProvider):
                 is_auxiliary=True,
             ),
         )
+        if response is None:
+            raise ReadException("Failed to get session token, response got ignored by requester")
+        session_token = dpath.util.get(self._decoder.decode(response), self.session_token_path)
+        if self.expiration_duration is not None:
+            self._next_expiration_time = pendulum.now() + self.expiration_duration
+        self._token = session_token
 
 
 @dataclass

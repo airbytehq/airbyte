@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import importlib.metadata
 import os
 
@@ -12,8 +13,17 @@ def initialize():
     if "SENTRY_DSN" in os.environ:
         sentry_sdk.init(
             dsn=os.environ.get("SENTRY_DSN"),
+            before_send=before_send,
             release=f"pipelines@{importlib.metadata.version('pipelines')}",
         )
+
+
+def before_send(event, hint):
+    # Ignore logged errors that do not contain an exception
+    if "log_record" in hint and "exc_info" not in hint:
+        return None
+
+    return event
 
 
 def with_step_context(func):
@@ -42,7 +52,7 @@ def with_step_context(func):
                         "technical_name": connector.technical_name,
                         "language": connector.language,
                         "version": connector.version,
-                        "release_stage": connector.release_stage,
+                        "support_level": connector.support_level,
                     },
                 )
 

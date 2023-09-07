@@ -128,6 +128,9 @@
     {% if dagger_logs_url %}
     <li><b><a href="{{ dagger_logs_url }}">Dagger logs</a></b></li>
     {% endif %}
+    {% if dagger_cloud_url %}
+    <li><b><a href="{{ dagger_cloud_url }}">Dagger Cloud UI</a></b></li>
+    {% endif %}
   </ul>
   <h2>Summary</h2>
   <table>
@@ -169,6 +172,6 @@
     </div>
   </div>
   {% endfor %}
-  <p style="margin-top: 50px"><em>These reports are generated from <a href="https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/tests/templates/test_report.html.j2">this code</a>, please reach out to the Connector Operations team for support.</em></p>
+  <p style="margin-top: 50px"><em>These reports are generated from <a href="https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/tests/templates/test_report.html.j2">this code</a>, please reach out to the Connector Operations team for support.</em></p>
 </body>
 </html>

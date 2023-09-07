@@ -7,7 +7,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 public class NoopTyperDeduper implements TyperDeduper {
 
   @Override
-  public void prepareFinalTables() throws Exception {
+  public void prepareTables() throws Exception {
 
   }
 
@@ -18,6 +18,16 @@ public class NoopTyperDeduper implements TyperDeduper {
 
   @Override
   public void commitFinalTables() throws Exception {
+
+  }
+
+  @Override
+  public void typeAndDedupe() throws Exception {
+
+  }
+
+  @Override
+  public void cleanup() {
 
   }
 

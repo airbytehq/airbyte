@@ -1,11 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pytest
 
+import pathlib
+
+import pytest
 from click.testing import CliRunner
 from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo
+from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydantic import BaseModel, ValidationError, error_wrappers
 
 
@@ -97,6 +100,26 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
         commands.click.secho.assert_has_calls([mocker.call(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")])
         # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
         assert result.exit_code == 5
+
+
+def test_upload_prerelease(mocker, valid_metadata_yaml_files):
+    runner = CliRunner()
+    mocker.patch.object(commands.click, "secho")
+    mocker.patch.object(commands, "upload_metadata_to_gcs")
+
+    prerelease_tag = "0.3.0-dev.6d33165120"
+    bucket = "my-bucket"
+    metadata_file_path = valid_metadata_yaml_files[0]
+    validator_opts = ValidatorOptions(prerelease_tag=prerelease_tag)
+
+    upload_info = mock_metadata_upload_info(False, True, False, metadata_file_path)
+    commands.upload_metadata_to_gcs.return_value = upload_info
+    result = runner.invoke(
+        commands.upload, [metadata_file_path, bucket, "--prerelease", prerelease_tag]
+    )  # Using valid_metadata_yaml_files[0] as SA because it exists...
+
+    commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
+    assert result.exit_code == 0
 
 
 @pytest.mark.parametrize(

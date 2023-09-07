@@ -6,8 +6,7 @@ from enum import Enum
 
 
 class FileBasedSourceError(Enum):
-    EMPTY_STREAM = "No files were identified in the stream. This may be because there are no files in the specified container, or because your glob patterns did not match any files. Please verify that your source contains files and that your glob patterns are not overly strict."
-    EXTENSION_MISMATCH = "The file type that you specified for this stream does not agree with the extension of one or more files in the stream. You may need to modify your glob patterns."
+    EMPTY_STREAM = "No files were identified in the stream. This may be because there are no files in the specified container, or because your glob patterns did not match any files. Please verify that your source contains files last modified after the start_date and that your glob patterns are not overly strict."
     GLOB_PARSE_ERROR = (
         "Error parsing glob pattern. Please refer to the glob pattern rules at https://facelessuser.github.io/wcmatch/glob/#split."
     )
@@ -55,6 +54,10 @@ class MissingSchemaError(BaseFileBasedSourceError):
     pass
 
 
+class NoFilesMatchingError(BaseFileBasedSourceError):
+    pass
+
+
 class RecordParseError(BaseFileBasedSourceError):
     pass
 
@@ -72,4 +75,8 @@ class UndefinedParserError(BaseFileBasedSourceError):
 
 
 class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
+    pass
+
+
+class ErrorListingFiles(BaseFileBasedSourceError):
     pass

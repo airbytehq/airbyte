@@ -73,7 +73,6 @@ def test_http_requester():
     assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.interpret_response_status(requests.Response()) == response_status
-    assert {} == requester.request_kwargs(stream_state={}, stream_slice=None, next_page_token=None)
 
 
 @pytest.mark.parametrize(
@@ -212,6 +211,10 @@ def test_send_request_data_json(provider_data, provider_json, param_data, param_
         ("field=value", None, "field=value", ValueError, None),
         (None, "field=value", "field=value", ValueError, None),
         ("field=value", "field=value", "field=value", ValueError, None),
+        # assert body string and mapping from different source fails
+        ("field=value", {"abc": "def"}, None, ValueError, None),
+        ({"abc": "def"}, "field=value", None, ValueError, None),
+        ("field=value", None, {"abc": "def"}, ValueError, None),
     ]
 )
 def test_send_request_string_data(provider_data, param_data, authenticator_data, expected_exception, expected_body):
@@ -558,3 +561,42 @@ def test_duplicate_request_params_are_deduped(path, params, expected_url):
     else:
         prepared_request = requester._create_prepared_request(path=path, params=params)
         assert prepared_request.url == expected_url
+
+
+@pytest.mark.parametrize(
+    "should_log, status_code, should_throw", [
+        (True, 200, False),
+        (True, 400, False),
+        (True, 500, True),
+        (False, 200, False),
+        (False, 400, False),
+        (False, 500, True),
+    ]
+)
+def test_log_requests(should_log, status_code, should_throw):
+    repository = MagicMock()
+    requester = HttpRequester(
+        name="name",
+        url_base="https://test_base_url.com",
+        path="/",
+        http_method=HttpMethod.GET,
+        request_options_provider=None,
+        config={},
+        parameters={},
+        message_repository=repository,
+        disable_retries=True
+    )
+    requester._session.send = MagicMock()
+    response = requests.Response()
+    response.status_code = status_code
+    requester._session.send.return_value = response
+    formatter = MagicMock()
+    formatter.return_value = "formatted_response"
+    if should_throw:
+        with pytest.raises(DefaultBackoffException):
+            requester.send_request(log_formatter=formatter if should_log else None)
+    else:
+        requester.send_request(log_formatter=formatter if should_log else None)
+    if should_log:
+        assert repository.log_message.call_args_list[0].args[1]() == "formatted_response"
+        formatter.assert_called_once_with(response)

@@ -9,6 +9,8 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.Collection;
+import java.util.List;
 
 public interface Source extends Integration {
 
@@ -35,5 +37,22 @@ public interface Source extends Integration {
    * @throws Exception - any exception.
    */
   AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
+
+  /**
+   * Returns a collection of iterators of messages pulled from the source, each representing a
+   * "stream".
+   *
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
+   * @param catalog - schema of the incoming messages.
+   * @param state - state of the incoming messages.
+   * @return The collection of {@link AutoCloseableIterator} instances that produce messages for each
+   *         configured "stream"
+   * @throws Exception - any exception
+   */
+  default Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
+      throws Exception {
+    return List.of(read(config, catalog, state));
+  }
 
 }

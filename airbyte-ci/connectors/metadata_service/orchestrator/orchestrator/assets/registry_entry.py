@@ -1,26 +1,31 @@
-import yaml
-import json
-import pandas as pd
-import os
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import copy
-
-from pydantic import ValidationError
-from google.cloud import storage
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-from dagster import DynamicPartitionsDefinition, asset, OpExecutionContext, Output, MetadataValue, AutoMaterializePolicy
-from pydash.objects import get
-
-from metadata_service.spec_cache import get_cached_spec, list_cached_specs
-from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
-from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
-
-from orchestrator.utils.object_helpers import deep_copy_params
-from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
-from orchestrator.config import get_public_url_for_gcs_file, VALID_REGISTRIES, MAX_METADATA_PARTITION_RUN_REQUEST
-
+import json
+import os
 from typing import List, Optional, Tuple, Union
+
+import orchestrator.hacks as HACKS
+import pandas as pd
+import sentry_sdk
+import yaml
+from dagster import AutoMaterializePolicy, DynamicPartitionsDefinition, MetadataValue, OpExecutionContext, Output, asset
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from google.cloud import storage
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.spec_cache import get_cached_spec, list_cached_specs
+from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
+from orchestrator.logging import sentry
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.dagster_helpers import OutputDataFrame
+from orchestrator.utils.object_helpers import deep_copy_params
+from pydantic import ValidationError
+from pydash.objects import get
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
@@ -39,6 +44,7 @@ class MissingCachedSpecError(Exception):
 # HELPERS
 
 
+@sentry_sdk.trace
 def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataFrame) -> dict:
     cached_connector_version = {
         (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
@@ -115,6 +121,30 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
 
 @deep_copy_params
+def apply_ab_internal_defaults(metadata_data: dict) -> dict:
+    """Apply ab_internal defaults to the metadata data field.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+
+    Returns:
+        dict: The metadata data field with the ab_internal defaults applied.
+    """
+    default_ab_internal_values = {
+        "sl": 100,
+        "ql": 100,
+    }
+
+    existing_ab_internal_values = metadata_data.get("ab_internal") or {}
+    ab_internal_values = {**default_ab_internal_values, **existing_ab_internal_values}
+
+    metadata_data["ab_internal"] = ab_internal_values
+
+    return metadata_data
+
+
+@deep_copy_params
+@sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
 
@@ -153,9 +183,12 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data["custom"] = False
     overridden_metadata_data["public"] = True
 
-    # if there is no releaseStage, set it to "alpha"
-    if not overridden_metadata_data.get("releaseStage"):
-        overridden_metadata_data["releaseStage"] = "alpha"
+    # if there is no supportLevel, set it to "community"
+    if not overridden_metadata_data.get("supportLevel"):
+        overridden_metadata_data["supportLevel"] = "community"
+
+    # apply ab_internal defaults
+    overridden_metadata_data = apply_ab_internal_defaults(overridden_metadata_data)
 
     # apply generated fields
     overridden_metadata_data["iconUrl"] = metadata_entry.icon_url
@@ -164,6 +197,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     return overridden_metadata_data
 
 
+@sentry_sdk.trace
 def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistryEntry:
     json_string = registry_entry_blob.download_as_string().decode("utf-8")
     registry_entry_dict = json.loads(json_string)
@@ -189,10 +223,10 @@ def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_
         raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
 
     metadata_folder = os.path.dirname(metadata_path)
-    print(f"metadata_folder: {metadata_folder}")
     return os.path.join(metadata_folder, registry_name)
 
 
+@sentry_sdk.trace
 def persist_registry_entry_to_json(
     registry_entry: PolymorphicRegistryEntry,
     registry_name: str,
@@ -213,9 +247,11 @@ def persist_registry_entry_to_json(
     registry_entry_write_path = get_registry_entry_write_path(metadata_entry, registry_name)
     registry_entry_json = registry_entry.json(exclude_none=True)
     file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
+    HACKS.write_registry_to_overrode_file_paths(registry_entry, registry_name, metadata_entry, registry_directory_manager)
     return file_handle
 
 
+@sentry_sdk.trace
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
     cached_specs: OutputDataFrame,
@@ -240,6 +276,7 @@ def generate_and_persist_registry_entry(
     registry_model = ConnectorModel.parse_obj(registry_entry_with_spec)
 
     file_handle = persist_registry_entry_to_json(registry_model, registry_name, metadata_entry, metadata_directory_manager)
+
     return file_handle.public_url
 
 
@@ -281,6 +318,7 @@ def delete_registry_entry(registry_name, registry_entry: LatestMetadataEntry, me
     return file_handle.public_url if file_handle else None
 
 
+@sentry_sdk.trace
 def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[MetadataDefinition]:
     """
     Safely parse the metadata definition from the given metadata entry.
@@ -304,12 +342,13 @@ def safe_parse_metadata_definition(metadata_blob: storage.Blob) -> Optional[Meta
 
 
 @asset(
-    required_resource_keys={"all_metadata_file_blobs"},
+    required_resource_keys={"slack", "all_metadata_file_blobs"},
     group_name=GROUP_NAME,
     partitions_def=metadata_partitions_def,
     output_required=False,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
+@sentry.instrument_asset_op
 def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadataEntry]]:
     """Parse and compute the LatestMetadataEntry for the given metadata file."""
     etag = context.partition_key
@@ -322,7 +361,12 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
         raise Exception(f"Could not find blob with etag {etag}")
 
     metadata_file_path = matching_blob.name
-    context.log.info(f"Found metadata file with path {metadata_file_path} for etag {etag}")
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.METADATA_VALIDATION,
+        StageStatus.IN_PROGRESS,
+        f"Found metadata file with path {metadata_file_path} for etag {etag}",
+    )
 
     # read the matching_blob into a metadata definition
     metadata_def = safe_parse_metadata_definition(matching_blob)
@@ -336,7 +380,12 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
 
     # return only if the metadata definition is valid
     if not metadata_def:
-        context.log.warn(f"Could not parse metadata definition for {metadata_file_path}")
+        PublishConnectorLifecycle.log(
+            context,
+            PublishConnectorLifecycleStage.METADATA_VALIDATION,
+            StageStatus.FAILED,
+            f"Could not parse metadata definition for {metadata_file_path}, dont panic, this can be expected for old metadata files",
+        )
         return Output(value=None, metadata=dagster_metadata)
 
     icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
@@ -355,15 +404,23 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
         file_path=metadata_file_path,
     )
 
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.METADATA_VALIDATION,
+        StageStatus.SUCCESS,
+        f"Successfully parsed metadata definition for {metadata_file_path}",
+    )
+
     return Output(value=metadata_entry, metadata=dagster_metadata)
 
 
 @asset(
-    required_resource_keys={"root_metadata_directory_manager"},
+    required_resource_keys={"slack", "root_metadata_directory_manager"},
     group_name=GROUP_NAME,
     partitions_def=metadata_partitions_def,
     auto_materialize_policy=AutoMaterializePolicy.eager(max_materializations_per_minute=MAX_METADATA_PARTITION_RUN_REQUEST),
 )
+@sentry.instrument_asset_op
 def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestMetadataEntry]) -> Output[Optional[dict]]:
     """
     Generate the registry entry files from the given metadata file, and persist it to GCS.
@@ -371,6 +428,13 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
     if not metadata_entry:
         # if the metadata entry is invalid, return an empty dict
         return Output(metadata={"empty_metadata": True}, value=None)
+
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
+        StageStatus.IN_PROGRESS,
+        f"Generating registry entry for {metadata_entry.file_path}",
+    )
 
     cached_specs = pd.DataFrame(list_cached_specs())
 
@@ -382,10 +446,15 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         for registry_name in enabled_registries
     }
 
-    deleted_registry_entries = {
-        registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
-        for registry_name in disabled_registries
-    }
+    # Only delete the registry entry if it is the latest version
+    # This is to preserve any registry specific overrides even if they were removed
+    deleted_registry_entries = {}
+    if metadata_entry.is_latest_version_path:
+        context.log.debug(f"Deleting previous registry entries enabled {metadata_entry.file_path}")
+        deleted_registry_entries = {
+            registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
+            for registry_name in disabled_registries
+        }
 
     dagster_metadata_persist = {
         f"create_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in persisted_registry_entries.items()
@@ -399,5 +468,23 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         **dagster_metadata_persist,
         **dagster_metadata_delete,
     }
+
+    # Log the registry entries that were created
+    for registry_name, registry_url in persisted_registry_entries.items():
+        PublishConnectorLifecycle.log(
+            context,
+            PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
+            StageStatus.SUCCESS,
+            f"Successfully generated {registry_name} registry entry for {metadata_entry.file_path} at {registry_url}",
+        )
+
+    # Log the registry entries that were deleted
+    for registry_name, registry_url in deleted_registry_entries.items():
+        PublishConnectorLifecycle.log(
+            context,
+            PublishConnectorLifecycleStage.REGISTRY_ENTRY_GENERATION,
+            StageStatus.SUCCESS,
+            f"Successfully deleted {registry_name} registry entry for {metadata_entry.file_path}",
+        )
 
     return Output(metadata=dagster_metadata, value=persisted_registry_entries)

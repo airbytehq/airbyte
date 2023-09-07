@@ -507,6 +507,7 @@ class ModelToComponentFactory:
 
         return DatetimeBasedCursor(
             cursor_field=model.cursor_field,
+            cursor_datetime_formats=model.cursor_datetime_formats if model.cursor_datetime_formats else [],
             cursor_granularity=model.cursor_granularity,
             datetime_format=model.datetime_format,
             end_datetime=end_datetime,
@@ -695,7 +696,9 @@ class ModelToComponentFactory:
             http_method=model_http_method,
             request_options_provider=request_options_provider,
             config=config,
+            disable_retries=self._disable_retries,
             parameters=model.parameters or {},
+            message_repository=self._message_repository,
         )
 
     @staticmethod
@@ -912,8 +915,6 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
                 parameters=model.parameters or {},
-                disable_retries=self._disable_retries,
-                message_repository=self._message_repository,
             )
         return SimpleRetriever(
             name=name,
@@ -925,8 +926,6 @@ class ModelToComponentFactory:
             cursor=cursor,
             config=config,
             parameters=model.parameters or {},
-            disable_retries=self._disable_retries,
-            message_repository=self._message_repository,
         )
 
     @staticmethod
