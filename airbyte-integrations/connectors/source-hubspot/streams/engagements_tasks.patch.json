@@ -6,6 +6,16 @@
         "type": ["null", "integer", "string"],
         "format": "integer"
       }
-    }
+    },
+    "tickets": {
+      "items": {
+        "type": [
+          "null",
+          "string",
+          "integer"
+        ]
+      },
+      "format": "integer"
   }
+}
 }
