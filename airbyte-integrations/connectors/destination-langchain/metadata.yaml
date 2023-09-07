@@ -22,9 +22,10 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  breakingChanges:
-    0.1.0:
-      message: >
-        This version changes the way record ids are tracked internally. If you are using a stream in **append-dedup** mode, you need to reset the connection after doing the upgrade to avoid duplicates.
-      upgradeDeadline: "2023-09-18"
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: >
+          This version changes the way record ids are tracked internally. If you are using a stream in **append-dedup** mode, you need to reset the connection after doing the upgrade to avoid duplicates.
+        upgradeDeadline: "2023-09-18"
 metadataSpecVersion: "1.0"

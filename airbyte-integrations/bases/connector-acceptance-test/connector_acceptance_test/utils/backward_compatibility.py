@@ -57,9 +57,7 @@ class BaseDiffChecker(ABC):
         Detect field value change: "str" -> "int" / "date-time" -> "date" / "timestamp_without_timezone" -> "timestamp_with_timezone"
         """
         diffs = diff.get("values_changed", set()) | diff.get("dictionary_item_added", set()) | diff.get("dictionary_item_removed", set())
-        field_value_changes = [
-            change for change in diffs if {"properties", field}.issubset(change.path(output_format="list"))
-        ]
+        field_value_changes = [change for change in diffs if {"properties", field}.issubset(change.path(output_format="list"))]
         if field_value_changes:
             self._raise_error(f"The '{field}' field value was changed.", diff)
 
