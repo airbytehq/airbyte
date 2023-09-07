@@ -420,28 +420,22 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors;
-    if (streamColumns.isEmpty()) {
-      // ARRAY_CONCAT doesn't like having an empty argument list, so handle that case separately
-      columnErrors = "[]";
-    } else {
-      columnErrors = "ARRAY_CONCAT(" + streamColumns.entrySet().stream().map(
-          col -> new StringSubstitutor(Map.of(
-              "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
-              "col_type", toDialectType(col.getValue()).name(),
-              "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-                  // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
-                  // and necessary because json_query
-                  """
-                  CASE
-                    WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
-                      AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
-                      AND (${json_extract} IS NULL)
-                      THEN ['Problem with `${raw_col_name}`']
-                    ELSE []
-                  END"""))
-          .collect(joining(",\n")) + ")";
-    }
+    final String columnErrors = "[" + streamColumns.entrySet().stream().map(
+        col -> new StringSubstitutor(Map.of(
+            "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
+            "col_type", toDialectType(col.getValue()).name(),
+            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+                // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                // and necessary because json_query
+                """
+                CASE
+                  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
+                    AND (${json_extract} IS NULL)
+                    THEN 'Problem with `${raw_col_name}`'
+                  ELSE NULL
+                END"""))
+        .collect(joining(",\n")) + "]";
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -472,7 +466,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             WITH intermediate_data AS (
               SELECT
             ${column_casts}
-              ${column_errors} as _airbyte_cast_errors,
+              ${column_errors} AS column_errors,
               _airbyte_raw_id,
               _airbyte_extracted_at
               FROM ${raw_table_id}
@@ -482,7 +476,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             )
             SELECT
             ${column_list}
-              to_json(struct(_airbyte_cast_errors AS errors)) AS _airbyte_meta,
+              to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
               _airbyte_raw_id,
               _airbyte_extracted_at
             FROM intermediate_data;""");

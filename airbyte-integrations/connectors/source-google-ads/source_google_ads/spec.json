@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",
     "type": "object",
-    "required": ["credentials", "start_date", "customer_id"],
+    "required": ["credentials", "customer_id"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -67,7 +67,7 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated.",
+        "description": "UTC date in the format YYYY-MM-DD. Any data before this date will not be replicated. (Default value of two years ago is used if not set)",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
         "examples": ["2017-01-25"],
@@ -77,7 +77,7 @@
       "end_date": {
         "type": "string",
         "title": "End Date",
-        "description": "UTC date in the format YYYY-MM-DD. Any data after this date will not be replicated.",
+        "description": "UTC date in the format YYYY-MM-DD. Any data after this date will not be replicated. (Default value of today is used if not set)",
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
         "examples": ["2017-01-30"],
