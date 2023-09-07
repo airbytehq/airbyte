@@ -35,9 +35,9 @@ acceptance_tests:
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
-              bypass_reason: "can be updated by platform"
+              bypass_reason: "can be updated by Google Ads"
             - name: customer.optimization_score
-              bypass_reason: "value can be changed because it is real-life recommendation from Amazon"
+              bypass_reason: "value can be changed by Google Ads"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -96,6 +96,7 @@ class GoogleAdsStream(Stream, ABC):
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
             record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            # value can be integer or float so change type to float
             if self.name == "accounts" and isinstance(record.get("customer.optimization_score_weight"), int):
                 record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
             yield record
