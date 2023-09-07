@@ -58,7 +58,8 @@ def chunk_date_range(
     Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
     start_date = pendulum.parse(start_date, tz=time_zone)
-    end_date = pendulum.parse(end_date, tz=time_zone)
+    today = pendulum.today(tz=time_zone)
+    end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
     if days_of_data_storage:
@@ -530,8 +531,12 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return self.parent_stream.current_state(customer_id, default)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
-        slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, stream_state)
-        yield from slices_generator
+        if stream_state:
+            slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, stream_state)
+            yield from slices_generator
+        else:
+            for customer in self.customers:
+                yield {"customer_id": customer.id, "updated_ids": set(), "deleted_ids": set(), "id_to_time": dict()}
 
     def read_parent_stream(
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
