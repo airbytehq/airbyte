@@ -103,7 +103,7 @@ public class MongoDbCdcInitializer {
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
     final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, MongoDbDebeziumPropertiesManager.normalizeName(databaseName), replicaSet);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName, replicaSet);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
         : Jsons.clone(stateManager.getCdcState().state());
     final Optional<BsonDocument> savedOffset = mongoDbDebeziumStateUtil.savedOffset(

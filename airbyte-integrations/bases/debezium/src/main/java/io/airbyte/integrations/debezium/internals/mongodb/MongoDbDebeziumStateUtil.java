@@ -212,11 +212,12 @@ public class MongoDbDebeziumStateUtil {
      * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
      */
     final Map<String, String> sourceInfoMap = new LinkedHashMap<>();
+    final String normalizedServerId = MongoDbDebeziumPropertiesManager.normalizeName(serverId);
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
-    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, serverId);
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, normalizedServerId);
 
     final List<Object> key = new LinkedList<>();
-    key.add(serverId);
+    key.add(normalizedServerId);
     key.add(sourceInfoMap);
     return key;
   }
