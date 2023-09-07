@@ -51,6 +51,7 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"
+        timeout_seconds: 3600
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         threshold_days: 14
         future_state:
