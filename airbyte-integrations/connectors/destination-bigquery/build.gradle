@@ -7,7 +7,7 @@ plugins {
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
-                                 '-XX:NativeMemoryTracking=detail',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:GCLockerRetryAllocationCount=100',
             '-Djava.rmi.server.hostname=localhost',
             '-Dcom.sun.management.jmxremote=true',
             '-Dcom.sun.management.jmxremote.port=6000',
