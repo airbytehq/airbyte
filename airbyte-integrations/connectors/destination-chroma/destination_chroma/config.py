@@ -41,8 +41,7 @@ class ChromaIndexingConfigModel(BaseModel):
     auth_method: Union[PersistentMode, HttpMode] = Field(
         ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=0
     )
-    # vector_field: str = Field(title="Vector Field", description="The field in the entity that contains the vector", default="vector")
-    embedded_text_field: str = Field(title="Embedded Text Field", description="The field in the entity that contains the embedded text", default="text")
+    collection_name: str = Field(..., title="Collection Name", description="The collection to load data into", order=3)
 
     class Config:
         title = "Indexing"

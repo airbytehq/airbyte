@@ -4,7 +4,7 @@
 
 import re
 
-def convert_to_valid_collection_name(stream_name):
+def validate_collection_name(stream_name):
     if is_valid_collection_name(stream_name):
         return stream_name
     
