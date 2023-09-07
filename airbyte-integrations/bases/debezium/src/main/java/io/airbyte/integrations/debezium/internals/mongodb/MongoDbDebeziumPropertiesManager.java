@@ -12,7 +12,6 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -45,9 +44,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
                                           final ConfiguredAirbyteCatalog catalog,
-                                          final AirbyteFileOffsetBackingStore offsetManager,
-                                          final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    super(properties, config, catalog, offsetManager, schemaHistoryManager);
+                                          final AirbyteFileOffsetBackingStore offsetManager) {
+    super(properties, config, catalog, offsetManager, Optional.empty());
   }
 
   @Override
