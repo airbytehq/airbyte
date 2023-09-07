@@ -1,4 +1,5 @@
 import gzip
+import hashlib
 import json
 import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -140,6 +141,8 @@ class KYVEStream(HttpStream, IncrementalMixin):
             storage_id = bundle.get("storage_id")
             storage_provider_id = bundle.get("storage_provider_id")
 
+            # 1: Arweave, 2: Bundle -> both use arweave.net
+            # 3: KYVE-Storage-Provider -> storage.kyve.network
             if storage_provider_id != "3":
                 # retrieve file from Arweave
                 response_from_storage_provider = requests.get(f"https://arweave.net/{storage_id}")
@@ -147,21 +150,20 @@ class KYVEStream(HttpStream, IncrementalMixin):
                 response_from_storage_provider = requests.get(f"https://storage.kyve.network/{storage_id}")
 
             if not response_from_storage_provider.ok:
-                logger.error(f"Reading bundle {storage_id} with status code {response_from_storage_provider.status_code}")
+                logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
                 # todo future: this is a temporary fix until the bugs with Arweave are solved
                 continue
             try:
                 decompressed = gzip.decompress(response_from_storage_provider.content)
             except gzip.BadGzipFile as e:
                 logger.error(f"Decompressing bundle {storage_id} failed with '{e}'")
-                # todo future: this is a temporary fix until the bugs with Arweave are solved
-                # todo future: usually this exception should fail
                 continue
 
-            # todo future: fail on incorrect hash, enabled after regenesis
-            # bundle_hash = bundle.get("bundle_hash")
-            # local_hash = hmac.new(b"", msg=decompressed, digestmod=hashlib.sha256).digest().hex()
-            # assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
+            # Compare hash of the downloaded data from Arweave with the hash from KYVE.
+            # This is required to make sure, that the Arweave Gateway provided the correct data.
+            bundle_hash = bundle.get("data_hash")
+            local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
+            assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
             decompressed_as_json = json.loads(decompressed)
 
             # If schema is supported, use flattened version
