@@ -214,8 +214,7 @@ jobs:
       - changes
       - format
     runs-on: ubuntu-latest
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.python_cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+    if: always()
     name: "Airbyte Python CDK: Build"
     timeout-minutes: 90
     steps:
@@ -256,6 +255,12 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
+
+      - name: Print cached venv 1
+        run: ls -al airbyte-cdk/python/
+
+      - name: Print cached venv 2
+        run: ls -al airbyte-cdk/python/.venv
 
       - name: Build
         uses: Wandalen/wretry.action@v1.0.42

@@ -44,4 +44,4 @@ runs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           **/.venv
-        key: ${{ inputs.cache-key }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ inputs.cache-key }}-Linux-598629cef2cbd02f48363c97a8c2ae9dacaa5a1cc864bff924f9bc929199ff84-0ecd6c3153bdf6e7e5693a8f341b2fe8c7f26544f4800c2780d273f236414309-dd44506a54bd576b538753be3d1c222bce70d5534efe80ef1c6e5b260fd6945c-e984f78be8ff889dff4531e97de0d3f6008a9e203317526133f0b2cab25e72c3
