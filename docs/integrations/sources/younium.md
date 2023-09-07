@@ -43,5 +43,5 @@ The Younium source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------- |
-| 0.2.0   | 2023-09-09 | [](https://github.com/airbytehq/airbyte/pull/) | 🎉 Add streams accounts and bookings |
+| 0.2.0   | 2023-09-09 | [30258](https://github.com/airbytehq/airbyte/pull/30258) | 🎉 Add streams accounts and bookings |
 | 0.1.0   | 2022-11-09 | [18758](https://github.com/airbytehq/airbyte/pull/18758) | 🎉 New Source: Younium [python cdk]  |
