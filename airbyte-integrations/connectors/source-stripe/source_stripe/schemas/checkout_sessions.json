@@ -213,6 +213,7 @@
         }
       }
     },
-    "url": { "type": ["null", "string"] }
+    "url": { "type": ["null", "string"] },
+    "updated": { "type": ["null", "integer"] }
   }
 }

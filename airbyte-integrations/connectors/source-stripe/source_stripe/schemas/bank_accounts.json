@@ -40,6 +40,9 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "updated": {
+      "type": ["null", "integer"]
     }
   }
 }

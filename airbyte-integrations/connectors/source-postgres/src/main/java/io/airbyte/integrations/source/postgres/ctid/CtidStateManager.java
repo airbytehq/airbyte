@@ -15,9 +15,8 @@ public abstract class CtidStateManager {
 
   public static final long CTID_STATUS_VERSION = 2;
   public static final String STATE_TYPE_KEY = "state_type";
-  public static final String STATE_VER_KEY = "version";
 
-  private final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
+  protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;
@@ -29,10 +28,10 @@ public abstract class CtidStateManager {
 
   public static boolean validateRelationFileNode(final CtidStatus ctidstatus,
                                                  final AirbyteStreamNameNamespacePair pair,
-                                                 final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+                                                 final FileNodeHandler fileNodeHandler) {
 
-    if (fileNodes.containsKey(pair)) {
-      final Long fileNode = fileNodes.get(pair);
+    if (fileNodeHandler.hasFileNode(pair)) {
+      final Long fileNode = fileNodeHandler.getFileNode(pair);
       return Objects.equals(ctidstatus.getRelationFilenode(), fileNode);
     }
     return true;
