@@ -18,8 +18,8 @@ data:
   license: MIT
   name: Typeform
   releaseDate: 2021-07-10
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   tags:
     - language:low-code
