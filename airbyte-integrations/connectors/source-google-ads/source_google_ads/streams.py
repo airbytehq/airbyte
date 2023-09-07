@@ -95,7 +95,10 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
-            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            if self.name == "accounts" and isinstance(record.get("customer.optimization_score_weight"), int):
+                record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
+            yield record
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
