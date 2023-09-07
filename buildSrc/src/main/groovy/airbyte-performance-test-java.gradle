@@ -41,7 +41,7 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
         }
         performanceTestJava.configure {
             mustRunAfter project.tasks.named('test')
-            dependsOn project.tasks.matching { it.name == 'airbyteDocker' }
+            dependsOn project.tasks.matching { it.name == 'assemble' }
         }
     }
 }
