@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Iterables;
@@ -28,6 +29,7 @@ import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcState;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
@@ -56,7 +58,10 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.BsonArray;
+import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
@@ -64,9 +69,7 @@ import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
 class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
-
-  private static final String DATABASE_NAME = "test";
-  private static final String COLLECTION_NAME = "acceptance_test1";
+  
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String DOUBLE_TEST_FIELD = "double_test";
   private static final String EMPTY_TEST_FIELD = "empty_test";
@@ -75,13 +78,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String INVALID_RESUME_TOKEN = "820000000000000000000000296E04";
   private static final String NAME_FIELD = "name";
   private static final String OBJECT_TEST_FIELD = "object_test";
-  private static final String OTHER_COLLECTION_NAME = "acceptance_test2";
   private static final String TEST_FIELD = "test";
   private static final String TEST_ARRAY_FIELD = "test_array";
 
-  protected JsonNode config;
-  protected MongoClient mongoClient;
-
+  private JsonNode config;
+  private String collectionName;
+  private String databaseName;
+  private MongoClient mongoClient;
+  private String otherCollectionName;
   private int recordCount = 0;
 
   @Override
@@ -92,8 +96,13 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
+    // Randomly generate the names to avoid collisions with other tests
+    collectionName = "collection_" + RandomStringUtils.randomAlphabetic(8);
+    databaseName = "acceptance_test_" + RandomStringUtils.randomAlphabetic(8);
+    otherCollectionName = "collection_" + RandomStringUtils.randomAlphabetic(8);
+
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    ((ObjectNode) config).put(DATABASE_CONFIGURATION_KEY, DATABASE_NAME);
+    ((ObjectNode) config).put(DATABASE_CONFIGURATION_KEY, databaseName);
     ((ObjectNode) config).put(IS_TEST_CONFIGURATION_KEY, true);
     ((ObjectNode) config).put(CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
 
@@ -103,15 +112,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createTestCollections(final MongoClient mongoClient) {
-    mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).drop();
-    mongoClient.getDatabase(DATABASE_NAME).getCollection(OTHER_COLLECTION_NAME).drop();
-    mongoClient.getDatabase(DATABASE_NAME).createCollection(COLLECTION_NAME);
-    mongoClient.getDatabase(DATABASE_NAME).createCollection(OTHER_COLLECTION_NAME);
-
+    mongoClient.getDatabase(databaseName).getCollection(collectionName).drop();
+    mongoClient.getDatabase(databaseName).getCollection(otherCollectionName).drop();
+    mongoClient.getDatabase(databaseName).createCollection(collectionName);
+    mongoClient.getDatabase(databaseName).createCollection(otherCollectionName);
   }
 
   private void insertTestData(final MongoClient mongoClient) {
-    final MongoCollection<Document> collection = mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME);
+    final MongoCollection<Document> collection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     final var objectDocument =
         new Document("testObject", new Document(NAME_FIELD, "subName").append("testField1", "testField1").append(INT_TEST_FIELD, 10)
             .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
@@ -136,9 +144,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    mongoClient.getDatabase(DATABASE_NAME).getCollection(COLLECTION_NAME).drop();
-    mongoClient.getDatabase(DATABASE_NAME).getCollection(OTHER_COLLECTION_NAME).drop();
-    mongoClient.getDatabase(DATABASE_NAME).drop();
+    mongoClient.getDatabase(databaseName).getCollection(collectionName).drop();
+    mongoClient.getDatabase(databaseName).getCollection(otherCollectionName).drop();
+    mongoClient.getDatabase(databaseName).drop();
     mongoClient.close();
     recordCount = 0;
   }
@@ -175,7 +183,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private ConfiguredAirbyteCatalog getConfiguredCatalog(final List<Field> enabledFields) {
-    final AirbyteStream airbyteStream = MongoCatalogHelper.buildAirbyteStream(COLLECTION_NAME, DATABASE_NAME, enabledFields);
+    final AirbyteStream airbyteStream = MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, enabledFields);
     final ConfiguredAirbyteStream configuredIncrementalAirbyteStream = convertToConfiguredAirbyteStream(airbyteStream, SyncMode.INCREMENTAL);
     final List<ConfiguredAirbyteStream> streams = new ArrayList<>();
     streams.add(configuredIncrementalAirbyteStream);
@@ -195,19 +203,19 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     final List<AirbyteRecordMessage> records = filterRecords(allMessages);
     assertFalse(records.isEmpty(), "Expected a incremental sync to produce records");
-    verifyFieldNotExist(records, COLLECTION_NAME, DOUBLE_TEST_FIELD);
-    verifyFieldNotExist(records, COLLECTION_NAME, EMPTY_TEST_FIELD);
-    verifyFieldNotExist(records, COLLECTION_NAME, ID_FIELD);
-    verifyFieldNotExist(records, COLLECTION_NAME, INT_TEST_FIELD);
-    verifyFieldNotExist(records, COLLECTION_NAME, OBJECT_TEST_FIELD);
-    verifyFieldNotExist(records, COLLECTION_NAME, TEST_FIELD);
-    verifyFieldNotExist(records, COLLECTION_NAME, TEST_ARRAY_FIELD);
+    verifyFieldNotExist(records, collectionName, DOUBLE_TEST_FIELD);
+    verifyFieldNotExist(records, collectionName, EMPTY_TEST_FIELD);
+    verifyFieldNotExist(records, collectionName, ID_FIELD);
+    verifyFieldNotExist(records, collectionName, INT_TEST_FIELD);
+    verifyFieldNotExist(records, collectionName, OBJECT_TEST_FIELD);
+    verifyFieldNotExist(records, collectionName, TEST_FIELD);
+    verifyFieldNotExist(records, collectionName, TEST_ARRAY_FIELD);
   }
 
   @Test
   void testSyncEmptyCollection() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
-    final AirbyteStream otherAirbyteStream = MongoCatalogHelper.buildAirbyteStream(OTHER_COLLECTION_NAME, DATABASE_NAME,
+    final AirbyteStream otherAirbyteStream = MongoCatalogHelper.buildAirbyteStream(otherCollectionName, databaseName,
         List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
     configuredCatalog.withStreams(List.of(convertToConfiguredAirbyteStream(otherAirbyteStream, SyncMode.INCREMENTAL)));
 
@@ -225,13 +233,95 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Test
+  void testNewStreamAddedToExistingCDCSync() throws Exception {
+    /*
+     * Insert the data into the second stream that will be added before
+     * the second sync.  Do this before the first sync to ensure that the
+     * resume token stored in the state at the end of the first sync accounts
+     * for this data.  If not, we will get duplicate records from the second
+     * sync:  one batch from the initial snapshot for the second stream and
+     * one batch from Debezium via the change event stream.  This is a known
+     * issue that happens when a stream with data inserted/changed AFTER the
+     * first stream is added to the connection and is currently handled by
+     * de-duping during normalization, so we will not test that case here.
+     */
+    final int otherCollectionCount = 100;
+    insertData(databaseName, otherCollectionName, otherCollectionCount);
+
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+
+    // Start a sync with one stream
+    final List<AirbyteMessage> messages = runRead(configuredCatalog);
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
+    final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
+
+    assertEquals(recordCount, recordMessages.size());
+    assertEquals(recordCount + 1, stateMessages.size());
+
+    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
+    validateStateMessages(stateMessages);
+    validateAllStreamsComplete(stateMessages, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+    assertFalse(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(
+            createStateStreamFilter(new StreamDescriptor().withName(otherCollectionName).withNamespace(databaseName))));
+
+    final List<Field> fields = List.of(
+            Field.of(NAME_FIELD, JsonSchemaType.STRING),
+            Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER));
+    addStreamToConfiguredCatalog(configuredCatalog, databaseName, otherCollectionName, fields);
+
+    // Start another sync with a newly added stream
+    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage)));
+    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
+    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
+
+    assertEquals(otherCollectionCount, recordMessages2.size());
+    assertEquals(otherCollectionCount + 1, stateMessages2.size());
+
+    validateStateMessages(stateMessages2);
+    validateAllStreamsComplete(stateMessages2, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+            new StreamDescriptor().withName(otherCollectionName).withNamespace(databaseName)));
+  }
+
+  @Test
+  void testNoChangeForCDCIncrementalSync() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+
+    // Start a sync with one stream
+    final List<AirbyteMessage> messages = runRead(configuredCatalog);
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
+    final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
+
+    assertEquals(recordCount, recordMessages.size());
+    assertEquals(recordCount + 1, stateMessages.size());
+
+    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
+    validateStateMessages(stateMessages);
+    validateAllStreamsComplete(stateMessages, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+
+    // Start another sync with no changes
+    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage)));
+    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
+    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
+
+    assertEquals(0, recordMessages2.size());
+    assertEquals(1, stateMessages2.size());
+
+    validateStateMessages(stateMessages2);
+    validateAllStreamsComplete(stateMessages2, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
+  }
+
+  @Test
   void testCDCStreamCheckpointingWithMultipleStreams() throws Exception {
     final int otherCollectionCount = 100;
-    insertData(DATABASE_NAME, OTHER_COLLECTION_NAME, otherCollectionCount);
+    insertData(databaseName, otherCollectionName, otherCollectionCount);
 
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
     final List<ConfiguredAirbyteStream> streams = configuredCatalog.getStreams();
-    final AirbyteStream otherAirbyteStream = MongoCatalogHelper.buildAirbyteStream(OTHER_COLLECTION_NAME, DATABASE_NAME,
+    final AirbyteStream otherAirbyteStream = MongoCatalogHelper.buildAirbyteStream(otherCollectionName, databaseName,
         List.of(Field.of(NAME_FIELD, JsonSchemaType.STRING), Field.of(INT_TEST_FIELD, JsonSchemaType.NUMBER)));
     streams.add(convertToConfiguredAirbyteStream(otherAirbyteStream, SyncMode.INCREMENTAL));
     configuredCatalog.withStreams(streams);
@@ -247,12 +337,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     validateStateMessages(stateMessages);
 
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
-    assertNotNull(lastStateMessage.getGlobal().getSharedState());
-    assertFalse(lastStateMessage.getGlobal().getSharedState().isEmpty());
-    assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)));
-    assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)));
-    assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage.getGlobal().getStreamStates().stream()
-        .filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class).status());
+    validateAllStreamsComplete(stateMessages, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+            new StreamDescriptor().withName(otherCollectionName).withNamespace(databaseName)));
 
     // Start a second sync from somewhere in the middle of stream 2 in order to test that only stream 2
     // is synced via initial snapshot
@@ -264,50 +351,36 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(50, stateMessages2.size());
 
     validateStateMessages(stateMessages2);
-
-    final AirbyteStateMessage lastStateMessage2 = Iterables.getLast(stateMessages2);
-    assertNotNull(lastStateMessage2.getGlobal().getSharedState());
-    assertFalse(lastStateMessage2.getGlobal().getSharedState().isEmpty());
-    assertTrue(lastStateMessage2.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)));
-    assertTrue(
-        lastStateMessage2.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)));
-    assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage2.getGlobal().getStreamStates().stream()
-        .filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class).status());
-    assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage2.getGlobal().getStreamStates().stream()
-        .filter(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class)
-        .status());
+    validateAllStreamsComplete(stateMessages2, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+            new StreamDescriptor().withName(otherCollectionName).withNamespace(databaseName)));
 
     // Insert more data for one stream
-    insertData(DATABASE_NAME, OTHER_COLLECTION_NAME, otherCollectionCount);
+    insertData(databaseName, otherCollectionName, otherCollectionCount);
 
     // Start a third sync to test that only the new records are synced via incremental CDC
-    final List<AirbyteMessage> messages3 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage2)));
+    final List<AirbyteMessage> messages3 = runRead(configuredCatalog, Jsons.jsonNode(List.of(Iterables.getLast(stateMessages2))));
     final List<AirbyteRecordMessage> recordMessages3 = filterRecords(messages3);
     final List<AirbyteStateMessage> stateMessages3 = filterStateMessages(messages3);
 
     assertEquals(otherCollectionCount, recordMessages3.size());
     assertEquals(0, recordMessages3.stream().map(r -> new StreamDescriptor().withName(r.getStream()).withNamespace(r.getNamespace()))
-        .filter(createRecordStreamFilter(COLLECTION_NAME, DATABASE_NAME)).count());
+        .filter(createRecordStreamFilter(collectionName, databaseName)).count());
     assertEquals(otherCollectionCount,
         recordMessages3.stream().map(r -> new StreamDescriptor().withName(r.getStream()).withNamespace(r.getNamespace()))
-            .filter(createRecordStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)).count());
+            .filter(createRecordStreamFilter(otherCollectionName, databaseName)).count());
     assertEquals(1, stateMessages3.size());
     validateStateMessages(stateMessages3);
-
-    final AirbyteStateMessage lastStateMessage3 = Iterables.getLast(stateMessages3);
-    assertNotNull(lastStateMessage3.getGlobal().getSharedState());
-    assertFalse(lastStateMessage3.getGlobal().getSharedState().isEmpty());
-    assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage3.getGlobal().getStreamStates().stream()
-        .filter(createStateStreamFilter(COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class).status());
-    assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage3.getGlobal().getStreamStates().stream()
-        .filter(createStateStreamFilter(OTHER_COLLECTION_NAME, DATABASE_NAME)).findFirst().get().getStreamState(), MongoDbStreamState.class)
-        .status());
+    validateAllStreamsComplete(stateMessages3, List.of(
+            new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
+            new StreamDescriptor().withName(otherCollectionName).withNamespace(databaseName)));
   }
 
   @Test
   void testSyncShouldHandlePurgedLogsGracefully() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
 
+    System.out.println("******* Run 1");
     // Run the sync to establish the next resume token value
     final List<AirbyteMessage> messages = runRead(configuredCatalog);
     final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
@@ -319,11 +392,13 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(DATABASE_NAME,
+        MongoDbDebeziumStateUtil.formatState(databaseName,
             config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
+    System.out.println("******* Run 2");
+    System.out.println(state);
     // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
     final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
 
@@ -361,6 +436,28 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertTrue(targetPosition.reachedTargetPosition(new BsonTimestamp(eventTimestamp)));
     assertFalse(targetPosition.reachedTargetPosition(new BsonTimestamp(0L)));
     assertFalse(targetPosition.reachedTargetPosition((BsonTimestamp) null));
+  }
+
+  @Test
+  void testIsSameOffset() {
+    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
+    final String resumeTokenString = resumeToken.get("_data").asString().getValue();
+    final Map<String, String> emptyOffsetA = Map.of();
+    final Map<String, String> emptyOffsetB = Map.of();
+    final Map<String, String> offsetA = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
+            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), resumeTokenString), new TypeReference<>() {});
+    final Map<String, String> offsetB = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
+            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), resumeTokenString), new TypeReference<>() {});
+    final Map<String, String> offsetBDifferent = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
+            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), INVALID_RESUME_TOKEN), new TypeReference<>() {});
+
+    assertFalse(targetPosition.isSameOffset(null, offsetB));
+    assertFalse(targetPosition.isSameOffset(emptyOffsetA, offsetB));
+    assertFalse(targetPosition.isSameOffset(offsetA, null));
+    assertFalse(targetPosition.isSameOffset(offsetA, emptyOffsetB));
+    assertFalse(targetPosition.isSameOffset(offsetA, offsetBDifferent));
+    assertTrue(targetPosition.isSameOffset(offsetA, offsetB));
   }
 
   private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
@@ -404,12 +501,29 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     });
   }
 
-  private Predicate<AirbyteStreamState> createStateStreamFilter(final String name, final String namespace) {
-    return s -> s.getStreamDescriptor().equals(new StreamDescriptor().withName(name).withNamespace(namespace));
+  private void validateAllStreamsComplete(final List<AirbyteStateMessage> stateMessages, final List<StreamDescriptor> completedStreams) {
+    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
+    assertNotNull(lastStateMessage.getGlobal().getSharedState());
+    assertFalse(lastStateMessage.getGlobal().getSharedState().isEmpty());
+    completedStreams.forEach(s -> {
+      assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(s)));
+      assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(lastStateMessage.getGlobal().getStreamStates().stream()
+              .filter(createStateStreamFilter(s)).findFirst().get().getStreamState(), MongoDbStreamState.class).status());
+    });
+  }
+
+  private Predicate<AirbyteStreamState> createStateStreamFilter(final StreamDescriptor streamDescriptor) {
+    return s -> s.getStreamDescriptor().equals(streamDescriptor);
   }
 
   private Predicate<StreamDescriptor> createRecordStreamFilter(final String name, final String namespace) {
     return s -> s.equals(new StreamDescriptor().withName(name).withNamespace(namespace));
   }
 
+  private void addStreamToConfiguredCatalog(final ConfiguredAirbyteCatalog configuredAirbyteCatalog, final String databaseName, final String collectionName, final List<Field> fields) {
+    final List<ConfiguredAirbyteStream> streams = configuredAirbyteCatalog.getStreams();
+    final AirbyteStream otherAirbyteStream = MongoCatalogHelper.buildAirbyteStream(collectionName, databaseName, fields);
+    streams.add(convertToConfiguredAirbyteStream(otherAirbyteStream, SyncMode.INCREMENTAL));
+    configuredAirbyteCatalog.withStreams(streams);
+  }
 }
