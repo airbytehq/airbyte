@@ -1,0 +1,8 @@
+{
+    "properties": {
+      "Language": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+  
