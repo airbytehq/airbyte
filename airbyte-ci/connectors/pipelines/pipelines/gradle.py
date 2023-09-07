@@ -23,7 +23,7 @@ class GradleTask(Step, ABC):
         title (str): The step title.
     """
 
-    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
+    DEFAULT_TASKS_TO_EXCLUDE = ["assemble", "airbyteDocker", "connectorAcceptanceTest"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
     gradle_task_options: Tuple[str, ...] = ()
@@ -50,21 +50,6 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    async def _get_patched_build_src_dir(self) -> Directory:
-        """Patch some gradle plugins.
-
-        Returns:
-            Directory: The patched buildSrc directory
-        """
-
-        build_src_dir = self.context.get_repo_dir("buildSrc")
-        cat_gradle_plugin_content = await build_src_dir.file("src/main/groovy/airbyte-connector-acceptance-test.gradle").contents()
-        # When running integrationTest in Dagger we don't want to run connectorAcceptanceTest
-        # connectorAcceptanceTest is run in the AcceptanceTest step
-        cat_gradle_plugin_content = cat_gradle_plugin_content.replace(
-            "project.integrationTest.dependsOn(project.connectorAcceptanceTest)", ""
-        )
-        return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", contents=cat_gradle_plugin_content)
 
     def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
@@ -85,7 +70,6 @@ class GradleTask(Step, ABC):
         connector_under_test = (
             environments.with_gradle(self.context, includes, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))

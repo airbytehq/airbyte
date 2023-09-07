@@ -371,6 +371,23 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "primary_key": [["ad_group_criterion_label.resource_name"]]
+    },
+    {
+      "stream": {
+        "name": "campaign_budget",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date"],
+        "source_defined_primary_key": [
+          ["campaign_budget.id"],
+          ["segments.date"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["segments.date"],
+      "primary_key": [["campaign_budget.id"], ["segments.date"]]
     }
   ]
 }

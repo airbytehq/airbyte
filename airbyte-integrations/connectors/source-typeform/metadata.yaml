@@ -2,27 +2,28 @@ data:
   allowedHosts:
     hosts:
       - api.typeform.com
+  registries:
+    cloud:
+      enabled: true
+      dockerImageTag: 1.1.0
+    oss:
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-typeform
   githubIssueLabel: source-typeform
   icon: typeform.svg
   license: MIT
   name: Typeform
-  registries:
-    cloud:
-      enabled: true
-      dockerImageTag: 1.0.0
-    oss:
-      enabled: true
+  releaseDate: 2021-07-10
   releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   tags:
-    - language:python
+    - language:low-code
   ab_internal:
     sl: 200
     ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"
