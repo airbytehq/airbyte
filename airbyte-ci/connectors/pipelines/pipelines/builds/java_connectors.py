@@ -15,6 +15,8 @@ class BuildConnectorDistributionTar(GradleTask):
     gradle_task_name = "distTar"
     mount_connector_secrets = False
 
+    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker", "assemble"]
+
     async def _run(self) -> StepResult:
         cdk_includes = ["airbyte-cdk/java/airbyte-cdk"]
         with_built_tar = (
