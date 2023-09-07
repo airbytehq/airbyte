@@ -175,6 +175,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
     if (flushFailure.isFailed()) {
+      if (flushFailure.getException() == null) {
+        throw new RuntimeException("The worker failed because of an unknown exception");
+      }
       throw flushFailure.getException();
     }
   }
