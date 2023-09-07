@@ -14,12 +14,8 @@ logger = logging.getLogger("airbyte")
 # this mapping handles the schema to runtime relation
 # this needs to be updated whenever a new schema is integrated
 runtime_to_root_file_mapping = {
-    "@kyvejs/bitcoin": "bitcoin/block",
-    "@kyvejs/celo": "celo/block",
-    "@kyvejs/cosmos": "cosmos/block",
-    "@kyvejs/evm": "evm/block",
-    "@kyvejs/tendermint": "tendermint/tendermint",
-    "@kyvejs/uniswap": "uniswap/event"
+    "@kyvejs/tendermint-bsync": "tendermint/tendermint-bsync",
+    "@kyvejs/tendermint": "tendermint/tendermint"
 }
 
 
