@@ -9,7 +9,10 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
@@ -20,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<Object> {
 
-  static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
+  public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
 
   private final long emittedAtConverted;
 
@@ -39,6 +42,23 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<
     }
 
     return mongoDbCdcConnectorMetadataInjector;
+  }
+
+  /**
+   * Adds the metadata columns injected into records by this implementation to the discovered field
+   * information.
+   *
+   * @param properties An {@link ObjectNode} representing the fields in an
+   *        {@link io.airbyte.protocol.models.v0.AirbyteStream}.
+   * @return The modified {@link ObjectNode} with the CDC metadata columns added.
+   */
+  public static ObjectNode addCdcMetadataColumns(final ObjectNode properties) {
+    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
+    properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
+    properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
+    return properties;
   }
 
   @Override

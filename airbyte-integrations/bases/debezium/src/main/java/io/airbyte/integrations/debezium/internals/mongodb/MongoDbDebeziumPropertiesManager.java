@@ -12,7 +12,6 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
