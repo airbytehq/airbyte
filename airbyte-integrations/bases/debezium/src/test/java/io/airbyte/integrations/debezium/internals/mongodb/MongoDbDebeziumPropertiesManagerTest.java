@@ -58,7 +58,6 @@ class MongoDbDebeziumPropertiesManagerTest {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
-    when(schemaHistoryManager.getPath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
     final Properties cdcProperties = new Properties();
@@ -68,8 +67,7 @@ class MongoDbDebeziumPropertiesManagerTest {
         cdcProperties,
         config,
         catalog,
-        offsetManager,
-        Optional.of(schemaHistoryManager));
+        offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(24 + cdcProperties.size(), debeziumProperties.size());
@@ -94,7 +92,6 @@ class MongoDbDebeziumPropertiesManagerTest {
     final JsonNode config = createConfiguration(Optional.empty(), Optional.empty(), Optional.empty());
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
-    when(schemaHistoryManager.getPath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
 
     final Properties cdcProperties = new Properties();
@@ -104,8 +101,7 @@ class MongoDbDebeziumPropertiesManagerTest {
         cdcProperties,
         config,
         catalog,
-        offsetManager,
-        Optional.of(schemaHistoryManager));
+        offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(21 + cdcProperties.size(), debeziumProperties.size());

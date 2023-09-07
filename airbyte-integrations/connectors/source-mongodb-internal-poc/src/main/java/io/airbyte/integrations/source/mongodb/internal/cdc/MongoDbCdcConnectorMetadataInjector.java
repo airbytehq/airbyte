@@ -58,7 +58,7 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<
   }
 
   @Override
-  public String name(JsonNode source) {
+  public String name(final JsonNode source) {
     return source.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE_COLLECTION).asText();
   }
 

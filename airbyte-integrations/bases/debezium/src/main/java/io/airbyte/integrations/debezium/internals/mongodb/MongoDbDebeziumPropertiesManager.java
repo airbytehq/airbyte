@@ -45,9 +45,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
                                           final ConfiguredAirbyteCatalog catalog,
-                                          final AirbyteFileOffsetBackingStore offsetManager,
-                                          final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
-    super(properties, config, catalog, offsetManager, schemaHistoryManager);
+                                          final AirbyteFileOffsetBackingStore offsetManager) {
+    super(properties, config, catalog, offsetManager, Optional.empty());
   }
 
   @Override
