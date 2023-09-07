@@ -38,6 +38,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
+import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
@@ -89,7 +90,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 30;
+  protected static final int INITIAL_WAITING_SECONDS = 15;
   private PostgreSQLContainer<?> container;
 
   protected String dbName;
@@ -909,11 +910,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
    *
    * @throws Exception Exception happening in the test.
    */
-  @Disabled("Disabled 'verifyCheckpointStatesBySeconds' test as flaky. https://github.com/airbytehq/airbyte/issues/29411")
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
-    final int recordsToCreate = 20000;
+    final int recordsToCreate = 40000;
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
@@ -989,6 +989,16 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
       assertTrue(expectedIds.contains(c.getData().get(COL_ID).asInt()));
       expectedIds.remove(c.getData().get(COL_ID).asInt());
     });
+  }
+
+  @Override
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition, final AirbyteRecordMessage record) {
+    // The LSN from records should be either equal or grater than the position value before the sync started.
+    // The current Write-Ahead Log (WAL) position can move ahead even without any data modifications (INSERT, UPDATE, DELETE)
+    // The start and end of transactions, even read-only ones, are recorded in the WAL. So, simply starting and committing a transaction can cause the WAL location to move forward.
+    // Periodic checkpoints, which write dirty pages from memory to disk to ensure database consistency, generate WAL records. Checkpoints happen even if there are no active data modifications
+    assert targetPosition instanceof PostgresCdcTargetPosition;
+    assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
   }
 
 }
