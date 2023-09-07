@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "openai",
     "requests",
     "tiktoken",
-    "pinecone-client",
+    "pinecone-client[grpc]",
     "typing-inspect==0.8.0",
     "typing_extensions==4.5.0",
     "pydantic==1.10.8",

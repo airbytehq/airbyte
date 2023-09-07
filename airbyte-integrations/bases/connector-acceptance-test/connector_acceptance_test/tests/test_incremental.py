@@ -3,6 +3,7 @@
 #
 
 import json
+from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
@@ -13,6 +14,7 @@ from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, Airbyte
 from connector_acceptance_test import BaseTest
 from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
+from deepdiff import DeepDiff
 
 
 @pytest.fixture(name="future_state_configuration")
@@ -53,18 +55,6 @@ def future_state_fixture(future_state_configuration, test_strictness_level, conf
     return states
 
 
-@pytest.fixture(name="cursor_paths")
-def cursor_paths_fixture(inputs, configured_catalog_for_incremental) -> Mapping[str, Any]:
-    cursor_paths = getattr(inputs, "cursor_paths") or {}
-    result = {}
-
-    for stream in configured_catalog_for_incremental.streams:
-        path = cursor_paths.get(stream.stream.name, [stream.cursor_field[-1]])
-        result[stream.stream.name] = path
-
-    return result
-
-
 @pytest.fixture(name="configured_catalog_for_incremental")
 def configured_catalog_for_incremental_fixture(configured_catalog) -> ConfiguredAirbyteCatalog:
     catalog = incremental_only_catalog(configured_catalog)
@@ -81,53 +71,6 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
                 )
 
     return catalog
-
-
-def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any, Any]]:
-    """Iterate over records and return cursor value with corresponding cursor value from state"""
-    for record in records:
-        stream_name = record.record.stream
-        stream = stream_mapping[stream_name]
-        helper = JsonSchemaHelper(schema=stream.stream.json_schema)
-        cursor_field = helper.field(stream.cursor_field)
-        record_value = cursor_field.parse(record=record.record.data)
-        try:
-            if state[stream_name] is None:
-                continue
-
-            # first attempt to parse the state value assuming the state object is namespaced on stream names
-            state_value = cursor_field.parse(record=state[stream_name], path=state_cursor_paths[stream_name])
-        except KeyError:
-            try:
-                # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
-                state_value = cursor_field.parse(record=state, path=state_cursor_paths[stream_name])
-            except KeyError:
-                continue
-        yield record_value, state_value, stream_name
-
-
-def compare_cursor_with_threshold(record_value, state_value, threshold_days: int) -> bool:
-    """
-    Checks if the record's cursor value is older or equal to the state cursor value.
-
-    If the threshold_days option is set, the values will be converted to dates so that the time-based offset can be applied.
-    :raises: pendulum.parsing.exceptions.ParserError: if threshold_days is passed with non-date cursor values.
-    """
-    if threshold_days:
-
-        def _parse_date_value(value) -> datetime:
-            if isinstance(value, datetime):
-                return value
-            if isinstance(value, (int, float)):
-                return pendulum.from_timestamp(value / 1000)
-            return pendulum.parse(value, strict=False)
-
-        record_date_value = _parse_date_value(record_value)
-        state_date_value = _parse_date_value(state_value)
-
-        return record_date_value >= (state_date_value - pendulum.duration(days=threshold_days))
-
-    return record_value >= state_value
 
 
 def is_per_stream_state(message: AirbyteMessage) -> bool:
@@ -148,59 +91,69 @@ def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict
     return latest_per_stream_by_name
 
 
+def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteMessage]) -> DeepDiff:
+    """
+    Naively diff two lists of records by comparing their data field.
+    """
+    records_1_data = [record.record.data for record in records_1]
+    records_2_data = [record.record.data for record in records_2]
+
+    # ignore_order=True because the order of records in the list is not guaranteed
+    diff = DeepDiff(records_1_data, records_2_data, ignore_order=True)
+    return diff
+
+
 @pytest.mark.default_timeout(20 * 60)
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(
         self,
-        inputs: IncrementalConfig,
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
-        cursor_paths: dict[str, list[Union[int, str]]],
         docker_runner: ConnectorRunner,
     ):
-        threshold_days = getattr(inputs, "threshold_days") or 0
-        stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
+        """
+        This test makes two calls to the read method and verifies that the records returned are different.
 
-        output = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
-        records_1 = filter_output(output, type_=Type.RECORD)
-        states_1 = filter_output(output, type_=Type.STATE)
+        Important!
 
-        assert states_1, "Should produce at least one state"
-        assert records_1, "Should produce at least one record"
+        Assert only that the reads are different. Nothing else.
+        This is because there is only a small subset of assertions we can make
+        in the absense of enforcing that all connectors return 3 or more state messages
+        during the first read.
+
+        To learn more: https://github.com/airbytehq/airbyte/issues/29926
+        """
+        output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
+        records_1 = filter_output(output_1, type_=Type.RECORD)
+        states_1 = filter_output(output_1, type_=Type.STATE)
+
+        assert states_1, "First Read should produce at least one state"
+        assert records_1, "First Read should produce at least one record"
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
-        if is_per_stream_state(states_1[-1]):
+        is_per_stream = is_per_stream_state(states_1[-1])
+        if is_per_stream:
             latest_state = construct_latest_state_from_messages(states_1)
             state_input = list(
                 {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
                 for stream_name, stream_state in latest_state.items()
             )
         else:
-            latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
 
-        parsed_records_1 = list(records_with_state(records_1, latest_state, stream_mapping, cursor_paths))
+        # READ #2
 
-        # This catches the case of a connector that emits an invalid state that is not compatible with the schema
-        # See https://github.com/airbytehq/airbyte/issues/21863 to understand more
-        assert parsed_records_1, "At least one valid state should be produced, given a cursor path"
+        output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
+        records_2 = filter_output(output_2, type_=Type.RECORD)
 
-        for record_value, state_value, stream_name in parsed_records_1:
-            assert (
-                record_value <= state_value
-            ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
-
-        output = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
-        records_2 = filter_output(output, type_=Type.RECORD)
-
-        for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
-            assert compare_cursor_with_threshold(
-                record_value, state_value, threshold_days
-            ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
+        diff = naive_diff_records(records_1, records_2)
+        assert (
+            diff
+        ), f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner
+        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
     ):
         """
         Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
@@ -212,52 +165,70 @@ class TestIncremental(BaseTest):
             pytest.skip("Skipping new incremental test based on acceptance-test-config.yml")
             return
 
-        threshold_days = getattr(inputs, "threshold_days") or 0
-        stream_mapping = {stream.stream.name: stream for stream in configured_catalog_for_incremental.streams}
+        output_1 = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
+        records_1 = filter_output(output_1, type_=Type.RECORD)
+        states_1 = filter_output(output_1, type_=Type.STATE)
 
-        output = await docker_runner.call_read(connector_config, configured_catalog_for_incremental)
-        records_1 = filter_output(output, type_=Type.RECORD)
-        states_1 = filter_output(output, type_=Type.STATE)
+        # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
+        unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
 
-        assert states_1, "Should produce at least one state"
-        assert records_1, "Should produce at least one record"
+        # Important!
+
+        # There is only a small subset of assertions we can make
+        # in the absense of enforcing that all connectors return 3 or more state messages
+        # during the first read.
+
+        # To learn more: https://github.com/airbytehq/airbyte/issues/29926
+        if len(unique_state_messages) < 3:
+            pytest.skip("Skipping test because there are not enough state messages to test with")
+            return
+
+        assert records_1, "First Read should produce at least one record"
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
         is_per_stream = is_per_stream_state(states_1[-1])
-        if is_per_stream:
-            latest_state = construct_latest_state_from_messages(states_1)
-        else:
-            latest_state = states_1[-1].state.data
-
-        for record_value, state_value, stream_name in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
-            assert (
-                record_value <= state_value
-            ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
-
-        checkpoint_messages = filter_output(output, type_=Type.STATE)
-
-        # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
-        checkpoint_messages = [message for index, message in enumerate(checkpoint_messages) if message not in checkpoint_messages[:index]]
 
         # To avoid spamming APIs we only test a fraction of batches (10%) and enforce a minimum of 10 tested
-        min_batches_to_test = 10
-        sample_rate = len(checkpoint_messages) // min_batches_to_test
-        stream_name_to_per_stream_state = dict()
-        for idx, state_message in enumerate(checkpoint_messages):
-            assert state_message.type == Type.STATE
-            state_input, complete_state = self.get_next_state_input(state_message, stream_name_to_per_stream_state, is_per_stream)
+        min_batches_to_test = 5
+        sample_rate = len(unique_state_messages) // min_batches_to_test
 
-            if len(checkpoint_messages) >= min_batches_to_test and idx % sample_rate != 0:
+        mutating_stream_name_to_per_stream_state = dict()
+        for idx, state_message in enumerate(unique_state_messages):
+            assert state_message.type == Type.STATE
+
+            # if first state message, skip
+            # this is because we cannot assert if the first state message will result in new records
+            # as in this case it is possible for a connector to return an empty state message when it first starts.
+            # e.g. if the connector decides it wants to let the caller know that it has started with an empty state.
+            if idx == 0:
                 continue
 
-            output = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
-            records = filter_output(output, type_=Type.RECORD)
+            # if last state message, skip
+            # this is because we cannot assert if the last state message will result in new records
+            # as in this case it is possible for a connector to return a previous state message.
+            # e.g. if the connector is using pagination and the last page is only partially full
+            if idx == len(unique_state_messages) - 1:
+                continue
 
-            for record_value, state_value, stream_name in records_with_state(records, complete_state, stream_mapping, cursor_paths):
-                assert compare_cursor_with_threshold(
-                    record_value, state_value, threshold_days
-                ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
+            # if batching required, and not a sample, skip
+            if len(unique_state_messages) >= min_batches_to_test and idx % sample_rate != 0:
+                continue
+
+            state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
+                state_message, mutating_stream_name_to_per_stream_state, is_per_stream
+            )
+
+            output_N = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
+            records_N = filter_output(output_N, type_=Type.RECORD)
+            assert (
+                records_N
+            ), f"Read {idx + 2} of {len(unique_state_messages)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 2}: {records_N}"
+
+            diff = naive_diff_records(records_1, records_N)
+            assert (
+                diff
+            ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 2}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
         self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner

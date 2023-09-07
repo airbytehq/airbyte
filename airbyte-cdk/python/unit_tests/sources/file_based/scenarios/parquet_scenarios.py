@@ -6,7 +6,7 @@ import datetime
 import decimal
 
 import pyarrow as pa
-from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -730,7 +730,7 @@ parquet_with_invalid_config_scenario = (
             "message": "Error parsing record"
         }
     ]})
-    .set_expected_discover_error(SchemaInferenceError, "Error inferring schema from files")
+    .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
     .set_expected_catalog(
         {
             "streams": [
