@@ -145,18 +145,18 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 34, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
         (
                 '{"error": "Not sufficient permissions"}',
                 403,
-                31,
+                32,
                 ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
                 None
         ),
         (
                 '',
                 404,
-                31,
+                32,
                 ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
                 'Not Found'
         ),
