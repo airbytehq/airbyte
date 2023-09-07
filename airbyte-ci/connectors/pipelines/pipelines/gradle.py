@@ -50,7 +50,6 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-
     def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
             ["./gradlew"]
