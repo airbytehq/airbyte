@@ -4,8 +4,10 @@
 
 package io.airbyte.integrations.debezium.internals.mongodb;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
@@ -68,7 +70,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
     } else {
       final BsonTimestamp eventResumeTokenTimestamp =
           MongoDbResumeTokenHelper.extractTimestampFromEvent(changeEventWithMetadata.eventValueAsJson());
-      boolean isEventResumeTokenAfter = resumeTokenTimestamp.compareTo(eventResumeTokenTimestamp) <= 0;
+      final boolean isEventResumeTokenAfter = resumeTokenTimestamp.compareTo(eventResumeTokenTimestamp) <= 0;
       if (isEventResumeTokenAfter) {
         LOGGER.info("Signalling close because record's event timestamp {} is after target event timestamp {}.",
             eventResumeTokenTimestamp, resumeTokenTimestamp);
@@ -91,14 +93,29 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
 
   @Override
   public boolean isEventAheadOffset(final Map<String, String> offset, final ChangeEventWithMetadata event) {
+    if (offset.size() != 1) {
+      return false;
+    }
+
     return MongoDbResumeTokenHelper.extractTimestampFromEvent(event.eventValueAsJson()).getValue() >= ResumeTokens
-        .getTimestamp(ResumeTokens.fromData(offset.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN))).getValue();
+        .getTimestamp(ResumeTokens.fromData(getResumeToken(offset))).getValue();
   }
 
   @Override
   public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
-    return offsetA.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN)
-        .equals(offsetB.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN));
+    if (offsetA == null || offsetA.size() != 1) {
+      return false;
+    }
+    if (offsetB == null || offsetB.size() != 1) {
+      return false;
+    }
+
+    return getResumeToken(offsetA).equals(getResumeToken(offsetB));
+  }
+
+  private static String getResumeToken(final Map<String, String> offset) {
+    final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
+    return offsetJson.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText();
   }
 
   @Override
@@ -107,7 +124,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    MongoDbCdcTargetPosition that = (MongoDbCdcTargetPosition) o;
+    final MongoDbCdcTargetPosition that = (MongoDbCdcTargetPosition) o;
     return Objects.equals(resumeTokenTimestamp, that.resumeTokenTimestamp);
   }
 
