@@ -209,6 +209,7 @@ class Pages(IncrementalNotionStream):
     """
 
     state_checkpoint_interval = 100
+    use_cache = True
 
     def __init__(self, **kwargs):
         super().__init__(obj_type="page", **kwargs)
@@ -220,14 +221,10 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     """
 
     http_method = "GET"
-    # use_cache = True
+    use_cache = True
 
     # block id stack for block hierarchy traversal
     block_id_stack = []
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.block_id_cache = set()
 
     def path(self, **kwargs) -> str:
         return f"blocks/{self.block_id_stack[-1]}/children"
@@ -251,7 +248,6 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         for page in slices:
             page_id = page["parent"]["id"]
             self.block_id_stack.append(page_id)
-            self.block_id_cache.add(page_id)
 
             # stream sync is finished when it is on the last slice
             self.is_finished = page_id == slices[-1]["parent"]["id"]
@@ -272,13 +268,12 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         # if reached recursive limit, don't read anymore
         if len(self.block_id_stack) > MAX_BLOCK_DEPTH:
             return
-
+        print("Block id stack in Blocks.read_records: ", self.block_id_stack)
         records = super().read_records(**kwargs)
         for record in records:
             if record.get("has_children", False):
                 # do the depth first traversal recursive call, get children blocks
                 self.block_id_stack.append(record["id"])
-                self.block_id_cache.add(record["id"])
                 yield from self.read_records(**kwargs)
             yield record
 
@@ -321,9 +316,30 @@ class Comments(HttpSubStream, IncrementalNotionStream):
             params["start_cursor"] = next_page_token["next_cursor"]
         return params
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        return IncrementalNotionStream.read_records(self, **kwargs)
+    # def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+    #     return IncrementalNotionStream.read_records(self, **kwargs)
     
-    def stream_slices(self, **kwargs) -> MutableMapping[str, Any]:        
-        for block_id in self.parent.block_id_cache:
-            yield {"block_id": block_id}
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        
+        print("Stream_state in Comments.stream_slices: ", stream_state)
+
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        parent_stream_slices_list = list(parent_stream_slices)
+        print("Parent stream slices in Comments.stream_slices: ", parent_stream_slices_list)
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices_list:
+            print("Stream_slice in Comments.stream_slices: ", stream_slice)
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+
+            # iterate over all parent records with current stream_slice
+            for record in parent_records:
+                yield {"block_id": record["id"]}
