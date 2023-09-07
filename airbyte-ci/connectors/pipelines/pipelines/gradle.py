@@ -23,7 +23,7 @@ class GradleTask(Step, ABC):
         title (str): The step title.
     """
 
-    DEFAULT_TASKS_TO_EXCLUDE = ["assemble", "airbyteDocker", "connectorAcceptanceTest"]
+    DEFAULT_TASKS_TO_EXCLUDE = ["assemble", "airbyteDocker"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
     gradle_task_options: Tuple[str, ...] = ()
