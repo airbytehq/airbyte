@@ -27,7 +27,6 @@ class TypeformAuthenticator(DeclarativeAuthenticator):
 
 @dataclass
 class FormIdPartitionRouter(SubstreamPartitionRouter):
-    
     def stream_slices(self) -> Iterable[StreamSlice]:
         form_ids = self.config.get("form_ids", [])
 
