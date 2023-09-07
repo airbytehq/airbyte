@@ -1,0 +1,14 @@
+[
+    "AccountId",
+    "CampaignId",
+    "AdGroupId",
+    "TimePeriod",
+    "CurrencyCode",
+    "AdDistribution",
+    "DeviceType",
+    "Network",
+    "DeliveredMatchType",
+    "DeviceOS",
+    "TopVsOther",
+    "BidMatchType"
+]
