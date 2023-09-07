@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
@@ -22,7 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
+public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest {
 
   @BeforeAll
   static void init() {
@@ -57,8 +61,6 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     assertEquals("xmin", stateTypeFromFirstStateMessage);
     assertFalse(firstSyncStateMessage.getStream().getStreamState().has("ctid"));
     assertFalse(firstSyncStateMessage.getStream().getStreamState().has("incremental_state"));
-
-
 
     // Assert that the last message in the sequence is a state message
     assertMessageSequence(recordsFromFirstSync);
@@ -105,4 +107,5 @@ public class XminPostgresWithOldServerSourceTest extends XminPostgresSourceTest{
     assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_raw_value").asLong() > firstSyncStateMessage.getStream().getStreamState()
         .get("xmin_raw_value").asLong());
   }
+
 }

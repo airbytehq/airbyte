@@ -1,9 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pytest
+
 import pathlib
 
+import pytest
 from click.testing import CliRunner
 from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo

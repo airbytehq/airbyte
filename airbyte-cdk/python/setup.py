@@ -17,11 +17,16 @@ avro_dependency = "avro~=1.11.2"
 fastavro_dependency = "fastavro~=1.8.0"
 pyarrow_dependency = "pyarrow==12.0.1"
 
+langchain_dependency = "langchain==0.0.271"
+openai_dependency = "openai[embeddings]==0.27.9"
+cohere_dependency = "cohere==4.21"
+tiktoken_dependency = "tiktoken==0.4.0"
+
 setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.51.3",
+    version="0.51.13",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -58,7 +63,7 @@ setup(
         "jsonref~=0.2",
         "pendulum",
         "genson==1.2.2",
-        "pydantic>=1.9.2,<2.0.0",
+        "pydantic>=1.10.8,<2.0.0",
         "python-dateutil",
         "PyYAML>=6.0.1",
         "requests",
@@ -82,6 +87,10 @@ setup(
             "pytest-httpserver",
             "pandas==2.0.3",
             pyarrow_dependency,
+            langchain_dependency,
+            openai_dependency,
+            cohere_dependency,
+            tiktoken_dependency,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
@@ -92,5 +101,6 @@ setup(
             fastavro_dependency,
             pyarrow_dependency,
         ],
+        "vector-db-based": [langchain_dependency, openai_dependency, cohere_dependency, tiktoken_dependency],
     },
 )

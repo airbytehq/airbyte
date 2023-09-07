@@ -43,10 +43,7 @@
           "type": ["null", "string"]
         }
       },
-      "required": [
-        "hex",
-        "type"
-      ]
+      "required": ["hex", "type"]
     },
     "chainId": {
       "type": ["null", "integer"]
@@ -64,10 +61,7 @@
           "type": ["null", "string"]
         }
       },
-      "required": [
-        "hex",
-        "type"
-      ]
+      "required": ["hex", "type"]
     },
     "gasPrice": {
       "type": ["null", "object"],
@@ -79,10 +73,7 @@
           "type": ["null", "string"]
         }
       },
-      "required": [
-        "hex",
-        "type"
-      ]
+      "required": ["hex", "type"]
     },
     "blockHash": {
       "type": ["null", "string"]

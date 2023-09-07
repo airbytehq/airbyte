@@ -1,17 +1,20 @@
-import pandas as pd
-import numpy as np
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import os
 from typing import List
-from dagster import Output, asset, OpExecutionContext
+
+import numpy as np
+import pandas as pd
 import yaml
-
+from dagster import OpExecutionContext, Output, asset
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
-
-from orchestrator.utils.object_helpers import are_values_equal, merge_values
-from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
 from orchestrator.config import get_public_url_for_gcs_file
 from orchestrator.logging import sentry
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition, PartialMetadataDefinition
+from orchestrator.utils.object_helpers import are_values_equal, merge_values
 
 GROUP_NAME = "metadata"
 

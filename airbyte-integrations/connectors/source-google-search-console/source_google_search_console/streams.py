@@ -25,8 +25,8 @@ class QueryAggregationType(Enum):
 
 class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
-    primary_key = None
     data_field = ""
+    raise_on_http_errors = True
 
     def __init__(
         self,
@@ -64,11 +64,29 @@ class GoogleSearchConsole(HttpStream, ABC):
             for record in records:
                 yield record
 
+    def should_retry(self, response: requests.Response) -> bool:
+        response_json = response.json()
+        if "error" in response_json:
+            error = response_json.get("error", {})
+            # handle the `HTTP-403` - insufficient permissions
+            if error.get("code", 0) == 403:
+                self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
+                setattr(self, "raise_on_http_errors", False)
+                return False
+            # handle the `HTTP-400` - Bad query params with `aggregationType`
+            if error.get("code", 0) == 400:
+                self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
+                self.aggregation_type = QueryAggregationType.auto
+                setattr(self, "raise_on_http_errors", False)
+        return super().should_retry(response)
+
 
 class Sites(GoogleSearchConsole):
     """
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
+
+    primary_key = None
 
     def path(
         self,
@@ -84,6 +102,7 @@ class Sitemaps(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
+    primary_key = None
     data_field = "sitemap"
 
     def path(
@@ -200,6 +219,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "rowLimit": ROW_LIMIT,
             "dataState": stream_slice.get("data_state"),
         }
+
         return data
 
     def _get_end_date(self) -> pendulum.date:
@@ -288,30 +308,36 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
+    primary_key = ["site_url", "date", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date"]
 
 
 class SearchAnalyticsByCountry(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "country"]
 
 
 class SearchAnalyticsByDevice(SearchAnalytics):
+    primary_key = ["site_url", "date", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "device"]
 
 
 class SearchAnalyticsByPage(SearchAnalytics):
+    primary_key = ["site_url", "date", "page", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "page"]
 
 
 class SearchAnalyticsByQuery(SearchAnalytics):
+    primary_key = ["site_url", "date", "query", "search_type"]
     dimensions = ["date", "query"]
 
 
 class SearchAnalyticsAllFields(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "page", "query"]
 
 
@@ -322,6 +348,7 @@ class SearchAppearance(SearchAnalytics):
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
     """
 
+    primary_key = None
     dimensions = ["searchAppearance"]
 
 
@@ -342,7 +369,6 @@ class SearchByKeyword(SearchAnalytics):
         stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
         keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
         keywords = {record["searchAppearance"] for record in keywords_records}
-
         filters = []
         for keyword in keywords:
             filters.append({"dimension": "searchAppearance", "operator": "equals", "expression": keyword})
@@ -353,26 +379,37 @@ class SearchByKeyword(SearchAnalytics):
 
 
 class SearchAnalyticsKeywordPageReport(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "query", "page"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
 
 
+class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
+    dimensions = ["date", "country", "device", "query"]
+    aggregation_type = QueryAggregationType.by_property
+
+
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type"]
     dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportByPage(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsPageReport(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type", "page"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "country", "device", "page"]
 
@@ -384,11 +421,16 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
         "device": [{"device": {"type": ["null", "string"]}}],
         "page": [{"page": {"type": ["null", "string"]}}],
         "query": [{"query": {"type": ["null", "string"]}}],
+        "search_type": [{"search_type": {"type": ["null", "string"]}}],
     }
+
+    primary_key = None
 
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions
+        # assign the dimensions as PK for the custom report stream
+        self.primary_key = dimensions
 
     def get_json_schema(self) -> Mapping[str, Any]:
         try:

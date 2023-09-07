@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Google Sear
 
 ## Prerequisites
 
-- A verified property in Google Search Console
+- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Properties))
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -75,7 +75,7 @@ For more information on this topic, please refer to [this Google article](https:
 3. Find and select **Google Search Console** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
-6. For **Start Date**, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
+6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 
    <!-- env:cloud -->
@@ -117,6 +117,7 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics report by query](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics keyword report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics keyword report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
+- [Analytics keyword report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics page report](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
@@ -126,34 +127,27 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ### Custom reports
 
-Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed as a JSON object in the following format:
+Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed like following:
 
-```json
-{
-   "name": "<report-name>",
-   "dimensions": ["<dimension-name>", "<dimension-name>", ...]
-   }
-```
+1. Click `Add` under the `Custom Reports` section
+2. Enter the `Name` of the report, this will be the name of the stream
+3. Select one or more `Dimensions` from the available dropdown list
 
-The available dimensions are:
+The available `Dimensions` are:
 
 - `country`
 - `date`
 - `device`
 - `page`
 - `query`
-- `searchAppearance`
+- `search_type`
 
 For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
 
-```json
-[
-   {
-      "name": "country_date",
-      "dimensions": ["country", "date"]
-   }
-]
-```
+* Name: country_date
+* Dimensions: ["country", "date"]
+
+The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
 
 You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
@@ -185,6 +179,11 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 | :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
+| `1.3.3`  | 2023-08-29 | [29941](https://github.com/airbytehq/airbyte/pull/29941)                                                      | Added `primary key` to each stream, added `custom_report` config migration                      |
+| `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                     |
+| `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                     |
+| `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream |
+| `1.2.2`  | 2023-08-23 | [29741](https://github.com/airbytehq/airbyte/pull/29741)                                                      | Handle `HTTP-401`, `HTTP-403` errors |
 | `1.2.1`  | 2023-07-04 | [27952](https://github.com/airbytehq/airbyte/pull/27952)                                                      | Removed deprecated `searchType`, added `discover`(Discover results) and `googleNews`(Results from news.google.com, etc.) types |
 | `1.2.0`  | 2023-06-29 | [27831](https://github.com/airbytehq/airbyte/pull/27831)                                                      | Add new streams                                                                                                                |
 | `1.1.0`  | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738)                                                      | License Update: Elv2                                                                                                           |

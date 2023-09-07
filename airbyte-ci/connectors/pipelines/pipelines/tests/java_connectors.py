@@ -8,14 +8,10 @@ from typing import List, Optional
 
 import anyio
 from dagger import File, QueryError
-
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
-from pipelines.builds.java_connectors import (
-    BuildConnectorDistributionTar,
-    BuildConnectorImage,
-)
+from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
 from pipelines.builds.normalization import BuildOrPullNormalization
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
@@ -57,7 +53,7 @@ class UnitTests(GradleTask):
     """A step to run unit tests for Java connectors."""
 
     title = "Java Connector Unit Tests"
-    gradle_task_name = "test"
+    gradle_task_name = "check"
     context: ConnectorContext
 
     @property

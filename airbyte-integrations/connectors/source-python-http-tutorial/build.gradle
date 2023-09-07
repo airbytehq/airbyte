@@ -24,8 +24,3 @@ airbyteStandardSourceTestFile {
     // for incremental syncing (e.g. include cursor fields, etc).
     configuredCatalogPath = "sample_files/configured_catalog.json"
 }
-
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
-}

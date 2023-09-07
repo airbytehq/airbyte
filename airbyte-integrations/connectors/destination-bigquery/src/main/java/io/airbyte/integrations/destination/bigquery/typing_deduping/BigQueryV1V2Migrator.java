@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -55,7 +59,7 @@ public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefin
   protected NamespacedTableName convertToV1RawName(StreamConfig streamConfig) {
     return new NamespacedTableName(
         this.nameTransformer.getNamespace(streamConfig.id().originalNamespace()),
-        this.nameTransformer.getRawTableName(streamConfig.id().originalName())
-    );
+        this.nameTransformer.getRawTableName(streamConfig.id().originalName()));
   }
+
 }
