@@ -1,4 +1,4 @@
-# Langchain Migration Guide
+# Vector Database (powered by LangChain) Migration Guide
 
 ## Upgrading to 0.1.0
 
