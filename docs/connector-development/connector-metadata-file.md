@@ -123,5 +123,5 @@ releases:
   breakingChanges:
     1.0.0:
       message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
-      upgradeDeadline: "2023-12-31"  # The date that the upstream API stops support for ApiKey authentication
+      upgradeDeadline: "2023-12-31"
 ```

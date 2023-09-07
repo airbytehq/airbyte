@@ -38,7 +38,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryReco
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV1V2Migrator;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV2RawTableMigrator;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryV2TableMigrator;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -444,13 +444,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                          final BigQuery bigquery,
                                          final String datasetLocation) {
     final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
-    final BigQueryV2RawTableMigrator v2RawTableMigrator = new BigQueryV2RawTableMigrator(bigquery);
+    final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
     return new DefaultTyperDeduper<>(
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery, datasetLocation),
         parsedCatalog,
         migrator,
-        v2RawTableMigrator);
+        v2RawTableMigrator,
+            8);
 
   }
 
