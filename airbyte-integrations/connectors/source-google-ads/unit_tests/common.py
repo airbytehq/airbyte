@@ -13,6 +13,7 @@ class MockSearchRequest:
     query = None
     page_size = 100
     page_token = None
+    next_page_token = None
 
 
 # Mocking Classes

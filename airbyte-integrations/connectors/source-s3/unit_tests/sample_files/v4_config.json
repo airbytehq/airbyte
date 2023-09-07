@@ -1,0 +1,11 @@
+{
+  "bucket": "a-bucket",
+  "streams": [
+    {
+      "name": "output-stream-name",
+      "format": { "filetype": "csv" },
+      "file_type": "csv",
+      "validation_policy": "Emit Record"
+    }
+  ]
+}
