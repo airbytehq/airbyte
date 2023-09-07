@@ -4,17 +4,7 @@
       "stream": {
         "name": "subjects",
         "json_schema": {
-          "properties": {
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "lastModifiedDateTime":{
-              "type": "string"
-            }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
@@ -30,17 +20,7 @@
       "stream": {
         "name": "program_enrolments",
         "json_schema": {
-          "properties": {
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "lastModifiedDateTime":{
-              "type": "string"
-            }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
@@ -56,17 +36,7 @@
       "stream": {
         "name": "program_encounters",
         "json_schema": {
-          "properties": {
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "lastModifiedDateTime":{
-              "type": "string"
-            }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,
@@ -82,17 +52,7 @@
       "stream": {
         "name": "encounters",
         "json_schema": {
-          "properties": {
-            "username": {
-              "type": "string"
-            },
-            "password": {
-              "type": "string"
-            },
-            "lastModifiedDateTime":{
-              "type": "string"
-            }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh","incremental"],
         "source_defined_cursor": true,

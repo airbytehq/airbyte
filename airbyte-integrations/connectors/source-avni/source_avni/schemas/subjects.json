@@ -83,8 +83,13 @@
     "last_modified_at":{
       "type": "string",
       "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
-    }
-    ,
+    },
+    "catchments":{
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "audit": {
       "type": ["null", "object"],
       "additionalProperties": true,
