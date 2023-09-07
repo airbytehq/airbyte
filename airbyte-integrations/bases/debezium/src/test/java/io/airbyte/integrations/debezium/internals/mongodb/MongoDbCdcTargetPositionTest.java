@@ -11,12 +11,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.protocol.models.Jsons;
 import io.debezium.connector.mongodb.ResumeTokens;
 import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.Test;
 class MongoDbCdcTargetPositionTest {
 
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
+  private static final String OTHER_RESUME_TOKEN = "8264BEB9F3000000012B0229296E05";
 
   @Test
   void testCreateTargetPosition() {
@@ -188,7 +191,8 @@ class MongoDbCdcTargetPositionTest {
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
     final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final Map<String, String> offset = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, RESUME_TOKEN);
+    final Map<String, String> offset =
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
 
     final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
     final boolean result = targetPosition.isEventAheadOffset(offset, changeEventWithMetadata);
@@ -207,9 +211,12 @@ class MongoDbCdcTargetPositionTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final Map<String, String> offsetA = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, RESUME_TOKEN);
-    final Map<String, String> offsetB = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, RESUME_TOKEN);
-    final Map<String, String> offsetC = Map.of(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, "other resume token");
+    final Map<String, String> offsetA =
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
+    final Map<String, String> offsetB =
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
+    final Map<String, String> offsetC =
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, OTHER_RESUME_TOKEN), new TypeReference<>() {});
 
     final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
 
