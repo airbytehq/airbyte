@@ -14,8 +14,8 @@ from source_stripe.streams import (
     Persons,
     SetupAttempts,
     StripeStream,
+    UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
-    UpdatedCursorIncrementalStripeLazySubStream
 )
 
 
