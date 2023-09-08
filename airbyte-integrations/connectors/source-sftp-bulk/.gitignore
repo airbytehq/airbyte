@@ -1,9 +1,8 @@
 .hypothesis
-**/*/build/**/*
-**/*/bin/**/*
+*/build/**/*
+*/bin/**/*
 .dockerversions
-config.json
-.python-version
+acceptance_tests_logs
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
