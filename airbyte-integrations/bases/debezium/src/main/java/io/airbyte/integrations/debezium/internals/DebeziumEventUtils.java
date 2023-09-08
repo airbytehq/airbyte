@@ -154,7 +154,7 @@ public class DebeziumEventUtils {
                                          boolean isDelete) {
 
     final long transactionMillis = source.get("ts_ms").asLong();
-    final String transactionTimestamp = new Timestamp(transactionMillis).toInstant().toString();
+    final String transactionTimestamp = Instant.ofEpochMilli(transactionMillis).toString();
 
     baseNode.put(CDC_UPDATED_AT, transactionTimestamp);
     cdcMetadataInjector.addMetaData(baseNode, source);
