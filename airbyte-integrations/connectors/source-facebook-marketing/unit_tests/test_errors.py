@@ -98,7 +98,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_403_requires_permission",
-     "Re-authenticate because current credential missing permissions",
+     "Re-authenticate because current credential does not have the necessary permissions",
      {
          "status_code": 403,
          "json": {
@@ -111,7 +111,7 @@ CONFIG_ERRORS = [
      ),
 
     ("error_400_permission_must_be_granted",
-     "Re-authenticate because current credential missing permissions",
+     "Re-authenticate because current credential does not have the necessary permissions",
      {
          "status_code": 400,
          "json": {
@@ -124,7 +124,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_unsupported_get_request",
-     "Re-authenticate because current credential missing permissions",
+     "Re-authenticate because current credential does not have the necessary permissions",
      {
          "json": {
              "error": {
@@ -135,11 +135,11 @@ CONFIG_ERRORS = [
                  "fbtrace_id": "A7qVRrTcBm8Pt6iUvnBrxwf"
              }
          },
-         "status_code": 400,  # ???????????????????
+         "status_code": 400,
      }
      ),
-    ("error_400_unknown",
-     "Re-authenticate because current credential missing permissions",
+    ("error_400_unknown_profile_is_no_linked",
+     "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page",
      {
          "status_code": 400,
          "json": {
@@ -153,7 +153,53 @@ CONFIG_ERRORS = [
                  "error_user_msg": "profile should always be linked to delegate page",
              }
          }
-     })
+     }
+     # Error happens on Video stream: https://graph.facebook.com/v17.0/act_XXXXXXXXXXXXXXXX/advideos
+     # Recommendations says that the problem can be fixed by switching to Business Ad Account Id
+    ),
+    ("error_400_unknown_profile_is_no_linked_es",
+     "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page",
+     {
+         "status_code": 400,
+         "json": {
+             "error": {
+                 "message": "An unknown error occurred",
+                 "type": "OAuthException",
+                 "code": 1,
+                 "error_subcode": 2853001,
+                 "is_transient": False,
+                 "error_user_title": "el perfil no est\u00e1 vinculado a la p\u00e1gina del delegado",
+                 "error_user_msg": "el perfil deber\u00eda estar siempre vinculado a la p\u00e1gina del delegado",
+             }
+         }
+     }
+     ),
+    # ("error_400_unsupported request",
+    #  "Re-authenticate because current credential missing permissions",
+    #  {
+    #      "status_code": 400,
+    #      "json": {
+    #          "error": {
+    #              "message": "Unsupported request - method type: get",
+    #              "type": "GraphMethodException",
+    #              "code": 100,
+    #          }
+    #      }
+    #  }
+    # # for 'ad_account' stream, endpoint: https://graph.facebook.com/v17.0/act_1231630184301950/,
+    # # further attempts failed as well
+    # # previous sync of 'activities' stream was successfull
+    # # It seems like random problem:
+    # # - https://stackoverflow.com/questions/71195844/unsupported-request-method-type-get
+    # #     "Same issue, but it turned out to be caused by Facebook (confirmed by their employee). A few hours later, the Graph API returned to normal without any action taken."
+    # # - https://developers.facebook.com/community/threads/805349521160054/
+    # #     "following, I've bein getting this error too, since last week, randomly."
+    #
+    #
+    # # https://developers.facebook.com/community/threads/1232870724022634/
+    # # I observed that if I remove preview_shareable_link field from the request, the code is working properly.
+    #
+    # ),
 ]
 
 
@@ -204,7 +250,22 @@ class TestRealErrors:
                      }
                  }
              }
-             )
+             ),
+            ("error_500_reduce_the_amount_of_data",
+             {
+                 "status_code": 500,
+                 "json": {
+                     "error": {
+                         "message": "Please reduce the amount of data you're asking for, then retry your request",
+                         "code": 1,
+                     }
+                 }
+             }
+             # It can be a temporal problem:
+             # Happened during 'ad_account' stream sync which always returns only 1 record.
+             # Potentially could be caused by some particular field (list of requested fields is constant).
+             # But since sync was successful on next attempt, then conclusion is that this is a temporal problem.
+            )
         ]
     )
     def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):
@@ -238,7 +299,8 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
-    @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[-1]])
+    # @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[-1]])
+    @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
 

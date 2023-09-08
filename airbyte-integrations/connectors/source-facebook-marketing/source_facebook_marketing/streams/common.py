@@ -119,7 +119,11 @@ def deep_merge(a: Any, b: Any) -> Any:
 
 
 def traced_exception(fb_exception: FacebookRequestError):
+    """Add user-friendly message for FacebookRequestError
 
+    Please see ../unit_tests/test_errors.py for full error examples
+    Please add new errors to the tests
+    """
     msg = fb_exception.api_error_message()
 
     if "Error validating access token" in msg:
@@ -132,13 +136,14 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     elif "permission" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = "Re-authenticate because current credential missing permissions"
+        friendly_msg = "Re-authenticate because current credential does not have the necessary permissions"
 
     elif "An unknown error occurred" in msg and "error_user_title" in fb_exception._error:
         msg = fb_exception._error["error_user_title"]
-        if "profile is not linked to delegate page" in msg:
+        if ("profile is not linked to delegate page" in msg or
+            'el perfil no est' in msg):
             failure_type = FailureType.config_error
-            friendly_msg = "Re-authenticate because current credential missing permissions"
+            friendly_msg = "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page"
 
     else:
         failure_type = FailureType.system_error
