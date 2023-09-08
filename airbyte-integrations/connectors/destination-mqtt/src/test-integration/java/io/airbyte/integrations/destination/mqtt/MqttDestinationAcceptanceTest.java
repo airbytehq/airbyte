@@ -134,13 +134,13 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
           .map(InetAddress::getHostAddress)
           .filter(InetAddresses::isUriInetAddress)
           .findFirst().orElse(InetAddress.getLocalHost().getHostAddress());
-    } catch (SocketException e) {
+    } catch (final SocketException e) {
       return InetAddress.getLocalHost().getHostAddress();
     }
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws MqttException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws MqttException {
     recordsPerTopic.clear();
     client = new MqttClient("tcp://" + extension.getHost() + ":" + extension.getMqttPort(), UUID.randomUUID().toString(), new MemoryPersistence());
 
@@ -150,14 +150,14 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
     client.connect(options);
 
     client.subscribe(TOPIC_PREFIX + "#", (topic, msg) -> {
-      List<JsonNode> records = recordsPerTopic.getOrDefault(topic, new ArrayList<>());
+      final List<JsonNode> records = recordsPerTopic.getOrDefault(topic, new ArrayList<>());
       records.add(READER.readTree(msg.getPayload()).get(MqttDestination.COLUMN_NAME_DATA));
       recordsPerTopic.put(topic, records);
     });
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws MqttException {
+  protected void tearDown(final TestDestinationEnv testEnv) throws MqttException {
     client.disconnectForcibly();
     client.close();
   }

@@ -5,8 +5,8 @@
       "type": ["null", "object"],
       "properties": {
         "address": {
-      "$ref": "address.json"
-    }
+          "$ref": "address.json"
+        }
       }
     },
     "company": {
@@ -18,6 +18,9 @@
       }
     },
     "created": {
+      "type": ["null", "integer"]
+    },
+    "updated": {
       "type": ["null", "integer"]
     },
     "email": {
@@ -65,7 +68,6 @@
             }
           }
         }
-
       }
     },
     "livemode": {

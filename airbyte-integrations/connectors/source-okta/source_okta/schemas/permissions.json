@@ -39,7 +39,7 @@
       "type": "string",
       "description": "Type of permissions"
     },
-    "conditions":{
+    "conditions": {
       "type": ["null", "object"],
       "properties": {
         "included": {

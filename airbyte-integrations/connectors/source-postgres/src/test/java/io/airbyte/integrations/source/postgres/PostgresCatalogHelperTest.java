@@ -66,6 +66,7 @@ class PostgresCatalogHelperTest {
         .setIncrementalToSourceDefined(noIncremental)
         .getSourceDefinedCursor());
   }
+
   @Test
   public void testSetDefaultCursorFieldForCdc() {
     final AirbyteStream cdcIncrementalStream = new AirbyteStream()

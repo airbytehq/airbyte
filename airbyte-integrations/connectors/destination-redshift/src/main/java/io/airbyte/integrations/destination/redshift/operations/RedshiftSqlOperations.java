@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.redshift.operations;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -19,43 +18,21 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSqlOperations.class);
   public static final int REDSHIFT_VARCHAR_MAX_BYTE_SIZE = 65535;
+  public static final int REDSHIFT_SUPER_MAX_BYTE_SIZE = 1000000;
 
-  public RedshiftSqlOperations() {
-  }
+  public RedshiftSqlOperations() {}
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      return v2CreateTable(database, schemaName, tableName);
-    } else {
-      return v1CreateTable(database, schemaName, tableName);
-    }
-  }
-
-  private String v1CreateTable(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format("""
-                             CREATE TABLE IF NOT EXISTS %s.%s (
-                              %s VARCHAR PRIMARY KEY,
-                              %s SUPER,
-                              %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-                              """, schemaName, tableName,
-                         JavaBaseConstants.COLUMN_NAME_AB_ID,
-                         JavaBaseConstants.COLUMN_NAME_DATA,
-                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-    );
-  }
-
-  private String v2CreateTable(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return String.format("""
-                             CREATE TABLE IF NOT EXISTS %s.%s (
-                              %s VARCHAR PRIMARY KEY,
-                              %s SUPER,
-                              %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
-                              """, schemaName, tableName,
-                         JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-                         JavaBaseConstants.COLUMN_NAME_DATA,
-                         JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
-    );
+                         CREATE TABLE IF NOT EXISTS %s.%s (
+                          %s VARCHAR PRIMARY KEY,
+                          %s SUPER,
+                          %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+                          """, schemaName, tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
   @Override
@@ -65,17 +42,6 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
                                     final String tmpTableName)
       throws SQLException {
     LOGGER.info("actual size of batch: {}", records.size());
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      v2InsertRecordsInternal(database, records, schemaName, tmpTableName);
-    } else {
-      v1InsertRecordsInternal(database, records, schemaName, tmpTableName);
-    }
-  }
-
-  private void v1InsertRecordsInternal(final JdbcDatabase database,
-                                       final List<AirbyteRecordMessage> records,
-                                       final String schemaName,
-                                       final String tmpTableName) throws SQLException {
 
     // query syntax:
     // INSERT INTO public.users (ab_id, data, emitted_at) VALUES
@@ -87,26 +53,9 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
         tmpTableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-    );
+        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     final String recordQueryComponent = "(?, JSON_PARSE(?), ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
   }
 
-  private void v2InsertRecordsInternal(final JdbcDatabase database,
-                                       final List<AirbyteRecordMessage> records,
-                                       final String schemaName,
-                                       final String tmpTableName) throws SQLException {
-    final String insertQueryComponent = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s, %s) VALUES\n",
-        schemaName,
-        tmpTableName,
-        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT
-    );
-    final String recordQueryComponent = "(?, JSON_PARSE(?), ?, null),\n";
-    SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, records);
-  }
 }

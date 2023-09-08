@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   dockerRepository: airbyte/source-harvest
   githubIssueLabel: source-harvest
   icon: harvest.svg
@@ -22,6 +22,6 @@ data:
     - language:python
   ab_internal:
     sl: 200
-    ql: 300
+    ql: 400
   supportLevel: certified
 metadataSpecVersion: "1.0"

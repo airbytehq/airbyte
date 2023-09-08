@@ -10,12 +10,12 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 #### Features
 
-| Feature                        | Support | Notes                                                                                |
-| :----------------------------- | :-----: | :----------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path. |
-| Incremental - Append Sync      |   ✅    |                                                                                      |
-| Incremental - Append + Deduped |   ❌    |                                                                                      |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.          |
+| Feature                        | Support | Notes                                                                                                                                                                                               |
+| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/understanding-airbyte/connections/incremental-append#inclusive-cursors) |
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
 
 ## Configuration
 

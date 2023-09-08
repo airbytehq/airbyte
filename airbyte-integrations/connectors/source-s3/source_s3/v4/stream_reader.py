@@ -8,6 +8,7 @@ from io import IOBase
 from typing import Iterable, List, Optional, Set
 
 import boto3.session
+import pytz
 import smart_open
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -47,23 +48,21 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             # list or read files.
             raise ValueError("Source config is missing; cannot create the S3 client.")
         if self._s3_client is None:
-            if self.config.endpoint:
-                client_kv_args = _get_s3_compatible_client_args(self.config)
-                self._s3_client = boto3.client("s3", **client_kv_args)
-            else:
-                self._s3_client = boto3.client(
-                    "s3",
-                    aws_access_key_id=self.config.aws_access_key_id,
-                    aws_secret_access_key=self.config.aws_secret_access_key,
-                )
+            client_kv_args = _get_s3_compatible_client_args(self.config) if self.config.endpoint else {}
+            self._s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=self.config.aws_access_key_id,
+                aws_secret_access_key=self.config.aws_secret_access_key,
+                **client_kv_args,
+            )
         return self._s3_client
 
-    def get_matching_files(self, globs: List[str], logger: logging.Logger) -> Iterable[RemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Get all files matching the specified glob patterns.
         """
         s3 = self.s3_client
-        prefixes = self.get_prefixes_from_globs(globs)
+        prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
         total_n_keys = 0
 
@@ -122,7 +121,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         total_n_keys_for_prefix = 0
         kwargs = {"Bucket": bucket}
         while True:
-            response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix) if prefix else s3.list_objects_v2(Bucket=bucket)
+            response = s3.list_objects_v2(Prefix=prefix, **kwargs) if prefix else s3.list_objects_v2(**kwargs)
             key_count = response.get("KeyCount")
             total_n_keys_for_prefix += key_count
             logger.info(f"Received {key_count} objects from S3 for prefix '{prefix}'.")
@@ -131,7 +130,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 for file in response["Contents"]:
                     if self._is_folder(file):
                         continue
-                    remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"])
+                    remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
                     if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
                         seen.add(remote_file.uri)
                         yield remote_file

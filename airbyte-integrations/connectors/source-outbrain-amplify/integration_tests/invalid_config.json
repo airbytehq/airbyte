@@ -1,0 +1,10 @@
+{
+  "credentials": {
+    "type": "access_token",
+    "access_token": "12345"
+  },
+  "report_granularity": "daily",
+  "geo_location_breakdown": "country",
+  "start_date": "20220429",
+  "end_date": "20220430"
+}

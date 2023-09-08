@@ -27,6 +27,10 @@ acceptance_tests:
         path: "integration_tests/expected_records.jsonl"
       fail_on_extra_columns: true
       timeout_seconds: 3600
+      ignored_fields:
+        campaign_groups:
+          - name: "lastModified"
+            bypass_reason: "Volatile data"
       empty_streams:
         - name: ad_member_company_size_analytics
           bypass_reason: "Empty stream; Retention period is 2y"

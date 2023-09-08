@@ -27,7 +27,7 @@ public class MongoCatalogHelper {
   /**
    * The list of supported sync modes for a given stream.
    */
-  public static final List<SyncMode> SUPPORTED_SYNC_MODES = List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL);
+  public static final List<SyncMode> SUPPORTED_SYNC_MODES = List.of(SyncMode.INCREMENTAL);
 
   /**
    * Builds an {@link AirbyteStream} with the correct configuration for this source.

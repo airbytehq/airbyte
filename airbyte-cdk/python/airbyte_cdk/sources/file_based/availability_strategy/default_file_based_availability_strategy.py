@@ -55,7 +55,6 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         """
         try:
             files = self._check_list_files(stream)
-            self._check_extensions(stream, files)
             self._check_parse_record(stream, files[0], logger)
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
@@ -73,16 +72,11 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
 
         return files
 
-    def _check_extensions(self, stream: "AbstractFileBasedStream", files: List[RemoteFile]) -> None:
-        if not all(f.extension_agrees_with_file_type(stream.config.file_type) for f in files):
-            raise CheckAvailabilityError(FileBasedSourceError.EXTENSION_MISMATCH, stream=stream.name)
-        return None
-
     def _check_parse_record(self, stream: "AbstractFileBasedStream", file: RemoteFile, logger: logging.Logger) -> None:
         parser = stream.get_parser(stream.config.file_type)
 
         try:
-            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader, logger)))
+            record = next(iter(parser.parse_records(stream.config, file, self.stream_reader, logger, discovered_schema=None)))
         except StopIteration:
             # The file is empty. We've verified that we can open it, so will
             # consider the connection check successful even though it means

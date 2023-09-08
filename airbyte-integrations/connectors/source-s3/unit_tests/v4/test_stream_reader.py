@@ -125,9 +125,28 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
         raise exc
 
     stub = set_stub(reader, mocked_response, multiple_pages)
-    files = list(reader.get_matching_files(globs, logger))
+    files = list(reader.get_matching_files(globs, None, logger))
     stub.deactivate()
     assert set(f.uri for f in files) == expected_uris
+
+
+@patch("boto3.client")
+def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_token(boto3_client_mock) -> None:
+    boto3_client_mock.return_value.list_objects_v2.side_effect = [
+        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2, "NextContinuationToken": "a key"},
+        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2},
+    ]
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="aws_access_key_id",
+        aws_secret_access_key="aws_secret_access_key",
+        streams=[],
+        endpoint=None,
+    )
+    list(reader.get_matching_files(["**"], None, logger))
+    assert boto3_client_mock.return_value.list_objects_v2.call_count == 2
+    assert "ContinuationToken" in boto3_client_mock.return_value.list_objects_v2.call_args_list[1].kwargs
 
 
 def test_get_matching_files_exception():
@@ -137,14 +156,14 @@ def test_get_matching_files_exception():
     stub.add_client_error("list_objects_v2")
     stub.activate()
     with pytest.raises(ErrorListingFiles) as exc:
-        list(reader.get_matching_files(["*"], logger))
+        list(reader.get_matching_files(["*"], None, logger))
     stub.deactivate()
     assert FileBasedSourceError.ERROR_LISTING_FILES.value in exc.value.args[0]
 
 
 def test_get_matching_files_without_config_raises_exception():
     with pytest.raises(ValueError):
-        next(SourceS3StreamReader().get_matching_files([], logger))
+        next(SourceS3StreamReader().get_matching_files([], None, logger))
 
 
 def test_open_file_without_config_raises_exception():

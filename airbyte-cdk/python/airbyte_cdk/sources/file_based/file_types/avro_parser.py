@@ -4,7 +4,7 @@
 
 import logging
 import uuid
-from typing import Any, Dict, Iterable, Mapping
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 import fastavro
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
@@ -12,6 +12,7 @@ from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileB
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 
 AVRO_TYPE_TO_JSON_TYPE = {
     "null": "null",
@@ -47,7 +48,7 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
-    ) -> Dict[str, Any]:
+    ) -> SchemaType:
         avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
@@ -132,6 +133,7 @@ class AvroParser(FileTypeParser):
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
+        discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):

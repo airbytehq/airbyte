@@ -4,30 +4,25 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static io.airbyte.integrations.destination.snowflake.SnowflakeDestinationResolver.getNumberOfFileBuffers;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
-import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
-import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -45,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
-  private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
+  public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
   private final String airbyteEnvironment;
 
   public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
@@ -125,54 +120,6 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final String defaultNamespace = config.get("schema").asText();
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
-        stream.getStream().setNamespace(defaultNamespace);
-      }
-    }
-
-    final SnowflakeSqlGenerator sqlGenerator = new SnowflakeSqlGenerator();
-    final ParsedCatalog parsedCatalog;
-    final TyperDeduper typerDeduper;
-    final JdbcDatabase database = getDatabase(getDataSource(config));
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
-      final CatalogParser catalogParser;
-      if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
-        catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
-      } else {
-        catalogParser = new CatalogParser(sqlGenerator);
-      }
-      parsedCatalog = catalogParser.parseCatalog(catalog);
-      // TODO make a SnowflakeV1V2Migrator
-      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
-    } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
-    }
-
-    return new StagingConsumerFactory().create(
-        outputRecordCollector,
-        database,
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
-        getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
-        config,
-        catalog,
-        true,
-        new TypeAndDedupeOperationValve(),
-        typerDeduper,
-        parsedCatalog,
-        defaultNamespace);
-  }
-
-  @Override
   public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector) {
@@ -187,23 +134,18 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final ParsedCatalog parsedCatalog;
     final TyperDeduper typerDeduper;
     final JdbcDatabase database = getDatabase(getDataSource(config));
-    if (TypingAndDedupingFlag.isDestinationV2()) {
-      final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
-      final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
-      final CatalogParser catalogParser;
-      if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
-        catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
-      } else {
-        catalogParser = new CatalogParser(sqlGenerator);
-      }
-      parsedCatalog = catalogParser.parseCatalog(catalog);
-      // TODO make a SnowflakeV1V2Migrator
-      NoOpDestinationV1V2Migrator migrator = new NoOpDestinationV1V2Migrator();
-      typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
+    final String databaseName = config.get(JdbcUtils.DATABASE_KEY).asText();
+    final SnowflakeDestinationHandler snowflakeDestinationHandler = new SnowflakeDestinationHandler(databaseName, database);
+    final CatalogParser catalogParser;
+    if (TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent()) {
+      catalogParser = new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get());
     } else {
-      parsedCatalog = null;
-      typerDeduper = new NoopTyperDeduper();
+      catalogParser = new CatalogParser(sqlGenerator);
     }
+    parsedCatalog = catalogParser.parseCatalog(catalog);
+    final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
+    final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
 
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
@@ -216,7 +158,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         new TypeAndDedupeOperationValve(),
         typerDeduper,
         parsedCatalog,
-        defaultNamespace);
+        defaultNamespace,
+        true);
   }
 
 }
