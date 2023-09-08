@@ -64,6 +64,7 @@ public class BlotoutAuthentication {
     }
 
     public boolean validateEdgeTagBasedAuthentication(String origin, String token) throws IOException, InterruptedException {
+        LOGGER.info(" inside  validateEdgeTagBasedAuthentication");
         final var request = HttpRequest
                 .newBuilder(URI.create(configs.getBlotoutBaseUrl() + configs.getBlotoutAuthEndpoint()))
                 .timeout(Duration.ofSeconds(120))
