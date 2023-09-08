@@ -27,6 +27,7 @@ connectionSpecification:
       enum:
         - https://kf.kobotoolbox.org
         - https://kobo.humanitarianresponse.info
+        - https://eu.kobotoolbox.org
       order: 3
     start_time:
       type: string
