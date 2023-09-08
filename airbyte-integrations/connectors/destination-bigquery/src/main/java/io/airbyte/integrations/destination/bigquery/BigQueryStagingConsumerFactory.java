@@ -14,7 +14,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
@@ -80,16 +79,17 @@ public class BigQueryStagingConsumerFactory {
         defaultNamespace);
   }
 
+  // TODO Commenting this out for now since it slows down syncs
   private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
-    final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
+    // final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
     return (streamId) -> {
-      if (!valve.containsKey(streamId)) {
-        valve.addStream(streamId);
-      }
-      if (valve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-        valve.updateTimeAndIncreaseInterval(streamId);
-      }
+      // if (!valve.containsKey(streamId)) {
+      // valve.addStream(streamId);
+      // }
+      // if (valve.readyToTypeAndDedupe(streamId)) {
+      // typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+      // valve.updateTimeAndIncreaseInterval(streamId);
+      // }
     };
   }
 
@@ -227,13 +227,13 @@ public class BigQueryStagingConsumerFactory {
        * however, with the changes to checkpointing this will no longer be necessary since despite partial
        * successes, we'll be committing the target table (aka airbyte_raw) table throughout the sync
        */
-
+      typerDeduper.typeAndDedupe();
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName());
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       LOGGER.info("Cleaning up destination completed.");
     };
   }

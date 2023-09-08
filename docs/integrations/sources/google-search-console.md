@@ -127,34 +127,27 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 
 ### Custom reports
 
-Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed as a JSON object in the following format:
+Custom reports allow you to query the API with a custom set of dimensions to group results by. Results are grouped in the order that you supply these dimensions. Each custom report should be constructed like following:
 
-```json
-{
-   "name": "<report-name>",
-   "dimensions": ["<dimension-name>", "<dimension-name>", ...]
-   }
-```
+1. Click `Add` under the `Custom Reports` section
+2. Enter the `Name` of the report, this will be the name of the stream
+3. Select one or more `Dimensions` from the available dropdown list
 
-The available dimensions are:
+The available `Dimensions` are:
 
 - `country`
 - `date`
 - `device`
 - `page`
 - `query`
-- `searchAppearance`
+- `search_type`
 
 For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
 
-```json
-[
-   {
-      "name": "country_date",
-      "dimensions": ["country", "date"]
-   }
-]
-```
+* Name: country_date
+* Dimensions: ["country", "date"]
+
+The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
 
 You can use the [Google APIS Explorer](https://developers.google.com/webmaster-tools/v1/searchanalytics/query) to build and test the reports you want to use.
 
@@ -186,6 +179,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 | :------- | :--------- | :------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------- |
+| `1.3.3`  | 2023-08-29 | [29941](https://github.com/airbytehq/airbyte/pull/29941)                                                      | Added `primary key` to each stream, added `custom_report` config migration                      |
 | `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                     |
 | `1.3.1`  | 2023-08-24 | [29329](https://github.com/airbytehq/airbyte/pull/29329)                                                      | Update tooltip descriptions                     |
 | `1.3.0`  | 2023-08-24 | [29750](https://github.com/airbytehq/airbyte/pull/29750)                                                      | Add new `Keyword-Site-Report-By-Site` stream |
