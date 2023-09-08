@@ -4,7 +4,7 @@
 
 import logging
 from contextlib import nullcontext as does_not_raise
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 import source_stripe
