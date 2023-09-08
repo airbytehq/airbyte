@@ -167,7 +167,7 @@ def test_full_access_streams(caplog, requests_mock, ticket_forms_response, statu
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
-    logged_warnings = iter([record for record in caplog.records if record.levelname == "ERROR"])
+    logged_warnings = (record for record in caplog.records if record.levelname == "ERROR")
     for msg in expected_warnings:
         assert msg in next(logged_warnings).message
 
@@ -1079,3 +1079,14 @@ def test_read_tickets_comment(requests_mock, status_code):
     stream = TicketComments(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
     read_full_refresh(stream)
     assert request_history.call_count == 1
+
+
+def test_read_non_json_error(requests_mock, caplog):
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json",
+        text="not_json_response"
+    )
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = "Skipping stream tickets: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")

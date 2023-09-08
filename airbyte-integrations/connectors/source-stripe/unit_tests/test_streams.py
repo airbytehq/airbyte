@@ -9,9 +9,12 @@ from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
+    FilteringRecordExtractor,
+    IncrementalStripeStream,
     Persons,
     SetupAttempts,
     StripeStream,
+    UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
 )
 
@@ -31,12 +34,59 @@ def balance_transactions(incremental_stream_args):
 
 
 @pytest.fixture()
-def credit_notes(incremental_stream_args):
-    def mocker(args=incremental_stream_args):
+def credit_notes(stream_args):
+    def mocker(args=stream_args):
         return UpdatedCursorIncrementalStripeStream(
             name="credit_notes",
             path="credit_notes",
             event_types=["credit_note.created", "credit_note.updated", "credit_note.voided"],
+            **args
+        )
+    return mocker
+
+
+@pytest.fixture()
+def customers(stream_args):
+    def mocker(args=stream_args):
+        return IncrementalStripeStream(
+            name="customers",
+            path="customers",
+            use_cache=True,
+            event_types=["customer.created", "customer.updated"],
+            **args,
+        )
+    return mocker
+
+
+@pytest.fixture()
+def bank_accounts(customers, stream_args):
+    def mocker(args=stream_args):
+        return UpdatedCursorIncrementalStripeLazySubStream(
+            name="bank_accounts",
+            path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
+            parent=customers(),
+            event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated"],
+            legacy_cursor_field=None,
+            parent_id="customer_id",
+            sub_items_attr="sources",
+            response_filter={"attr": "object", "value": "bank_account"},
+            extra_request_params={"object": "bank_account"},
+            record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+            **args,
+        )
+    return mocker
+
+
+@pytest.fixture()
+def external_bank_accounts(stream_args):
+    def mocker(args=stream_args):
+        return UpdatedCursorIncrementalStripeStream(
+            name="external_account_bank_accounts",
+            path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
+            event_types=["account.external_account.created", "account.external_account.updated"],
+            legacy_cursor_field=None,
+            extra_request_params={"object": "bank_account"},
+            record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
             **args
         )
     return mocker
@@ -48,7 +98,7 @@ def test_request_headers(accounts):
     assert headers["Stripe-Version"] == "2022-11-15"
 
 
-def test_lazy_sub_stream(requests_mock, invoice_line_items, invoices, stream_args, incremental_stream_args):
+def test_lazy_sub_stream(requests_mock, invoice_line_items, invoices, stream_args):
     # First initial request to parent stream
     requests_mock.get(
         "https://api.stripe.com/v1/invoices",
@@ -103,8 +153,7 @@ def test_lazy_sub_stream(requests_mock, invoice_line_items, invoices, stream_arg
 
     # make start date a recent date so there's just one slice in a parent stream
     stream_args["start_date"] = pendulum.today().subtract(days=3).int_timestamp
-    incremental_stream_args["start_date"] = pendulum.today().subtract(days=3).int_timestamp
-    parent_stream = invoices(incremental_stream_args)
+    parent_stream = invoices(stream_args)
     stream = invoice_line_items(stream_args, parent_stream=parent_stream)
     records = []
 
@@ -352,12 +401,12 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
     ]
 
 
-def test_persons_wo_state(requests_mock, incremental_stream_args):
+def test_persons_wo_state(requests_mock, stream_args):
     requests_mock.get(
         "/v1/accounts",
         json={"data": [{"id": 1, "object": "account", "created": 111}]}
     )
-    stream = Persons(**incremental_stream_args)
+    stream = Persons(**stream_args)
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
     requests_mock.get(
@@ -372,7 +421,7 @@ def test_persons_wo_state(requests_mock, incremental_stream_args):
 
 
 @freezegun.freeze_time("2023-08-23T15:00:15")
-def test_persons_w_state(requests_mock, incremental_stream_args):
+def test_persons_w_state(requests_mock, stream_args):
     requests_mock.get(
         "/v1/events",
         json={
@@ -383,16 +432,120 @@ def test_persons_w_state(requests_mock, incremental_stream_args):
                             "object": "person", "name": "John", "created": 1653341716
                         }
                     },
-                    "type": "credit_note.voided"
+                    "type": "person.updated"
                 }
             ],
             "has_more": False
         }
     )
-    stream = Persons(**incremental_stream_args)
+    stream = Persons(**stream_args)
     slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
     assert slices == [{}]
     records = [
         record for record in stream.read_records("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp})
     ]
     assert records == [{"object": "person", "name": "John", "created": 1653341716, "updated": 1691629292}]
+
+
+@pytest.mark.parametrize(
+    "sync_mode, stream_state",
+    (
+        ("full_refresh", {}),
+        ("incremental", {}),
+        ("incremental", {"updated": 1693987430})
+    )
+)
+def test_cursorless_incremental_stream(requests_mock, external_bank_accounts, sync_mode, stream_state):
+    # Testing streams that *only* have the cursor field value in incremental mode because of API discrepancies,
+    # e.g. /bank_accounts does not return created/updated date, however /events?type=bank_account.updated returns the update date.
+    # Key condition here is that the underlying stream has legacy cursor field set to None.
+    stream = external_bank_accounts()
+    requests_mock.get(
+        "/v1/accounts/<account_id>/external_accounts",
+        json={
+            "data": [
+                {
+                    "id": "ba_1Nncwa2eZvKYlo2CDILv1Q7N",
+                    "object": "bank_account",
+                    "account": "acct_1032D82eZvKYlo2C",
+                    "bank_name": "STRIPE TEST BANK",
+                    "country": "US"
+                }
+            ]
+        }
+    )
+    requests_mock.get(
+        "/v1/events",
+        json={
+            "data": [
+                {
+                    "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL", "object": "event", "api_version": "2020-08-27", "created": 1691629292,
+                    "data": {
+                        "object": {
+                            "id": "ba_1Nncwa2eZvKYlo2CDILv1Q7N",
+                            "object": "bank_account",
+                            "account": "acct_1032D82eZvKYlo2C",
+                            "bank_name": "STRIPE TEST BANK",
+                            "country": "US"
+                        }
+                    },
+                    "type": "account.external_account.updated"
+                }
+            ],
+            "has_more": False
+        }
+    )
+    for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
+        for record in stream.read_records(sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_):
+            stream.get_updated_state(stream_state, record)
+    # no assertions, this should be just a successful sync
+
+
+@pytest.mark.parametrize(
+    "sync_mode, stream_state",
+    (
+        ("full_refresh", {}),
+        ("incremental", {}),
+        ("incremental", {"updated": 1693987430})
+    )
+)
+def test_cursorless_incremental_substream(requests_mock, bank_accounts, sync_mode, stream_state):
+    # same for substreams
+    stream = bank_accounts()
+    requests_mock.get(
+        "/v1/customers",
+        json={
+            "data": [
+                {"id": 1, "created": 1, "object": "customer", "sources": {"data": [{"id": 1, "object": "bank_account"}], "has_more": True}}
+            ],
+            "has_more": False
+        }
+    )
+    requests_mock.get(
+        "/v1/customers/1/sources",
+        json={"has_more": False, "data": [{"id": 2, "object": "bank_account"}]}
+    )
+    requests_mock.get(
+        "/v1/events",
+        json={
+            "data": [{
+                "id": "evt_1NdNFoEcXtiJtvvhBP5mxQmL",
+                "object": "event",
+                "api_version": "2020-08-27",
+                "created": 1691629292,
+                "data": {
+                    "object": {
+                        "id": "ba_1Nncwa2eZvKYlo2CDILv1Q7N",
+                        "object": "bank_account",
+                        "account": "acct_1032D82eZvKYlo2C",
+                        "bank_name": "STRIPE TEST BANK",
+                        "country": "US"
+                    }
+                },
+                "type": "account.external_account.updated"
+            }]
+        }
+    )
+    for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
+        for record in stream.read_records(sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_):
+            stream.get_updated_state(stream_state, record)

@@ -2013,7 +2013,7 @@ files = [
 
 [[package]]
 name = "metadata-service"
-version = "0.1.4"
+version = "0.1.5"
 description = ""
 optional = false
 python-versions = "^3.9"
@@ -4353,4 +4353,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8c6fa8dc9750af9e32ac39bfb45a960721098d735bd81f5baf8134921127f16d"
+content-hash = "134eed98a16bd7c49f885a97a2c8955bef284d92d8a9fa833593044ec39a497a"
