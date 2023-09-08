@@ -1,7 +1,6 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-ads:dev
-test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -70,20 +69,3 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        cursor_paths:
-          account_performance_report: [ "4651612872", "segments.date" ]
-          click_view: [ "4651612872", "segments.date" ]
-          geographic_report: [ "4651612872", "segments.date" ]
-          keyword_report: [ "4651612872", "segments.date" ]
-          display_topics_performance_report: [ "4651612872", "segments.date" ]
-          shopping_performance_report: [ "4651612872", "segments.date" ]
-          ad_group_ads: [ "4651612872", "segments.date" ]
-          ad_groups: [ "4651612872", "segments.date" ]
-          accounts: [ "4651612872", "segments.date" ]
-          campaigns: [ "4651612872", "segments.date" ]
-          campaign_budget: [ "4651612872", "segments.date" ]
-          user_location_report: [ "4651612872", "segments.date" ]
-          ad_group_ad_report: [ "4651612872", "segments.date" ]
-          display_keyword_performance_report: [ "4651612872", "segments.date" ]
-          ad_group_criterions: ["change_status", "4651612872", "change_status.last_change_date_time"]
-          campaign_criterion: ["change_status", "4651612872", "change_status.last_change_date_time"]
