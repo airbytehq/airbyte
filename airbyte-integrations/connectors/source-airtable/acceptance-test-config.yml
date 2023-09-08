@@ -17,7 +17,7 @@ acceptance_tests:
       - config_path: "integration_tests/invalid_config_oauth.json"
         status: "failed"
       - config_path: "integration_tests/invalid_config_oauth_missing_fields.json"
-        status: "exception"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"

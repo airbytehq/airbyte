@@ -1,5 +1,11 @@
 # Building a Python Destination
 
+:::warning
+Airbyte has a Python Destination CDK that allows you to create quick and simple destinations for particular use cases. 
+Currently, the project is not accepting new Python Destinations in the official catalog.
+However, you can still build the connector and use it for your projects locally or import it into Airbyte Cloud.
+:::
+
 ## Summary
 
 This article provides a checklist for how to create a Python destination. Each step in the checklist has a link to a more detailed explanation below.

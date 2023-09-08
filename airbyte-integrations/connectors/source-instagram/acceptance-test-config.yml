@@ -59,14 +59,19 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          user_lifetime_insights:
+            - name: value
+              bypass_reason: Floating values from sync-to-sync, due to live updating info.
+          user_insights:
+            - name: profile_views
+              bypass_reason: Floating values from sync-to-sync, due to live updating info.
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        cursor_paths:
-          user_insights: ["17841408147298757", "date"]
         # because state is complex and stores values for different accounts on one hand
         # and there's no way we can set multiple cursor paths for a single stream on the other,
         # this test should be skipped as it is false negative.

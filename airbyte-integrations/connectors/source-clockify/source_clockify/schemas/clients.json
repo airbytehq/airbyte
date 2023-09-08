@@ -1,23 +1,27 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties": {
     "address": {
       "type": ["null", "string"]
     },
     "archived": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "note": {
       "type": ["null", "string"]
     },
     "workspaceId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "type": "object"

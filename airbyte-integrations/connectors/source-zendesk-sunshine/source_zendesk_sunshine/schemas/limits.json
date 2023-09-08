@@ -1,14 +1,16 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "key": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "limit": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   }
 }

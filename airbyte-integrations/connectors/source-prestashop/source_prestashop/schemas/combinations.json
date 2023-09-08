@@ -1,60 +1,60 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_product": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "location": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ean13": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isbn": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "upc": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "mpn": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "quantity": {
-      "type": "string"
+      "type": ["null", "integer"]
     },
     "reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "supplier_reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "wholesale_price": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "price": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ecotax": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "weight": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "unit_price_impact": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "minimal_quantity": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "low_stock_threshold": {
       "type": ["null", "string"]
     },
     "low_stock_alert": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "default_on": {
       "type": ["null", "string"]
@@ -72,7 +72,7 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }
@@ -83,7 +83,7 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["null", "string"]
               }
             }
           }

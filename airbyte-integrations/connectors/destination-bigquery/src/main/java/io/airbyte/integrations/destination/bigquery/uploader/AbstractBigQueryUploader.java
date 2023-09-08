@@ -14,7 +14,10 @@ import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableInfo;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
@@ -51,10 +54,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     this.syncMode = syncMode;
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
-  }
-
-  public BigQueryRecordFormatter getRecordFormatter() {
-    return recordFormatter;
   }
 
   protected void postProcessAction(final boolean hasFailed) throws Exception {
@@ -96,9 +95,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     try {
-      LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
-      uploadDataToTableFromTmpTable();
-      LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
       outputRecordCollector.accept(lastStateMessage);
       LOGGER.info("Final state message is accepted.");
     } catch (final Exception e) {
@@ -106,6 +102,18 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       throw e;
     } finally {
       dropTmpTable();
+    }
+  }
+
+  public void createRawTable() {
+    // Ensure that this table exists.
+    // TODO alter an existing raw table?
+    final Table rawTable = bigQuery.getTable(table);
+    if (rawTable == null) {
+      LOGGER.info("Creating raw table {}.", table);
+      bigQuery.create(TableInfo.newBuilder(table, StandardTableDefinition.of(recordFormatter.getBigQuerySchema())).build());
+    } else {
+      LOGGER.info("Found raw table {}.", rawTable.getTableId());
     }
   }
 

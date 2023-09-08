@@ -33,8 +33,8 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/postgres
+  supportLevel: certified
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
 metadataSpecVersion: "1.0"
 ```
 
@@ -86,3 +86,42 @@ In the example above, the connector has three tags. Tags are used for two primar
 2. **Keywords for Searching**: Tags that begin with keyword: are used to make the connector more discoverable by adding searchable terms related to it. In the example above, the tags keyword:database and keyword:SQL can be used to find this connector when searching for `database` or `SQL`.
 
 These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
+
+## The `icon` Field
+This denotes the name of the icon file for the connector. At this time the icon file is located in the `platform-internal` repository. So please ensure that the icon file is present in the `platform-internal` repository at [oss/airbyte-config/init/src/main/resources/icons](https://github.com/airbytehq/airbyte-platform-internal/tree/master/oss/airbyte-config/init/src/main/resources/icons) before adding the icon name to the `metadata.yaml` file.
+
+### Future Plans
+_⚠️ This property is in the process of being refactored to be a file in the connector folder_
+
+You may notice a `icon.svg` file in the connectors folder.
+
+This is because we are transitioning away from icons being stored in the `platform-internal` repository. Instead, we will be storing them in the connector folder itself. This will allow us to have a single source of truth for all connector-related information.
+
+This transition is currently in progress. Once it is complete, the `icon` field in the `metadata.yaml` file will be removed, and the `icon.svg` file will be used instead.
+
+## The `releases` Section
+The `releases` section contains extra information about certain types of releases. The current types of releases are:
+* `breakingChanges`
+
+### `breakingChanges`
+
+The `breakingChanges` section of `releases` contains a dictionary of version numbers (usually major versions, i.e. `1.0.0`) and information about
+their associated breaking changes. Each entry must contain the following parameters:
+* `message`: A description of the breaking change, written in a user-friendly format. This message should briefly describe
+  * What the breaking change is, and which users it effects (e.g. all users of the source, or only those using a certain stream)
+  * Why the change is better for the user (fixed a bug, something got faster, etc)
+  * What the user should do to fix the issue (e.g. a full reset, run a SQL query in the destinaton, etc)
+* `upgradeDeadline`: (`YYYY-MM-DD`) The date by which the user should upgrade to the new version.
+
+When considering what the `upgradeDeadline` should be, target the amount of time which would be reasonable for the user to make the required changes described in the `message` and upgrade giude.  If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended.  Note that you do *not* want to link the duration of `upgradeDeadline` to an upstream API's deprecation date.  While it is true that the older version of a connector will continue to work for that period of time, it means that users who are pinned to the older version of the connector will not benefit from future updates and fixes.
+
+Without all 3 of these points, the breaking change message is not helpful to users. 
+
+Here is an example:
+```yaml
+releases:
+  breakingChanges:
+    1.0.0:
+      message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
+      upgradeDeadline: "2023-12-31"
+```

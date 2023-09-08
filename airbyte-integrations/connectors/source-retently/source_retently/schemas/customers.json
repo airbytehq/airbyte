@@ -1,52 +1,53 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "firstName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "lastName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "companyName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "companyId": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "tags": {
       "type": "array",
       "items": {
-        "type": ["string", "null"]
+        "type": ["null", "string"]
       }
     },
     "createdDate": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": ["null", "string"],
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
     },
     "properties": {
       "type": "array",
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "label": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "type": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": ["string", "integer", "number", "boolean"]
+            "type": ["null", "string"]
           }
         }
       }

@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "archivedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "bccRecipients": {
+      "type": ["null", "string"]
+    },
+    "bodyHtml": {
+      "type": ["null", "string"]
+    },
+    "bodyText": {
+      "type": ["null", "string"]
+    },
+    "bounceCount": {
+      "type": ["null", "integer"]
+    },
+    "ccRecipients": {
+      "type": ["null", "string"]
+    },
+    "clickCount": {
+      "type": ["null", "integer"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deliverCount": {
+      "type": ["null", "integer"]
+    },
+    "failureCount": {
+      "type": ["null", "integer"]
+    },
+    "lastUsedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "negativeReplyCount": {
+      "type": ["null", "integer"]
+    },
+    "neutralReplyCount": {
+      "type": ["null", "integer"]
+    },
+    "openCount": {
+      "type": ["null", "integer"]
+    },
+    "optOutCount": {
+      "type": ["null", "integer"]
+    },
+    "positiveReplyCount": {
+      "type": ["null", "integer"]
+    },
+    "replyCount": {
+      "type": ["null", "integer"]
+    },
+    "scheduleCount": {
+      "type": ["null", "integer"]
+    },
+    "shareType": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "string"]
+    },
+    "toRecipients": {
+      "type": ["null", "string"]
+    },
+    "trackLinks": {
+      "type": ["null", "boolean"]
+    },
+    "trackOpens": {
+      "type": ["null", "boolean"]
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "contentCategoryMemberships": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "creator": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "owner": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "recipients": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "sequenceTemplates": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "updater": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    }
+  }
+}

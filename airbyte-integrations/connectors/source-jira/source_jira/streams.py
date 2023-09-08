@@ -688,6 +688,10 @@ class IssueWatchers(StartDateJiraStream):
 
     # extract_field = "watchers"
     primary_key = None
+    skip_http_status_codes = [
+        # Issue is not found or the user does not have permission to view it.
+        requests.codes.NOT_FOUND
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -808,7 +812,7 @@ class Projects(JiraStream):
 
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)
-        params["expand"] = "description"
+        params["expand"] = "description,lead"
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:

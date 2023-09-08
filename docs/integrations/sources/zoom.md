@@ -53,15 +53,22 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ### Requirements
 
-* Zoom JWT Token
+* Zoom Server-to-Server Oauth App
 
 ### Setup guide
+Please read [How to generate your Server-to-Server OAuth app ](https://developers.zoom.us/docs/internal-apps/s2s-oauth/).
 
-Please read [How to generate your JWT Token](https://marketplace.zoom.us/docs/guides/build/jwt-app).
+:::info
+
+JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https://developers.zoom.us/docs/internal-apps/jwt-faq/)
+
+:::
+
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------| :--------------------------------------------------------------------- |
+| 1.0.0   | 2023-7-28  | [25308](https://github.com/airbytehq/airbyte/pull/25308) | Replace JWT Auth methods with server-to-server Oauth |
 | 0.1.1   | 2022-11-30 | [19939](https://github.com/airbytehq/airbyte/pull/19939) | Upgrade CDK version to fix bugs with SubStreamSlicer |
 | 0.1.0   | 2022-10-25 | [18179](https://github.com/airbytehq/airbyte/pull/18179) | Initial Release                                                        |

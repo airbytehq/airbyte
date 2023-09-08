@@ -1,8 +1,14 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
+const yaml = require('js-yaml');
+const fs = require("node:fs");
+const path = require("node:path");
+
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+
+const redirects = yaml.load(fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8"));
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -20,70 +26,11 @@ const config = {
   projectName: "airbyte", // Usually your repo name.
 
   plugins: [
-    [require.resolve("@cmfcmf/docusaurus-search-local"), { indexBlog: false }],
     [
       "@docusaurus/plugin-client-redirects",
       {
         fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
-        redirects: [
-          // /docs/oldDoc -> /docs/newDoc
-          {
-            from: "/upgrading-airbyte",
-            to: "/operator-guides/upgrading-airbyte",
-          },
-          {
-            from: "/catalog",
-            to: "/understanding-airbyte/airbyte-protocol",
-          },
-          {
-            from: "/integrations/sources/google-analytics-data-api",
-            to: "/integrations/sources/google-analytics-v4",
-          },
-          {
-            from: "/integrations/sources/appstore",
-            to: "/integrations/sources/appstore-singer",
-          },
-          {
-            from: "/project-overview/security",
-            to: "/operator-guides/security",
-          },
-          {
-            from: "/operator-guides/securing-airbyte",
-            to: "/operator-guides/security",
-          },
-          {
-            from: "/connector-development/config-based/",
-            to: "/connector-development/config-based/low-code-cdk-overview",
-          },
-          {
-            from: "/project-overview/changelog",
-            to: "/category/release-notes",
-          },
-          {
-            from: "/connector-development/config-based/understanding-the-yaml-file/stream-slicers/",
-            to: "/connector-development/config-based/understanding-the-yaml-file/partition-router",
-          },
-          {
-            from: "/cloud/managing-airbyte-cloud",
-            to: "/category/using-airbyte-cloud",
-          },
-          {
-            from: "/category/managing-airbyte-cloud",
-            to: "/category/using-airbyte-cloud",
-          },
-          {
-            from: "/category/airbyte-open-source-quick-start",
-            to: "/category/getting-started"
-          },
-          {
-            from: "/cloud/dbt-cloud-integration",
-            to: "/cloud/managing-airbyte-cloud/dbt-cloud-integration",
-          },
-          //                        {
-          //                         from: '/some-lame-path',
-          //                         to: '/a-much-cooler-uri',
-          //                        },
-        ],
+        redirects: redirects,
       },
     ],
     () => ({
@@ -139,6 +86,11 @@ const config = {
           autoCollapseCategories: true,
         },
       },
+      algolia: {
+          appId: 'OYKDBC51MU',
+          apiKey: '15c487fd9f7722282efd8fcb76746fce', // Public API key: it is safe to commit it
+          indexName: 'airbyte',
+      },
       navbar: {
         title: "",
         logo: {
@@ -165,7 +117,7 @@ const config = {
             position: "left",
           },
           {
-            href: "https://discuss.airbyte.io/",
+            href: "https://support.airbyte.com/",
             label: "Support",
             position: "left",
           },
