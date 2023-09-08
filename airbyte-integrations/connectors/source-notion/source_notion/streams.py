@@ -125,6 +125,7 @@ class IncrementalNotionStream(NotionStream, ABC):
         return "search"
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        print(f"Object type is: {self.obj_type}")
         if not self.obj_type:
             return
 
@@ -348,7 +349,7 @@ class Comments(HttpSubStream, IncrementalNotionStream):
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-                print("Was it an instance of a stateValueWrapper? ", state_lmd)
+                print("STATE has an LMD: ", state_lmd)
 
             print("Record_lmd: ", record_lmd)
             print("State_lmd: ", state_lmd)
