@@ -188,11 +188,14 @@ class IncrementalNotionStream(NotionStream, ABC):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         state_value = (current_stream_state or {}).get(self.cursor_field, "")
+        print("State_value being read by get_updated_state: ", state_value)
         if not isinstance(state_value, StateValueWrapper):
             state_value = StateValueWrapper(stream=self, state_value=state_value)
 
         record_time = latest_record.get(self.cursor_field, self.start_date)
         state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
+
+        print("State value being returned from get_updated_state: ", state_value)
 
         return {self.cursor_field: state_value}
 
@@ -346,19 +349,11 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         
-        print("Stream_state in Comments.stream_slices: ", stream_state)
-
-        # parent_stream_slices = self.parent.stream_slices(
-        #     sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        # )
-
-        # iterate over all parent stream_slices
-        # for stream_slice in parent_stream_slices:
-            # print("Stream_slice in Comments.stream_slices: ", stream_slice)
+        # gather parent stream records in full
         parent_records = self.parent.read_records(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
-            # iterate over all parent records with current stream_slice to get block_id for use in request_params
+        # iterate over all parent records to get block_id for use in request_params
         for record in parent_records:
             yield {"block_id": record["id"]}
