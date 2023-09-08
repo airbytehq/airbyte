@@ -17,6 +17,22 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - ads_insights
+      - campaigns
+      - ads
+      - ad_sets
+      - ad_creatives
+      - ads_insights_age_and_gender
+      - ads_insights_action_type
+      - custom_conversions
+      - images
+      - ads_insights_country
+      - ads_insights_platform_and_device
+      - ads_insights_region
+      - ads_insights_dma
+      - activities
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   tags:
     - language:python
