@@ -46,8 +46,8 @@ def credit_notes(stream_args):
 
 
 @pytest.fixture()
-def customers(incremental_stream_args):
-    def mocker(args=incremental_stream_args):
+def customers(stream_args):
+    def mocker(args=stream_args):
         return IncrementalStripeStream(
             name="customers",
             path="customers",
@@ -59,8 +59,8 @@ def customers(incremental_stream_args):
 
 
 @pytest.fixture()
-def bank_accounts(customers, incremental_stream_args):
-    def mocker(args=incremental_stream_args):
+def bank_accounts(customers, stream_args):
+    def mocker(args=stream_args):
         return UpdatedCursorIncrementalStripeLazySubStream(
             name="bank_accounts",
             path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
@@ -78,8 +78,8 @@ def bank_accounts(customers, incremental_stream_args):
 
 
 @pytest.fixture()
-def external_bank_accounts(incremental_stream_args):
-    def mocker(args=incremental_stream_args):
+def external_bank_accounts(stream_args):
+    def mocker(args=stream_args):
         return UpdatedCursorIncrementalStripeStream(
             name="external_account_bank_accounts",
             path=lambda self, *args, **kwargs: f"accounts/{self.account_id}/external_accounts",
