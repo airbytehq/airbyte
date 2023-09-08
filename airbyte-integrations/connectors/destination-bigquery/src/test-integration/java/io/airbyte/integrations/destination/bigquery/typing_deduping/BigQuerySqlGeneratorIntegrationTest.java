@@ -125,41 +125,6 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   }
 
   @Override
-  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws InterruptedException {
-    final String cdcDeletedAt = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "final_table_id", streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix),
-            "cdc_deleted_at", cdcDeletedAt)).replace(
-                """
-                                          CREATE TABLE ${final_table_id} (
-                                            _airbyte_raw_id STRING NOT NULL,
-                                            _airbyte_extracted_at TIMESTAMP NOT NULL,
-                                            _airbyte_meta JSON NOT NULL,
-                                            `id1` INT64,
-                                            `id2` INT64,
-                                            `updated_at` TIMESTAMP,
-                                            ${cdc_deleted_at}
-                                            `struct` JSON,
-                                            `array` JSON,
-                                            `string` STRING,
-                  `number` NUMERIC,
-                  `integer` INT64,
-                  `boolean` BOOL,
-                  `timestamp_with_timezone` TIMESTAMP,
-                  `timestamp_without_timezone` DATETIME,
-                  `time_with_timezone` STRING,
-                  `time_without_timezone` TIME,
-                  `date` DATE,
-                  `unknown` JSON
-                )
-                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                CLUSTER BY id1, id2, _airbyte_extracted_at;
-                """))
-        .build());
-  }
-
-  @Override
   protected void insertFinalTableRecords(final boolean includeCdcDeletedAt,
                                          final StreamId streamId,
                                          final String suffix,

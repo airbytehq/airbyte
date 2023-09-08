@@ -78,22 +78,27 @@ There are two types of incremental sync:
 The Zendesk Support source connector supports the following streams:
 
 - [Account Attributes](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-account-attributes)
+- [Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles) \(Incremental\) 
+- [Article Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\) 
+- [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/#list-comments) \(Incremental\) 
+- [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\) 
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
-- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
+- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
 - [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+- [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields) \(Incremental\)
 - [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
 - [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
-- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments)
-- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
-- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments) \(Incremental\)
+- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
+- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
-- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
-- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
+- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
+- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
@@ -117,6 +122,10 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.5.0`  | 2023-09-04 | [30138](https://github.com/airbytehq/airbyte/pull/30138) | Add new Streams: `Article Votes`, `Article Comments`, `Article Comment Votes`                                                                                                                                                      |
+| `1.4.0`  | 2023-09-04 | [30134](https://github.com/airbytehq/airbyte/pull/30134) | Add incremental support for streams: `custom Roles`, `Schedules`, `SLA Policies`                                                                                                                                                   |
+| `1.3.0`  | 2023-08-30 | [30031](https://github.com/airbytehq/airbyte/pull/30031) | Add new streams: `Articles`, `Organization Fields`                                                                                                                                                                                 |
+| `1.2.2`  | 2023-08-30 | [29998](https://github.com/airbytehq/airbyte/pull/29998) | Fix typo in stream `AttributeDefinitions`: field condition                                                                                                                                                                         |
 | `1.2.1`  | 2023-08-30 | [29991](https://github.com/airbytehq/airbyte/pull/29991) | Remove Custom availability strategy                                                                                                                                                                                                |
 | `1.2.0`  | 2023-08-29 | [29940](https://github.com/airbytehq/airbyte/pull/29940) | Add undeclared fields to schemas                                                                                                                                                                                                   |
 | `1.1.1`  | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | make `Organizations` stream incremental                                                                                                                                                                                            |

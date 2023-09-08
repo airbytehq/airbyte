@@ -23,8 +23,11 @@ class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     gradle_task_name = "integrationTest"
-    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
     title = "Java Connector Integration Tests"
+
+    # skip the connector acceptance tests run by gradle
+    # as we run them in the AcceptanceTests step
+    gradle_task_options = ("-x", "connectorAcceptanceTest")
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
@@ -53,7 +56,7 @@ class UnitTests(GradleTask):
     """A step to run unit tests for Java connectors."""
 
     title = "Java Connector Unit Tests"
-    gradle_task_name = "test"
+    gradle_task_name = "check"
     context: ConnectorContext
 
     @property

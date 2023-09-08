@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
+import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -188,28 +189,30 @@ public class PostgresQueryUtils {
     return cursorBasedStatusMap;
   }
 
-  public static ResultWithFailed<Map<AirbyteStreamNameNamespacePair, Long>> fileNodeForStreams(final JdbcDatabase database,
-                                                                                               final List<ConfiguredAirbyteStream> streams,
-                                                                                               final String quoteString) {
-    final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
-    final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery = new ArrayList<>();
+  public static FileNodeHandler fileNodeForStreams(final JdbcDatabase database,
+                                                   final List<ConfiguredAirbyteStream> streams,
+                                                   final String quoteString) {
+    final FileNodeHandler fileNodeHandler = new FileNodeHandler();
     streams.forEach(stream -> {
       try {
         final AirbyteStreamNameNamespacePair namespacePair =
             new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-        final Optional<Long> fileNode = fileNodeForStreams(database, namespacePair, quoteString);
+        final Optional<Long> fileNode = fileNodeForIndividualStream(database, namespacePair, quoteString);
         fileNode.ifPresentOrElse(
-            l -> fileNodes.put(namespacePair, l),
-            () -> failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
+            l -> fileNodeHandler.updateFileNode(namespacePair, l),
+            () -> fileNodeHandler
+                .updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
       } catch (final Exception e) {
         LOGGER.warn("Failed to fetch relation node for {}.{} .", stream.getStream().getNamespace(), stream.getStream().getName(), e);
-        failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
+        fileNodeHandler.updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
       }
     });
-    return new ResultWithFailed<>(fileNodes, failedToQuery);
+    return fileNodeHandler;
   }
 
-  public static Optional<Long> fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString)
+  public static Optional<Long> fileNodeForIndividualStream(final JdbcDatabase database,
+                                                           final AirbyteStreamNameNamespacePair stream,
+                                                           final String quoteString)
       throws SQLException {
     final String streamName = stream.getName();
     final String schemaName = stream.getNamespace();

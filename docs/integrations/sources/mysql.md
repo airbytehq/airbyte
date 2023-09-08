@@ -92,14 +92,14 @@ server-id                  = 223344
 log_bin                    = mysql-bin
 binlog_format              = ROW
 binlog_row_image           = FULL
-binlog_expire_log_seconds  = 864000
+binlog_expire_logs_seconds  = 864000
 ```
 
 - server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
 - log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
 - binlog_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
 - binlog_row_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
-- binlog_expire_log_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
+- binlog_expire_logs_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
 
 **2. Enable GTIDs \(Optional\)**
 
@@ -264,6 +264,9 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.4   | 2023-09-06 | [30213](https://github.com/airbytehq/airbyte/pull/30213)   | CDC : Checkpointable initial snapshot                                                                                                           |
+| 3.0.3   | 2023-08-31 | [29821](https://github.com/airbytehq/airbyte/pull/29821)   | Set replication_method display_type to radio                                                                                                    |
+| 3.0.2   | 2023-08-30 | [30015](https://github.com/airbytehq/airbyte/pull/30015)   | Logging : Log storage engines associated with tables in the sync                                                                                |
 | 3.0.1   | 2023-08-21 | [29308](https://github.com/airbytehq/airbyte/pull/29308)   | CDC: Enable frequent state emissions during incremental runs                                                                                    |
 | 3.0.0   | 2023-08-08 | [28756](https://github.com/airbytehq/airbyte/pull/28756)   | CDC: Set a default cursor                                                                                                                       |
 | 2.1.2   | 2023-08-08 | [29220](https://github.com/airbytehq/airbyte/pull/29220)   | Add indicator that CDC is the recommended update method                                                                                         |

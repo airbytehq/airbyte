@@ -446,10 +446,15 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         for registry_name in enabled_registries
     }
 
-    deleted_registry_entries = {
-        registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
-        for registry_name in disabled_registries
-    }
+    # Only delete the registry entry if it is the latest version
+    # This is to preserve any registry specific overrides even if they were removed
+    deleted_registry_entries = {}
+    if metadata_entry.is_latest_version_path:
+        context.log.debug(f"Deleting previous registry entries enabled {metadata_entry.file_path}")
+        deleted_registry_entries = {
+            registry_name: delete_registry_entry(registry_name, metadata_entry, root_metadata_directory_manager)
+            for registry_name in disabled_registries
+        }
 
     dagster_metadata_persist = {
         f"create_{registry_name}": MetadataValue.url(registry_url) for registry_name, registry_url in persisted_registry_entries.items()

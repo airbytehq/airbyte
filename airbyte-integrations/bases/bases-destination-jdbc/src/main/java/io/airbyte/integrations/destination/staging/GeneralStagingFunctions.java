@@ -104,6 +104,7 @@ public class GeneralStagingFunctions {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       log.info("Cleaning up destination started for {} streams", writeConfigs.size());
+      typerDeduper.typeAndDedupe();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
@@ -112,11 +113,9 @@ public class GeneralStagingFunctions {
               stageName);
           stagingOperations.dropStageIfExists(database, stageName);
         }
-
-        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
       }
-
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       log.info("Cleaning up destination completed.");
     };
   }
