@@ -67,6 +67,7 @@ public class BigQueryTableWriter implements DestinationWriter {
 
   @Override
   public void closeAfterPush() throws IOException {
+    LOGGER.error("===================== CLOSING AFTER PUSH ==========================");
     this.writeChannel.close();
   }
 
