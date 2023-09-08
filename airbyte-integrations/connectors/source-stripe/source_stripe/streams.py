@@ -48,20 +48,20 @@ class EventRecordExtractor(DefaultRecordExtractor):
 
 
 class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
-    def __init__(self, cursor_field: str, legacy_cursor_field: str):
+    def __init__(self, cursor_field: str, legacy_cursor_field: Optional[str]):
         self.cursor_field = cursor_field
         self.legacy_cursor_field = legacy_cursor_field
 
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping]:
         records = super().extract_records(response)
         for record in records:
-            if self.cursor_field not in record:
+            if self.legacy_cursor_field and self.cursor_field not in record:
                 record[self.cursor_field] = record[self.legacy_cursor_field]
             yield record
 
 
 class FilteringRecordExtractor(UpdatedCursorIncrementalRecordExtractor):
-    def __init__(self, cursor_field: str, legacy_cursor_field: str, object_type: str):
+    def __init__(self, cursor_field: str, legacy_cursor_field: Optional[str], object_type: str):
         super().__init__(cursor_field, legacy_cursor_field)
         self.object_type = object_type
 
@@ -213,7 +213,9 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         """
         state_cursor_value = current_stream_state.get(self.cursor_field, 0)
         latest_record_value = latest_record.get(self.cursor_field)
-        return {self.cursor_field: max(latest_record_value, state_cursor_value)}
+        if state_cursor_value and latest_record_value:
+            return {self.cursor_field: max(latest_record_value, state_cursor_value)}
+        return current_stream_state
 
     def request_params(
         self,
@@ -310,7 +312,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         self,
         *args,
         cursor_field: str = "updated",
-        legacy_cursor_field: str = "created",
+        legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         record_extractor: Optional[IRecordExtractor] = None,
         **kwargs,
@@ -336,6 +338,10 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         )
 
     def update_cursor_field(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        if not self.legacy_cursor_field:
+            # Streams that used to support only full_refresh mode.
+            # Now they support event-based incremental syncs but have a cursor field only in that mode.
+            return stream_state
         # support for both legacy and new cursor fields
         current_stream_state_value = stream_state.get(self.cursor_field, stream_state.get(self.legacy_cursor_field, 0))
         return {self.cursor_field: current_stream_state_value}
@@ -343,8 +349,10 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         latest_record_value = latest_record.get(self.cursor_field)
         current_stream_state = self.update_cursor_field(current_stream_state)
-        state_value = current_stream_state.get(self.cursor_field)
-        return {self.cursor_field: max(latest_record_value, state_value)}
+        current_state_value = current_stream_state.get(self.cursor_field)
+        if latest_record_value and current_state_value:
+            return {self.cursor_field: max(latest_record_value, current_state_value)}
+        return current_stream_state
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -401,7 +409,7 @@ class IncrementalStripeStream(StripeStream):
         self,
         *args,
         cursor_field: str = "updated",
-        legacy_cursor_field: str = "created",
+        legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         **kwargs,
     ):
@@ -792,7 +800,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         parent: StripeStream,
         *args,
         cursor_field: str = "updated",
-        legacy_cursor_field: str = "created",
+        legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
         parent_id: Optional[str] = None,
         add_parent_id: bool = False,
@@ -801,6 +809,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self._cursor_field = cursor_field
         updated_cursor_incremental_stream = UpdatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
@@ -819,6 +828,10 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         )
         self._parent_stream = None
         self.stream_selector = IncrementalStripeLazySubStreamSelector(updated_cursor_incremental_stream, lazy_substream)
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return [self._cursor_field]
 
     @property
     def parent_stream(self):
