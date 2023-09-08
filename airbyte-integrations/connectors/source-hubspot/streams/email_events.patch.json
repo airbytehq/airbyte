@@ -1,0 +1,10 @@
+{
+    "properties":{
+        "browser": {
+            "version":{
+                "type": ["null", "string", "array"]
+            },
+            "type": ["object", "null"]
+        }
+    }
+}
