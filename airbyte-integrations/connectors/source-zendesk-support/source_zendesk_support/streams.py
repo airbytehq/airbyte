@@ -119,7 +119,7 @@ class BaseZendeskSupportStream(HttpStream, ABC):
             except requests.exceptions.JSONDecodeError:
                 reason = response.reason
                 error = {"title": f"{reason}", "message": "Received empty JSON response"}
-            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
+            self.logger.error(f"Skipping stream {self.name}, error message: {error}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.")
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
