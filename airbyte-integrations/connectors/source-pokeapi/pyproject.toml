@@ -1,12 +1,18 @@
 [tool.poetry]
-name = "source-pokeapi"
+name = "airbyte-source-pokeapi"
 version = "0.1.0"
 description = "Source implementation for Pokeapi."
 authors = ["Airbyte <contact@airbyte.io>"]
+classifiers = [
+    "Framework :: Airbyte :: Connectors :: Sources"
+]
+packages = [
+    { include = "source_pokeapi", from = "src" }
+]
 include = [
     { path = "src/*/*.json"},
     { path = "src/*/schemas/*.json"},
-    { path = "schemas/shared/*.json"}
+    { path = "src/*/schemas/shared/*.json"}
 ]
 
 [tool.poetry.dependencies]
@@ -20,6 +26,7 @@ mypy = "^1.4.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "~6"
+# Could we publish it?
 connector-acceptance-test = {path = "../../bases/connector-acceptance-test", develop = true}
 
 [build-system]
@@ -50,3 +57,4 @@ disallow_untyped_defs = "False"
 testpaths = [
     "tests/unit_tests"
 ]
+addopts ="-r a --capture=no -vv --color=yes"

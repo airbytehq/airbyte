@@ -1,13 +1,13 @@
 FROM python:3.9-slim
 
 # Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+#RUN apt-get clean && apt-get update && apt-get install -y bash --allow-insecure-repositories && rm -rf /var/lib/apt/lists/*
 
 
 WORKDIR /airbyte/integration_code
-COPY source_pokeapi ./source_pokeapi
+COPY src/source_pokeapi ./src/source_pokeapi
 COPY main.py ./
-COPY setup.py ./
+COPY pyproject.toml ./
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"

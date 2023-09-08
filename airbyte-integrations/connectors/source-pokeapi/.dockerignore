@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_pokeapi
-!setup.py
+!src/source_pokeapi
+!pyproject.toml
 !secrets
