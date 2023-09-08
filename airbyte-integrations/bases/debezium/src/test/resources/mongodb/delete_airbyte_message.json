@@ -1,7 +1,5 @@
 {
-  "_id": {
-    "$oid": "64f24244f95155351c4185b1"
-  },
+  "_id": "64f24244f95155351c4185b1",
   "name": "Document 0",
   "description": "This is document #0",
   "doubleField": 0.0,
@@ -16,5 +14,5 @@
     }
   },
   "_ab_cdc_updated_at": "2023-09-01T19:57:57Z",
-  "_ab_cdc_deleted_at": null
+  "_ab_cdc_deleted_at": "2023-09-01T19:57:57Z"
 }
