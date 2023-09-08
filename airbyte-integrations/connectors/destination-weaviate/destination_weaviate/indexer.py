@@ -58,11 +58,16 @@ class WeaviateIndexer(Indexer):
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
         classes = self.client.schema.get().get("classes", [])
-        if self.config.class_name not in [c.get("class") for c in classes]:
+        schema = next((item for item in classes if item["class"] == self.config.class_name), None)
+        if schema is None:
             self.client.schema.create_class({"class": self.config.class_name, "vectorizer": "none"})
-        schema = self.client.schema.get(self.config.class_name)
-        self.has_stream_metadata = any(prop.get("name") == METADATA_STREAM_FIELD for prop in schema.get("properties", {}))
-        self.has_record_id_metadata = any(prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {}))
+
+        self.has_stream_metadata = schema is not None and any(
+            prop.get("name") == METADATA_STREAM_FIELD for prop in schema.get("properties", {})
+        )
+        self.has_record_id_metadata = schema is not None and any(
+            prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
+        )
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
@@ -136,12 +141,12 @@ class WeaviateIndexer(Indexer):
 
         for buffered_object in self.objects_with_error.values():
             self.client.batch.add_data_object(
-                buffered_object.properties, buffered_object.class_name, buffered_object.id, buffered_object.vector
+                buffered_object.properties, buffered_object.class_name, buffered_object.id, vector=buffered_object.vector
             )
 
         if len(self.objects_with_error) > 0 and retries > 0:
             logging.info("sleeping 2 seconds before retrying batch again")
             time.sleep(2)
-            self.flush(retries - 1)
+            self._flush(retries - 1)
 
         self.buffered_objects.clear()

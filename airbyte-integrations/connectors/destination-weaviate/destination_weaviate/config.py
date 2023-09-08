@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (

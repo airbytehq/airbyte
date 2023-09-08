@@ -4,18 +4,19 @@
 
 import json
 import logging
+import time
 
+import docker
+import weaviate
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_weaviate.destination import DestinationWeaviate
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Weaviate
-import docker
-import time
-import weaviate
 
 WEAVIATE_CONTAINER_NAME = "weaviate-test-container-will-get-deleted"
+
 
 class WeaviateIntegrationTest(BaseIntegrationTest):
     def _init_weaviate(self):
@@ -52,7 +53,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
         self._init_weaviate()
-    
+
     def tearDown(self) -> None:
         self.docker_client.containers.get(WEAVIATE_CONTAINER_NAME).remove(force=True)
 
@@ -66,7 +67,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             {**self.config, "indexing": {**self.config["indexing"], "host": "http://localhost:9999"}},
         )
         assert outcome.status == Status.FAILED
-    
+
     def count_objects(self, class_name: str) -> int:
         result = self.client.query.aggregate(class_name) \
             .with_fields('meta { count }') \
@@ -80,12 +81,11 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
 
         destination = DestinationWeaviate()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert self.count_objects("Test")  == 5
+        assert self.count_objects("Test") == 5
 
         second_record_chunk = [self._record("mystream", f"Dogs are number {i}", i + 1000) for i in range(2)]
         list(destination.write(self.config, catalog, [*second_record_chunk, first_state_message]))
-        assert self.count_objects("Test")  == 2
-
+        assert self.count_objects("Test") == 2
 
     def test_write_incremental_dedup(self):
         catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
@@ -95,7 +95,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         # initial sync
         destination = DestinationWeaviate()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert self.count_objects("Test")  == 5
+        assert self.count_objects("Test") == 5
 
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
@@ -109,7 +109,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             }).do()
 
         assert len(result["data"]["Get"]["Test"]) == 1
-        assert self.count_objects("Test")  == 5
+        assert self.count_objects("Test") == 5
         assert result["data"]["Get"]["Test"][0]["text"] == "str_col: Cats are nice"
 
         # test langchain integration

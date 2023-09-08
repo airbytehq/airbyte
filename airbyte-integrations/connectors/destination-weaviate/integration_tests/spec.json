@@ -25,11 +25,7 @@
             "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
             "default": [],
             "always_show": true,
-            "examples": [
-              "text",
-              "user.name",
-              "users.*.name"
-            ],
+            "examples": ["text", "user.name", "users.*.name"],
             "type": "array",
             "items": {
               "type": "string"
@@ -40,20 +36,14 @@
             "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
             "default": [],
             "always_show": true,
-            "examples": [
-              "age",
-              "user",
-              "user.name"
-            ],
+            "examples": ["age", "user", "user.name"],
             "type": "array",
             "items": {
               "type": "string"
             }
           }
         },
-        "required": [
-          "chunk_size"
-        ],
+        "required": ["chunk_size"],
         "group": "processing"
       },
       "embedding": {
@@ -70,9 +60,7 @@
                 "title": "Mode",
                 "default": "openai",
                 "const": "openai",
-                "enum": [
-                  "openai"
-                ],
+                "enum": ["openai"],
                 "type": "string"
               },
               "openai_key": {
@@ -81,9 +69,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "openai_key"
-            ],
+            "required": ["openai_key"],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
@@ -94,9 +80,7 @@
                 "title": "Mode",
                 "default": "cohere",
                 "const": "cohere",
-                "enum": [
-                  "cohere"
-                ],
+                "enum": ["cohere"],
                 "type": "string"
               },
               "cohere_key": {
@@ -105,9 +89,7 @@
                 "type": "string"
               }
             },
-            "required": [
-              "cohere_key"
-            ],
+            "required": ["cohere_key"],
             "description": "Use the Cohere API to embed text."
           },
           {
@@ -118,34 +100,23 @@
                 "title": "Mode",
                 "default": "from_field",
                 "const": "from_field",
-                "enum": [
-                  "from_field"
-                ],
+                "enum": ["from_field"],
                 "type": "string"
               },
               "field_name": {
                 "title": "Field name",
                 "description": "Name of the field in the record that contains the embedding",
-                "examples": [
-                  "embedding",
-                  "vector"
-                ],
+                "examples": ["embedding", "vector"],
                 "type": "string"
               },
               "dimensions": {
                 "title": "Embedding dimensions",
                 "description": "The number of dimensions the embedding model is generating",
-                "examples": [
-                  1536,
-                  384
-                ],
+                "examples": [1536, 384],
                 "type": "integer"
               }
             },
-            "required": [
-              "field_name",
-              "dimensions"
-            ],
+            "required": ["field_name", "dimensions"],
             "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           },
           {
@@ -156,9 +127,7 @@
                 "title": "Mode",
                 "default": "no_embedding",
                 "const": "no_embedding",
-                "enum": [
-                  "no_embedding"
-                ],
+                "enum": ["no_embedding"],
                 "type": "string"
               }
             },
@@ -172,9 +141,7 @@
                 "title": "Mode",
                 "default": "fake",
                 "const": "fake",
-                "enum": [
-                  "fake"
-                ],
+                "enum": ["fake"],
                 "type": "string"
               }
             },
@@ -216,9 +183,7 @@
                     "title": "Mode",
                     "default": "token",
                     "const": "token",
-                    "enum": [
-                      "token"
-                    ],
+                    "enum": ["token"],
                     "type": "string"
                   },
                   "token": {
@@ -228,9 +193,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "token"
-                ],
+                "required": ["token"],
                 "description": "Authenticate using an API token (suitable for Weaviate Cloud)"
               },
               {
@@ -241,9 +204,7 @@
                     "title": "Mode",
                     "default": "username_password",
                     "const": "username_password",
-                    "enum": [
-                      "username_password"
-                    ],
+                    "enum": ["username_password"],
                     "type": "string"
                   },
                   "username": {
@@ -260,10 +221,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "username",
-                  "password"
-                ],
+                "required": ["username", "password"],
                 "description": "Authenticate using username and password (suitable for self-managed Weaviate clusters)"
               },
               {
@@ -274,9 +232,7 @@
                     "title": "Mode",
                     "default": "no_auth",
                     "const": "no_auth",
-                    "enum": [
-                      "no_auth"
-                    ],
+                    "enum": ["no_auth"],
                     "type": "string"
                   }
                 },
@@ -321,27 +277,16 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "key",
-                "value"
-              ]
+              "required": ["key", "value"]
             }
           }
         },
-        "required": [
-          "host",
-          "class_name",
-          "auth"
-        ],
+        "required": ["host", "class_name", "auth"],
         "group": "indexing",
         "description": "Indexing configuration"
       }
     },
-    "required": [
-      "processing",
-      "embedding",
-      "indexing"
-    ],
+    "required": ["processing", "embedding", "indexing"],
     "groups": [
       {
         "id": "processing",
@@ -358,9 +303,5 @@
     ]
   },
   "supportsIncremental": true,
-  "supported_destination_sync_modes": [
-    "overwrite",
-    "append",
-    "append_dedup"
-  ]
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
 }

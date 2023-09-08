@@ -1,15 +1,28 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import unittest
-from unittest.mock import patch, Mock, MagicMock
-from destination_weaviate.config import WeaviateIndexingConfigModel, NoAuth
-from destination_weaviate.indexer import WeaviateIndexer
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from unittest.mock import ANY, Mock, call, patch
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode
+from destination_weaviate.config import NoAuth, WeaviateIndexingConfigModel
+from destination_weaviate.indexer import WeaviateIndexer, WeaviatePartialBatchError
+
 
 class TestWeaviateIndexer(unittest.TestCase):
 
     def setUp(self):
         self.config = WeaviateIndexingConfigModel(host="https://test-host:12345", class_name="Test", auth=NoAuth())  # Setup your config here
         self.indexer = WeaviateIndexer(self.config)
+        mock_catalog = Mock()
+        mock_stream = Mock()
+        mock_stream.stream.name = "example_stream"
+        mock_stream.destination_sync_mode = DestinationSyncMode.append
+        self.mock_stream = mock_stream
+        mock_catalog.streams = [mock_stream]
+        self.mock_catalog = mock_catalog
 
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_successful_check(self, MockClient):
@@ -27,30 +40,36 @@ class TestWeaviateIndexer(unittest.TestCase):
         self.assertEqual(self.indexer.check(), "Host must start with https://")
 
     @patch("destination_weaviate.indexer.weaviate.Client")
+    def test_pre_sync_that_creates_class(self, MockClient):
+        mock_client = Mock()
+        mock_client.schema.get.return_value = {"classes": []}
+        MockClient.return_value = mock_client
+        self.indexer.pre_sync(self.mock_catalog)
+        mock_client.schema.create_class.assert_called_with({"class": "Test", "vectorizer": "none"})
+
+    @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_that_deletes(self, MockClient):
         mock_client = Mock()
+        mock_client.schema.get.return_value = {"classes": [{"class": "Test", "properties": [{"name": "_ab_stream"}, {"name": "_ab_record_id"}]}]}
         MockClient.return_value = mock_client
-        self.indexer.has_stream_metadata = True
-        self.indexer.pre_sync(Mock())
-        mock_client.batch.delete_objects.assert_called()
+        self.mock_stream.destination_sync_mode = DestinationSyncMode.overwrite
+        self.indexer.pre_sync(self.mock_catalog)
+        mock_client.batch.delete_objects.assert_called_with(class_name="Test", where={"path":["_ab_stream"], "operator": "Equal", "valueText": "example_stream"})
 
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_no_delete_no_metadata_field(self, MockClient):
         mock_client = Mock()
+        mock_client.schema.get.return_value = {"classes": [{"class": "Test", "properties": []}]}
         MockClient.return_value = mock_client
-        self.indexer.has_stream_metadata = False
-        self.indexer.pre_sync(Mock())
+        self.indexer.pre_sync(self.mock_catalog)
         mock_client.batch.delete_objects.assert_not_called()
 
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_no_delete_no_overwrite_mode(self, MockClient):
         mock_client = Mock()
+        mock_client.schema.get.return_value = {"classes": [{"class": "Test", "properties": [{"name": "_ab_stream"}, {"name": "_ab_record_id"}]}]}
         MockClient.return_value = mock_client
-        mock_catalog = Mock()
-        mock_stream = Mock()
-        mock_stream.destination_sync_mode = DestinationSyncMode.append
-        mock_catalog.streams = [mock_stream]
-        self.indexer.pre_sync(mock_catalog)
+        self.indexer.pre_sync(self.mock_catalog)
         mock_client.batch.delete_objects.assert_not_called()
 
     def test_index_deletes_by_record_id(self):
@@ -68,33 +87,38 @@ class TestWeaviateIndexer(unittest.TestCase):
         self.indexer.index([], ["some_id"])
         mock_client.batch.delete_objects.assert_not_called()
 
-    @patch("destination_weaviate.indexer.weaviate.Client")
-    def test_index_flushes_batch(self, MockClient):
+    def test_index_flushes_batch(self):
         mock_client = Mock()
-        MockClient.return_value = mock_client
-        mock_chunk = Chunk()
-        self.indexer.index([mock_chunk], [])
-        self.indexer.flush()
+        self.indexer.client = mock_client
+        mock_client.batch.create_objects.return_value = []
+        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        self.indexer.index([mock_chunk1, mock_chunk2], [])
         mock_client.batch.create_objects.assert_called()
+        chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", ANY, vector=[1, 2, 3])
+        chunk2_call = call({"someField": "some_value2", "text": "some_other_content"}, "Test", ANY, vector=[4,5,6])
+        mock_client.batch.add_data_object.assert_has_calls([chunk1_call, chunk2_call], any_order=False)
 
-    @patch("destination_weaviate.indexer.weaviate.Client")
-    def test_index_flushes_batch_and_retries(self, MockClient):
+    @patch("destination_weaviate.indexer.uuid.uuid4")
+    @patch('time.sleep', return_value=None)
+    def test_index_flushes_batch_and_retries(self, MockTime, MockUUID):
         mock_client = Mock()
-        MockClient.return_value = mock_client
+        self.indexer.client = mock_client
         mock_client.batch.create_objects.return_value = [{'result': {'errors': ['some_error']}, 'id': 'some_id'}]
-        mock_chunk = Chunk()
-        self.indexer.index([mock_chunk], [])
-        self.indexer.flush()
-        self.assertEqual(mock_client.batch.create_objects.call_count, 4)  # 1 initial try + 3 retries
+        MockUUID.side_effect = ['some_id', 'some_id2']
+        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        with self.assertRaises(WeaviatePartialBatchError):
+            self.indexer.index([mock_chunk1, mock_chunk2], [])
+        chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", "some_id", vector=[1, 2, 3])
+        chunk2_call = call({"someField": "some_value2", "text": "some_other_content"}, "Test", "some_id2", vector=[4,5,6])
+        self.assertEqual(mock_client.batch.create_objects.call_count, 3)  # 1 initial try + 2 retries
+        mock_client.batch.add_data_object.assert_has_calls([chunk1_call, chunk2_call, chunk1_call, chunk1_call, chunk1_call], any_order=False)  # 1 initial try + 2 retries + adding the data object before raising the exception in the next recursion
 
-    @patch("destination_weaviate.indexer.weaviate.Client")
-    def test_index_flushes_batch_and_normalizes(self, MockClient):
+    def test_index_flushes_batch_and_normalizes(self):
         mock_client = Mock()
-        MockClient.return_value = mock_client
-        mock_chunk = Chunk(metadata={'someField': {'nestedField': 'some_value'}})
+        self.indexer.client = mock_client
+        mock_client.batch.create_objects.return_value = []
+        mock_chunk = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value", "complex": {"a": [1,2,3]}, "UPPERCASE_NAME": "abc"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
         self.indexer.index([mock_chunk], [])
-        self.indexer.flush()
-        self.assertTrue(isinstance(self.indexer.buffered_objects['some_id'].properties['someField'], str))  # Should be JSON serialized
-
-if __name__ == "__main__":
-    unittest.main()
+        mock_client.batch.add_data_object.assert_called_with({"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content"}, "Test", ANY, vector=[1, 2, 3])
