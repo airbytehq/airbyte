@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
@@ -41,6 +42,8 @@ class EventRecordExtractor(DefaultRecordExtractor):
         for record in records:
             item = record["data"]["object"]
             item[self.cursor_field] = record["created"]
+            if record["type"].endswith(".deleted"):
+                item["is_deleted"] = True
             yield item
 
 
@@ -308,7 +311,6 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
     def __init__(
         self,
         *args,
-        lookback_window_days: int = 0,
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
@@ -320,10 +322,12 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         self._legacy_cursor_field = legacy_cursor_field
         record_extractor = record_extractor or UpdatedCursorIncrementalRecordExtractor(self.cursor_field, self.legacy_cursor_field)
         super().__init__(*args, record_extractor=record_extractor, **kwargs)
-        self.lookback_window_days = lookback_window_days
+        # `lookback_window_days` is hardcoded as it does not make any sense to re-export events,
+        # as each event holds the latest value of a record.
+        # `start_date_max_days_from_now` represents the events API limitation.
         self.events_stream = Events(
             authenticator=self.authenticator,
-            lookback_window_days=self.lookback_window_days,
+            lookback_window_days=0,
             start_date_max_days_from_now=30,
             account_id=self.account_id,
             start_date=self.start_date,
@@ -406,7 +410,6 @@ class IncrementalStripeStream(StripeStream):
         *args,
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
-        lookback_window_days: int = 0,
         event_types: Optional[List[str]] = None,
         **kwargs,
     ):
@@ -415,7 +418,8 @@ class IncrementalStripeStream(StripeStream):
         created_cursor_stream = CreatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
-            lookback_window_days=lookback_window_days,
+            # `lookback_window_days` set to 0 because this particular instance is in charge of full_refresh/initial incremental syncs only
+            lookback_window_days=0,
             record_extractor=UpdatedCursorIncrementalRecordExtractor(cursor_field, legacy_cursor_field),
             **kwargs,
         )
@@ -423,7 +427,6 @@ class IncrementalStripeStream(StripeStream):
             *args,
             cursor_field=cursor_field,
             legacy_cursor_field=legacy_cursor_field,
-            lookback_window_days=lookback_window_days,
             event_types=event_types,
             **kwargs,
         )
@@ -489,7 +492,6 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
             account_id=self.account_id,
             start_date=self.start_date,
             slice_range=self.slice_range,
-            lookback_window_days=self.lookback_window_days,
         )
 
     def __init__(self, *args, **kwargs):
@@ -567,7 +569,7 @@ class CustomerBalanceTransactions(StripeStream):
             name="customers",
             path="customers",
             use_cache=True,
-            event_types=["customer.created", "customer.updated"],
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
             authenticator=self.authenticator,
             account_id=self.account_id,
             start_date=self.start_date,
@@ -594,6 +596,9 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
     """
 
     def __init__(self, **kwargs):
+        # SetupAttempts needs lookback_window, but it's parent class does not
+        parent_kwargs = copy.copy(kwargs)
+        parent_kwargs.pop("lookback_window_days")
         parent = IncrementalStripeStream(
             name="setup_intents",
             path="setup_intents",
@@ -604,7 +609,7 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
                 "setup_intent.setup_failed",
                 "setup_intent.succeeded",
             ],
-            **kwargs,
+            **parent_kwargs,
         )
         super().__init__(parent=parent, **kwargs)
 
@@ -644,11 +649,11 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
     API docs: https://stripe.com/docs/api/persons/list
     """
 
-    event_types = ["person.created", "person.updated"]
+    event_types = ["person.created", "person.updated", "person.deleted"]
 
-    def __init__(self, *args, lookback_window_days: int = 0, **kwargs):
+    def __init__(self, *args, **kwargs):
         parent = StripeStream(*args, name="accounts", path="accounts", use_cache=True, **kwargs)
-        super().__init__(*args, parent=parent, lookback_window_days=lookback_window_days, **kwargs)
+        super().__init__(*args, parent=parent, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['parent']['id']}/persons"
@@ -797,7 +802,6 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         cursor_field: str = "updated",
         legacy_cursor_field: Optional[str] = "created",
         event_types: Optional[List[str]] = None,
-        lookback_window_days: int = 0,
         parent_id: Optional[str] = None,
         add_parent_id: bool = False,
         sub_items_attr: Optional[str] = None,
@@ -810,7 +814,6 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             *args,
             cursor_field=cursor_field,
             legacy_cursor_field=legacy_cursor_field,
-            lookback_window_days=lookback_window_days,
             event_types=event_types,
             **kwargs,
         )
