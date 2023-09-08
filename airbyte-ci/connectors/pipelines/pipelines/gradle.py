@@ -105,8 +105,8 @@ class GradleTask(Step, ABC):
             connector_under_test = connector_under_test.with_(
                 environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
             )
-        if self.with_java_cdk_snapshot:
-            connector_under_test = connector_under_test.with_exec(self._get_publish_snapshot_command())
+#        if self.with_java_cdk_snapshot:
+#            connector_under_test = connector_under_test.with_exec(self._get_publish_snapshot_command())
         connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
         result = await self.get_step_result(connector_under_test)

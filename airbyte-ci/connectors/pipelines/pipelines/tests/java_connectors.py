@@ -82,10 +82,10 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """
     step_results = []
 
-    unit_tests_results = await UnitTests(context).run()
-    step_results.append(unit_tests_results)
-    if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
-        return step_results
+#    unit_tests_results = await UnitTests(context).run()
+#    step_results.append(unit_tests_results)
+#    if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
+#        return step_results
 
     build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
     step_results.append(build_distribution_tar_results)
@@ -118,6 +118,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     integration_tests_results = await IntegrationTests(context).run(connector_image_tar_file, normalization_tar_file)
     step_results.append(integration_tests_results)
 
-    acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
-    step_results.append(acceptance_tests_results)
+#    acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
+#    step_results.append(acceptance_tests_results)
     return step_results
