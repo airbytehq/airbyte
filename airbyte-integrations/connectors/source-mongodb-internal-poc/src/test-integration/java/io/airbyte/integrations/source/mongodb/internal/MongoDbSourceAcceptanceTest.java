@@ -407,8 +407,6 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(recordCount + otherCollectionCount + 1, stateMessages.size());
 
     validateStateMessages(stateMessages);
-
-    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     validateAllStreamsComplete(stateMessages, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName),
         new StreamDescriptor().withName(otherCollectionName).withNamespace(databaseName)));
