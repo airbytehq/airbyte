@@ -58,6 +58,10 @@
     },
     "id": {
       "type": ["null", "integer"]
+    }, 
+    "date_modified": {
+      "format": "date-time",
+      "type": ["null", "string"]
     }
   }
 }
