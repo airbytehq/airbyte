@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -582,7 +583,7 @@ invalid_csv_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_logs(
         {
             "read": [
@@ -1096,7 +1097,7 @@ empty_schema_inference_scenario = (
         }
     )
     .set_parsers({"csv": EmptySchemaParser()})
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_records(
         [
             {
@@ -1885,7 +1886,7 @@ csv_newline_in_values_not_quoted_scenario = (
             ]
         }
     )
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
 
 csv_escape_char_is_set_scenario = (
@@ -2630,5 +2631,5 @@ earlier_csv_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
