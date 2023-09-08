@@ -38,8 +38,8 @@ def blocks(parent, args):
 
 
 @fixture
-def comments(blocks, args):
-    return Comments(parent=blocks, **args)
+def comments(parent, args):
+    return Comments(parent=parent, **args)
 
 
 def test_cursor_field(stream):
@@ -219,17 +219,11 @@ def test_comments_request_params(comments):
     assert params == {'block_id': 'block1', 'page_size': comments.page_size}
 
 
-def test_comments_stream_slices(comments, blocks, requests_mock):
-
-    # blocks._session.cache.clear()
-
+def test_comments_stream_slices(comments, requests_mock):
 
     inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': {}}
     requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "id_1"}], "next_cursor": None})
-    requests_mock.get(f"https://api.notion.com/v1/blocks/id_1/children", json={"results": [{"id": "aaa", "type": "block"}, {"id": "bbb", "type": "block"}], "next_cursor": None})
-    # requests_mock.get(f"https://api.notion.com/v1/blocks/id_2/children", json={"results": [{"id": "ccc", "type": "block"}, {"id": "ddd", "type": "block"}], "next_cursor": None})
-
-    expected_stream_slice = [{"block_id": "aaa"}, {"block_id": "bbb"}]
+    expected_stream_slice = [{"block_id": "id_1"}]
 
     actual_stream_slices_list = list(comments.stream_slices(**inputs))
 
@@ -237,23 +231,15 @@ def test_comments_stream_slices(comments, blocks, requests_mock):
     assert actual_stream_slices_list == expected_stream_slice
 
 
-def test_comments_read_records(comments, blocks, requests_mock):
-
-    # blocks._session.cache.clear()
+def test_comments_read_records(comments, requests_mock):
 
     stream_slice = {"block_id": "aaa"}
     stream_state = {}
 
     inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': stream_state, "stream_slice": stream_slice}
-    # requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "id_1"}], "next_cursor": None})
-    # requests_mock.get(f"https://api.notion.com/v1/blocks/id_1/children", json={"results": [{"id": "aaa", "type": "block"}, {"id": "bbb", "type": "block"}], "next_cursor": None})
-
     requests_mock.get(f"https://api.notion.com/v1/comments?block_id=aaa", json={"results": [{"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha and the Omega comment"}}]}], "next_cursor": None})
 
     expected_records = [{"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha and the Omega comment"}}]}]
 
     response = list(comments.read_records(**inputs))
-
-    print(requests_mock.last_request.url)
-    print(requests_mock.call_count)
     assert response == expected_records
