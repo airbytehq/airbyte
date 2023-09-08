@@ -3,20 +3,20 @@ Author: Augustin Lafanechere
 Date: 2023-09-08
 
 # What is this?
-This notebook contains an analysis of our certified python connectors Dockerfile.
+This notebook contains an analysis of our certified python connectors Dockerfiles.
 We originally had a lot of false certitudes that all our Python connectors are built the same.
 This is an attempt at analyzing how similar, and different, our connector images are.
 
 # Context
-The Connector Operations team wants to consolidate our Python connector build process to have a single way of building connector images. This will be achieved via:
-- the definition of a common base image which will contain the majority of the system needs of our connectors
-- the definition of a common build procedure for our Python connectors (no per connector Dockerfile, we'll remove them)
-- the definition of a simple framework of hooks that will allow connector developers to customize the connector image **only if needed**
+The Connector Operations team wants to consolidate our Python connector build process to have a single way of building connector images. This will be achieved via the definition of:
+-  a common base image which will contain the majority of the system needs of our connectors
+-  a common build procedure for our Python connectors (no per connector Dockerfile, we'll remove them)
+- a simple framework of hooks that will allow connector developers to customize the connector image **only if needed**
 
 # Worfklow
 1. Determine the Dockerfile variants we have: scan our certified connectors dockerfile and identify families (variant) of Dockerfile that exists in our codebase. This will hopefully help us narrow down the analysis to a reduce number of images instead of analyzing all our connector images.
-2. Analyze the different python base image use by the variants.
-3. Analyze the environments variable set in these variants: we'll check which env var is common and static for all connectors, which env var common to all images but with different values and which env var is set on only a portion of Dockerfiles.
+2. Analyze the different python base images use by the variants.
+3. Analyze the environments variables set in these variants: we'll check which env var is common and static for all connectors, which env var common to all images but with different values and which env var is set on only a portion of Dockerfiles.
 4. Analyze the system dependencies installed in the variants: assess if any connector is installing a custom system dependency and if we should make this dependency join the base image.
 5. Given the conclusion of the previous steps, suggest a base image defintion and a build procedure for certified Python connectors.
 
@@ -685,12 +685,12 @@ async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_cli
 
 # Overall analysis conclusion
 ### Base images to use for our base image:
-We want to use a python image with 3.9 in its latest patch versio,: 3.9.18
+We want to use a python image with 3.9 in its latest patch version: 3.9.18
 We want to use debian as it has proven its good fit for our existing connector image.
-We want to use a debian image that has a maximum of system package to avoid connector specific package install: let's use `bullseye`, the latest debian version release name.
-[python:3.9.18-bullseye](https://hub.docker.com/layers/library/python/3.9.18-bullseye/images/sha256-d7e28b2648cb4611a94f068d92a236e7faaf6edb7589e01c09c1c16035c26d0a?context=explore)
-- For AMD64: `python:3.9.18-bullseye@sha256:d7e28b2648cb4611a94f068d92a236e7faaf6edb7589e01c09c1c16035c26d0a`
-- For AMR64: `python:3.9.18-bullseye@sha256:a3fc5f7523dbda93d333b6d98704691acf1a921b5cca89206452d5d31a717beb`
+We want to use a debian image that has a maximum of system package to avoid connector specific package install: let's use `bookworm`, the latest debian version release name.
+[python:3.9.18-bookworm](https://hub.docker.com/layers/library/python/3.9.18-bookworm/images/sha256-40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58?context=explore)
+- For AMD64: `python:3.9.18-bookworm@sha256:40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58`
+- For AMR64: `python:3.9.18-bookworm@sha256:0d132e30eb9325d53c790738e5478e9abffc98b69115e7de429d7c6fc52dddac`
 
 ### System settings to set on our base image:
 We must set the timezone to UTC
@@ -724,7 +724,7 @@ No certified connector is installing a custom system dependency.
 The system packages bundled with the python base image I suggest to use should guarantee all system requirements are met for all our connectors.
 
 ### Labels
-All our connector image set the following labels. We should continue to use these, but I'm not sure of there actual usefulness.
+All our connector images set the following labels. We should continue to use these, but I'm not sure of their actual usefulness.
 ```Dockerfile
 LABEL io.airbyte.version=<semver-connector-version>
 LABEL io.airbyte.name=airbyte/<connector-technical-name>
