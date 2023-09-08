@@ -25,6 +25,10 @@ class IntegrationTests(GradleTask):
     gradle_task_name = "integrationTest"
     title = "Java Connector Integration Tests"
 
+    # skip the connector acceptance tests run by gradle
+    # as we run them in the AcceptanceTests step
+    gradle_task_options = ("-x", "connectorAcceptanceTest")
+
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
