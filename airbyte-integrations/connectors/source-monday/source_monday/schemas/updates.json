@@ -8,7 +8,21 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "created_at": { "type": ["null", "string"], "format": "date-time" },
+          "file_extension": { "type": ["null", "string"] },
+          "file_size": { "type": ["null", "integer"] },
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "original_geometry": { "type": ["null", "string"] },
+          "public_url": { "type": ["null", "string"] },
+          "uploaded_by": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": { "type": ["null", "integer"] }
+            }
+          },
+          "url": { "type": ["null", "string"] },
+          "url_thumbnail": { "type": ["null", "string"] }
         }
       }
     },

@@ -20,13 +20,21 @@ from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import Customer
 from .streams import (
+    AccountLabels,
     AccountPerformanceReport,
     Accounts,
     AdGroupAdLabels,
     AdGroupAdReport,
     AdGroupAds,
+    AdGroupBiddingStrategies,
+    AdGroupCriterionLabels,
+    AdGroupCriterions,
     AdGroupLabels,
     AdGroups,
+    AdListingGroupCriterions,
+    Audience,
+    CampaignBiddingStrategies,
+    CampaignBudget,
     CampaignLabels,
     Campaigns,
     ClickView,
@@ -34,8 +42,10 @@ from .streams import (
     DisplayTopicsPerformanceReport,
     GeographicReport,
     KeywordReport,
+    Labels,
     ServiceAccounts,
     ShoppingPerformanceReport,
+    UserInterest,
     UserLocationReport,
 )
 from .utils import GAQL
@@ -70,14 +80,19 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: List[Customer]):
+        # date range is mandatory parameter for incremental streams, so default start day is used
+        start_date = config.get("start_date", today().subtract(years=2).to_date_string())
+
         end_date = config.get("end_date")
-        if end_date:
-            end_date = min(today(), parse(end_date)).to_date_string()
+        # check if end_date is not in the future, set to today if it is
+        end_date = min(today(), parse(end_date)) if end_date else today()
+        end_date = end_date.to_date_string()
+
         incremental_stream_config = dict(
             api=google_api,
             customers=customers,
             conversion_window_days=config["conversion_window_days"],
-            start_date=config["start_date"],
+            start_date=start_date,
             end_date=end_date,
         )
         return incremental_stream_config
@@ -146,10 +161,20 @@ class SourceGoogleAds(AbstractSource):
             AdGroupAds(**incremental_config),
             AdGroupAdLabels(google_api, customers=customers),
             AdGroups(**incremental_config),
+            AdGroupBiddingStrategies(**incremental_config),
+            AdGroupCriterions(google_api, customers=customers),
+            AdGroupCriterionLabels(google_api, customers=customers),
             AdGroupLabels(google_api, customers=customers),
+            AdListingGroupCriterions(google_api, customers=customers),
             Accounts(**incremental_config),
+            AccountLabels(google_api, customers=customers),
+            Audience(google_api, customers=customers),
+            CampaignBiddingStrategies(**incremental_config),
+            CampaignBudget(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
+            Labels(google_api, customers=customers),
+            UserInterest(google_api, customers=customers),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:

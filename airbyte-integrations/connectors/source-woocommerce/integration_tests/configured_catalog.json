@@ -98,7 +98,8 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-    }, {
+    },
+    {
       "stream": {
         "name": "product_variations",
         "json_schema": {},
@@ -106,7 +107,8 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
-    }, {
+    },
+    {
       "stream": {
         "name": "products",
         "json_schema": {},

@@ -21,27 +21,35 @@ import java.util.UUID;
  * <p>
  * This intentionally does not extend {@link BaseSheetGenerator}, because it needs the columns in a
  * different order (ABID, JSON, timestamp) vs (ABID, timestamp, JSON)
+ * <p>
+ * In 1s1t mode, the column ordering is also different (raw_id, extracted_at, loaded_at, data). Note
+ * that the loaded_at column is rendered as an empty string; callers are expected to configure their
+ * destination to parse this as NULL. For example, Snowflake's COPY into command accepts a NULL_IF
+ * parameter, and Redshift accepts an EMPTYASNULL option.
  */
 public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
-  /**
-   * This method is implemented for clarity, but not actually used. S3StreamCopier disables headers on
-   * S3CsvWriter.
-   */
+  private final boolean useDestinationsV2Columns;
+  private final List<String> header;
+
+  public StagingDatabaseCsvSheetGenerator() {
+    this(false);
+  }
+
+  public StagingDatabaseCsvSheetGenerator(final boolean useDestinationsV2Columns) {
+    this.useDestinationsV2Columns = useDestinationsV2Columns;
+    this.header = this.useDestinationsV2Columns ? JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES : JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+  }
+
+  // TODO is this even used anywhere?
   @Override
   public List<String> getHeaderRow() {
-    return List.of(
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
-        JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    return header;
   }
 
   @Override
   public List<Object> getDataRow(final UUID id, final AirbyteRecordMessage recordMessage) {
-    return List.of(
-        id,
-        Jsons.serialize(recordMessage.getData()),
-        Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+    return getDataRow(id, Jsons.serialize(recordMessage.getData()), recordMessage.getEmittedAt());
   }
 
   @Override
@@ -51,10 +59,18 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
 
   @Override
   public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
-    return List.of(
-        id,
-        formattedString,
-        Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+    if (useDestinationsV2Columns) {
+      return List.of(
+          id,
+          Timestamp.from(Instant.ofEpochMilli(emittedAt)),
+          "",
+          formattedString);
+    } else {
+      return List.of(
+          id,
+          formattedString,
+          Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+    }
   }
 
 }

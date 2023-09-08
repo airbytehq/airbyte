@@ -1,412 +1,223 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "BillEmail": {
       "properties": {
         "Address": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "PaymentMethodRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "CustomerRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "SyncToken": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Line": {
       "items": {
         "properties": {
           "Id": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "LineNum": {
-            "type": [
-              "null",
-              "integer"
-            ]
+            "type": ["null", "integer"]
           },
           "DetailType": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "Description": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "Amount": {
-            "type": [
-              "null",
-              "number"
-            ]
+            "type": ["null", "number"]
           },
           "SalesItemLineDetail": {
             "properties": {
               "ItemRef": {
                 "properties": {
                   "name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   },
                   "value": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 },
-                "type": [
-                  "null",
-                  "object"
-                ]
+                "type": ["null", "object"]
               },
               "Qty": {
-                "type": [
-                  "null",
-                  "number"
-                ]
+                "type": ["null", "number"]
               },
               "TaxCodeRef": {
                 "properties": {
                   "value": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 },
-                "type": [
-                  "null",
-                  "object"
-                ]
+                "type": ["null", "object"]
               },
               "UnitPrice": {
-                "type": [
-                  "null",
-                  "integer"
-                ]
+                "type": ["null", "integer"]
               }
             },
-            "type": [
-              "null",
-              "object"
-            ]
+            "type": ["null", "object"]
           }
         },
-        "type": [
-          "null",
-          "object"
-        ]
+        "type": ["null", "object"]
       },
-      "type": [
-        "null",
-        "array"
-      ]
+      "type": ["null", "array"]
     },
     "CurrencyRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "Balance": {
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "TxnTaxDetail": {
       "properties": {
         "TotalTax": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "DepositToAccountRef": {
       "properties": {
         "name": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "MetaData": {
       "properties": {
         "CreateTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "LastUpdatedTime": {
           "format": "date-time",
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "CustomerMemo": {
       "properties": {
         "value": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "Id": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "domain": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "TxnDate": {
       "format": "date",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "PrintStatus": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "CustomField": {
       "items": {
         "properties": {
           "DefinitionId": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "Name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "Type": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           }
         },
-        "type": [
-          "null",
-          "object"
-        ]
+        "type": ["null", "object"]
       },
-      "type": [
-        "null",
-        "array"
-      ]
+      "type": ["null", "array"]
     },
     "BillAddr": {
       "properties": {
         "Lat": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "Id": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "Line2": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "Line4": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "Line3": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "Line1": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "Long": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         }
       },
-      "type": [
-        "null",
-        "object"
-      ]
+      "type": ["null", "object"]
     },
     "DocNumber": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ApplyTaxAfterDiscount": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "ExchangeRate": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "HomeTotalAmt": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "TotalAmt": {
-      "type": [
-        "null",
-        "number"
-      ]
+      "type": ["null", "number"]
     },
     "sparse": {
-      "type":  [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "airbyte_cursor": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     }
   }
 }

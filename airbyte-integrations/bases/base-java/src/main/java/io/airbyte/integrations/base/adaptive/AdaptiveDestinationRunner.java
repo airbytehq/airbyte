@@ -4,7 +4,12 @@
 
 package io.airbyte.integrations.base.adaptive;
 
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.Command;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.integrations.base.IntegrationCliParser;
+import io.airbyte.integrations.base.IntegrationConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -82,6 +87,15 @@ public class AdaptiveDestinationRunner {
     }
 
     public void run(final String[] args) throws Exception {
+      // getDestination() sometimes depends on the singleton being initialized.
+      // Parse the CLI args just so we can accomplish that.
+      IntegrationConfig parsedArgs = new IntegrationCliParser().parse(args);
+      if (parsedArgs.getCommand() != Command.SPEC) {
+        DestinationConfig.initialize(IntegrationRunner.parseConfig(parsedArgs.getConfigPath()));
+      } else {
+        DestinationConfig.initialize(Jsons.emptyObject());
+      }
+
       final Destination destination = getDestination();
       LOGGER.info("Starting destination: {}", destination.getClass().getName());
       new IntegrationRunner(destination).run(args);

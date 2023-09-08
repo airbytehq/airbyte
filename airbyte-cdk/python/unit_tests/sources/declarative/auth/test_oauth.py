@@ -3,6 +3,7 @@
 #
 
 import logging
+from unittest.mock import Mock
 
 import freezegun
 import pendulum
@@ -138,6 +139,7 @@ class TestOauth2Authenticator:
     def test_refresh_access_token_expire_format(self, mocker, expires_in_response, token_expiry_date_format):
         next_day = "2020-01-02T00:00:00Z"
         config.update({"token_expiry_date": pendulum.parse(next_day).subtract(days=2).to_rfc3339_string()})
+        message_repository = Mock()
         oauth = DeclarativeOauth2Authenticator(
             token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
             client_id="{{ config['client_id'] }}",
@@ -152,6 +154,7 @@ class TestOauth2Authenticator:
                 "another_field": "{{ config['another_field'] }}",
                 "scopes": ["no_override"],
             },
+            message_repository=message_repository,
             parameters={},
         )
 
@@ -161,6 +164,7 @@ class TestOauth2Authenticator:
         token = oauth.get_access_token()
         assert "access_token" == token
         assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
+        assert message_repository.log_message.call_count == 1
 
     @pytest.mark.parametrize(
         "expires_in_response, next_day, raises",

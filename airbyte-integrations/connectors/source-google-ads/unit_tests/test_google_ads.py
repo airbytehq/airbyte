@@ -92,7 +92,7 @@ def test_interval_chunking():
         {"start_date": "2021-07-27", "end_date": "2021-08-05"},
         {"start_date": "2021-08-06", "end_date": "2021-08-10"},
     ]
-    intervals = list(chunk_date_range("2021-07-01", 14, "2021-08-10", range_days=10))
+    intervals = list(chunk_date_range("2021-07-01", 14, "2021-08-10", range_days=10, time_zone="UTC"))
     assert mock_intervals == intervals
 
 

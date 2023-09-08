@@ -27,8 +27,18 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       "CREATE STAGE IF NOT EXISTS %s encryption = (type = 'SNOWFLAKE_SSE') copy_options = (on_error='skip_file');";
   private static final String PUT_FILE_QUERY = "PUT file://%s @%s/%s PARALLEL = %d;";
   private static final String LIST_STAGE_QUERY = "LIST @%s/%s/%s;";
-  private static final String COPY_QUERY = "COPY INTO %s.%s FROM '@%s/%s' "
-      + "file_format = (type = csv compression = auto field_delimiter = ',' skip_header = 0 FIELD_OPTIONALLY_ENCLOSED_BY = '\"')";
+  // the 1s1t copy query explicitly quotes the raw table+schema name.
+  private static final String COPY_QUERY_1S1T =
+      """
+      COPY INTO "%s"."%s" FROM '@%s/%s'
+      file_format = (
+        type = csv
+        compression = auto
+        field_delimiter = ','
+        skip_header = 0
+        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+        NULL_IF=('')
+      )""";
   private static final String DROP_STAGE_QUERY = "DROP STAGE IF EXISTS %s;";
   private static final String REMOVE_QUERY = "REMOVE @%s;";
 
@@ -42,9 +52,9 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
 
   @Override
   public String getStageName(final String namespace, final String streamName) {
-    return nameTransformer.applyDefaultCase(String.join("_",
-        nameTransformer.convertStreamName(namespace),
-        nameTransformer.convertStreamName(streamName)));
+    return String.join(".",
+        '"' + nameTransformer.convertStreamName(namespace) + '"',
+        '"' + nameTransformer.convertStreamName(streamName) + '"');
   }
 
   @Override
@@ -184,7 +194,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
                                 final List<String> stagedFiles,
                                 final String dstTableName,
                                 final String schemaName) {
-    return String.format(COPY_QUERY + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+    return String.format(COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
   }
 
   @Override

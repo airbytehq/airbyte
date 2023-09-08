@@ -37,7 +37,8 @@ public interface Destination extends Integration {
 
   /**
    * Default implementation allows us to not have to touch existing destinations while avoiding a lot
-   * of conditional statements in {@link IntegrationRunner}.
+   * of conditional statements in {@link IntegrationRunner}. This is preferred over #getConsumer and
+   * is the default Async Framework method.
    *
    * @param config config
    * @param catalog catalog

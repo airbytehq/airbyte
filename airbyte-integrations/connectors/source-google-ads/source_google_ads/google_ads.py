@@ -18,22 +18,33 @@ from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
     "accounts": "customer",
-    "service_accounts": "customer",
+    "account_labels": "customer_label",
+    "account_performance_report": "customer",
     "ad_group_ads": "ad_group_ad",
     "ad_group_ad_labels": "ad_group_ad_label",
-    "ad_groups": "ad_group",
-    "ad_group_labels": "ad_group_label",
-    "campaigns": "campaign",
-    "campaign_labels": "campaign_label",
-    "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
+    "ad_groups": "ad_group",
+    "ad_group_bidding_strategies": "ad_group",
+    "ad_group_criterions": "ad_group_criterion",
+    "ad_group_criterion_labels": "ad_group_criterion_label",
+    "ad_group_labels": "ad_group_label",
+    "ad_listing_group_criterions": "ad_group_criterion",
+    "audience": "audience",
+    "campaigns": "campaign",
+    "campaign_real_time_bidding_settings": "campaign",
+    "campaign_bidding_strategies": "campaign",
+    "campaign_budget": "campaign_budget",
+    "campaign_labels": "campaign_label",
+    "click_view": "click_view",
     "display_keyword_performance_report": "display_keyword_view",
     "display_topics_performance_report": "topic_view",
-    "shopping_performance_report": "shopping_performance_view",
-    "user_location_report": "user_location_view",
-    "click_view": "click_view",
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
+    "labels": "label",
+    "service_accounts": "customer",
+    "shopping_performance_report": "shopping_performance_view",
+    "user_interest": "user_interest",
+    "user_location_report": "user_location_view",
 }
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
@@ -71,7 +82,14 @@ class GoogleAds:
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
-        return [self.ga_service.search(search_request)]
+        results = [self.ga_service.search(search_request)]
+        # iterate over pages but no more than limit if it is set
+        next_page_token = results[-1].next_page_token
+        while next_page_token:
+            search_request.page_token = next_page_token
+            results.append(self.ga_service.search(search_request))
+            next_page_token = results[-1].next_page_token
+        return results
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """

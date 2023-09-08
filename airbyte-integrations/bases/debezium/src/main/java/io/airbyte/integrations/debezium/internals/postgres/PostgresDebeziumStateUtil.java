@@ -16,6 +16,7 @@ import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
@@ -85,7 +86,7 @@ public class PostgresDebeziumStateUtil {
                                   final ConfiguredAirbyteCatalog catalog,
                                   final JsonNode cdcState,
                                   final JsonNode config) {
-    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
+    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()),
         Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();

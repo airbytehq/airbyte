@@ -1,3 +1,5 @@
 {
-  "api_key": "<API-KEY>"
+  "credentials": {
+    "api_key": "api_key"
+  }
 }

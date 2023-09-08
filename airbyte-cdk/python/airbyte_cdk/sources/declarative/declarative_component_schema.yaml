@@ -578,10 +578,11 @@ definitions:
           - "created_at"
           - "{{ config['record_cursor'] }}"
       datetime_format:
-        title: Cursor Field Datetime Format
+        title: Outgoing Datetime Format
         description: |
-          The datetime format of the Cursor Field. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
+          The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
@@ -613,6 +614,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+          - "%ms"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -624,6 +626,16 @@ definitions:
         examples:
           - "2020-01-1T00:00:00Z"
           - "{{ config['start_time'] }}"
+      cursor_datetime_formats:
+        title: Cursor Datetime Formats
+        description: The possible formats for the cursor field, in order of preference. The first format that matches the cursor field value will be used to parse it. If not provided, the `datetime_format` will be used.
+        type: array
+        items:
+          type: string
+          examples:
+            - "%Y-%m-%dT%H:%M:%S.%f%z"
+            - "%Y-%m-%d"
+            - "%s"
       cursor_granularity:
         title: Cursor Granularity
         description:
@@ -868,6 +880,8 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
+      # TODO we have move the transformation to the RecordSelector level in the code but kept this here for
+      # compatibility reason. We should eventually move this to align with the code.
       transformations:
         title: Transformations
         description: A list of transformations to be applied to each output record.
@@ -1008,6 +1022,81 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  SessionTokenAuthenticator:
+    type: object
+    required:
+      - type
+      - login_requester
+      - session_token_path
+      - request_authentication
+    properties:
+      type:
+        type: string
+        enum: [SessionTokenAuthenticator]
+      login_requester:
+        title: Login Requester
+        description: Description of the request to perform to obtain a session token to perform data requests. The response body is expected to be a JSON object with a session token property.
+        "$ref": "#/definitions/HttpRequester"
+        examples:
+          - type: HttpRequester
+            url_base: "https://my_api.com"
+            path: "/login"
+            authenticator:
+              type: BasicHttpAuthenticator
+              username: "{{ config.username }}"
+              password: "{{ config.password }}"
+      session_token_path:
+        title: Session Token Path
+        description: The path in the response body returned from the login requester to the session token.
+        examples:
+          - ["access_token"]
+          - ["result", "token"]
+        type: array
+        items:
+          type: string
+      expiration_duration:
+        title: Expiration Duration
+        description: The duration in ISO 8601 duration notation after which the session token expires, starting from the time it was obtained. Omitting it will result in the session token being refreshed for every request.
+        type: string
+        examples:
+          - "PT1H"
+          - "P1D"
+      request_authentication:
+        title: Data Request Authentication
+        description: Authentication method to use for requests sent to the API, specifying how to inject the session token.
+        anyOf:
+          - "$ref": "#/definitions/SessionTokenRequestApiKeyAuthenticator"
+          - "$ref": "#/definitions/SessionTokenRequestBearerAuthenticator"
+      $parameters:
+        type: object
+        additionalProperties: true
+  SessionTokenRequestApiKeyAuthenticator:
+    type: object
+    title: API Key Authenticator
+    description: Authenticator for requests using the session token as an API key that's injected into the request.
+    required:
+      - type
+      - inject_into
+    properties:
+      type:
+        enum: [ApiKey]
+      inject_into:
+        title: Inject API Key Into Outgoing HTTP Request
+        description: Configure how the API Key will be sent in requests to the source API.
+        "$ref": "#/definitions/RequestOption"
+        examples:
+          - inject_into: header
+            field_name: Authorization
+          - inject_into: request_parameter
+            field_name: authKey
+  SessionTokenRequestBearerAuthenticator:
+    title: Bearer Authenticator
+    description: Authenticator for requests using the session token as a standard bearer token.
+    required:
+      - type
+    properties:
+      type:
+        enum: [Bearer]
   HttpRequester:
     title: HTTP Requester
     description: Requester submitting HTTP requests and extracting records from the response.
@@ -1055,6 +1144,7 @@ definitions:
           - "$ref": "#/definitions/OAuthAuthenticator"
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
+          - "$ref": "#/definitions/LegacySessionTokenAuthenticator"
       error_handler:
         title: Error Handler
         description: Error handler component that defines how to handle errors.
@@ -1325,6 +1415,7 @@ definitions:
         description: |
           Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
@@ -1722,7 +1813,7 @@ definitions:
           - segment_id
       inject_into:
         title: Inject Into
-        description: Configures where the descriptor should be set on the HTTP requests.
+        description: Configures where the descriptor should be set on the HTTP requests. Note that request parameters that are already encoded in the URL path will not be duplicated.
         enum:
           - request_parameter
           - header
@@ -1738,9 +1829,9 @@ definitions:
     description: The stream schemas representing the shape of the data emitted by the stream.
     type: object
     additionalProperties: true
-  SessionTokenAuthenticator:
+  LegacySessionTokenAuthenticator:
     title: Session Token Authenticator
-    description: Authenticator for requests authenticated using session tokens. A session token is a random value generated by a server to identify a specific user for the duration of one interaction session.
+    description: Deprecated - use SessionTokenAuthenticator instead. Authenticator for requests authenticated using session tokens. A session token is a random value generated by a server to identify a specific user for the duration of one interaction session.
     type: object
     required:
       - type
@@ -1751,7 +1842,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SessionTokenAuthenticator]
+        enum: [LegacySessionTokenAuthenticator]
       header:
         title: Session Request Header
         description: The name of the session token header that will be injected in the request

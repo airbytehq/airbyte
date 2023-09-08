@@ -37,7 +37,7 @@ MAIN_REQUIREMENTS = [
 if not os.environ.get("DOCKER_BUILD"):
     MAIN_REQUIREMENTS.append(local_dependency("source-file"))
 
-TEST_REQUIREMENTS = ["boto3==1.21.21", "pytest==7.1.2", "pytest-docker==1.0.0", "pytest-mock~=3.8.2"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "boto3==1.21.21", "pytest==7.1.2", "pytest-docker==1.0.0", "pytest-mock~=3.8.2"]
 
 setup(
     name="source_file_secure",

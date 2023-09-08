@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 0.5.0
+  dockerImageTag: 1.1.7
   dockerRepository: airbyte/source-facebook-marketing
   githubIssueLabel: source-facebook-marketing
   icon: facebook.svg
@@ -20,4 +20,8 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   tags:
     - language:python
+  ab_internal:
+    sl: 300
+    ql: 400
+  supportLevel: certified
 metadataSpecVersion: "1.0"

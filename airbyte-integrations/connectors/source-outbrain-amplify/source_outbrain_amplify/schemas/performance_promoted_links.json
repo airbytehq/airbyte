@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "fromDate": {
+          "type": ["string", "null"]
+        },
+        "toDate": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "impressions": {
+          "type": ["number", "null"]
+        },
+        "clicks": {
+          "type": ["number", "null"]
+        },
+        "totalConversions": {
+          "type": ["number", "null"]
+        },
+        "conversions": {
+          "type": ["number", "null"]
+        },
+        "viewConversions": {
+          "type": ["number", "null"]
+        },
+        "spend": {
+          "type": ["number", "null"]
+        },
+        "ecpc": {
+          "type": ["number", "null"]
+        },
+        "ctr": {
+          "type": ["number", "null"]
+        },
+        "conversionRate": {
+          "type": ["number", "null"]
+        },
+        "viewConversionRate": {
+          "type": ["number", "null"]
+        },
+        "cpa": {
+          "type": ["number", "null"]
+        },
+        "totalCpa": {
+          "type": ["number", "null"]
+        },
+        "totalSumValue": {
+          "type": ["number", "null"]
+        },
+        "sumValue": {
+          "type": ["number", "null"]
+        },
+        "viewSumValue": {
+          "type": ["number", "null"]
+        },
+        "totalAverageValue": {
+          "type": ["number", "null"]
+        },
+        "averageValue": {
+          "type": ["number", "null"]
+        },
+        "viewAverageValue": {
+          "type": ["number", "null"]
+        },
+        "totalRoas": {
+          "type": ["number", "null"]
+        },
+        "roas": {
+          "type": ["number", "null"]
+        },
+        "videoReachedFirstQ": {
+          "type": ["integer", "null"]
+        },
+        "videoReachedSecondQ": {
+          "type": ["integer", "null"]
+        },
+        "videoReachedThirdQ": {
+          "type": ["integer", "null"]
+        },
+        "videoReachedCompletion": {
+          "type": ["integer", "null"]
+        },
+        "videoViewDuration": {
+          "type": ["integer", "null"]
+        },
+        "videoAvgViewDuration": {
+          "type": ["integer", "null"]
+        },
+        "videoPlays": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "marketer_id": {
+      "type": ["string", "null"]
+    },
+    "campaign_id": {
+      "type": ["string", "null"]
+    },
+    "promoted_link_id": {
+      "type": ["string", "null"]
+    }
+  }
+}

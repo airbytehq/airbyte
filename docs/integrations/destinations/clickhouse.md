@@ -2,12 +2,12 @@
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | Yes                  |       |
-| Namespaces                    | Yes                  |       |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
 
 #### Output Schema
 

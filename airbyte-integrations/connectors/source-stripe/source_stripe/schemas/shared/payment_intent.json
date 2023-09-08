@@ -62,6 +62,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "currency": {
       "type": ["null", "string"]
     },
@@ -374,7 +377,7 @@
                       "type": ["null", "object"],
                       "properties": {
                         "billing_address": {
-                            "$ref": "address.json"
+                          "$ref": "address.json"
                         },
                         "email": {
                           "type": ["null", "string"]
@@ -833,6 +836,60 @@
     },
     "transfer_group": {
       "type": ["null", "string"]
+    },
+    "latest_charge": {
+      "type": ["null", "string"]
+    },
+    "statement_descriptor": {
+      "type": ["null", "string"]
+    },
+    "amount_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "tip": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "integer"]
+            }
+          }
+        }
+      }
+    },
+    "processing": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "card": {
+          "type": ["null", "object"],
+          "properties": {
+            "customer_notification": {
+              "type": ["null", "object"],
+              "properties": {
+                "approval_requested": {
+                  "type": ["null", "boolean"]
+                },
+                "completes_at": {
+                  "type": ["null", "integer"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "automatic_payment_methods": {
+      "type": ["null", "object"],
+      "properties": {
+        "allow_redirects": {
+          "type": ["null", "string"]
+        },
+        "enabled": {
+          "type": ["null", "boolean"]
+        }
+      }
     }
   }
 }
