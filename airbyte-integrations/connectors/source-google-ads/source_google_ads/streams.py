@@ -607,8 +607,9 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
         # yield deleted items
         record_fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        deleted_record = {field_: None for field_ in record_fields}
+        deleted_record_template = {field_: None for field_ in record_fields}
         for id_ in stream_slice.get("deleted_ids", []):
+            deleted_record = deleted_record_template.copy()
             deleted_record[self.id_field] = id_
             if deleted_record.get(self.primary_key[0]) in stream_slice.get("id_to_time"):
                 deleted_record[self.cursor_field] = stream_slice["id_to_time"][deleted_record[self.primary_key[0]]]
