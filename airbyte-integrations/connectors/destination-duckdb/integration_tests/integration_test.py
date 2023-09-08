@@ -30,17 +30,17 @@ from airbyte_cdk.models import (
 )
 from destination_duckdb import DestinationDuckdb
 
-SECRETS_CONFIG_PATH = "secrets/config.json"
+CONFIG_PATH = "secrets/config.json"
 
 def pytest_generate_tests(metafunc):
     if "config" not in metafunc.fixturenames:
         return
-    
+
     configs: list[str] = ["local_file_config"]
-    if Path(SECRETS_CONFIG_PATH).is_file():
+    if Path(CONFIG_PATH).is_file():
         configs.append("motherduck_config")
     else:
-        print(f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}")
+        print(f"Skipping MotherDuck tests because config file not found at: {CONFIG_PATH}")
 
     # for test_name in ["test_check_succeeds", "test_write"]:
     metafunc.parametrize("config", configs, indirect=True)
@@ -55,7 +55,7 @@ def config(request) -> Dict[str, str]:
         yield {"destination_path": test}
 
     elif request.param == "motherduck_config":
-        yield json.loads(Path(SECRETS_CONFIG_PATH).read_text())
+        yield json.loads(Path(CONFIG_PATH).read_text())
 
     else:
         raise ValueError(f"Unknown config type: {request.param}")
