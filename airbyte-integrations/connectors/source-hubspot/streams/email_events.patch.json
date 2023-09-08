@@ -1,8 +1,10 @@
 {
     "properties":{
         "browser": {
+            "properties": {
             "version":{
                 "type": ["null", "object"]
+            }
             },
             "type": ["object", "null"]
         }
