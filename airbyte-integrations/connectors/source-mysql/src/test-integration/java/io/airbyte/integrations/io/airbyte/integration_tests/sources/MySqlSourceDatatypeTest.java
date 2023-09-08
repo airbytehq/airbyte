@@ -15,9 +15,4 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
     return  Path.of("secrets/mysql-source-datatype-test-config.json");
   }
 
-  @Override
-  public boolean testCatalog() {
-    return true;
-  }
-
 }
