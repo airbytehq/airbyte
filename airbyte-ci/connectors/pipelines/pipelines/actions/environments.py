@@ -312,14 +312,30 @@ async def with_installed_python_package(
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    has_setup_py, has_requirements_txt = await check_path_in_workdir(container, "setup.py"), await check_path_in_workdir(
-        container, "requirements.txt"
-    )
+    has_setup_py = await check_path_in_workdir(container, "setup.py")
+    has_requirements_txt = await check_path_in_workdir(container, "requirements.txt")
+    has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
-    if has_setup_py:
+    if has_pyproject_toml:
+        pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
+        poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
+        poetry_install_no_venv_cmd = ["poetry", "install", "--no-root", "--no-dev"]
+        container = (
+            container
+                .with_exec(pip_install_poetry_cmd)
+                .with_exec(poetry_disable_virtual_env_cmd)
+                .with_exec(poetry_install_no_venv_cmd)
+        )
+
+    elif has_setup_py:
         container = container.with_exec(install_connector_package_cmd)
-    if has_requirements_txt:
+    elif has_requirements_txt:
         container = container.with_exec(install_requirements_cmd)
+
+    # todo
+    # 1. move to a separate function for all these silly installs
+    # 2. add additional dependency groun functionality to all of them
+    # 3. install poetry in the python base image ffs
 
     if additional_dependency_groups:
         container = container.with_exec(
@@ -360,7 +376,7 @@ async def with_python_connector_installed(context: ConnectorContext) -> Containe
             "metadata.yaml",
             "bootstrap.md",
             "icon.svg",
-            "README.md",
+            # "README.md",
             "Dockerfile",
             "acceptance-test-docker.sh",
             "build.gradle",
