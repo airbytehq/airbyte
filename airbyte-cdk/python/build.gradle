@@ -11,7 +11,7 @@ tasks.register('generateComponentManifestClassFiles', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
 }.configure {
-    dependsOn project(':tools:code-generator').tasks.named('airbyteDocker')
+    dependsOn project(':tools:code-generator').tasks.named('assemble')
 }
 
 tasks.register('validateSourceYamlManifest', Exec) {

@@ -129,7 +129,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     LOGGER.debug("Initializing file offset backing store with state '{}'...", cdcState);
     final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties,
         config, catalog,
-        AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()), Optional.empty());
+        AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()));
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     return parseSavedOffset(debeziumProperties, mongoClient);
   }
