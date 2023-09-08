@@ -70,7 +70,7 @@ class MongoDbDebeziumPropertiesManagerTest {
         offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    assertEquals(24 + cdcProperties.size(), debeziumProperties.size());
+    assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(NAME_KEY));
     assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
@@ -104,7 +104,7 @@ class MongoDbDebeziumPropertiesManagerTest {
         offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    assertEquals(21 + cdcProperties.size(), debeziumProperties.size());
+    assertEquals(19 + cdcProperties.size(), debeziumProperties.size());
     assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(NAME_KEY));
     assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
