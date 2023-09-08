@@ -8,24 +8,27 @@ from typing import Iterable, List
 from airbyte_cdk.destinations.vector_db_based.batcher import Batcher
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
 
 
 class Writer:
     """
-    The Writer class is orchestrating the document processor, the batcher and the indexer:
+    The Writer class is orchestrating the document processor, the batcher, the embedder and the indexer:
     * Incoming records are collected using the batcher
     * The document processor generates documents from all records in the batch
-    * The indexer indexes the resulting documents in the destination
+    * The embedder embeds the documents
+    * The indexer indexes the resulting documents and their embeddings in the destination
 
     The destination connector is responsible to create a writer instance and pass the input messages iterable to the write method.
     The batch size can be configured by the destination connector to give the freedom of either letting the user configure it or hardcoding it to a sensible value depending on the destination.
     """
 
-    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, batch_size: int) -> None:
+    def __init__(self, processing_config: ProcessingConfigModel, indexer: Indexer, embedder: Embedder, batch_size: int) -> None:
         self.processing_config = processing_config
         self.indexer = indexer
+        self.embedder = embedder
         self.batcher = Batcher(batch_size, lambda batch: self._process_batch(batch))
 
     def _process_batch(self, batch: List[AirbyteRecordMessage]) -> None:
@@ -36,6 +39,9 @@ class Writer:
             documents.extend(record_documents)
             if record_id_to_delete is not None:
                 ids_to_delete.append(record_id_to_delete)
+        embeddings = self.embedder.embed_chunks(documents)
+        for i, document in enumerate(documents):
+            document.embedding = embeddings[i]
         self.indexer.index(documents, ids_to_delete)
 
     def write(self, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]) -> Iterable[AirbyteMessage]:

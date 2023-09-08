@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts: []
   connectorSubtype: api
@@ -6,6 +9,7 @@ data:
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
   dockerImageTag: 5.0.0
   dockerRepository: airbyte/source-faker
+  documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
   icon: faker.svg
   license: MIT
@@ -16,6 +20,16 @@ data:
     oss:
       enabled: true
   releaseStage: beta
+  releases:
+    breakingChanges:
+      4.0.0:
+        message: This is a breaking change message
+        upgradeDeadline: "2023-07-19"
+      5.0.0:
+        message:
+          ID and products.year fields are changing to be integers instead of
+          floats.
+        upgradeDeadline: "2023-08-31"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -27,21 +41,7 @@ data:
       - users
       - products
       - purchases
-  documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  supportLevel: community
   tags:
     - language:python
-  releases:
-    breakingChanges:
-      5.0.0:
-        message:
-          "ID and products.year fields are changing to be integers instead
-          of floats."
-        upgradeDeadline: "2023-08-31"
-      4.0.0:
-        message: "This is a breaking change message"
-        upgradeDeadline: "2023-07-19"
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

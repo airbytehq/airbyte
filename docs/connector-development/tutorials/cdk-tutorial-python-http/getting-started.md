@@ -14,7 +14,7 @@ All the commands below assume that `python` points to a version of python &gt;=3
 
 ## Exchange Rates API Setup
 
-For this guide we will be making API calls to the Exchange Rates API. In order to generate the API access key that will be used by the new connector, you will have to follow steps on the [Exchange Rates API](https://exchangeratesapi.io/) by signing up for the Free tier plan. Once you have an API access key, you can continue with the guide.
+For this guide we will be making API calls to the Exchange Rates API. In order to generate the API access key that will be used by the new connector, you will have to follow steps on the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api/) by signing up for the Free tier plan. Once you have an API access key, you can continue with the guide.
 
 ## Checklist
 
