@@ -150,9 +150,12 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
       stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
 
-      return new AirbyteMessage()
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
+
+      LOGGER.info("Initial snapshot message {}", airbyteMessage);
+      return airbyteMessage;
     } else if (emitStateDueToMessageCount || emitStateDueToDuration) {
       count = 0;
       lastCheckpoint = Instant.now();
@@ -164,9 +167,11 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
 
-      return new AirbyteMessage()
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
+      LOGGER.info("Initial snapshot message {}", airbyteMessage);
+      return airbyteMessage;
     }
 
     count++;
@@ -175,13 +180,16 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
     lastId = document.get(MongoConstants.ID_FIELD);
 
-    return new AirbyteMessage()
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
             .withData(injectMetadata(jsonNode)));
+
+    LOGGER.info("Initial snapshot message {}", airbyteMessage);
+    return airbyteMessage;
   }
 
   private JsonNode injectMetadata(final JsonNode jsonNode) {

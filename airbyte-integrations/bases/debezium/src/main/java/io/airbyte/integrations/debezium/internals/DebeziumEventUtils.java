@@ -10,12 +10,15 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DebeziumEventUtils {
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumEventUtils.class);
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
@@ -59,9 +62,12 @@ public class DebeziumEventUtils {
         .withEmittedAt(emittedAt.toEpochMilli())
         .withData(data);
 
-    return new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
         .withRecord(airbyteRecordMessage);
+
+    LOGGER.info("debezium airbyteMessage: {}", airbyteMessage);
+    return airbyteMessage;
   }
 
   private static AirbyteMessage formatMongoDbEvent(final ChangeEventWithMetadata event,
@@ -116,7 +122,7 @@ public class DebeziumEventUtils {
                                                           final JsonNode debeziumEventKey,
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector) {
-    ObjectNode baseNode;
+    final ObjectNode baseNode;
 
     /*
      * The change events produced by MongoDB differ based on the server version. For version BEFORE 6.x,
@@ -151,7 +157,7 @@ public class DebeziumEventUtils {
   private static JsonNode addCdcMetadata(final ObjectNode baseNode,
                                          final JsonNode source,
                                          final CdcMetadataInjector cdcMetadataInjector,
-                                         boolean isDelete) {
+                                         final boolean isDelete) {
 
     final long transactionMillis = source.get("ts_ms").asLong();
     final String transactionTimestamp = Instant.ofEpochMilli(transactionMillis).toString();
@@ -165,6 +171,7 @@ public class DebeziumEventUtils {
       baseNode.put(CDC_DELETED_AT, (String) null);
     }
 
+    LOGGER.info("formatted debezium record: {}", baseNode);
     return baseNode;
   }
 
