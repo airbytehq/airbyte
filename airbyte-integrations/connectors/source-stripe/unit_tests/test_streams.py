@@ -31,8 +31,8 @@ def balance_transactions(incremental_stream_args):
 
 
 @pytest.fixture()
-def credit_notes(incremental_stream_args):
-    def mocker(args=incremental_stream_args):
+def credit_notes(stream_args):
+    def mocker(args=stream_args):
         return UpdatedCursorIncrementalStripeStream(
             name="credit_notes",
             path="credit_notes",
@@ -48,7 +48,7 @@ def test_request_headers(accounts):
     assert headers["Stripe-Version"] == "2022-11-15"
 
 
-def test_lazy_sub_stream(requests_mock, invoice_line_items, invoices, stream_args, incremental_stream_args):
+def test_lazy_sub_stream(requests_mock, invoice_line_items, invoices, stream_args):
     # First initial request to parent stream
     requests_mock.get(
         "https://api.stripe.com/v1/invoices",
@@ -103,8 +103,7 @@ def test_lazy_sub_stream(requests_mock, invoice_line_items, invoices, stream_arg
 
     # make start date a recent date so there's just one slice in a parent stream
     stream_args["start_date"] = pendulum.today().subtract(days=3).int_timestamp
-    incremental_stream_args["start_date"] = pendulum.today().subtract(days=3).int_timestamp
-    parent_stream = invoices(incremental_stream_args)
+    parent_stream = invoices(stream_args)
     stream = invoice_line_items(stream_args, parent_stream=parent_stream)
     records = []
 
@@ -352,12 +351,12 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
     ]
 
 
-def test_persons_wo_state(requests_mock, incremental_stream_args):
+def test_persons_wo_state(requests_mock, stream_args):
     requests_mock.get(
         "/v1/accounts",
         json={"data": [{"id": 1, "object": "account", "created": 111}]}
     )
-    stream = Persons(**incremental_stream_args)
+    stream = Persons(**stream_args)
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
     requests_mock.get(
@@ -372,7 +371,7 @@ def test_persons_wo_state(requests_mock, incremental_stream_args):
 
 
 @freezegun.freeze_time("2023-08-23T15:00:15")
-def test_persons_w_state(requests_mock, incremental_stream_args):
+def test_persons_w_state(requests_mock, stream_args):
     requests_mock.get(
         "/v1/events",
         json={
@@ -389,7 +388,7 @@ def test_persons_w_state(requests_mock, incremental_stream_args):
             "has_more": False
         }
     )
-    stream = Persons(**incremental_stream_args)
+    stream = Persons(**stream_args)
     slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
     assert slices == [{}]
     records = [

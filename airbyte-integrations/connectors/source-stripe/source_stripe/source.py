@@ -105,7 +105,7 @@ class SourceStripe(AbstractSource):
                 "customer.subscription.updated",
                 "customer.subscription.deleted",
             ],
-            **incremental_args,
+            **args,
         )
         subscription_items = StripeLazySubStream(
             name="subscription_items",
@@ -122,21 +122,21 @@ class SourceStripe(AbstractSource):
             path="transfers",
             use_cache=True,
             event_types=["transfer.created", "transfer.reversed", "transfer.updated"],
-            **incremental_args,
+            **args,
         )
         application_fees = IncrementalStripeStream(
             name="application_fees",
             path="application_fees",
             use_cache=True,
             event_types=["application_fee.created", "application_fee.refunded"],
-            **incremental_args,
+            **args,
         )
         customers = IncrementalStripeStream(
             name="customers",
             path="customers",
             use_cache=True,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
-            **incremental_args,
+            **args,
         )
         invoices = IncrementalStripeStream(
             name="invoices",
@@ -169,7 +169,7 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 extra_request_params={"object": "card"},
                 record_extractor=FilteringRecordExtractor("updated", "created", "card"),
-                **incremental_args,
+                **args,
             ),
             UpdatedCursorIncrementalStripeStream(
                 name="external_account_bank_accounts",
@@ -177,9 +177,9 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 extra_request_params={"object": "bank_account"},
                 record_extractor=FilteringRecordExtractor("updated", "created", "bank_account"),
-                **incremental_args,
+                **args,
             ),
-            Persons(**incremental_args),
+            Persons(**args),
             SetupAttempts(**incremental_args),
             StripeStream(name="accounts", path="accounts", use_cache=True, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
@@ -197,7 +197,6 @@ class SourceStripe(AbstractSource):
                     "checkout.session.completed",
                     "checkout.session.expired",
                 ],
-                lookback_window_days=config["lookback_window_days"] + 1,
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
@@ -209,32 +208,32 @@ class SourceStripe(AbstractSource):
                     "payment_method.detached",
                     "payment_method.updated",
                 ],
-                **incremental_args,
+                **args,
             ),
             UpdatedCursorIncrementalStripeStream(
                 name="credit_notes",
                 path="credit_notes",
                 event_types=["credit_note.created", "credit_note.updated", "credit_note.voided"],
-                **incremental_args,
+                **args,
             ),
             UpdatedCursorIncrementalStripeStream(
                 name="early_fraud_warnings",
                 path="radar/early_fraud_warnings",
                 event_types=["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="authorizations",
                 path="issuing/authorizations",
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
-                **incremental_args,
+                **args,
             ),
             customers,
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
                 event_types=["issuing_cardholder.created", "issuing_cardholder.updated"],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="charges",
@@ -249,10 +248,10 @@ class SourceStripe(AbstractSource):
                     "charge.succeeded",
                     "charge.updated",
                 ],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
-                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **incremental_args
+                name="coupons", path="coupons", event_types=["coupon.created", "coupon.updated", "coupon.deleted"], **args
             ),
             IncrementalStripeStream(
                 name="disputes",
@@ -264,7 +263,7 @@ class SourceStripe(AbstractSource):
                     "charge.dispute.funds_withdrawn",
                     "charge.dispute.updated",
                 ],
-                **incremental_args,
+                **args,
             ),
             application_fees,
             invoices,
@@ -273,7 +272,7 @@ class SourceStripe(AbstractSource):
                 path="invoiceitems",
                 legacy_cursor_field="date",
                 event_types=["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="payouts",
@@ -286,22 +285,22 @@ class SourceStripe(AbstractSource):
                     "payout.reconciliation_completed",
                     "payout.updated",
                 ],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="plans",
                 path="plans",
                 expand_items=["data.tiers"],
                 event_types=["plan.created", "plan.updated", "plan.deleted"],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
-                name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **incremental_args
+                name="prices", path="prices", event_types=["price.created", "price.updated", "price.deleted"], **args
             ),
             IncrementalStripeStream(
-                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **incremental_args
+                name="products", path="products", event_types=["product.created", "product.updated", "product.deleted"], **args
             ),
-            IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **incremental_args),
+            IncrementalStripeStream(name="reviews", path="reviews", event_types=["review.closed", "review.opened"], **args),
             subscriptions,
             IncrementalStripeStream(
                 name="subscription_schedule",
@@ -315,11 +314,11 @@ class SourceStripe(AbstractSource):
                     "subscription_schedule.released",
                     "subscription_schedule.updated",
                 ],
-                **incremental_args,
+                **args,
             ),
             transfers,
             IncrementalStripeStream(
-                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **incremental_args
+                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **args
             ),
             IncrementalStripeStream(
                 name="payment_intents",
@@ -334,13 +333,13 @@ class SourceStripe(AbstractSource):
                     "payment_intent.requires_action",
                     "payment_intent.succeeded",
                 ],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="promotion_codes",
                 path="promotion_codes",
                 event_types=["promotion_code.created", "promotion_code.updated"],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="setup_intents",
@@ -352,22 +351,22 @@ class SourceStripe(AbstractSource):
                     "setup_intent.setup_failed",
                     "setup_intent.succeeded",
                 ],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
-                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **incremental_args
+                name="cards", path="issuing/cards", event_types=["issuing_card.created", "issuing_card.updated"], **args
             ),
             IncrementalStripeStream(
                 name="transactions",
                 path="issuing/transactions",
                 event_types=["issuing_transaction.created", "issuing_transaction.updated"],
-                **incremental_args,
+                **args,
             ),
             IncrementalStripeStream(
                 name="top_ups",
                 path="topups",
                 event_types=["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"],
-                **incremental_args,
+                **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="application_fees_refunds",
@@ -377,7 +376,7 @@ class SourceStripe(AbstractSource):
                 parent_id="refund_id",
                 sub_items_attr="refunds",
                 add_parent_id=True,
-                **incremental_args,
+                **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
@@ -389,7 +388,7 @@ class SourceStripe(AbstractSource):
                 response_filter={"attr": "object", "value": "bank_account"},
                 extra_request_params={"object": "bank_account"},
                 record_extractor=FilteringRecordExtractor("updated", "created", "bank_account"),
-                **incremental_args,
+                **args,
             ),
             StripeLazySubStream(
                 name="invoice_line_items",
