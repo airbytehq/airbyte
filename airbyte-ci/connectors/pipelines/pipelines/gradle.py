@@ -12,6 +12,7 @@ from pipelines import consts
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.contexts import PipelineContext
+from pipelines.utils import sh_dash_c
 
 
 class GradleTask(Step, ABC):
@@ -157,8 +158,12 @@ class GradleTask(Step, ABC):
         openjdk_with_docker = (
             self.dagger_client.container()
             .from_("openjdk:17.0.1-jdk-slim")
-            .with_exec(["apt-get", "update"])
-            .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
+            .with_exec(sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y curl jq rsync npm pip",
+                ]
+            ))
             .with_env_variable("VERSION", consts.DOCKER_VERSION)
             .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
             .with_env_variable("GRADLE_HOME", "/root/.gradle")
