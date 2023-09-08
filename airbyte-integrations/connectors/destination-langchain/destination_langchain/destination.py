@@ -17,10 +17,10 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.destinations.vector_db_based import Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_langchain.batcher import Batcher
 from destination_langchain.config import ConfigModel
 from destination_langchain.document_processor import DocumentProcessor
-from destination_langchain.embedder import Embedder, FakeEmbedder, OpenAIEmbedder
 from destination_langchain.indexer import ChromaLocalIndexer, DocArrayHnswSearchIndexer, Indexer, PineconeIndexer
 from langchain.document_loaders.base import Document
 
