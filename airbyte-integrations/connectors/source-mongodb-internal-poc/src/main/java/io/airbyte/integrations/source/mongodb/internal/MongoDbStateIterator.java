@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
 import io.airbyte.integrations.source.mongodb.internal.state.IdType;
 import io.airbyte.integrations.source.mongodb.internal.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
@@ -171,7 +171,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
     count++;
     final var document = iter.next();
-    final var jsonNode = MongoUtils.toJsonNode(document, fields);
+    final var jsonNode = MongoDbCdcEventUtils.toJsonNode(document, fields);
 
     lastId = document.get(MongoConstants.ID_FIELD);
 

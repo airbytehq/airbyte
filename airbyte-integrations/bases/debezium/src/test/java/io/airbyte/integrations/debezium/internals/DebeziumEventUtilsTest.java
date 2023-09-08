@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.ID_FIELD;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.OBJECT_ID_FIELD;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.ID_FIELD;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;

@@ -9,11 +9,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Map;
 
 public class DebeziumEventUtils {
 
@@ -25,12 +24,6 @@ public class DebeziumEventUtils {
   static final String AFTER_EVENT = "after";
   @VisibleForTesting
   static final String BEFORE_EVENT = "before";
-  @VisibleForTesting
-  static final String DOCUMENT_OBJECT_ID_FIELD = "_id";
-  @VisibleForTesting
-  static final String ID_FIELD = "id";
-  @VisibleForTesting
-  static final String OBJECT_ID_FIELD = "$oid";
   @VisibleForTesting
   static final String OPERATION_FIELD = "op";
   @VisibleForTesting
@@ -109,7 +102,7 @@ public class DebeziumEventUtils {
      * needs to be turned back into a JSON object for inclusion in the Airybte message.
      */
     final ObjectNode baseNode = (ObjectNode) Jsons.deserialize((after.isNull() ? before : after).asText());
-    return addCdcMetadata(normalizeObjectId(baseNode), source, cdcMetadataInjector, false);
+    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(baseNode), source, cdcMetadataInjector, false);
   }
 
   private static JsonNode formatMongoDbDeleteDebeziumData(final JsonNode before,
@@ -130,13 +123,12 @@ public class DebeziumEventUtils {
      * for more details.
      */
     if (!before.isNull()) {
-      baseNode = normalizeObjectId((ObjectNode) Jsons.deserialize(before.asText()));
+      baseNode = (ObjectNode) Jsons.deserialize(before.asText());
     } else {
-      final String objectId = Jsons.deserialize(debeziumEventKey.get(ID_FIELD).asText()).get(OBJECT_ID_FIELD).asText();
-      baseNode = (ObjectNode) Jsons.jsonNode(Map.of(DOCUMENT_OBJECT_ID_FIELD, objectId));
+      baseNode = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     }
 
-    return addCdcMetadata(baseNode, source, cdcMetadataInjector, true);
+    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(baseNode), source, cdcMetadataInjector, true);
   }
 
   private static JsonNode formatRelationalDbDebeziumData(final JsonNode before,
@@ -166,38 +158,6 @@ public class DebeziumEventUtils {
     }
 
     return baseNode;
-  }
-
-  /**
-   * Normalizes the document's object ID value stored in the change event to match the raw data
-   * produced by the initial snapshot.
-   * <p/>
-   * <p/>
-   * We need to unpack the object ID from the event data in order for it to match up with the data
-   * produced by the initial snapshot. The event contains the object ID in a nested object:
-   * <p/>
-   * <p/>
-   * <code>
-   * {\"_id\": {\"$oid\": \"64f24244f95155351c4185b1\"}, ...}
-   * </code>
-   * <p/>
-   * <p/>
-   * In order to match the data produced by the initial snapshot, this must be translated into:
-   * <p/>
-   * <p/>
-   * <code>
-   * {\"_id\": \"64f24244f95155351c4185b1\", ...}
-   * </code>
-   *
-   * @param data The {@link ObjectNode} that contains the record data extracted from the change event.
-   * @return The updated record data with the document object ID normalized.
-   */
-  private static ObjectNode normalizeObjectId(final ObjectNode data) {
-    if (data.has(DOCUMENT_OBJECT_ID_FIELD) && data.get(DOCUMENT_OBJECT_ID_FIELD).has(OBJECT_ID_FIELD)) {
-      final String objectId = data.get(DOCUMENT_OBJECT_ID_FIELD).get(OBJECT_ID_FIELD).asText();
-      data.put(DOCUMENT_OBJECT_ID_FIELD, objectId);
-    }
-    return data;
   }
 
 }
