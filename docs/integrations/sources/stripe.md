@@ -129,6 +129,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1   | 2023-09-07 | [30254](https://github.com/airbytehq/airbyte/pull/30254) | Fix cursorless incremental streams                                                                                                   |
 | 4.0.0   | 2023-08-15 | [29330](https://github.com/airbytehq/airbyte/pull/29330) | Implement incremental syncs based on date of update                                                                                                  |
 | 3.17.4  | 2023-08-15 | [29425](https://github.com/airbytehq/airbyte/pull/29425) | Revert 3.17.3                                                                                                                                        |
 | 3.17.3  | 2023-08-01 | [28911](https://github.com/airbytehq/airbyte/pull/28911) | Revert 3.17.2 and fix atm_fee property                                                                                                               |
