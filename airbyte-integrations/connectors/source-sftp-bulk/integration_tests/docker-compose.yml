@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  mysftp:
+    image: atmoz/sftp
+    volumes:
+      - ./files:/home/foo/files
+    ports:
+      - "2222:22"
+    command: foo:pass
+  mysftpssh:
+    image: atmoz/sftp
+    volumes:
+      - ./files:/home/foo/files
+      - /tmp/test-sftp-source/ssh:/home/foo/.ssh/keys
+    ports:
+      - "2223:22"
+    command: foo:pass:1001

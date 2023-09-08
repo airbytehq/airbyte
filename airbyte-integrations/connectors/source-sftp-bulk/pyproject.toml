@@ -31,6 +31,9 @@ acceptance_tests = [
   "connector-acceptance-test",
 ]
 
+[tool.poetry.group.dev.dependencies]
+pytest-docker = "^2.0.1"
+
 [build-system]
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core"]

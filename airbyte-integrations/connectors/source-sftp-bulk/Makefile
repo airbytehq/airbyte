@@ -14,11 +14,16 @@ install.all: ## Install using poetry using all extras
 #                                 test commands                                #
 # ---------------------------------------------------------------------------- #
 
-test: ## Run tests
-	@poetry run pytest
 
-test.unit: ## Run unit tests
+test.unit: install.all ## Run unit tests
 	@poetry run pytest unit_tests
 
-test.integration: install.all ## Run integration tests
+test.integration.local: install.all ## Run local integration tests
+	@poetry run pytest integration_tests
+
+test.all: ## Run both unit and local integration tests
+	@poetry run pytest
+
+test.integration.general: install.all ## Run integration tests
 	@poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=.
+

@@ -13,7 +13,15 @@ from typing import Mapping
 import docker
 import paramiko
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode, Type
+from airbyte_cdk.models import (
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
 from source_sftp_bulk import SourceFtp
 
 pytest_plugins = ("connector_acceptance_test.plugin",)
@@ -23,119 +31,87 @@ logger = logging.getLogger("airbyte")
 TMP_FOLDER = "/tmp/test_sftp_source"
 
 
-def generate_ssh_keys():
+@pytest.fixture(scope="session")
+def ssh_path():
     key = paramiko.RSAKey.generate(2048)
-    privateString = StringIO()
-    key.write_private_key(privateString)
 
-    return privateString.getvalue(), "ssh-rsa " + key.get_base64()
+    ssh_path = TMP_FOLDER + "/ssh"
+    os.makedirs(ssh_path, exist_ok=True)
+
+    private_key_path = ssh_path + "/id_rsa"
+    public_key_path = ssh_path + "/id_rsa.pub"
+
+    with open(public_key_path, "w") as pub, open(private_key_path, "w") as priv:
+        key.write_private_key(priv)
+        pub.write("ssh-rsa " + key.get_base64())
+
+    yield ssh_path
+
+    shutil.rmtree(ssh_path)
 
 
 @pytest.fixture(scope="session")
-def docker_client() -> docker.client.DockerClient:
-    return docker.from_env()
+def public_key(ssh_path):
+    with open(ssh_path + "/id_rsa.pub", "r") as pub:
+        yield pub.read()
+
+
+@pytest.fixture(scope="session")
+def private_key(ssh_path):
+    with open(ssh_path + "/id_rsa", "r") as priv:
+        yield priv.read()
+
+
+@pytest.fixture(scope="session")
+def docker_compose_file(pytestconfig):
+    return os.path.join(
+        str(pytestconfig.rootdir),
+        "integration_tests",
+        "docker-compose.yml",
+    )
 
 
 @pytest.fixture(name="config", scope="session")
-def config_fixture(docker_client: docker.client.DockerClient):
-    with socket() as s:
-        s.bind(("", 0))
-        available_port = s.getsockname()[1]
-
-    dir_path = os.getcwd() + "/integration_tests"
+def config_fixture(docker_services):
+    port = docker_services.port_for("mysftp", 22)
 
     config = {
-        "host": "localhost",
-        "port": available_port,
+        "host": "0.0.0.0",
+        "port": port,
         "username": "foo",
         "password": "pass",
         "file_type": "json",
         "start_date": "2021-01-01T00:00:00Z",
-        "folder_path": "/files",
+        "folder_path": "/files/json",
         "stream_name": "overwrite_stream",
         "file_most_recent": False,
         "max_depth": 0,
         "column_names": None,
         "column_names_separator": "|",
         "autogenerate_column_names": False,
-        "autogenerate_column_names_prefix": "col_"
-
+        "autogenerate_column_names_prefix": "col_",
     }
 
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        f"{config['username']}:{config['password']}",
-        name="mysftp",
-        ports={22: config["port"]},
-        volumes={
-            f"{dir_path}/files": {
-                "bind": "/home/foo/files",
-                "mode": "rw",
-            },
-        },
-        detach=True,
-        remove=False,
-    )
-
-    # wait
-    time.sleep(10)
     yield config
-
-    container.kill()
-    container.remove()
 
 
 @pytest.fixture(name="config_pk", scope="session")
-def config_fixture_pk(docker_client):
-    with socket() as s:
-        s.bind(("", 0))
-        available_port = s.getsockname()[1]
-
-    ssh_path = TMP_FOLDER + "/ssh"
-    dir_path = os.getcwd() + "/integration_tests"
-
-    if os.path.exists(ssh_path):
-        shutil.rmtree(ssh_path)
-
-    os.makedirs(ssh_path)
-
-    pk, pubk = generate_ssh_keys()
-
-    pub_key_path = ssh_path + "/id_rsa.pub"
-    with open(pub_key_path, "w") as f:
-        f.write(pubk)
+def config_fixture_pk(private_key, docker_services):
+    available_port = docker_services.port_for("mysftpssh", 22)
 
     config = {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": available_port,
         "username": "foo",
         "password": "pass",
         "file_type": "json",
-        "private_key": pk,
+        "private_key": private_key,
         "start_date": "2021-01-01T00:00:00Z",
         "folder_path": "/files",
         "stream_name": "overwrite_stream",
     }
 
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        f"{config['username']}:{config['password']}:1001",
-        name="mysftpssh",
-        ports={22: config["port"]},
-        volumes={
-            f"{dir_path}/files": {"bind": "/home/foo/files", "mode": "rw"},
-            f"{pub_key_path}": {"bind": "/home/foo/.ssh/keys/id_rsa.pub", "mode": "ro"},
-        },
-        detach=True,
-        remove=False,
-    )
-
-    time.sleep(10)
     yield config
-
-    shutil.rmtree(ssh_path)
-    container.kill()
-    container.remove()
 
 
 @pytest.fixture(name="configured_catalog")
@@ -168,7 +144,11 @@ def test_check_valid_config_pk(config_pk: Mapping):
 
 def test_check_valid_config_pk_bad_pk(config_pk: Mapping):
     outcome = SourceFtp().check(
-        logger, {**config_pk, "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----"}
+        logger,
+        {
+            **config_pk,
+            "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----",
+        },
     )
     assert outcome.status == Status.FAILED
 
@@ -194,7 +174,8 @@ def test_get_files_no_pattern_json(
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 2
     for res in result:
         assert res.type == Type.RECORD
@@ -213,7 +194,8 @@ def test_get_files_pattern_json(
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 1
     for res in result:
         assert res.type == Type.RECORD
@@ -232,7 +214,8 @@ def test_get_files_pattern_json_new_separator(
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 1
     for res in result:
         assert res.type == Type.RECORD
@@ -245,13 +228,14 @@ def test_get_files_pattern_no_match_json(
     configured_catalog: ConfiguredAirbyteCatalog,
 ):
     source = SourceFtp()
-    result = source.read(
+    result_iter = source.read(
         logger,
         {**config, "file_pattern": "bad_pattern.+"},
         configured_catalog,
         None,
     )
-    assert len(list(result)) == 0
+    result = [m for m in result_iter if m.type is Type.RECORD]
+    assert len(result) == 0
 
 
 def test_get_files_no_pattern_csv(
@@ -265,7 +249,8 @@ def test_get_files_no_pattern_csv(
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 4
     for res in result:
         assert res.type == Type.RECORD
@@ -280,11 +265,17 @@ def test_get_files_pattern_csv(
     source = SourceFtp()
     result_iter = source.read(
         logger,
-        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_1.+"},
+        {
+            **config,
+            "file_type": "csv",
+            "folder_path": "files/csv",
+            "file_pattern": "test_1.+",
+        },
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 2
     for res in result:
         assert res.type == Type.RECORD
@@ -299,11 +290,17 @@ def test_get_files_pattern_csv_new_separator(
     source = SourceFtp()
     result_iter = source.read(
         logger,
-        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "test_2.+"},
+        {
+            **config,
+            "file_type": "csv",
+            "folder_path": "files/csv",
+            "file_pattern": "test_2.+",
+        },
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 2
     for res in result:
         assert res.type == Type.RECORD
@@ -318,11 +315,18 @@ def test_get_files_pattern_csv_new_separator_with_config(
     source = SourceFtp()
     result_iter = source.read(
         logger,
-        {**config, "file_type": "csv", "folder_path": "files/csv", "separator": ";", "file_pattern": "test_2.+"},
+        {
+            **config,
+            "file_type": "csv",
+            "folder_path": "files/csv",
+            "separator": ";",
+            "file_pattern": "test_2.+",
+        },
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 2
     for res in result:
         assert res.type == Type.RECORD
@@ -335,13 +339,19 @@ def test_get_files_pattern_no_match_csv(
     configured_catalog: ConfiguredAirbyteCatalog,
 ):
     source = SourceFtp()
-    result = source.read(
+    result_iter = source.read(
         logger,
-        {**config, "file_type": "csv", "folder_path": "files/csv", "file_pattern": "badpattern.+"},
+        {
+            **config,
+            "file_type": "csv",
+            "folder_path": "files/csv",
+            "file_pattern": "badpattern.+",
+        },
         configured_catalog,
         None,
     )
-    assert len(list(result)) == 0
+    result = [m for m in result_iter if m.type is Type.RECORD]
+    assert len(result) == 0
 
 
 def test_get_files_empty_files(
@@ -349,13 +359,15 @@ def test_get_files_empty_files(
     configured_catalog: ConfiguredAirbyteCatalog,
 ):
     source = SourceFtp()
-    result = source.read(
+    result_iter = source.read(
         logger,
         {**config, "folder_path": "files/json_empty"},
         configured_catalog,
         None,
     )
-    assert len(list(result)) == 0
+
+    result = [m for m in result_iter if m.type is Type.RECORD]
+    assert len(result) == 0
 
 
 def test_get_files_handle_null_values(
@@ -369,7 +381,8 @@ def test_get_files_handle_null_values(
         configured_catalog,
         None,
     )
-    result = list(result_iter)
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
     assert len(result) == 5
 
     res = result[2]
@@ -384,7 +397,6 @@ def test_get_files_handle_null_values(
 
 
 def test_get_files_recusively_depth(
-    config: Mapping,
-    configured_catalog: ConfiguredAirbyteCatalog,
+    docker_services,
 ):
     pass
