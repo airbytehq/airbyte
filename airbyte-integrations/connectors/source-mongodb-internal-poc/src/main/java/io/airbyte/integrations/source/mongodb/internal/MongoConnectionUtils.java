@@ -40,7 +40,7 @@ public class MongoConnectionUtils {
 
     final MongoClientSettings.Builder mongoClientSettingsBuilder = MongoClientSettings.builder()
         .applyConnectionString(mongoConnectionString)
-        .readPreference(ReadPreference.secondaryPreferred());
+        .readPreference(ReadPreference.primary());
 
     if (config.has(USER_CONFIGURATION_KEY) && config.has(PASSWORD_CONFIGURATION_KEY)) {
       final String authSource = config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText();
@@ -58,7 +58,7 @@ public class MongoConnectionUtils {
     return connectionString +
         "?replicaSet=" +
         replicaSet +
-        "&readPreference=secondary" +
+        "&readPreference=primary" +
         "&retryWrites=false" +
         "&provider=airbyte" +
         "&tls=true";

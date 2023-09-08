@@ -148,7 +148,7 @@ public class MongoUtil {
         config.has(QUEUE_SIZE_CONFIGURATION_KEY) ? OptionalInt.of(config.get(QUEUE_SIZE_CONFIGURATION_KEY).asInt()) : OptionalInt.empty();
 
     if (sizeFromConfig.isPresent()) {
-      int size = sizeFromConfig.getAsInt();
+      final int size = sizeFromConfig.getAsInt();
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
             MIN_QUEUE_SIZE);
