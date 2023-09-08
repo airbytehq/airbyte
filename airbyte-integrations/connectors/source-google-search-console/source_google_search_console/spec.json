@@ -23,6 +23,7 @@
         "default": "2021-01-01",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
+        "always_show": true,
         "order": 1,
         "format": "date"
       },
@@ -115,7 +116,37 @@
         "order": 4,
         "type": "string",
         "title": "Custom Reports",
-        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See our <a href='https://docs.airbyte.com/integrations/sources/google-search-console'>documentation</a> for more information on formulating custom reports."
+        "airbyte_hidden": true,
+        "description": "(DEPRCATED) A JSON array describing the custom reports you want to sync from Google Search Console. See our <a href='https://docs.airbyte.com/integrations/sources/google-search-console'>documentation</a> for more information on formulating custom reports."
+      },
+      "custom_reports_array": {
+        "title": "Custom Reports",
+        "description": "You can add your Custom Analytics report by creating one.",
+        "order": 5,
+        "type": "array",
+        "items": {
+          "title": "Custom Report Config",
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "description": "The name of the custom report, this name would be used as stream name",
+              "type": "string"
+            },
+            "dimensions": {
+              "title": "Dimensions",
+              "description": "A list of dimensions (country, date, device, page, query)",
+              "type": "array",
+              "items": {
+                "title": "ValidEnums",
+                "description": "An enumeration of dimensions.",
+                "enum": ["country", "date", "device", "page", "query"]
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["name", "dimensions"]
+        }
       },
       "data_state": {
         "type": "string",
@@ -124,7 +155,7 @@
         "description": "If set to 'final', the returned data will include only finalized, stable data. If set to 'all', fresh data will be included. When using Incremental sync mode, we do not recommend setting this parameter to 'all' as it may cause data loss. More information can be found in our <a href='https://docs.airbyte.com/integrations/source/google-search-console'>full documentation</a>.",
         "examples": ["final", "all"],
         "default": "final",
-        "order": 5
+        "order": 6
       }
     }
   },

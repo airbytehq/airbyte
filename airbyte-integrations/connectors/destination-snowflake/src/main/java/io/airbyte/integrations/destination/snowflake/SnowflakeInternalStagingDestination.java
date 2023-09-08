@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
-  private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
+  public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
   private final String airbyteEnvironment;
 
   public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
@@ -143,7 +144,8 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
     parsedCatalog = catalogParser.parseCatalog(catalog);
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator);
+    final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
 
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,

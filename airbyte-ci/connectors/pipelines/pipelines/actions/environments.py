@@ -529,7 +529,6 @@ def with_gradle(
         "gradle",
         "gradlew",
         "LICENSE_SHORT",
-        "publish-repositories.gradle",
         "settings.gradle",
         "build.gradle",
         "tools/gradle",

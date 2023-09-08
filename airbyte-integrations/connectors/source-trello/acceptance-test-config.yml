@@ -34,8 +34,6 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
-      cursor_paths:
-        actions: ["611aa586ef5f2c8e1deec8b6", "date"]
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

@@ -10,6 +10,7 @@ from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigMode
 from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 def initialize_processor():
@@ -181,7 +182,7 @@ def test_no_text_fields():
     processor.logger = MagicMock()
 
     # assert process is throwing with no text fields found
-    with pytest.raises(ValueError):
+    with pytest.raises(AirbyteTracedException):
         processor.process(record)
 
 
