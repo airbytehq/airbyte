@@ -20,6 +20,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "email": {
       "type": ["null", "string"]
     },

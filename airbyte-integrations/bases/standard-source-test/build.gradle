@@ -41,7 +41,7 @@ def getFullPath(String className) {
     return pathInPackage
 }
 
-task generateSourceTestDocs(type: Javadoc) {
+def generateSourceTestDocs = tasks.register('generateSourceTestDocs', Javadoc) {
     def javadocOutputDir = project.file("${project.buildDir}/docs/javadoc")
 
     options.addStringOption('Xdoclint:none', '-quiet')
@@ -75,8 +75,6 @@ task generateSourceTestDocs(type: Javadoc) {
 
     outputs.upToDateWhen { false }
 }
-
-project.build.dependsOn(generateSourceTestDocs)
 
 application {
     mainClass = 'io.airbyte.integrations.standardtest.source.PythonSourceAcceptanceTest'

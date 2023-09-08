@@ -8,5 +8,3 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
