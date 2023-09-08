@@ -23,7 +23,7 @@ class GradleTask(Step, ABC):
         title (str): The step title.
     """
 
-    DEFAULT_TASKS_TO_EXCLUDE = ["assemble", "airbyteDocker", "connectorAcceptanceTest"]
+    DEFAULT_TASKS_TO_EXCLUDE = ["assemble", "airbyteDocker"]
     BIND_TO_DOCKER_HOST = True
     gradle_task_name: ClassVar
     gradle_task_options: Tuple[str, ...] = ()
@@ -49,7 +49,6 @@ class GradleTask(Step, ABC):
             str(dependency_directory)
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
-
 
     def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
