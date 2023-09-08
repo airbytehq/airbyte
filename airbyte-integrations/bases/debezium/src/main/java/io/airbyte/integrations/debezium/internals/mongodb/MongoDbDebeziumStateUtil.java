@@ -21,6 +21,7 @@ import io.debezium.connector.mongodb.MongoDbTaskContext;
 import io.debezium.connector.mongodb.ReplicaSetDiscovery;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
