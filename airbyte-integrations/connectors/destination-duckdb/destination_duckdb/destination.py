@@ -42,7 +42,6 @@ class DestinationDuckdb(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -72,7 +71,6 @@ class DestinationDuckdb(Destination):
         # create the tables if needed
         # con.execute("BEGIN TRANSACTION")
         for configured_stream in configured_catalog.streams:
-
             name = configured_stream.stream.name
             table_name = f"_airbyte_raw_{name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
@@ -98,11 +96,9 @@ class DestinationDuckdb(Destination):
         buffer = defaultdict(list)
 
         for message in input_messages:
-
             if message.type == Type.STATE:
                 # flush the buffer
                 for stream_name in buffer.keys():
-
                     logger.info(f"flushing buffer for state: {message}")
                     query = """
                     INSERT INTO {table_name} (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
@@ -130,7 +126,6 @@ class DestinationDuckdb(Destination):
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-
             query = """
             INSERT INTO {table_name}
             VALUES (?,?,?)
@@ -160,7 +155,7 @@ class DestinationDuckdb(Destination):
             if path.startswith("/local"):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
-            
+
             if "motherduck_api_key" in config:
                 os.environ["motherduck_token"] = config["motherduck_api_key"]
 
