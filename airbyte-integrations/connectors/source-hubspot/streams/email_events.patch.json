@@ -3,7 +3,7 @@
         "browser": {
             "properties": {
             "version":{
-                "type": ["null", "object"]
+                "type": ["null", "string", "array"]
             }
             },
             "type": ["object", "null"]
