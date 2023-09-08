@@ -4,7 +4,7 @@
 
 import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
@@ -104,9 +104,7 @@ class TestMilvusIndexer(unittest.TestCase):
         )
 
     def test_pre_sync_calls_delete(self):
-        mock_iterator = Mock()
-        mock_iterator.next.side_effect = [[{"id": 1}], []]
-        self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
+        self.milvus_indexer._collection.query_iterator.return_value = iter([[{"id": 1}]])
 
         self.milvus_indexer.pre_sync(
             Mock(
@@ -137,11 +135,9 @@ class TestMilvusIndexer(unittest.TestCase):
         )
 
     def test_index_calls_delete(self):
-        mock_iterator = Mock()
-        mock_iterator.next.side_effect = [[{"id": "123"}], []]
-        self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
+        self.milvus_indexer._collection.query_iterator.return_value = iter([[{"id": "123"}, {"id": "456"}], [{"id": "789"}]])
 
         self.milvus_indexer.index([], ["some_id"])
 
         self.milvus_indexer._collection.query_iterator.assert_called_with(expr='_ab_record_id in ["some_id"]')
-        self.milvus_indexer._collection.delete.assert_called_with(expr="id in [123]")
+        self.milvus_indexer._collection.delete.assert_has_calls([call(expr="id in [123, 456]"), call(expr="id in [789]")], any_order=False)
