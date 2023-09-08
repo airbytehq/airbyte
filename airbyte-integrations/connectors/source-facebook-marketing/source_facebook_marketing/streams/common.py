@@ -58,17 +58,17 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             # set the flag to the api class that the `limit` param was reduced
             details.get("args")[0].request_record_limit_is_reduced = True
 
-        def revert_request_record_limit(details):
-            """
-            This method is triggered `on_success` after successfull retry,
-            sets the internal class flags to provide the logic to restore the previously reduced
-            `limit` param.
-            """
-            # reference issue: https://github.com/airbytehq/airbyte/issues/25383
-            # set the flag to the api class that the last api call was ssuccessfull
-            details.get("args")[0].last_api_call_is_successfull = True
-            # set the flag to the api class that the `limit` param is restored
-            details.get("args")[0].request_record_limit_is_reduced = False
+    def revert_request_record_limit(details):
+        """
+        This method is triggered `on_success` after successfull retry,
+        sets the internal class flags to provide the logic to restore the previously reduced
+        `limit` param.
+        """
+        # reference issue: https://github.com/airbytehq/airbyte/issues/25383
+        # set the flag to the api class that the last api call was ssuccessfull
+        details.get("args")[0].last_api_call_is_successfull = True
+        # set the flag to the api class that the `limit` param is restored
+        details.get("args")[0].request_record_limit_is_reduced = False
 
 
     def should_retry_api_error(exc):

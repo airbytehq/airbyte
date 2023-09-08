@@ -188,6 +188,7 @@ class SourceFacebookMarketing(AbstractSource):
                 max_batch_size=config.max_batch_size,
             ),
             CustomAudiences(
+                source=self,
                 api=api,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,

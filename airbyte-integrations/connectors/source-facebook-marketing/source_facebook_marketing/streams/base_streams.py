@@ -120,11 +120,11 @@ class FBMarketingStream(Stream, ABC):
                 #reduce_batch_size(reques) # this is what happens in the Master branch
 
             requests_q.put(request)
-            nonlocal batch_size
-            # reduce current batch size
-            if batch_size > 1:
-                batch_size -= 1
-                logger.debug(f"Reducing batch size to {batch_size}")
+            # nonlocal batch_size
+            # # reduce current batch size
+            # if batch_size > 1:
+            #     batch_size -= 1
+            #     logger.debug(f"Reducing batch size to {batch_size}")
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         while not requests_q.empty():

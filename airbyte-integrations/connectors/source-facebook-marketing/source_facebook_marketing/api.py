@@ -186,8 +186,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str, page_size: int = 100):
-        self._account_id = account_id
+    def __init__(self, account_ids: List[str], access_token: str, page_size: int = 100, parallelism: int=1):
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.token_hash = str(sha256(access_token.encode('utf-8')).hexdigest())
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
