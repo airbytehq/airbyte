@@ -141,10 +141,19 @@ class IncrementalNotionStream(NotionStream, ABC):
         return body
 
     def read_records(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        print("Read_Rec in IncrementalNotionStream has begun")
         if sync_mode == SyncMode.full_refresh:
             stream_state = None
         try:
-            yield from super().read_records(sync_mode, stream_state=stream_state, **kwargs)
+            # Remove the print statements and switch the list to a generator when done testing
+            # yield from super().read_records(sync_mode, stream_state=stream_state, **kwargs)
+            records = list(super().read_records(sync_mode, stream_state=stream_state, **kwargs))
+            print("Records in IncrementalNotionStream.read_records: ", records)
+
+            for record in records:
+                print("Individual record in IncrementalNotionStream.read_records: ", record)
+                yield record
+
         except UserDefinedBackoffException as e:
             message = self.check_invalid_start_cursor(e.response)
             if message:
@@ -153,12 +162,23 @@ class IncrementalNotionStream(NotionStream, ABC):
             raise e
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        records = super().parse_response(response, stream_state=stream_state, **kwargs)
+        # TODO: remove print statements and list, return to generator
+        # records = super().parse_response(response, stream_state=stream_state, **kwargs)
+        records = list(super().parse_response(response, stream_state=stream_state, **kwargs))
+        print("Records in IncrementalNotionStream.parse_response: ", records)
         for record in records:
+            print("Individual record in IncrementalNotionStream.parse_response: ", record)
             record_lmd = record.get(self.cursor_field, "")
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
+                print("Was it an instance of a stateValueWrapper? ", state_lmd)
+
+            print("Record_lmd: ", record_lmd)
+            print("State_lmd: ", state_lmd)
+            print("Stream_state: ", stream_state)
+            print ("Do we yield this record?", not stream_state or record_lmd >= state_lmd)
+
             if not stream_state or record_lmd >= state_lmd:
                 yield from transform_properties(record)
 
@@ -209,7 +229,6 @@ class Pages(IncrementalNotionStream):
     """
 
     state_checkpoint_interval = 100
-    use_cache = True
 
     def __init__(self, **kwargs):
         super().__init__(obj_type="page", **kwargs)
@@ -221,7 +240,6 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     """
 
     http_method = "GET"
-    use_cache = True
 
     # block id stack for block hierarchy traversal
     block_id_stack = []
@@ -268,7 +286,6 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         # if reached recursive limit, don't read anymore
         if len(self.block_id_stack) > MAX_BLOCK_DEPTH:
             return
-        print("Block id stack in Blocks.read_records: ", self.block_id_stack)
         records = super().read_records(**kwargs)
         for record in records:
             if record.get("has_children", False):
@@ -311,13 +328,19 @@ class Comments(HttpSubStream, IncrementalNotionStream):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         block_id = stream_slice.get("block_id")  # Get block_id from the current stream slice
+        print("Block_id in Comments.request_params: ", block_id)
         params = {"block_id": block_id, "page_size": self.page_size}
         if next_page_token:
             params["start_cursor"] = next_page_token["next_cursor"]
         return params
 
-    # def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-    #     return IncrementalNotionStream.read_records(self, **kwargs)
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        records = IncrementalNotionStream.read_records(self, **kwargs)
+        list_of_records = list(records)
+        print("Records in Comments.read_records after parent call: ", list_of_records)
+        for record in list_of_records:
+            print("Individual record in comments: ", record)
+            yield record
     
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -325,21 +348,17 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         
         print("Stream_state in Comments.stream_slices: ", stream_state)
 
-        parent_stream_slices = self.parent.stream_slices(
+        # parent_stream_slices = self.parent.stream_slices(
+        #     sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        # )
+
+        # iterate over all parent stream_slices
+        # for stream_slice in parent_stream_slices:
+            # print("Stream_slice in Comments.stream_slices: ", stream_slice)
+        parent_records = self.parent.read_records(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
-        parent_stream_slices_list = list(parent_stream_slices)
-        print("Parent stream slices in Comments.stream_slices: ", parent_stream_slices_list)
-
-        # iterate over all parent stream_slices
-        for stream_slice in parent_stream_slices_list:
-            print("Stream_slice in Comments.stream_slices: ", stream_slice)
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-
-
-            # iterate over all parent records with current stream_slice
-            for record in parent_records:
-                yield {"block_id": record["id"]}
+            # iterate over all parent records with current stream_slice to get block_id for use in request_params
+        for record in parent_records:
+            yield {"block_id": record["id"]}

@@ -64,6 +64,6 @@ class SourceNotion(AbstractSource):
         args = {"authenticator": authenticator, "config": config}
         pages = Pages(**args)
         blocks = Blocks(parent=pages, **args)
-        comments = Comments(parent=blocks, **args)
+        comments = Comments(parent=pages, **args)
 
         return [Users(**args), Databases(**args), pages, blocks, comments]
