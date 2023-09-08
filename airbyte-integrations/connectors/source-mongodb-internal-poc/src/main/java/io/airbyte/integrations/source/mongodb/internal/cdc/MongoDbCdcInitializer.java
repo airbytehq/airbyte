@@ -19,7 +19,6 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.integrations.source.mongodb.internal.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.internal.MongoUtil;
