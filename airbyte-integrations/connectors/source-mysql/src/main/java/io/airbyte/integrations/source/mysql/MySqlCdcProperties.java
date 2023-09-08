@@ -115,12 +115,6 @@ public class MySqlCdcProperties {
     return props;
   }
 
-  static Properties getSnapshotProperties(final JdbcDatabase database) {
-    final Properties props = commonProperties(database);
-    props.setProperty("snapshot.mode", "initial_only");
-    return props;
-  }
-
   private static int generateServerID() {
     final int min = 5400;
     final int max = 6400;

@@ -41,7 +41,7 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 ## Quick Start to Upgrading
 
-**Self-hosted Airbyte users will need to be on at least version 0.50.24 of the Airbte Platform.**
+**Self-hosted Airbyte users will need to be on at least version 0.50.24 of the Airbyte Platform.  Update the Airbyte Platform _before_ updating any of the connectors.**
 
 The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
 
