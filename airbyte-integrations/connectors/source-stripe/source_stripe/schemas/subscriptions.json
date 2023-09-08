@@ -233,6 +233,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "ended_at": {
       "type": ["null", "number"]
     },
@@ -442,6 +445,9 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }
