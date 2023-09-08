@@ -104,7 +104,9 @@ class TestMilvusIndexer(unittest.TestCase):
         )
 
     def test_pre_sync_calls_delete(self):
-        self.milvus_indexer._collection.query_iterator.return_value = iter([[{"id": 1}]])
+        mock_iterator = Mock()
+        mock_iterator.next.side_effect = [[{"id": 1}], []]
+        self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
 
         self.milvus_indexer.pre_sync(
             Mock(
@@ -135,7 +137,9 @@ class TestMilvusIndexer(unittest.TestCase):
         )
 
     def test_index_calls_delete(self):
-        self.milvus_indexer._collection.query_iterator.return_value = iter([[{"id": "123"}, {"id": "456"}], [{"id": "789"}]])
+        mock_iterator = Mock()
+        mock_iterator.next.side_effect = [[{"id": "123"}, {"id": "456"}], [{"id": "789"}], []]
+        self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
 
         self.milvus_indexer.index([], ["some_id"])
 

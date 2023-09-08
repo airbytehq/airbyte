@@ -86,11 +86,13 @@ class MilvusIndexer(Indexer):
 
     def _delete_for_filter(self, expr: str) -> None:
         iterator = self._collection.query_iterator(expr=expr)
-        for page in iterator:
+        page = iterator.next()
+        while len(page) > 0:
             id_field = next(iter(page[0].keys()))
             ids = [next(iter(entity.values())) for entity in page]
             id_list_expr = ", ".join([str(id) for id in ids])
             self._collection.delete(expr=f"{id_field} in [{id_list_expr}]")
+            page = iterator.next()
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
