@@ -57,7 +57,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
         }
         integrationTestJava.configure {
             mustRunAfter project.tasks.named('test')
-            dependsOn project.tasks.matching { it.name == 'airbyteDocker' }
+            dependsOn project.tasks.matching { it.name == 'assemble' }
             dependsOn project.tasks.matching { it.name == 'spotbugsMain' }
         }
     }

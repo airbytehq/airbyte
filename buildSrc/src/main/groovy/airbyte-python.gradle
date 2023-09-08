@@ -196,8 +196,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn installLocalReqs
         }
 
-        def airbytePythonChecks = project.tasks.register('airbytePythonChecks') {}
-        airbytePythonChecks.configure {
+        project.tasks.named('check').configure {
             dependsOn installReqs
             dependsOn flakeCheck
         }
@@ -208,13 +207,9 @@ class AirbytePythonPlugin implements Plugin<Project> {
                 command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
             }
 
-            airbytePythonChecks.configure {
+            project.tasks.named('check').configure {
                 dependsOn mypyCheck
             }
-        }
-
-        project.tasks.named('assemble').configure {
-            dependsOn airbytePythonChecks
         }
 
         def installTestReqs = project.tasks.register('installTestReqs', PythonTask) {
@@ -227,11 +222,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn installReqs
         }
 
-
-
         Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'unitTest', installTestReqs)
         project.tasks.named('check').configure {
-            dependsOn airbytePythonChecks
             dependsOn project.tasks.matching { it.name == 'unitTest' }
         }
 
