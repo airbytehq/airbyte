@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.1
+Changing `format` or `airbyte_type` in a field definition of a schema or specification is now a breaking change.
+
 ## 2.0.0
 Update test_incremental.test_two_sequential_reads to be unaware of the contents of the state message. This is to support connectors that have a custom implementation of a cursor.
 
