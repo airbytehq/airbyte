@@ -4,7 +4,9 @@
 
 
 import pytest
+
 from airbyte_cdk.sources.streams.core import Stream
+
 from source_trello.components import OrderIdsPartitionRouter
 
 
@@ -51,11 +53,11 @@ test_cases = [
 
 @pytest.mark.parametrize("boards_records, organizations_records, expected_board_ids", test_cases)
 def test_read_all_boards(boards_records, organizations_records, expected_board_ids):
-
     # Set up mock streams with provided records
+    partition_router = OrderIdsPartitionRouter(parent_stream_configs=[None], config=None, parameters=None)
     boards_stream = MockStream(records=boards_records)
     organizations_stream = MockStream(records=organizations_records)
 
     # Call the function and check the result
-    board_ids = list(OrderIdsPartitionRouter.read_all_boards(boards_stream, organizations_stream))
+    board_ids = list(partition_router.read_all_boards(boards_stream, organizations_stream))
     assert board_ids == expected_board_ids
