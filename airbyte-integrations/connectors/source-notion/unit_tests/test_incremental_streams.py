@@ -222,12 +222,10 @@ def test_comments_request_params(comments):
 def test_comments_stream_slices(comments, requests_mock):
 
     inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': {}}
-    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "id_1"}], "next_cursor": None})
-    expected_stream_slice = [{"block_id": "id_1"}]
+    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"name": "page_1", "id": "id_1"}, {"name": "page_2", "id": "id_2"}], "next_cursor": None})
+    expected_stream_slice = [{"block_id": "id_1"}, {"block_id": "id_2"}]
 
     actual_stream_slices_list = list(comments.stream_slices(**inputs))
-
-
     assert actual_stream_slices_list == expected_stream_slice
 
 
@@ -237,9 +235,20 @@ def test_comments_read_records(comments, requests_mock):
     stream_state = {}
 
     inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': stream_state, "stream_slice": stream_slice}
-    requests_mock.get(f"https://api.notion.com/v1/comments?block_id=aaa", json={"results": [{"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha and the Omega comment"}}]}], "next_cursor": None})
+    requests_mock.get(
+        f"https://api.notion.com/v1/comments?block_id=aaa", 
+        json={
+            "results": [
+                {"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha comment"}}]},
+                {"id": "comment_id_2", "rich_text": [{"type": "text", "text": {"content": "I am the Omega comment"}}]}
+            ], 
+            "next_cursor": None
+        })
 
-    expected_records = [{"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha and the Omega comment"}}]}]
+    expected_records = [
+                {"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha comment"}}]},
+                {"id": "comment_id_2", "rich_text": [{"type": "text", "text": {"content": "I am the Omega comment"}}]}
+            ]
 
     response = list(comments.read_records(**inputs))
     assert response == expected_records

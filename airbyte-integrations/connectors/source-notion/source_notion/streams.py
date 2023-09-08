@@ -336,6 +336,27 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         if next_page_token:
             params["start_cursor"] = next_page_token["next_cursor"]
         return params
+    
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        # TODO: remove print statements and list, return to generator
+        # records = super().parse_response(response, stream_state=stream_state, **kwargs)
+        records = list(super().parse_response(response, stream_state=stream_state, **kwargs))
+        print("Records in Comments.parse_response: ", records)
+        for record in records:
+            print("Individual record in Comments.parse_response: ", record)
+            record_lmd = record.get(self.cursor_field, "")
+            state_lmd = stream_state.get(self.cursor_field, "")
+            if isinstance(state_lmd, StateValueWrapper):
+                state_lmd = state_lmd.value
+                print("Was it an instance of a stateValueWrapper? ", state_lmd)
+
+            print("Record_lmd: ", record_lmd)
+            print("State_lmd: ", state_lmd)
+            print("Stream_state: ", stream_state)
+            print ("Do we yield this record?", not stream_state or record_lmd >= state_lmd)
+
+            if not stream_state or record_lmd >= state_lmd:
+                yield from transform_properties(record)
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         records = IncrementalNotionStream.read_records(self, **kwargs)
