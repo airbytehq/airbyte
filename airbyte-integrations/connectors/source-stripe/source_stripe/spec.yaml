@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - client_secret
     - account_id
-    - start_date
   properties:
     account_id:
       type: string
@@ -30,6 +29,7 @@ connectionSpecification:
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Only data generated
         after this date will be replicated.
+      default: "2017-01-25T00:00:00Z"
       examples:
         - "2017-01-25T00:00:00Z"
       format: date-time
@@ -42,7 +42,8 @@ connectionSpecification:
       description: >-
         When set, the connector will always re-export data from the past N days,
         where N is the value set here. This is useful if your data is frequently updated
-        after creation. Please note, when using the incremental sync mode, a limit of 30 days is applied. More info <a
+        after creation. Applies only to streams that do not support event-based incremental syncs: CheckoutSessionLineItems, 
+        Events, SetupAttempts, ShippingRates, BalanceTransactions, Files, FileLinks. More info <a
         href="https://docs.airbyte.com/integrations/sources/stripe#requirements">here</a>
       order: 3
     slice_range:
