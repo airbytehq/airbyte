@@ -2,7 +2,10 @@
     "properties":{
         "browser": {
             "version":{
-                "type": ["null", "string", "array"]
+                "type": ["null", "string", "array"],
+                "items": {
+                  "type": "object"
+                }
             },
             "type": ["object", "null"]
         }
