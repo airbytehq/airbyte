@@ -5,6 +5,9 @@
     "customer.id": {
       "type": ["null", "integer"]
     },
+    "campaign.id": {
+      "type": ["null", "integer"]
+    },
     "ad_group.ad_rotation_mode": {
       "type": ["null", "string"]
     },
