@@ -8,7 +8,14 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from source_wildberries_ads.auth import CredentialsCraftAuthenticator
-from source_wildberries_ads.streams import WordsStatStream, FullStatStream, AutoStatStream, SeaCatStatStream, check_ads_stream_connection
+from source_wildberries_ads.streams import (
+    WordsStatStream,
+    FullStatStream,
+    AutoStatStream,
+    SeaCatStatStream,
+    check_ads_stream_connection,
+    AdsCampaignStream,
+)
 from source_wildberries_ads.types import IsSuccess, Message, StartDate, EndDate, WildberriesCredentials
 
 
@@ -23,6 +30,7 @@ class SourceWildberriesAds(AbstractSource):
             FullStatStream(credentials=credentials, campaign_id=campaign_id, date_from=date_from, date_to=date_to),
             AutoStatStream(credentials=credentials, campaign_id=campaign_id),
             SeaCatStatStream(credentials=credentials, campaign_id=campaign_id),
+            AdsCampaignStream(credentials=credentials),
         ]
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[IsSuccess, Message | None]:
@@ -76,12 +84,8 @@ class SourceWildberriesAds(AbstractSource):
             if datetime.fromisoformat(date_from) > datetime.fromisoformat(date_to):
                 return False, "'Date from' exceeds 'Date to' in ads config"
 
-        # Check campaign_id config
-        if not (campaign_id := config.get("campaign_id")):
-            return False, "Campaign ID is not specified in ads config"
-
         # Check connection
-        is_success, message = check_ads_stream_connection(credentials=credentials, campaign_id=campaign_id)
+        is_success, message = check_ads_stream_connection(credentials=credentials, campaign_id=config.get("campaign_id"))
         if not is_success:
             return is_success, message
 

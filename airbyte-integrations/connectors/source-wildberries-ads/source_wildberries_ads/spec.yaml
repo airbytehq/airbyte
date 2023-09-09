@@ -5,7 +5,6 @@ connectionSpecification:
   type: object
   required:
     - credentials
-    - campaign_id
   additionalProperties: false
   properties:
     credentials:
