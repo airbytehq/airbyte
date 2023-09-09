@@ -72,6 +72,9 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_default_start_date(cls):
+        """Start Date is a required request parameter for Zendesk Support API streams.
+        We could not fetch all data if start date not specified
+        """
         return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DDTHH:mm:ss[Z]")
 
     @classmethod
