@@ -283,6 +283,35 @@ async def find_local_dependencies_in_pyproject_toml(
     return local_dependency_paths
 
 
+def _install_python_dependencies_from_setup_py(
+    container: Container,
+    additional_dependency_groups: Optional[List] = None,
+) -> Container:
+    install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
+    container = container.with_exec(install_connector_package_cmd)
+
+    if additional_dependency_groups:
+        # e.g. .[dev,tests]
+        group_string = f".[{','.join(additional_dependency_groups)}]"
+        group_install_cmd = ["python", "-m", "pip", "install", group_string]
+
+        container = container.with_exec(group_install_cmd)
+
+    return container
+
+
+def _install_python_dependencies_from_requirements_txt(container: Container) -> Container:
+    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
+    return container.with_exec(install_requirements_cmd)
+
+
+def _install_python_dependencies_from_poetry(container: Container) -> Container:
+    pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
+    poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
+    poetry_install_no_venv_cmd = ["poetry", "install", "--no-root", "--no-dev"]
+    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
+
+
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
@@ -302,9 +331,6 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
-    install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
-
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
 
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
@@ -317,30 +343,13 @@ async def with_installed_python_package(
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
     if has_pyproject_toml:
-        pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
-        poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-        poetry_install_no_venv_cmd = ["poetry", "install", "--no-root", "--no-dev"]
-        container = (
-            container
-                .with_exec(pip_install_poetry_cmd)
-                .with_exec(poetry_disable_virtual_env_cmd)
-                .with_exec(poetry_install_no_venv_cmd)
-        )
+        container = _install_python_dependencies_from_poetry(container)
 
-    elif has_setup_py:
-        container = container.with_exec(install_connector_package_cmd)
-    elif has_requirements_txt:
-        container = container.with_exec(install_requirements_cmd)
+    if has_setup_py:
+        container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
 
-    # todo
-    # 1. move to a separate function for all these silly installs
-    # 2. add additional dependency groun functionality to all of them
-    # 3. install poetry in the python base image ffs
-
-    if additional_dependency_groups:
-        container = container.with_exec(
-            install_connector_package_cmd[:-1] + [install_connector_package_cmd[-1] + f"[{','.join(additional_dependency_groups)}]"]
-        )
+    if has_requirements_txt:
+        container = _install_python_dependencies_from_requirements_txt(container)
 
     return container
 
@@ -376,7 +385,7 @@ async def with_python_connector_installed(context: ConnectorContext) -> Containe
             "metadata.yaml",
             "bootstrap.md",
             "icon.svg",
-            # "README.md",
+            "README.md",
             "Dockerfile",
             "acceptance-test-docker.sh",
             "build.gradle",
