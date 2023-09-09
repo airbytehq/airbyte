@@ -8,6 +8,7 @@ import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
+    FromFieldEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
@@ -50,10 +51,18 @@ class ChromaIndexingConfigModel(BaseModel):
             "description": "Indexing configuration",
         }
 
+class NoEmbeddingConfigModel(BaseModel):
+    mode: Literal["no_embedding"] = Field("no_embedding", const=True)
+
+    class Config:
+        title = "Chroma Default Embedding Function"
+        schema_extra = {
+            "description": "Do not calculate embeddings. Use Chromadb default embedding function"
+        }
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
+    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, FromFieldEmbeddingConfigModel, NoEmbeddingConfigModel] = Field(
         ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
     )
     indexing: ChromaIndexingConfigModel

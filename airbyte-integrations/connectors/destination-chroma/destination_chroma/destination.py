@@ -7,17 +7,24 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder, FromFieldEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, ConfiguredAirbyteCatalog, DestinationSyncMode, Status
 
 from destination_chroma.config import ConfigModel
 from destination_chroma.indexer import ChromaIndexer
+from destination_chroma.no_embedder import NoEmbedder
 
 BATCH_SIZE = 128
 
-embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
+embedder_map = {
+    "openai": OpenAIEmbedder,
+    "cohere": CohereEmbedder,
+    "fake": FakeEmbedder,
+    "from_field": FromFieldEmbedder,
+    "no_embedding": NoEmbedder,
+}
 
 class DestinationChroma(Destination):
 
@@ -26,7 +33,7 @@ class DestinationChroma(Destination):
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
-        self.indexer = ChromaIndexer(config.indexing, self.embedder)
+        self.indexer = ChromaIndexer(config.indexing)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
@@ -49,7 +56,7 @@ class DestinationChroma(Destination):
 
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        writer = Writer(config_model.processing, self.indexer, batch_size=BATCH_SIZE)
+        writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
         yield from writer.write(configured_catalog, input_messages)
 
 

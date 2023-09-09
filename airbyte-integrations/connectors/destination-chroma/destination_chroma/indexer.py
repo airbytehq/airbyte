@@ -3,11 +3,11 @@
 #
 
 from typing import List
+import uuid
 
 import chromadb
 from chromadb.config import Settings
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
-from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -18,8 +18,8 @@ from .utils import validate_collection_name
 
 
 class ChromaIndexer(Indexer):
-    def __init__(self, config: ChromaIndexingConfigModel, embedder: Embedder):
-        super().__init__(config, embedder)
+    def __init__(self, config: ChromaIndexingConfigModel):
+        super().__init__(config)
         self.client = self._get_client()
         self.collection_name = validate_collection_name(config.collection_name)
 
@@ -28,7 +28,7 @@ class ChromaIndexer(Indexer):
             heartbeat = self.client.heartbeat()
             if not heartbeat:
                 return "Chroma client server is not alive"
-            collection = self.client.get_or_create_collection(self.collection_name)
+            collection = self.client.get_or_create_collection(name=self.collection_name) 
             count = collection.count()
             if count!=0 and not count:
                 return f"unable to get or create collection with name {self.collection_name}"
@@ -38,13 +38,12 @@ class ChromaIndexer(Indexer):
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
-            self._delete_records(delete_ids=delete_ids)
-        embedding_vectors = self.embedder.embed_texts([chunk.page_content for chunk in document_chunks])
+            self._delete_by_filter(field_name=METADATA_RECORD_ID_FIELD, field_values=delete_ids)
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
-            entities.append({'id': chunk.metadata[METADATA_RECORD_ID_FIELD], 
-                             'embedding': embedding_vectors[i], 
+            entities.append({'id': str(uuid.uuid4()),
+                             'embedding': chunk.embedding, 
                              'metadata': chunk.metadata,
                              'document': chunk.page_content})
         self._write_data(entities)
@@ -54,7 +53,7 @@ class ChromaIndexer(Indexer):
         streams_to_overwrite = [stream 
                                 for stream in catalog.streams 
                                 if stream.destination_sync_mode == DestinationSyncMode.overwrite]
-        self._delete_records(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
+        self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
 
     @staticmethod
     def _get_client(self):
@@ -78,21 +77,23 @@ class ChromaIndexer(Indexer):
             return client
         return
     
-    def _delete_records(self, field_name=None, field_values=None, delete_ids=None):
-        collection = self.client.get_collection(self.collection_name)
+    def _delete_by_filter(self, field_name, field_values):
+        collection = self.client.get_collection(name=self.collection_name)
         try:
-            if delete_ids:
-                collection.delete(ids=delete_ids)
-            if field_name and field_values:
-                where_dict_list = [{field_name:value} for value in field_values]
-                for where_dict in where_dict_list:
-                    collection.delete(where=where_dict)
+            where_filter = {
+                field_name: {
+                    "$in": field_values
+                }
+            }
+            collection.delete(where=where_filter)
         except ValueError as e:
             raise e
 
     def _write_data(self, entities):
         ids = [entity['id'] for entity in entities]
         embeddings = [entity['embedding'] for entity in entities]
+        if not any(embeddings):
+            embeddings=None
         metadata = [entity['metadata'] for entity in entities]
         documents = [entity['document'] for entity in entities]
 
