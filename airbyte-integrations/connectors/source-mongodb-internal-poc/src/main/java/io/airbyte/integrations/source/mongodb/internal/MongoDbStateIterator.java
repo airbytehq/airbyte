@@ -151,6 +151,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
       stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
 
+
+      LOGGER.info("initial snapshot current total count of record messages: {}", totalCount);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
@@ -165,6 +167,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
 
+      LOGGER.info("initial snapshot current total count of record messages: {}", totalCount);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
@@ -177,7 +180,6 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     lastId = document.get(MongoConstants.ID_FIELD);
 
     totalCount++;
-    LOGGER.info("initial snapshot current total count of record messages: {}", totalCount);
     return new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
