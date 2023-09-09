@@ -192,7 +192,7 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.url_custom_parameters": {
-      "type": ["null", "string", "array"],
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "object"]
       }

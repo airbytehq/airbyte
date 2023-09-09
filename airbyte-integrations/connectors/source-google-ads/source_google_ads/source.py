@@ -106,6 +106,12 @@ class SourceGoogleAds(AbstractSource):
         )
         return incremental_stream_config
 
+    @staticmethod
+    def get_incremental_events_stream_config(google_api: GoogleAds, customers: List[Customer]):
+        events_stream = ChangeStatus(api=google_api, customers=customers)
+        incremental_events_config = dict(api=google_api, customers=customers, parent_stream=events_stream)
+        return incremental_events_config
+
     def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
         dummy_customers = [Customer(id=_id) for _id in config["customer_id"].split(",")]
         accounts_stream = ServiceAccounts(google_api, customers=dummy_customers)
@@ -166,8 +172,7 @@ class SourceGoogleAds(AbstractSource):
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
-        events_stream = ChangeStatus(api=google_api, customers=customers)
-        incremental_events_config = {"api": google_api, "customers": customers, "parent_stream": events_stream}
+        incremental_events_config = self.get_incremental_events_stream_config(google_api, customers)
         streams = [
             AdGroupAds(**incremental_config),
             AdGroupAdLabels(google_api, customers=customers),
