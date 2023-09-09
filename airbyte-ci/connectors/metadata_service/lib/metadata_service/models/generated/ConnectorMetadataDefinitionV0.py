@@ -189,7 +189,7 @@ class Registry(BaseModel):
 
 class Data(BaseModel):
     class Config:
-        extra = Extra.allow
+        extra = Extra.forbid
 
     name: str
     icon: Optional[str] = None
