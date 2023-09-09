@@ -44,6 +44,9 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
   private boolean isSyncFinished = false;
 
+  private int totalRecordCount = 0;
+  private int totalStateCount = 0;
+
   /**
    * These parameters control when a checkpoint message has to be sent in a CDC integration. We can
    * emit a checkpoint when any of the following two conditions are met.
@@ -133,6 +136,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   @Override
   protected AirbyteMessage computeNext() {
     if (isSyncFinished) {
+      LOGGER.info("Total records emitted: {}, total state messages emitted: {}", totalRecordCount, totalStateCount);
       return endOfData();
     }
 
@@ -142,6 +146,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       previousCheckpointOffset.clear();
       previousCheckpointOffset.putAll(checkpointOffsetToSend);
       resetCheckpointValues();
+      totalStateCount++;
       return stateMessage;
     }
 
@@ -172,10 +177,12 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
+      totalRecordCount++;
       return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt, debeziumConnectorType);
     }
 
     isSyncFinished = true;
+    totalStateCount++;
     return createStateMessage(offsetManager.read());
   }
 
