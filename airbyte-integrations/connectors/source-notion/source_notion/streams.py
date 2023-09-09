@@ -125,7 +125,6 @@ class IncrementalNotionStream(NotionStream, ABC):
         return "search"
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
-        print(f"Object type is: {self.obj_type}")
         if not self.obj_type:
             return
 
@@ -142,17 +141,10 @@ class IncrementalNotionStream(NotionStream, ABC):
         return body
 
     def read_records(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        print("Read_Rec in IncrementalNotionStream has begun")
         if sync_mode == SyncMode.full_refresh:
             stream_state = None
         try:
-            # Remove the print statements and switch the list to a generator when done testing
-            # yield from super().read_records(sync_mode, stream_state=stream_state, **kwargs)
-            records = list(super().read_records(sync_mode, stream_state=stream_state, **kwargs))
-
-            for record in records:
-                yield record
-
+            yield from super().read_records(sync_mode, stream_state=stream_state, **kwargs)
         except UserDefinedBackoffException as e:
             message = self.check_invalid_start_cursor(e.response)
             if message:
@@ -161,23 +153,12 @@ class IncrementalNotionStream(NotionStream, ABC):
             raise e
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        # TODO: remove print statements and list, return to generator
-        # records = super().parse_response(response, stream_state=stream_state, **kwargs)
-        records = list(super().parse_response(response, stream_state=stream_state, **kwargs))
-        print("Records in IncrementalNotionStream.parse_response: ", records)
+        records = super().parse_response(response, stream_state=stream_state, **kwargs)
         for record in records:
-            # print("Individual record in IncrementalNotionStream.parse_response: ", record)
             record_lmd = record.get(self.cursor_field, "")
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-            #     print("Was it an instance of a stateValueWrapper? ", state_lmd)
-
-            # print("Record_lmd: ", record_lmd)
-            # print("State_lmd: ", state_lmd)
-            # print("Stream_state: ", stream_state)
-            # print ("Do we yield this record?", not stream_state or record_lmd >= state_lmd)
-
             if not stream_state or record_lmd >= state_lmd:
                 yield from transform_properties(record)
 
@@ -187,14 +168,11 @@ class IncrementalNotionStream(NotionStream, ABC):
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         state_value = (current_stream_state or {}).get(self.cursor_field, "")
-        print("State_value being read by get_updated_state: ", state_value)
         if not isinstance(state_value, StateValueWrapper):
             state_value = StateValueWrapper(stream=self, state_value=state_value)
 
         record_time = latest_record.get(self.cursor_field, self.start_date)
         state_value.max_cursor_time = max(state_value.max_cursor_time, record_time)
-
-        print("State value being returned from get_updated_state: ", state_value)
 
         return {self.cursor_field: state_value}
 
@@ -322,8 +300,13 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         return super().should_retry(response)
 
 class Comments(HttpSubStream, IncrementalNotionStream):
+    """
+    Comments Object Docs: https://developers.notion.com/reference/comment-object
+    Comments Endpoint Docs: https://developers.notion.com/reference/retrieve-a-comment
+    """
 
     http_method = "GET"
+    # The cursor field is set to the parent Pages stream's cursor field because we cannot guarantee.
     cursor_field = "page_last_edited_time"
 
     def path(self, **kwargs) -> str:
@@ -331,39 +314,27 @@ class Comments(HttpSubStream, IncrementalNotionStream):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         block_id = stream_slice.get("block_id")  # Get block_id from the current stream slice
-        print("Block_id in Comments.request_params: ", block_id)
         params = {"block_id": block_id, "page_size": self.page_size}
+
         if next_page_token:
             params["start_cursor"] = next_page_token["next_cursor"]
+
         return params
     
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        # TODO: remove print statements and list, return to generator
-        # records = super().parse_response(response, stream_state=stream_state, **kwargs)
+        # the last edited time
         parent_record_lmd = stream_slice.get("page_last_edited_time", "")
-        print("Parent_record_lmd in Comments.parse_response: ", parent_record_lmd)
-        print("Response in Comments.parse_response: ", response.json())
         records = response.json().get("results", [])
-        print("Records after calling Incremental.parse_response: ", records)
-        print("Stream_slice in parse_respone: ", stream_slice)
         for record in records:
             record["page_last_edited_time"] = parent_record_lmd
-            print("Parent_record_lmd for this record: ", parent_record_lmd)  
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-                print("STATE has an LMD: ", state_lmd)
-
-            print("Record_lmd: ", parent_record_lmd)
-            print("State_lmd: ", state_lmd)
-            print("Stream_state: ", stream_state)
-            print ("Do we yield this record?", not stream_state or parent_record_lmd >= state_lmd)
-
             if not stream_state or parent_record_lmd >= state_lmd:
                 yield from transform_properties(record)
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        
+
         records = IncrementalNotionStream.read_records(self, **kwargs)
         list_of_records = list(records)
         for record in list_of_records:
@@ -378,7 +349,10 @@ class Comments(HttpSubStream, IncrementalNotionStream):
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
-        # iterate over all parent records to get block_id for use in request_params
+        # the parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" because pages are also blocks in the Notion API
+        # we also grab the last_edited_time from the parent record to use as the cursor field
         for record in parent_records:
-            print("Parent record in Comments.stream_slices: ", record)
-            yield {"block_id": record["id"], "page_last_edited_time": record["last_edited_time"]}
+            yield {
+                "block_id": record["id"], 
+                "page_last_edited_time": record["last_edited_time"]
+            }

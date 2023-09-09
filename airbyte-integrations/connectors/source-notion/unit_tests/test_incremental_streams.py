@@ -231,7 +231,7 @@ def test_comments_stream_slices(comments, requests_mock):
 
 def test_comments_read_records(comments, requests_mock):
 
-    stream_slice = {"block_id": "aaa"}
+    stream_slice = {"block_id": "aaa", "page_last_edited_time": "2021-10-10T00:00:00.000Z"}
     stream_state = {}
 
     inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': stream_state, "stream_slice": stream_slice}
