@@ -178,8 +178,8 @@ class AzureOpenAIEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
     def embedding_dimensions(self) -> int:
