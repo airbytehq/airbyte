@@ -36,7 +36,8 @@ public class MongoDbResumeTokenHelper {
        * Must call tryNext before attempting to get the resume token from the cursor directly. Otherwise,
        * the call to getResumeToken() will return null!
        */
-      eventStreamCursor.tryNext();
+      final ChangeStreamDocument<BsonDocument> bsonDocumentChangeStreamDocument = eventStreamCursor.tryNext();
+      LOGGER.info("Change Event: {}", bsonDocumentChangeStreamDocument);
       return eventStreamCursor.getResumeToken();
     }
   }

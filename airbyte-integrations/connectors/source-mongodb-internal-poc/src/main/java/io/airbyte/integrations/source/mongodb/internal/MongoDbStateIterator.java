@@ -54,7 +54,8 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
    * Counts the number of records seen in this batch, resets when a state-message has been generated.
    */
   private int count = 0;
-  private int totalCount = 0;
+  private int totalRecordCount = 0;
+  private int totalStatecount = 0;
 
   /**
    * Pointer to the last document _id seen by this iterator, necessary to track for state messages.
@@ -152,7 +153,9 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
 
 
-      LOGGER.info("initial snapshot current total count of record messages: {}", totalCount);
+      totalStatecount++;
+      LOGGER.info("initial snapshot current total count of state messages: {}", totalStatecount);
+      LOGGER.info("initial snapshot current total count of record messages: {}", totalRecordCount);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
@@ -167,7 +170,9 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
         stateManager.updateStreamState(stream.getStream().getName(), stream.getStream().getNamespace(), state);
       }
 
-      LOGGER.info("initial snapshot current total count of record messages: {}", totalCount);
+      totalStatecount++;
+      LOGGER.info("initial snapshot current total count of state messages: {}", totalStatecount);
+      LOGGER.info("initial snapshot current total count of record messages: {}", totalRecordCount);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
@@ -179,7 +184,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
 
     lastId = document.get(MongoConstants.ID_FIELD);
 
-    totalCount++;
+    totalRecordCount++;
     return new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
