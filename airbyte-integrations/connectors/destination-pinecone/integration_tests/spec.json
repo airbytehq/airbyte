@@ -51,8 +51,44 @@
                 "type": "string"
               }
             },
-            "required": ["openai_key"],
+            "required": [
+              "openai_key"
+            ],
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
+            "title": "Azure OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "azure_openai",
+                "const": "azure_openai",
+                "enum": [
+                  "azure_openai"
+                ],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "Azure OpenAI API key",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "api_base": {
+                "title": "Base API URL",
+                "type": "string"
+              },
+              "deployment": {
+                "title": "Deployment name",
+                "type": "string"
+              }
+            },
+            "required": [
+              "openai_key",
+              "api_base",
+              "deployment"
+            ],
+            "description": "Use the Azure OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           },
           {
             "title": "Cohere",
