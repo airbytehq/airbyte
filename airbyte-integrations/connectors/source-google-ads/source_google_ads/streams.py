@@ -467,12 +467,18 @@ class Labels(GoogleAdsStream):
 
 
 class ChangeStatus(IncrementalGoogleAdsStream):
+    """
+    Change status stream: https://developers.google.com/google-ads/api/fields/v14/change_status
+    Stream is only used internally to implement incremental updates for child streams of IncrementalEventsStream
+    """
     cursor_field = "change_status.last_change_date_time"
     range_days = 15
     days_of_data_storage = 90
 
     def __init__(self, **kwargs):
         # date range is not used for these streams, only state is used to sync recent records, otherwise full refresh
+        for key in ["start_date", "conversion_window_days", "end_date"]:
+            kwargs.pop(key, None)
         super().__init__(start_date=None, conversion_window_days=1, end_date=None, **kwargs)
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
@@ -482,14 +488,19 @@ class ChangeStatus(IncrementalGoogleAdsStream):
             from_date=stream_slice.get("start_date"),
             to_date=stream_slice.get("end_date"),
             cursor_field=self.cursor_field,
+            # resource type is used for filtering updates only for desirable stream
             resource_type=stream_slice.get("resource_type"),
+            # limit is mandatory parameter for this stream, also 10k is maximum value
             limit=10000,
         )
         return query
 
 
 class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
-    def __init__(self, parent_stream=None, **kwargs):
+    """
+    Abstract class used for getting incremental updates based on events returned from ChangeStatus stream
+    """
+    def __init__(self, parent_stream: IncrementalGoogleAdsStream, **kwargs):
         self.parent_stream = parent_stream
         self.parent_stream_name: str = self.parent_stream.name
         self.parent_cursor_field: str = self.parent_stream.cursor_field
@@ -531,6 +542,9 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return self.parent_stream.current_state(customer_id, default)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
+        """
+        If state exists read updates from parent stream otherwise return slices with only customer id to sync all records for stream
+        """
         if stream_state:
             slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, stream_state)
             yield from slices_generator
@@ -587,15 +601,11 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         This method is overridden to read records using parent stream
         """
         self.incremental_sieve_logger.bump()
-
         self.incremental_sieve_logger.info(f"Started reading records for slice: {stream_slice}")
 
         records = super().read_records(sync_mode, stream_slice=stream_slice)
         for record in records:
-            if record.get(self.primary_key[0]) in stream_slice.get("id_to_time"):
-                record[self.cursor_field] = stream_slice["id_to_time"][record[self.primary_key[0]]]
-            else:
-                record[self.cursor_field] = None
+            record[self.cursor_field] = stream_slice["id_to_time"].get(record[self.primary_key[0]])
             yield record
 
         # update parent state in child stream
@@ -611,10 +621,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         for id_ in stream_slice.get("deleted_ids", []):
             deleted_record = deleted_record_template.copy()
             deleted_record[self.id_field] = id_
-            if deleted_record.get(self.primary_key[0]) in stream_slice.get("id_to_time"):
-                deleted_record[self.cursor_field] = stream_slice["id_to_time"][deleted_record[self.primary_key[0]]]
-            else:
-                deleted_record[self.cursor_field] = None
+            deleted_record[self.cursor_field] = stream_slice["id_to_time"].get(deleted_record[self.primary_key[0]])
             yield deleted_record
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
