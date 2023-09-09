@@ -6,6 +6,13 @@
         "type": ["null", "integer", "string"],
         "format": "integer"
       }
+    },
+    "companies": {      
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer", "string"],
+        "format": "integer"
     }
   }
+}
 }
