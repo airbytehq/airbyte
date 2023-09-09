@@ -29,8 +29,8 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.ofNullable(savedSchemaHistory);
+  public SchemaHistoryInfo getSavedSchemaHistory() {
+    return new SchemaHistoryInfo(Optional.ofNullable(savedSchemaHistory), false, false);
   }
 
 }

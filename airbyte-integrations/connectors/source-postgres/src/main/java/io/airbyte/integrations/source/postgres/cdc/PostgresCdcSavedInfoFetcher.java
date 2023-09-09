@@ -24,8 +24,8 @@ public class PostgresCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.empty();
+  public SchemaHistoryInfo getSavedSchemaHistory() {
+    throw new RuntimeException("Schema history is not relevant for Postgres");
   }
 
 }

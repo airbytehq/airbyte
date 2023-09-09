@@ -155,8 +155,8 @@ public class AirbyteDebeziumHandler<T> {
     }
 
     @Override
-    public Optional<JsonNode> getSavedSchemaHistory() {
-      return Optional.empty();
+    public SchemaHistoryInfo getSavedSchemaHistory() {
+      return new SchemaHistoryInfo(Optional.empty(), false, false);
     }
 
   }

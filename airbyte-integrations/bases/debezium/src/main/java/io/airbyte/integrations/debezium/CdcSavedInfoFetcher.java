@@ -15,6 +15,8 @@ public interface CdcSavedInfoFetcher {
 
   JsonNode getSavedOffset();
 
-  Optional<JsonNode> getSavedSchemaHistory();
+  SchemaHistoryInfo getSavedSchemaHistory();
+
+  record SchemaHistoryInfo(Optional<JsonNode> schemaHistory, boolean isSchemaHistoryCompressed, boolean compressionEnabled){}
 
 }

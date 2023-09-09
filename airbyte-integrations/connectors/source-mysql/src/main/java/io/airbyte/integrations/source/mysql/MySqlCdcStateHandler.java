@@ -4,12 +4,14 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.IS_COMPRESSED;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -37,10 +39,11 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MYSQL_CDC_OFFSET, offset);
-    state.put(MYSQL_DB_HISTORY, dbHistory);
+    state.put(MYSQL_DB_HISTORY, dbHistory.schema());
+    state.put(IS_COMPRESSED, dbHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
 

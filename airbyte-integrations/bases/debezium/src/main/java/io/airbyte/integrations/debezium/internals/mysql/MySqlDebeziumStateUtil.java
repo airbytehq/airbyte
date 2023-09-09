@@ -11,8 +11,10 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.debezium.CdcSavedInfoFetcher.SchemaHistoryInfo;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
@@ -27,9 +29,6 @@ import io.debezium.connector.mysql.MySqlPartition;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -44,8 +43,6 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.json.JsonConverterConfig;
 import org.apache.kafka.connect.runtime.WorkerConfig;
@@ -60,6 +57,7 @@ public class MySqlDebeziumStateUtil {
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDebeziumStateUtil.class);
   public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
   public static final String MYSQL_DB_HISTORY = "mysql_db_history";
+  public static final String IS_COMPRESSED = "is_compressed";
 
   public boolean savedOffsetStillPresentOnServer(final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
     if (savedState.gtidSet().isPresent()) {
@@ -260,7 +258,7 @@ public class MySqlDebeziumStateUtil {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
+    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistoryInfo(Optional.empty(), true, true));
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
         database.getSourceConfig(),
@@ -287,113 +285,21 @@ public class MySqlDebeziumStateUtil {
     }
 
     final Map<String, String> offset = offsetManager.read();
-    final String dbHistory = schemaHistoryStorage.read();
-    final String compressed = schemaHistoryStorage.readAsCompressed();
+    final SchemaHistory schemaHistory = schemaHistoryStorage.read();
+    final String dbHistory = schemaHistory.schema();
 
-    calculateStringSizeInMB(dbHistory, "uncompressed");
-    calculateStringSizeInMB(compressed, "compressed");
-//    decompress(Jsons.deserialize(compressed, byte[].class), dbHistory);
-
-    final Map<String, Object> state2 = new HashMap<>();
-    state2.put(MYSQL_CDC_OFFSET, offset);
-    state2.put(MYSQL_DB_HISTORY, compressed);
-    final JsonNode asJson2 = Jsons.jsonNode(state2);
-
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage2 = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
-    schemaHistoryStorage2.persistCompressed(Optional.of(asJson2.get(MYSQL_DB_HISTORY)));
-
-    final String read2 = schemaHistoryStorage2.read();
-    final String readc = schemaHistoryStorage2.readAsCompressed();
-    if (!read2.equals(dbHistory)) {
-      throw new RuntimeException("not same");
-    }
-
-    if (!compressed.equals(readc)) {
-      throw new RuntimeException("not same compressed");
-    }
-
-
-    System.exit(0);
     assert !offset.isEmpty();
     assert Objects.nonNull(dbHistory);
 
     final Map<String, Object> state = new HashMap<>();
     state.put(MYSQL_CDC_OFFSET, offset);
     state.put(MYSQL_DB_HISTORY, dbHistory);
+    state.put(IS_COMPRESSED, schemaHistory.isCompressed());
 
     final JsonNode asJson = Jsons.jsonNode(state);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
     return asJson;
-  }
-
-  public static double calculateStringSizeInMB(String inputString, String blobName) {
-    // Convert the string to bytes using the UTF-8 encoding (you can change the encoding if needed)
-    byte[] stringBytes = inputString.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-
-    // Calculate the size in megabytes (1 MB = 1024 * 1024 bytes)
-    double sizeInMB = (double) stringBytes.length / (1024 * 1024);
-    LOGGER.info("Size of {} blob : {}", blobName, sizeInMB);
-    return sizeInMB;
-  }
-
-  public void compress(String originalString) {
-    try {
-      // Compress the string
-      ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
-      try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(compressedStream)) {
-        gzipOutputStream.write(originalString.getBytes());
-      }
-      byte[] compressedData = compressedStream.toByteArray();
-      double sizeInMB = (double) compressedData.length / (1024 * 1024);
-      LOGGER.info("Size of compressedData in MB : {}", sizeInMB);
-
-      byte[] serialize2 = serializeUsingJackson(compressedData);
-
-      // Decompress the data
-      decompress(serialize2, originalString);
-
-      System.out.println();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void decompress(byte[] serialize2, String originalString) {
-    // Decompress the data
-    ByteArrayInputStream compressedInputStream2 = new ByteArrayInputStream(serialize2);
-    ByteArrayOutputStream decompressedStream2 = new ByteArrayOutputStream();
-    try (GZIPInputStream gzipInputStream2 = new GZIPInputStream(compressedInputStream2)) {
-      byte[] buffer = new byte[1024];
-      int bytesRead;
-      while ((bytesRead = gzipInputStream2.read(buffer)) != -1) {
-        decompressedStream2.write(buffer, 0, bytesRead);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    final String decompressedString2 = decompressedStream2.toString();
-    if (!decompressedString2.equals(originalString)) {
-      LOGGER.info("VALUES DONT MATCH");
-    }
-    System.out.println();
-  }
-
-  public byte[] serializeUsingJackson(byte[] compressedData) {
-    // Serialize compressed data
-    String serializedData = Jsons.serialize(compressedData);
-    // Convert the string to bytes using the UTF-8 encoding (you can change the encoding if needed)
-    byte[] stringBytes = serializedData.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-
-    // Calculate the size in megabytes (1 MB = 1024 * 1024 bytes)
-    double sizeInMB = (double) stringBytes.length / (1024 * 1024);
-    LOGGER.info("Size of serializedData blob via jackson : {}", sizeInMB);
-
-
-    // Deserialize serialized data
-    byte[] bytes = Jsons.deserialize(serializedData, byte[].class);
-    return bytes;
   }
 
   /**
