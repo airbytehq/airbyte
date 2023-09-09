@@ -192,3 +192,70 @@ class T_E_S_T_BaseStream:
         assert batch.add_request.call_count == len(requests) + 1
         assert batch.execute.call_count == 2
         assert len(result) == len(requests)
+
+
+class TestDateTimeValue:
+    def test_date_time_value(self):
+        record = {
+            'bla': '2023-01-19t20:38:59 0000',
+            'created_time': '2023-01-19t20:38:59 0000',
+            'creation_time': '2023-01-19t20:38:59 0000',
+            'updated_time': '2023-01-19t20:38:59 0000',
+            'event_time': '2023-01-19t20:38:59 0000',
+            'first_fired_time': '2023-01-19t20:38:59 0000',
+            'last_fired_time': '2023-01-19t20:38:59 0000',
+            'sub_list': [
+                {
+                    'bla': '2023-01-19t20:38:59 0000',
+                    'created_time': '2023-01-19t20:38:59 0000',
+                    'creation_time': '2023-01-19t20:38:59 0000',
+                    'updated_time': '2023-01-19t20:38:59 0000',
+                    'event_time': '2023-01-19t20:38:59 0000',
+                    'first_fired_time': '2023-01-19t20:38:59 0000',
+                    'last_fired_time': '2023-01-19t20:38:59 0000'
+                }
+            ],
+            'sub_entries1': {
+                'sub_entries2': {
+                    'bla': '2023-01-19t20:38:59 0000',
+                    'created_time': '2023-01-19t20:38:59 0000',
+                    'creation_time': '2023-01-19t20:38:59 0000',
+                    'updated_time': '2023-01-19t20:38:59 0000',
+                    'event_time': '2023-01-19t20:38:59 0000',
+                    'first_fired_time': '2023-01-19t20:38:59 0000',
+                    'last_fired_time': '2023-01-19t20:38:59 0000'
+                }
+            }
+        }
+        FBMarketingStream.fix_date_time(record)
+        assert {
+            'bla': '2023-01-19t20:38:59 0000',
+            'created_time': '2023-01-19T20:38:59+0000',
+            'creation_time': '2023-01-19T20:38:59+0000',
+            'updated_time': '2023-01-19T20:38:59+0000',
+            'event_time': '2023-01-19T20:38:59+0000',
+            'first_fired_time': '2023-01-19T20:38:59+0000',
+            'last_fired_time': '2023-01-19T20:38:59+0000',
+            'sub_list': [
+                {
+                    'bla': '2023-01-19t20:38:59 0000',
+                    'created_time': '2023-01-19T20:38:59+0000',
+                    'creation_time': '2023-01-19T20:38:59+0000',
+                    'updated_time': '2023-01-19T20:38:59+0000',
+                    'event_time': '2023-01-19T20:38:59+0000',
+                    'first_fired_time': '2023-01-19T20:38:59+0000',
+                    'last_fired_time': '2023-01-19T20:38:59+0000'
+                }
+            ],
+            'sub_entries1': {
+                'sub_entries2': {
+                    'bla': '2023-01-19t20:38:59 0000',
+                    'created_time': '2023-01-19T20:38:59+0000',
+                    'creation_time': '2023-01-19T20:38:59+0000',
+                    'updated_time': '2023-01-19T20:38:59+0000',
+                    'event_time': '2023-01-19T20:38:59+0000',
+                    'first_fired_time': '2023-01-19T20:38:59+0000',
+                    'last_fired_time': '2023-01-19T20:38:59+0000'
+                }
+            }
+        } == record

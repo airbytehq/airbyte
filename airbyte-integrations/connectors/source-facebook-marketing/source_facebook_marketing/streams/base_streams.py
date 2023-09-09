@@ -55,6 +55,31 @@ class FBMarketingStream(Stream, ABC):
         """List of fields that we want to query, for now just all properties from stream's schema"""
         return list(self.get_json_schema().get("properties", {}).keys())
 
+    @classmethod
+    def fix_date_time(cls, record):
+        date_time_fields = (
+            'created_time',
+            'creation_time',
+            'updated_time',
+            'event_time',
+            'start_time',
+            'first_fired_time',
+            'last_fired_time',
+        )
+
+        if isinstance(record, dict):
+            for field, value in record.items():
+                if isinstance(value, str):
+                    if field in date_time_fields:
+                        record[field] = value.replace('t', 'T').replace(' 0000', '+0000')
+                else:
+                    cls.fix_date_time(value)
+
+        elif isinstance(record, list):
+            for entry in record:
+                cls.fix_date_time(entry)
+
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -66,9 +91,9 @@ class FBMarketingStream(Stream, ABC):
         try:
             for record in self.list_objects(params=self.request_params(stream_state=stream_state)):
                 if isinstance(record, AbstractObject):
-                    yield record.export_all_data()  # convert FB object to dict
-                else:
-                    yield record  # execute_in_batch will emmit dicts
+                    record = record.export_all_data()  # convert FB object to dict
+                self.fix_date_time(record)
+                yield record
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
@@ -230,7 +255,9 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
                 self._max_cursor_value = self._max_cursor_value or record_cursor_value
                 self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
-                yield record.export_all_data()
+                record = record.export_all_data()
+                self.fix_date_time(record)
+                yield record
 
             self._cursor_value = self._max_cursor_value
         except FacebookRequestError as exc:
