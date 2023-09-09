@@ -58,27 +58,26 @@ class FBMarketingStream(Stream, ABC):
     @classmethod
     def fix_date_time(cls, record):
         date_time_fields = (
-            'created_time',
-            'creation_time',
-            'updated_time',
-            'event_time',
-            'start_time',
-            'first_fired_time',
-            'last_fired_time',
+            "created_time",
+            "creation_time",
+            "updated_time",
+            "event_time",
+            "start_time",
+            "first_fired_time",
+            "last_fired_time",
         )
 
         if isinstance(record, dict):
             for field, value in record.items():
                 if isinstance(value, str):
                     if field in date_time_fields:
-                        record[field] = value.replace('t', 'T').replace(' 0000', '+0000')
+                        record[field] = value.replace("t", "T").replace(" 0000", "+0000")
                 else:
                     cls.fix_date_time(value)
 
         elif isinstance(record, list):
             for entry in record:
                 cls.fix_date_time(entry)
-
 
     def read_records(
         self,

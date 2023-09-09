@@ -145,8 +145,8 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
     status = command_check(fb_marketing, config_gen(end_date="2019-99-10T00:00:00Z"))
     assert status.status == Status.FAILED
 
-    with pytest.raises(Exception):
-        assert command_check(fb_marketing, config_gen(start_date=...))
+    status = command_check(fb_marketing, config_gen(start_date=...))
+    assert status.status == Status.FAILED
 
     assert command_check(fb_marketing, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
     assert command_check(fb_marketing, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)

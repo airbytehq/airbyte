@@ -140,10 +140,11 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     elif "An unknown error occurred" in msg and "error_user_title" in fb_exception._error:
         msg = fb_exception._error["error_user_title"]
-        if ("profile is not linked to delegate page" in msg or
-            'el perfil no est' in msg):
+        if "profile is not linked to delegate page" in msg or "el perfil no est" in msg:
             failure_type = FailureType.config_error
-            friendly_msg = "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page"
+            friendly_msg = (
+                "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page"
+            )
 
     else:
         failure_type = FailureType.system_error

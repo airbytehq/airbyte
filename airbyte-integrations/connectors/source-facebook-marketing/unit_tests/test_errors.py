@@ -156,7 +156,7 @@ CONFIG_ERRORS = [
      }
      # Error happens on Video stream: https://graph.facebook.com/v17.0/act_XXXXXXXXXXXXXXXX/advideos
      # Recommendations says that the problem can be fixed by switching to Business Ad Account Id
-    ),
+     ),
     ("error_400_unknown_profile_is_no_linked_es",
      "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page",
      {
@@ -265,7 +265,7 @@ class TestRealErrors:
              # Happened during 'ad_account' stream sync which always returns only 1 record.
              # Potentially could be caused by some particular field (list of requested fields is constant).
              # But since sync was successful on next attempt, then conclusion is that this is a temporal problem.
-            )
+             )
         ]
     )
     def test_retryable_error(self, some_config, requests_mock, name, retryable_error_response):

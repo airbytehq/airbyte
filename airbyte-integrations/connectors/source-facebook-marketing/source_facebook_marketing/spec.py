@@ -131,7 +131,7 @@ class ConnectorConfig(BaseConfig):
         airbyte_secret=True,
     )
 
-    start_date: datetime = Field(
+    start_date: Optional[datetime] = Field(
         title="Start Date",
         order=2,
         description=(

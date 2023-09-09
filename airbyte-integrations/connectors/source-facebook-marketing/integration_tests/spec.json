@@ -378,7 +378,7 @@
         "type": "string"
       }
     },
-    "required": ["account_id", "access_token", "start_date"]
+    "required": ["account_id", "access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],

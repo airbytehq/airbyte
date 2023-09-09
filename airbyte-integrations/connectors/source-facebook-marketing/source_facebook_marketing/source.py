@@ -64,7 +64,13 @@ class SourceFacebookMarketing(AbstractSource):
         config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
             config.pop("end_date")
+
+        # set default start_date to 2 years ago
+        if not config.get("start_date"):
+            config["start_date"] = pendulum.now().add(years=-2)
+
         config = ConnectorConfig.parse_obj(config)
+
         config.start_date = pendulum.instance(config.start_date)
         config.end_date = pendulum.instance(config.end_date)
         return config
