@@ -30,7 +30,7 @@ from airbyte_cdk.models import (
 )
 from destination_duckdb import DestinationDuckdb
 
-CONFIG_PATH = "secrets/config.json"
+CONFIG_PATH = "integration_tests/config.json"
 
 def pytest_generate_tests(metafunc):
     if "config" not in metafunc.fixturenames:
