@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
 import uuid
+from typing import List
 
 import chromadb
 from chromadb.config import Settings
+
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
@@ -14,7 +15,8 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 
 from destination_chroma.config import ChromaIndexingConfigModel
-from .utils import validate_collection_name
+from destination_chroma.utils import validate_collection_name
+
 
 
 class ChromaIndexer(Indexer):

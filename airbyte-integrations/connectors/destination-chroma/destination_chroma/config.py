@@ -2,9 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import dpath.util
 from typing import Literal, Union
 
-import dpath.util
+from pydantic import BaseModel, Field
+
 from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
@@ -13,7 +15,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-from pydantic import BaseModel, Field
+
 
 
 class HttpMode(BaseModel):

@@ -4,20 +4,19 @@
 
 import re
 
+
+
 def validate_collection_name(stream_name):
     if is_valid_collection_name(stream_name):
         return stream_name
     
     # Remove characters that are not lowercase letters, digits, dots, dashes, or underscores
     valid_chars = re.sub(r'[^a-z0-9._-]', '', stream_name)
-
     # Ensure the resulting name is within length constraints
     truncated_name = valid_chars[:63]
-
     # If the resulting name is too short, add some characters to meet the minimum length
     while len(truncated_name) < 3:
         truncated_name += 'x'
-        
     # Ensure the resulting name starts and ends with a lowercase letter or digit
     if truncated_name[0].isdigit():
         truncated_name = 'a' + truncated_name[1:]

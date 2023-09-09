@@ -10,6 +10,7 @@ from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from destination_chroma.config import NoEmbeddingConfigModel
 
 
+
 class NoEmbedder(Embedder):
     def __init__(self, config: NoEmbeddingConfigModel):
         super().__init__()
