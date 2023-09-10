@@ -12,10 +12,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -161,7 +161,7 @@ public class MySqlQueryUtils {
    */
   public static Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                                                         final List<ConfiguredAirbyteStream> streams,
-                                                                                                                                        final MySqlCursorBasedStateManager stateManager,
+                                                                                                                                        final StateManager stateManager,
                                                                                                                                         final String quoteString) {
 
     final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
@@ -180,11 +180,12 @@ public class MySqlQueryUtils {
 
         LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
         final String cursorField = cursorInfoOptional.get().getCursorField();
+        final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
-            cursorField,
+            quotedCursorField,
             fullTableName,
-            cursorField,
-            cursorField,
+            quotedCursorField,
+            quotedCursorField,
             fullTableName);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
