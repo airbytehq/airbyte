@@ -13,8 +13,6 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "3.17.0" # invoices schema fix
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -36,18 +34,12 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_cards"
             bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "checkout_sessions"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "checkout_sessions_line_items"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "payment_methods"
             bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "persons"
             bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "reviews"
             bypass_reason: "this stream can't be seeded in our sandbox account"
-          - name: "transfers"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "transactions"
             bypass_reason: "This stream can't be seeded in our sandbox account"
         expect_records:
