@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -29,8 +30,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * Abstract Class factoring common behavior for oAuth 2.0 flow implementations
@@ -74,6 +75,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   public void setHeaderAuth(Boolean headerAuth) {
     this.headerAuth = headerAuth;
   }
+
   public void setMultiParameterAuth(Boolean multiParameterAuth) {
     this.multiParameterAuth = multiParameterAuth;
   }
@@ -96,6 +98,17 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     this.tokenReqContentType = tokenReqContentType;
   }
 
+  private String changeState(final UUID workspaceId, final String Url) {
+    try {
+      URIBuilder uriBuilder = new URIBuilder(Url);
+      uriBuilder.setParameter("state", workspaceId.toString());
+
+      return uriBuilder.build().toString();
+    } catch (URISyntaxException e) {
+      return Url;
+    }
+  }
+
   @Override
   public String getSourceConsentUrl(final UUID workspaceId,
                                     final UUID sourceDefinitionId,
@@ -105,10 +118,14 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       throws IOException, ConfigNotFoundException, JsonValidationException {
     validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
-    if(multiParameterAuth){
-      return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), getConfigValueUnsafe(oAuthParamConfig,"redirect_url"), inputOAuthConfiguration);
+    if (multiParameterAuth) {
+      return changeState(workspaceId,
+          formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), getConfigValueUnsafe(oAuthParamConfig, "redirect_url"),
+              inputOAuthConfiguration));
+    } else {
+      return changeState(workspaceId,
+          formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, inputOAuthConfiguration));
     }
-    return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, inputOAuthConfiguration);
   }
 
   @Override
@@ -120,7 +137,8 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       throws IOException, ConfigNotFoundException, JsonValidationException {
     validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
     final JsonNode oAuthParamConfig = getDestinationOAuthParamConfig(workspaceId, destinationDefinitionId);
-    return formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, inputOAuthConfiguration);
+    return changeState(workspaceId,
+        formatConsentUrl(destinationDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, inputOAuthConfiguration));
   }
 
   /**
@@ -244,22 +262,22 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       throws IOException {
     final var accessTokenUrl = getAccessTokenUrl(inputOAuthConfiguration);
     HttpRequest request;
-    if(headerAuth){
-      request  = HttpRequest.newBuilder()
-              .POST(HttpRequest.BodyPublishers
-                      .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-              .uri(URI.create(accessTokenUrl))
-              .header("Content-Type", TOKEN_REQUEST_CONTENT_TYPE.URL_ENCODED.contentType)
-              .header("Authorization",getBase64Auth(clientId, clientSecret))
-              .build();
-    }else{
-      request  = HttpRequest.newBuilder()
-              .POST(HttpRequest.BodyPublishers
-                      .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-              .uri(URI.create(accessTokenUrl))
-              .header("Content-Type", tokenReqContentType.contentType)
-              .header("Accept", "application/json")
-              .build();
+    if (headerAuth) {
+      request = HttpRequest.newBuilder()
+          .POST(HttpRequest.BodyPublishers
+              .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+          .uri(URI.create(accessTokenUrl))
+          .header("Content-Type", TOKEN_REQUEST_CONTENT_TYPE.URL_ENCODED.contentType)
+          .header("Authorization", getBase64Auth(clientId, clientSecret))
+          .build();
+    } else {
+      request = HttpRequest.newBuilder()
+          .POST(HttpRequest.BodyPublishers
+              .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+          .uri(URI.create(accessTokenUrl))
+          .header("Content-Type", tokenReqContentType.contentType)
+          .header("Accept", "application/json")
+          .build();
     }
 
     // TODO: Handle error response to report better messages
@@ -272,7 +290,8 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   protected String getBase64Auth(final String clientId,
-                                  final String clientSecret) throws UnsupportedEncodingException {
+                                 final String clientSecret)
+      throws UnsupportedEncodingException {
     return "Auth";
   }
 
