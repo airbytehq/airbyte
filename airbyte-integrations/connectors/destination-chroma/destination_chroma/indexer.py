@@ -22,21 +22,23 @@ from destination_chroma.utils import validate_collection_name
 class ChromaIndexer(Indexer):
     def __init__(self, config: ChromaIndexingConfigModel):
         super().__init__(config)
-        self.client = self._get_client()
         self.collection_name = validate_collection_name(config.collection_name)
 
     def check(self):
+        client = self._get_client()
         try:
-            heartbeat = self.client.heartbeat()
+            heartbeat = client.heartbeat()
             if not heartbeat:
                 return "Chroma client server is not alive"
-            collection = self.client.get_or_create_collection(name=self.collection_name) 
+            collection = client.get_or_create_collection(name=self.collection_name) 
             count = collection.count()
             if count!=0 and not count:
                 return f"unable to get or create collection with name {self.collection_name}"
             return
         except Exception as e:
             return format_exception(e)
+        finally:
+            del client
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
@@ -51,11 +53,12 @@ class ChromaIndexer(Indexer):
         self._write_data(entities)
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
-        self._get_client()
-        streams_to_overwrite = [stream 
+        self.client = self._get_client()
+        streams_to_overwrite = [stream.stream.name 
                                 for stream in catalog.streams 
                                 if stream.destination_sync_mode == DestinationSyncMode.overwrite]
-        self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
+        if streams_to_overwrite:
+            self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
 
     @staticmethod
     def _get_client(self):
