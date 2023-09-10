@@ -252,8 +252,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
                 if not self._include_deleted and self.get_record_deleted_status(record):
                     continue
 
-                self._max_cursor_value = self._max_cursor_value or record_cursor_value
-                self._max_cursor_value = max(self._max_cursor_value, record_cursor_value)
+                self._max_cursor_value = max(self._max_cursor_value, record_cursor_value) if self._max_cursor_value else record_cursor_value
                 record = record.export_all_data()
                 self.fix_date_time(record)
                 yield record
