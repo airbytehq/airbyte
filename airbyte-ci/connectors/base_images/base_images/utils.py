@@ -2,15 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from pathlib import Path
-from typing import Type
+from typing import Mapping, Type
 
 from base_images import common
-from py_markdown_table.markdown_table import markdown_table
+from py_markdown_table.markdown_table import markdown_table  # type: ignore
 
 
-def write_changelog_file(
-    changelog_path: Path, base_cls: Type[common.AirbyteConnectorBaseImage], base_images: dict[str, Type[common.AirbyteConnectorBaseImage]]
-):
+def write_changelog_file(changelog_path: Path, base_image_name: str, base_images: Mapping[str, Type[common.AirbyteConnectorBaseImage]]):
     def get_version_with_link_md(cls: Type[common.AirbyteConnectorBaseImage]) -> str:
         return f"[{cls.version}]({cls.github_url})"
 
@@ -23,5 +21,5 @@ def write_changelog_file(
     ]
     markdown = markdown_table(entries).set_params(row_sep="markdown", quote=False).get_markdown()
     with open(changelog_path, "w") as f:
-        f.write(f"# Changelog for {base_cls.image_name}\n\n")
+        f.write(f"# Changelog for {base_image_name}\n\n")
         f.write(markdown)

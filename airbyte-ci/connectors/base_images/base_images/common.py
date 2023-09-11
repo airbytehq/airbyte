@@ -52,6 +52,10 @@ class AirbyteConnectorBaseImage(ABC):
     Please do not declare any Dagger with_exec instruction in this class as in the abstract class context we have no guarantee about the underlying system used in the base image.
     """
 
+    name_with_tag: str
+    github_url: str
+    version: str
+
     @property
     @abstractmethod
     def base_base_image(cls) -> BaseBaseImage:
@@ -115,7 +119,7 @@ class AirbyteConnectorBaseImage(ABC):
             ValueError: Raised if the platform is not supported by the base image.
         """
         if self.platform not in self.base_base_image.value:
-            raise PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.python_base_image.name}.")
+            raise PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.base_base_image.name}.")
 
     @final
     @property
