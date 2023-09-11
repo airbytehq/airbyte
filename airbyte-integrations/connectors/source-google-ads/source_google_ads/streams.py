@@ -471,8 +471,9 @@ class ChangeStatus(IncrementalGoogleAdsStream):
     Change status stream: https://developers.google.com/google-ads/api/fields/v14/change_status
     Stream is only used internally to implement incremental updates for child streams of IncrementalEventsStream
     """
+
     cursor_field = "change_status.last_change_date_time"
-    range_days = 15
+    range_days = 1
     days_of_data_storage = 90
 
     def __init__(self, **kwargs):
@@ -500,6 +501,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     """
     Abstract class used for getting incremental updates based on events returned from ChangeStatus stream
     """
+
     def __init__(self, parent_stream: IncrementalGoogleAdsStream, **kwargs):
         self.parent_stream = parent_stream
         self.parent_stream_name: str = self.parent_stream.name
