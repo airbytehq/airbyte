@@ -8,8 +8,14 @@
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+    "ghcr.io/devcontainers/features/docker-in-docker": {}
   },
+  "overrideFeatureInstallOrder": [
+    // Deterministic order maximizes cache reuse
+    "ghcr.io/devcontainers-contrib/features/poetry",
+    "ghcr.io/devcontainers/features/docker-in-docker"
+  ],
 
   "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
 
@@ -17,10 +23,21 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-python.python",
-        "ms-python.black-formatter",
-        "matangover.mypy",
-        "charliermarsh.ruff"
+				// Python extensions:
+				"charliermarsh.ruff",
+				"matangover.mypy",
+				"ms-python.black",
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+
+				// Toml support
+				"tamasfe.even-better-toml",
+			
+				// Yaml and JSON Schema support:
+				"redhat.vscode-yaml",
+
+				// Contributing:
+				"GitHub.vscode-pull-request-github"
       ],
       "settings": {
         "extensions.ignoreRecommendations": true,
