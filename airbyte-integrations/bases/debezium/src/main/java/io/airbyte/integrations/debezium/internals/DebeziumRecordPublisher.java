@@ -34,7 +34,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
   private DebeziumEngine<ChangeEvent<String, String>> engine;
   private final AtomicBoolean hasClosed;
   private final AtomicBoolean isClosing;
-  public final AtomicReference<Throwable> thrownError;
+  private final AtomicReference<Throwable> thrownError;
   private final CountDownLatch engineLatch;
   private final DebeziumPropertiesManager debeziumPropertiesManager;
 
