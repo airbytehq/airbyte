@@ -26,7 +26,7 @@ acceptance_tests:
           - name: "traffic_sources"
             bypass_reason: "The data contains business information"
           - name: "demographic_interest_report"
-            bypass_reason: "The test resource does not collect interest."
+            bypass_reason: "The test resource does not collect interest"
           - name: "demographic_age_report"
             bypass_reason: "The test resource does not collect age"
           - name: "demographic_gender_report"

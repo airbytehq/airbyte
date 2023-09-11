@@ -1,6 +1,6 @@
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230402","active1DayUsers":978},"emitted_at":1681405954037}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230412","active1DayUsers":2164},"emitted_at":1681405954037}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230404","active1DayUsers":2386},"emitted_at":1681405954038}
+{"stream": "daily_active_users", "data": {"property_id": "314186564", "date": "20230909", "active1DayUsers": 993}, "emitted_at": 1694463040915}
+{"stream": "daily_active_users", "data": {"property_id": "314186564", "date": "20230902", "active1DayUsers": 981}, "emitted_at": 1694463040915}
+{"stream": "daily_active_users", "data": {"property_id": "314186564", "date": "20230911", "active1DayUsers": 902}, "emitted_at": 1694463040915}
 {"stream":"weekly_active_users","data":{"property_id":"314186564","date":"20230403","active7DayUsers":11840},"emitted_at":1681405954684}
 {"stream":"weekly_active_users","data":{"property_id":"314186564","date":"20230406","active7DayUsers":11828},"emitted_at":1681405954685}
 {"stream":"weekly_active_users","data":{"property_id":"314186564","date":"20230404","active7DayUsers":11812},"emitted_at":1681405954685}
