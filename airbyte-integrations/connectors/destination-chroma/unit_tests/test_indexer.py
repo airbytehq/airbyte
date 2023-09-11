@@ -41,7 +41,7 @@ class TestChromaIndexer(unittest.TestCase):
             ({"collection_name": "123.34...54.2", "auth_method": {"mode": "persistent_client", "path": "./path"}}, '12334542'),
             ({"collection_name": "345.4.23.12", "auth_method": {"mode": "persistent_client", "path": "./path"}}, '345.4.23.12')
             ]
-        
+
         for config, collection_name in test_configs:
             mock_config = ChromaIndexingConfigModel(**config)
             chroma_indexer = ChromaIndexer(mock_config)
