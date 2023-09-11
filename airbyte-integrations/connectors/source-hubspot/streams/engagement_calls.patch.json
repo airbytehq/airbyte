@@ -1,0 +1,11 @@
+{
+    "properties":{
+        "contacts": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "integer", "string"],
+              "format": "integer"
+            }
+    }
+}
+}
