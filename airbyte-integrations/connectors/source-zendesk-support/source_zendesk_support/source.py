@@ -12,7 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
+from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
     AccountAttributes,
@@ -24,6 +24,7 @@ from .streams import (
     AuditLogs,
     Brands,
     CustomRoles,
+    DeletedTickets,
     GroupMemberships,
     Groups,
     Macros,
@@ -101,7 +102,7 @@ class SourceZendeskSupport(AbstractSource):
             elif auth.get("credentials") == "api_token":
                 return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
             else:
-                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
+                raise ZendeskConfigException(message=f"Not implemented authorization method: {config['credentials']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -112,17 +113,18 @@ class SourceZendeskSupport(AbstractSource):
         (False, error) otherwise.
         """
         auth = self.get_authenticator(config)
-        settings = None
         try:
             datetime.strptime(config["start_date"], DATETIME_FORMAT)
             settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
         except Exception as e:
             return False, e
-
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
-        # logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
-            return False, "Organization access is not enabled. Please check admin permission of the current account"
+            return (
+                False,
+                "Please verify that the account linked to the API key has admin permissions and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
+            )
         return True, None
 
     @classmethod
@@ -148,6 +150,7 @@ class SourceZendeskSupport(AbstractSource):
             ArticleCommentVotes(**args),
             ArticleVotes(**args),
             AuditLogs(**args),
+            DeletedTickets(**args),
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),
