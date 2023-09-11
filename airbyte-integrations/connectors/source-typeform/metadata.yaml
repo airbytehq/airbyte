@@ -24,7 +24,7 @@ data:
     breakingChanges:
       2.0.0:
         upgradeDeadline: "2023-08-12"
-        message: "This version changes the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures."
+        message: "This version migrates the Typeform connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures."
   tags:
     - language:low-code
   ab_internal:
