@@ -207,7 +207,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
+|:-----------------|:-------------|:------|
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -217,7 +217,8 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------|
-| 1.1.3   | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions                   |
+| 1.2.0   | 2023-09-11 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add new pre-configured reports                                                |
+| 1.1.3   | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions                                               |
 | 1.1.2   | 2023-07-03 | [27909](https://github.com/airbytehq/airbyte/pull/27909) | Limit the page size of custom report streams                                  |
 | 1.1.1   | 2023-06-26 | [27718](https://github.com/airbytehq/airbyte/pull/27718) | Limit the page size when calling `check()`                                    |
 | 1.1.0   | 2023-06-26 | [27738](https://github.com/airbytehq/airbyte/pull/27738) | License Update: Elv2                                                          |
