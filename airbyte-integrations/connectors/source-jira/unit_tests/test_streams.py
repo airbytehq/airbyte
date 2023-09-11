@@ -58,6 +58,25 @@ from source_jira.streams import (
     WorkflowStatuses,
 )
 from source_jira.utils import read_full_refresh
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+
+@responses.activate
+def test_application_roles_stream_401_error(config, caplog):
+    config['domain'] = "test_application_domain"
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50",
+        status=401
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = ApplicationRoles(**args)
+    with pytest.raises(AirbyteTracedException) as e:
+        [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert e.value.message == "Config validation error: Invalid creds were provided, please check your api token, domain and/or email."
+    assert "Invalid creds were provided, please check your api token, domain and/or email." in caplog.text
 
 
 @responses.activate
@@ -123,7 +142,7 @@ def test_board_stream_forbidden(config, boards_response, caplog):
     stream = Boards(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert records == []
-    assert "Please check the 'read' permission for viewing all boards." in caplog.text
+    assert "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access." in caplog.text
 
 
 @responses.activate

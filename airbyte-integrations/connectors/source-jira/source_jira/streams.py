@@ -15,6 +15,9 @@ from requests.exceptions import HTTPError
 
 from .utils import read_full_refresh, read_incremental, safe_max
 
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.models import FailureType
+
 API_VERSION = 3
 
 
@@ -29,7 +32,11 @@ class JiraStream(HttpStream, ABC):
     api_v1 = False
     skip_http_status_codes = []
     raise_on_http_errors = True
-    error_messages = {}
+    error_messages = {
+        requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access."
+    }
+    config_error_status_codes = [requests.codes.UNAUTHORIZED, ]
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -94,6 +101,12 @@ class JiraStream(HttpStream, ABC):
             user_error_message = self.error_messages.get(e.response.status_code)
             if user_error_message:
                 self.logger.error(user_error_message)
+            if e.response.status_code in self.config_error_status_codes:
+                raise AirbyteTracedException(
+                    message="Config validation error: " + user_error_message,
+                    internal_message=str(e),
+                    failure_type=FailureType.config_error,
+                ) from e
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
 
@@ -203,9 +216,6 @@ class Boards(JiraStream):
         # for user that have no valid license
         requests.codes.FORBIDDEN
     ]
-    error_messages = {
-        requests.codes.FORBIDDEN: "Please check the 'read' permission for viewing all boards."
-    }
 
     extract_field = "values"
     use_cache = True
