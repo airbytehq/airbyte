@@ -31,6 +31,7 @@ import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -267,13 +268,15 @@ public class MySqlDebeziumStateUtil {
         Optional.of(schemaHistoryStorage),
         DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
       publisher.start(queue);
+      final Instant engineStartTime = Instant.now();
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
-        if (publisher.thrownError.get() != null) {
-          publisher.close();
-          break;
-        }
         if (event == null) {
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5L)) > 0) {
+            LOGGER.error("No record is returned even after 5 minutes of waiting, closing the engine");
+            publisher.close();
+
+          }
           continue;
         }
         LOGGER.info("A record is returned, closing the engine since the state is constructed");

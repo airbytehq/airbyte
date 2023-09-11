@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher.SchemaHistoryInfo;
 import io.debezium.document.Document;
@@ -82,8 +83,9 @@ public class AirbyteSchemaHistoryStorage {
     final String schemaHistory = readUncompressed();
     return new SchemaHistory(schemaHistory, false);
   }
-  
-  private String readUncompressed() {
+
+  @VisibleForTesting
+  public String readUncompressed() {
     final StringBuilder fileAsString = new StringBuilder();
     try {
       for (final String line : Files.readAllLines(path, UTF8)) {
@@ -202,8 +204,9 @@ public class AirbyteSchemaHistoryStorage {
     }
   }
 
-  private static double calculateSizeOfStringInMB(final String inputString) {
-    return (double) inputString.getBytes(StandardCharsets.UTF_8).length / (ONE_MB);
+  @VisibleForTesting
+  public static double calculateSizeOfStringInMB(final String string) {
+    return (double) string.getBytes(StandardCharsets.UTF_8).length / (ONE_MB);
   }
 
   public static AirbyteSchemaHistoryStorage initializeDBHistory(final SchemaHistoryInfo schemaHistoryInfo) {
