@@ -11,8 +11,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-API_VERSION = "2021-11"
-OLD_API_VERSION = "2021-01"
+API_VERSION_2021_11 = "2021-11"
+API_VERSION_2021_01 = "2021-01"
 
 
 class RechargeStream(HttpStream, ABC):
@@ -38,7 +38,7 @@ class RechargeStream(HttpStream, ABC):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {"x-recharge-version": API_VERSION}
+        return {"x-recharge-version": API_VERSION_2021_11}
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -174,7 +174,13 @@ class Onetimes(IncrementalRechargeStream):
 class Orders(IncrementalRechargeStream):
     """
     Orders Stream: https://developer.rechargepayments.com/v1-shopify?python#list-orders
+    Using old API version to avoid schema changes and loosing email, first_name, last_name columns, because in new version it not present
     """
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"x-recharge-version": API_VERSION_2021_01}
 
 
 class Products(RechargeStream):
@@ -186,7 +192,7 @@ class Products(RechargeStream):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {"x-recharge-version": OLD_API_VERSION}
+        return {"x-recharge-version": API_VERSION_2021_01}
 
 
 class Shop(RechargeStream):
@@ -201,7 +207,7 @@ class Shop(RechargeStream):
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {"x-recharge-version": OLD_API_VERSION}
+        return {"x-recharge-version": API_VERSION_2021_01}
 
 
 class Subscriptions(IncrementalRechargeStream):
