@@ -34,11 +34,13 @@ checkSshScriptCopy.configure {
     dependsOn copySshScript
 }
 
-tasks.named('airbyteDocker').configure {
+def generate = tasks.register('generate')
+generate.configure {
     dependsOn checkSshScriptCopy
 }
+
 tasks.named('check').configure {
-    dependsOn checkSshScriptCopy
+    dependsOn generate
 }
 
 def customIntegrationTestPython = tasks.register('customIntegrationTestPython', PythonTask) {
@@ -93,7 +95,7 @@ def buildAirbyteDocker(String customConnector) {
         configure buildAirbyteDocker(customConnector)
     }
     task.configure {
-        dependsOn checkSshScriptCopy
+        dependsOn generate
     }
     tasks.named('assemble').configure {
         dependsOn task
