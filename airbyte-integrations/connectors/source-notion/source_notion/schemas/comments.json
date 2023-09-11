@@ -29,6 +29,9 @@
     "last_edited_time": {
       "type": "string"
     },
+    "page_last_edited_time": {
+      "type": "string"
+    },
     "created_by": {
       "$ref": "user.json"
     },
