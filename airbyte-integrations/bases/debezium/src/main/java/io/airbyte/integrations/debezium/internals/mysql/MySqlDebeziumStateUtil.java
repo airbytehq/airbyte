@@ -289,20 +289,24 @@ public class MySqlDebeziumStateUtil {
 
     final Map<String, String> offset = offsetManager.read();
     final SchemaHistory schemaHistory = schemaHistoryStorage.read();
-    final String dbHistory = schemaHistory.schema();
 
     assert !offset.isEmpty();
-    assert Objects.nonNull(dbHistory);
+    assert Objects.nonNull(schemaHistory);
+    assert Objects.nonNull(schemaHistory.schema());
 
-    final Map<String, Object> state = new HashMap<>();
-    state.put(MYSQL_CDC_OFFSET, offset);
-    state.put(MYSQL_DB_HISTORY, dbHistory);
-    state.put(IS_COMPRESSED, schemaHistory.isCompressed());
-
-    final JsonNode asJson = Jsons.jsonNode(state);
+    final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
     return asJson;
+  }
+
+  public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory dbHistory) {
+    final Map<String, Object> state = new HashMap<>();
+    state.put(MYSQL_CDC_OFFSET, offset);
+    state.put(MYSQL_DB_HISTORY, dbHistory.schema());
+    state.put(IS_COMPRESSED, dbHistory.isCompressed());
+
+    return Jsons.jsonNode(state);
   }
 
   /**
