@@ -22,12 +22,8 @@ from pipelines.utils import export_container_to_tarball
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
-    gradle_task_name = "integrationTest"
+    gradle_task_name = "integrationTestJava"
     title = "Java Connector Integration Tests"
-
-    # skip the connector acceptance tests run by gradle
-    # as we run them in the AcceptanceTests step
-    gradle_task_options = ("-x", "connectorAcceptanceTest")
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
