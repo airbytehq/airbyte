@@ -69,8 +69,6 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     try {
       final String stagedFile = stagingOperations.uploadRecordsToStage(writeConfig.datasetId(), writeConfig.streamName(), writer);
 
-      writeConfig.addStagedFile(stagedFile);
-
       stagingOperations.copyIntoTableFromStage(
           writeConfig.datasetId(),
           writeConfig.streamName(),

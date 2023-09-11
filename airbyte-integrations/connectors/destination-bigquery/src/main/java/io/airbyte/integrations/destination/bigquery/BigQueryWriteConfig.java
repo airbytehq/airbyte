@@ -7,10 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.util.ArrayList;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @param streamName output stream name
@@ -21,7 +17,6 @@ import org.slf4j.LoggerFactory;
  * @param targetTableId BigQuery final raw table
  * @param tableSchema schema for the table
  * @param syncMode BigQuery's mapping of write modes to Airbyte's sync mode
- * @param stagedFiles collection of staged files to copy data from
  */
 public record BigQueryWriteConfig(
                                   String streamName,
@@ -31,10 +26,7 @@ public record BigQueryWriteConfig(
                                   TableId tmpTableId,
                                   TableId targetTableId,
                                   Schema tableSchema,
-                                  DestinationSyncMode syncMode,
-                                  List<String> stagedFiles) {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryWriteConfig.class);
+                                  DestinationSyncMode syncMode) {
 
   public BigQueryWriteConfig(final String streamName,
                              final String namespace,
@@ -52,17 +44,6 @@ public record BigQueryWriteConfig(
         TableId.of(datasetId, tmpTableName),
         TableId.of(datasetId, targetTableName),
         tableSchema,
-        syncMode,
-        new ArrayList<>());
+        syncMode);
   }
-
-  public void addStagedFile(final String file) {
-    this.stagedFiles.add(file);
-    LOGGER.info("Added staged file: {}", file);
-  }
-
-  public void clearStagedFiles() {
-    this.stagedFiles.clear();
-  }
-
 }
