@@ -88,10 +88,11 @@ The Notion source connector supports the following [sync modes](https://docs.air
 
 The Notion source connector supports the following streams. For more information, see the [Notion API](https://developers.notion.com/reference/intro).
 
-- [blocks](https://developers.notion.com/reference/retrieve-a-block)
-- [databases](https://developers.notion.com/reference/retrieve-a-database)
-- [pages](https://developers.notion.com/reference/retrieve-a-page)
-- [users](https://developers.notion.com/reference/get-user)
+- [Blocks](https://developers.notion.com/reference/retrieve-a-block)
+- [Comments](https://developers.notion.com/reference/retrieve-a-comment)
+- [Databases](https://developers.notion.com/reference/retrieve-a-database)
+- [Pages](https://developers.notion.com/reference/retrieve-a-page)
+- [Users](https://developers.notion.com/reference/get-users)
 
 :::note
 
@@ -107,6 +108,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 1.2.0   | 2023-09-11 | []() | Add Comments stream   |
 | 1.1.2   | 2023-08-30 | [29999](https://github.com/airbytehq/airbyte/pull/29999) | Update error handling during connection check
 | 1.1.1   | 2023-06-14 | [26535](https://github.com/airbytehq/airbyte/pull/26535) | Migrate from deprecated `authSpecification` to `advancedAuth`                |
 | 1.1.0   | 2023-06-08 | [27170](https://github.com/airbytehq/airbyte/pull/27170) | Fix typo in `blocks` schema                                                  |
