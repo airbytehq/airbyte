@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "airbyte-connectors-base-images"
+version = "0.1.0"
+description = "This package should be used as a library to import base images definitions to build Airbyte connectors."
+authors = ["Augustin Lafanechere <augustin@airbyte.io>"]
+readme = "README.md"
+packages = [{include = "base_images"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+dagger-io = "0.6.4"
+py-markdown-table = "0.4.0"
+gitpython = "^3.1.35"
+rich = "^13.5.2"
+semver = "^3.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.2.5"
+pytest-mock = "^3.10.0"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+build =  "base_images:build"
