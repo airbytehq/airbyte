@@ -265,7 +265,7 @@ public class GlobalAsyncStateManager {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
     stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
     registerNewStateId(resolvedDescriptor);
-
+    log.error("************************ State: " + message.getSerialized());
     allocateMemoryToState(sizeInBytes);
   }
 
