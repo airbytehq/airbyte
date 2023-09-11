@@ -27,9 +27,7 @@
             "always_show": true,
             "examples": ["text", "user.name", "users.*.name"],
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           },
           "metadata_fields": {
             "title": "Fields to store as metadata",
@@ -38,9 +36,7 @@
             "always_show": true,
             "examples": ["age", "user", "user.name"],
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           }
         },
         "required": ["chunk_size"],
@@ -157,10 +153,7 @@
             "title": "Public Endpoint",
             "description": "The public endpoint of the Milvus instance. ",
             "order": 1,
-            "examples": [
-              "https://my-cluster.weaviate.network",
-              "http://host.docker.internal:8080"
-            ],
+            "examples": ["https://my-cluster.weaviate.network"],
             "type": "string"
           },
           "class_name": {
@@ -225,7 +218,7 @@
                 "description": "Authenticate using username and password (suitable for self-managed Weaviate clusters)"
               },
               {
-                "title": "No auth",
+                "title": "No Authentication",
                 "type": "object",
                 "properties": {
                   "mode": {
@@ -257,27 +250,21 @@
             "description": "Additional HTTP headers to send with every request.",
             "default": [],
             "examples": [
-              {
-                "key": "X-OpenAI-Api-Key",
-                "value": "my-openai-api-key"
-              }
+              { "header_key": "X-OpenAI-Api-Key", "value": "my-openai-api-key" }
             ],
             "type": "array",
             "items": {
               "title": "Header",
               "type": "object",
               "properties": {
-                "key": {
-                  "title": "Header Key",
-                  "type": "string"
-                },
+                "header_key": { "title": "Header Key", "type": "string" },
                 "value": {
                   "title": "Header Value",
                   "airbyte_secret": true,
                   "type": "string"
                 }
               },
-              "required": ["key", "value"]
+              "required": ["header_key", "value"]
             }
           }
         },
@@ -288,18 +275,9 @@
     },
     "required": ["processing", "embedding", "indexing"],
     "groups": [
-      {
-        "id": "processing",
-        "title": "Processing"
-      },
-      {
-        "id": "embedding",
-        "title": "Embedding"
-      },
-      {
-        "id": "indexing",
-        "title": "Indexing"
-      }
+      { "id": "processing", "title": "Processing" },
+      { "id": "embedding", "title": "Embedding" },
+      { "id": "indexing", "title": "Indexing" }
     ]
   },
   "supportsIncremental": true,

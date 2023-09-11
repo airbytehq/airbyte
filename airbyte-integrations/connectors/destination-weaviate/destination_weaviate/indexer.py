@@ -45,7 +45,7 @@ class WeaviateIndexer(Indexer):
 
     def _create_client(self):
         headers = {
-            self.config.additional_headers[i].key: self.config.additional_headers[i].value
+            self.config.additional_headers[i].header_key: self.config.additional_headers[i].value
             for i in range(len(self.config.additional_headers))
         }
         if self.config.auth.mode == "username_password":

@@ -46,7 +46,7 @@ class TokenAuth(BaseModel):
 
 
 class Header(BaseModel):
-    key: str = Field(..., title="Header Key")
+    header_key: str = Field(..., title="Header Key")
     value: str = Field(..., title="Header Value", airbyte_secret=True)
 
 
@@ -56,7 +56,7 @@ class WeaviateIndexingConfigModel(BaseModel):
         title="Public Endpoint",
         order=1,
         description="The public endpoint of the Milvus instance. ",
-        examples=["https://my-cluster.weaviate.network", "http://host.docker.internal:8080"],
+        examples=["https://my-cluster.weaviate.network"],
     )
     class_name: str = Field(..., title="Class name", description="The class to load data into", order=3)
     auth: Union[TokenAuth, UsernamePasswordAuth, NoAuth] = Field(
@@ -68,7 +68,7 @@ class WeaviateIndexingConfigModel(BaseModel):
         title="Additional headers",
         description="Additional HTTP headers to send with every request.",
         default=[],
-        examples=[{"key": "X-OpenAI-Api-Key", "value": "my-openai-api-key"}],
+        examples=[{"header_key": "X-OpenAI-Api-Key", "value": "my-openai-api-key"}],
     )
 
     class Config:
