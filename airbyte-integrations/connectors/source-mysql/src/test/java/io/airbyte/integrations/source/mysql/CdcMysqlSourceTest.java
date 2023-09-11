@@ -91,6 +91,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   private Database database;
   private MySqlSource source;
   private JsonNode config;
+  private static final Random RANDOM = new Random();
 
   @BeforeEach
   public void setup() throws SQLException {
@@ -741,10 +742,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final int length = 32;
 
     final StringBuilder randomString = new StringBuilder(length);
-    final Random random = new Random();
 
     for (int i = 0; i < length; i++) {
-      final int index = random.nextInt(characters.length());
+      final int index = RANDOM.nextInt(characters.length());
       final char randomChar = characters.charAt(index);
       randomString.append(randomChar);
     }
