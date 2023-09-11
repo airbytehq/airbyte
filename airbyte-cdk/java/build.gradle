@@ -1,0 +1,250 @@
+import org.jsonschema2pojo.SourceType
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id "com.github.eirnym.js2p" version "1.0"
+    id "java-test-fixtures"
+    // id 'airbyte-docker'
+    // id "airbyte-integration-test-java"
+    // id "airbyte-performance-test-java"
+}
+
+group 'io.airbyte'
+
+project.configurations {
+    testImplementation.extendsFrom implementation
+    testFixturesImplementation.extendsFrom implementation
+    testFixturesRuntimeOnly.extendsFrom runtimeOnly
+}
+
+// Version is dynamically loaded from version.properties file.
+def props = new Properties()
+file("src/main/resources/version.properties").withInputStream { props.load(it) }
+version = props.getProperty('version')
+description = "Airbyte Connector Development Kit (CDK) for Java."
+
+dependencies {
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+
+    implementation libs.airbyte.protocol
+    implementation project(':airbyte-config-oss:config-models-oss')
+    implementation project(':airbyte-config-oss:init-oss')
+    implementation project(':airbyte-commons-cli')
+    implementation project(':airbyte-json-validation')
+
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    testImplementation project(':airbyte-test-utils')
+
+    testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
+
+    implementation libs.bundles.junit
+    // implementation libs.junit.jupiter.api
+    implementation libs.junit.jupiter.params
+    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
+    implementation libs.jooq
+    testImplementation libs.junit.jupiter.engine
+    implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
+    implementation 'com.azure:azure-storage-blob:12.12.0'
+    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
+    implementation "io.aesy:datasize:1.0.0"
+    implementation libs.apache.commons
+    implementation libs.apache.commons.lang
+    implementation 'commons-cli:commons-cli:1.4'
+    implementation 'org.apache.commons:commons-csv:1.4'
+
+    // testImplementation libs.junit.jupiter.api
+    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+    implementation libs.hikaricp
+    implementation libs.bundles.debezium.bundle
+
+    implementation libs.bundles.datadog
+    // implementation 'com.datadoghq:dd-trace-api'
+    implementation 'org.apache.sshd:sshd-mina:2.8.0'
+
+    implementation libs.connectors.testcontainers
+    implementation libs.connectors.testcontainers.mysql
+    implementation libs.connectors.testcontainers.jdbc
+    implementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.connectors.testcontainers.jdbc
+    testImplementation libs.connectors.testcontainers.mysql
+    testImplementation libs.connectors.testcontainers.postgresql
+    implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
+
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+
+    // Lombok
+    implementation 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor('org.projectlombok:lombok:1.18.20')
+
+    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
+    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
+
+    implementation libs.postgresql
+    testImplementation libs.postgresql
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+
+    testImplementation libs.junit.jupiter.system.stubs
+
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'io.airbyte'
+            artifactId = 'airbyte-cdk'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name 'cloudrepo'
+            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+            credentials {
+                username System.getenv('CLOUDREPO_USER')
+                password System.getenv('CLOUDREPO_PASSWORD')
+            }
+        }
+    }
+}
+
+// Adds publishToMavenLocal as final command in the list of 'build' tasks.
+build.dependsOn(publishToMavenLocal)
+
+publishToMavenLocal {
+    // Always re-publish the artifact to MavenLocal
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        println "Running CDK publishToMavenLocal..."
+    }
+    doLast {
+        println "Finished CDK publishToMavenLocal."
+    }
+}
+
+// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
+task publishSnapshotIfNeeded {}
+
+if (version.endsWith("-SNAPSHOT")) {
+    logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
+    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
+} else {
+    logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+        showExceptions = true
+        showCauses = true
+        showStackTraces = false
+        events = ['passed', 'skipped', 'failed']
+    }
+}
+
+// Convert yaml to java: relationaldb.models
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/source-relational-db/db_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.cdk.integrations.source.relationaldb.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
+
+//////////////////////////////////////////////////
+// Gradle Scraps from other build.gradle files ///
+//////////////////////////////////////////////////
+
+// // Add a configuration for our migrations tasks defined below to encapsulate their dependencies
+// configurations {
+//     migrations.extendsFrom implementation
+// }
+
+/*
+dependencies {
+    // implementation libs.bundles.datadog
+    implementation 'com.datadoghq:dd-trace-api'
+    implementation project(':airbyte-commons')
+    implementation project(':airbyte-commons-cli')
+
+    // annotationProcessor('org.projectlombok:lombok:1.18.20')
+    // api libs.hikaricp
+    // api libs.jooq
+    // api libs.jooq.meta
+    // api libs.junit.jupiter.api
+    // api libs.postgresql
+    // implementation libs.connectors.testcontainers.cockroachdb
+    // testImplementation libs.connectors.testcontainers.cockroachdb
+    implementation libs.airbyte.protocol
+    implementation libs.flyway.core
+    implementation libs.jackson.annotations
+    implementation libs.temporal.sdk
+
+    implementation libs.aws.java.sdk.s3
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
+    implementation 'com.google.cloud:google-cloud-storage:1.113.16'
+    implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
+    implementation 'commons-cli:commons-cli:1.4'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation 'net.i2p.crypto:eddsa:0.3.0'
+    implementation 'net.java.dev.jna:jna-platform:5.8.0'
+    implementation 'net.java.dev.jna:jna:5.8.0'
+    implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
+    implementation 'org.apache.commons:commons-csv:1.4'
+    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    implementation 'org.bouncycastle:bctls-jdk15on:1.66'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    implementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
+    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
+    implementation 'org.mockito:mockito-core:4.6.1'
+    implementation 'org.projectlombok:lombok:1.18.20'
+    implementation 'org.xerial.snappy:snappy-java:1.1.8.4'
+    implementation "io.airbyte:airbyte-cdk:0.1.0"
+    implementation "org.mockito:mockito-inline:4.1.0"
+    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
+    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
+    implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
+    implementation project(':airbyte-config-oss:config-models-oss')
+    implementation project(':airbyte-config-oss:init-oss')
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    implementation project(':airbyte-json-validation')
+    implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
+    // migrations sourceSets.main.output
+    // runtimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    // testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    // testFixturesImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+    // testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
+    // testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
+    // testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.0.0'
+    // testFixturesImplementation libs.airbyte.protocol
+    // testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+
+    testImplementation 'commons-lang:commons-lang:2.6'
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+    testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
+    testImplementation "org.mockito:mockito-inline:4.1.0"
+    testImplementation libs.junit.jupiter.system.stubs
+    testImplementation libs.postgresql
+    testImplementation project(':airbyte-test-utils')
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+*/
