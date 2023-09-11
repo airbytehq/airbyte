@@ -104,12 +104,12 @@ class AirbyteConnectorBaseImage(ABC):
         """Validate the version follows semantic versioning naming.
 
         Raises:
-            VersionError: Raised if the version is not in the format `x.y.z` or if any part is not a digit.
+            VersionError: Raised if the version is not following semantic versioning naming.
         """
         try:
             semver.VersionInfo.parse(cls.version)
         except ValueError as e:
-            raise BaseImageVersionError(f"The version class {cls.__name__} is not in the expected semver format: e.g `_0_1_0`.") from e
+            raise BaseImageVersionError(f"The version class {cls.__name__} is not in the expected semantic versioning naming format: e.g `_0_1_0`.") from e
 
     @final
     def _validate_platform_availability(self):
@@ -130,7 +130,7 @@ class AirbyteConnectorBaseImage(ABC):
     @final
     def base_container(self) -> dagger.Container:
         """Returns a container using the base python image. This container is used to build the Airbyte base image.
-        We set environment variables and labels to ensure we can easily check:
+        We set environment variables and labels to ensure we can easily check at post build time:
          - the Python base image that was used to build the Airbyte base image
          - the version of the Airbyte base image
 
@@ -160,13 +160,13 @@ class AirbyteConnectorBaseImage(ABC):
             SanityCheckError: Raised if a sanity check fails.
         """
         if not await self.container.env_variable("AIRBYTE_BASE_BASE_IMAGE") == self.base_base_image_name:
-            raise SanityCheckError("the AIRBYTE_BASE_BASE_IMAGE environment variable is not set correctly.")
+            raise SanityCheckError("the AIRBYTE_BASE_BASE_IMAGE environment variable is not correctly set.")
         if not await self.container.env_variable("AIRBYTE_BASE_IMAGE") == self.name_with_tag:
-            raise SanityCheckError("the AIRBYTE_BASE_IMAGE environment variable is not set correctly.")
+            raise SanityCheckError("the AIRBYTE_BASE_IMAGE environment variable is not correctly. set")
         if not await self.container.label("io.airbyte.base_base_image") == self.base_base_image_name:
-            raise SanityCheckError("the io.airbyte.base_base_image label is not set correctly.")
+            raise SanityCheckError("the io.airbyte.base_base_image label is not correctly set.")
         if not await self.container.label("io.airbyte.base_image") == self.name_with_tag:
-            raise SanityCheckError("the io.airbyte.base_image label is not set correctly.")
+            raise SanityCheckError("the io.airbyte.base_image label is not correctly set.")
 
     @staticmethod
     def get_github_url(cls):
