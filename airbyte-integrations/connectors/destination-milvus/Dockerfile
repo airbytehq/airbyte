@@ -5,11 +5,6 @@ FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-
-RUN apt-get update \
-    && pip install --upgrade pip \
-    && apt-get install -y build-essential cmake g++ libffi-dev libstdc++6
-
 COPY setup.py ./
 
 RUN pip install --upgrade pip
@@ -37,10 +32,10 @@ RUN apt-get install bash
 
 # copy payload code only
 COPY main.py ./
-COPY destination_langchain ./destination_langchain
+COPY destination_milvus ./destination_milvus
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.1
-LABEL io.airbyte.name=airbyte/destination-langchain
+LABEL io.airbyte.version=0.0.1
+LABEL io.airbyte.name=airbyte/destination-milvus
