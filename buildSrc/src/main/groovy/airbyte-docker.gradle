@@ -317,6 +317,22 @@ class AirbyteDockerPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         AirbyteDockerTaskFactory.build(project, 'airbyteDocker', 'Dockerfile')
+
+        // Used only for source-mongodb. Consider removing entirely.
         AirbyteDockerTaskFactory.build(project, 'airbyteDockerTest', 'Dockerfile.test')
+
+        // Used for base-normalization.
+        [ 'airbyteDockerMSSql': 'mssql',
+          'airbyteDockerMySql': 'mysql',
+          'airbyteDockerOracle': 'oracle',
+          'airbyteDockerClickhouse': 'clickhouse',
+          'airbyteDockerSnowflake': 'snowflake',
+          'airbyteDockerRedshift': 'redshift',
+          'airbyteDockerTiDB': 'tidb',
+          'airbyteDockerDuckDB': 'duckdb'
+        ].forEach {taskName, customConnector ->
+            AirbyteDockerTaskFactory.build(project, taskName, "${customConnector}.Dockerfile")
+        }
+
     }
 }

@@ -25,7 +25,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mssql')
 
 }
-
-tasks.named('airbyteDocker').configure {
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDockerMSSql')
-}

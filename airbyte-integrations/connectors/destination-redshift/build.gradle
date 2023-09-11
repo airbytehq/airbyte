@@ -39,10 +39,3 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-redshift')
 }
-
-tasks.named('airbyteDocker').configure {
-    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
-    // but it's also just simple to implement.
-    // this also goes away once airbyte-ci becomes a reality.
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDockerRedshift')
-}
