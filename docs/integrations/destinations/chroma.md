@@ -23,7 +23,7 @@ Airbyte Cloud only supports connecting to your Chroma Instance instance in clien
 
 ## Getting Started \(Airbyte Open-Source\)
 
-You can connect to a Chroma instance either in client/server mode or in a local persistent mode
+You can connect to a Chroma instance either in client/server mode or in a local persistent mode. For the local persistent mode, the database file will be saved in the path defined in the `path` config parameter. Note that `path` must be an absolute path, prefixed with `/local`.
 
 #### Requirements
 
@@ -52,7 +52,7 @@ You should now have all the requirements needed to configure Chroma as a destina
     - **Username** (Optional)
     - **Password** (Optional)
   - For persistent mode
-    - **Path** The path to the local database file
+    - **Path** The path to the local database file. Note that `path` must be an absolute path, prefixed with `/local`.
 - (Optional) Embedding 
   - **OpenAI API key** if using OpenAI for embedding
   - **Cohere API key** if using Cohere for embedding

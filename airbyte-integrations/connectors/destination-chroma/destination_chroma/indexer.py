@@ -13,15 +13,23 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from chromadb.config import Settings
 from destination_chroma.config import ChromaIndexingConfigModel
-from destination_chroma.utils import validate_collection_name
+from destination_chroma.utils import is_valid_collection_name
 
 
 class ChromaIndexer(Indexer):
     def __init__(self, config: ChromaIndexingConfigModel):
         super().__init__(config)
-        self.collection_name = validate_collection_name(config.collection_name)
+        self.collection_name = config.collection_name
 
     def check(self):
+        collection_name_validation_error = is_valid_collection_name(self.collection_name)
+        if collection_name_validation_error:
+            return collection_name_validation_error
+        
+        auth_method = self.config.auth_method
+        if auth_method.mode == "persistent_client" and not auth_method.path.startswith("/local/"):
+                return "Path must start be prefixed with /local"
+        
         client = self._get_client()
         try:
             heartbeat = client.heartbeat()
@@ -56,7 +64,6 @@ class ChromaIndexer(Indexer):
         if streams_to_overwrite:
             self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
 
-    @staticmethod
     def _get_client(self):
 
         auth_method = self.config.auth_method
@@ -93,8 +100,8 @@ class ChromaIndexer(Indexer):
         embeddings = [entity["embedding"] for entity in entities]
         if not any(embeddings):
             embeddings = None
-        metadata = [entity["metadata"] for entity in entities]
+        metadatas = [entity["metadata"] for entity in entities]
         documents = [entity["document"] for entity in entities]
 
         collection = self.client.get_collection(name=self.collection_name)
-        collection.add(ids=ids, embeddings=embeddings, metadata=metadata, documents=documents)
+        collection.add(ids=ids, embeddings=embeddings, metadatas=metadatas, documents=documents)
