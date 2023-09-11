@@ -37,6 +37,7 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
 
     image_name: Final[str] = "airbyte-python-connector-base"
 
+    # These env vars were set on all our certified python connectors that were not using this base image
     EXPECTED_ENV_VARS: Set[str] = {
         "PYTHON_VERSION",
         "PYTHON_PIP_VERSION",
