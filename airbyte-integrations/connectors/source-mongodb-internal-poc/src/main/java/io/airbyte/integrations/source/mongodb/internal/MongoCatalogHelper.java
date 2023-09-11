@@ -24,7 +24,12 @@ public class MongoCatalogHelper {
   /**
    * The default cursor field name.
    */
-  public static final String DEFAULT_CURSOR_FIELD = MongoConstants.ID_FIELD;
+  public static final String DEFAULT_CURSOR_FIELD = CDC_DEFAULT_CURSOR;
+
+  /**
+   * The default primary key field name.
+   */
+  public static final String DEFAULT_PRIMARY_KEY = MongoConstants.ID_FIELD;
 
   /**
    * The list of supported sync modes for a given stream.
@@ -43,8 +48,8 @@ public class MongoCatalogHelper {
     return CatalogHelpers.createAirbyteStream(streamName, streamNamespace, addCdcMetadataColumns(fields))
         .withSupportedSyncModes(SUPPORTED_SYNC_MODES)
         .withSourceDefinedCursor(true)
-        .withDefaultCursorField(List.of(CDC_DEFAULT_CURSOR))
-        .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_CURSOR_FIELD)));
+        .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
+        .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_PRIMARY_KEY)));
   }
 
   /**

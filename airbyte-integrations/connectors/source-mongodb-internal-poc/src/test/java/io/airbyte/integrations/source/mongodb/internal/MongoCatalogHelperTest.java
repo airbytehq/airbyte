@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.SUPPORTED_SYNC_MODES;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,9 +33,9 @@ class MongoCatalogHelperTest {
     assertNotNull(airbyteStream);
     assertEquals(streamNamespace, airbyteStream.getNamespace());
     assertEquals(streamName, airbyteStream.getName());
-    assertEquals(List.of(CDC_DEFAULT_CURSOR), airbyteStream.getDefaultCursorField());
+    assertEquals(List.of(DEFAULT_CURSOR_FIELD), airbyteStream.getDefaultCursorField());
     assertEquals(true, airbyteStream.getSourceDefinedCursor());
-    assertEquals(List.of(List.of(DEFAULT_CURSOR_FIELD)), airbyteStream.getSourceDefinedPrimaryKey());
+    assertEquals(List.of(List.of(DEFAULT_PRIMARY_KEY)), airbyteStream.getSourceDefinedPrimaryKey());
     assertEquals(SUPPORTED_SYNC_MODES, airbyteStream.getSupportedSyncModes());
     assertEquals(5, airbyteStream.getJsonSchema().get("properties").size());
 
