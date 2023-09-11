@@ -194,7 +194,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
             .withData(injectMetadata(jsonNode)));
-    if(totalStatecount == 1){
+    if(totalRecordCount == 1){
       LOGGER.info("first record message: {}", airbyteMessage);
     }
     return airbyteMessage;
