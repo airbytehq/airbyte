@@ -7,9 +7,9 @@
 # - settings.gradle
 # 
 # Commits to cherry pick:
-# - 4ae3f0f0988660284a94f851aa41e94e1e2effb8 - add cdk gradle plugin to connectors
-# - ec97daf67947037af51b92c3628a31a8ae43efa4 - cleanup removed gradle refs
-# - d6440c7168e51eaff7095e36cb8154494c04fc3a - additional build.gradle fixes on connectors
+# - eed850eafd6e2fb37b4ca7b5b3fd63ae237a2780 - add cdk gradle plugin to connectors
+# - ceedc270b150aa4b532a8f42e8541880c9041312 - cleanup removed gradle refs
+# - 1424b5f144378ac7532ae1a2e41c9f3d270169e7 - additional build.gradle fixes on connectors
 #
 # This file is an audit and automation tool for the CDK migration itself.
 # It may be deleted befor the PR is merged.
