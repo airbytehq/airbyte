@@ -75,7 +75,8 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     base_base_image: Final[PythonBase] = PythonBase.PYTHON_3_9
 
     TIMEZONE: Final[str] = "Etc/UTC"
-    EXPECTED_PYTHON_VERSION: str = "3.9.18"
+    # This should be a final class attribute if the base_base_image attribute is Final
+    EXPECTED_PYTHON_VERSION: Final[str] = "3.9.18"
     EXPECTED_PIP_VERSION: str = "23.2.1"
 
     changelog: str = (
