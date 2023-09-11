@@ -11,58 +11,53 @@
     "contentId": {
       "type": ["null", "integer"]
     },
-    "counters": {
-      "type": ["null", "object"],
-      "properties": {
-        "open": {
-          "type": ["null", "integer"]
-        },
-        "processed": {
-          "type": ["null", "integer"]
-        },
-        "sent": {
-          "type": ["null", "integer"]
-        },
-        "deferred": {
-          "type": ["null", "integer"]
-        },
-        "unsubscribed": {
-          "type": ["null", "integer"]
-        },
-        "statuschange": {
-          "type": ["null", "integer"]
-        },
-        "bounce": {
-          "type": ["null", "integer"]
-        },
-        "mta_dropped": {
-          "type": ["null", "integer"]
-        },
-        "dropped": {
-          "type": ["null", "integer"]
-        },
-        "suppressed": {
-          "type": ["null", "integer"]
-        },
-        "click": {
-          "type": ["null", "integer"]
-        },
-        "delivered": {
-          "type": ["null", "integer"]
-        },
-        "forward": {
-          "type": ["null", "integer"]
-        },
-        "print": {
-          "type": ["null", "integer"]
-        },
-        "reply": {
-          "type": ["null", "integer"]
-        },
-        "spamreport": {
-          "type": ["null", "integer"]
-        }
-      }
+    "counters_open": {
+      "type": ["null", "integer"]
+    },
+    "counters_processed": {
+      "type": ["null", "integer"]
+    },
+    "counters_sent": {
+      "type": ["null", "integer"]
+    },
+    "counters_deferred": {
+      "type": ["null", "integer"]
+    },
+    "counters_unsubscribed": {
+      "type": ["null", "integer"]
+    },
+    "counters_statuschange": {
+      "type": ["null", "integer"]
+    },
+    "counters_bounce": {
+      "type": ["null", "integer"]
+    },
+    "counters_mta_dropped": {
+      "type": ["null", "integer"]
+    },
+    "counters_dropped": {
+      "type": ["null", "integer"]
+    },
+    "counters_suppressed": {
+      "type": ["null", "integer"]
+    },
+    "counters_click": {
+      "type": ["null", "integer"]
+    },
+    "counters_delivered": {
+      "type": ["null", "integer"]
+    },
+    "counters_forward": {
+      "type": ["null", "integer"]
+    },
+    "counters_print": {
+      "type": ["null", "integer"]
+    },
+    "counters_reply": {
+      "type": ["null", "integer"]
+    },
+    "counters_spamreport": {
+      "type": ["null", "integer"]
     },
     "id": {
       "type": ["null", "integer"]

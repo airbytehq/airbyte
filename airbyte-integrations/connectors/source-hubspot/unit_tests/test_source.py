@@ -296,7 +296,8 @@ class TestSplittingPropertiesFunctionality:
         # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record in stream_records:
-            assert len(record["properties"]) == NUMBER_OF_PROPERTIES
+            properties = [field for field in record if field.startswith("properties_")]
+            assert len(properties) == NUMBER_OF_PROPERTIES
 
     def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
         """
@@ -328,7 +329,8 @@ class TestSplittingPropertiesFunctionality:
 
         assert len(stream_records) == 5
         for record in stream_records:
-            assert len(record["properties"]) == NUMBER_OF_PROPERTIES
+            properties = [field for field in record if field.startswith("properties_")]
+            assert len(properties) == NUMBER_OF_PROPERTIES
 
     def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
         """

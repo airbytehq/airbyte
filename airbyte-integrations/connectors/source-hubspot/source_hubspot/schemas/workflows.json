@@ -26,21 +26,22 @@
         "type": ["null", "integer"]
       }
     },
-    "contactListIds": {
-      "type": ["null", "object"],
-      "properties": {
-        "enrolled": {
-          "type": ["null", "integer"]
-        },
-        "active": {
-          "type": ["null", "integer"]
-        },
-        "steps": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
-        }
+    "contactListIds_enrolled": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_active": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_completed": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_succeeded": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_steps": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
     },
     "lastUpdatedByUserId": {
