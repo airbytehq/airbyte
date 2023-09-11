@@ -56,7 +56,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private int count = 0;
   private int totalRecordCount = 0;
   private int totalStatecount = 0;
-  private AirbyteMessage airbyteMessage
+  private AirbyteMessage airbyteMessage;
 
   /**
    * Pointer to the last document _id seen by this iterator, necessary to track for state messages.
