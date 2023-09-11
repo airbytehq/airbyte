@@ -56,9 +56,6 @@ import org.slf4j.LoggerFactory;
 public class MySqlDebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDebeziumStateUtil.class);
-  public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
-  public static final String MYSQL_DB_HISTORY = "mysql_db_history";
-  public static final String IS_COMPRESSED = "is_compressed";
 
   public boolean savedOffsetStillPresentOnServer(final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
     if (savedState.gtidSet().isPresent()) {
@@ -259,7 +256,8 @@ public class MySqlDebeziumStateUtil {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistoryInfo(Optional.empty(), true, true));
+    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistoryInfo(Optional.empty(), false,
+        MysqlCdcStateConstants.COMPRESSION_ENABLED));
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
         database.getSourceConfig(),
@@ -302,9 +300,9 @@ public class MySqlDebeziumStateUtil {
 
   public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory dbHistory) {
     final Map<String, Object> state = new HashMap<>();
-    state.put(MYSQL_CDC_OFFSET, offset);
-    state.put(MYSQL_DB_HISTORY, dbHistory.schema());
-    state.put(IS_COMPRESSED, dbHistory.isCompressed());
+    state.put(MysqlCdcStateConstants.MYSQL_CDC_OFFSET, offset);
+    state.put(MysqlCdcStateConstants.MYSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MysqlCdcStateConstants.IS_COMPRESSED, dbHistory.isCompressed());
 
     return Jsons.jsonNode(state);
   }

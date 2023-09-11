@@ -4,9 +4,10 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.IS_COMPRESSED;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
@@ -23,7 +24,8 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState().get(MYSQL_CDC_OFFSET) : null;
     this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MYSQL_DB_HISTORY) : null;
-    this.isSavedSchemaHistoryCompressed = !savedStatePresent || !savedState.getState().has(IS_COMPRESSED) || savedState.getState().get(IS_COMPRESSED).asBoolean();
+    this.isSavedSchemaHistoryCompressed =
+        savedStatePresent && savedState.getState().has(IS_COMPRESSED) && savedState.getState().get(IS_COMPRESSED).asBoolean();
   }
 
   @Override
@@ -33,7 +35,7 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   @Override
   public SchemaHistoryInfo getSavedSchemaHistory() {
-    return new SchemaHistoryInfo(Optional.ofNullable(savedSchemaHistory), isSavedSchemaHistoryCompressed, true);
+    return new SchemaHistoryInfo(Optional.ofNullable(savedSchemaHistory), isSavedSchemaHistoryCompressed, COMPRESSION_ENABLED);
   }
 
 }

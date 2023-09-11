@@ -6,9 +6,9 @@ package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.IS_COMPRESSED;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
