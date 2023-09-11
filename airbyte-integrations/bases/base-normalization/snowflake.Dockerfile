@@ -44,7 +44,9 @@ WORKDIR /airbyte/base_python_structs
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code
-RUN pip install .
+RUN pip install . && \
+    # patch for https://nvd.nist.gov/vuln/detail/CVE-2023-30608
+    pip install sqlparse==0.4.4
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
@@ -56,11 +58,6 @@ ENTRYPOINT ["/airbyte/entrypoint.sh"]
 
 LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/normalization-snowflake
-
-# patch for https://nvd.nist.gov/vuln/detail/CVE-2023-30608
-RUN pip install sqlparse==0.4.4 && \
-    # ensures `yaml` module is found
-    pip install "Cython<3.0" "PyYAML==5.4" --no-build-isolation
 
 RUN pip uninstall setuptools -y && \
     PATH=$ROOTPATH pip uninstall setuptools -y && \
