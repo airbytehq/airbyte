@@ -5,13 +5,12 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 1.0.0
     oss:
       enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.1.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-typeform
   githubIssueLabel: source-typeform
   icon: typeform.svg
@@ -21,6 +20,11 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
+  releases:
+    breakingChanges:
+      2.0.0:
+        upgradeDeadline: "2023-08-12"
+        message: "This version changes the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures."
   tags:
     - language:low-code
   ab_internal:
