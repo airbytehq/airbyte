@@ -227,6 +227,15 @@ public class MySqlQueryUtils {
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
 
+  public static void logStreamSyncStatus(final List<ConfiguredAirbyteStream> streams, final String syncType) {
+    if (streams.isEmpty()) {
+      LOGGER.info("No Streams will be synced via {}.", syncType);
+    } else {
+      LOGGER.info("Streams to be synced via {} : {}", syncType, streams.size());
+      LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streams));
+    }
+  }
+
   public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {
     return streamList.stream().map(s -> "%s.%s".formatted(s.getStream().getNamespace(), s.getStream().getName())).collect(Collectors.joining(", "));
   }

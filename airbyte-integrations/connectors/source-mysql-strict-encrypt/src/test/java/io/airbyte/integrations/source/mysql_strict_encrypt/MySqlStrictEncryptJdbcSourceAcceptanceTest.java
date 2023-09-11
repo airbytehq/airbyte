@@ -198,7 +198,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
-  @Override
   protected List<AirbyteMessage> getTestMessages() {
     return List.of(
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)

@@ -8,7 +8,6 @@ import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateCons
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.CURSOR_BASED_STATE_TYPE;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -254,8 +253,8 @@ public class MySqlInitialReadUtil {
   }
 
   /**
-   * Determines the streams to sync for initial primary key load. These include streams
-   * that are (i) currently in primary key load (ii) newly added incremental streams.
+   * Determines the streams to sync for initial primary key load. These include streams that are (i)
+   * currently in primary key load (ii) newly added incremental streams.
    */
   public static InitialLoadStreams streamsForInitialPrimaryKeyLoad(final StateManager stateManager,
                                                                    final ConfiguredAirbyteCatalog fullCatalog) {
@@ -284,7 +283,7 @@ public class MySqlInitialReadUtil {
         // key load in progress.
 
         if (streamState.has(STATE_TYPE_KEY)) {
-          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(PRIMARY_KEY_STATE_TYPE)) {
+          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(PRIMARY_KEY_STATE_TYPE) ) {
             final PrimaryKeyLoadStatus primaryKeyLoadStatus = Jsons.object(streamState, PrimaryKeyLoadStatus.class);
             pairToInitialLoadStatus.put(pair, primaryKeyLoadStatus);
             streamsStillInPkSync.add(pair);
@@ -295,70 +294,15 @@ public class MySqlInitialReadUtil {
     }
     final List<ConfiguredAirbyteStream> streamsForPkSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
-        .filter(stream -> streamsStillInPkSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
-            && streamHasPrimaryKey(stream))
-
+        .filter(stream -> streamsStillInPkSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .forEach(streamsForPkSync::add);
 
     final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyStreamsToSnapshot(fullCatalog,
         Collections.unmodifiableSet(alreadySeenStreamPairs));
     streamsForPkSync.addAll(newlyAddedStreams);
-    return new InitialLoadStreams(streamsForPkSync, pairToInitialLoadStatus);
+    return new InitialLoadStreams(streamsForPkSync.stream().filter(MySqlInitialReadUtil::streamHasPrimaryKey).collect(Collectors.toList()), pairToInitialLoadStatus);
   }
-
-
-  /**
-   * Determines the streams to sync for initial primary key load. These include streams
-   * that are (i) currently in primary key load (ii) newly added incremental streams.
-   */
-  public static CursorBasedStreams streamsForCursorBasedLoad(final StateManager stateManager,
-                                                             final ConfiguredAirbyteCatalog fullCatalog,
-                                                             final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus) {
-
-    final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
-    final Set<AirbyteStreamNameNamespacePair> alreadySeenStreamPairs = new HashSet<>();
-    final Set<AirbyteStreamNameNamespacePair> cursorBasedStreamPairs = new HashSet<>();
-
-    // Build a map of stream <-> initial load status for streams that currently have an initial primary
-    // key load in progress.
-
-    if (rawStateMessages != null) {
-      rawStateMessages.forEach(stateMessage -> {
-        final AirbyteStreamState stream = stateMessage.getStream();
-        final JsonNode streamState = stream.getStreamState();
-        final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-        if (streamState == null || streamDescriptor == null) {
-          return;
-        }
-
-        final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-                                                                                       streamDescriptor.getNamespace());
-
-        // Build a map of stream <-> initial load status for streams that currently have an initial primary
-        // key load in progress.
-
-        if (streamState.has(STATE_TYPE_KEY)) {
-          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase(CURSOR_BASED_STATE_TYPE)) {
-            cursorBasedStreamPairs.add(pair);
-          }
-        }
-        alreadySeenStreamPairs.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
-      });
-    }
-    final List<ConfiguredAirbyteStream> streamsForCursorBased = new ArrayList<>();
-    fullCatalog.getStreams().stream()
-        .filter(stream -> cursorBasedStreamPairs.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
-            && streamHasPrimaryKey(stream))
-
-        .map(Jsons::clone)
-        .forEach(streamsForCursorBased::add);
-
-    return new CursorBasedStreams(streamsForCursorBased, pairToCursorBasedStatus);
-  }
-
-
-
 
   private static boolean streamHasPrimaryKey(final ConfiguredAirbyteStream stream) {
     return stream.getStream().getSourceDefinedPrimaryKey().size() > 0;
@@ -375,13 +319,16 @@ public class MySqlInitialReadUtil {
         .collect(Collectors.toList());
   }
 
+  public static List<ConfiguredAirbyteStream> identifyStreamsForCursorBased(final ConfiguredAirbyteCatalog catalog,
+                                                                            final List<ConfiguredAirbyteStream> streamsForInitialLoad) {
 
-  public static List<ConfiguredAirbyteStream> identifyStreamsForCursorBased(final ConfiguredAirbyteCatalog catalog, final Set<AirbyteStreamNameNamespacePair> streamsForCursorBased) {
-    LOGGER.info("IN SIDE NEW IDENTITY STREAMS FOR CURSOR BASED");
+    final Set<AirbyteStreamNameNamespacePair> initialLoadStreamsNamespacePairs =
+        streamsForInitialLoad.stream().map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
+            .collect(
+                Collectors.toSet());
     return catalog.getStreams().stream()
         .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
-        .filter(stream -> streamsForCursorBased.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
-            && streamHasPrimaryKey(stream))
+        .filter(stream -> !initialLoadStreamsNamespacePairs.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
@@ -441,5 +388,9 @@ public class MySqlInitialReadUtil {
   }
 
   public record PrimaryKeyInfo(String pkFieldName, MysqlType fieldType, String pkMaxValue) {}
+
+  public static AirbyteStreamNameNamespacePair convertNameNamespacePairFromV0(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair v1NameNamespacePair) {
+    return new AirbyteStreamNameNamespacePair(v1NameNamespacePair.getName(), v1NameNamespacePair.getNamespace());
+  }
 
 }

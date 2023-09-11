@@ -193,7 +193,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       connection.close();
   }
 
-  @Override
   protected List<AirbyteMessage> getTestMessages() {
     return Lists.newArrayList(
         new AirbyteMessage().withType(Type.RECORD)
