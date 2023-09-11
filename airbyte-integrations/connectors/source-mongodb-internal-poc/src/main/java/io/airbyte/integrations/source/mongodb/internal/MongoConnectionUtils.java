@@ -8,7 +8,6 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUT
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DRIVER_NAME;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,11 +53,8 @@ public class MongoConnectionUtils {
 
   private static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText();
-    final String replicaSet = config.get(REPLICA_SET_CONFIGURATION_KEY).asText();
     return connectionString +
-        "?replicaSet=" +
-        replicaSet +
-        "&readPreference=primary" +
+        "?readPreference=secondary" +
         "&retryWrites=false" +
         "&provider=airbyte" +
         "&tls=true";

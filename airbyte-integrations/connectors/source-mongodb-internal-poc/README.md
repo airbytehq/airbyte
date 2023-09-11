@@ -42,7 +42,6 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
             "user": "username",
             "password": "password",
             "connection_string": "mongodb+srv://cluster0.abcd1.mongodb.net/",
-            "replica_set": "atlas-abcdefg-shard-0",
             "auth_source": "auth_database"
        }
       ```

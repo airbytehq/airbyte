@@ -14,6 +14,8 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
+
 /**
  * Collection of utility methods for generating the {@link AirbyteCatalog}.
  */
@@ -41,7 +43,7 @@ public class MongoCatalogHelper {
     return CatalogHelpers.createAirbyteStream(streamName, streamNamespace, addCdcMetadataColumns(fields))
         .withSupportedSyncModes(SUPPORTED_SYNC_MODES)
         .withSourceDefinedCursor(true)
-        .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
+        .withDefaultCursorField(List.of(CDC_DEFAULT_CURSOR))
         .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_CURSOR_FIELD)));
   }
 

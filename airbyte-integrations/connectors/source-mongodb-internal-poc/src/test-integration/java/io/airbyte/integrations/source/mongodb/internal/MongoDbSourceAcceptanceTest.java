@@ -8,7 +8,6 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.IS_TEST_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -460,9 +459,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
+    final String replicaSetName = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(databaseName,
-            config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), INVALID_RESUME_TOKEN));
+        MongoDbDebeziumStateUtil.formatState(databaseName, replicaSetName, INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
@@ -510,14 +509,15 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
+    final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
     final Map<String, String> offsetA = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), resumeTokenString), new TypeReference<>() {});
+        replicaSet, resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetB = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), resumeTokenString), new TypeReference<>() {});
+        replicaSet, resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetBDifferent = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        config.get(REPLICA_SET_CONFIGURATION_KEY).asText(), INVALID_RESUME_TOKEN), new TypeReference<>() {});
+        replicaSet, INVALID_RESUME_TOKEN), new TypeReference<>() {});
 
     assertFalse(targetPosition.isSameOffset(null, offsetB));
     assertFalse(targetPosition.isSameOffset(emptyOffsetA, offsetB));
