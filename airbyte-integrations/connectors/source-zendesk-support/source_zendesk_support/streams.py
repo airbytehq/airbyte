@@ -14,7 +14,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -123,6 +123,22 @@ class BaseZendeskSupportStream(HttpStream, ABC):
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            self.logger.error(
+                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+            )
 
 
 class SourceZendeskSupportStream(BaseZendeskSupportStream):

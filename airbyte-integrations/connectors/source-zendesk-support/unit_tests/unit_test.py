@@ -10,6 +10,7 @@ from datetime import datetime
 from unittest.mock import patch
 from urllib.parse import parse_qsl, urlparse
 
+import freezegun
 import pendulum
 import pytest
 import pytz
@@ -69,6 +70,12 @@ TEST_CONFIG = {
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
 }
 
+TEST_CONFIG_WITHOUT_START_DATE = {
+    "subdomain": "sandbox",
+    "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
+}
+
+
 # raw config oauth
 TEST_CONFIG_OAUTH = {
     "subdomain": "sandbox",
@@ -114,6 +121,12 @@ def test_token_authenticator():
 def test_convert_config2stream_args(config):
     result = SourceZendeskSupport().convert_config2stream_args(config)
     assert "authenticator" in result
+
+
+@freezegun.freeze_time("2022-01-01")
+def test_default_start_date():
+    result = SourceZendeskSupport().convert_config2stream_args(TEST_CONFIG_WITHOUT_START_DATE)
+    assert result["start_date"] == "2020-01-01T00:00:00Z"
 
 
 @pytest.mark.parametrize(
@@ -1079,3 +1092,14 @@ def test_read_tickets_comment(requests_mock, status_code):
     stream = TicketComments(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
     read_full_refresh(stream)
     assert request_history.call_count == 1
+
+
+def test_read_non_json_error(requests_mock, caplog):
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json",
+        text="not_json_response"
+    )
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = "Skipping stream tickets: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
