@@ -90,8 +90,7 @@ class MongoDbCdcInitializerTest {
 
   final JsonNode CONFIG = Jsons.jsonNode(Map.of(
       MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-      MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE,
-      MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, REPLICA_SET));
+      MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE));
 
   final Instant EMITTED_AT = Instant.now();
 

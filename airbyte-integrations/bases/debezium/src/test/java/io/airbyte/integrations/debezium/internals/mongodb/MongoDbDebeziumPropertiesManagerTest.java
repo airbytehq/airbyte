@@ -10,7 +10,6 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.COLLECTION_INCLUDE_LIST_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
@@ -134,8 +133,7 @@ class MongoDbDebeziumPropertiesManagerTest {
   private JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {
     final Map<String, Object> baseConfig = Map.of(
         DATABASE_CONFIGURATION_KEY, DATABASE_NAME,
-        CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
-        REPLICA_SET_CONFIGURATION_KEY, "replica-set");
+        CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/");
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     authMode.ifPresent(a -> config.put(AUTH_SOURCE_CONFIGURATION_KEY, a));

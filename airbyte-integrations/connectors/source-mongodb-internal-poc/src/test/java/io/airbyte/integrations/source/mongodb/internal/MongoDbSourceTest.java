@@ -214,8 +214,7 @@ class MongoDbSourceTest {
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
-        MongoConstants.REPLICA_SET_CONFIGURATION_KEY, "replica-set");
+        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USER_CONFIGURATION_KEY, u));

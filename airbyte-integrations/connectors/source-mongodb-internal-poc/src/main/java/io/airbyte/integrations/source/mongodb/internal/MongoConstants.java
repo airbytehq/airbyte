@@ -24,7 +24,6 @@ public class MongoConstants {
   public static final String IS_TEST_CONFIGURATION_KEY = "is_test";
   public static final String PASSWORD_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
   public static final String QUEUE_SIZE_CONFIGURATION_KEY = "queue_size";
-  public static final String REPLICA_SET_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY;
   public static final String STORAGE_STATS_KEY = "storageStats";
   public static final String USER_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
 

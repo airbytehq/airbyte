@@ -5,6 +5,8 @@
 package io.airbyte.integrations.debezium.internals.mongodb;
 
 import static com.mongodb.assertions.Assertions.assertNotNull;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.ID_FIELD;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class MongoDbCdcTargetPositionTest {
 
+  private static final String OBJECT_ID = "64f24244f95155351c4185b1";
   private static final String RESUME_TOKEN = "8264BEB9F3000000012B0229296E04";
   private static final String OTHER_RESUME_TOKEN = "8264BEB9F3000000012B0229296E05";
 
@@ -60,6 +63,7 @@ class MongoDbCdcTargetPositionTest {
     final MongoClient mongoClient = mock(MongoClient.class);
     final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
 
+    when(changeEvent.key()).thenReturn("{\"" + ID_FIELD + "\":\"{\\\"" + OBJECT_ID_FIELD + "\\\": \\\"" + OBJECT_ID + "\\\"}\"}");
     when(changeEvent.value()).thenReturn(changeEventJson);
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -84,6 +88,7 @@ class MongoDbCdcTargetPositionTest {
     final MongoClient mongoClient = mock(MongoClient.class);
     final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
 
+    when(changeEvent.key()).thenReturn("{\"" + ID_FIELD + "\":\"{\\\"" + OBJECT_ID_FIELD + "\\\": \\\"" + OBJECT_ID + "\\\"}\"}");
     when(changeEvent.value()).thenReturn(changeEventJson);
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -104,6 +109,7 @@ class MongoDbCdcTargetPositionTest {
     final MongoClient mongoClient = mock(MongoClient.class);
     final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
 
+    when(changeEvent.key()).thenReturn("{\"" + ID_FIELD + "\":\"{\\\"" + OBJECT_ID_FIELD + "\\\": \\\"" + OBJECT_ID + "\\\"}\"}");
     when(changeEvent.value()).thenReturn(changeEventJson);
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -185,6 +191,7 @@ class MongoDbCdcTargetPositionTest {
     final String changeEventJson = MoreResources.readResource("mongodb/change_event.json");
     final ChangeEvent<String, String> changeEvent = mock(ChangeEvent.class);
 
+    when(changeEvent.key()).thenReturn("{\"" + ID_FIELD + "\":\"{\\\"" + OBJECT_ID_FIELD + "\\\": \\\"" + OBJECT_ID + "\\\"}\"}");
     when(changeEvent.value()).thenReturn(changeEventJson);
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
