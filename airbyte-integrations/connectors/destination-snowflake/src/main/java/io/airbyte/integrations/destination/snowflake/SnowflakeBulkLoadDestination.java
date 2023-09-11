@@ -53,19 +53,19 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
   public SnowflakeBulkLoadDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
-  class StageNotFoundException extends Exception {
+  public static class StageNotFoundException extends Exception {
     public StageNotFoundException(String message) {
       super(message);
     }
   }
 
-  class InvalidValueException extends Exception {
+  public static class InvalidValueException extends Exception {
     public InvalidValueException(String message) {
       super(message);
     }
   }
 
-  public String findMatchingStageName(Map<String, String> s3StageMap, String s3Path) throws StageNotFoundException{
+  public static String findMatchingStageName(Map<String, String> s3StageMap, String s3Path) throws StageNotFoundException{
     for (Map.Entry<String, String> entry : s3StageMap.entrySet()) {
       if (s3Path.startsWith(entry.getValue())) {
         return entry.getKey();
@@ -74,7 +74,7 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
     throw new StageNotFoundException("No matching Snowflake stage name found for S3 path: " + s3Path);
   }
 
-  public String getRelativePath(String rootPath, String fullS3Path) throws InvalidValueException {
+  public static String getRelativePath(String rootPath, String fullS3Path) throws InvalidValueException {
     if (fullS3Path.startsWith(rootPath)) {
       return fullS3Path.substring(rootPath.length());
     }
