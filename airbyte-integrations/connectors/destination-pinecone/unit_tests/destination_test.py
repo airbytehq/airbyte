@@ -2,102 +2,95 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock, patch
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk.models.airbyte_protocol import (
-    AirbyteLogMessage,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    ConfiguredAirbyteCatalog,
-    Level,
-    Type,
-)
+from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_pinecone.config import ConfigModel
-from destination_pinecone.destination import BATCH_SIZE, DestinationPinecone, embedder_map, indexer_map
+from destination_pinecone.destination import DestinationPinecone, embedder_map
 
 
-def _generate_record_message(index: int):
-    return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="example_stream", emitted_at=1234, data={"column_name": f"value {index}", "id": index}))
-
-
-@patch.dict(embedder_map, {"openai": MagicMock()})
-@patch.dict(indexer_map, {"pinecone": MagicMock()})
-def test_write():
-    """
-    Basic test for the write method, batcher and document processor.
-    """
-    config = {
-        "processing": {"text_fields": ["column_name"], "metadata_fields": None, "chunk_size": 1000},
-        "embedding": {"mode": "openai", "openai_key": "mykey"},
-        "indexing": {
-            "mode": "pinecone",
-            "pinecone_key": "mykey",
-            "index": "myindex",
-            "pinecone_environment": "myenv",
-        },
-    }
-    config_model = ConfigModel.parse_obj(config)
-
-    configured_catalog: ConfiguredAirbyteCatalog = ConfiguredAirbyteCatalog.parse_obj(
-        {
-            "streams": [
-                {
-                    "stream": {
-                        "name": "example_stream",
-                        "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                        "supported_sync_modes": ["full_refresh", "incremental"],
-                        "source_defined_cursor": False,
-                        "default_cursor_field": ["column_name"],
-                    },
-                    "primary_key": [["id"]],
-                    "sync_mode": "incremental",
-                    "destination_sync_mode": "append_dedup",
-                }
-            ]
+class TestDestinationPinecone(unittest.TestCase):
+    def setUp(self):
+        self.config = {
+            "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
+            "embedding": {"mode": "openai", "openai_key": "mykey"},
+            "indexing": {
+                "pinecone_key": "mykey",
+                "pinecone_environment": "myenv",
+                "index": "myindex",
+            },
         }
-    )
-    # messages are flushed after 32 records or after a state message, so this will trigger two batches to be processed
-    input_messages = [_generate_record_message(i) for i in range(BATCH_SIZE + 5)]
-    state_message = AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage())
-    input_messages.append(state_message)
-    # messages are also flushed once the input messages are exhausted, so this will trigger another batch
-    input_messages.extend([_generate_record_message(i) for i in range(5)])
+        self.config_model = ConfigModel.parse_obj(self.config)
+        self.logger = AirbyteLogger()
 
-    mock_embedder = MagicMock()
-    embedder_map["openai"].return_value = mock_embedder
+    @patch("destination_pinecone.destination.PineconeIndexer")
+    @patch.dict(embedder_map, openai=MagicMock())
+    def test_check(self, MockedPineconeIndexer):
+        mock_embedder = Mock()
+        mock_indexer = Mock()
+        embedder_map["openai"].return_value = mock_embedder
+        MockedPineconeIndexer.return_value = mock_indexer
 
-    mock_indexer = MagicMock()
-    indexer_map["pinecone"].return_value = mock_indexer
-    mock_indexer.max_metadata_size = 1000
-    post_sync_log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="post sync"))
-    mock_indexer.post_sync.return_value = [post_sync_log_message]
+        mock_embedder.check.return_value = None
+        mock_indexer.check.return_value = None
 
-    # Create the DestinationLangchain instance
-    destination = DestinationPinecone()
+        destination = DestinationPinecone()
+        result = destination.check(self.logger, self.config)
 
-    output_messages = destination.write(config, configured_catalog, input_messages)
-    output_message = next(output_messages)
-    # assert state message is
-    assert output_message == state_message
+        self.assertEqual(result.status, Status.SUCCEEDED)
+        mock_embedder.check.assert_called_once()
+        mock_indexer.check.assert_called_once()
 
-    embedder_map["openai"].assert_called_with(config_model.embedding)
-    indexer_map["pinecone"].assert_called_with(config_model.indexing, mock_embedder)
-    mock_indexer.pre_sync.assert_called_with(configured_catalog)
+    @patch("destination_pinecone.destination.PineconeIndexer")
+    @patch.dict(embedder_map, openai=MagicMock())
+    def test_check_with_errors(self, MockedPineconeIndexer):
+        mock_embedder = Mock()
+        mock_indexer = Mock()
+        embedder_map["openai"].return_value = mock_embedder
+        MockedPineconeIndexer.return_value = mock_indexer
 
-    # 1 batches due to max batch size reached and 1 batch due to state message
-    assert mock_indexer.index.call_count == 2
+        embedder_error_message = "Embedder Error"
+        indexer_error_message = "Indexer Error"
 
-    output_message = next(output_messages)
-    assert output_message == post_sync_log_message
+        mock_embedder.check.return_value = embedder_error_message
+        mock_indexer.check.return_value = indexer_error_message
 
-    try:
-        next(output_messages)
-        assert False, "Expected end of message stream"
-    except StopIteration:
-        pass
+        destination = DestinationPinecone()
+        result = destination.check(self.logger, self.config)
 
-    # 1 batch due to end of message stream
-    assert mock_indexer.index.call_count == 3
+        self.assertEqual(result.status, Status.FAILED)
+        self.assertEqual(result.message, f"{embedder_error_message}\n{indexer_error_message}")
 
-    mock_indexer.post_sync.assert_called()
+        mock_embedder.check.assert_called_once()
+        mock_indexer.check.assert_called_once()
+
+    @patch("destination_pinecone.destination.Writer")
+    @patch("destination_pinecone.destination.PineconeIndexer")
+    @patch.dict(embedder_map, openai=MagicMock())
+    def test_write(self, MockedPineconeIndexer, MockedWriter):
+        mock_embedder = Mock()
+        mock_indexer = Mock()
+        mock_writer = Mock()
+
+        embedder_map["openai"].return_value = mock_embedder
+        MockedPineconeIndexer.return_value = mock_indexer
+        MockedWriter.return_value = mock_writer
+
+        mock_writer.write.return_value = []
+
+        configured_catalog = MagicMock()
+        input_messages = []
+
+        destination = DestinationPinecone()
+        list(destination.write(self.config, configured_catalog, input_messages))
+
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128)
+        mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
+
+    def test_spec(self):
+        destination = DestinationPinecone()
+        result = destination.spec()
+
+        self.assertIsInstance(result, ConnectorSpecification)
