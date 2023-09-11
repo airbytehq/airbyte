@@ -156,11 +156,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
 
             # create a record with the file metadata:
+            file_uri_full = f"s3://{self.config.bucket}/{self.config.path_prefix}/{file.uri}"
             record = {
-                "file_uri": file.uri,
+                "file_uri": file_uri_full,
                 "file_schema": file_schema,
                 self.ab_last_mod_col: file_datetime_string,
-                self.ab_file_name_col: file.uri,
+                self.ab_file_name_col: file_uri_full,
             }
             yield stream_data_to_airbyte_message(self.name, record)
 
