@@ -4,9 +4,7 @@
 
 
 import pytest
-
 from airbyte_cdk.sources.streams.core import Stream
-
 from source_trello.components import OrderIdsPartitionRouter
 
 
