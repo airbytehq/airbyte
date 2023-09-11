@@ -29,8 +29,8 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
   // the 1s1t copy query explicitly quotes the raw table+schema name.
   private static final String COPY_QUERY_EXTERNAL_STAGE =
       """
-      COPY INTO "%s"."%s" FROM '@%s/%s'
-      file_format = %2;
+      COPY INTO "%s"."%s" FROM '@%s/'
+      file_format = %s
       """;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
@@ -119,13 +119,13 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
 
   public void copyIntoTableFromStage(final JdbcDatabase database,
                                      final String stageName,
-                                     final String stagingPath,
                                      final List<String> stagedFiles,
                                      final String tableName,
-                                     final String schemaName)
+                                     final String schemaName,
+                                     final String fileFormatName)
       throws SQLException {
     try {
-      final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
+      final String query = getCopyQuery(stageName, stagedFiles, tableName, schemaName, fileFormatName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
     } catch (final SQLException e) {
@@ -138,18 +138,18 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
    * https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html for more context
    *
    * @param stageName name of staging folder
-   * @param stagingPath path of staging folder to data files
    * @param stagedFiles collection of the staging files
    * @param dstTableName name of destination table
    * @param schemaName name of schema
+   * @param fileFormatName name of pre-created Snowflake file format
    * @return SQL query string
    */
   protected String getCopyQuery(final String stageName,
-                                final String stagingPath,
                                 final List<String> stagedFiles,
                                 final String dstTableName,
-                                final String schemaName) {
-    return String.format(COPY_QUERY_EXTERNAL_STAGE + generateFilesList(stagedFiles) + ";", schemaName, dstTableName, stageName, stagingPath);
+                                final String schemaName,
+                                final String fileFormatName) {
+    return String.format(COPY_QUERY_EXTERNAL_STAGE, schemaName, dstTableName, stageName, fileFormatName) + generateFilesList(stagedFiles) + ";";
   }
 
 }
