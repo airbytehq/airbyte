@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -171,13 +172,13 @@ class MongoDbSourceTest {
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get("other").get("type").asText());
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
-        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
+        stream.get().getJsonSchema().get("properties").get(DEFAULT_CURSOR_FIELD).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
     assertEquals(true, stream.get().getSourceDefinedCursor());
-    assertEquals(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
+    assertEquals(List.of(DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
     assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_PRIMARY_KEY)), stream.get().getSourceDefinedPrimaryKey());
     assertEquals(MongoCatalogHelper.SUPPORTED_SYNC_MODES, stream.get().getSupportedSyncModes());
   }

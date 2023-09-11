@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
+import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
+
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -13,8 +15,6 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
 
 /**
  * Collection of utility methods for generating the {@link AirbyteCatalog}.

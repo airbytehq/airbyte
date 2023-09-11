@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mongodb.internal;
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.DEFAULT_PRIMARY_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.SUPPORTED_SYNC_MODES;
-import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
