@@ -11,7 +11,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from requests.exceptions import HTTPError
 
 from .utils import transform_properties
 
@@ -265,7 +264,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         # if reached recursive limit, don't read anymore
         if len(self.block_id_stack) > MAX_BLOCK_DEPTH:
-            return
+            return 
         records = super().read_records(**kwargs)
         for record in records:
             if record.get("has_children", False):
@@ -306,6 +305,9 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     """
 
     http_method = "GET"
+    # We can use the "last edited time" of the parent Page as the cursor field,
+    # since we cannot guarantee the order of comments between pages.
+    cursor_field = "page_last_edited_time"
 
     def path(self, **kwargs) -> str:
         return f"comments"
@@ -321,39 +323,36 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         
-        parent_record_lmd = stream_slice.get("page_last_edited_time", "")
+        # Get the parent's "last edited time" to compare against state
+        page_last_edited_time = stream_slice.get("page_last_edited_time", "")
         records = response.json().get("results", [])
 
         for record in records:
-            record["page_last_edited_time"] = parent_record_lmd
-            state_lmd = stream_state.get(self.cursor_field, "")
+            record["page_last_edited_time"] = page_last_edited_time
+            state_last_edited_time = stream_state.get(self.cursor_field, "")
 
-            if isinstance(state_lmd, StateValueWrapper):
-                state_lmd = state_lmd.value
+            if isinstance(state_last_edited_time, StateValueWrapper):
+                state_last_edited_time = state_last_edited_time.value
 
-            if not stream_state or parent_record_lmd >= state_lmd:
+            if not stream_state or page_last_edited_time >= state_last_edited_time:
                 yield from transform_properties(record)
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
 
-        records = IncrementalNotionStream.read_records(self, **kwargs)
-        list_of_records = list(records)
-        for record in list_of_records:
-            yield record
+        yield from IncrementalNotionStream.read_records(self, **kwargs)
     
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        
-        print("Cursor Field: ", cursor_field)
-        
+                
         # Gather parent stream records in full
         parent_records = self.parent.read_records(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field, stream_state=stream_state
         )
 
-        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" because pages are also blocks in the Notion API
-        # we also grab the last_edited_time from the parent record to use as the cursor field
+        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" 
+        # because pages are also blocks in the Notion API.
+        # We also grab the last_edited_time from the parent record to use as the cursor field.
         for record in parent_records:
             yield {
                 "block_id": record["id"], 
