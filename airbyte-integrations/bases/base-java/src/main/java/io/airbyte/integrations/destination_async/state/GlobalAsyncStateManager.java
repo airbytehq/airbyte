@@ -263,10 +263,15 @@ public class GlobalAsyncStateManager {
    */
   private void closeState(final PartialAirbyteMessage message, final long sizeInBytes) {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
-    stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
-    registerNewStateId(resolvedDescriptor);
-    log.error("************************ State: " + message.getSerialized());
-    allocateMemoryToState(sizeInBytes);
+    if (stateIdToState.containsKey(getStateId(resolvedDescriptor)) &&
+            stateIdToState.get(getStateId(resolvedDescriptor)).getLeft().getSerialized().equals(message.getSerialized())) {
+      log.error("Received Duplicated state");
+    } else {
+      stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
+      registerNewStateId(resolvedDescriptor);
+      log.error("************************ State: " + message.getSerialized());
+      allocateMemoryToState(sizeInBytes);
+    }
   }
 
   /**
