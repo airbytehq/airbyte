@@ -116,7 +116,7 @@ class SourceZendeskSupport(AbstractSource):
         try:
             datetime.strptime(config["start_date"], DATETIME_FORMAT)
             settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
-        except SourceZendeskException as e:
+        except Exception as e:
             return False, e
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
         if "organization_access_enabled" not in active_features:
