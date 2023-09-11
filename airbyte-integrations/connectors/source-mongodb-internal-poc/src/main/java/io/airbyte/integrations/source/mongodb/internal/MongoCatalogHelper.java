@@ -60,7 +60,7 @@ public class MongoCatalogHelper {
    */
   public static List<Field> addCdcMetadataColumns(final List<Field> fields) {
     final List<Field> modifiedFields = new ArrayList<>(fields);
-    modifiedFields.add(new Field(DebeziumEventUtils.CDC_LSN, JsonSchemaType.NUMBER));
+    modifiedFields.add(new Field(DEFAULT_CURSOR_FIELD, JsonSchemaType.NUMBER));
     modifiedFields.add(new Field(DebeziumEventUtils.CDC_UPDATED_AT, JsonSchemaType.STRING));
     modifiedFields.add(new Field(DebeziumEventUtils.CDC_DELETED_AT, JsonSchemaType.STRING));
     return modifiedFields;

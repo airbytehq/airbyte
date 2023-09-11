@@ -40,9 +40,9 @@ class MongoCatalogHelperTest {
     assertEquals(5, airbyteStream.getJsonSchema().get("properties").size());
 
     discoveredFields.forEach(f -> assertTrue(airbyteStream.getJsonSchema().get("properties").has(f.getName())));
-    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventUtils.CDC_LSN));
+    assertTrue(airbyteStream.getJsonSchema().get("properties").has(DEFAULT_CURSOR_FIELD));
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
-        airbyteStream.getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
+        airbyteStream.getJsonSchema().get("properties").get(DEFAULT_CURSOR_FIELD).get("type").asText());
     assertTrue(airbyteStream.getJsonSchema().get("properties").has(DebeziumEventUtils.CDC_DELETED_AT));
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
         airbyteStream.getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
