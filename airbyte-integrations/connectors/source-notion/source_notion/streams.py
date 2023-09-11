@@ -265,6 +265,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         # if reached recursive limit, don't read anymore
         if len(self.block_id_stack) > MAX_BLOCK_DEPTH:
             return 
+        
         records = super().read_records(**kwargs)
         for record in records:
             if record.get("has_children", False):
