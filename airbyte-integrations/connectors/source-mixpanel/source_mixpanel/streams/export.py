@@ -4,7 +4,7 @@
 
 import json
 from functools import cache
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, List
 
 import pendulum
 import requests
@@ -75,7 +75,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
      3 queries per second and 60 queries per hour.
     """
 
-    primary_key: str = None
+    primary_key: List[str] = ["insert_id", "distinct_id", "mp_event"]
     cursor_field: str = "time"
     state_checkpoint_interval = 100
 
