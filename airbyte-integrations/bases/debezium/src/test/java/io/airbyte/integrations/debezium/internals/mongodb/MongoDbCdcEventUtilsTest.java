@@ -7,6 +7,7 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.DOCUMENT_OBJECT_ID_FIELD;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.ID_FIELD;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -51,10 +52,10 @@ class MongoDbCdcEventUtilsTest {
     final String key = "{\"" + OBJECT_ID_FIELD + "\": \"" + OBJECT_ID + "\"}";
     final JsonNode debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, key));
 
-    final JsonNode updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
+    final String updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
 
-    assertTrue(updated.has(DOCUMENT_OBJECT_ID_FIELD));
-    assertEquals(OBJECT_ID, updated.get(DOCUMENT_OBJECT_ID_FIELD).asText());
+    assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
+    assertEquals(key.replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD), updated);
   }
 
   @Test
@@ -93,7 +94,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field14", new BsonRegularExpression("pattern"))
         .append("field15", new BsonNull());
 
-    final ObjectNode documentAsJson = (ObjectNode) Jsons.deserialize(document.toJson());
+    final String documentAsJson = document.toJson();
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson);
 
     assertNotNull(transformed);

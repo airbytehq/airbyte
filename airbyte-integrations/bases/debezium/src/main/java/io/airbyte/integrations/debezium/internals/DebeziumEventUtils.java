@@ -97,19 +97,15 @@ public class DebeziumEventUtils {
                                                     final JsonNode after,
                                                     final JsonNode source,
                                                     final CdcMetadataInjector cdcMetadataInjector) {
-    /*
-     * Debezium MongoDB change events contain the document as an escaped JSON string. Therefore, it
-     * needs to be turned back into a JSON object for inclusion in the Airybte message.
-     */
-    final ObjectNode baseNode = (ObjectNode) Jsons.deserialize((after.isNull() ? before : after).asText());
-    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(baseNode), source, cdcMetadataInjector, false);
+    final String eventJson = (after.isNull() ? before : after).asText();
+    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson), source, cdcMetadataInjector, false);
   }
 
   private static JsonNode formatMongoDbDeleteDebeziumData(final JsonNode before,
                                                           final JsonNode debeziumEventKey,
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector) {
-    ObjectNode baseNode;
+    String eventJson;
 
     /*
      * The change events produced by MongoDB differ based on the server version. For version BEFORE 6.x,
@@ -123,12 +119,12 @@ public class DebeziumEventUtils {
      * for more details.
      */
     if (!before.isNull()) {
-      baseNode = (ObjectNode) Jsons.deserialize(before.asText());
+      eventJson = before.asText();
     } else {
-      baseNode = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
+      eventJson = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     }
 
-    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(baseNode), source, cdcMetadataInjector, true);
+    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson), source, cdcMetadataInjector, true);
   }
 
   private static JsonNode formatRelationalDbDebeziumData(final JsonNode before,
