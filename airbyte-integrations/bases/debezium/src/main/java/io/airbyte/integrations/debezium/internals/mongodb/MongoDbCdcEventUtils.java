@@ -20,7 +20,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
