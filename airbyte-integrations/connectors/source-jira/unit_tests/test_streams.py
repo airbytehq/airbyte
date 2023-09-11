@@ -6,6 +6,7 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 from responses import matchers
 from source_jira.source import SourceJira
@@ -58,7 +59,6 @@ from source_jira.streams import (
     WorkflowStatuses,
 )
 from source_jira.utils import read_full_refresh
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @responses.activate

@@ -10,13 +10,12 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 
 from .utils import read_full_refresh, read_incremental, safe_max
-
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.models import FailureType
 
 API_VERSION = 3
 
@@ -34,9 +33,11 @@ class JiraStream(HttpStream, ABC):
     raise_on_http_errors = True
     error_messages = {
         requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
-        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access."
+        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
     }
-    config_error_status_codes = [requests.codes.UNAUTHORIZED, ]
+    config_error_status_codes = [
+        requests.codes.UNAUTHORIZED,
+    ]
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -344,9 +345,7 @@ class Issues(IncrementalJiraStream):
     extract_field = "issues"
     use_cache = False  # disable caching due to OOM errors in kubernetes
 
-    skip_http_status_codes = [
-        requests.codes.FORBIDDEN
-    ]
+    skip_http_status_codes = [requests.codes.FORBIDDEN]
 
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
