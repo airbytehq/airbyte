@@ -52,26 +52,21 @@
           "."
         ]
       }
-    },
-    "codespaces": {
-      "repositories": {
-        "airbytehq/airbyte": {
-          "python.testing.pytestEnabled": true
-        }
-      }
     }
   },
   "containerEnv": {
     "POETRY_VIRTUALENVS_IN_PROJECT": "true"
   },
 
+  // Mark the root directory as 'safe' for git.
+  "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
+
   // Use 'postCreateCommand' to run commands after the container is created.
   // Post-create tasks:
   // 1. Create a symlink directory.
-  // 2. Map the devcontainer.json file to it.
-  // 3. Mark the root directory as 'safe' for git.
-  // 4. Install the Python/Poetry dependencies.
-  "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/docs/destinations/duckdb/devcontainer.json ./.symlinks/devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/duckdb.md ./.symlinks/duckdb-docs.md && git config --add safe.directory /workspaces/airbyte && poetry install"
+  // 2. Create symlinks for the devcontainer.json and docs markdown file.
+  // 3. Install the Python/Poetry dependencies.
+  "postCreateCommand": "mkdir -p ./.symlinks && echo '*' > ./.symlinks/.gitignore && ln -sf /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/duckdb.md ./.symlinks/duckdb-docs.md && poetry install"
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
