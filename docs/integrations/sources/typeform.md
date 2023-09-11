@@ -90,7 +90,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.0 | 2023-08-11  | [29916](https://github.com/airbytehq/airbyte/pull/29916) | Mark breaking changes for Typeform source after migration to Low-Code Framework                                                                  |
+| 2.0.0 | 2023-08-11  | [30312](https://github.com/airbytehq/airbyte/pull/30312) | Mark breaking changes for Typeform source after migration to Low-Code Framework                                                                  |
 | 1.1.0  | 2023-09-04 | [29916](https://github.com/airbytehq/airbyte/pull/29916) | Migrate to Low-Code Framework                                                                                                                    |
 | 1.0.0  | 2023-06-26 | [27240](https://github.com/airbytehq/airbyte/pull/27240) | Add OAuth support                                                                                                                                |
 | 0.3.0  | 2023-06-23 | [27653](https://github.com/airbytehq/airbyte/pull/27653) | Add `form_id` to records of `responses` stream                                                                                                   |
