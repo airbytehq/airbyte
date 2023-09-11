@@ -222,8 +222,8 @@ def test_comments_request_params(comments):
 def test_comments_stream_slices(comments, requests_mock):
 
     inputs = {'sync_mode': SyncMode.incremental, 'cursor_field': [], 'stream_state': {}}
-    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"name": "page_1", "id": "id_1"}, {"name": "page_2", "id": "id_2"}], "next_cursor": None})
-    expected_stream_slice = [{"block_id": "id_1"}, {"block_id": "id_2"}]
+    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"name": "page_1", "id": "id_1", "last_edited_time": "2021-01-01T00:00:00.000Z"}, {"name": "page_2", "id": "id_2", "last_edited_time": "2021-20-01T00:00:00.000Z"}], "next_cursor": None})
+    expected_stream_slice = [{"block_id": "id_1", "page_last_edited_time": "2021-01-01T00:00:00.000Z"}, {"block_id": "id_2", "page_last_edited_time": "2021-20-01T00:00:00.000Z"}]
 
     actual_stream_slices_list = list(comments.stream_slices(**inputs))
     assert actual_stream_slices_list == expected_stream_slice
@@ -246,8 +246,8 @@ def test_comments_read_records(comments, requests_mock):
         })
 
     expected_records = [
-                {"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha comment"}}]},
-                {"id": "comment_id_2", "rich_text": [{"type": "text", "text": {"content": "I am the Omega comment"}}]}
+                {"id": "comment_id_1", "rich_text": [{"type": "text", "text": {"content": "I am the Alpha comment"}}], "page_last_edited_time": "2021-10-10T00:00:00.000Z"},
+                {"id": "comment_id_2", "rich_text": [{"type": "text", "text": {"content": "I am the Omega comment"}}], "page_last_edited_time": "2021-10-10T00:00:00.000Z"}
             ]
 
     response = list(comments.read_records(**inputs))

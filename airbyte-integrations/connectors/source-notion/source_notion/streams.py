@@ -306,14 +306,12 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     """
 
     http_method = "GET"
-    # The cursor field is set to the parent Pages stream's cursor field because we cannot guarantee.
-    cursor_field = "page_last_edited_time"
 
     def path(self, **kwargs) -> str:
         return f"comments"
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        block_id = stream_slice.get("block_id")  # Get block_id from the current stream slice
+        block_id = stream_slice.get("block_id", "")
         params = {"block_id": block_id, "page_size": self.page_size}
 
         if next_page_token:
@@ -322,14 +320,17 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         return params
     
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        # the last edited time
+        
         parent_record_lmd = stream_slice.get("page_last_edited_time", "")
         records = response.json().get("results", [])
+
         for record in records:
             record["page_last_edited_time"] = parent_record_lmd
             state_lmd = stream_state.get(self.cursor_field, "")
+
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
+
             if not stream_state or parent_record_lmd >= state_lmd:
                 yield from transform_properties(record)
 
@@ -344,12 +345,14 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         
-        # gather parent stream records in full
+        print("Cursor Field: ", cursor_field)
+        
+        # Gather parent stream records in full
         parent_records = self.parent.read_records(
             sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
-        # the parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" because pages are also blocks in the Notion API
+        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" because pages are also blocks in the Notion API
         # we also grab the last_edited_time from the parent record to use as the cursor field
         for record in parent_records:
             yield {
