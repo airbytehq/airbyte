@@ -113,7 +113,7 @@ class AirbyteConnectorBaseImage(ABC):
 
     @final
     def _validate_platform_availability(self):
-        """Validates that the platform is supported by the base image.
+        """Validates that the base image supports the platform passed at initialization.
 
         Raises:
             ValueError: Raised if the platform is not supported by the base image.
