@@ -53,22 +53,6 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    async def _get_patched_build_src_dir(self) -> Directory:
-        """Patch some gradle plugins.
-
-        Returns:
-            Directory: The patched buildSrc directory
-        """
-
-        build_src_dir = self.context.get_repo_dir("buildSrc")
-        cat_gradle_plugin_content = await build_src_dir.file("src/main/groovy/airbyte-connector-acceptance-test.gradle").contents()
-        # When running integrationTest in Dagger we don't want to run connectorAcceptanceTest
-        # connectorAcceptanceTest is run in the AcceptanceTest step
-        cat_gradle_plugin_content = cat_gradle_plugin_content.replace(
-            "project.integrationTest.dependsOn(project.connectorAcceptanceTest)", ""
-        )
-        return build_src_dir.with_new_file("src/main/groovy/airbyte-connector-acceptance-test.gradle", contents=cat_gradle_plugin_content)
-
     def _get_publish_snapshot_command(self) -> List:
         command = (
             ["./gradlew"]
@@ -82,14 +66,19 @@ class GradleTask(Step, ABC):
 
     def _get_gradle_command(self) -> List:
         command = (
-            ["./gradlew"]
-            + list(self.DEFAULT_GRADLE_TASK_OPTIONS)
-            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
-            + list(self.gradle_task_options)
+                ["./gradlew"]
+                + list(self.DEFAULT_GRADLE_TASK_OPTIONS)
+                + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
+                + list(self.gradle_task_options)
         )
         for task in self.DEFAULT_TASKS_TO_EXCLUDE:
             command += ["-x", task]
-        return command
+        command += ["--debug"]
+        gradle = " ".join(command)
+        load_from_cache = "rsync -a /root/gradle-cache/ /root/.gradle"
+        store_to_cache = "rsync -a /root/.gradle/ /root/gradle-cache"
+        with_rsync = f"(set -o xtrace && {load_from_cache} && {gradle} && {store_to_cache}) > /root/stdout.txt 2> /root/stderr.txt"
+        return ["sh", "-c", with_rsync]
 
     async def _run(self) -> StepResult:
         includes = self.build_include + ["airbyte-cdk/java/airbyte-cdk"] if self.with_java_cdk_snapshot else self.build_include
@@ -97,7 +86,6 @@ class GradleTask(Step, ABC):
         connector_under_test = (
             self.with_gradle(sources_to_include=includes)
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            .with_mounted_directory("buildSrc", await self._get_patched_build_src_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
         )
@@ -105,8 +93,6 @@ class GradleTask(Step, ABC):
             connector_under_test = connector_under_test.with_(
                 environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
             )
-#        if self.with_java_cdk_snapshot:
-#            connector_under_test = connector_under_test.with_exec(self._get_publish_snapshot_command())
         connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
         result = await self.get_step_result(connector_under_test)
