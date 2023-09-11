@@ -270,7 +270,7 @@ public class GlobalAsyncStateManager {
     if (message.getSerialized().equals(streamToLastestState.get(resolvedDescriptor))) {
       log.error("Received Duplicated state");
     } else {
-      streamToLastestState.putIfAbsent(resolvedDescriptor, message.getSerialized());
+      streamToLastestState.put(resolvedDescriptor, message.getSerialized());
       stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
       registerNewStateId(resolvedDescriptor);
       log.error("************************ State: " + message.getSerialized());
