@@ -1,0 +1,272 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/milvus",
+  "connectionSpecification": {
+    "title": "Milvus Destination Config",
+    "type": "object",
+    "properties": {
+      "processing": {
+        "title": "ProcessingConfigModel",
+        "type": "object",
+        "properties": {
+          "chunk_size": {
+            "title": "Chunk size",
+            "description": "Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
+            "maximum": 8191,
+            "type": "integer"
+          },
+          "chunk_overlap": {
+            "title": "Chunk overlap",
+            "description": "Size of overlap between chunks in tokens to store in vector store to better capture relevant context",
+            "default": 0,
+            "type": "integer"
+          },
+          "text_fields": {
+            "title": "Text fields to embed",
+            "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+            "default": [],
+            "always_show": true,
+            "examples": ["text", "user.name", "users.*.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata_fields": {
+            "title": "Fields to store as metadata",
+            "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
+            "default": [],
+            "always_show": true,
+            "examples": ["age", "user", "user.name"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["chunk_size"],
+        "group": "processing"
+      },
+      "embedding": {
+        "title": "Embedding",
+        "description": "Embedding configuration",
+        "group": "embedding",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "openai",
+                "const": "openai",
+                "enum": ["openai"],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "OpenAI API key",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["openai_key"],
+            "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
+            "title": "Cohere",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "cohere",
+                "const": "cohere",
+                "enum": ["cohere"],
+                "type": "string"
+              },
+              "cohere_key": {
+                "title": "Cohere API key",
+                "airbyte_secret": true,
+                "type": "string"
+              }
+            },
+            "required": ["cohere_key"],
+            "description": "Use the Cohere API to embed text."
+          },
+          {
+            "title": "Fake",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "fake",
+                "const": "fake",
+                "enum": ["fake"],
+                "type": "string"
+              }
+            },
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+          },
+          {
+            "title": "From Field",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "from_field",
+                "const": "from_field",
+                "enum": ["from_field"],
+                "type": "string"
+              },
+              "field_name": {
+                "title": "Field name",
+                "description": "Name of the field in the record that contains the embedding",
+                "examples": ["embedding", "vector"],
+                "type": "string"
+              },
+              "dimensions": {
+                "title": "Embedding dimensions",
+                "description": "The number of dimensions the embedding model is generating",
+                "examples": [1536, 384],
+                "type": "integer"
+              }
+            },
+            "required": ["field_name", "dimensions"],
+            "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
+          }
+        ]
+      },
+      "indexing": {
+        "title": "Indexing",
+        "type": "object",
+        "properties": {
+          "host": {
+            "title": "Public Endpoint",
+            "description": "The public endpoint of the Milvus instance. ",
+            "order": 1,
+            "examples": [
+              "https://my-instance.zone.zillizcloud.com",
+              "tcp://host.docker.internal:19530",
+              "tcp://my-local-milvus:19530"
+            ],
+            "type": "string"
+          },
+          "db": {
+            "title": "Database Name",
+            "description": "The database to connect to",
+            "default": "",
+            "type": "string"
+          },
+          "collection": {
+            "title": "Collection Name",
+            "description": "The collection to load data into",
+            "order": 3,
+            "type": "string"
+          },
+          "auth": {
+            "title": "Authentication",
+            "description": "Authentication method",
+            "type": "object",
+            "order": 2,
+            "oneOf": [
+              {
+                "title": "API Token",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "token",
+                    "const": "token",
+                    "enum": ["token"],
+                    "type": "string"
+                  },
+                  "token": {
+                    "title": "API Token",
+                    "description": "API Token for the Milvus instance",
+                    "airbyte_secret": true,
+                    "type": "string"
+                  }
+                },
+                "required": ["token"],
+                "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
+              },
+              {
+                "title": "Username/Password",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "username_password",
+                    "const": "username_password",
+                    "enum": ["username_password"],
+                    "type": "string"
+                  },
+                  "username": {
+                    "title": "Username",
+                    "description": "Username for the Milvus instance",
+                    "order": 1,
+                    "type": "string"
+                  },
+                  "password": {
+                    "title": "Password",
+                    "description": "Password for the Milvus instance",
+                    "airbyte_secret": true,
+                    "order": 2,
+                    "type": "string"
+                  }
+                },
+                "required": ["username", "password"],
+                "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
+              },
+              {
+                "title": "No auth",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "no_auth",
+                    "const": "no_auth",
+                    "enum": ["no_auth"],
+                    "type": "string"
+                  }
+                },
+                "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)"
+              }
+            ]
+          },
+          "vector_field": {
+            "title": "Vector Field",
+            "description": "The field in the entity that contains the vector",
+            "default": "vector",
+            "type": "string"
+          },
+          "text_field": {
+            "title": "Text Field",
+            "description": "The field in the entity that contains the embedded text",
+            "default": "text",
+            "type": "string"
+          }
+        },
+        "required": ["host", "collection", "auth"],
+        "group": "indexing",
+        "description": "Indexing configuration"
+      }
+    },
+    "required": ["processing", "embedding", "indexing"],
+    "groups": [
+      {
+        "id": "processing",
+        "title": "Processing"
+      },
+      {
+        "id": "embedding",
+        "title": "Embedding"
+      },
+      {
+        "id": "indexing",
+        "title": "Indexing"
+      }
+    ]
+  },
+  "supportsIncremental": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"]
+}
