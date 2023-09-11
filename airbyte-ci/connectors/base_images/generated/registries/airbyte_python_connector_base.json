@@ -1,0 +1,14 @@
+[
+  {
+    "published_docker_image": {
+      "registry": "docker.io",
+      "image_name": "airbyte/python-connector-base",
+      "tag": "1.0.0",
+      "sha": "dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27"
+    },
+    "changelog_entry": "Initial release: an image based on python:3.9.18-slim-bookworm with pip==23.2.1 and poetry==1.6.1",
+    "dockerfile_example": "FROM docker.io/python:3.9.18-slim-bookworm@sha256:44b7f161ed03f85e96d423b9916cdc8cb0509fb970fd643bdbc9896d49e1cad0\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN pip install --upgrade pip==23.2.1\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1",
+    "published_timestamp": "2023-09-19T14:41:48.689452",
+    "version": "1.0.0"
+  }
+]
