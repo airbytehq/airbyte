@@ -8,6 +8,7 @@ import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -16,9 +17,17 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   private DSLContext dslContext;
 
@@ -32,6 +41,7 @@ public class CdcInitialSnapshotMySqlSourceDatatypeTest extends AbstractMySqlSour
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
