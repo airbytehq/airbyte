@@ -2,11 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import dpath.util
 from typing import Literal, Union
 
-from pydantic import BaseModel, Field
-
+import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
@@ -15,7 +13,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-
+from pydantic import BaseModel, Field
 
 
 class HttpMode(BaseModel):
@@ -53,20 +51,24 @@ class ChromaIndexingConfigModel(BaseModel):
             "description": "Indexing configuration",
         }
 
+
 class NoEmbeddingConfigModel(BaseModel):
     mode: Literal["no_embedding"] = Field("no_embedding", const=True)
 
     class Config:
         title = "Chroma Default Embedding Function"
-        schema_extra = {
-            "description": "Do not calculate embeddings. Use Chromadb default embedding function"
-        }
+        schema_extra = {"description": "Do not calculate embeddings. Use Chromadb default embedding function"}
+
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, FromFieldEmbeddingConfigModel, NoEmbeddingConfigModel] = Field(
-        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
-    )
+    embedding: Union[
+        OpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        FromFieldEmbeddingConfigModel,
+        NoEmbeddingConfigModel,
+    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: ChromaIndexingConfigModel
 
     class Config:

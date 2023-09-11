@@ -10,7 +10,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.0.1
   dockerRepository: airbyte/destination-chroma
   githubIssueLabel: destination-chroma
   icon: chroma.svg

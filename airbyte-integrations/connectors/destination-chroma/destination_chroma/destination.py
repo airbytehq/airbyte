@@ -7,16 +7,20 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder, FromFieldEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, FromFieldEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, ConfiguredAirbyteCatalog, DestinationSyncMode, Status
-
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    Status,
+)
 from destination_chroma.config import ConfigModel
 from destination_chroma.indexer import ChromaIndexer
 from destination_chroma.no_embedder import NoEmbedder
-
-
 
 BATCH_SIZE = 128
 
@@ -27,6 +31,7 @@ embedder_map = {
     "from_field": FromFieldEmbedder,
     "no_embedding": NoEmbedder,
 }
+
 
 class DestinationChroma(Destination):
 
@@ -61,7 +66,6 @@ class DestinationChroma(Destination):
         writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
         yield from writer.write(configured_catalog, input_messages)
 
-
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
@@ -88,5 +92,5 @@ class DestinationChroma(Destination):
             documentationUrl="https://docs.airbyte.com/integrations/destinations/chroma",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=ConfigModel.schema()
+            connectionSpecification=ConfigModel.schema(),
         )

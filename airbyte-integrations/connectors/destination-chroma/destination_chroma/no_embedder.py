@@ -6,9 +6,7 @@ from typing import List, Optional
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
-
 from destination_chroma.config import NoEmbeddingConfigModel
-
 
 
 class NoEmbedder(Embedder):

@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, Mock, patch
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
-
 from destination_chroma.config import ConfigModel
 from destination_chroma.destination import DestinationChroma, embedder_map
 
