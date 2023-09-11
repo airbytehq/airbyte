@@ -18,6 +18,8 @@ from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -35,8 +37,12 @@ def to_int(s):
     return s
 
 
-class SourceZendeskException(Exception):
-    """default exception of custom SourceZendesk logic"""
+class ZendeskConfigException(AirbyteTracedException):
+    """default config exception to custom SourceZendesk logic"""
+
+    def __init__(self, **kwargs):
+        failure_type: FailureType = FailureType.config_error
+        super(ZendeskConfigException, self).__init__(failure_type=failure_type, **kwargs)
 
 
 class BaseZendeskSupportStream(HttpStream, ABC):
@@ -796,7 +802,7 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
     def get_settings(self) -> Mapping[str, Any]:
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
-        raise SourceZendeskException("not found settings")
+        raise ZendeskConfigException(message="Can not get access to settings endpoint; Please check provided credentials")
 
     def request_params(
         self,

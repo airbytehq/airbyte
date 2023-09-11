@@ -12,7 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
+from source_zendesk_support.streams import DATETIME_FORMAT, ZendeskConfigException
 
 from .streams import (
     AccountAttributes,
@@ -102,7 +102,7 @@ class SourceZendeskSupport(AbstractSource):
             elif auth.get("credentials") == "api_token":
                 return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
             else:
-                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
+                raise ZendeskConfigException(message=f"Not implemented authorization method: {config['credentials']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -122,7 +122,8 @@ class SourceZendeskSupport(AbstractSource):
         if "organization_access_enabled" not in active_features:
             return (
                 False,
-                "Please ensure the authenticated account or the account which generated the API key has admin permissions and try again",
+                "Please ensure the authenticated account or the account which generated the API key has admin permissions and try again"
+                "see https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access for more info",
             )
         return True, None
 
