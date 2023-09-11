@@ -71,6 +71,8 @@ public class GlobalAsyncStateManager {
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
   private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> streamToStateIdQ = new ConcurrentHashMap<>();
 
+  private final ConcurrentMap<StreamDescriptor, String> streamToLastestState = new ConcurrentHashMap<>();
+
   private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
   // empty in the STREAM case.
 
@@ -265,12 +267,10 @@ public class GlobalAsyncStateManager {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
     log.error("Resolved descriptor: " + resolvedDescriptor.toString());
 
-    if (streamToStateIdQ.containsKey(resolvedDescriptor)
-            && streamToStateIdQ.get(resolvedDescriptor).size() > 0
-            && stateIdToState.containsKey(streamToStateIdQ.get(resolvedDescriptor).getLast())
-            && stateIdToState.get(streamToStateIdQ.get(resolvedDescriptor).getLast()).getLeft().getSerialized().equals(message.getSerialized())) {
+    if (message.getSerialized().equals(streamToLastestState.get(resolvedDescriptor))) {
       log.error("Received Duplicated state");
     } else {
+      streamToLastestState.putIfAbsent(resolvedDescriptor, message.getSerialized());
       stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
       registerNewStateId(resolvedDescriptor);
       log.error("************************ State: " + message.getSerialized());
