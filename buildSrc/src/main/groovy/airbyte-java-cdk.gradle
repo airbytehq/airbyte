@@ -1,0 +1,77 @@
+/*
+Main plugin class for Java connectors. This class is responsible for applying all the necessary plugins.
+This class also facilitates importing the Java CDK.
+*/
+
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
+
+class AirbyteCdkExtension {
+    static final String CDK_VERSION_FILE = "airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties"
+
+    boolean useCdkProjectRef = true
+    String cdkVersionRequired
+    String cdkTargetVersion
+    Project project
+
+    AirbyteCdkExtension(Project project) {
+        this.project = project
+        // this.cdkTargetVersion = this.readCdkTargetVersion(project)
+    }
+
+    // private String readCdkTargetVersion(Project project) {
+    //     Properties properties = new Properties()
+    //     project.file("${project.rootDir}/${CDK_VERSION_FILE}").withInputStream {
+    //         properties.load(it)
+    //     }
+    //     return properties.getProperty('version') ?: 'undefined'
+    // }
+
+    // TODO: Debug or remove:
+    // // Compute the cdkDependencyRef value based on cdkVersionRequired and useCdkProjRef
+    // String getCdkDependencyRef() {
+    //     return useCdkProjectRef ? project.project(':airbyte-cdk:java:airbyte-cdk') : "io.airbyte:airbyte-cdk:${cdkVersionRequired}"
+    // }
+}
+
+class AirbyteJavaCdkPlugin implements Plugin<Project> {
+
+    @Override
+    void apply(Project project) {
+        AirbyteCdkExtension extension = project.extensions.create('airbyteCdk', AirbyteCdkExtension, project)
+        
+        project.dependencies {
+            implementation project.project(':airbyte-cdk:java:airbyte-cdk')
+        }
+        // testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk'))
+        // integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk'))
+        // performanceTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk'))
+
+        if (extension.useCdkProjectRef) {
+            project.dependencies {
+                // implementation project(':airbyte-cdk:java:airbyte-cdk')
+                // testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk'))
+                // integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk'))
+                // performanceTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk'))
+            }
+        } else {
+            project.dependencies {
+                // TODO: Fix this: It evaluates anyway and fails with a hard error, even if the condition is false.
+                // implementation "io.airbyte:airbyte-cdk:${cdkTargetVersion}"
+            }
+        }
+        
+        // TODO: Debug or remove:
+        // if (cdkTargetVersion.contains('SNAPSHOT')) {
+        //     referenceCdkAsProject(project)
+        // } else {
+        //     referenceCdkSnapshotVersion(project, cdkVersionRequired)
+        // }
+    }
+
+    // void referenceCdkSnapshotVersion(Project project) {
+    //     project.dependencies {
+    //     }
+    // }
+}
