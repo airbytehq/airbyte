@@ -82,7 +82,14 @@ class GoogleAds:
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
-        return [self.ga_service.search(search_request)]
+        results = [self.ga_service.search(search_request)]
+        # iterate over pages but no more than limit if it is set
+        next_page_token = results[-1].next_page_token
+        while next_page_token:
+            search_request.page_token = next_page_token
+            results.append(self.ga_service.search(search_request))
+            next_page_token = results[-1].next_page_token
+        return results
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """

@@ -185,7 +185,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
           + " times but VACUUM is still happening in between the sync, Please reach out to the customer to understand their VACUUM frequency.");
     }
     subQueriesPlan.clear();
-    subQueriesPlan.addAll(getQueryPlan(null));
+    subQueriesPlan.addAll(getQueryPlan(null)); // TODO: check here
     numberOfTimesReSynced++;
   }
 

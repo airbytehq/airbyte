@@ -14,7 +14,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -123,6 +123,22 @@ class BaseZendeskSupportStream(HttpStream, ABC):
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            self.logger.error(
+                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+            )
 
 
 class SourceZendeskSupportStream(BaseZendeskSupportStream):
@@ -410,6 +426,10 @@ class OrganizationMemberships(CursorPaginationZendeskSupportStream):
     """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
 
 
+class OrganizationFields(CursorPaginationZendeskSupportStream):
+    """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields"""
+
+
 class AuditLogs(CursorPaginationZendeskSupportStream):
     """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
 
@@ -675,7 +695,7 @@ class Topics(CursorPaginationZendeskSupportStream):
         return "community/topics"
 
 
-class SlaPolicies(FullRefreshZendeskSupportStream):
+class SlaPolicies(IncrementalZendeskSupportStream):
     """SlaPolicies stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/sla_policies/"""
 
     def path(self, *args, **kwargs) -> str:
@@ -694,7 +714,7 @@ class Brands(FullRefreshZendeskSupportStream):
     """Brands stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands"""
 
 
-class CustomRoles(FullRefreshZendeskSupportStream):
+class CustomRoles(IncrementalZendeskSupportStream):
     """CustomRoles stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles"""
 
     def request_params(
@@ -706,7 +726,7 @@ class CustomRoles(FullRefreshZendeskSupportStream):
         return {}
 
 
-class Schedules(FullRefreshZendeskSupportStream):
+class Schedules(IncrementalZendeskSupportStream):
     """Schedules stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules"""
 
     def path(self, *args, **kwargs) -> str:
@@ -792,7 +812,9 @@ class UserFields(FullRefreshZendeskSupportStream):
         return "user_fields"
 
 
-class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):
+class PostComments(CursorPaginationZendeskSupportStream, HttpSubStream):
+    """Post Comments Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/"""
+
     response_list_name = "comments"
 
     def __init__(self, **kwargs):
@@ -810,7 +832,7 @@ class PostComments(FullRefreshZendeskSupportStream, HttpSubStream):
         return f"community/posts/{post_id}/comments"
 
 
-class AbstractVotes(FullRefreshZendeskSupportStream, ABC):
+class AbstractVotes(CursorPaginationZendeskSupportStream, ABC):
     response_list_name = "votes"
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -848,3 +870,80 @@ class PostCommentVotes(AbstractVotes, HttpSubStream):
         post_id = stream_slice.get("parent").get("post_id")
         comment_id = stream_slice.get("parent").get("id")
         return f"community/posts/{post_id}/comments/{comment_id}/votes"
+
+
+class Articles(SourceZendeskIncrementalExportStream):
+    """Articles Stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles"""
+
+    response_list_name: str = "articles"
+
+    def path(self, **kwargs) -> str:
+        return "help_center/incremental/articles"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        next_page_token = next_page_token or {}
+        parsed_state = self.check_stream_state(stream_state)
+        params = {"sort_by": "updated_at", "sort_order": "asc", "start_time": next_page_token.get(self.cursor_field, parsed_state)}
+        # check "start_time" is not in the future
+        params["start_time"] = self.check_start_time_param(params["start_time"])
+        if self.sideload_param:
+            params["include"] = self.sideload_param
+        if next_page_token:
+            params.update(next_page_token)
+        return params
+
+
+class ArticleVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = Articles(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        article_id = stream_slice.get("parent").get("id")
+        return f"help_center/articles/{article_id}/votes"
+
+
+class ArticleComments(CursorPaginationZendeskSupportStream, HttpSubStream):
+    response_list_name = "comments"
+
+    def __init__(self, **kwargs):
+        parent = Articles(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        article_id = stream_slice.get("parent").get("id")
+        return f"help_center/articles/{article_id}/comments"
+
+
+class ArticleCommentVotes(AbstractVotes, HttpSubStream):
+    def __init__(self, **kwargs):
+        parent = ArticleComments(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        article_id = stream_slice.get("parent").get("source_id")
+        comment_id = stream_slice.get("parent").get("id")
+        return f"help_center/articles/{article_id}/comments/{comment_id}/votes"

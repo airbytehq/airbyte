@@ -10,6 +10,7 @@ from datetime import datetime
 from unittest.mock import patch
 from urllib.parse import parse_qsl, urlparse
 
+import freezegun
 import pendulum
 import pytest
 import pytz
@@ -69,6 +70,12 @@ TEST_CONFIG = {
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
 }
 
+TEST_CONFIG_WITHOUT_START_DATE = {
+    "subdomain": "sandbox",
+    "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
+}
+
+
 # raw config oauth
 TEST_CONFIG_OAUTH = {
     "subdomain": "sandbox",
@@ -116,6 +123,12 @@ def test_convert_config2stream_args(config):
     assert "authenticator" in result
 
 
+@freezegun.freeze_time("2022-01-01")
+def test_default_start_date():
+    result = SourceZendeskSupport().convert_config2stream_args(TEST_CONFIG_WITHOUT_START_DATE)
+    assert result["start_date"] == "2020-01-01T00:00:00Z"
+
+
 @pytest.mark.parametrize(
     "config, expected",
     [(TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="), (TEST_CONFIG_OAUTH, "test_access_token")],
@@ -145,18 +158,18 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 29, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 34, [], None),
         (
                 '{"error": "Not sufficient permissions"}',
                 403,
-                26,
+                31,
                 ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
                 None
         ),
         (
                 '',
                 404,
-                26,
+                31,
                 ["Skipping stream ticket_forms: Check permissions, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}."],
                 'Not Found'
         ),
@@ -167,7 +180,7 @@ def test_full_access_streams(caplog, requests_mock, ticket_forms_response, statu
     requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
     result = SourceZendeskSupport().streams(config=TEST_CONFIG)
     assert len(result) == expected_n_streams
-    logged_warnings = iter([record for record in caplog.records if record.levelname == "ERROR"])
+    logged_warnings = (record for record in caplog.records if record.levelname == "ERROR")
     for msg in expected_warnings:
         assert msg in next(logged_warnings).message
 
@@ -992,7 +1005,8 @@ def test_read_post_votes_stream(requests_mock):
 
     post_votes_response = {
         "votes": [
-            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607}
+            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607,
+             "updated_at": "2023-01-02T00:00:00Z"}
         ]
     }
     requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/votes", json=post_votes_response)
@@ -1012,12 +1026,13 @@ def test_read_post_comment_votes_stream(requests_mock):
 
     post_comments_response = {
         "comments": [
-            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607}
+            {"author_id": 89567, "body": "Test_comment for Test_post", "id": 35467, "post_id": 7253375870607,
+             "updated_at": "2023-01-02T00:00:00Z"}
         ]
     }
     requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments", json=post_comments_response)
 
-    votes = [{"id": 35467, "user_id": 888887, "value": -1}]
+    votes = [{"id": 35467, "user_id": 888887, "value": -1, "updated_at": "2023-01-03T00:00:00Z"}]
     requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments/35467/votes",
                       json={"votes": votes})
     stream = PostCommentVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
@@ -1077,3 +1092,14 @@ def test_read_tickets_comment(requests_mock, status_code):
     stream = TicketComments(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
     read_full_refresh(stream)
     assert request_history.call_count == 1
+
+
+def test_read_non_json_error(requests_mock, caplog):
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json",
+        text="not_json_response"
+    )
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = "Skipping stream tickets: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")

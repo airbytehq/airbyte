@@ -3,71 +3,39 @@
 #
 
 
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    Status,
-    Type,
-)
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.writer import Writer
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from destination_pinecone.batcher import Batcher
 from destination_pinecone.config import ConfigModel
-from destination_pinecone.document_processor import DocumentProcessor
-from destination_pinecone.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
-from destination_pinecone.indexer import Indexer, PineconeIndexer
-from langchain.document_loaders.base import Document
+from destination_pinecone.indexer import PineconeIndexer
 
 BATCH_SIZE = 128
 
-indexer_map = {"pinecone": PineconeIndexer}
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
 
 
 class DestinationPinecone(Destination):
     indexer: Indexer
-    processor: DocumentProcessor
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
-        self.indexer = indexer_map["pinecone"](config.indexing, self.embedder)
-
-    def _process_batch(self, batch: List[AirbyteRecordMessage]):
-        documents: List[Document] = []
-        ids_to_delete = []
-        for record in batch:
-            record_documents, record_id_to_delete = self.processor.process(record)
-            documents.extend(record_documents)
-            if record_id_to_delete is not None:
-                ids_to_delete.append(record_id_to_delete)
-        self.indexer.index(documents, ids_to_delete)
+        self.indexer = PineconeIndexer(config.indexing, self.embedder.embedding_dimensions)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        self.processor = DocumentProcessor(config_model.processing, configured_catalog, max_metadata_size=self.indexer.max_metadata_size)
-        batcher = Batcher(BATCH_SIZE, lambda batch: self._process_batch(batch))
-        self.indexer.pre_sync(configured_catalog)
-        for message in input_messages:
-            if message.type == Type.STATE:
-                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
-                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
-                batcher.flush()
-                yield message
-            elif message.type == Type.RECORD:
-                batcher.add(message.record)
-        batcher.flush()
-        yield from self.indexer.post_sync()
+        writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
+        yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         self._init_indexer(ConfigModel.parse_obj(config))
