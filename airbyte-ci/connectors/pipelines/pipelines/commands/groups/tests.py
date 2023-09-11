@@ -13,6 +13,7 @@ import sys
 import anyio
 import click
 import dagger
+from pipelines.consts import DOCKER_VERSION
 from pipelines.utils import sh_dash_c
 
 
@@ -65,7 +66,7 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
                         ]
                     )
                 )
-                .with_env_variable("VERSION", "24.0.2")
+                .with_env_variable("VERSION", DOCKER_VERSION)
                 .with_exec(sh_dash_c(["curl -fsSL https://get.docker.com | sh"]))
                 .with_mounted_directory(
                     "/airbyte",
