@@ -7,10 +7,9 @@ import re
 from typing import List, Literal, Optional, Union
 
 import dpath.util
+from airbyte_cdk.destinations.vector_db_based.embedder import FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-
-from airbyte_cdk.destinations.vector_db_based.embedder import OpenAIEmbeddingConfigModel, FakeEmbeddingConfigModel
 
 
 class ProcessingConfigModel(BaseModel):

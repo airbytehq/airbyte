@@ -6,8 +6,8 @@ import json
 import logging
 
 import chromadb
-from airbyte_cdk.models import DestinationSyncMode, Status
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.models import DestinationSyncMode, Status
 from chromadb.api.types import QueryResult
 from destination_langchain.destination import DestinationLangchain
 from integration_tests.base_integration_test import LocalIntegrationTest

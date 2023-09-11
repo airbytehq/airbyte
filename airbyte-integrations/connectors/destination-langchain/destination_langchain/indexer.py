@@ -9,9 +9,9 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import pinecone
+from airbyte_cdk.destinations.vector_db_based import Embedder
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, DestinationSyncMode, Level, Type
-from airbyte_cdk.destinations.vector_db_based import Embedder
 from destination_langchain.config import ChromaLocalIndexingModel, DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from destination_langchain.measure_time import measure_time
