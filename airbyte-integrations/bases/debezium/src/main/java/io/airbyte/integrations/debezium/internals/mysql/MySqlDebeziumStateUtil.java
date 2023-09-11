@@ -256,8 +256,9 @@ public class MySqlDebeziumStateUtil {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistoryInfo(Optional.empty(), false,
-        MysqlCdcStateConstants.COMPRESSION_ENABLED));
+    final AirbyteSchemaHistoryStorage schemaHistoryStorage =
+        AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistoryInfo(Optional.empty(), false,
+            MysqlCdcStateConstants.COMPRESSION_ENABLED));
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
         database.getSourceConfig(),

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,8 +46,10 @@ public class AirbyteSchemaHistoryStorageTest {
 
   @Test
   public void sizeTest() throws IOException {
-    assertEquals(5.881045341491699, AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_greater_than_3_mb.dat")));
-    assertEquals(0.0038671493530273438, AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_less_than_3_mb.dat")));
+    assertEquals(5.881045341491699,
+        AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_greater_than_3_mb.dat")));
+    assertEquals(0.0038671493530273438,
+        AirbyteSchemaHistoryStorage.calculateSizeOfStringInMB(MoreResources.readResource("dbhistory_less_than_3_mb.dat")));
   }
 
   @Test

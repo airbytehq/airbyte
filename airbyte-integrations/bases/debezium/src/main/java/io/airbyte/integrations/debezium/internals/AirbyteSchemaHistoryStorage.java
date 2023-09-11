@@ -58,7 +58,7 @@ public class AirbyteSchemaHistoryStorage {
   }
 
   public record SchemaHistory(String schema, boolean isCompressed) {}
-  
+
   public SchemaHistory read() {
     final double fileSizeMB = (double) path.toFile().length() / (ONE_MB);
     if ((fileSizeMB > SIZE_LIMIT_TO_COMPRESS_MB) && compressionEnabled) {
@@ -107,7 +107,7 @@ public class AirbyteSchemaHistoryStorage {
     final ByteArrayOutputStream compressedStream = new ByteArrayOutputStream();
     try (final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(compressedStream);
         final BufferedReader bufferedReader = Files.newBufferedReader(path, UTF8)) {
-      for (; ; ) {
+      for (;;) {
         final String line = bufferedReader.readLine();
         if (line == null) {
           break;
@@ -218,7 +218,8 @@ public class AirbyteSchemaHistoryStorage {
     }
     final Path dbHistoryFilePath = dbHistoryWorkingDir.resolve("dbhistory.dat");
 
-    final AirbyteSchemaHistoryStorage schemaHistoryManager = new AirbyteSchemaHistoryStorage(dbHistoryFilePath, schemaHistoryInfo.compressionEnabled());
+    final AirbyteSchemaHistoryStorage schemaHistoryManager =
+        new AirbyteSchemaHistoryStorage(dbHistoryFilePath, schemaHistoryInfo.compressionEnabled());
     schemaHistoryManager.persist(schemaHistoryInfo.schemaHistory(), schemaHistoryInfo.isSchemaHistoryCompressed());
     return schemaHistoryManager;
   }
