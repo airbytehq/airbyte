@@ -14,6 +14,7 @@ from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_weaviate.destination import DestinationWeaviate
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Weaviate
+from pytest_docker.plugin import get_docker_ip
 
 WEAVIATE_CONTAINER_NAME = "weaviate-test-container-will-get-deleted"
 
@@ -35,9 +36,11 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
 
         self.docker_client.containers.run(
             "semitechnologies/weaviate:1.21.2", detach=True, environment=env_vars, name=WEAVIATE_CONTAINER_NAME,
-            ports={8080: ('127.0.0.1', 8081)}
+            ports={8080: ('0.0.0.0', 8081)}
         )
         time.sleep(0.5)
+        docker_ip = get_docker_ip()
+        self.config["indexing"]["host"] = f"http://{docker_ip}:8081"
 
         retries = 10
         while retries > 0:
