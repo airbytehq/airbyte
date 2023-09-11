@@ -39,7 +39,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         )
         time.sleep(0.5)
 
-        retries = 3
+        retries = 10
         while retries > 0:
             try:
                 self.client = weaviate.Client(url=self.config["indexing"]["host"])
