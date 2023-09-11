@@ -21,9 +21,10 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  breakingChanges:
-    0.2.0:
-      message: >
-        This version changes the way object classes are managed. Instead of automatically creating a new class for each stream, the connector now loads all records in a single class. If you are syncing multiple streams into a single Weaviate cluster, you will need to configure separate destinations per object class. For more details check out the migration guide.
-      upgradeDeadline: "2023-10-01"
+  releases:
+    breakingChanges:
+      0.2.0:
+        message: >
+          This version changes the way object classes are managed. Instead of automatically creating a new class for each stream, the connector now loads all records in a single class. If you are syncing multiple streams into a single Weaviate cluster, you will need to configure separate destinations per object class. For more details check out the migration guide.
+        upgradeDeadline: "2023-10-01"
 metadataSpecVersion: "1.0"
