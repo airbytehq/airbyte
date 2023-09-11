@@ -28,7 +28,7 @@ class ChromaIndexer(Indexer):
         
         auth_method = self.config.auth_method
         if auth_method.mode == "persistent_client" and not auth_method.path.startswith("/local/"):
-                return "Path must start be prefixed with /local"
+                return "Path must be prefixed with /local"
         
         client = self._get_client()
         try:

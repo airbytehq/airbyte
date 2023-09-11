@@ -17,7 +17,7 @@ class TestChromaIndexer(unittest.TestCase):
                 "collection_name": "dummy-collection",
                 "auth_method": {
                     "mode": "persistent_client",
-                    "path": "./path",
+                    "path": "/local/path",
                 },
             }
         )
@@ -32,21 +32,39 @@ class TestChromaIndexer(unittest.TestCase):
     def test_valid_collection_name(self):
 
         test_configs = [
-            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'dummy-collection'),
-            ({"collection_name": "du", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'dux'),
-            ({"collection_name": "dummy-collectionxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'dummy-collectionxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
-            ({"collection_name": "1dummy-colle..ction4", "auth_method": {"mode": "persistent_client", "path": "./path"}}, '1dummy-collection4'),
-            ({"collection_name": "Dummy-coll...ectioN", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'dummy-coll.ection'),
-            ({"collection_name": "-dum?my-collection-", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'x-dummy-collection-x'),
-            ({"collection_name": "123.34...54.2", "auth_method": {"mode": "persistent_client", "path": "./path"}}, '12334542'),
-            ({"collection_name": "345.4.23.12", "auth_method": {"mode": "persistent_client", "path": "./path"}}, '345.4.23.12')
+            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, None),
+            ({"collection_name": "du", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The length of the collection name must be between 3 and 63 characters'),
+            ({"collection_name": "dummy-collectionxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The length of the collection name must be between 3 and 63 characters'),
+            ({"collection_name": "1dummy-colle..ction4", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must not contain two consecutive dots'),
+            ({"collection_name": "Dummy-coll...ectioN", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must start and end with a lowercase letter or a digit'),
+            ({"collection_name": "-dum?my-collection-", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must start and end with a lowercase letter or a digit'),
+            ({"collection_name": "dummy?collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name can only contain lower case alphanumerics, dots, dashes, and underscores'),
+            ({"collection_name": "345.4.23.12", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must not be a valid IP address.')
             ]
 
-        for config, collection_name in test_configs:
+        for config, expected_error in test_configs:
             mock_config = ChromaIndexingConfigModel(**config)
             chroma_indexer = ChromaIndexer(mock_config)
+            chroma_indexer._get_client = Mock()
 
-            self.assertEqual(chroma_indexer.collection_name, collection_name)
+            result = chroma_indexer.check()
+            self.assertEqual(result, expected_error)
+
+    def test_valid_path(self):
+        test_configs = [
+            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, None),
+            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "local/path"}}, 'Path must be prefixed with /local'),
+            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/localpath"}}, 'Path must be prefixed with /local'),
+            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'Path must be prefixed with /local'),
+            ]
+
+        for config, expected_error in test_configs:
+            mock_config = ChromaIndexingConfigModel(**config)
+            chroma_indexer = ChromaIndexer(mock_config)
+            chroma_indexer._get_client = Mock()
+
+            result = chroma_indexer.check()
+            self.assertEqual(result, expected_error)
 
     def test_check_returns_expected_result(self):
         check_result = self.chroma_indexer.check()
