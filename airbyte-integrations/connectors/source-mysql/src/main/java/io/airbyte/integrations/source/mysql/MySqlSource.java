@@ -49,7 +49,6 @@ import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.cursor_based.MySqlCursorBasedStateManager;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
-import io.airbyte.integrations.source.mysql.initialsync.MySqlFeatureFlags;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadHandler;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStreamStateManager;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil;
@@ -350,13 +349,12 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final Instant emittedAt) {
 
     final JsonNode sourceConfig = database.getSourceConfig();
-    final MySqlFeatureFlags mySqlFeatureFlags = new MySqlFeatureFlags(sourceConfig);
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("Using PK + CDC");
       return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
       if (isAnyStreamIncrementalSyncMode(catalog)) {
-        if (mySqlFeatureFlags.isStandardInitialSyncViaPkEnabled()) {
+        if (true) {
           LOGGER.info("Syncing via Primary Key");
           final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
           final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
