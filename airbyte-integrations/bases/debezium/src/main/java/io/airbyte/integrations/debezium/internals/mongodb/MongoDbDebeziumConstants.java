@@ -36,7 +36,6 @@ public class MongoDbDebeziumConstants {
     public static final String CONNECTION_STRING_CONFIGURATION_KEY = "connection_string";
     public static final String DATABASE_CONFIGURATION_KEY = "database";
     public static final String PASSWORD_CONFIGURATION_KEY = "password";
-    public static final String REPLICA_SET_CONFIGURATION_KEY = "replica_set";
     public static final String USER_CONFIGURATION_KEY = "user";
 
   }

@@ -8,7 +8,6 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.AUT
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.DRIVER_NAME;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.REPLICA_SET_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.USER_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,19 +32,16 @@ class MongoConnectionUtilsTest {
     final int port = 1234;
     final String username = "user";
     final String password = "password";
-    final String replicaSet = "replica-set";
     final JsonNode config = Jsons.jsonNode(Map.of(
         CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/",
         USER_CONFIGURATION_KEY, username,
         PASSWORD_CONFIGURATION_KEY, password,
-        REPLICA_SET_CONFIGURATION_KEY, replicaSet,
         AUTH_SOURCE_CONFIGURATION_KEY, authSource));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(replicaSet, ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getRequiredReplicaSetName());
     assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
     assertEquals(false, ((MongoClientImpl) mongoClient).getSettings().getRetryWrites());
     assertEquals(true, ((MongoClientImpl) mongoClient).getSettings().getSslSettings().isEnabled());
@@ -59,16 +55,13 @@ class MongoConnectionUtilsTest {
   void testCreateMongoClientWithoutCredentials() {
     final String host = "host";
     final int port = 1234;
-    final String replicaSet = "replica-set";
     final JsonNode config = Jsons.jsonNode(Map.of(
-        CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/",
-        REPLICA_SET_CONFIGURATION_KEY, replicaSet));
+        CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/"));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
     assertNotNull(mongoClient);
     assertEquals(List.of(new ServerAddress(host, port)), ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getHosts());
-    assertEquals(replicaSet, ((MongoClientImpl) mongoClient).getSettings().getClusterSettings().getRequiredReplicaSetName());
     assertEquals(ReadPreference.secondaryPreferred(), ((MongoClientImpl) mongoClient).getSettings().getReadPreference());
     assertEquals(false, ((MongoClientImpl) mongoClient).getSettings().getRetryWrites());
     assertEquals(true, ((MongoClientImpl) mongoClient).getSettings().getSslSettings().isEnabled());

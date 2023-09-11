@@ -17,6 +17,7 @@ import io.debezium.config.Configuration;
 import io.debezium.connector.mongodb.MongoDbConnectorConfig;
 import io.debezium.connector.mongodb.MongoDbOffsetContext;
 import io.debezium.connector.mongodb.MongoDbTaskContext;
+import io.debezium.connector.mongodb.MongoUtil;
 import io.debezium.connector.mongodb.ReplicaSetDiscovery;
 import io.debezium.connector.mongodb.ReplicaSets;
 import io.debezium.connector.mongodb.ResumeTokens;
@@ -54,12 +55,12 @@ public class MongoDbDebeziumStateUtil {
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @param serverId The ID of the target server.
-   * @param replicaSet The replication set associated with the sync.
    * @return The initial Debezium offset state storage document as a {@link JsonNode}.
+   * @throws IllegalStateException if unable to determine the replica set.
    */
-  public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String serverId, final String replicaSet) {
+  public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String serverId) {
+    final String replicaSet = getReplicaSetName(mongoClient);
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
-
     final JsonNode state = formatState(serverId, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
@@ -85,6 +86,18 @@ public class MongoDbDebeziumStateUtil {
     value.put(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, resumeTokenData);
 
     return Jsons.jsonNode(Map.of(Jsons.serialize(key), Jsons.serialize(value)));
+  }
+
+  /**
+   * Retrieves the replica set name for the current connection.
+   *
+   * @param mongoClient The {@link MongoClient} used to retrieve the replica set name.
+   * @return The replica set name.
+   * @throws IllegalStateException if unable to determine the replica set.
+   */
+  public static String getReplicaSetName(final MongoClient mongoClient) {
+    final Optional<String> replicaSetName = MongoUtil.replicaSetName(mongoClient.getClusterDescription());
+    return replicaSetName.orElseThrow(() -> new IllegalStateException("Unable to determine replica set."));
   }
 
   /**
@@ -212,11 +225,12 @@ public class MongoDbDebeziumStateUtil {
      * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
      */
     final Map<String, String> sourceInfoMap = new LinkedHashMap<>();
+    final String normalizedServerId = MongoDbDebeziumPropertiesManager.normalizeName(serverId);
     sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_REPLICA_SET, replicaSet);
-    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, serverId);
+    sourceInfoMap.put(MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID, normalizedServerId);
 
     final List<Object> key = new LinkedList<>();
-    key.add(serverId);
+    key.add(normalizedServerId);
     key.add(sourceInfoMap);
     return key;
   }

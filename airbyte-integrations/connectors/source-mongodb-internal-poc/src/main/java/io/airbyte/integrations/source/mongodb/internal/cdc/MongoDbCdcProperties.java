@@ -15,13 +15,15 @@ import java.util.stream.Collectors;
 public class MongoDbCdcProperties {
 
   static final String CAPTURE_MODE_KEY = "capture.mode";
-  static final String CAPTURE_MODE_VALUE = "change_streams_update_full";
+  static final String CAPTURE_MODE_VALUE = "change_streams_update_full_with_pre_image";
   static final String CONNECTOR_CLASS_KEY = "connector.class";
   static final String CONNECTOR_CLASS_VALUE = "io.debezium.connector.mongodb.MongoDbConnector";
   static final String HEARTBEAT_FREQUENCY_MS = Long.toString(Duration.ofSeconds(10).toMillis());
   static final String HEARTBEAT_INTERVAL_KEY = "heartbeat.interval.ms";
   static final String SNAPSHOT_MODE_KEY = "snapshot.mode";
-  static final String SNAPSHOT_MODE_VALUE = "initial";
+  static final String SNAPSHOT_MODE_VALUE = "never";
+  static final String TOMBSTONE_ON_DELETE_KEY = "tombstones.on.delete";
+  static final String TOMBSTONE_ON_DELETE_VALUE = Boolean.FALSE.toString();
   static final String FIELD_EXCLUDE_LIST_KEY = "field.exclude.list";
 
   public record ExcludedField(String database, String collection, String field) {
@@ -44,6 +46,7 @@ public class MongoDbCdcProperties {
     props.setProperty(SNAPSHOT_MODE_KEY, SNAPSHOT_MODE_VALUE);
     props.setProperty(CAPTURE_MODE_KEY, CAPTURE_MODE_VALUE);
     props.setProperty(HEARTBEAT_INTERVAL_KEY, HEARTBEAT_FREQUENCY_MS);
+    props.setProperty(TOMBSTONE_ON_DELETE_KEY, TOMBSTONE_ON_DELETE_VALUE);
 
     /**
      * //https://debezium.io/documentation/reference/2.2/connectors/mongodb.html#mongodb-property-field-exclude-list

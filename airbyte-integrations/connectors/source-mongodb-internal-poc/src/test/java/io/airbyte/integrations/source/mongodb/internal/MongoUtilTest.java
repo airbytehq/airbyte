@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MIN_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
@@ -75,7 +75,7 @@ public class MongoUtilTest {
     final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
     assertNotNull(streams);
     assertEquals(1, streams.size());
-    assertEquals(12, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+    assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
   }
 
   @Test
@@ -102,7 +102,7 @@ public class MongoUtilTest {
     final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
     assertNotNull(streams);
     assertEquals(1, streams.size());
-    assertEquals(12, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+    assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get("total").get(JSON_TYPE_PROPERTY_NAME).asText());
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),

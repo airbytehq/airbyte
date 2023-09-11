@@ -7,6 +7,7 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,8 +78,7 @@ class MongoDbDebeziumStateUtilTest {
 
     final JsonNode config = Jsons.jsonNode(Map.of(
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database,
-        MongoDbDebeziumConstants.Configuration.REPLICA_SET_CONFIGURATION_KEY, replicaSet));
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database));
 
     when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
@@ -89,7 +89,7 @@ class MongoDbDebeziumStateUtilTest {
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
     final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient,
-        database, replicaSet);
+        database);
 
     assertNotNull(initialState);
     assertEquals(1, initialState.size());
@@ -109,6 +109,28 @@ class MongoDbDebeziumStateUtilTest {
             mongoClient);
     assertTrue(parsedOffset.isPresent());
     assertEquals(resumeToken, parsedOffset.get().get("_data").asString().getValue());
+  }
+
+  @Test
+  void testConstructInitialDebeziumStateMissingReplicaSet() {
+    final String database = DATABASE;
+    final String resumeToken = RESUME_TOKEN;
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
+    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
+        mock(MongoChangeStreamCursor.class);
+    final ServerDescription serverDescription = mock(ServerDescription.class);
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
+    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
+    when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+
+    assertThrows(IllegalStateException.class, () -> mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, database));
   }
 
   @Test

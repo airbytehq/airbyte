@@ -14,6 +14,8 @@ import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProp
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.HEARTBEAT_INTERVAL_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_KEY;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.SNAPSHOT_MODE_VALUE;
+import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.TOMBSTONE_ON_DELETE_KEY;
+import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcProperties.TOMBSTONE_ON_DELETE_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -51,11 +53,12 @@ class MongoDbCdcPropertiesTest {
         new ExcludedField(DATABASE, COLLECTION3, FIELD1));
 
     final Properties debeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsToExclude);
-    assertEquals(5, debeziumProperties.size());
+    assertEquals(6, debeziumProperties.size());
     assertEquals(CONNECTOR_CLASS_VALUE, debeziumProperties.get(CONNECTOR_CLASS_KEY));
     assertEquals(SNAPSHOT_MODE_VALUE, debeziumProperties.get(SNAPSHOT_MODE_KEY));
     assertEquals(CAPTURE_MODE_VALUE, debeziumProperties.get(CAPTURE_MODE_KEY));
     assertEquals(HEARTBEAT_FREQUENCY_MS, debeziumProperties.get(HEARTBEAT_INTERVAL_KEY));
+    assertEquals(TOMBSTONE_ON_DELETE_VALUE, debeziumProperties.get(TOMBSTONE_ON_DELETE_KEY));
     final String fieldExcludeList = (String) debeziumProperties.get(FIELD_EXCLUDE_LIST_KEY);
     final List<String> actualFullyQualifiedExcludedFields = Arrays.asList(fieldExcludeList.split(","));
     assertEquals(4, actualFullyQualifiedExcludedFields.size());

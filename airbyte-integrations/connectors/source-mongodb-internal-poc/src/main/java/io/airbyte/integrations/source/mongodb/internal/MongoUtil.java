@@ -11,7 +11,6 @@ import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUE
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.STORAGE_STATS_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoException;
@@ -23,7 +22,6 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
-import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -75,13 +73,6 @@ public class MongoUtil {
   static final int MAX_QUEUE_SIZE = 10000;
 
   /**
-   * Name of the property in the JSON representation of an Airbyte stream that contains the discovered
-   * fields.
-   */
-  @VisibleForTesting
-  static final String AIRBYTE_STREAM_PROPERTIES = "properties";
-
-  /**
    * Returns the set of collections that the current credentials are authorized to access.
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server for authorized
@@ -130,7 +121,6 @@ public class MongoUtil {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName))
-        .map(MongoUtil::addCdcMetadataColumns)
         .collect(Collectors.toList());
   }
 
@@ -199,19 +189,6 @@ public class MongoUtil {
     }
 
     return Optional.empty();
-  }
-
-  /**
-   * Adds CDC metadata columns to the stream.
-   *
-   * @param stream An {@link AirbyteStream}.
-   * @return The modified {@link AirbyteStream}.
-   */
-  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
-    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    final ObjectNode properties = (ObjectNode) jsonSchema.get(AIRBYTE_STREAM_PROPERTIES);
-    MongoDbCdcConnectorMetadataInjector.addCdcMetadataColumns(properties);
-    return stream;
   }
 
   /**

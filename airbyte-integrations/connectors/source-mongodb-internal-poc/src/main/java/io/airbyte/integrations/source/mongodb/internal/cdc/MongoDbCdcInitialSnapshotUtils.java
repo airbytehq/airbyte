@@ -121,7 +121,7 @@ public class MongoDbCdcInitialSnapshotUtils {
   private static void estimateInitialSnapshotSyncSize(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {
     final Optional<MongoUtil.CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(mongoClient, stream);
     collectionStatistics.ifPresent(c -> {
-      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * c.size().intValue(),
+      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * c.size().longValue(),
           AirbyteEstimateTraceMessage.Type.STREAM, c.count().longValue(), stream.getStream().getName(), stream.getStream().getNamespace());
       LOGGER
           .info(String.format(
