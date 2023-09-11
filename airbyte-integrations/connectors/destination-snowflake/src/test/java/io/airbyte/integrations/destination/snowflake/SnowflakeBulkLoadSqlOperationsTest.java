@@ -4,20 +4,24 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.DestinationConfig;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class SnowflakeBulkLoadSqlOperationsTest {
 
   private static final String SCHEMA_NAME = "schemaName";
   private static final String STAGE_NAME = "stageName";
-  private static final String STAGE_PATH = "stagePath/2022/";
+  private static final String FILE_FORMAT_NAME = "my_file_format";
   private static final String FILE_PATH = "filepath/filename";
 
   private SnowflakeBulkLoadSqlOperations snowflakeBulkLoadSqlOperations;
@@ -30,27 +34,43 @@ class SnowflakeBulkLoadSqlOperationsTest {
   }
 
   @Test
-  void putFileToStage() {
-    final String expectedQuery = "PUT file://" + FILE_PATH + " @" + STAGE_NAME + "/" + STAGE_PATH + " PARALLEL =";
-    final String actualPutQuery = snowflakeBulkLoadSqlOperations.getPutQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
-    assertTrue(actualPutQuery.startsWith(expectedQuery));
+  public void getRelativePath_WithValidRoot_ReturnsRelativePath() throws Exception {
+    String rootPath = "s3:/bucket-name/path/prefix";
+    String s3Path = "s3:/bucket-name/path/prefix/folder/file.txt";
+    String relativePath = SnowflakeBulkLoadDestination.getRelativePath(rootPath, s3Path);
+    assertEquals("/folder/file.txt", relativePath);
+  }
+
+  @Test
+  public void getRelativePath_WithInvalidRoot_ThrowsException() {
+    String rootPath = "s3:/wrong-bucket-name/path/prefix";
+    String s3Path = "s3:/bucket-name/path/prefix/folder/file.txt";
+    assertThrows(SnowflakeBulkLoadDestination.InvalidValueException.class, () -> {
+      SnowflakeBulkLoadDestination.getRelativePath(rootPath, s3Path);
+    });
   }
 
   @Test
   void listStage() {
-    final String expectedQuery = "LIST @" + STAGE_NAME + "/" + STAGE_PATH + FILE_PATH + ";";
-    final String actualListQuery = snowflakeBulkLoadSqlOperations.getListQuery(STAGE_NAME, STAGE_PATH, FILE_PATH);
+    final String expectedQuery = "LIST @" + STAGE_NAME + "/" + "" + FILE_PATH + ";";
+    final String actualListQuery = snowflakeBulkLoadSqlOperations.getListQuery(STAGE_NAME, "", FILE_PATH);
     assertEquals(expectedQuery, actualListQuery);
   }
 
   @Test
-  void copyIntoTmpTableFromStage() {
+  void testCopySQLStatement() {
     final String expectedQuery =
         """
-        COPY INTO schemaName.tableName FROM '@s3_stage_name/'
-        file_format = MY_FILE_FORMAT files = ('filename1','filename2');""";
+        COPY INTO "schemaName"."tableName" FROM '@stageName/'
+        file_format = my_file_format
+         files = ('filename1.csv','filename2.csv','filename3.csv');""";
+    final List<String> fileList = List.of(
+        "s3://my-bucket/root/path/filename1.csv",
+        "s3://my-bucket/root/path/filename2.csv",
+        "s3://my-bucket/root/path/filename3.csv"
+    );
     final String actualCopyQuery =
-        snowflakeBulkLoadSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), "tableName", SCHEMA_NAME);
+        snowflakeBulkLoadSqlOperations.getCopyQuery(STAGE_NAME, fileList, "tableName", SCHEMA_NAME,  FILE_FORMAT_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
 
