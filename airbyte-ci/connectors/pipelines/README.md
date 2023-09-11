@@ -18,7 +18,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 
 This project requires Python 3.10 and pipx.
 
-## General Installation
+## Install or Update
 
 The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
@@ -32,10 +32,12 @@ python -m pipx ensurepath
 Once pipx is installed, navigate to the root directory of the project, then run:
 
 ```bash
-pipx install airbyte-ci/connectors/pipelines/
+pipx install airbyte-ci/connectors/pipelines/ --force
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
+
+_Note: `--force` is required to ensure updates are applied on subsequent installs._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
 
