@@ -7,11 +7,15 @@ airbytePython {
     moduleDirectory 'airbyte_cdk'
 }
 
-tasks.register('generateComponentManifestClassFiles', Exec) {
+def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
-}.configure {
+}
+generateComponentManifestClassFiles.configure {
     dependsOn project(':tools:code-generator').tasks.named('assemble')
+}
+tasks.register('generate').configure {
+    dependsOn generateComponentManifestClassFiles
 }
 
 tasks.register('validateSourceYamlManifest', Exec) {

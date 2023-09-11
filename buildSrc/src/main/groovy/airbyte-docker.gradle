@@ -246,7 +246,7 @@ class AirbyteDockerTaskFactory {
             // Images for java projects always rely on the distribution tarball.
             dependsOn project.tasks.matching { it.name == 'distTar' }
             // Ensure that all files exist beforehand.
-            dependsOn project.tasks.named('generate')
+            dependsOn project.tasks.matching { it.name == 'generate' }
         }
         project.tasks.named('assemble').configure {
             // We may revisit the dependency on assemble but the dependency should always be on a base task.
