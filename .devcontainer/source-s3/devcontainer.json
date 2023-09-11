@@ -3,11 +3,11 @@
 {
     "name": "S3 Source Connector DevContainer (Python)",
 
-    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     "image": "mcr.microsoft.com/devcontainers/python:0-3.9",
 
     // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker": {},
         "ghcr.io/devcontainers-contrib/features/poetry:2": {}
     },
 
@@ -32,13 +32,6 @@
                 "python.testing.pytestEnabled": true,
                 "python.testing.cwd": "/workspaces/airbyte/airbyte-integrations/connectors/source-s3",
                 "python.testing.pytestArgs": ["--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/source-s3", "."]
-            }
-        },
-        "codespaces": {
-            "repositories": {
-                "airbytehq/airbyte": {
-                    "python.testing.pytestEnabled": true
-                }
             }
         }
     },
