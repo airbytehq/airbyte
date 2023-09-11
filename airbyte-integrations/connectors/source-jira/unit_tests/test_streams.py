@@ -110,6 +110,23 @@ def test_boards_stream(config, boards_response):
 
 
 @responses.activate
+def test_board_stream_forbidden(config, boards_response, caplog):
+    config['domain'] = 'test_boards_domain'
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
+        json={'error': f"403 Client Error: Forbidden for url: https://{config['domain']}/rest/agile/1.0/board?maxResults=50"},
+        status=403
+    )
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Boards(**args)
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert records == []
+    assert "Please check the 'read' permission for viewing all boards." in caplog.text
+
+
+@responses.activate
 def test_dashboards_stream(config, dashboards_response):
     responses.add(
         responses.GET,

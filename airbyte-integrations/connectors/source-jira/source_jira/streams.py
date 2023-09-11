@@ -29,6 +29,7 @@ class JiraStream(HttpStream, ABC):
     api_v1 = False
     skip_http_status_codes = []
     raise_on_http_errors = True
+    error_messages = {}
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -90,6 +91,9 @@ class JiraStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except HTTPError as e:
+            user_error_message = self.error_messages.get(e.response.status_code)
+            if user_error_message:
+                self.logger.error(user_error_message)
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
 
@@ -194,6 +198,14 @@ class Boards(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
+    error_messages = {
+        requests.codes.FORBIDDEN: "Please check the 'read' permission for viewing all boards."
+    }
 
     extract_field = "values"
     use_cache = True
