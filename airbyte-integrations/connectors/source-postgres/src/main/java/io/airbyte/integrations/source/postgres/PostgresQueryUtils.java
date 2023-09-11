@@ -112,9 +112,7 @@ public class PostgresQueryUtils {
    */
   public static final String CTID_ESTIMATE_MAX_TUPLE =
       """
-      WITH est1 AS (SELECT MAX((ctid::text::point)[1]::int) FROM "%s"."%s" TABLESAMPLE SYSTEM (0.1)),
-      est2 AS (SELECT (reltuples / relpages)::int FROM pg_class WHERE oid = to_regclass('%s')::oid)
-      SELECT GREATEST(est1, est2) AS estimate_max_tuple FROM est1, est2
+      SELECT COALESCE(MAX((ctid::text::point)[1]::int), 0) AS max_tuple FROM "%s"."%s"
       """;
 
   /**
@@ -325,6 +323,7 @@ public class PostgresQueryUtils {
   public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleEstimateForStreams(final JdbcDatabase database,
                                                                                                 final List<ConfiguredAirbyteStream> streams,
                                                                                                 final String quoteString) {
+    LOGGER.info("getTableMaxTupleEstimateForStreams");
     final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -343,11 +342,12 @@ public class PostgresQueryUtils {
       final String schemaName = stream.getNamespace();
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+      LOGGER.info("*** running {}", CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName));
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
-          conn -> conn.prepareStatement(CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName, fullTableName)).executeQuery(),
+          conn -> conn.prepareStatement(CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName)).executeQuery(),
           resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
-      final int maxTuple = jsonNodes.get(0).get("estimate_max_tuple").asInt();
+      final int maxTuple = jsonNodes.get(0).get("max_tuple").asInt();
       LOGGER.info("Stream {} estimated max tuple is {}", fullTableName, maxTuple);
       return maxTuple;
     } catch (final SQLException e) {

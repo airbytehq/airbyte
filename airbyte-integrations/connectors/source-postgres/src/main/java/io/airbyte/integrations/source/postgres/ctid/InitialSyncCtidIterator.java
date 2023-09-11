@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSyncCtidIterator.class);
-  private static final int TEMP_TUPLES_IN_PAGE = 51;
+//  private static final int TEMP_TUPLES_IN_PAGE = 51;
 
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final long blockSize;
@@ -58,6 +58,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private final Queue<Pair<Ctid, Ctid>> subQueriesPlan;
   private final String tableName;
   private final long tableSize;
+  private final int maxTuple;
   private final boolean useTestPageSize;
 
   private AutoCloseableIterator<RowDataWithCtid> currentIterator;
@@ -74,10 +75,12 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                  final String tableName,
                                  final long tableSize,
                                  final long blockSize,
+                                 final int maxTuple,
                                  final FileNodeHandler fileNodeHandler,
                                  final boolean useTestPageSize) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
+    this.maxTuple = maxTuple;
     this.columnNames = columnNames;
     this.ctidStateManager = ctidStateManager;
     this.database = database;
@@ -170,7 +173,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         ? ctidQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
             tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE)
         : ctidLegacyQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
-            tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE, TEMP_TUPLES_IN_PAGE);
+            tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE, maxTuple);
     return queryPlan;
   }
 
@@ -206,23 +209,25 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                               final int chunkSize,
                                               final double dataSize) {
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
-    long lowerBound = startCtid.page;
-    long upperBound;
-    final double pages = dataSize / blockSize;
-    final long eachStep = (long) pages * chunkSize;
-    LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSize);
-    final long theoreticalLastPage = relationSize / blockSize;
-    LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
-    upperBound = lowerBound + eachStep;
+    if (blockSize > 0 && chunkSize > 0 && dataSize > 0) {
+      long lowerBound = startCtid.page;
+      long upperBound;
+      final double pages = dataSize / blockSize;
+      final long eachStep = (long) pages * chunkSize;
+      LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSize);
+      final long theoreticalLastPage = relationSize / blockSize;
+      LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
+      upperBound = lowerBound + eachStep;
 
-    if (upperBound > theoreticalLastPage) {
-      chunks.add(Pair.of(startCtid, null));
-    } else {
-      chunks.add(Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0)));
-      while (upperBound < theoreticalLastPage) {
-        lowerBound = upperBound;
-        upperBound += eachStep;
-        chunks.add(Pair.of(Ctid.of(lowerBound, 0), upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
+      if (upperBound > theoreticalLastPage) {
+        chunks.add(Pair.of(startCtid, null));
+      } else {
+        chunks.add(Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0)));
+        while (upperBound < theoreticalLastPage) {
+          lowerBound = upperBound;
+          upperBound += eachStep;
+          chunks.add(Pair.of(Ctid.of(lowerBound, 0), upperBound > theoreticalLastPage ? null : Ctid.of(upperBound, 0)));
+        }
       }
     }
     // The last pair is (x,y) -> null to indicate an unbounded "WHERE ctid > (x,y)" query.
@@ -236,23 +241,26 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                                     final int chunkSize,
                                                     final double dataSize,
                                                     final int tuplesInPage) {
+
     final List<Pair<Ctid, Ctid>> chunks = new ArrayList<>();
-    long lowerBound = startCtid.page;
-    long upperBound;
-    final double pages = dataSize / blockSize;
-    // cap each chunk at no more than 5m tuples
-    final long eachStep = Math.min((long) pages * chunkSize,
-        5_000_000 / tuplesInPage);
-    LOGGER.info("Will read {} pages on each query", eachStep);
-    final long theoreticalLastPage = relationSize / blockSize;
-    final long lastPage = (long) ((double) theoreticalLastPage * 1.1);
-    LOGGER.info("Theoretical last page {}. will read until {}", theoreticalLastPage, lastPage);
-    upperBound = lowerBound + eachStep;
-    chunks.add((Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0))));
-    while (upperBound < lastPage) {
-      lowerBound = upperBound + 1;
-      upperBound += eachStep;
-      chunks.add(Pair.of(Ctid.of(lowerBound, 0), Ctid.of(upperBound, 0)));
+    if (blockSize > 0 && chunkSize > 0 && dataSize > 0 && tuplesInPage > 0) {
+      long lowerBound = startCtid.page;
+      long upperBound;
+      final double pages = dataSize / blockSize;
+      // cap each chunk at no more than 5m tuples
+      final long eachStep = Math.min((long) pages * chunkSize,
+          5_000_000 / tuplesInPage);
+      LOGGER.info("Will read {} pages on each query", eachStep);
+      final long theoreticalLastPage = relationSize / blockSize;
+      final long lastPage = (long) ((double) theoreticalLastPage * 1.1);
+      LOGGER.info("Theoretical last page {}. will read until {}", theoreticalLastPage, lastPage);
+      upperBound = lowerBound + eachStep;
+      chunks.add((Pair.of(Ctid.of(lowerBound, startCtid.tuple), Ctid.of(upperBound, 0))));
+      while (upperBound < lastPage) {
+        lowerBound = upperBound + 1;
+        upperBound += eachStep;
+        chunks.add(Pair.of(Ctid.of(lowerBound, 0), Ctid.of(upperBound, 0)));
+      }
     }
     return chunks;
   }
@@ -293,14 +301,14 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
           quoteString);
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
       final String sql =
-          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', i, j)::tid FROM generate_series(?, ?) as gs(i), generate_series(?,?) as gs2(j)))"
+          "SELECT ctid::text, %s FROM %s WHERE ctid = ANY (ARRAY (SELECT FORMAT('(%%s,%%s)', page, tuple)::tid FROM generate_series(?, ?) as page, generate_series(?,?) as tuple))"
               .formatted(
                   wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       preparedStatement.setLong(1, lowerBound.page);
       preparedStatement.setLong(2, upperBound.page);
       preparedStatement.setLong(3, lowerBound.tuple);
-      preparedStatement.setLong(4, TEMP_TUPLES_IN_PAGE);
+      preparedStatement.setLong(4, maxTuple);
       LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
       return preparedStatement;
     } catch (final SQLException e) {
