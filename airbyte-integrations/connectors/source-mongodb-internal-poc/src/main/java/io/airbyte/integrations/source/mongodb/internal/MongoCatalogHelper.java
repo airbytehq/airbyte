@@ -6,14 +6,13 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
 
-import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,6 +36,12 @@ public class MongoCatalogHelper {
   public static final List<SyncMode> SUPPORTED_SYNC_MODES = List.of(SyncMode.INCREMENTAL);
 
   /**
+   * Name of the property in the JSON representation of an Airbyte stream that contains the discovered
+   * fields.
+   */
+  public static final String AIRBYTE_STREAM_PROPERTIES = "properties";
+
+  /**
    * Builds an {@link AirbyteStream} with the correct configuration for this source.
    *
    * @param streamName The name of the stream.
@@ -45,25 +50,24 @@ public class MongoCatalogHelper {
    * @return The configured {@link AirbyteStream} for this source.
    */
   public static AirbyteStream buildAirbyteStream(final String streamName, final String streamNamespace, final List<Field> fields) {
-    return CatalogHelpers.createAirbyteStream(streamName, streamNamespace, addCdcMetadataColumns(fields))
+    return addCdcMetadataColumns(CatalogHelpers.createAirbyteStream(streamName, streamNamespace, fields)
         .withSupportedSyncModes(SUPPORTED_SYNC_MODES)
         .withSourceDefinedCursor(true)
         .withDefaultCursorField(List.of(DEFAULT_CURSOR_FIELD))
-        .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_PRIMARY_KEY)));
+        .withSourceDefinedPrimaryKey(List.of(List.of(DEFAULT_PRIMARY_KEY))));
   }
 
   /**
-   * Adds the metadata columns required to use CDC to the list of discovered fields.
+   * Adds CDC metadata columns to the stream.
    *
-   * @param fields The list of discovered fields.
-   * @return The modified list of discovered fields that includes the required CDC metadata columns.
+   * @param stream An {@link AirbyteStream}.
+   * @return The modified {@link AirbyteStream}.
    */
-  public static List<Field> addCdcMetadataColumns(final List<Field> fields) {
-    final List<Field> modifiedFields = new ArrayList<>(fields);
-    modifiedFields.add(new Field(DEFAULT_CURSOR_FIELD, JsonSchemaType.NUMBER));
-    modifiedFields.add(new Field(DebeziumEventUtils.CDC_UPDATED_AT, JsonSchemaType.STRING));
-    modifiedFields.add(new Field(DebeziumEventUtils.CDC_DELETED_AT, JsonSchemaType.STRING));
-    return modifiedFields;
+  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
+    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
+    final ObjectNode properties = (ObjectNode) jsonSchema.get(AIRBYTE_STREAM_PROPERTIES);
+    MongoDbCdcConnectorMetadataInjector.addCdcMetadataColumns(properties);
+    return stream;
   }
 
 }

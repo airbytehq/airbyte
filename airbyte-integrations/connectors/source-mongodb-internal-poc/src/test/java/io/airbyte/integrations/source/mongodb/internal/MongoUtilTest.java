@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mongodb.internal.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.internal.MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.AIRBYTE_STREAM_PROPERTIES;
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.internal.MongoUtil.MIN_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.internal.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
