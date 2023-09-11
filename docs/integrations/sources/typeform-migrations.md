@@ -1,6 +1,6 @@
 # Typeform Migration Guide
 
-## Upgrading to 2.0.0
+## Upgrading to 1.1.0
 
 This version upgrades the connector to the low-code framework for better maintainability. This migration includes a breaking change to the state format of the `responses` stream.
 
