@@ -122,8 +122,8 @@ class SourceZendeskSupport(AbstractSource):
         if "organization_access_enabled" not in active_features:
             return (
                 False,
-                "Please ensure the authenticated account or the account which generated the API key has admin permissions and try again"
-                "see https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access for more info",
+                "Please verify that the account linked to the API key has admin permissions and try again."
+                "For more information visit https://support.zendesk.com/hc/en-us/articles/4408832171034-About-team-member-product-roles-and-access.",
             )
         return True, None
 
