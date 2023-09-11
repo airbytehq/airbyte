@@ -18,6 +18,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
@@ -78,7 +79,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
       if (TypingAndDedupingFlag.isDestinationV2()) {
         final var rawSchemaName = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                                                                                    .orElse(CatalogParser.DEFAULT_RAW_TABLE_NAMESPACE));
+                                                                                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
         attemptTableOperations(rawSchemaName, database, namingResolver, sqlOperations, false);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -225,7 +226,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
                                                                .parseCatalog(catalog);
       // TODO make a migrator
       final var migrator = new NoOpDestinationV1V2Migrator<JdbcDatabase>();
-      final TyperDeduper typerDeduper = new DefaultTyperDeduper<JdbcDatabase>(sqlGenerator, new JdbcDestinationHandler(), parsedCatalog, migrator);
+      final TyperDeduper typerDeduper = new DefaultTyperDeduper<JdbcDatabase>(sqlGenerator, new JdbcDestinationHandler(), parsedCatalog, migrator, 8);
       return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
                                                 catalog, typerDeduper
       );
