@@ -344,6 +344,10 @@ class Issues(IncrementalJiraStream):
     extract_field = "issues"
     use_cache = False  # disable caching due to OOM errors in kubernetes
 
+    skip_http_status_codes = [
+        requests.codes.FORBIDDEN
+    ]
+
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._expand_changelog = expand_changelog
@@ -1288,6 +1292,11 @@ class WorkflowStatuses(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "status"
