@@ -56,20 +56,11 @@
     "shop_url": {
       "type": ["null", "string"]
     },
-    "is_deleted": {
-      "type": ["null", "boolean"]
-    },
     "deleted_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "subject_type": {
-      "type": ["null", "string"]
-    },
     "message": {
-      "type": ["null", "string"]
-    },
-    "author": {
       "type": ["null", "string"]
     },
     "description": {
