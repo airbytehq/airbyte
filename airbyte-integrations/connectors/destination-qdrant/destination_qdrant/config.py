@@ -3,38 +3,45 @@
 #
 
 
+import dpath.util
 import json
 import re
+
+from jsonschema import RefResolver
 from typing import Literal, Union
 
-import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
+    FromFieldEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
-from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-class UsernamePasswordAuth(BaseModel):
-    mode: Literal["username_password"] = Field("username_password", const=True)
-    username: str = Field(..., title="Username", description="Username for the Qdrant instance")
-    password: str = Field(..., title="Password", description="Password for the Qdrant instance", airbyte_secret=True)
 
 
-class TokenAuth(BaseModel):
-    mode: Literal["token"] = Field("token", const=True)
+class LocalServerAuth(BaseModel):
+    mode: Literal["local_server"] = Field("local_server", const=True)
+    host: str = Field(..., title="Host", description="Host of the Qdrant instance")
+    port: str = Field(..., title="Port", description="Port of the Qdrant instance")
+    grpc_port: str = Field(..., title="gRPC Port", description="gRPC Port of the Qdrant instance", default="")
+
+class CloudAuth(BaseModel):
+    mode: Literal["cloud"] = Field("cloud", const=True)
+    url: str = Field(..., title="url", description="url of the Qdrant instance")
+    api_key: str = Field(..., title="API Key", description="API Key for the Qdrant instance", airbyte_secret=True)
 
 
 class QdrantIndexingConfigModel(BaseModel):
-    host: str = Field(..., title="Public Endpoint")
-    token: str = Field(..., title="API Token", description="API Token for the Qdrant instance", airbyte_secret=True)
+    auth_method: Union[LocalServerAuth, CloudAuth] = Field(
+        ..., title="Authentication Method", description="Method to connect to the Qdrant Instance", discriminator="mode", type="object", order=0
+    )
     prefer_grpc: bool = Field(
         title="Prefer gRPC", description="Whether to prefer gRPC over HTTP. Set to true for Qdrant cloud clusters", default=True
     )
     collection: str = Field(..., title="Collection Name", description="The collection to load data into")
-    text_field: str = Field(title="Text Field", description="The field in the entity that contains the embedded text", default="text")
+    # text_field: str = Field(title="Text Field", description="The field in the entity that contains the embedded text", default="text")
 
     class Config:
         title = "Indexing"
@@ -46,7 +53,7 @@ class QdrantIndexingConfigModel(BaseModel):
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
+    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, FromFieldEmbeddingConfigModel] = Field(
         ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
     )
     indexing: QdrantIndexingConfigModel

@@ -6,8 +6,6 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-
-from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
@@ -27,26 +25,36 @@ from destination_qdrant.config import ConfigModel
 
 BATCH_SIZE = 256
 
-embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
+embedder_map = {
+    "openai": OpenAIEmbedder,
+    "cohere": CohereEmbedder,
+    "fake": FakeEmbedder,
+    # "from_field": FromFieldEmbedder,
+    # "no_embedding": NoEmbedder,
+}
 
 class DestinationQdrant(Destination):
     indexer: Indexer
-    processor: DocumentProcessor
     embedder: Embedder
+
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
-        self.indexer = QdrantIndexer(config.indexing, self.embedder)
+        self.indexer = QdrantIndexer(config.indexing)
+
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
+        
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        writer = Writer(config_model.processing, self.indexer, batch_size=BATCH_SIZE)
+        writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
         yield from writer.write(configured_catalog, input_messages)
 
+
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+
         self._init_indexer(ConfigModel.parse_obj(config))
         embedder_error = self.embedder.check()
         indexer_error = self.indexer.check()
@@ -56,7 +64,9 @@ class DestinationQdrant(Destination):
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
+
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/destinations/qdrant",
             supportsIncremental=True,
