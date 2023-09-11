@@ -449,5 +449,170 @@
         "date": "20990101"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_interest_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_report_combined"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_3_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_ad_unit_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_age_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_ad_format_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_4_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_5_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_category_2_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_name_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_page_path_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "demographic_gender_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "ecommerce_purchases_item_brand_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "publisher_ads_ad_source_report"
+      },
+      "stream_state": {
+        "date": "20990101"
+      }
+    }
   }
 ]

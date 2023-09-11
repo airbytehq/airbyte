@@ -1,13 +1,6 @@
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230406","active1DayUsers":2562},"emitted_at":1681405954033}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230403","active1DayUsers":2521},"emitted_at":1681405954034}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230404","active1DayUsers":2386},"emitted_at":1681405954034}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230405","active1DayUsers":2318},"emitted_at":1681405954035}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230411","active1DayUsers":2248},"emitted_at":1681405954035}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230412","active1DayUsers":2164},"emitted_at":1681405954036}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230410","active1DayUsers":2021},"emitted_at":1681405954036}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230407","active1DayUsers":1628},"emitted_at":1681405954037}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230409","active1DayUsers":1009},"emitted_at":1681405954037}
-{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230402","active1DayUsers":978},"emitted_at":1681405954038}
+{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230402","active1DayUsers":978},"emitted_at":1681405954037}
+{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230412","active1DayUsers":2164},"emitted_at":1681405954037}
+{"stream":"daily_active_users","data":{"property_id":"314186564","date":"20230404","active1DayUsers":2386},"emitted_at":1681405954038}
 {"stream":"weekly_active_users","data":{"property_id":"314186564","date":"20230403","active7DayUsers":11840},"emitted_at":1681405954684}
 {"stream":"weekly_active_users","data":{"property_id":"314186564","date":"20230406","active7DayUsers":11828},"emitted_at":1681405954685}
 {"stream":"weekly_active_users","data":{"property_id":"314186564","date":"20230404","active7DayUsers":11812},"emitted_at":1681405954685}
