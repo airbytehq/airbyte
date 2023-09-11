@@ -145,10 +145,11 @@ helm repo update
 4. Install Airbyte Enterprise on helm using the following command:
 
 ```text
-RELEASE_NAME=<your release name>./tools/bin/install_airbyte_pro_on_helm.sh
+./tools/bin/install_airbyte_pro_on_helm.sh
 ```
 
-If unspecified, the default release name is `airbyte-pro`. You can change this by editing the `install_airbyte_pro_on_helm.sh` script.
+The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
+variable.
 
 ## Migrate from old charts to new ones
 

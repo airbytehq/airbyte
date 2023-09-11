@@ -9,11 +9,11 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Optional
 
 import pinecone
+from airbyte_cdk.destinations.vector_db_based import Embedder
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, DestinationSyncMode, Level, Type
 from destination_langchain.config import ChromaLocalIndexingModel, DocArrayHnswSearchIndexingModel, PineconeIndexingModel
 from destination_langchain.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
-from destination_langchain.embedder import Embedder
 from destination_langchain.measure_time import measure_time
 from destination_langchain.utils import format_exception
 from langchain.document_loaders.base import Document
@@ -66,7 +66,7 @@ class PineconeIndexer(Indexer):
         super().__init__(config, embedder)
         pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment, threaded=True)
         self.pinecone_index = pinecone.Index(config.index, pool_threads=10)
-        self.embed_fn = measure_time(self.embedder.langchain_embeddings.embed_documents)
+        self.embed_fn = measure_time(self.embedder.embeddings.embed_documents)
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         index_description = pinecone.describe_index(self.config.index)
@@ -134,7 +134,7 @@ class DocArrayHnswSearchIndexer(Indexer):
 
     def _init_vectorstore(self):
         self.vectorstore = DocArrayHnswSearch.from_params(
-            embedding=self.embedder.langchain_embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
+            embedding=self.embedder.embeddings, work_dir=self.config.destination_path, n_dim=self.embedder.embedding_dimensions
         )
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
@@ -172,7 +172,7 @@ class ChromaLocalIndexer(Indexer):
     def _init_vectorstore(self):
         self.vectorstore = Chroma(
             collection_name=self.config.collection_name,
-            embedding_function=self.embedder.langchain_embeddings,
+            embedding_function=self.embedder.embeddings,
             persist_directory=self.config.destination_path,
         )
 
