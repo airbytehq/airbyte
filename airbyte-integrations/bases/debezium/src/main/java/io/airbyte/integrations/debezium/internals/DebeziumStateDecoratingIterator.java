@@ -181,7 +181,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       recordsLastSync++;
       totalRecordCount++;
       airbyteMessage = DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt, debeziumConnectorType);
-      if(totalRecordCount == 0) {
+      if(totalRecordCount == 1) {
         LOGGER.info("first record message: {}", airbyteMessage);
       }
       return airbyteMessage;

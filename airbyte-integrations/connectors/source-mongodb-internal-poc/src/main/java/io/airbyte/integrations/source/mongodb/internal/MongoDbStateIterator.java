@@ -56,6 +56,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private int count = 0;
   private int totalRecordCount = 0;
   private int totalStatecount = 0;
+  private AirbyteMessage airbyteMessage
 
   /**
    * Pointer to the last document _id seen by this iterator, necessary to track for state messages.
@@ -156,6 +157,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
       totalStatecount++;
       LOGGER.info("initial snapshot current total count of state messages: {}", totalStatecount);
       LOGGER.info("initial snapshot current total count of record messages: {}", totalRecordCount);
+      LOGGER.info("last record message: {}", airbyteMessage);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(stateManager.toState());
@@ -185,13 +187,17 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     lastId = document.get(MongoConstants.ID_FIELD);
 
     totalRecordCount++;
-    return new AirbyteMessage()
+    airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(stream.getStream().getName())
             .withNamespace(stream.getStream().getNamespace())
             .withEmittedAt(emittedAt.toEpochMilli())
             .withData(injectMetadata(jsonNode)));
+    if(totalStatecount == 1){
+      LOGGER.info("first record message: {}", airbyteMessage);
+    }
+    return airbyteMessage;
   }
 
   private JsonNode injectMetadata(final JsonNode jsonNode) {
