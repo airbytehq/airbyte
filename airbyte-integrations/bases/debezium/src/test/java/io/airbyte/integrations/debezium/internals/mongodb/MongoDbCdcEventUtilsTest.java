@@ -21,6 +21,8 @@ import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Map;
+
+import io.airbyte.db.DataTypeUtils;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
@@ -74,15 +76,16 @@ class MongoDbCdcEventUtilsTest {
 
   @Test
   void testTransformDataTypes() {
-    final Instant timestamp = Instant.parse("2023-09-07T23:31:00.186Z");
+    final BsonTimestamp bsonTimestamp = new BsonTimestamp(394, 1926745562);
+    final String expectedTimestamp = DataTypeUtils.toISO8601StringWithMilliseconds(bsonTimestamp.getValue());
 
     final Document document = new Document("field1", new BsonBoolean(true))
         .append("field2", new BsonInt32(1))
         .append("field3", new BsonInt64(2))
         .append("field4", new BsonDouble(3.0))
         .append("field5", new BsonDecimal128(new Decimal128(4)))
-        .append("field6", new BsonTimestamp(394, 1926745562))
-        .append("field7", new BsonDateTime(new BsonTimestamp(394, 1926745562).getValue()))
+        .append("field6", bsonTimestamp)
+        .append("field7", new BsonDateTime(bsonTimestamp.getValue()))
         .append("field8", new BsonBinary("test".getBytes(Charset.defaultCharset())))
         .append("field9", new BsonSymbol("test2"))
         .append("field10", new BsonString("test3"))
@@ -102,8 +105,8 @@ class MongoDbCdcEventUtilsTest {
     assertEquals(2, transformed.get("field3").asInt());
     assertEquals(3.0, transformed.get("field4").asDouble());
     assertEquals(4.0, transformed.get("field5").asDouble());
-    assertEquals(timestamp, Instant.parse(transformed.get("field6").asText()));
-    assertEquals(timestamp, Instant.parse(transformed.get("field7").asText()));
+    assertEquals(expectedTimestamp, transformed.get("field6").asText());
+    assertEquals(expectedTimestamp, transformed.get("field7").asText());
     assertEquals(Base64.encodeAsString("test".getBytes(Charset.defaultCharset())), transformed.get("field8").asText());
     assertEquals("test2", transformed.get("field9").asText());
     assertEquals("test3", transformed.get("field10").asText());
