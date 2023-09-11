@@ -18,6 +18,7 @@ semver = "^3.0.1"
 pytest = "^6.2.5"
 pytest-mock = "^3.10.0"
 pytest-cov = "^4.1.0"
+mypy = "^1.5.1"
 
 [build-system]
 requires = ["poetry-core"]

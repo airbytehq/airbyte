@@ -9,6 +9,7 @@ import anyio
 import dagger
 from base_images import common, consts, utils
 from rich.console import Console
+from rich.status import Status
 
 console = Console()
 
@@ -21,7 +22,7 @@ except common.BaseImageVersionError as e:
 ALL_BASE_IMAGES = {**python_bases.ALL_BASE_IMAGES}  # , **java_bases.ALL_BASE_IMAGES}
 
 
-async def run_all_sanity_checks(status: console.status) -> bool:
+async def run_all_sanity_checks(status: Status) -> bool:
     """
     Runs sanity checks on all the base images.
     """
@@ -57,7 +58,9 @@ def build():
         console.log(":tada: Successfully ran sanity checks on all the base images.")
         python_changelog_path = Path(consts.PROJECT_DIR / "CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
         status.update(f"Writing the changelog to {python_changelog_path}")
-        utils.write_changelog_file(python_changelog_path, python_bases.AirbytePythonConnectorBaseImage, python_bases.ALL_BASE_IMAGES)
+        utils.write_changelog_file(
+            python_changelog_path, python_bases.AirbytePythonConnectorBaseImage.image_name, python_bases.ALL_BASE_IMAGES
+        )
         console.log(
             f":memo: Wrote the updated changelog to {python_changelog_path}. [bold red]Please commit and push it![/bold red]",
         )
