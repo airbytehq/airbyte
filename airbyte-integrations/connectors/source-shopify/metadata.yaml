@@ -14,7 +14,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   suggestedStreams:
     streams:
       - customers
