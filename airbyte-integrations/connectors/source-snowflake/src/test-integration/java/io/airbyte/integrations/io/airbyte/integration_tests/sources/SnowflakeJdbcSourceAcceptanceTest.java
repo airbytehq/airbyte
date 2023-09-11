@@ -171,7 +171,6 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  @Override
   protected List<AirbyteMessage> getTestMessages() {
     return List.of(
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)

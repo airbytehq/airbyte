@@ -13,6 +13,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils.TableSizeInfo;
+import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -56,7 +57,7 @@ public class MySqlInitialLoadHandler {
 
   public MySqlInitialLoadHandler(final JsonNode config,
                                  final JdbcDatabase database,
-                                 final JdbcCompatibleSourceOperations sourceOperations,
+                                 final MySqlSourceOperations sourceOperations,
                                  final String quoteString,
                                  final MySqlInitialLoadStateManager initialLoadStateManager,
                                  final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,

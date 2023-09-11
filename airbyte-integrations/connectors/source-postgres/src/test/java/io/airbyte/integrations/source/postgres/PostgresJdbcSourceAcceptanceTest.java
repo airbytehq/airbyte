@@ -5,10 +5,6 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractSpecificFieldFromCombinedMessages;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -318,11 +314,12 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertEquals(expected, actual);
   }
 
-  @Override
+
   protected List<AirbyteMessage> getTestMessages() {
     return getTestMessages(streamName);
   }
 
+  @Override
   protected List<AirbyteMessage> getTestMessages(final String streamName) {
     return Lists.newArrayList(
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)

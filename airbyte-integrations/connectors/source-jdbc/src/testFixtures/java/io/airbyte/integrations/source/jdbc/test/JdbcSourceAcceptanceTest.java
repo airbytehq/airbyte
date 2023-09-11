@@ -298,7 +298,7 @@ public abstract class JdbcSourceAcceptanceTest {
     dropSchemas();
   }
 
-//  @Test
+  @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final String resourceString = MoreResources.readResource("spec.json");
@@ -307,21 +307,21 @@ public abstract class JdbcSourceAcceptanceTest {
     assertEquals(expected, actual);
   }
 
-//  @Test
+  @Test
   void testCheckSuccess() throws Exception {
     final AirbyteConnectionStatus actual = source.check(config);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
-//  @Test
+  @Test
   void testCheckFailure() throws Exception {
     ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }
 
-//  @Test
+  @Test
   void testDiscover() throws Exception {
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     final AirbyteCatalog expected = getCatalog(getDefaultNamespace());
@@ -336,7 +336,7 @@ public abstract class JdbcSourceAcceptanceTest {
     });
   }
 
-//  @Test
+  @Test
   protected void testDiscoverWithNonCursorFields() throws Exception {
     database.execute(connection -> {
       connection.createStatement()
@@ -353,7 +353,7 @@ public abstract class JdbcSourceAcceptanceTest {
     assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
   }
 
-//  @Test
+  @Test
   protected void testDiscoverWithNullableCursorFields() throws Exception {
     database.execute(connection -> {
       connection.createStatement()
@@ -386,7 +386,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-//  @Test
+  @Test
   void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
     String driverClass = getDriverClass().toLowerCase();
@@ -429,19 +429,19 @@ public abstract class JdbcSourceAcceptanceTest {
     assertEquals(expected, filterOutOtherSchemas(actual));
   }
 
-//  @Test
+  @Test
   void testReadSuccess() throws Exception {
     final List<AirbyteMessage> actualMessages =
         MoreIterators.toList(
             source.read(config, getConfiguredCatalogWithOneStream(getDefaultNamespace()), null));
 
     setEmittedAtToNull(actualMessages);
-    final List<AirbyteMessage> expectedMessages = getTestMessages();
+    final List<AirbyteMessage> expectedMessages = getTestMessages(streamName);
     assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
     assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
 
-//  @Test
+  @Test
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaType.NUMBER));
@@ -457,7 +457,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesReadOneColumn() {
-    final List<AirbyteMessage> expectedMessages = getTestMessages().stream()
+    final List<AirbyteMessage> expectedMessages = getTestMessages(streamName).stream()
         .map(Jsons::clone)
         .peek(m -> {
           ((ObjectNode) m.getRecord().getData()).remove(COL_NAME);
@@ -469,11 +469,11 @@ public abstract class JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
-//  @Test
+  @Test
   void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages(streamName));
 
     for (int i = 2; i < 10; i++) {
       final int iFinal = i;
@@ -502,6 +502,7 @@ public abstract class JdbcSourceAcceptanceTest {
       expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2));
     }
 
+
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 
@@ -513,7 +514,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
-    return getTestMessages()
+    return getTestMessages(streamName)
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
@@ -527,7 +528,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   }
 
-//  @Test
+  @Test
   void testTablesWithQuoting() throws Exception {
     final ConfiguredAirbyteStream streamForTableWithSpaces = createTableWithSpaces();
 
@@ -540,7 +541,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
 
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages(streamName));
     expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
@@ -549,7 +550,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
-    return getTestMessages()
+    return getTestMessages(streamName)
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
@@ -564,7 +565,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
-//  @Test
+  @Test
   void testReadFailure() {
     final ConfiguredAirbyteStream spiedAbStream = spy(
         getConfiguredCatalogWithOneStream(getDefaultNamespace()).getStreams().get(0));
@@ -575,34 +576,34 @@ public abstract class JdbcSourceAcceptanceTest {
     assertThrows(RuntimeException.class, () -> source.read(config, catalog, null));
   }
 
-//  @Test
+  @Test
   void testIncrementalNoPreviousState() throws Exception {
     incrementalCursorCheck(
         COL_ID,
         null,
         "3",
-        getTestMessages());
+        getTestMessages(streamName));
   }
 
-//  @Test
+  @Test
   void testIncrementalIntCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_ID,
         "2",
         "3",
-        List.of(getTestMessages().get(2)));
+        List.of(getTestMessages(streamName).get(2)));
   }
 
-//  @Test
+  @Test
   void testIncrementalStringCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_NAME,
         "patent",
         "vash",
-        List.of(getTestMessages().get(0), getTestMessages().get(2)));
+        List.of(getTestMessages(streamName).get(0), getTestMessages(streamName).get(2)));
   }
 
-//  @Test
+  @Test
   void testIncrementalStringCheckCursorSpaceInColumnName() throws Exception {
     final ConfiguredAirbyteStream streamWithSpaces = createTableWithSpaces();
 
@@ -617,13 +618,13 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(final ConfiguredAirbyteStream streamWithSpaces) {
-    final AirbyteMessage firstMessage = getTestMessages().get(0);
+    final AirbyteMessage firstMessage = getTestMessages(streamName).get(0);
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_UPDATED_AT);
     ((ObjectNode) firstMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
         ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_NAME));
 
-    final AirbyteMessage secondMessage = getTestMessages().get(2);
+    final AirbyteMessage secondMessage = getTestMessages(streamName).get(2);
     secondMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_UPDATED_AT);
     ((ObjectNode) secondMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
@@ -632,7 +633,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return List.of(firstMessage, secondMessage);
   }
 
-//  @Test
+  @Test
   void testIncrementalDateCheckCursor() throws Exception {
     incrementalDateCheck();
   }
@@ -642,10 +643,10 @@ public abstract class JdbcSourceAcceptanceTest {
         COL_UPDATED_AT,
         "2005-10-18",
         "2006-10-19",
-        List.of(getTestMessages().get(1), getTestMessages().get(2)));
+        List.of(getTestMessages(streamName).get(1), getTestMessages(streamName).get(2)));
   }
 
-//  @Test
+  @Test
   void testIncrementalCursorChanges() throws Exception {
     incrementalCursorCheck(
         COL_ID,
@@ -655,10 +656,10 @@ public abstract class JdbcSourceAcceptanceTest {
         // records to (incorrectly) be filtered out.
         "data",
         "vash",
-        getTestMessages());
+        getTestMessages(streamName));
   }
 
-//  @Test
+  @Test
   void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
@@ -726,7 +727,7 @@ public abstract class JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
-//  @Test
+  @Test
   void testReadMultipleTablesIncrementally() throws Exception {
     final String tableName2 = TABLE_NAME + 2;
     final String streamName2 = streamName + 2;
@@ -799,7 +800,7 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursor("3")
             .withCursorRecordCount(1L));
 
-    final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
+    final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages(streamName));
     expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
     expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1), expectedStateStreams2));
@@ -812,7 +813,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
-    return getTestMessages()
+    return getTestMessages(streamName)
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
@@ -836,7 +837,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
-//  @Test
+  @Test
   public void testIncrementalWithConcurrentInsertion() throws Exception {
     final String driverName = getDriverClass().toLowerCase();
     final String namespace = getDefaultNamespace();
@@ -857,6 +858,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 namespace,
                 Field.of(COL_NAME, JsonSchemaType.STRING),
                 Field.of(COL_TIMESTAMP, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
+
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(List.of(COL_TIMESTAMP));
@@ -1047,7 +1049,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  protected List<AirbyteMessage> getTestMessages() {
+  protected List<AirbyteMessage> getTestMessages(final String streamName) {
     return List.of(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
@@ -1272,6 +1274,35 @@ public abstract class JdbcSourceAcceptanceTest {
       return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
+  }
+
+  protected List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,
+                                                                      final String streamName,
+                                                                      final String field) {
+    return extractStateMessage(messages).stream()
+        .filter(s -> s.getStream().getStreamDescriptor().getName().equals(streamName))
+        .map(s -> s.getStream().getStreamState().get(field) != null ? s.getStream().getStreamState().get(field).asText() : "").toList();
+  }
+
+  protected List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.RECORD)
+        .collect(Collectors.toList());
+  }
+
+  protected List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  protected List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages, final String streamName) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE &&
+            r.getState().getStream().getStreamDescriptor().getName().equals(streamName)).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  protected AirbyteMessage createRecord(final String stream, final String namespace, final Map<Object, Object> data) {
+    return new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(namespace));
   }
 
 }
