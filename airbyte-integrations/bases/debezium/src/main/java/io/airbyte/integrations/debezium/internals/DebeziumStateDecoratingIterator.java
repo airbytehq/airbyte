@@ -46,6 +46,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
 
   private int totalRecordCount = 0;
   private int totalStateCount = 0;
+  private AirbyteMessage airbyteMessage;
 
   /**
    * These parameters control when a checkpoint message has to be sent in a CDC integration. We can
@@ -137,6 +138,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
   protected AirbyteMessage computeNext() {
     if (isSyncFinished) {
       LOGGER.info("Total records emitted: {}, total state messages emitted: {}", totalRecordCount, totalStateCount);
+      LOGGER.info("last record message: {}", airbyteMessage);
       return endOfData();
     }
 
@@ -178,7 +180,11 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       }
       recordsLastSync++;
       totalRecordCount++;
-      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt, debeziumConnectorType);
+      airbyteMessage = DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt, debeziumConnectorType);
+      if(totalRecordCount == 0) {
+        LOGGER.info("first record message: {}", airbyteMessage);
+      }
+      return airbyteMessage;
     }
 
     isSyncFinished = true;
