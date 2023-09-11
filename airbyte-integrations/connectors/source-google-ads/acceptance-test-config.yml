@@ -24,10 +24,8 @@ acceptance_tests:
         empty_streams:
           - name: "account_labels"
             bypass_reason: "Unsufficient permissions"
-          - name: "unhappytable"
-            bypass_reason: "Empty testing stream"
           - name: "shopping_performance_report"
-            bypass_reason: "No shopping campaign, need item for sale "
+            bypass_reason: "No shopping campaign, need item for sale"
           - name: "display_topics_performance_report"
             bypass_reason: "No data for this date range, tested in next config"
           - name: "click_view"
@@ -35,9 +33,9 @@ acceptance_tests:
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
-              bypass_reason: "value can be updated by Google Ads"
+              bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
-              bypass_reason: "value can be updated by Google Ads"
+              bypass_reason: "Value can be updated by Google Ads"
       - config_path: "secrets/config_click_view.json"
         expect_records:
           path: "integration_tests/expected_records_click.jsonl"
@@ -45,10 +43,8 @@ acceptance_tests:
         empty_streams:
           - name: "account_labels"
             bypass_reason: "Unsufficient permissions"
-          - name: "unhappytable"
-            bypass_reason: "Empty testing stream"
           - name: "shopping_performance_report"
-            bypass_reason: "No shopping campaign, need item for sale "
+            bypass_reason: "No shopping campaign, need item for sale"
           - name: "display_keyword_performance_report"
             bypass_reason: "No data for this date range, tested in previous config"
           - name: "keyword_report"
@@ -56,9 +52,9 @@ acceptance_tests:
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
-              bypass_reason: "value can be updated by Google Ads"
+              bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
-              bypass_reason: "value can be updated by Google Ads"
+              bypass_reason: "Value can be updated by Google Ads"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

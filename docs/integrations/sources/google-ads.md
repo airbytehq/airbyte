@@ -98,8 +98,12 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 #### Incremental Campaign Criterion and Ad Group Criterion
-This streams offer support for incremental deletions and is built using the Change Status stream. However, it only provides updates for the most recent three months.
-First sync is full refresh, but the following sync is done by at first reading updates from change_status stream and then syncing records by id. 
+
+These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
+
+The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
+
+It's important to note that the ChangeStatus stream has a limit of 10,000 records per day. If there are more than 10,000 updates in a single day for these streams, some records will be missed. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
 
 ## Supported Streams
 
