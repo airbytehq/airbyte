@@ -117,4 +117,7 @@ public sealed interface AirbyteType permits AirbyteProtocolType,Struct,Array,Uns
     return schemaClone;
   }
 
+
+  String getTypeName();
+
 }
