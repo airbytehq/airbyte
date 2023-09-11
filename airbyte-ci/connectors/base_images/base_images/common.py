@@ -101,7 +101,7 @@ class AirbyteConnectorBaseImage(ABC):
     @final
     @staticmethod
     def _validate_version(cls):
-        """Validates that the version is in the format `x.y.z` and each part is a digit.
+        """Validate the version follows semantic versioning naming.
 
         Raises:
             VersionError: Raised if the version is not in the format `x.y.z` or if any part is not a digit.
