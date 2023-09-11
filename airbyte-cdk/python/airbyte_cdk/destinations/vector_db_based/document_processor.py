@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import dpath.util
-from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
+from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, TextSplitterConfigModel, TokenSplitterConfigModel
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_ab_stream"
@@ -24,6 +24,9 @@ class Chunk:
     metadata: Dict[str, Any]
     record: AirbyteRecordMessage
     embedding: Optional[List[float]] = None
+
+
+headers_to_split_on = ["^# ", "^## ", "^### ", "^#### ", "^##### ", "^###### "]
 
 
 class DocumentProcessor:
@@ -43,12 +46,32 @@ class DocumentProcessor:
 
     streams: Mapping[str, ConfiguredAirbyteStream]
 
+    def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
+        if splitter_config is None:
+            splitter_config = TokenSplitterConfigModel(mode="token")
+        if splitter_config.mode == "token":
+            return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=splitter_config.separators,
+                keep_separator=splitter_config.keep_separator,
+            )
+        if splitter_config.mode == "markdown":
+            return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=headers_to_split_on[: splitter_config.split_level],
+                keep_separator=True,
+            )
+        if splitter_config.mode == "code":
+            return RecursiveCharacterTextSplitter.from_language(
+                chunk_size=chunk_size, chunk_overlap=chunk_overlap, language=splitter_config.language
+            )
+
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
         self.streams = {self._stream_identifier(stream.stream): stream for stream in catalog.streams}
 
-        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
-        )
+        self.splitter = self._get_text_splitter(config.chunk_size, config.chunk_overlap, config.text_splitter)
         self.text_fields = config.text_fields
         self.metadata_fields = config.metadata_fields
         self.logger = logging.getLogger("airbyte.document_processor")

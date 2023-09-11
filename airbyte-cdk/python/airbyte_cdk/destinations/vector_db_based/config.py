@@ -2,9 +2,57 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 from pydantic import BaseModel, Field
+
+
+class TokenSplitterConfigModel(BaseModel):
+    mode: Literal["token"] = Field("token", const=True)
+    separators: List[str] = Field(
+        default=["\n\n", "\n", " ", ""], title="Separators", description="List of separator strings to split text fields by"
+    )
+    keep_separator: bool = Field(default=False, title="Keep separator", description="Whether to keep the separator in the resulting tokens")
+
+
+class MarkdownHeaderSplitterConfigModel(BaseModel):
+    mode: Literal["markdown"] = Field("markdown", const=True)
+    split_level: int = Field(
+        default=1,
+        title="Split level",
+        description="Level of markdown headers to split text fields by. Headings down to the specified level will be used as split points",
+        le=6,
+        ge=1,
+    )
+
+
+class CodeSplitterConfigModel(BaseModel):
+    mode: Literal["code"] = Field("code", const=True)
+    language: str = Field(
+        title="Language",
+        description="Split code in suitable places based on the programming language",
+        enum=[
+            "cpp",
+            "go",
+            "java",
+            "js",
+            "php",
+            "proto",
+            "python",
+            "rst",
+            "ruby",
+            "rust",
+            "scala",
+            "swift",
+            "markdown",
+            "latex",
+            "html",
+            "sol",
+        ],
+    )
+
+
+TextSplitterConfigModel = Union[TokenSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
 
 
 class ProcessingConfigModel(BaseModel):
@@ -32,6 +80,13 @@ class ProcessingConfigModel(BaseModel):
         description="List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
         always_show=True,
         examples=["age", "user", "user.name"],
+    )
+    text_splitter: TextSplitterConfigModel = Field(
+        default=None,
+        title="Text splitter",
+        discriminator="mode",
+        type="object",
+        description="Split text fields into chunks based on the specified method.",
     )
 
     class Config:
