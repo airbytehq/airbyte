@@ -1346,16 +1346,15 @@ class DealsArchived(ClientSideIncrementalStream):
 
 
 class DealPipelines(ClientSideIncrementalStream):
-    """Deal pipelines, API v1,
-    This endpoint requires the contacts scope the tickets scope.
-    Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
+    """Deal pipelines, API v3,
+    Docs: https://developers.hubspot.com/docs/api/crm/pipelines
     """
 
     url = "/crm/v3/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     cursor_field_datetime_format = "x"
-    primary_key = "pipelineId"
+    primary_key = "id"
     scopes = {
         "crm.schemas.contacts.read",
         "crm.objects.contacts.read",
