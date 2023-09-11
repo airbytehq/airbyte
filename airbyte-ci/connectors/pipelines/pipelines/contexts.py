@@ -436,7 +436,7 @@ class ConnectorContext(PipelineContext):
             Directory: The connector under test source code directory.
         """
         vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
-        return await hacks.patch_connector_dir(self, vanilla_connector_dir)
+        return await vanilla_connector_dir.with_timestamps(1)
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
