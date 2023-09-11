@@ -37,10 +37,10 @@ public class CtidGlobalStateManager extends CtidStateManager {
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
   public CtidGlobalStateManager(final CtidStreams ctidStreams,
-                                final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+                                final FileNodeHandler fileNodeHandler,
                                 final CdcState cdcState,
                                 final ConfiguredAirbyteCatalog catalog) {
-    super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodes));
+    super(filterOutExpiredFileNodes(ctidStreams.pairToCtidStatus(), fileNodeHandler));
     this.cdcState = cdcState;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(ctidStreams, catalog);
   }
@@ -60,11 +60,11 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> filterOutExpiredFileNodes(
                                                                                            final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus,
-                                                                                           final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+                                                                                           final FileNodeHandler fileNodeHandler) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> filteredMap = new HashMap<>();
     pairToCtidStatus.forEach((pair, ctidStatus) -> {
       final AirbyteStreamNameNamespacePair updatedPair = new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
-      if (validateRelationFileNode(ctidStatus, updatedPair, fileNodes)) {
+      if (validateRelationFileNode(ctidStatus, updatedPair, fileNodeHandler)) {
         filteredMap.put(updatedPair, ctidStatus);
       } else {
         LOGGER.warn(
@@ -77,6 +77,7 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   @Override
   public AirbyteStateMessage createCtidStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+    pairToCtidStatus.put(pair, ctidStatus);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);

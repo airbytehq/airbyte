@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -15,7 +16,10 @@ from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskExcepti
 
 from .streams import (
     AccountAttributes,
+    ArticleComments,
+    ArticleCommentVotes,
     Articles,
+    ArticleVotes,
     AttributeDefinitions,
     AuditLogs,
     Brands,
@@ -67,6 +71,21 @@ class SourceZendeskSupport(AbstractSource):
     """
 
     @classmethod
+    def get_default_start_date(cls) -> str:
+        """
+        Gets the default start date for data retrieval.
+
+        The default date is set to the current date and time in UTC minus 2 years.
+
+        Returns:
+            str: The default start date in 'YYYY-MM-DDTHH:mm:ss[Z]' format.
+
+        Note:
+            Start Date is a required request parameter for Zendesk Support API streams.
+        """
+        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DDTHH:mm:ss[Z]")
+
+    @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> [TokenAuthenticator, BasicApiTokenAuthenticator]:
 
         # old authentication flow support
@@ -113,7 +132,7 @@ class SourceZendeskSupport(AbstractSource):
         """
         return {
             "subdomain": config["subdomain"],
-            "start_date": config["start_date"],
+            "start_date": config.get("start_date", cls.get_default_start_date()),
             "authenticator": cls.get_authenticator(config),
             "ignore_pagination": config.get("ignore_pagination", False),
         }
@@ -125,6 +144,9 @@ class SourceZendeskSupport(AbstractSource):
         args = self.convert_config2stream_args(config)
         streams = [
             Articles(**args),
+            ArticleComments(**args),
+            ArticleCommentVotes(**args),
+            ArticleVotes(**args),
             AuditLogs(**args),
             GroupMemberships(**args),
             Groups(**args),
