@@ -18,11 +18,9 @@ import com.amazonaws.util.Base64;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import java.nio.charset.Charset;
-import java.time.Instant;
-import java.util.Map;
-
 import io.airbyte.db.DataTypeUtils;
+import java.nio.charset.Charset;
+import java.util.Map;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
