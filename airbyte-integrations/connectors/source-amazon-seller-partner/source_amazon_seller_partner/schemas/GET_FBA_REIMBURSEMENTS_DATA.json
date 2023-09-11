@@ -1,68 +1,64 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FBA Reimbursements Report",
+  "description": "FBA Reimbursements Report",
   "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Seller Id": {
+    "source_name": {
       "type": ["null", "string"]
     },
-    "Sku": {
+    "approval-date": {
       "type": ["null", "string"]
     },
-    "Item ID": {
+    "reimbursement-id": {
       "type": ["null", "string"]
     },
-    "Product Name": {
+    "case-id": {
       "type": ["null", "string"]
     },
-    "Product Category": {
+    "amazon-order-id": {
       "type": ["null", "string"]
     },
-    "Seller Name": {
+    "reason": {
       "type": ["null", "string"]
     },
-    "Seller Item Price": {
+    "sku": {
       "type": ["null", "string"]
     },
-    "Seller Ship Price": {
+    "fnsku": {
       "type": ["null", "string"]
     },
-    "IsSellerBuyBoxWinner": {
+    "asin": {
       "type": ["null", "string"]
     },
-    "Buybox Seller ID": {
+    "product-name": {
       "type": ["null", "string"]
     },
-    "Buybox Item Price": {
+    "condition": {
       "type": ["null", "string"]
     },
-    "Buybox Ship Price": {
+    "currency-unit": {
       "type": ["null", "string"]
     },
-    "Offer2 Seller ID": {
+    "amount-per-unit": {
       "type": ["null", "string"]
     },
-    "Offer2 Item Price": {
+    "amount-total": {
       "type": ["null", "string"]
     },
-    "Offer2 Ship Price": {
+    "quantity-reimbursed-cash": {
       "type": ["null", "string"]
     },
-    "Offer3 Seller ID": {
+    "quantity-reimbursed-inventory": {
       "type": ["null", "string"]
     },
-    "Offer3 Item Price": {
+    "quantity-reimbursed-total": {
       "type": ["null", "string"]
     },
-    "Offer3 Ship Price": {
+    "original-reimbursement-id": {
       "type": ["null", "string"]
     },
-    "Offer4 Seller ID": {
-      "type": ["null", "string"]
-    },
-    "Offer4 Item Price": {
-      "type": ["null", "string"]
-    },
-    "Offer4 Ship Price": {
+    "original-reimbursement-type": {
       "type": ["null", "string"]
     }
   }
