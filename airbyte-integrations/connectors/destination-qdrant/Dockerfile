@@ -4,8 +4,11 @@ FROM python:3.10-slim as base
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
+RUN apt-get update \
+    && pip install --upgrade pip \
+    && apt-get install -y build-essential cmake g++ libffi-dev libstdc++6
 
+# upgrade pip to the latest version
 COPY setup.py ./
 
 RUN pip install --upgrade pip

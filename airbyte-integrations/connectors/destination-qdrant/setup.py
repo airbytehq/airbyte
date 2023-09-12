@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]", "qdrant-client"]
+MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]", "qdrant-client", "fastembed"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 
