@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CatalogParser {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CatalogParser.class);
 
   private final SqlGenerator<?> sqlGenerator;
