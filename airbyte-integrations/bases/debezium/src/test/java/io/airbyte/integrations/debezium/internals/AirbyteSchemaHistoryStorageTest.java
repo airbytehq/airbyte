@@ -24,7 +24,8 @@ public class AirbyteSchemaHistoryStorageTest {
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromUncompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
         new SchemaHistory<>(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
-            false), true);
+            false),
+        true);
     final SchemaHistory<String> schemaHistoryFromUncompressedContent = schemaHistoryStorageFromUncompressedContent.read();
 
     assertTrue(schemaHistoryFromUncompressedContent.isCompressed());
@@ -33,7 +34,8 @@ public class AirbyteSchemaHistoryStorageTest {
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromCompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
         new SchemaHistory<>(Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema())),
-            true), true);
+            true),
+        true);
     final SchemaHistory<String> schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read();
 
     assertTrue(schemaHistoryFromCompressedContent.isCompressed());
@@ -55,7 +57,8 @@ public class AirbyteSchemaHistoryStorageTest {
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromUncompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
         new SchemaHistory<>(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
-            false), true);
+            false),
+        true);
     final SchemaHistory<String> schemaHistoryFromUncompressedContent = schemaHistoryStorageFromUncompressedContent.read();
 
     assertFalse(schemaHistoryFromUncompressedContent.isCompressed());
@@ -64,7 +67,8 @@ public class AirbyteSchemaHistoryStorageTest {
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromCompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
         new SchemaHistory<>(Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema())),
-            false), true);
+            false),
+        true);
     final SchemaHistory<String> schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read();
 
     assertFalse(schemaHistoryFromCompressedContent.isCompressed());

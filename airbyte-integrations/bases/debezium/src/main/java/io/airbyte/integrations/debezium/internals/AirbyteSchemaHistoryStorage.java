@@ -56,7 +56,7 @@ public class AirbyteSchemaHistoryStorage {
     return path;
   }
 
-  public record SchemaHistory<T>(T schema, boolean isCompressed) {}
+  public record SchemaHistory<T> (T schema, boolean isCompressed) {}
 
   public SchemaHistory<String> read() {
     final double fileSizeMB = (double) path.toFile().length() / (ONE_MB);
@@ -208,7 +208,8 @@ public class AirbyteSchemaHistoryStorage {
     return (double) string.getBytes(StandardCharsets.UTF_8).length / (ONE_MB);
   }
 
-  public static AirbyteSchemaHistoryStorage initializeDBHistory(final SchemaHistory<Optional<JsonNode>> schemaHistory, final boolean compressSchemaHistoryForState) {
+  public static AirbyteSchemaHistoryStorage initializeDBHistory(final SchemaHistory<Optional<JsonNode>> schemaHistory,
+                                                                final boolean compressSchemaHistoryForState) {
     final Path dbHistoryWorkingDir;
     try {
       dbHistoryWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-db-history");
