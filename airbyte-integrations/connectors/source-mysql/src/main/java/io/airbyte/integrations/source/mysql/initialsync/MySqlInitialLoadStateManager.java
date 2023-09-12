@@ -16,8 +16,6 @@ public interface MySqlInitialLoadStateManager {
   String STATE_TYPE_KEY = "state_type";
   String PRIMARY_KEY_STATE_TYPE = "primary_key";
 
-  String CURSOR_BASED_STATE_TYPE = "cursor_based";
-
   // Returns an intermediate state message for the initial sync.
   AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus);
 
@@ -34,4 +32,5 @@ public interface MySqlInitialLoadStateManager {
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type &
   // the column name associated with the stream.
   PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair);
+
 }

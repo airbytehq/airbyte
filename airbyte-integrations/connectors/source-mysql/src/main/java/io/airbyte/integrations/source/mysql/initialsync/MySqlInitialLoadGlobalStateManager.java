@@ -42,15 +42,15 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
 
   public MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final CdcState cdcState) {
+                                            final CdcState cdcState,
+                                            final ConfiguredAirbyteCatalog catalog) {
     this.cdcState = cdcState;
     this.pairToPrimaryKeyLoadStatus = initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
   }
 
-
+  @Override
   public AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
@@ -60,9 +60,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     });
     streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(pkLoadStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    if (cdcState != null) {
-      globalState.setSharedState(Jsons.jsonNode(cdcState));
-    }
+    globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
 
     return new AirbyteStateMessage()
@@ -75,6 +73,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
   }
 
+  @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
@@ -84,9 +83,6 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     });
 
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    if (cdcState != null) {
-      globalState.setSharedState(Jsons.jsonNode(cdcState));
-    }
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
 
