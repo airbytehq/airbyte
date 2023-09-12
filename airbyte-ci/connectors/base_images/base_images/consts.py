@@ -5,6 +5,7 @@
 """This module declares constants used by the base_images module.
 """
 
+import os
 from pathlib import Path
 
 import dagger
@@ -16,3 +17,4 @@ AIRBYTE_ROOT_DIR: str = str(GIT_REPO.working_tree_dir)
 MAIN_BRANCH_NAME = "master"
 PROJECT_DIR = Path(__file__).parent.parent
 SUPPORTED_PLATFORMS = (dagger.Platform("linux/amd64"), dagger.Platform("linux/arm64"))
+DEBUG = os.getenv("LOG_LEVEL", "INFO").upper() == "DEBUG"
