@@ -315,14 +315,14 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         return f"comments"
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        block_id = stream_slice.get("block_id", "")
+        block_id = stream_slice.get("block_id")
         params = {"block_id": block_id, "page_size": self.page_size}
 
         if next_page_token:
             params["start_cursor"] = next_page_token["next_cursor"]
 
         return params
-    
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         
         # Get the parent's "last edited time" to compare against state
@@ -344,12 +344,11 @@ class Comments(HttpSubStream, IncrementalNotionStream):
         yield from IncrementalNotionStream.read_records(self, **kwargs)
     
     def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
                 
         # Gather parent stream records in full
         parent_records = self.parent.read_records(
-            sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field
         )
 
         # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" 
