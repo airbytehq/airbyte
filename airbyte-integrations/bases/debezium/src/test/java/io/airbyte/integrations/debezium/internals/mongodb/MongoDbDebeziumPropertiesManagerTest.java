@@ -10,7 +10,7 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.COLLECTION_INCLUDE_LIST_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_AUTHSOURCE_KEY;
@@ -74,7 +74,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
     assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
-    assertEquals(config.get(USER_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
+    assertEquals(config.get(USERNAME_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
     assertEquals(config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_AUTHSOURCE_KEY));
     assertEquals(MONGODB_SSL_ENABLED_VALUE, debeziumProperties.get(MONGODB_SSL_ENABLED_KEY));
@@ -137,7 +137,7 @@ class MongoDbDebeziumPropertiesManagerTest {
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     authMode.ifPresent(a -> config.put(AUTH_SOURCE_CONFIGURATION_KEY, a));
-    username.ifPresent(u -> config.put(USER_CONFIGURATION_KEY, u));
+    username.ifPresent(u -> config.put(USERNAME_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(PASSWORD_CONFIGURATION_KEY, p));
     return Jsons.deserialize(Jsons.serialize(config));
   }

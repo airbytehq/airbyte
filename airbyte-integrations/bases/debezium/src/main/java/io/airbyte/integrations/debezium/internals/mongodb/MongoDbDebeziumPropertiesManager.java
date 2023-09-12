@@ -8,7 +8,7 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
@@ -55,8 +55,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
     properties.setProperty(MONGODB_CONNECTION_STRING_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
     properties.setProperty(MONGODB_CONNECTION_MODE_KEY, MONGODB_CONNECTION_MODE_VALUE);
 
-    if (config.has(USER_CONFIGURATION_KEY)) {
-      properties.setProperty(MONGODB_USER_KEY, config.get(USER_CONFIGURATION_KEY).asText());
+    if (config.has(USERNAME_CONFIGURATION_KEY)) {
+      properties.setProperty(MONGODB_USER_KEY, config.get(USERNAME_CONFIGURATION_KEY).asText());
     }
     if (config.has(PASSWORD_CONFIGURATION_KEY)) {
       properties.setProperty(MONGODB_PASSWORD_KEY, config.get(PASSWORD_CONFIGURATION_KEY).asText());
