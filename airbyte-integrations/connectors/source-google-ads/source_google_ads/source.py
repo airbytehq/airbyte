@@ -35,10 +35,8 @@ from .streams import (
     Audience,
     CampaignBiddingStrategies,
     CampaignBudget,
-    CampaignCriterion,
     CampaignLabels,
     Campaigns,
-    ChangeStatus,
     ClickView,
     DisplayKeywordPerformanceReport,
     DisplayTopicsPerformanceReport,
@@ -52,14 +50,7 @@ from .streams import (
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = [
-    "asset",
-    "asset_group_listing_group_filter",
-    "custom_audience",
-    "geo_target_constant",
-    "change_event",
-    "change_status",
-]
+FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -105,12 +96,6 @@ class SourceGoogleAds(AbstractSource):
             end_date=end_date,
         )
         return incremental_stream_config
-
-    @staticmethod
-    def get_incremental_events_stream_config(google_api: GoogleAds, customers: List[Customer]):
-        events_stream = ChangeStatus(api=google_api, customers=customers)
-        incremental_events_config = dict(api=google_api, customers=customers, parent_stream=events_stream)
-        return incremental_events_config
 
     def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
         dummy_customers = [Customer(id=_id) for _id in config["customer_id"].split(",")]
@@ -178,13 +163,12 @@ class SourceGoogleAds(AbstractSource):
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
-        incremental_events_config = self.get_incremental_events_stream_config(google_api, customers)
         streams = [
             AdGroupAds(**incremental_config),
             AdGroupAdLabels(google_api, customers=customers),
             AdGroups(**incremental_config),
             AdGroupBiddingStrategies(**incremental_config),
-            AdGroupCriterions(**incremental_events_config),
+            AdGroupCriterions(google_api, customers=customers),
             AdGroupCriterionLabels(google_api, customers=customers),
             AdGroupLabels(google_api, customers=customers),
             AdListingGroupCriterions(google_api, customers=customers),
@@ -192,7 +176,6 @@ class SourceGoogleAds(AbstractSource):
             AccountLabels(google_api, customers=customers),
             Audience(google_api, customers=customers),
             CampaignBiddingStrategies(**incremental_config),
-            CampaignCriterion(**incremental_events_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
             Labels(google_api, customers=customers),
