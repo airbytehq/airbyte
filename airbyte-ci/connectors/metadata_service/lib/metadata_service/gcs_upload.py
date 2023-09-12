@@ -13,7 +13,7 @@ from typing import Optional, Tuple
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
-from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME, METADATA_FOLDER
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME, METADATA_FOLDER, DOCS_FOLDER_PATH
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
@@ -119,6 +119,17 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
         return False, f"No Icon found at {local_icon_path}"
     return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
+def _docs_upload(metadata: ConnectorMetadataDefinitionV0, bucker: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
+    [connector_type, connector_name] = metadata_file_path.parent.name.split('-')
+    docs_folder_path = metadata_file_path.parents[3] / DOCS_FOLDER_PATH / f"{connector_type}s"
+    local_doc_path = docs_folder_path / f"{connector_name}.md"
+    local_inapp_doc_path = docs_folder_path / f"{connector_name}_inapp.md"
+    print("local_doc_path:", local_doc_path)
+    print("local_inapp_doc_path:", local_inapp_doc_path)
+    if not local_doc_path.exists():
+        print("No Doc found at ", local_doc_path)
+        return False, f"No Doc found at {local_doc_path}"
+    return True, "blobId"
 
 def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
     metadata, error = validate_and_load(metadata_file_path, [], validator_opts)
@@ -173,6 +184,7 @@ def upload_metadata_to_gcs(
     bucket = storage_client.bucket(bucket_name)
 
     icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path)
+    docs_uploaded, doc_blob_id = _docs_upload(metadata, bucket, metadata_file_path)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
     if not validator_opts.prerelease_tag:
