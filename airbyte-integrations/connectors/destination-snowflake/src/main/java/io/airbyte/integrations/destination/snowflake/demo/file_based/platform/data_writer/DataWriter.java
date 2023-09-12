@@ -4,7 +4,9 @@ import java.io.IOException;
 import org.apache.commons.io.function.IOConsumer;
 
 /**
- * Writes airbyte records to some underlying storage.\
+ * Writes airbyte records to some underlying storage.
+ * <p>
+ * TODO how to deal with memory footprint?
  */
 public interface DataWriter<T extends StorageLocation> {
 
