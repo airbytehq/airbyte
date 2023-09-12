@@ -54,7 +54,7 @@ def dummy_qa_report() -> pd.DataFrame:
         ]
     )
 
-@pytest.fixture(autouse=True)
-def change_test_dir(monkeypatch):
+@pytest.fixture()
+def set_working_dir_to_repo_root(monkeypatch):
     monkeypatch.chdir(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
