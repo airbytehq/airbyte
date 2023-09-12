@@ -9,7 +9,6 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
-
 COPY setup.py ./
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
