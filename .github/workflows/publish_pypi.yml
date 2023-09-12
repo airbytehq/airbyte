@@ -1,0 +1,16 @@
+name: Publish connectors to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs-on:
+        type: string
+        default: conn-prod-xlarge-runner
+        required: true
+
+jobs:
+  no-op:
+    name: No-op
+    runs-on: ${{ inputs.runs-on || 'conn-prod-xlarge-runner' }}
+    steps:
+      - run: echo 'hi!'

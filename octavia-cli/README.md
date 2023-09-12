@@ -27,7 +27,7 @@ These are non-exhaustive use cases `octavia` can be convenient for:
 - Integrating the Airbyte configuration deployment in a dev ops tooling stack: Helm, Ansible etc.
 - Streamlining the deployment of Airbyte configurations to multiple Airbyte instance.
 
-Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Discourse](https://discuss.airbyte.io/).
+Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ## Table of content
 
@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.44.12
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.50.0
 ```
 
 ### Using `docker-compose`
@@ -178,7 +178,7 @@ headers:
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
 | **`octavia init`**                        | Initialize required directories for the project.                                           |
 | **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.                      |
-| **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.                 |
+| **`octavia list connectors destinations`** | List all destinations connectors available on the remote Airbyte instance.                 |
 | **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                                    |
 | **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                               |
 | **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                                |

@@ -436,18 +436,26 @@ def test_export_stream(requests_mock, export_response, config):
     assert records_length == 1
 
 
+def test_handle_time_zone_mismatch(requests_mock, config, caplog):
+    stream = Export(authenticator=MagicMock(), **config)
+    requests_mock.register_uri("GET", get_url_to_mock(stream), status_code=400, text="to_date cannot be later than today")
+    records = []
+    for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
+        records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
+    assert list(records) == []
+    assert "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. " \
+           "Stopping current stream sync." in caplog.text
+
+
 def test_export_stream_request_params(config):
     stream = Export(authenticator=MagicMock(), **config)
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
-    stream_state = {"date": "2021-06-16T17:00:00"}
-
-    request_params = stream.request_params(stream_state=None, stream_slice=stream_slice)
-    assert "where" not in request_params
 
     request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
     assert "where" not in request_params
 
-    request_params = stream.request_params(stream_state=stream_state, stream_slice=stream_slice)
+    stream_slice["time"] = "2021-06-16T17:00:00"
+    request_params = stream.request_params(stream_state={}, stream_slice=stream_slice)
     assert "where" in request_params
     timestamp = int(pendulum.parse("2021-06-16T17:00:00Z").timestamp())
     assert request_params.get("where") == f'properties["$time"]>=datetime({timestamp})'
@@ -468,3 +476,20 @@ def test_export_iter_dicts(config):
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
     # drop record parts because they are not standing nearby
     assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]
+
+
+@pytest.mark.parametrize(
+    ("http_status_code", "should_retry", "log_message"),
+    [
+        (402, False, "Unable to perform a request. Payment Required: "),
+    ],
+)
+def test_should_retry_payment_required(http_status_code, should_retry, log_message, config, caplog):
+    response_mock = MagicMock()
+    response_mock.status_code = http_status_code
+    response_mock.json = MagicMock(return_value={"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"})
+    streams = [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]
+    for stream_class in streams:
+        stream = stream_class(authenticator=MagicMock(), **config)
+        assert stream.should_retry(response_mock) == should_retry
+        assert log_message in caplog.text

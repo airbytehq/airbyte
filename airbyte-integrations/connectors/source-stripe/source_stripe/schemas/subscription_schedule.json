@@ -21,6 +21,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "current_phase": {
       "type": ["null", "object"],
       "additionalProperties": true,
@@ -257,6 +260,9 @@
       "type": ["null", "string"]
     },
     "test_clock": {
+      "type": ["null", "string"]
+    },
+    "renewal_interval": {
       "type": ["null", "string"]
     }
   }

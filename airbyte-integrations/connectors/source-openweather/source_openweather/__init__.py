@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
-from .source import SourceOpenWeather
+from .source import SourceOpenweather
 
-__all__ = ["SourceOpenWeather"]
+__all__ = ["SourceOpenweather"]

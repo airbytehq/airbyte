@@ -50,7 +50,9 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 #### Acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-
+```
+python -m pytest integration_tests -p integration_tests.acceptance
+```
 To run your integration tests with Docker, run:
 ```
 ./acceptance-test-docker.sh

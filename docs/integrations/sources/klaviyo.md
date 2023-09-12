@@ -6,7 +6,6 @@ This page contains the setup guide and reference information for the Klaviyo sou
 
 To set up the Klaviyo source connector, you'll need the [Klaviyo Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
 
-
 ## Set up the Klaviyo connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
@@ -14,27 +13,27 @@ To set up the Klaviyo source connector, you'll need the [Klaviyo Private API key
 3. On the Set up the source page, select **Klaviyo** from the Source type dropdown.
 4. Enter the name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 7. Click **Set up source**.
 
 ## Supported sync modes
 
 The Klaviyo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-* [Campaigns](https://developers.klaviyo.com/en/v1-2/reference/get-campaigns#get-campaigns)
-* [Events](https://developers.klaviyo.com/en/v1-2/reference/metrics-timeline)
-* [GlobalExclusions](https://developers.klaviyo.com/en/v1-2/reference/get-global-exclusions)
-* [Lists](https://developers.klaviyo.com/en/v1-2/reference/get-lists)
-* [Metrics](https://developers.klaviyo.com/en/v1-2/reference/get-metrics)
-* [Flows](https://developers.klaviyo.com/en/reference/get_flows)
-* [Profiles](https://developers.klaviyo.com/en/reference/get_profiles)
+- [Campaigns](https://developers.klaviyo.com/en/v1-2/reference/get-campaigns#get-campaigns)
+- [Events](https://developers.klaviyo.com/en/v1-2/reference/metrics-timeline)
+- [GlobalExclusions](https://developers.klaviyo.com/en/v1-2/reference/get-global-exclusions)
+- [Lists](https://developers.klaviyo.com/en/v1-2/reference/get-lists)
+- [Metrics](https://developers.klaviyo.com/en/v1-2/reference/get-metrics)
+- [Flows](https://developers.klaviyo.com/en/reference/get_flows)
+- [Profiles](https://developers.klaviyo.com/en/reference/get_profiles)
 
 ## Performance considerations
 
@@ -45,7 +44,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `number`         | `number`     |       |
 | `array`          | `array`      |       |
@@ -54,16 +53,18 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 ## Changelog
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
-|:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| `0.3.0`  | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add ` Email Templates` stream 
-| `0.2.0` | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream
-| `0.1.13` | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                |
+| :------- | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| `0.3.2`  | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498)   | Do not store state in the future                                                          |
+| `0.3.1`  | 2023-06-08 | [27162](https://github.com/airbytehq/airbyte/pull/27162)   | Anonymize check connection error message                                                  |
+| `0.3.0`  | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add ` Email Templates` stream                                                             |
+| `0.2.0`  | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream                                                                     |
+| `0.1.13` | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                |
 | `0.1.12` | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                |
 | `0.1.11` | 2023-01-27 | [22012](https://github.com/airbytehq/airbyte/pull/22012)   | Set `AvailabilityStrategy` for streams explicitly to `None`                               |
 | `0.1.10` | 2022-09-29 | [17422](https://github.com/airbytehq/airbyte/issues/17422) | Update CDK dependency                                                                     |
-| `0.1.9`  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/issues/17304) | Migrate to per-stream state.                                                              |                                                      
+| `0.1.9`  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/issues/17304) | Migrate to per-stream state.                                                              |
 | `0.1.6`  | 2022-07-20 | [14872](https://github.com/airbytehq/airbyte/issues/14872) | Increase test coverage                                                                    |
-| `0.1.5`  | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max\_retries = 10 for `lists` stream.                                                 |
+| `0.1.5`  | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max_retries = 10 for `lists` stream.                                                  |
 | `0.1.4`  | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                      |
 | `0.1.3`  | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592)     | Improve performance, make Global Exclusions stream incremental and enable Metrics stream. |
 | `0.1.2`  | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952)     | Update schema validation in SAT                                                           |

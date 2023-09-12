@@ -2,13 +2,13 @@
 
 ## Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | No |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No |  |
-| Namespaces | No |  |
-| Provide vector | Yes |  |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | No                   |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | No                   |       |
+| Provide vector                 | Yes                  |       |
 
 #### Output Schema
 
@@ -18,15 +18,17 @@ in the Weaviate class.
 **Uploading Vectors:** Use the vectors configuration if you want to upload
 vectors from a source database into Weaviate. You can do this by specifying
 the stream name and vector field name in the following format:
+
 ```
 <stream_name>.<vector_field_name>, <stream_name2>.<vector_field_name>
 ```
+
 For example, if you have a table named `my_table` and the vector is stored using the column `vector` then
 you should use the following `vectors`configuration: `my_table.vector`.
 
 Dynamic Schema: Weaviate will automatically create a schema for the stream if no class was defined unless
 you have disabled the Dynamic Schema feature in Weaviate. You can also create the class in Weaviate in advance
-if you need more control over the schema in Weaviate. 
+if you need more control over the schema in Weaviate.
 
 IDs: If your source table has an int based id stored as field name `id` then the
 ID will automatically be converted to a UUID. Weaviate only supports the ID to be a UUID.
@@ -48,7 +50,7 @@ password.
 
 To use the Weaviate destination, you'll need:
 
-* A Weaviate cluster version 21.8.10.19 or above
+- A Weaviate cluster version 21.8.10.19 or above
 
 #### Configure Network Access
 
@@ -58,24 +60,21 @@ Make sure your Weaviate database can be accessed by Airbyte. If your database is
 
 You need a Weaviate user or use a Weaviate instance that's accessible to all
 
-
 ### Setup the Weaviate Destination in Airbyte
 
 You should now have all the requirements needed to configure Weaviate as a destination in the UI. You'll need the following information to configure the Weaviate destination:
 
-* **URL** for example http://localhost:8080 or https://my-wcs.semi.network
-* **Username** (Optional)
-* **Password** (Optional)
-* **Batch Size** (Optional, defaults to 100)
-* **Vectors** a comma separated list of `<stream_name.vector_field_name>` to specify the field
-* **ID Schema** a comma separated list of `<stream_name.id_field_name>` to specify the field
+- **URL** for example http://localhost:8080 or https://my-wcs.semi.network
+- **Username** (Optional)
+- **Password** (Optional)
+- **Batch Size** (Optional, defaults to 100)
+- **Vectors** a comma separated list of `<stream_name.vector_field_name>` to specify the field
+- **ID Schema** a comma separated list of `<stream_name.id_field_name>` to specify the field
   name that contains the ID of a record
-
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                      |
-|:--------|:-----------| :--- |:---------------------------------------------|
+| Version | Date       | Pull Request                                               | Subject                                                                                                                          |
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
-| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination |
-
+| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                         |

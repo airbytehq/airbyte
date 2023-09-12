@@ -1,0 +1,15 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+  implementation project(':airbyte-config-oss:config-models-oss')
+  implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+  implementation project(':airbyte-integrations:bases:base-typing-deduping')
+  implementation libs.airbyte.protocol
+
+  implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
+  implementation 'org.junit.jupiter:junit-jupiter-api'
+  implementation 'org.junit.jupiter:junit-jupiter-params'
+  implementation 'org.mockito:mockito-core:4.6.1'
+}

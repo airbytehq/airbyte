@@ -1,47 +1,50 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "createdDate": {
-      "type": ["string", "null"],
-      "format": "date-time"
+      "type": ["null", "string"],
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
     },
     "domain": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "companyName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "industryName": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "tags": {
       "type": "array",
       "items": {
-        "type": ["string", "null"]
+        "type": ["null", "string"]
       }
     },
     "cxMetrics": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "NPS": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "CSAT": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "CES": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         },
         "STAR": {
-          "type": ["number", "null"]
+          "type": ["null", "number"]
         }
       }
     },
     "contactsCount": {
-      "type": ["number", "null"]
+      "type": ["null", "number"]
     }
   }
 }

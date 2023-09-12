@@ -5,6 +5,7 @@
 import json
 from functools import partial
 from typing import Any, Iterable, Mapping
+from unittest import skip
 
 import pytest
 from facebook_business import FacebookSession
@@ -128,6 +129,32 @@ class TestBaseStream:
 
         assert batch.add_request.call_count == len(requests)
         assert batch.execute.call_count == 1
+
+    @skip("We have a different way to handle batch sizes, this needs more investigation")
+    def test_batch_reduce_amount(self, source, api, batch, mock_batch_responses, caplog):
+        """Reduce batch size to 1 and finally fail with message"""
+
+        retryable_message = "Please reduce the amount of data you're asking for, then retry your request"
+        mock_batch_responses(
+            [
+                {
+                    "json": [
+                        {"body": {"error": {"message": retryable_message}}, "code": 500, "headers": {}},
+                    ],
+                }
+            ]
+        )
+
+        stream = SomeTestStream(source=source, api=api)
+        requests = [FacebookRequest("node", "GET", "endpoint")]
+        with pytest.raises(RuntimeError, match="Batch request failed with only 1 request in..."):
+            list(stream.execute_in_batch(requests))
+
+        assert batch.add_request.call_count == 7
+        assert batch.execute.call_count == 7
+        assert stream.max_batch_size == 1
+        for index, expected_batch_size in enumerate(["25", "13", "7", "4", "2", "1"]):
+            assert expected_batch_size in caplog.messages[index]
 
     def test_execute_in_batch_retry_batch_error(self, source, api, batch, mock_batch_responses):
         """Should retry without exception when any request returns 960 error code"""

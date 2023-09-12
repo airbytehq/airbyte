@@ -109,13 +109,13 @@ class SourceDixa(AbstractSource):
         """
         Check connectivity using one day's worth of data.
         """
-        config["authenticator"] = TokenAuthenticator(token=config["api_token"])
-        stream = ConversationExport(config)
-        # using 1 day batch size for slices.
-        stream.batch_size = 1
-        # use the first slice from stream_slices list
-        stream_slice = stream.stream_slices()[0]
         try:
+            config["authenticator"] = TokenAuthenticator(token=config["api_token"])
+            stream = ConversationExport(config)
+            # using 1 day batch size for slices.
+            stream.batch_size = 1
+            # use the first slice from stream_slices list
+            stream_slice = stream.stream_slices()[0]
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
             return True, None
         except Exception as e:

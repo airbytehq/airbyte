@@ -588,6 +588,13 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
             .build());
 
+    addHstoreTest();
+    addTimeWithTimeZoneTest();
+    addArraysTestData();
+    addMoneyTest();
+  }
+
+  protected void addHstoreTest() {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("hstore")
@@ -602,10 +609,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
                 null)
             .build());
-
-    addTimeWithTimeZoneTest();
-    addArraysTestData();
-    addMoneyTest();
   }
 
   protected void addMoneyTest() {

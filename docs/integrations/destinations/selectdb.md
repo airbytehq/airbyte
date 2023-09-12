@@ -12,19 +12,16 @@ Each stream will be output into its own table in SelectDB. Each table will conta
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Doris is `BIGINT`.
 - `_airbyte_data`: a json blob representing with the event data. The column type in SelectDB is `String`.
 
-
 ### Features
 
 This section should contain a table with the following format:
 
-| Feature                                | Supported?(Yes/No) | Notes                    |
-| :------------------------------------- | :----------------- | :----------------------- |
-| Full Refresh Sync                      | Yes                |                          |
-| Incremental - Append Sync              | Yes                |                          |
-| Incremental - Deduped History          | No                 | it will soon be realized |
-| For databases, WAL/Logical replication | Yes                |                          |
-
-
+| Feature                                | Supported?(Yes/No) | Notes |
+| :------------------------------------- | :----------------- | :---- |
+| Full Refresh Sync                      | Yes                |       |
+| Incremental - Append Sync              | Yes                |       |
+| Incremental - Append + Deduped         | No                 |       |
+| For databases, WAL/Logical replication | Yes                |       |
 
 ### Performance considerations
 
@@ -37,7 +34,7 @@ Importing multiple tables will generate multiple transactions, which should be s
 
 To use the SelectDB destination, you'll need:
 
-- A SelectDB server and your 
+- A SelectDB server and your
 - Make sure your SelectDB http port and mysql query port can be accessed by Airbyte.
 - Make sure your SelectDB host can be accessed by Airbyte. if use a public network to access SelectDB, please ensure that your airbyte public network IP is in the ip whitelist of your SelectDB.
 - Make sure your SelectDB user with read/write permissions on certain tables.
@@ -58,7 +55,6 @@ You need to prepare database that will be used to store synced data from Airbyte
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2023-04-03 | [\#20881](https://github.com/airbytehq/airbyte/pull/20881) | Initial release SelectDB Destination |
-
+| Version | Date       | Pull Request                                               | Subject                              |
+| :------ | :--------- | :--------------------------------------------------------- | :----------------------------------- |
+| 0.1.0   | 2023-04-03 | [\#20881](https://github.com/airbytehq/airbyte/pull/20881) | Initial release SelectDB Destination |

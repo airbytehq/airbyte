@@ -17,30 +17,31 @@ To set up the Mixpanel source connector, you'll need a Mixpanel [Service Account
 7. For **Attribution Window**, enter the number of days for the length of the attribution window.
 8. For **Project Timezone**, enter the [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel) for your Mixpanel project.
 9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If left blank, the connector will replicate data from up to one year ago by default.
-10. For **End Date**, enter the date in YYYY-MM-DD format. 
+10. For **End Date**, enter the date in YYYY-MM-DD format.
 11. For **Region**, enter the [region](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU) for your Mixpanel project.
 12. For **Date slicing window**, enter the number of days to slice through data. If you encounter RAM usage issues due to a huge amount of data in each window, try using a lower value for this parameter.
 13. Click **Set up source**.
 
 ## Supported sync modes
+
 The Mixpanel source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
 
 ### Supported Streams
 
-* [Export](https://developer.mixpanel.com/reference/raw-event-export) \(Incremental\)
-* [Engage](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
-* [Funnels](https://developer.mixpanel.com/reference/funnels-query) \(Incremental\)
-* [Revenue](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
-* [Annotations](https://developer.mixpanel.com/reference/overview-1) \(Full table\)
-* [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
-* [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
+- [Export](https://developer.mixpanel.com/reference/raw-event-export) \(Incremental\)
+- [Engage](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
+- [Funnels](https://developer.mixpanel.com/reference/funnels-query) \(Incremental\)
+- [Revenue](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
+- [Annotations](https://developer.mixpanel.com/reference/overview-1) \(Full table\)
+- [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
+- [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
 ## Performance considerations
 
@@ -50,6 +51,11 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 0.1.38  | 2023-08-31 | [30028](https://github.com/airbytehq/airbyte/pull/30028) | Handle gracefully project timezone mismatch                                                                 |
+| 0.1.37  | 2023-07-20 | [27932](https://github.com/airbytehq/airbyte/pull/27932) | Fix spec: change start/end date format to `date`                                                            |
+| 0.1.36  | 2023-06-27 | [27752](https://github.com/airbytehq/airbyte/pull/27752) | Partially revert version 0.1.32; Use exponential backoff;                                                   |
+| 0.1.35  | 2023-06-12 | [27252](https://github.com/airbytehq/airbyte/pull/27252) | Add should_retry False for 402 error                                                                        |
+| 0.1.34  | 2023-05-15 | [21837](https://github.com/airbytehq/airbyte/pull/21837) | Add "insert_id" field to "export" stream schema                                                             |
 | 0.1.33  | 2023-04-25 | [25543](https://github.com/airbytehq/airbyte/pull/25543) | Set should_retry for 104 error in stream export                                                             |
 | 0.1.32  | 2023-04-11 | [25056](https://github.com/airbytehq/airbyte/pull/25056) | Set HttpAvailabilityStrategy, add exponential backoff, streams export and annotations add undeclared fields |
 | 0.1.31  | 2023-02-13 | [22936](https://github.com/airbytehq/airbyte/pull/22936) | Specified date formatting in specification                                                                  |
@@ -83,5 +89,3 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 | 0.1.2   | 2021-11-02 | [7439](https://github.com/airbytehq/airbyte/issues/7439) | Added delay for all streams to match API limitation of requests rate                                        |
 | 0.1.1   | 2021-09-16 | [6075](https://github.com/airbytehq/airbyte/issues/6075) | Added option to select project region                                                                       |
 | 0.1.0   | 2021-07-06 | [3698](https://github.com/airbytehq/airbyte/issues/3698) | Created CDK native mixpanel connector                                                                       |
-
-

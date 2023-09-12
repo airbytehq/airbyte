@@ -5,7 +5,7 @@
 
 # Static Type Checking
 echo "Running MyPy to static check and test files."
-mypy airbyte_cdk/ unit_tests/
+mypy airbyte_cdk/ unit_tests/ --config mypy.ini
 
 printf "\n"
 

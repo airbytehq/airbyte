@@ -11,6 +11,7 @@ from abc import ABC
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
+import dpath
 import jsonschema
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
@@ -20,18 +21,24 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 from source_google_analytics_data_api import utils
-from source_google_analytics_data_api.utils import DATE_FORMAT
+from source_google_analytics_data_api.utils import DATE_FORMAT, WRONG_DIMENSIONS, WRONG_JSON_SYNTAX, WRONG_METRICS
 
 from .api_quota import GoogleAnalyticsApiQuota
-from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
+from .utils import (
+    authenticator_class_map,
+    check_invalid_property_error,
+    check_no_property_error,
+    get_dimensions_type,
+    get_metrics_type,
+    get_source_defined_primary_key,
+    metrics_type_to_python,
+)
 
 # set the quota handler globaly since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
-# set page_size to 100000 due to determination of maximum limit value in official documentation
-# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
-PAGE_SIZE = 100000
+LOOKBACK_WINDOW = datetime.timedelta(days=2)
 
 
 class ConfigurationError(Exception):
@@ -61,13 +68,25 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     http_method = "POST"
     raise_on_http_errors = True
 
-    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+    def __init__(self, *, config: Mapping[str, Any], page_size: int = 100_000, **kwargs):
         super().__init__(**kwargs)
         self._config = config
+        self._source_defined_primary_key = get_source_defined_primary_key(self.name)
+        # default value is 100 000 due to determination of maximum limit value in official documentation
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+        self._page_size = page_size
 
     @property
     def config(self):
         return self._config
+
+    @property
+    def page_size(self):
+        return self._page_size
+
+    @page_size.setter
+    def page_size(self, value: int):
+        self._page_size = value
 
     # handle the quota errors with prepared values for:
     # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
@@ -93,22 +112,21 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     """
 
     _record_date_format = "%Y%m%d"
-    primary_key = "uuid"
     offset = 0
 
     metadata = MetadataDescriptor()
 
     @property
     def cursor_field(self) -> Optional[str]:
-        return "date" if "date" in self.config.get("dimensions", {}) else []
+        return "date" if "date" in self.config.get("dimensions", []) else []
 
-    @staticmethod
-    def add_primary_key() -> dict:
-        return {"uuid": str(uuid.uuid4())}
-
-    @staticmethod
-    def add_property_id(property_id):
-        return {"property_id": property_id}
+    @property
+    def primary_key(self):
+        pk = ["property_id"] + self.config.get("dimensions", [])
+        if "cohort_spec" not in self.config and "date" not in pk:
+            pk.append("startDate")
+            pk.append("endDate")
+        return pk
 
     @staticmethod
     def add_dimensions(dimensions, row) -> dict:
@@ -133,7 +151,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "additionalProperties": True,
             "properties": {
                 "property_id": {"type": ["string"]},
-                "uuid": {"type": ["string"], "description": "Custom unique identifier for each record, to support primary key"},
             },
         }
 
@@ -143,6 +160,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 for d in self.config["dimensions"]
             }
         )
+        # skipping startDate and endDate fields for cohort stream, because it doesn't support startDate and endDate fields
+        if "cohort_spec" not in self.config and "date" not in self.config["dimensions"]:
+            schema["properties"].update(
+                {
+                    "startDate": {"type": ["null", "string"], "format": "date"},
+                    "endDate": {"type": ["null", "string"], "format": "date"},
+                }
+            )
 
         schema["properties"].update(
             {
@@ -163,9 +188,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             total_rows = r["rowCount"]
 
             if self.offset == 0:
-                self.offset = PAGE_SIZE
+                self.offset = self.page_size
             else:
-                self.offset += PAGE_SIZE
+                self.offset += self.page_size
 
             if total_rows <= self.offset:
                 self.offset = 0
@@ -193,9 +218,24 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
-            yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
-                dimensions, row
-            ) | self.add_metrics(metrics, metrics_type_map, row)
+            record = {
+                "property_id": self.config["property_id"],
+                **self.add_dimensions(dimensions, row),
+                **self.add_metrics(metrics, metrics_type_map, row),
+            }
+
+            # https://github.com/airbytehq/airbyte/pull/26283
+            # We pass the uuid field for synchronizations which still have the old
+            # configured_catalog with the old primary key. We need it to avoid of removal of rows
+            # in the deduplication process. As soon as the customer press "refresh source schema"
+            # this part is no longer needed.
+            if self._source_defined_primary_key == [["uuid"]]:
+                record["uuid"] = str(uuid.uuid4())
+
+            if "cohort_spec" not in self.config and "date" not in record:
+                record["startDate"] = stream_slice["startDate"]
+                record["endDate"] = stream_slice["endDate"]
+            yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
@@ -219,7 +259,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(PAGE_SIZE),
+            "limit": str(self.page_size),
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
@@ -234,6 +274,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
             start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
+            start_date -= LOOKBACK_WINDOW
             start_date = max(start_date, self.config["date_ranges_start_date"])
         else:
             start_date = self.config["date_ranges_start_date"]
@@ -322,8 +363,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             if isinstance(config["custom_reports"], str):
                 try:
                     config["custom_reports"] = json.loads(config["custom_reports"])
+                    if not isinstance(config["custom_reports"], list):
+                        raise ValueError
                 except ValueError:
-                    raise ConfigurationError("custom_reports is not valid JSON")
+                    raise ConfigurationError(WRONG_JSON_SYNTAX)
         else:
             config["custom_reports"] = []
 
@@ -331,6 +374,12 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         try:
             jsonschema.validate(instance=config["custom_reports"], schema=schema)
         except jsonschema.ValidationError as e:
+            if message := check_no_property_error(e):
+                raise ConfigurationError(message)
+            if message := check_invalid_property_error(e):
+                report_name = dpath.util.get(config["custom_reports"], str(e.absolute_path[0])).get("name")
+                raise ConfigurationError(message.format(fields=e.message, report_name=report_name))
+
             key_path = "custom_reports"
             if e.path:
                 key_path += "." + ".".join(map(str, e.path))
@@ -371,7 +420,9 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             return False, str(e)
         config["authenticator"] = self.get_authenticator(config)
 
+        metadata = None
         try:
+            # explicitly setting small page size for the check operation not to cause OOM issues
             stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except HTTPError as e:
@@ -398,12 +449,12 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             invalid_dimensions = set(report["dimensions"]) - dimensions
             if invalid_dimensions:
                 invalid_dimensions = ", ".join(invalid_dimensions)
-                return False, f"custom_reports: invalid dimension(s): {invalid_dimensions} for the custom report: {report['name']}"
+                return False, WRONG_DIMENSIONS.format(fields=invalid_dimensions, report_name=report["name"])
             invalid_metrics = set(report["metrics"]) - metrics
             if invalid_metrics:
                 invalid_metrics = ", ".join(invalid_metrics)
-                return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
-            report_stream = self.instantiate_report_class(report, config)
+                return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
+            report_stream = self.instantiate_report_class(report, config, page_size=100)
             # check if custom_report dimensions + metrics can be combined and report generated
             stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
             next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
@@ -416,10 +467,14 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return [self.instantiate_report_class(report, config) for report in reports + config["custom_reports"]]
 
     @staticmethod
-    def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
+    def instantiate_report_class(report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
-        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
+        stream_config = {
+            "metrics": report["metrics"],
+            "dimensions": report["dimensions"],
+            **config,
+        }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:
             stream_config["pivots"] = pivots
@@ -427,4 +482,4 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if cohort_spec:
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
-        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"])
+        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)

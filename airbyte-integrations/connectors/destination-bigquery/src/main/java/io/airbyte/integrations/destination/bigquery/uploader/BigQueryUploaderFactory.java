@@ -31,8 +31,12 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
 
   private static final String CONFIG_ERROR_MSG = """
                                                     Failed to write to destination schema.
@@ -50,20 +54,20 @@ public class BigQueryUploaderFactory {
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
-    final String schemaName = BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
+    final String dataset = uploaderConfig.getParsedStream().id().rawNamespace();
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
-    final Set<String> existingSchemas = new HashSet<>();
+    final Set<String> existingDatasets = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
-    final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
-    final TableId tmpTable = TableId.of(schemaName, uploaderConfig.getTmpTableName());
+    final TableId targetTable = TableId.of(dataset, uploaderConfig.getTargetTableName());
+    final TableId tmpTable = TableId.of(dataset, uploaderConfig.getTmpTableName());
 
     BigQueryUtils.createSchemaAndTableIfNeeded(
         uploaderConfig.getBigQuery(),
-        existingSchemas,
-        schemaName,
+        existingDatasets,
+        dataset,
         tmpTable,
         datasetLocation,
         bigQuerySchema);
@@ -146,8 +150,9 @@ public class BigQueryUploaderFactory {
                                                                   final String datasetLocation,
                                                                   final BigQueryRecordFormatter formatter) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
+    LOGGER.info("Will write raw data to {} with schema {}", targetTable, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
-        WriteChannelConfiguration.newBuilder(tmpTable)
+        WriteChannelConfiguration.newBuilder(targetTable)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
             .setSchema(formatter.getBigQuerySchema())
             .setFormatOptions(FormatOptions.json())
