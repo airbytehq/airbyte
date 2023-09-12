@@ -1,3 +1,3 @@
-string_col,int_col
-"hello",1
-"foo",2
+string_col;int_col;path_col
+"hello";1;dir_1/dir_2/test_3.csv
+"foo";2;dir_1/dir_2/test_3.csv

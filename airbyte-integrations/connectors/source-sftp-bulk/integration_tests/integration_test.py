@@ -158,7 +158,11 @@ def sftp_service_pk(config_pk, docker_services):
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {
         "type": "object",
-        "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}},
+        "properties": {
+            "string_col": {"type": "str"},
+            "int_col": {"type": "integer"},
+            "path_col": {"type": "str"},
+        },
     }
 
     overwrite_stream = ConfiguredAirbyteStream(
@@ -452,6 +456,48 @@ def test_get_files_handle_null_values(
 
 
 def test_get_files_recusively_depth(
-    docker_services,
+    config: Mapping,
+    configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    pass
+    updated_config = {
+        **config,
+        "folder_path": "files/csv_nested",
+        "file_type": "csv",
+    }
+
+    result_iter = sftp_service.read(
+        logger,
+        updated_config,
+        configured_catalog,
+        None,
+    )
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
+    assert len(result) == 1
+
+    res = result[0]
+    assert res.type == Type.RECORD
+    assert res.record.data["string_col"] is None
+    assert res.record.data["int_col"] == 4
+
+
+def test_get_files_autogenerate_headers(
+    config: Mapping,
+    sftp_service: SourceFtp,
+):
+    assert False
+
+
+def test_get_files_dont_autogenerate_headers_if_colnames_set(
+    config: Mapping,
+    sftp_service: SourceFtp,
+):
+    assert False
+
+
+def test_get_files_parse_colnames(
+    config: Mapping,
+    sftp_service: SourceFtp,
+):
+    assert False
