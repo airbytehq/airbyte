@@ -29,7 +29,7 @@ public class MongoDbResumeTokenHelper {
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @return The most recent resume token value.
    */
-  public static BsonDocument getResumeToken(final MongoClient mongoClient) {
+  public static BsonDocument getMostRecentResumeToken(final MongoClient mongoClient) {
     final ChangeStreamIterable<BsonDocument> eventStream = mongoClient.watch(BsonDocument.class);
     try (final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> eventStreamCursor = eventStream.cursor()) {
       /*

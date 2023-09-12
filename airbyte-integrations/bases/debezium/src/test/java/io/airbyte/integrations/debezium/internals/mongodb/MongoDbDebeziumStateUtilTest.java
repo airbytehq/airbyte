@@ -65,12 +65,8 @@ class MongoDbDebeziumStateUtilTest {
   @Test
   void testConstructInitialDebeziumState() {
     final String database = DATABASE;
-    final String replicaSet = REPLICA_SET;
     final String resumeToken = RESUME_TOKEN;
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -80,16 +76,12 @@ class MongoDbDebeziumStateUtilTest {
         MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
         MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, database));
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(serverDescription.getSetName()).thenReturn(REPLICA_SET);
     when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
-    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient,
-        database);
+    final JsonNode initialState = mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, mongoClient, database);
 
     assertNotNull(initialState);
     assertEquals(1, initialState.size());
@@ -113,24 +105,17 @@ class MongoDbDebeziumStateUtilTest {
 
   @Test
   void testConstructInitialDebeziumStateMissingReplicaSet() {
-    final String database = DATABASE;
-    final String resumeToken = RESUME_TOKEN;
-    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
-    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
-    final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
-        mock(MongoChangeStreamCursor.class);
+    final BsonDocument resumeTokenDocument = ResumeTokens.fromData(RESUME_TOKEN);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
     final MongoClient mongoClient = mock(MongoClient.class);
 
-    when(mongoChangeStreamCursor.getResumeToken()).thenReturn(resumeTokenDocument);
-    when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(clusterDescription.getServerDescriptions()).thenReturn(List.of(serverDescription));
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
-    when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
-    assertThrows(IllegalStateException.class, () -> mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, database));
+    assertThrows(IllegalStateException.class,
+        () -> mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, mongoClient, DATABASE));
   }
 
   @Test

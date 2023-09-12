@@ -135,6 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.7   | 2023-08-29 | [29878](https://github.com/airbytehq/airbyte/pull/29878)   | Internal code changes                                                                                                                                           |
 | 2.0.6   | 2023-09-05 | [\#29917](https://github.com/airbytehq/airbyte/pull/29917) | Improve performance by changing metadata error array construction from ARRAY_CONCAT to ARRAY_AGG                                                                |
 | 2.0.5   | 2023-08-31 | [\#30020](https://github.com/airbytehq/airbyte/pull/30020) | Run typing and deduping tasks in parallel                                                                                                                       |
 | 2.0.4   | 2023-09-05 | [\#30117](https://github.com/airbytehq/airbyte/pull/30117) | Type and Dedupe at sync start and then every 6 hours                                                                                                            |
