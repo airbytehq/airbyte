@@ -54,7 +54,7 @@ public class BufferDequeue {
   public MemoryAwareMessageBatch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
     final var queue = buffers.get(streamDescriptor);
 
-    bufferLocks.putIfAbsent(streamDescriptor, new ReentrantLock());
+    bufferLocks.computeIfAbsent(streamDescriptor, _k -> new ReentrantLock());
 
     bufferLocks.get(streamDescriptor).lock();
     try {
