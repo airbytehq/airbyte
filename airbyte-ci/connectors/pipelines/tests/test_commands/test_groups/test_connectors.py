@@ -202,6 +202,7 @@ def test_get_selected_connectors_with_metadata_only():
         second_modified_connector.code_directory / "setup.py",
     }
 
+
 def test_get_selected_connectors_with_metadata_query():
     connector = pick_a_random_connector()
     metadata_query = f"data.dockerRepository == '{connector.metadata['dockerRepository']}'"
@@ -219,6 +220,7 @@ def test_get_selected_connectors_with_metadata_query():
     assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert not selected_connectors[0].modified_files
+
 
 @pytest.fixture()
 def click_context_obj():
