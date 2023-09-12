@@ -4,11 +4,13 @@
 import sys
 from itertools import product
 from pathlib import Path
-from typing import List
+from typing import Mapping, Type
+from unittest.mock import MagicMock
 
 import anyio
 import dagger
-from base_images import consts, errors, utils
+from base_images import common, consts, errors, hacks
+from py_markdown_table.markdown_table import markdown_table  # type: ignore
 from rich.console import Console
 from rich.status import Status
 
@@ -26,31 +28,81 @@ except errors.BaseImageVersionError as e:
 ALL_BASE_IMAGES = {**python_bases.ALL_BASE_IMAGES}  # , **java_bases.ALL_BASE_IMAGES}
 
 
-async def run_all_sanity_checks(status: Status) -> bool:
+def generate_dockerfile(base_image_version: common.AirbyteConnectorBaseImage):
     """
-    Runs sanity checks on all the base images.
+    Generates the dockerfiles for all the base images.
+    """
+    dockerfile = hacks.get_container_dockerfile(base_image_version.container)
+    dockerfile_directory = Path(consts.PROJECT_DIR / "generated" / "dockerfiles" / base_image_version.platform)
+    dockerfile_directory.mkdir(exist_ok=True, parents=True)
+    dockerfile_path = Path(dockerfile_directory / f"{base_image_version.name_with_tag}.Dockerfile")
+    dockerfile_path.write_text(dockerfile)
+    console.log(
+        f":whale2: Generated Dockerfile for {base_image_version.name_with_tag} for {base_image_version.platform}: {dockerfile_path}",
+        highlight=False,
+    )
+
+
+async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage) -> bool:
+    """
+    Runs sanity checks on a base images.
     Sanity checks are declared in the base image version classes by implementing the run_sanity_checks function.
-    Sanity checks are command executed on the base image container, we check the output of these command to make sure the base image is working as expected.
+    Sanity checks are commands executed on the base image container, we check the output of these command to make sure the base image is working as expected.
     """
-    sanity_check_errors: List[errors.SanityCheckError] = []
+    try:
+        await base_image_version.run_sanity_checks_for_version()
+        console.log(
+            f":white_check_mark: Successfully ran sanity checks on {base_image_version.name_with_tag} for {base_image_version.platform}",
+            highlight=False,
+        )
+        return True
+    except errors.SanityCheckError as sanity_check_error:
+        console.log(
+            f":cross_mark: Sanity checks failure on {base_image_version.name_with_tag} for {base_image_version.platform}: {sanity_check_error}",
+            style="bold red",
+            highlight=False,
+        )
+        return False
+
+
+def write_changelog_file(changelog_path: Path, base_image_name: str, base_images: Mapping[str, Type[common.AirbyteConnectorBaseImage]]):
+    """Writes the changelog file locally for a given base image. Per version entries are generated from the base_images Mapping.
+
+    Args:
+        changelog_path (Path): Local absolute path to the changelog file.
+        base_image_name (str): The name of the base image e.g airbyte-python-connectors-base .
+        base_images (Mapping[str, Type[common.AirbyteConnectorBaseImage]]): All the base images versions for a given base image.
+    """
+
+    def get_version_with_link_md(cls: Type[common.AirbyteConnectorBaseImage]) -> str:
+        return f"[{cls.version}]({cls.github_url})"
+
+    entries = [
+        {
+            "Version": get_version_with_link_md(base_cls),
+            "Changelog": base_cls.changelog_entry,
+        }
+        for _, base_cls in base_images.items()
+    ]
+    markdown = markdown_table(entries).set_params(row_sep="markdown", quote=False).get_markdown()
+    with open(changelog_path, "w") as f:
+        f.write(f"# Changelog for {base_image_name}\n\n")
+        f.write(markdown)
+
+
+async def a_build(status: Status) -> bool:
     dagger_config = dagger.Config(log_output=sys.stderr) if consts.DEBUG else dagger.Config()
+    sanity_check_successes = []
+    status.update(":dagger: Initializing dagger client")
     async with dagger.Connection(dagger_config) as dagger_client:
         for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES.values()):
-            status.update(f":mag_right: Running sanity checks on {BaseImageVersion.name_with_tag} for {platform}")
-            try:
-                await BaseImageVersion(dagger_client, platform).run_sanity_checks_for_version()
-                console.log(
-                    f":white_check_mark: Successfully ran sanity check on {BaseImageVersion.name_with_tag} for {platform}", highlight=False
-                )
-            except errors.SanityCheckError as sanity_check_error:
-                console.log(
-                    f":cross_mark: Sanity check failure on {BaseImageVersion.name_with_tag} for {platform}: {sanity_check_error}",
-                    style="bold red",
-                    highlight=False,
-                )
-                sanity_check_errors.append(sanity_check_error)
-
-    return not sanity_check_errors
+            base_image_version = BaseImageVersion(dagger_client, platform)
+            status.update(f":hammer_and_wrench: Generating Dockerfile for {base_image_version.name_with_tag} for {platform}")
+            generate_dockerfile(base_image_version)
+            status.update(f":mag_right: Running sanity checks on {base_image_version.name_with_tag} for {platform}")
+            success = await run_sanity_checks(base_image_version)
+            sanity_check_successes.append(success)
+    return all(sanity_check_successes)
 
 
 def build():
@@ -67,20 +119,28 @@ def build():
     Subsequent runs will be faster as the base images layers and sanity checks layers will be cached locally.
     """
     try:
-        with console.status("Building the project", spinner="bouncingBall") as status:
-            status.update("Running sanity checks on all the base images")
-            if not anyio.run(run_all_sanity_checks, status):
-                console.log(":bomb: Sanity checks failed, aborting the build.", style="bold red")
-                sys.exit(1)
-            console.log(":tada: Successfully ran sanity checks on all the base images.")
+        default_build_status = console.status("Building the project", spinner="bouncingBall")
+        disabled_build_status = MagicMock(default_build_status)
+        build_status = default_build_status if not consts.DEBUG else disabled_build_status  # type: ignore
+        with build_status as current_status:  # type: ignore
+            success = anyio.run(a_build, build_status)
             python_changelog_path = Path(consts.PROJECT_DIR / "CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
-            status.update(f"Writing the changelog to {python_changelog_path}")
-            utils.write_changelog_file(
-                python_changelog_path, python_bases.AirbytePythonConnectorBaseImage.image_name, python_bases.ALL_BASE_IMAGES
-            )
-            console.log(
-                f":memo: Wrote the updated changelog to {python_changelog_path}. [bold red]Please commit and push it![/bold red]",
-            )
+            if not success:
+                console.log(
+                    ":bomb: Sanity checks failed. Feel free to prepend the command with LOG_LEVEL=DEBUG if you want to investigate Dagger logs.",
+                    style="bold red",
+                )
+            else:
+                current_status.update(f"Writing the changelog to {python_changelog_path}")
+                write_changelog_file(
+                    python_changelog_path, python_bases.AirbytePythonConnectorBaseImage.image_name, python_bases.ALL_BASE_IMAGES
+                )
+                console.log(
+                    f":memo: Wrote the updated changelog to {python_changelog_path}.",
+                )
+                console.log("[bold green]You can now commit and push the changelog and the generated dockerfiles![/bold green]")
+        if not success:
+            sys.exit(1)
     except KeyboardInterrupt:
         console.log(":bomb: Aborted the build.", style="bold red")
         sys.exit(1)
