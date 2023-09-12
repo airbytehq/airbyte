@@ -8,6 +8,7 @@ import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadS
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -26,8 +27,8 @@ import org.slf4j.LoggerFactory;
 public class MySqlInitialSyncStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialSyncStateIterator.class);
-  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
-  public static final Integer SYNC_CHECKPOINT_RECORDS = 100_000;
+  public static final Duration SYNC_CHECKPOINT_DURATION = DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
+  public static final Integer SYNC_CHECKPOINT_RECORDS = DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
