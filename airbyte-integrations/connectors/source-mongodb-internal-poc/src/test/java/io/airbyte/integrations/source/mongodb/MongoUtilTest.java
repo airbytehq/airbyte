@@ -109,7 +109,8 @@ public class MongoUtilTest {
     assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
         streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(CDC_DELETED_AT).get(JSON_TYPE_PROPERTY_NAME).asText());
     assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get(JSON_TYPE_PROPERTY_NAME),
-        streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR).get(JSON_TYPE_PROPERTY_NAME).asText());
+        streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).get(MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR)
+            .get(JSON_TYPE_PROPERTY_NAME).asText());
   }
 
   @Test

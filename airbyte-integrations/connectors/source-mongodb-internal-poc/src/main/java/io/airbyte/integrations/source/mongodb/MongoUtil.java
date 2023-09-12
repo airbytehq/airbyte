@@ -129,7 +129,8 @@ public class MongoUtil {
    */
   public static OptionalInt getDebeziumEventQueueSize(final JsonNode config) {
     final OptionalInt sizeFromConfig =
-        config.has(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY) ? OptionalInt.of(config.get(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY).asInt()) : OptionalInt.empty();
+        config.has(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY) ? OptionalInt.of(config.get(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY).asInt())
+            : OptionalInt.empty();
 
     if (sizeFromConfig.isPresent()) {
       int size = sizeFromConfig.getAsInt();

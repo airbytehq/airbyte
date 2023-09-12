@@ -89,7 +89,8 @@ class MongoDbCdcInitialSnapshotUtilsTest {
     final boolean savedOffsetIsValid = false;
 
     when(mongoDatabase.runCommand(any()))
-        .thenReturn(new Document(Map.of(MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY, 1000000L, MongoConstants.COLLECTION_STATISTICS_COUNT_KEY, 10000)));
+        .thenReturn(new Document(
+            Map.of(MongoConstants.COLLECTION_STATISTICS_STORAGE_SIZE_KEY, 1000000L, MongoConstants.COLLECTION_STATISTICS_COUNT_KEY, 10000)));
     when(mongoClient.getDatabase(NAMESPACE)).thenReturn(mongoDatabase);
 
     final List<ConfiguredAirbyteStream> initialSnapshotStreams =
