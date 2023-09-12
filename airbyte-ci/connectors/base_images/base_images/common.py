@@ -2,6 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+"""This module declares common (abstract) classes and methods used by all base images.
+It's not meant to be regurlarly modified.
+"""
+
 import inspect
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -11,7 +15,7 @@ from typing import final
 
 import dagger
 import semver
-from base_images import consts
+from base_images import consts, errors
 
 
 @dataclass
@@ -23,24 +27,6 @@ class PlatformAwareDockerImage:
 
     def get_full_image_name(self) -> str:
         return f"{self.image_name}:{self.tag}@sha256:{self.sha}"
-
-
-class BaseImageVersionError(ValueError):
-    """Raised when the version is not in the expected format."""
-
-    pass
-
-
-class SanityCheckError(Exception):
-    """Raised when a sanity check fails."""
-
-    pass
-
-
-class PlatformAvailabilityError(ValueError):
-    """Raised when the platform is not supported by an image."""
-
-    pass
 
 
 class BaseBaseImage(Enum):
@@ -59,19 +45,42 @@ class AirbyteConnectorBaseImage(ABC):
     @property
     @abstractmethod
     def base_base_image(cls) -> BaseBaseImage:
-        """Returns the base image used to build the Airbyte base image."""
+        """Returns the base image used to build the Airbyte base image.
+
+        Raises:
+            NotImplementedError: Raised if a subclass does not define a 'base_base_image' attribute.
+
+        Returns:
+            BaseBaseImage: The base image used to build the Airbyte base image.
+        """
         raise NotImplementedError("Subclasses must define a 'base_base_image'.")
 
     @property
     @abstractmethod
     def image_name(cls) -> str:
-        """This is the name of the final base image."""
+        """This is the name of the final base image. By name we mean DockerHub image name without the tag.
+
+        Raises:
+            NotImplementedError: Raised if a subclass does not define an 'image_name' attribute.
+
+        Returns:
+            str: The name of the final base image.
+        """
         raise NotImplementedError("Subclasses must define an 'image_name'.")
 
     @property
     @abstractmethod
-    def changelog(cls) -> str:
-        raise NotImplementedError("Subclasses must define a 'changelog' attribute.")
+    def changelog_entry(cls) -> str:
+        """This is the changelog entry for a new base image version.
+        It will automatically be used to generate the changelog entry for the release notes.
+
+        Raises:
+            NotImplementedError: Raised if a subclass does not define a 'changelog_entry' attribute.
+
+        Returns:
+            str: The changelog entry for a new base image version.
+        """
+        raise NotImplementedError("Subclasses must define a 'changelog_entry' attribute.")
 
     @final
     def __init__(self, dagger_client: dagger.Client, platform: dagger.Platform):
@@ -109,7 +118,9 @@ class AirbyteConnectorBaseImage(ABC):
         try:
             semver.VersionInfo.parse(cls.version)
         except ValueError as e:
-            raise BaseImageVersionError(f"The version class {cls.__name__} is not in the expected semantic versioning naming format: e.g `_0_1_0`.") from e
+            raise errors.BaseImageVersionError(
+                f"The version class {cls.__name__} is not in the expected semantic versioning naming format: e.g `_0_1_0`."
+            ) from e
 
     @final
     def _validate_platform_availability(self):
@@ -119,11 +130,16 @@ class AirbyteConnectorBaseImage(ABC):
             ValueError: Raised if the platform is not supported by the base image.
         """
         if self.platform not in self.base_base_image.value:
-            raise PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.base_base_image.name}.")
+            raise errors.PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.base_base_image.name}.")
 
     @final
     @property
     def base_base_image_name(self) -> str:
+        """Returns the full name of the base's base image used to build the Airbyte base image.
+        In this context the base's base image name contains the tag.
+        Returns:
+            str: The full name of the base's base image used to build the Airbyte base image, with its tag.
+        """
         return self.base_base_image.value[self.platform].get_full_image_name()
 
     @property
@@ -131,7 +147,7 @@ class AirbyteConnectorBaseImage(ABC):
     def base_container(self) -> dagger.Container:
         """Returns a container using the base python image. This container is used to build the Airbyte base image.
         We set environment variables and labels to ensure we can easily check at post build time:
-         - the Python base image that was used to build the Airbyte base image
+         - the base image that was used to build the Airbyte base image
          - the version of the Airbyte base image
 
         Returns:
@@ -155,22 +171,29 @@ class AirbyteConnectorBaseImage(ABC):
     async def run_sanity_checks(self):
         """Runs sanity checks on the base image container.
         This method is called on base image build.
+        The following sanity checks are meant to check that labels and environment variables about the base's base image and the current Airbyte base image are correctly set.
 
         Raises:
             SanityCheckError: Raised if a sanity check fails.
         """
         if not await self.container.env_variable("AIRBYTE_BASE_BASE_IMAGE") == self.base_base_image_name:
-            raise SanityCheckError("the AIRBYTE_BASE_BASE_IMAGE environment variable is not correctly set.")
+            raise errors.SanityCheckError("the AIRBYTE_BASE_BASE_IMAGE environment variable is not correctly set.")
         if not await self.container.env_variable("AIRBYTE_BASE_IMAGE") == self.name_with_tag:
-            raise SanityCheckError("the AIRBYTE_BASE_IMAGE environment variable is not correctly. set")
+            raise errors.SanityCheckError("the AIRBYTE_BASE_IMAGE environment variable is not correctly. set")
         if not await self.container.label("io.airbyte.base_base_image") == self.base_base_image_name:
-            raise SanityCheckError("the io.airbyte.base_base_image label is not correctly set.")
+            raise errors.SanityCheckError("the io.airbyte.base_base_image label is not correctly set.")
         if not await self.container.label("io.airbyte.base_image") == self.name_with_tag:
-            raise SanityCheckError("the io.airbyte.base_image label is not correctly set.")
+            raise errors.SanityCheckError("the io.airbyte.base_image label is not correctly set.")
 
     @staticmethod
-    def get_github_url(cls):
+    def get_github_url(cls) -> str:
+        """This method returns the GitHub URL of the file where the class is defined on the main branch.
+        This URL is used to generate the changelog entry for the release notes.
+        This URL will resolve once the code is pushed to the main branch.
+
+        Returns:
+            str: The GitHub URL of the file where the class is defined on the main branch.
+        """
         absolute_module_path = inspect.getfile(cls)
         relative_module_path = Path(absolute_module_path).relative_to(consts.AIRBYTE_ROOT_DIR)
-        # This url will resolve once the code is pushed to the main branch
         return f"{consts.AIRBYTE_GITHUB_REPO_URL}/blob/{consts.MAIN_BRANCH_NAME}/{relative_module_path}"
