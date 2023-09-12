@@ -14,6 +14,7 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
+    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -65,14 +66,13 @@ class SourceFacebookMarketing(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
 
-        # set default start_date to 2 years ago
-        if not config.get("start_date"):
-            config["start_date"] = pendulum.now().add(years=-2)
-
         config = ConnectorConfig.parse_obj(config)
 
-        config.start_date = pendulum.instance(config.start_date)
-        config.end_date = pendulum.instance(config.end_date)
+        if config.start_date:
+            config.start_date = pendulum.instance(config.start_date)
+
+        if config.end_date:
+            config.end_date = pendulum.instance(config.end_date)
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -87,13 +87,13 @@ class SourceFacebookMarketing(AbstractSource):
 
             if config.end_date > pendulum.now():
                 return False, "Date range can not be in the future."
-            if config.end_date < config.start_date:
+            if config.start_date and config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
             api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
-            logger.info(f"Select account {api.account}")
 
-            account_info = api.account.api_get(fields=["is_personal"])
+            record_iterator = AdAccount(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
+            account_info = list(record_iterator)[0]
 
             if account_info.get("is_personal"):
                 message = (
@@ -104,7 +104,9 @@ class SourceFacebookMarketing(AbstractSource):
 
         except Exception as e:
             if isinstance(e, AirbyteTracedException):
-                msg = e.message
+                msg = f"{e.message}. Full error: {e.internal_message}"
+                if "(#100) Missing permissions" in msg:
+                    msg = f"Check if correct Ad Account id used. {msg}"
             else:
                 msg = repr(e)
             return False, msg
@@ -124,13 +126,17 @@ class SourceFacebookMarketing(AbstractSource):
         :return: list of the stream instances
         """
         config = self._validate_and_transform(config)
-        config.start_date = validate_start_date(config.start_date)
-        config.end_date = validate_end_date(config.start_date, config.end_date)
+        if config.start_date:
+            config.start_date = validate_start_date(config.start_date)
+            config.end_date = validate_end_date(config.start_date, config.end_date)
 
         api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
+        # if start_date not specified then set default start_date for report streams to 2 years ago
+        report_start_date = config.start_date or pendulum.now().add(years=-2)
+
         insights_args = dict(
-            api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
+            api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
             AdAccount(api=api),

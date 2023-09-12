@@ -146,11 +146,8 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
         super().__init__(**kwargs)
-        self._start_date = pendulum.instance(start_date)
-        self._end_date = pendulum.instance(end_date)
-
-        if self._end_date < self._start_date:
-            logger.error("The end_date must be after start_date.")
+        self._start_date = pendulum.instance(start_date) if start_date else None
+        self._end_date = pendulum.instance(end_date) if end_date else None
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -174,13 +171,24 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
+
         state_value = stream_state.get(self.cursor_field)
-        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+        if stream_state:
+            filter_value = pendulum.parse(state_value)
+        elif self._start_date:
+            filter_value = self._start_date
+        else:
+            # if start_date is not specified then do not use date filters
+            return {}
 
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-            filter_value = self._start_date
+            if self._start_date:
+                filter_value = self._start_date
+            else:
+                # if start_date is not specified then do not use date filters
+                return {}
 
         return {
             "filtering": [

@@ -96,6 +96,13 @@ CONFIG_ERRORS = [
              }
          }
      }
+     # Error randomly happens for different connections.
+     # Can be reproduced on https://developers.facebook.com/tools/explorer/?method=GET&path=act_<ad_account_id>&version=v17.0
+     # 1st reason: incorrect ad account id is used
+     # 2nd reason: access_token does not have permissions:
+     #      remove all permissions
+     #      re-generate access token
+     # Re-authenticate (for cloud) or refresh access token (for oss) and check if all required permissions are granted
      ),
     ("error_403_requires_permission",
      "Re-authenticate because current credential does not have the necessary permissions",

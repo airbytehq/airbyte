@@ -22,7 +22,8 @@ def config_fixture(requests_mock):
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", {})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users", json={"data": []})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",  json={"account": 123})
     return config
 
 
@@ -146,16 +147,23 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
     assert status.status == Status.FAILED
 
     status = command_check(fb_marketing, config_gen(start_date=...))
-    assert status.status == Status.FAILED
+    assert status.status == Status.SUCCEEDED
 
     assert command_check(fb_marketing, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
     assert command_check(fb_marketing, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
 
 
-def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock):
-    api_mock = mocker.Mock()
-    api_mock.account.api_get.return_value = {"account": 123, "is_personal": 1}
-    mocker.patch('source_facebook_marketing.source.API', return_value=api_mock)
+def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock, requests_mock):
+    account_id = '123'
+    ad_account_response = {
+        "json": {
+            "account_id": account_id,
+            "id": f"act_{account_id}",
+            'is_personal': 1
+        }
+    }
+    requests_mock.reset_mock()
+    requests_mock.register_uri("GET", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_123/", [ad_account_response])
 
     result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
 
