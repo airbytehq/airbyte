@@ -43,6 +43,18 @@ class AirbyteConnectorBaseImage(ABC):
     github_url: str
     version: str
 
+    @final
+    def __init__(self, dagger_client: dagger.Client, platform: dagger.Platform):
+        """Initializes the Airbyte base image.
+
+        Args:
+            dagger_client (dagger.Client): The dagger client used to build the base image.
+            platform (dagger.Platform): The platform used to build the base image.
+        """
+        self.dagger_client = dagger_client
+        self.platform = platform
+        self._validate_platform_availability()
+
     @property
     @abstractmethod
     def base_base_image(cls) -> BaseBaseImage:
@@ -82,18 +94,6 @@ class AirbyteConnectorBaseImage(ABC):
             str: The changelog entry for a new base image version.
         """
         raise NotImplementedError("Subclasses must define a 'changelog_entry' attribute.")
-
-    @final
-    def __init__(self, dagger_client: dagger.Client, platform: dagger.Platform):
-        """Initializes the Airbyte base image.
-
-        Args:
-            dagger_client (dagger.Client): The dagger client used to build the base image.
-            platform (dagger.Platform): The platform used to build the base image.
-        """
-        self.dagger_client = dagger_client
-        self.platform = platform
-        self._validate_platform_availability()
 
     @final
     def __init_subclass__(cls) -> None:
@@ -162,7 +162,7 @@ class AirbyteConnectorBaseImage(ABC):
         """
         return (
             self.dagger_client.pipeline(self.name_with_tag)
-            .container()
+            .container(platform=self.platform)
             .from_(self.base_base_image_name)
             .with_env_variable("AIRBYTE_BASE_BASE_IMAGE", self.base_base_image_name)
             .with_env_variable("AIRBYTE_BASE_IMAGE", self.name_with_tag)
