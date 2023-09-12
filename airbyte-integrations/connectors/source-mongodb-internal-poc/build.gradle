@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mongodb.internal.MongoDbSource'
+    mainClass = 'io.airbyte.integrations.source.mongodb.MongoDbSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -79,7 +79,7 @@ tasks.register('generateTestData', JavaExec) {
     }
 
     classpath = sourceSets.test.runtimeClasspath
-    main 'io.airbyte.integrations.source.mongodb.internal.MongoDbInsertClient'
+    main 'io.airbyte.integrations.source.mongodb.MongoDbInsertClient'
     standardInput = System.in
     args arguments
 }
@@ -108,7 +108,7 @@ tasks.register('debeziumTest', JavaExec) {
     }
 
     classpath = sourceSets.debeziumTest.runtimeClasspath
-    main 'io.airbyte.integrations.source.mongodb.internal.DebeziumMongoDbConnectorTest'
+    main 'io.airbyte.integrations.source.mongodb.DebeziumMongoDbConnectorTest'
     standardInput = System.in
     args arguments
 }

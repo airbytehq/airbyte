@@ -1,6 +1,8 @@
-package io.airbyte.integrations.source.mongodb.internal
+package io.airbyte.integrations.source.mongodb
 
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.source.mongodb.MongoConnectionUtils
+import io.airbyte.integrations.source.mongodb.MongoConstants
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -25,7 +27,8 @@ object MongoDbInsertClient {
         println("Enter password: ")
         val password = readln()
 
-        var config = mapOf(MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
+        var config = mapOf(
+            MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
                 MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY to connectionString,
                 MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY to "admin",
                 MongoConstants.USER_CONFIGURATION_KEY to username,
