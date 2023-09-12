@@ -265,10 +265,9 @@ public class GlobalAsyncStateManager {
    */
   private void closeState(final PartialAirbyteMessage message, final long sizeInBytes) {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
-    log.error("Resolved descriptor: " + resolvedDescriptor.toString());
 
     if (message.getSerialized().equals(streamToLastestState.get(resolvedDescriptor))) {
-      log.error("Received Duplicated state");
+      log.debug("Received duplicated state");
     } else {
       streamToLastestState.put(resolvedDescriptor, message.getSerialized());
       stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
@@ -302,10 +301,14 @@ public class GlobalAsyncStateManager {
       }
     }
     memoryUsed.addAndGet(sizeInBytes);
-    LOGGER.debug("State Manager memory usage: Allocated: {}, Used: {}, % Used {}",
-        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-        (double) memoryUsed.get() / memoryAllocated.get());
+    LOGGER.debug(getMemoryUsageMessage());
+  }
+
+  public String getMemoryUsageMessage() {
+    return String.format("State Manager memory usage: Allocated: %s, Used: %s, % Used %f",
+            FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+            FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+            (double) memoryUsed.get() / memoryAllocated.get());
   }
 
   private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message) {
