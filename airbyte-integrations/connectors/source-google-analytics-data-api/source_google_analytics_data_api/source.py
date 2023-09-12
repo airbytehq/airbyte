@@ -412,14 +412,8 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
         return authenticator_class(**get_credentials(credentials))
 
-    def get_property_ids(self, config):
-        property_ids = config.get("property_ids", [])
-        if "property_id" in config and config["property_id"] not in property_ids:
-            property_ids += [config["property_id"]]
-        return property_ids
-
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        for property_id in self.get_property_ids(config=config):
+        for property_id in config["property_ids"]:
             reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
             try:
                 config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
@@ -450,24 +444,29 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                     raise wrong_property_id_error
 
             if not metadata:
-                return False, "failed to get metadata, over quota, try later"
+                return False, "Failed to get metadata, over quota, try later"
 
             dimensions = {d["apiName"] for d in metadata["dimensions"]}
             metrics = {d["apiName"] for d in metadata["metrics"]}
 
             for report in _config["custom_reports"]:
+                # Check if custom report dimensions supported. Compare them with dimensions provided by GA API
                 invalid_dimensions = set(report["dimensions"]) - dimensions
                 if invalid_dimensions:
                     invalid_dimensions = ", ".join(invalid_dimensions)
                     return False, WRONG_DIMENSIONS.format(fields=invalid_dimensions, report_name=report["name"])
+
+                # Check if custom report metrics supported. Compare them with metrics provided by GA API
                 invalid_metrics = set(report["metrics"]) - metrics
                 if invalid_metrics:
                     invalid_metrics = ", ".join(invalid_metrics)
                     return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
+
                 report_stream = self.instantiate_report_class(report, _config, page_size=100)
                 # check if custom_report dimensions + metrics can be combined and report generated
                 stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
                 next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+
             return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -477,7 +476,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return [stream for report in reports + config["custom_reports"] for stream in self.instantiate_report_streams(report, config)]
 
     def instantiate_report_streams(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
-        for property_id in self.get_property_ids(config):
+        for property_id in config["property_ids"]:
             yield self.instantiate_report_class(report=report, config={**config, "property_id": property_id})
 
     def instantiate_report_class(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
