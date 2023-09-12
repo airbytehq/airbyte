@@ -87,7 +87,7 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
             raise errors.SanityCheckError(f"missing environment variables: {missing_env_vars}")
 
 
-class _0_1_0(AirbytePythonConnectorBaseImage):
+class _1_0_0(AirbytePythonConnectorBaseImage):
 
     base_base_image: Final[PythonBase] = PythonBase.PYTHON_3_9
 
@@ -106,24 +106,17 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
             self.base_container
             # Set the timezone to UTC
             .with_exec(["ln", "-snf", f"/usr/share/zoneinfo/{self.TIMEZONE}", "/etc/localtime"])
-            # Create the .local/bin directory to receive poetry bin
-            # .with_exec(["sh", "-c", "mkdir $HOME/.local/bin"])
-            # Set the PATH to include the .local/bin directory
-            # .with_env_variable("PATH", "$PATH:$HOME/.local/bin:")
             # Upgrade pip to the expected version
             .with_exec(["pip", "install", "--upgrade", f"pip=={self.EXPECTED_PIP_VERSION}"])
-            # Install poetry
-            .with_exec(["sh", "-c", "curl -sSL https://install.python-poetry.org | python3 -"])
         )
 
     @staticmethod
     async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
         await AirbytePythonConnectorBaseImage.run_sanity_checks(base_image_version)
-        await _0_1_0.check_time_zone(base_image_version)
-        await _0_1_0.check_bash_is_installed(base_image_version)
-        await _0_1_0.check_python_version(base_image_version)
-        await _0_1_0.check_pip_version(base_image_version)
-        await _0_1_0.check_poetry_is_installed(base_image_version)
+        await _1_0_0.check_time_zone(base_image_version)
+        await _1_0_0.check_bash_is_installed(base_image_version)
+        await _1_0_0.check_python_version(base_image_version)
+        await _1_0_0.check_pip_version(base_image_version)
 
     @staticmethod
     async def check_python_version(base_image_version: common.AirbyteConnectorBaseImage):
@@ -141,7 +134,7 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
             ).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run python --version.") from e
-        if python_version_output != f"Python {_0_1_0.EXPECTED_PYTHON_VERSION}\n":
+        if python_version_output != f"Python {_1_0_0.EXPECTED_PYTHON_VERSION}\n":
             raise errors.SanityCheckError(f"unexpected python version: {python_version_output}")
 
     @staticmethod
@@ -158,7 +151,7 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
             pip_version_output: str = await base_image_version.container.with_exec(["pip", "--version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run pip --version.") from e
-        if not pip_version_output.startswith(f"pip {_0_1_0.EXPECTED_PIP_VERSION}"):
+        if not pip_version_output.startswith(f"pip {_1_0_0.EXPECTED_PIP_VERSION}"):
             raise errors.SanityCheckError(f"unexpected pip version: {pip_version_output}")
 
     @staticmethod
@@ -193,40 +186,10 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run bash --version.") from e
 
-    @staticmethod
-    async def check_curl_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
-        """Bash should be installed on the base image for installing poetry.
-
-        Args:
-            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
-
-        Raises:
-            errors.SanityCheckError: Raised if the curl --version command could not be executed.
-        """
-        try:
-            await base_image_version.container.with_exec(["curl", "--version"], skip_entrypoint=True).stdout()
-        except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run curl --version.") from e
-
-    @staticmethod
-    async def check_poetry_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
-        """Poetry should be installed on the base image for installing dependencies if a Python connector uses this package manager.
-
-        Args:
-            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
-
-        Raises:
-            errors.SanityCheckError: Raised if the poetry --version command could not be executed.
-        """
-        try:
-            await base_image_version.container.with_exec(["poetry", "--version"], skip_entrypoint=True).stdout()
-        except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run poetry --version.") from e
-
 
 # DECLARE NEW BASE IMAGE VERSIONS BELOW THIS LINE
 # Non breaking version should ideally inherit from the previous version.
-# class _0_1_1(_0_1_0):
+# class _1_0_1(_1_0_0):
 
 # Breaking version should inherit from AirbytePythonConnectorBaseImage.
 # class _1_0_0(AirbyteConnectorBaseImage):
