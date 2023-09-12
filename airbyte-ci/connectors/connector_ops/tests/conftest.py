@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pandas as pd
 import pytest
-
+import os
 
 @pytest.fixture(scope="module")
 def adoption_metrics_per_connector_version():
@@ -53,3 +53,8 @@ def dummy_qa_report() -> pd.DataFrame:
             }
         ]
     )
+
+@pytest.fixture(autouse=True)
+def change_test_dir(monkeypatch):
+    monkeypatch.chdir(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+
