@@ -15,7 +15,7 @@ def get_all_base_images_mock(successful_sanity_check: bool):
 
         class _0_0_0__failing(RealImage):
             async def run_sanity_checks(self):
-                raise base_images.common.SanityCheckError("mocked sanity check failure")
+                raise base_images.errors.SanityCheckError("mocked sanity check failure")
 
         all_base_images_failing_sanity_checks[image_name] = _0_0_0__success if successful_sanity_check else _0_0_0__failing
 
