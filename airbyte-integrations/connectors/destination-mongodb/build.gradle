@@ -24,5 +24,4 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mongodb')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }

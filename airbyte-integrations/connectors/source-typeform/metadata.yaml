@@ -5,7 +5,6 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 1.0.0
     oss:
       enabled: true
   connectorSubtype: api
@@ -21,6 +20,11 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
+  releases:
+    breakingChanges:
+      1.1.0:
+        upgradeDeadline: "2023-09-25"
+        message: "This version migrates the Typeform connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures."
   tags:
     - language:low-code
   ab_internal:
