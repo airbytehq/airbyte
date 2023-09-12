@@ -5,10 +5,10 @@ import importlib
 import inspect
 import pkgutil
 from abc import ABC
-from typing import Final, Set, Type
+from typing import Final, Set, Type, final
 
 import dagger
-from base_images import common, errors
+from base_images import common, errors, sanity_checks
 
 
 class PythonBase(common.BaseBaseImage):
@@ -17,7 +17,7 @@ class PythonBase(common.BaseBaseImage):
     We use the image digest (the a sha256) to ensure that the image is not changed for reproducibility.
     """
 
-    PYTHON_3_9 = {
+    PYTHON_3_9_18 = {
         # https://hub.docker.com/layers/library/python/3.9.18-bookworm/images/sha256-40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58
         dagger.Platform("linux/amd64"): common.PlatformAwareDockerImage(
             image_name="python",
@@ -39,8 +39,8 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
     """An abstract class that represents an Airbyte Python base image."""
 
     image_name: Final[str] = "airbyte-python-connector-base"
-
-    EXPECTED_ENV_VARS: Set[str] = {
+    pip_cache_name: Final[str] = "pip-cache"
+    expected_env_vars: Set[str] = {
         "PYTHON_VERSION",
         "PYTHON_PIP_VERSION",
         "PYTHON_GET_PIP_SHA256",
@@ -56,6 +56,14 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         "TRACEPARENT",
     }
 
+    @final
+    def __init_subclass__(cls) -> None:
+        if not cls.__base__ == AirbytePythonConnectorBaseImage:
+            raise errors.BaseImageVersionError(
+                f"AirbytePythonConnectorBaseImage subclasses must directly inherit from AirbytePythonConnectorBaseImage. {cls.__name__} does not."
+            )
+        return super().__init_subclass__()
+
     @staticmethod
     async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
         await common.AirbyteConnectorBaseImage.run_sanity_checks(base_image_version)
@@ -64,7 +72,7 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
     @staticmethod
     async def check_env_vars(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the expected environment variables are set on the base image.
-        The EXPECTED_ENV_VARS were set on all our certified python connectors that were not using this base image
+        The expected_env_vars were set on all our certified python connectors that were not using this base image
         We want to make sure that they are still set on all our connectors to avoid breaking changes.
 
         Args:
@@ -73,14 +81,18 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         Raises:
             errors.SanityCheckError: Raised if a sanity check fails: the printenv command could not be executed or an expected variable is not set.
         """
-        try:
-            printenv_output: str = await base_image_version.container.with_exec(["printenv"], skip_entrypoint=True).stdout()
-        except dagger.ExecError as e:
-            raise errors.SanityCheckError(e)
-        env_vars = set([line.split("=")[0] for line in printenv_output.splitlines()])
-        missing_env_vars = AirbytePythonConnectorBaseImage.EXPECTED_ENV_VARS - env_vars
-        if missing_env_vars:
-            raise errors.SanityCheckError(f"missing environment variables: {missing_env_vars}")
+        for expected_env_var in AirbytePythonConnectorBaseImage.expected_env_vars:
+            await sanity_checks.check_env_var_with_printenv(base_image_version.container, expected_env_var)
+
+    def get_previous_version(self):
+        all_base_images_version_classes = list(ALL_BASE_IMAGES.values())
+        for i, value in enumerate(all_base_images_version_classes):
+            if value == self.__class__:
+                try:
+                    return all_base_images_version_classes[i + 1]
+                except IndexError:
+                    return None
+        raise errors.BaseImageVersionError(f"Could not find the previous version of {self.__class__.__name__}.")
 
 
 # HELPER FUNCTIONS
@@ -91,26 +103,16 @@ def get_all_python_base_images() -> dict[str, Type[AirbytePythonConnectorBaseIma
     Returns:
         dict[str, Type[AirbytePythonConnectorBaseImage]]: A dictionary of the base image versions declared in the module, keys are base image name and tag as string.
     """
-    # Reverse the order of the members so that the latest version is first
-    # cls_members = reversed(inspect.getmembers(sys.modules[__name__], inspect.isclass))
-    # return {
-    #     cls_member.name_with_tag: cls_member
-    #     for _, cls_member in cls_members
-    #     if issubclass(type(cls_member), type(AirbytePythonConnectorBaseImage))
-    #     and cls_member != AirbytePythonConnectorBaseImage
-    #     and cls_member != ABC
-    # }
 
     current_package = __package__ or ""
 
-    # Get a list of all modules in the current package
     package_path = current_package.replace(".", "/")
     package_modules = [module_name for _, module_name, _ in pkgutil.iter_modules([package_path])]
 
-    # List all classes in the imported modules
     all_base_image_classes = {}
     for module_name in package_modules:
         module = importlib.import_module(f"{current_package}.{module_name}")
+
         cls_members = list(reversed(inspect.getmembers(module, inspect.isclass)))
         all_base_image_classes.update(
             {
@@ -121,6 +123,7 @@ def get_all_python_base_images() -> dict[str, Type[AirbytePythonConnectorBaseIma
                 and cls_member != ABC
             }
         )
+
     return all_base_image_classes
 
 

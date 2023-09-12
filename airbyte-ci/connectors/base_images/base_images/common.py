@@ -16,7 +16,7 @@ from typing import final
 
 import dagger
 import semver
-from base_images import consts, errors
+from base_images import consts, errors, sanity_checks
 
 
 @dataclass
@@ -95,11 +95,23 @@ class AirbyteConnectorBaseImage(ABC):
         """
         raise NotImplementedError("Subclasses must define a 'changelog_entry' attribute.")
 
-    @final
+    @property
+    @abstractmethod
+    def run_previous_version_sanity_checks(cls) -> bool:
+        """This is a flag to run the previous version sanity checks on the current version.
+        It is helpful to detect breaking changes or regression in a new base image version.
+        Raises:
+            NotImplementedError: Raised if a subclass does not define a 'run_previous_version_sanity_checks' attribute.
+
+        Returns:
+            bool: A flag to run the previous version sanity checks on the current version.
+        """
+        raise NotImplementedError("Subclasses must define a 'run_previous_version_sanity_checks' attribute.")
+
     def __init_subclass__(cls) -> None:
         cls.github_url = AirbyteConnectorBaseImage.get_github_url(cls)
-        cls.version = AirbyteConnectorBaseImage.get_version_from_class_name(cls)
         if not inspect.isabstract(cls):
+            cls.version = AirbyteConnectorBaseImage.get_version_from_class_name(cls)
             AirbyteConnectorBaseImage._validate_version(cls)
             cls.name_with_tag = f"{cls.image_name}:{cls.version}"
         return super().__init_subclass__()
@@ -184,6 +196,11 @@ class AirbyteConnectorBaseImage(ABC):
         Raises:
             SanityCheckError: Raised if a sanity check fails.
         """
+        await self.__class__.__base__.run_sanity_checks(self)
+        if self.run_previous_version_sanity_checks:
+            PreviousVersion: AirbyteConnectorBaseImage = self.get_previous_version()
+            if PreviousVersion is not None:
+                await PreviousVersion(self.dagger_client, self.platform).run_sanity_checks(self)
         await self.run_sanity_checks(self)
 
     @staticmethod
@@ -199,14 +216,18 @@ class AirbyteConnectorBaseImage(ABC):
         Raises:
             SanityCheckError: Raised if a sanity check fails.
         """
-        if not await base_image_version.container.env_variable("AIRBYTE_BASE_BASE_IMAGE") == base_image_version.base_base_image_name:
-            raise errors.SanityCheckError("the AIRBYTE_BASE_BASE_IMAGE environment variable is not correctly set.")
-        if not await base_image_version.container.env_variable("AIRBYTE_BASE_IMAGE") == base_image_version.name_with_tag:
-            raise errors.SanityCheckError("the AIRBYTE_BASE_IMAGE environment variable is not correctly. set")
-        if not await base_image_version.container.label("io.airbyte.base_base_image") == base_image_version.base_base_image_name:
-            raise errors.SanityCheckError("the io.airbyte.base_base_image label is not correctly set.")
-        if not await base_image_version.container.label("io.airbyte.base_image") == base_image_version.name_with_tag:
-            raise errors.SanityCheckError("the io.airbyte.base_image label is not correctly set.")
+        await sanity_checks.check_env_var_defined_with_dagger(
+            base_image_version.container, "AIRBYTE_BASE_BASE_IMAGE", base_image_version.base_base_image_name
+        )
+        await sanity_checks.check_env_var_defined_with_dagger(
+            base_image_version.container, "AIRBYTE_BASE_IMAGE", base_image_version.name_with_tag
+        )
+        await sanity_checks.check_label_defined_with_dagger(
+            base_image_version.container, "io.airbyte.base_base_image", base_image_version.base_base_image_name
+        )
+        await sanity_checks.check_label_defined_with_dagger(
+            base_image_version.container, "io.airbyte.base_image", base_image_version.name_with_tag
+        )
 
     @staticmethod
     def get_github_url(cls) -> str:
@@ -220,3 +241,7 @@ class AirbyteConnectorBaseImage(ABC):
         absolute_module_path = inspect.getfile(cls)
         relative_module_path = Path(absolute_module_path).relative_to(consts.AIRBYTE_ROOT_DIR)
         return f"{consts.AIRBYTE_GITHUB_REPO_URL}/blob/{consts.MAIN_BRANCH_NAME}/{relative_module_path}"
+
+    @abstractmethod
+    def get_previous_version(self):
+        raise NotImplementedError("Subclasses must define a 'get_previous_version' method.")
