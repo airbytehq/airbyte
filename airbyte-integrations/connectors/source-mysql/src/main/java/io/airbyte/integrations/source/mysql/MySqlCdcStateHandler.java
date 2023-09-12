@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.serialize;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcStateHandler;
@@ -35,7 +36,7 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final JsonNode asJson = serialize(offset, dbHistory);
 
     LOGGER.info("debezium state: {}", asJson);
@@ -61,4 +62,8 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
 
+  @Override
+  public boolean compressSchemaHistoryForState() {
+    return COMPRESSION_ENABLED;
+  }
 }

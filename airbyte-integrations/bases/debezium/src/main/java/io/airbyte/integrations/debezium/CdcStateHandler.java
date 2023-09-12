@@ -14,9 +14,13 @@ import java.util.Map;
  */
 public interface CdcStateHandler {
 
-  AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory dbHistory);
+  AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory);
 
   AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams();
+
+  default boolean compressSchemaHistoryForState() {
+    return false;
+  }
 
   /**
    * This function is used as feature flag for sending state messages as checkpoints in CDC syncs.

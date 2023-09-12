@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.debezium.CdcSavedInfoFetcher.SchemaHistoryInfo;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import java.io.IOException;
 import java.util.Optional;
@@ -24,20 +23,18 @@ public class AirbyteSchemaHistoryStorageTest {
     final String contentReadDirectlyFromFile = MoreResources.readResource("dbhistory_greater_than_3_mb.dat");
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromUncompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
-        new SchemaHistoryInfo(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
-            false,
-            true));
-    final SchemaHistory schemaHistoryFromUncompressedContent = schemaHistoryStorageFromUncompressedContent.read();
+        new SchemaHistory<>(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
+            false), true);
+    final SchemaHistory<String> schemaHistoryFromUncompressedContent = schemaHistoryStorageFromUncompressedContent.read();
 
     assertTrue(schemaHistoryFromUncompressedContent.isCompressed());
     assertNotNull(schemaHistoryFromUncompressedContent.schema());
     assertEquals(contentReadDirectlyFromFile, schemaHistoryStorageFromUncompressedContent.readUncompressed());
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromCompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
-        new SchemaHistoryInfo(Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema())),
-            true,
-            true));
-    final SchemaHistory schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read();
+        new SchemaHistory<>(Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema())),
+            true), true);
+    final SchemaHistory<String> schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read();
 
     assertTrue(schemaHistoryFromCompressedContent.isCompressed());
     assertNotNull(schemaHistoryFromCompressedContent.schema());
@@ -57,20 +54,18 @@ public class AirbyteSchemaHistoryStorageTest {
     final String contentReadDirectlyFromFile = MoreResources.readResource("dbhistory_less_than_3_mb.dat");
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromUncompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
-        new SchemaHistoryInfo(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
-            false,
-            true));
-    final SchemaHistory schemaHistoryFromUncompressedContent = schemaHistoryStorageFromUncompressedContent.read();
+        new SchemaHistory<>(Optional.of(Jsons.jsonNode(contentReadDirectlyFromFile)),
+            false), true);
+    final SchemaHistory<String> schemaHistoryFromUncompressedContent = schemaHistoryStorageFromUncompressedContent.read();
 
     assertFalse(schemaHistoryFromUncompressedContent.isCompressed());
     assertNotNull(schemaHistoryFromUncompressedContent.schema());
     assertEquals(contentReadDirectlyFromFile, schemaHistoryFromUncompressedContent.schema());
 
     final AirbyteSchemaHistoryStorage schemaHistoryStorageFromCompressedContent = AirbyteSchemaHistoryStorage.initializeDBHistory(
-        new SchemaHistoryInfo(Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema())),
-            false,
-            true));
-    final SchemaHistory schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read();
+        new SchemaHistory<>(Optional.of(Jsons.jsonNode(schemaHistoryFromUncompressedContent.schema())),
+            false), true);
+    final SchemaHistory<String> schemaHistoryFromCompressedContent = schemaHistoryStorageFromCompressedContent.read();
 
     assertFalse(schemaHistoryFromCompressedContent.isCompressed());
     assertNotNull(schemaHistoryFromCompressedContent.schema());

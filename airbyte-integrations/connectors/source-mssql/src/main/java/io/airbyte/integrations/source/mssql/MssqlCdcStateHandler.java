@@ -32,7 +32,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
     state.put(MSSQL_DB_HISTORY, dbHistory.schema());
