@@ -5,7 +5,7 @@
 # - airbyte-cdk/java/airbyte-cdk/build.gradle
 # - buildSrc/src/main/groovy/airbyte-java-cdk.gradle
 # - settings.gradle
-# 
+#
 # Commits to cherry pick:
 # - eed850eafd6e2fb37b4ca7b5b3fd63ae237a2780 - add cdk gradle plugin to connectors
 # - ceedc270b150aa4b532a8f42e8541880c9041312 - cleanup removed gradle refs
@@ -83,10 +83,11 @@
 #     - Replace with: io.airbyte.cdk.$1
 #     - Exclude files: _temp_migration_script.sh,*.html,build,bin
 # - Replace references to the moved packages with the new package names.
-
+#
 # Other notes:
 # - This script is idempotent. It should become a no-op if run to completion.
 # - The "typing_deduping" and "typing_deduping_test" subpackages are special cases. They migrated from different directories while being declared as the same package name: "io.airbyte.integrations.destination.typing_deduping".
+# - Certain tasks may fail due to missing image integrations-base-java:dev. Rename Dockerfile to Dockerfile.bak to work around this.
 
 # If no source directory is specified, this script will invoke itself for all known directory migrations:
 if [ -z "$1" ]; then
