@@ -127,7 +127,7 @@ class GoogleAds:
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
-        
+
         # field is a cursor for successors of IncrementalEventsStream, so should be present in schema, but it is obtained from parent stream
         if report_name != "change_status" and "change_status.last_change_date_time" in fields:
             fields.remove("change_status.last_change_date_time")
