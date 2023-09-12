@@ -11,20 +11,19 @@ import static java.util.Collections.singleton;
 
 import autovalue.shaded.kotlin.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -177,9 +176,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         String.format(
             "The Following Exceptions were thrown while typing and deduping %s.%s:\n",
             originalNamespace,
-            originalName
-        )
-    );
+            originalName));
   }
 
   public Lock getRawTableInsertLock(final String originalNamespace, final String originalName) {
