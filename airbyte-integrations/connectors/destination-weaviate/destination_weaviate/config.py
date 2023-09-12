@@ -18,8 +18,8 @@ from pydantic import BaseModel, Field
 
 class UsernamePasswordAuth(BaseModel):
     mode: Literal["username_password"] = Field("username_password", const=True)
-    username: str = Field(..., title="Username", description="Username for the Milvus instance", order=1)
-    password: str = Field(..., title="Password", description="Password for the Milvus instance", airbyte_secret=True, order=2)
+    username: str = Field(..., title="Username", description="Username for the Weaviate cluster", order=1)
+    password: str = Field(..., title="Password", description="Password for the Weaviate cluster", airbyte_secret=True, order=2)
 
     class Config:
         title = "Username/Password"
@@ -55,7 +55,7 @@ class WeaviateIndexingConfigModel(BaseModel):
         ...,
         title="Public Endpoint",
         order=1,
-        description="The public endpoint of the Milvus instance. ",
+        description="The public endpoint of the Weaviate cluster.",
         examples=["https://my-cluster.weaviate.network"],
     )
     class_name: str = Field(..., title="Class name", description="The class to load data into", order=3)
@@ -83,9 +83,9 @@ class NoEmbeddingConfigModel(BaseModel):
     mode: Literal["no_embedding"] = Field("no_embedding", const=True)
 
     class Config:
-        title = "Weaviate vectorizer"
+        title = "No embedding"
         schema_extra = {
-            "description": "Do not calculate embeddings (suitable for classes with configured vectorizers to calculate embeddings within Weaviate)"
+            "description": "Do not calculate embeddings. Suitable for classes with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
         }
 
 
@@ -101,7 +101,7 @@ class ConfigModel(BaseModel):
     indexing: WeaviateIndexingConfigModel
 
     class Config:
-        title = "Milvus Destination Config"
+        title = "Weaviate Destination Config"
         schema_extra = {
             "groups": [
                 {"id": "processing", "title": "Processing"},

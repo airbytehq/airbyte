@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/weaviate",
   "connectionSpecification": {
-    "title": "Milvus Destination Config",
+    "title": "Weaviate Destination Config",
     "type": "object",
     "properties": {
       "processing": {
@@ -116,7 +116,7 @@
             "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           },
           {
-            "title": "Weaviate vectorizer",
+            "title": "No embedding",
             "type": "object",
             "properties": {
               "mode": {
@@ -127,7 +127,7 @@
                 "type": "string"
               }
             },
-            "description": "Do not calculate embeddings (suitable for classes with configured vectorizers to calculate embeddings within Weaviate)"
+            "description": "Do not calculate embeddings. Suitable for classes with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
           },
           {
             "title": "Fake",
@@ -151,7 +151,7 @@
         "properties": {
           "host": {
             "title": "Public Endpoint",
-            "description": "The public endpoint of the Milvus instance. ",
+            "description": "The public endpoint of the Weaviate cluster.",
             "order": 1,
             "examples": ["https://my-cluster.weaviate.network"],
             "type": "string"
@@ -202,13 +202,13 @@
                   },
                   "username": {
                     "title": "Username",
-                    "description": "Username for the Milvus instance",
+                    "description": "Username for the Weaviate cluster",
                     "order": 1,
                     "type": "string"
                   },
                   "password": {
                     "title": "Password",
-                    "description": "Password for the Milvus instance",
+                    "description": "Password for the Weaviate cluster",
                     "airbyte_secret": true,
                     "order": 2,
                     "type": "string"
