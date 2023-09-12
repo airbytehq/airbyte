@@ -396,7 +396,7 @@ description = "Packaged maintained by the connector operations team to perform C
 optional = false
 python-versions = "^3.10"
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 ci-credentials = {path = "../ci_credentials"}
@@ -2052,4 +2052,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2903a2c7f1a7ebc91ada22a4e6b73aa96e7195e0d3da72310254862e49c6f22b"
+content-hash = "af9fca8fc8b614482fef8d85b15f4b351e97757b05fd3de6f054d3cd3119ad07"
