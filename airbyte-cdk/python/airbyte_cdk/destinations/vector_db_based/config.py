@@ -7,12 +7,18 @@ from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 
-class TokenSplitterConfigModel(BaseModel):
-    mode: Literal["token"] = Field("token", const=True)
+class SeparatorSplitterConfigModel(BaseModel):
+    mode: Literal["separator"] = Field("separator", const=True)
     separators: List[str] = Field(
-        default=["\n\n", "\n", " ", ""], title="Separators", description="List of separator strings to split text fields by"
+        default=['"\\n\\n"', '"\\n"', '" "', '""'], title="Separators", description="List of separator strings to split text fields by"
     )
     keep_separator: bool = Field(default=False, title="Keep separator", description="Whether to keep the separator in the resulting tokens")
+
+    class Config:
+        title = "By Separator"
+        schema_extra = {
+            "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+        }
 
 
 class MarkdownHeaderSplitterConfigModel(BaseModel):
@@ -52,7 +58,7 @@ class CodeSplitterConfigModel(BaseModel):
     )
 
 
-TextSplitterConfigModel = Union[TokenSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
+TextSplitterConfigModel = Union[SeparatorSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
 
 
 class ProcessingConfigModel(BaseModel):

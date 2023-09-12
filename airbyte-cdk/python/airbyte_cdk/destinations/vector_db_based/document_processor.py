@@ -3,11 +3,12 @@
 #
 
 import logging
+import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import dpath.util
-from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, TextSplitterConfigModel, TokenSplitterConfigModel
+from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, TextSplitterConfigModel, SeparatorSplitterConfigModel
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
@@ -48,12 +49,12 @@ class DocumentProcessor:
 
     def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
         if splitter_config is None:
-            splitter_config = TokenSplitterConfigModel(mode="token")
+            splitter_config = SeparatorSplitterConfigModel()
         if splitter_config.mode == "token":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
-                separators=splitter_config.separators,
+                separators=[json.loads(s) for s in splitter_config.separators],
                 keep_separator=splitter_config.keep_separator,
             )
         if splitter_config.mode == "markdown":
