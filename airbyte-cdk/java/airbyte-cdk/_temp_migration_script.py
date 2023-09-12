@@ -3,6 +3,7 @@ import re
 import shutil
 from pathlib import Path
 import sys
+from typing import cast
 
 REPO_ROOT = "."
 CDK_ROOT = f"{REPO_ROOT}/airbyte-cdk/java/airbyte-cdk"
@@ -198,12 +199,16 @@ def update_cdk_package_defs() -> None:
 
 
 def refactor_cdk_package_refs() -> None:
-    for text_pattern, text_replacement, within_dir, exclude_dirs in [
+    for text_pattern, text_replacement, within_dir in [
         (
             r"(?<!package )io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
             r"io.airbyte.cdk.\1",
             REPO_ROOT,
-            ["target", "out", "build", "dist", "node_modules", "lib", "bin"]
+        ),
+        (
+            r"(?<!package )io\.airbyte\.integrations\.destination\.s3\.(avro|constant|credential|csv|jsonl|parquet|S3DestinationConfig|S3DestinationConstants|S3Format|S3FormatConfig|StorageProvider|template|util|writer)\b",
+            r"io.airbyte.cdk.integrations.destination.s3.\1",
+            REPO_ROOT,
         )
     ]:
         migrate_package_refs(
@@ -211,7 +216,7 @@ def refactor_cdk_package_refs() -> None:
             text_replacement,
             within_dir=within_dir,
             exclude_files=EXCLUDE_FILES,
-            exclude_dirs=list(set(exclude_dirs + EXCLUDE_DIRS)),
+            exclude_dirs=EXCLUDE_DIRS,
         )
 
 
