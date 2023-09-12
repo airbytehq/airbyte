@@ -305,7 +305,7 @@ public class GlobalAsyncStateManager {
   }
 
   public String getMemoryUsageMessage() {
-    return String.format("State Manager memory usage: Allocated: %s, Used: %s, % Used %f",
+    return String.format("State Manager memory usage: Allocated: %s, Used: %s, percentage Used %f",
             FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
             FileUtils.byteCountToDisplaySize(memoryUsed.get()),
             (double) memoryUsed.get() / memoryAllocated.get());
