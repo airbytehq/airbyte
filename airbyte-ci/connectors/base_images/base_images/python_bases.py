@@ -129,6 +129,9 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     async def check_python_version(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the python version is the expected one.
 
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+
         Raises:
             errors.SanityCheckError: Raised if the python --version command could not be executed or if the outputted version is not the expected one.
         """
@@ -145,6 +148,9 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     async def check_pip_version(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the pip version is the expected one.
 
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+
         Raises:
             errors.SanityCheckError: Raised if the pip --version command could not be executed or if the outputted version is not the expected one.
         """
@@ -158,6 +164,9 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     @staticmethod
     async def check_time_zone(base_image_version: common.AirbyteConnectorBaseImage):
         """We want to make sure that the system timezone is set to UTC.
+
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
 
         Raises:
             errors.SanityCheckError: Raised if the date command could not be executed or if the outputted timezone is not UTC.
@@ -173,6 +182,9 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     async def check_bash_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
         """Bash should be installed on the base image for debugging purposes and pre/post build hooks.
 
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+
         Raises:
             errors.SanityCheckError: Raised if the bash --version command could not be executed.
         """
@@ -185,6 +197,9 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     async def check_curl_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
         """Bash should be installed on the base image for installing poetry.
 
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+
         Raises:
             errors.SanityCheckError: Raised if the curl --version command could not be executed.
         """
@@ -196,6 +211,9 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
     @staticmethod
     async def check_poetry_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
         """Poetry should be installed on the base image for installing dependencies if a Python connector uses this package manager.
+
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
 
         Raises:
             errors.SanityCheckError: Raised if the poetry --version command could not be executed.
