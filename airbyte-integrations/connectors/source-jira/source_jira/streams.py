@@ -382,7 +382,8 @@ class Issues(IncrementalJiraStream):
             # we should skip the slice with wrong permissions on project level
             errors = response.json().get("errorMessages")
             self.logger.error(
-                f"Stream `{self.name}`. An error occurred, details: {errors}." f"Check permissions for this project. Skipping for now. "
+                f"Stream `{self.name}`. An error occurred, details: {errors}."
+                f"Check permissions for this project. Skipping for now. "
                 f"The user doesn't have permission to the project. Please grant the user to the project."
             )
             setattr(self, "raise_on_http_errors", False)
@@ -1114,9 +1115,11 @@ class Sprints(JiraStream):
     def get_user_message_from_error_message(self, errors: List[str]) -> str:
         for error_message in errors:
             if "The board does not support sprints" in error_message:
-                return ("The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
-                        "does it have sprints enabled under project settings? If it's a company-managed one,"
-                        " check that it has at least one Scrum board associated with it.")
+                return (
+                    "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                    "does it have sprints enabled under project settings? If it's a company-managed one,"
+                    " check that it has at least one Scrum board associated with it."
+                )
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == requests.codes.bad_request:
