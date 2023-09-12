@@ -75,8 +75,7 @@ def generateSourceTestDocs = tasks.register('generateSourceTestDocs', Javadoc) {
 
     outputs.upToDateWhen { false }
 }
-
-tasks.named('build').configure {
+tasks.register('generate').configure {
     dependsOn generateSourceTestDocs
 }
 

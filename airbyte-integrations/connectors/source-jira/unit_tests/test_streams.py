@@ -6,6 +6,7 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 from responses import matchers
 from source_jira.source import SourceJira
@@ -61,6 +62,24 @@ from source_jira.utils import read_full_refresh
 
 
 @responses.activate
+def test_application_roles_stream_401_error(config, caplog):
+    config['domain'] = "test_application_domain"
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/applicationrole?maxResults=50",
+        status=401
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = ApplicationRoles(**args)
+    with pytest.raises(AirbyteTracedException) as e:
+        [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert e.value.message == "Config validation error: Invalid creds were provided, please check your api token, domain and/or email."
+    assert "Invalid creds were provided, please check your api token, domain and/or email." in caplog.text
+
+
+@responses.activate
 def test_application_roles_stream(config, application_roles_response):
     responses.add(
         responses.GET,
@@ -107,6 +126,23 @@ def test_boards_stream(config, boards_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_board_stream_forbidden(config, boards_response, caplog):
+    config['domain'] = 'test_boards_domain'
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/agile/1.0/board?maxResults=50",
+        json={'error': f"403 Client Error: Forbidden for url: https://{config['domain']}/rest/agile/1.0/board?maxResults=50"},
+        status=403
+    )
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Boards(**args)
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert records == []
+    assert "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access." in caplog.text
 
 
 @responses.activate
