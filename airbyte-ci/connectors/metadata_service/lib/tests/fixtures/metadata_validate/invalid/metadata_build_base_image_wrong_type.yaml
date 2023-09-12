@@ -3,7 +3,7 @@ data:
     hosts:
       - "*.googleapis.com"
   build:
-    baseImage: 1
+    unexpectedField: additionalProperties are not allowed ('unexpectedField' was unexpected)
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
