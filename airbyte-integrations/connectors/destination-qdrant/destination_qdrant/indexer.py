@@ -14,14 +14,21 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 )
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type, AirbyteLogMessage, Level
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from qdrant_client import QdrantClient, models
+from qdrant_client.models import Distance, VectorParams
 from qdrant_client.conversions.common_types import PointsSelector
 
-from destination_qdrant.config import QdrantIndexingConfigModel
+from destination_qdrant.config import QdrantIndexingConfigModel, DistanceMetricEnum
 
 
+
+DISTANCE_METRIC_MAP = {
+    DistanceMetricEnum.dot: Distance.DOT,
+    DistanceMetricEnum.cos: Distance.COSINE,
+    DistanceMetricEnum.euc: Distance.EUCLID
+}
 
 class QdrantIndexer(Indexer):
     config: QdrantIndexingConfigModel
@@ -32,47 +39,63 @@ class QdrantIndexer(Indexer):
     def check(self) -> Optional[str]:
         try:
             self._create_client()
-            # TODO - do some checks
+            distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
+            try:
+                self._client.get_collection(collection_name=self.config.collection)
+            except ValueError:
+                self._client.recreate_collection(
+                    collection_name=self.config.collection,
+                    vectors_config=VectorParams(size=100, distance=distance_metric),
+                )
         except Exception as e:
             return format_exception(e)
-        return None
+        finally:
+            self._client.close()
+            return
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
-        for stream in catalog.streams:
-            if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self._delete_for_filter(
-                    models.FilterSelector(
-                        filter=models.Filter(
-                            must=[models.FieldCondition(key=METADATA_STREAM_FIELD, match=models.MatchValue(value=stream.stream.name))]
-                        )
+        streams_to_overwrite = [
+            stream.stream.name for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
+        ]
+        if streams_to_overwrite:
+            self._delete_for_filter(
+                models.FilterSelector(
+                    filter=models.Filter(
+                        should=[models.FieldCondition(key=METADATA_STREAM_FIELD, match=models.MatchValue(value=stream)) for stream in streams_to_overwrite]
                     )
                 )
+            )
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
             self._delete_for_filter(
                 models.FilterSelector(
                     filter=models.Filter(
-                        should=[models.FieldCondition(key=METADATA_RECORD_ID_FIELD, match=models.MatchValue(value=id)) for id in delete_ids]
+                        should=[models.FieldCondition(key=METADATA_RECORD_ID_FIELD, match=models.MatchValue(value=_id)) for _id in delete_ids]
                     )
                 )
             )
-        embedding_vectors = self.embedder.embed_texts([chunk.page_content for chunk in document_chunks])
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
-            metadata = chunk.metadata
-            metadata["text"] = chunk.page_content
+            payload = chunk.metadata
+            payload[self.config.text_field] = chunk.page_content
             entities.append(
                 models.Record(
                     id=str(uuid.uuid4()),
-                    payload={**chunk.metadata, self.config.text_field: chunk.page_content},
-                    vector=embedding_vectors[i],
+                    payload=payload,
+                    vector=chunk.embedding,
                 )
             )
         self._client.upload_records(collection_name=self.config.collection, records=entities)
 
+    def post_sync(self) -> List[AirbyteMessage]:
+        try:
+            self._client.close()
+            return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"))
+        except Exception as e:
+            return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(e))) 
 
     def _create_client(self):
         auth_method = self.config.auth_method
@@ -91,7 +114,8 @@ class QdrantIndexer(Indexer):
 
             self._client = QdrantClient(url=url, prefer_grpc=self.prefer_grpc, api_key=api_key)
 
-        # self._collection = self._client.get_collection(self.config.collection)
-
     def _delete_for_filter(self, selector: PointsSelector) -> None:
-        self._client.delete(collection_name=self.config.collection, points_selector=selector)
+        self._client.delete(
+            collection_name=self.config.collection, 
+            points_selector=selector
+            )

@@ -17,6 +17,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
+from enum import Enum
 from pydantic import BaseModel, Field
 
 
@@ -32,6 +33,10 @@ class CloudAuth(BaseModel):
     url: str = Field(..., title="url", description="url of the Qdrant instance")
     api_key: str = Field(..., title="API Key", description="API Key for the Qdrant instance", airbyte_secret=True)
 
+class DistanceMetricEnum(str, Enum):
+    dot = 'Dot product'
+    cos = 'Cosine similarity'
+    euc = 'Euclidean distance'
 
 class QdrantIndexingConfigModel(BaseModel):
     auth_method: Union[LocalServerAuth, CloudAuth] = Field(
@@ -41,7 +46,10 @@ class QdrantIndexingConfigModel(BaseModel):
         title="Prefer gRPC", description="Whether to prefer gRPC over HTTP. Set to true for Qdrant cloud clusters", default=True
     )
     collection: str = Field(..., title="Collection Name", description="The collection to load data into")
-    # text_field: str = Field(title="Text Field", description="The field in the entity that contains the embedded text", default="text")
+    distance_metric: DistanceMetricEnum = Field(
+        ..., title="Distance Metric", description="Select the Distance metrics are used to measure similarities among vectors."
+    )
+    text_field: str = Field(title="Text Field", description="The field in the payload that contains the embedded text", default="text")
 
     class Config:
         title = "Indexing"
