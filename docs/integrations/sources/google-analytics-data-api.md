@@ -266,7 +266,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------|
-| 1.2.0   | 2023-09-11 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add new preconfigured reports                                                 |
+| 1.2.0   | 2023-09-11 | [30290](https://github.com/airbytehq/airbyte/pull/30290) | Add new preconfigured reports                                                 |
 | 1.1.3   | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions                                               |
 | 1.1.2   | 2023-07-03 | [27909](https://github.com/airbytehq/airbyte/pull/27909) | Limit the page size of custom report streams                                  |
 | 1.1.1   | 2023-06-26 | [27718](https://github.com/airbytehq/airbyte/pull/27718) | Limit the page size when calling `check()`                                    |
