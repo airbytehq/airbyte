@@ -1,6 +1,8 @@
-package io.airbyte.integrations.source.mongodb.internal
+package io.airbyte.integrations.source.mongodb
 
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.source.mongodb.MongoConnectionUtils
+import io.airbyte.integrations.source.mongodb.MongoConstants
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -17,7 +19,6 @@ object MongoDbInsertClient {
         val connectionString by parser.option(ArgType.String, fullName = "connection-string", shortName = "cs", description = "MongoDb Connection String").required()
         val databaseName by parser.option(ArgType.String, fullName = "database-name", shortName = "d", description = "Database Name").required()
         val collectionName by parser.option(ArgType.String, fullName = "collection-name", shortName = "cn", description = "Collection Name").required()
-        val replicaSet by parser.option(ArgType.String, fullName = "replica-set", shortName = "r", description = "Replica Set").required()
         val username by parser.option(ArgType.String, fullName = "username", shortName = "u", description = "Username").required()
         val numberOfDocuments by parser.option(ArgType.Int, fullName = "number", shortName = "n", description = "Number of documents to generate").default(10000)
 
@@ -26,10 +27,10 @@ object MongoDbInsertClient {
         println("Enter password: ")
         val password = readln()
 
-        var config = mapOf(MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
+        var config = mapOf(
+            MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
                 MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY to connectionString,
                 MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY to "admin",
-                MongoConstants.REPLICA_SET_CONFIGURATION_KEY to replicaSet,
                 MongoConstants.USER_CONFIGURATION_KEY to username,
                 MongoConstants.PASSWORD_CONFIGURATION_KEY to password)
 

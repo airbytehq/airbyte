@@ -1,4 +1,4 @@
-package io.airbyte.integrations.source.mongodb.internal
+package io.airbyte.integrations.source.mongodb
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
