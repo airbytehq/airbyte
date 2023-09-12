@@ -5,6 +5,7 @@
 """This module declares common (abstract) classes and methods used by all base images.
 It's not meant to be regurlarly modified.
 """
+from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
@@ -84,6 +85,12 @@ class AirbyteConnectorBaseImage(ABC):
 
     @final
     def __init__(self, dagger_client: dagger.Client, platform: dagger.Platform):
+        """Initializes the Airbyte base image.
+
+        Args:
+            dagger_client (dagger.Client): The dagger client used to build the base image.
+            platform (dagger.Platform): The platform used to build the base image.
+        """
         self.dagger_client = dagger_client
         self.platform = platform
         self._validate_platform_availability()
@@ -168,7 +175,7 @@ class AirbyteConnectorBaseImage(ABC):
         """Returns a container of the Airbyte connector base image. This is where version specific definitions, like with_exec, should occur."""
         raise NotImplementedError("Subclasses must define a 'container' property.")
 
-    async def run_sanity_checks(self):
+    async def run_sanity_checks_for_version(self):
         """Runs sanity checks on the base image container.
         This method is called on base image build.
         The following sanity checks are meant to check that labels and environment variables about the base's base image and the current Airbyte base image are correctly set.
@@ -176,13 +183,28 @@ class AirbyteConnectorBaseImage(ABC):
         Raises:
             SanityCheckError: Raised if a sanity check fails.
         """
-        if not await self.container.env_variable("AIRBYTE_BASE_BASE_IMAGE") == self.base_base_image_name:
+        await self.run_sanity_checks(self)
+
+    @staticmethod
+    async def run_sanity_checks(base_image_version: AirbyteConnectorBaseImage):
+        """Runs sanity checks on the base image container.
+        This method is called on base image build.
+        This method is static to allow running sanity checks of a specific version from another one.
+        The following sanity checks are meant to check that labels and environment variables about the base's base image and the current Airbyte base image are correctly set.
+
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
+
+        Raises:
+            SanityCheckError: Raised if a sanity check fails.
+        """
+        if not await base_image_version.container.env_variable("AIRBYTE_BASE_BASE_IMAGE") == base_image_version.base_base_image_name:
             raise errors.SanityCheckError("the AIRBYTE_BASE_BASE_IMAGE environment variable is not correctly set.")
-        if not await self.container.env_variable("AIRBYTE_BASE_IMAGE") == self.name_with_tag:
+        if not await base_image_version.container.env_variable("AIRBYTE_BASE_IMAGE") == base_image_version.name_with_tag:
             raise errors.SanityCheckError("the AIRBYTE_BASE_IMAGE environment variable is not correctly. set")
-        if not await self.container.label("io.airbyte.base_base_image") == self.base_base_image_name:
+        if not await base_image_version.container.label("io.airbyte.base_base_image") == base_image_version.base_base_image_name:
             raise errors.SanityCheckError("the io.airbyte.base_base_image label is not correctly set.")
-        if not await self.container.label("io.airbyte.base_image") == self.name_with_tag:
+        if not await base_image_version.container.label("io.airbyte.base_image") == base_image_version.name_with_tag:
             raise errors.SanityCheckError("the io.airbyte.base_image label is not correctly set.")
 
     @staticmethod

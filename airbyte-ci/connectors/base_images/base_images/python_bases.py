@@ -60,24 +60,29 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         "TRACEPARENT",
     }
 
-    async def run_sanity_checks(self):
-        await super().run_sanity_checks()
-        await self.check_env_vars()
+    @staticmethod
+    async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
+        await common.AirbyteConnectorBaseImage.run_sanity_checks(base_image_version)
+        await AirbytePythonConnectorBaseImage.check_env_vars(base_image_version)
 
-    async def check_env_vars(self):
+    @staticmethod
+    async def check_env_vars(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the expected environment variables are set on the base image.
         The EXPECTED_ENV_VARS were set on all our certified python connectors that were not using this base image
         We want to make sure that they are still set on all our connectors to avoid breaking changes.
+
+        Args:
+            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
 
         Raises:
             errors.SanityCheckError: Raised if a sanity check fails: the printenv command could not be executed or an expected variable is not set.
         """
         try:
-            printenv_output: str = await self.container.with_exec(["printenv"], skip_entrypoint=True).stdout()
+            printenv_output: str = await base_image_version.container.with_exec(["printenv"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run printenv.") from e
         env_vars = set([line.split("=")[0] for line in printenv_output.splitlines()])
-        missing_env_vars = self.EXPECTED_ENV_VARS - env_vars
+        missing_env_vars = AirbytePythonConnectorBaseImage.EXPECTED_ENV_VARS - env_vars
         if missing_env_vars:
             raise errors.SanityCheckError(f"missing environment variables: {missing_env_vars}")
 
@@ -97,61 +102,108 @@ class _0_1_0(AirbytePythonConnectorBaseImage):
 
     @property
     def container(self) -> dagger.Container:
-        return self.base_container.with_exec(["ln", "-snf", f"/usr/share/zoneinfo/{self.TIMEZONE}", "/etc/localtime"]).with_exec(
-            ["pip", "install", "--upgrade", f"pip=={self.EXPECTED_PIP_VERSION}"]
+        return (
+            self.base_container
+            # Set the timezone to UTC
+            .with_exec(["ln", "-snf", f"/usr/share/zoneinfo/{self.TIMEZONE}", "/etc/localtime"])
+            # Create the .local/bin directory to receive poetry bin
+            # .with_exec(["sh", "-c", "mkdir $HOME/.local/bin"])
+            # Set the PATH to include the .local/bin directory
+            # .with_env_variable("PATH", "$PATH:$HOME/.local/bin:")
+            # Upgrade pip to the expected version
+            .with_exec(["pip", "install", "--upgrade", f"pip=={self.EXPECTED_PIP_VERSION}"])
+            # Install poetry
+            .with_exec(["sh", "-c", "curl -sSL https://install.python-poetry.org | python3 -"])
         )
 
-    async def run_sanity_checks(self):
-        await super().run_sanity_checks()
-        await self.check_python_version()
-        await self.check_pip_version()
-        await self.check_time_zone()
-        await self.check_bash_is_installed()
+    @staticmethod
+    async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
+        await AirbytePythonConnectorBaseImage.run_sanity_checks(base_image_version)
+        await _0_1_0.check_time_zone(base_image_version)
+        await _0_1_0.check_bash_is_installed(base_image_version)
+        await _0_1_0.check_python_version(base_image_version)
+        await _0_1_0.check_pip_version(base_image_version)
+        await _0_1_0.check_poetry_is_installed(base_image_version)
 
-    async def check_python_version(self):
+    @staticmethod
+    async def check_python_version(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the python version is the expected one.
 
         Raises:
             errors.SanityCheckError: Raised if the python --version command could not be executed or if the outputted version is not the expected one.
         """
         try:
-            python_version_output: str = await self.container.with_exec(["python", "--version"], skip_entrypoint=True).stdout()
+            python_version_output: str = await base_image_version.container.with_exec(
+                ["python", "--version"], skip_entrypoint=True
+            ).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run python --version.") from e
-        if python_version_output != f"Python {self.EXPECTED_PYTHON_VERSION}\n":
+        if python_version_output != f"Python {_0_1_0.EXPECTED_PYTHON_VERSION}\n":
             raise errors.SanityCheckError(f"unexpected python version: {python_version_output}")
 
-    async def check_pip_version(self):
+    @staticmethod
+    async def check_pip_version(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the pip version is the expected one.
 
         Raises:
             errors.SanityCheckError: Raised if the pip --version command could not be executed or if the outputted version is not the expected one.
         """
         try:
-            pip_version_output: str = await self.container.with_exec(["pip", "--version"], skip_entrypoint=True).stdout()
+            pip_version_output: str = await base_image_version.container.with_exec(["pip", "--version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run pip --version.") from e
-        if not pip_version_output.startswith(f"pip {self.EXPECTED_PIP_VERSION}"):
+        if not pip_version_output.startswith(f"pip {_0_1_0.EXPECTED_PIP_VERSION}"):
             raise errors.SanityCheckError(f"unexpected pip version: {pip_version_output}")
 
-    async def check_time_zone(self):
+    @staticmethod
+    async def check_time_zone(base_image_version: common.AirbyteConnectorBaseImage):
         """We want to make sure that the system timezone is set to UTC.
 
         Raises:
             errors.SanityCheckError: Raised if the date command could not be executed or if the outputted timezone is not UTC.
         """
         try:
-            tz_output: str = await self.container.with_exec(["date"], skip_entrypoint=True).stdout()
+            tz_output: str = await base_image_version.container.with_exec(["date"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run date.") from e
         if "UTC" not in tz_output:
             raise errors.SanityCheckError(f"unexpected timezone: {tz_output}")
 
-    async def check_bash_is_installed(self):
+    @staticmethod
+    async def check_bash_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
+        """Bash should be installed on the base image for debugging purposes and pre/post build hooks.
+
+        Raises:
+            errors.SanityCheckError: Raised if the bash --version command could not be executed.
+        """
         try:
-            await self.container.with_exec(["bash", "--version"], skip_entrypoint=True).stdout()
+            await base_image_version.container.with_exec(["bash", "--version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run bash --version.") from e
+
+    @staticmethod
+    async def check_curl_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
+        """Bash should be installed on the base image for installing poetry.
+
+        Raises:
+            errors.SanityCheckError: Raised if the curl --version command could not be executed.
+        """
+        try:
+            await base_image_version.container.with_exec(["curl", "--version"], skip_entrypoint=True).stdout()
+        except dagger.ExecError as e:
+            raise errors.SanityCheckError("failed to run curl --version.") from e
+
+    @staticmethod
+    async def check_poetry_is_installed(base_image_version: common.AirbyteConnectorBaseImage):
+        """Poetry should be installed on the base image for installing dependencies if a Python connector uses this package manager.
+
+        Raises:
+            errors.SanityCheckError: Raised if the poetry --version command could not be executed.
+        """
+        try:
+            await base_image_version.container.with_exec(["poetry", "--version"], skip_entrypoint=True).stdout()
+        except dagger.ExecError as e:
+            raise errors.SanityCheckError("failed to run poetry --version.") from e
 
 
 # DECLARE NEW BASE IMAGE VERSIONS BELOW THIS LINE
