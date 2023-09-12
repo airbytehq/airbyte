@@ -127,6 +127,14 @@ For better experience with `Incremental Refresh` the following is recommended:
 
 If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
 
+## Capturing Deleted Records
+The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams. 
+
+When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records. 
+
+Check the following Shopify documentation for more information about the [Retrieving Deleted Records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event) 
+
+
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
