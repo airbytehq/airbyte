@@ -295,7 +295,13 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["customer.id", "campaign_budget.id", "segments.date", "segments.budget_campaign_association_status.campaign", "segments.budget_campaign_association_status.status"]
+    primary_key = [
+        "customer.id",
+        "campaign_budget.id",
+        "segments.date",
+        "segments.budget_campaign_association_status.campaign",
+        "segments.budget_campaign_association_status.status",
+    ]
 
 
 class CampaignBiddingStrategies(IncrementalGoogleAdsStream):
@@ -357,7 +363,7 @@ class AdGroupCriterionLabels(GoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id", "label.id"]
+    primary_key = ["ad_group_criterion_label.resource_name"]
 
 
 class AdListingGroupCriterions(GoogleAdsStream):
@@ -470,7 +476,7 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
         "segments.product_type_l3",
         "segments.product_type_l4",
         "segments.product_type_l5",
-        "segments.product_store_id"
+        "segments.product_store_id",
     ]
 
 
