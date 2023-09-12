@@ -28,7 +28,7 @@ python_connector_base_image: dagger.Container = ALL_BASE_IMAGES["airbyte-python-
 3. Declare a new class inheriting from `AirbytePythonConnectorBaseImage` or an other existing version. **The class name must follow the semver pattern `_<major>_<minor>_<patch>(AirbytePythonConnectorBaseImage)`.**
 4. Implement the `container` property which must return a `dagger.Container` object.
 5. Declare the `changelog` class attribute to describe the change provided by the new version.
-6. *Recommended*: Override the `run_sanity_check` method to add a sanity check to your new base image version, please call the previous version sanity check to avoid breaking change: e.g `await _0_1_0.run_sanity_checks().`
+6. *Recommended*: Override the `run_sanity_check` method to add a sanity check to your new base image version, please call the previous version sanity check to avoid breaking change: e.g `await _1_0_0.run_sanity_checks().`
 7. Build the project: `poetry run build` it will run sanity checks on the images and update the changelog file.
 8. Commit and push your changes.
 9. Create a PR and ask for a review from the Connector Operations team.
@@ -38,7 +38,7 @@ python_connector_base_image: dagger.Container = ALL_BASE_IMAGES["airbyte-python-
 
 ```python
 # In base_images/python_bases.py
-class _0_1_1(_0_1_0):
+class _1_0_1(_1_0_0):
 
     changelog: str = "Add ffmpeg to the base image."
 
@@ -52,7 +52,7 @@ class _0_1_1(_0_1_0):
         
 
     async def run_sanity_checks(base_image_version: AirbyteConnectorBaseImage):
-        await _0_1_0.run_sanity_checks(base_image_version)
+        await _1_0_0.run_sanity_checks(base_image_version)
         try:
             await base_image_version.container.with_exec(["ffmpeg", "-version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
