@@ -46,7 +46,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
    *         database.
    */
   public static MongoDbCdcTargetPosition targetPosition(final MongoClient mongoClient) {
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     return new MongoDbCdcTargetPosition(resumeToken);
   }
 
