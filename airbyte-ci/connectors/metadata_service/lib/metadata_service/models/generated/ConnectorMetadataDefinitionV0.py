@@ -15,6 +15,13 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
+class Build(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    baseImage: Optional[str] = None
+
+
 class ReleaseStage(BaseModel):
     __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
         ...,
@@ -192,7 +199,7 @@ class Data(BaseModel):
     name: str
     icon: Optional[str] = None
     definitionId: UUID
-    connectorBaseImage: Optional[str] = None
+    build: Optional[Build] = None
     connectorType: Literal["destination", "source"]
     dockerRepository: str
     dockerImageTag: str
