@@ -65,17 +65,21 @@ def build():
     If you don't have the base base image locally it will be pulled, which can take a while.
     Subsequent runs will be faster as the base images layers and sanity checks layers will be cached locally.
     """
-    with console.status("Building the project", spinner="hamburger") as status:
-        status.update("Running sanity checks on all the base images")
-        if not anyio.run(run_all_sanity_checks, status):
-            console.log(":bomb: Sanity checks failed, aborting the build.", style="bold red")
-            sys.exit(1)
-        console.log(":tada: Successfully ran sanity checks on all the base images.")
-        python_changelog_path = Path(consts.PROJECT_DIR / "CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
-        status.update(f"Writing the changelog to {python_changelog_path}")
-        utils.write_changelog_file(
-            python_changelog_path, python_bases.AirbytePythonConnectorBaseImage.image_name, python_bases.ALL_BASE_IMAGES
-        )
-        console.log(
-            f":memo: Wrote the updated changelog to {python_changelog_path}. [bold red]Please commit and push it![/bold red]",
-        )
+    try:
+        with console.status("Building the project", spinner="hamburger") as status:
+            status.update("Running sanity checks on all the base images")
+            if not anyio.run(run_all_sanity_checks, status):
+                console.log(":bomb: Sanity checks failed, aborting the build.", style="bold red")
+                sys.exit(1)
+            console.log(":tada: Successfully ran sanity checks on all the base images.")
+            python_changelog_path = Path(consts.PROJECT_DIR / "CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
+            status.update(f"Writing the changelog to {python_changelog_path}")
+            utils.write_changelog_file(
+                python_changelog_path, python_bases.AirbytePythonConnectorBaseImage.image_name, python_bases.ALL_BASE_IMAGES
+            )
+            console.log(
+                f":memo: Wrote the updated changelog to {python_changelog_path}. [bold red]Please commit and push it![/bold red]",
+            )
+    except KeyboardInterrupt:
+        console.log(":bomb: Aborted the build.", style="bold red")
+        sys.exit(1)
