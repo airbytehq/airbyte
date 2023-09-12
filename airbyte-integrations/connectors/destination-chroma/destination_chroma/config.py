@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Literal, Union
+from typing import Literal, Union, Optional
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
@@ -19,9 +19,10 @@ from pydantic import BaseModel, Field
 class HttpMode(BaseModel):
     mode: Literal["http_client"] = Field("http_client", const=True)
     host: str = Field(..., title="Host", description="The URL to the chromadb instance", order=0)
-    port: str = Field(..., title="Port", description="The port to the chromadb instance", order=1)
-    username: str = Field(..., title="Username", description="Username used in server/client mode only", order=2)
-    password: str = Field(..., title="Password", description="Password used in server/client mode only", airbyte_secret=True, order=3)
+    port: int = Field(..., title="Port", description="The port to the chromadb instance", order=1)
+    ssl: bool = Field(..., title="SSL", description="Whether to use SSL to connect to the Chroma server", order=2)
+    username: Optional[str] = Field(..., title="Username", description="Username used in server/client mode only", order=3)
+    password: Optional[str] = Field(..., title="Password", description="Password used in server/client mode only", airbyte_secret=True, order=4)
 
     class Config:
         title = "Client/Server mode"
@@ -57,7 +58,7 @@ class NoEmbeddingConfigModel(BaseModel):
 
     class Config:
         title = "Chroma Default Embedding Function"
-        schema_extra = {"description": "Do not calculate embeddings. Use Chromadb default embedding function"}
+        schema_extra = {"description": "Do not calculate embeddings. Chromadb uses the sentence transfomer (https://www.sbert.net/index.html) as a default if an embedding function is not defined. Note that depending on your hardware, this can get very slow"}
 
 
 class ConfigModel(BaseModel):

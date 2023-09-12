@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import uuid
 from typing import List
 
@@ -52,7 +53,7 @@ class ChromaIndexer(Indexer):
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             entities.append(
-                {"id": str(uuid.uuid4()), "embedding": chunk.embedding, "metadata": chunk.metadata, "document": chunk.page_content}
+                {"id": str(uuid.uuid4()), "embedding": chunk.embedding, "metadata": self._normalize(chunk.metadata), "document": chunk.page_content}
             )
         self._write_data(entities)
 
@@ -61,7 +62,7 @@ class ChromaIndexer(Indexer):
         streams_to_overwrite = [
             stream.stream.name for stream in catalog.streams if stream.destination_sync_mode == DestinationSyncMode.overwrite
         ]
-        if streams_to_overwrite:
+        if len(streams_to_overwrite):
             self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
 
     def _get_client(self):
@@ -75,25 +76,38 @@ class ChromaIndexer(Indexer):
         elif auth_method.mode == "http_client":
             host = auth_method.host
             port = auth_method.port
+            ssl = auth_method.ssl
             username = auth_method.username
             password = auth_method.password
 
-            settings = Settings(
-                chroma_client_auth_provider="chromadb.auth.basic.BasicAuthClientProvider",
-                chroma_client_auth_credentials=f"{username}:{password}",
-            )
-
-            client = chromadb.HttpClient(settings=settings, host=host, port=port)
+            if username and password:
+                settings = Settings(
+                    chroma_client_auth_provider="chromadb.auth.basic.BasicAuthClientProvider",
+                    chroma_client_auth_credentials=f"{username}:{password}",
+                )
+                client = chromadb.HttpClient(settings=settings, host=host, port=port, ssl=ssl)
+            else:
+                client = chromadb.HttpClient(host=host, port=port, ssl=ssl)
             return client
         return
 
     def _delete_by_filter(self, field_name, field_values):
         collection = self.client.get_collection(name=self.collection_name)
-        try:
-            where_filter = {field_name: {"$in": field_values}}
-            collection.delete(where=where_filter)
-        except ValueError as e:
-            raise e
+        where_filter = {field_name: {"$in": field_values}}
+        collection.delete(where=where_filter)
+
+    def _normalize(self, metadata: dict) -> dict:
+        result = {}
+        for key, value in metadata.items():
+            if isinstance(value, list) and len(value) == 0:
+                # Handling of empty list that's not part of defined schema otherwise Weaviate throws invalid string property
+                continue
+            if isinstance(value, (str, int, float, bool)) or (isinstance(value, list) and all(isinstance(item, str) for item in value)):
+                result[key] = value
+            else:
+                # JSON encode all other types
+                result[key] = json.dumps(value)
+        return result
 
     def _write_data(self, entities):
         ids = [entity["id"] for entity in entities]
