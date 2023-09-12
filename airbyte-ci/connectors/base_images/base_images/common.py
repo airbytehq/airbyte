@@ -126,7 +126,7 @@ class AirbyteConnectorBaseImage(ABC):
             semver.VersionInfo.parse(cls.version)
         except ValueError as e:
             raise errors.BaseImageVersionError(
-                f"The version class {cls.__name__} is not in the expected semantic versioning naming format: e.g `_0_1_0`."
+                f"The version class {cls.__name__} is not in the expected semantic versioning naming format: e.g `_1_0_0`."
             ) from e
 
     @final
