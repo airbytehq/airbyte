@@ -25,4 +25,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-build =  "base_images:build"
+build =  "base_images.build:main"
