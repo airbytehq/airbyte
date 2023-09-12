@@ -4,14 +4,9 @@
 
 import logging
 import os
-import shutil
-import time
-from io import StringIO
-from socket import socket
+from pathlib import Path
 from typing import Mapping
 
-import docker
-import paramiko
 import pytest
 from airbyte_cdk.models import (
     AirbyteStream,
@@ -28,39 +23,6 @@ pytest_plugins = ("connector_acceptance_test.plugin",)
 
 logger = logging.getLogger("airbyte")
 
-TMP_FOLDER = "/tmp/test_sftp_source"
-
-
-@pytest.fixture(scope="session")
-def ssh_path():
-    key = paramiko.RSAKey.generate(2048)
-
-    ssh_path = TMP_FOLDER + "/ssh"
-    os.makedirs(ssh_path, exist_ok=True)
-
-    private_key_path = ssh_path + "/id_rsa"
-    public_key_path = ssh_path + "/id_rsa.pub"
-
-    with open(public_key_path, "w") as pub, open(private_key_path, "w") as priv:
-        key.write_private_key(priv)
-        pub.write("ssh-rsa " + key.get_base64())
-
-    yield ssh_path
-
-    shutil.rmtree(ssh_path)
-
-
-@pytest.fixture(scope="session")
-def public_key(ssh_path):
-    with open(ssh_path + "/id_rsa.pub", "r") as pub:
-        yield pub.read()
-
-
-@pytest.fixture(scope="session")
-def private_key(ssh_path):
-    with open(ssh_path + "/id_rsa", "r") as priv:
-        yield priv.read()
-
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig):
@@ -69,6 +31,23 @@ def docker_compose_file(pytestconfig):
         "integration_tests",
         "docker-compose.yml",
     )
+
+
+@pytest.fixture(scope="session")
+def ssh_path() -> Path:
+    return Path(__file__).parent / "ssh" / "keys"
+
+
+@pytest.fixture(scope="session")
+def public_key(ssh_path: Path):
+    pub_path = ssh_path / "test_source-sftp-bulk_id_rsa.pub"
+    yield pub_path.read_text()
+
+
+@pytest.fixture(scope="session")
+def private_key(ssh_path: Path):
+    priv_path = ssh_path / "test_source-sftp-bulk_id_rsa"
+    yield priv_path.read_text()
 
 
 @pytest.fixture(name="config", scope="session")
@@ -109,6 +88,12 @@ def config_fixture_pk(private_key, docker_services):
         "start_date": "2021-01-01T00:00:00Z",
         "folder_path": "/files",
         "stream_name": "overwrite_stream",
+        "file_most_recent": False,
+        "max_depth": 0,
+        "column_names": None,
+        "column_names_separator": "|",
+        "autogenerate_column_names": False,
+        "autogenerate_column_names_prefix": "col_",
     }
 
     yield config

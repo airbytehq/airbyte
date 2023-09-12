@@ -1,18 +1,21 @@
 version: "3"
 
+name: source-sftp-bulk
+
 services:
   mysftp:
     image: atmoz/sftp
     volumes:
       - ./files:/home/foo/files
     ports:
-      - "2222:22"
+      - ":22"
     command: foo:pass
+
   mysftpssh:
     image: atmoz/sftp
     volumes:
       - ./files:/home/foo/files
-      - /tmp/test-sftp-source/ssh:/home/foo/.ssh/keys
+      - ./ssh/keys/test_source-sftp-bulk_id_rsa.pub:/home/foo/.ssh/keys/id_rsa.pub
     ports:
-      - "2223:22"
+      - ":22"
     command: foo:pass:1001
