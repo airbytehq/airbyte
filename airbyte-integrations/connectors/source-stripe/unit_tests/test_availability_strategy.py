@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+import logging
+
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
-from source_stripe.streams import InvoiceLineItems, Invoices
+from source_stripe.availability_strategy import STRIPE_ERROR_CODES, StripeSubStreamAvailabilityStrategy
+from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
 
 
 def test_traverse_over_substreams(mocker):
@@ -24,15 +25,15 @@ def test_traverse_over_substreams(mocker):
 
     child_1 = mocker.Mock()
     child_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1.get_parent_stream_instance.return_value = root
+    child_1.parent = root
 
     child_1_1 = mocker.Mock()
     child_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1.get_parent_stream_instance.return_value = child_1
+    child_1_1.parent = child_1
 
     child_1_1_1 = mocker.Mock()
     child_1_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1_1.get_parent_stream_instance.return_value = child_1_1
+    child_1_1_1.parent = child_1_1
 
     # Start traverse
     is_available, reason = child_1_1_1.availability_strategy.check_availability(child_1_1_1, mocker.Mock(), mocker.Mock())
@@ -65,15 +66,15 @@ def test_traverse_over_substreams_failure(mocker):
 
     child_1 = mocker.Mock()
     child_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1.get_parent_stream_instance.return_value = root
+    child_1.parent = root
 
     child_1_1 = mocker.Mock()
     child_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1.get_parent_stream_instance.return_value = child_1
+    child_1_1.parent = child_1
 
     child_1_1_1 = mocker.Mock()
     child_1_1_1.availability_strategy = StripeSubStreamAvailabilityStrategy()
-    child_1_1_1.get_parent_stream_instance.return_value = child_1_1
+    child_1_1_1.parent = child_1_1
 
     # Start traverse
     is_available, reason = child_1_1_1.availability_strategy.check_availability(child_1_1_1, mocker.Mock(), mocker.Mock())
@@ -88,35 +89,43 @@ def test_traverse_over_substreams_failure(mocker):
     assert id(check_availability_mock.call_args_list[1].args[0]) == id(child_1)
 
 
-def test_substream_availability(mocker):
+def test_substream_availability(mocker, invoice_line_items):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
         check_availability_mock
     )
-
-    stream = InvoiceLineItems(start_date=pendulum.today().subtract(days=3).int_timestamp, account_id="None")
+    stream = invoice_line_items()
     is_available, reason = stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
     assert is_available and reason is None
 
     assert check_availability_mock.call_count == 2
-    assert isinstance(check_availability_mock.call_args_list[0].args[0], Invoices)
-    assert isinstance(check_availability_mock.call_args_list[1].args[0], InvoiceLineItems)
+    assert isinstance(check_availability_mock.call_args_list[0].args[0], IncrementalStripeStream)
+    assert isinstance(check_availability_mock.call_args_list[1].args[0], StripeLazySubStream)
 
 
-def test_substream_availability_no_parent(mocker):
+def test_substream_availability_no_parent(mocker, invoice_line_items):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
         "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
         check_availability_mock
     )
-
-    stream = InvoiceLineItems(start_date=pendulum.today().subtract(days=3).int_timestamp, account_id="None")
+    stream = invoice_line_items()
     stream.parent = None
 
     stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
 
     assert check_availability_mock.call_count == 1
-    assert isinstance(check_availability_mock.call_args_list[0].args[0], InvoiceLineItems)
+    assert isinstance(check_availability_mock.call_args_list[0].args[0], StripeLazySubStream)
+
+
+def test_403_error_handling(invoices, requests_mock):
+    stream = invoices()
+    logger = logging.getLogger("airbyte")
+    for error_code in STRIPE_ERROR_CODES:
+        requests_mock.get(f"{stream.url_base}{stream.path()}", status_code=403, json={"error": {"code": f"{error_code}"}})
+        available, message = stream.check_availability(logger)
+        assert not available
+        assert STRIPE_ERROR_CODES[error_code] in message
