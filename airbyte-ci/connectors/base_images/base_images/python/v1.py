@@ -2,89 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""This module declares the base images versions for Python connectors.
-To add a new base version please implement a new class that inherits from AirbytePythonConnectorBaseImage.
+"""This module declares all the airbyte python connector base image for version 1.
+Please create a v2.py module if you want to declare a new major version.
 """
 
-import inspect
-import sys
-from abc import ABC
-from typing import Final, Set, Type
+from typing import Final
 
 import dagger
 from base_images import common, errors
-
-
-class PythonBase(common.BaseBaseImage):
-    """
-    This enum declares the Python base images that can be use to build our own base image for python.
-    We use the image digest (the a sha256) to ensure that the image is not changed for reproducibility.
-    """
-
-    PYTHON_3_9 = {
-        # https://hub.docker.com/layers/library/python/3.9.18-bookworm/images/sha256-40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58
-        dagger.Platform("linux/amd64"): common.PlatformAwareDockerImage(
-            image_name="python",
-            tag="3.9.18-bookworm",
-            sha="40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58",
-            platform=dagger.Platform("linux/amd64"),
-        ),
-        # https://hub.docker.com/layers/library/python/3.9.18-bookworm/images/sha256-0d132e30eb9325d53c790738e5478e9abffc98b69115e7de429d7c6fc52dddac
-        dagger.Platform("linux/arm64"): common.PlatformAwareDockerImage(
-            image_name="python",
-            tag="3.9.18-bookworm",
-            sha="0d132e30eb9325d53c790738e5478e9abffc98b69115e7de429d7c6fc52dddac",
-            platform=dagger.Platform("linux/arm64"),
-        ),
-    }
-
-
-class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
-    """An abstract class that represents an Airbyte Python base image."""
-
-    image_name: Final[str] = "airbyte-python-connector-base"
-
-    EXPECTED_ENV_VARS: Set[str] = {
-        "PYTHON_VERSION",
-        "PYTHON_PIP_VERSION",
-        "PYTHON_GET_PIP_SHA256",
-        "PYTHON_GET_PIP_URL",
-        "HOME",
-        "PATH",
-        "LANG",
-        "GPG_KEY",
-        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
-        "PYTHON_SETUPTOOLS_VERSION",
-        "OTEL_TRACES_EXPORTER",
-        "OTEL_TRACE_PARENT",
-        "TRACEPARENT",
-    }
-
-    @staticmethod
-    async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
-        await common.AirbyteConnectorBaseImage.run_sanity_checks(base_image_version)
-        await AirbytePythonConnectorBaseImage.check_env_vars(base_image_version)
-
-    @staticmethod
-    async def check_env_vars(base_image_version: common.AirbyteConnectorBaseImage):
-        """Checks that the expected environment variables are set on the base image.
-        The EXPECTED_ENV_VARS were set on all our certified python connectors that were not using this base image
-        We want to make sure that they are still set on all our connectors to avoid breaking changes.
-
-        Args:
-            base_image_version (AirbyteConnectorBaseImage): The base image version on which the sanity checks should run.
-
-        Raises:
-            errors.SanityCheckError: Raised if a sanity check fails: the printenv command could not be executed or an expected variable is not set.
-        """
-        try:
-            printenv_output: str = await base_image_version.container.with_exec(["printenv"], skip_entrypoint=True).stdout()
-        except dagger.ExecError as e:
-            raise errors.SanityCheckError(e)
-        env_vars = set([line.split("=")[0] for line in printenv_output.splitlines()])
-        missing_env_vars = AirbytePythonConnectorBaseImage.EXPECTED_ENV_VARS - env_vars
-        if missing_env_vars:
-            raise errors.SanityCheckError(f"missing environment variables: {missing_env_vars}")
+from base_images.python import AirbytePythonConnectorBaseImage, PythonBase
 
 
 class _1_0_0(AirbytePythonConnectorBaseImage):
@@ -244,25 +170,3 @@ class _1_1_1(_1_1_0):
 
 # Breaking version should inherit from AirbytePythonConnectorBaseImage.
 # class _2_0_0(AirbyteConnectorBaseImage):
-
-
-# HELPER FUNCTIONS
-def get_all_python_base_images() -> dict[str, Type[AirbytePythonConnectorBaseImage]]:
-    """Discover the base image versions declared in the module.
-    It saves us from hardcoding the list of base images version: implementing a new class should be the only step to make a new base version available.
-
-    Returns:
-        dict[str, Type[AirbytePythonConnectorBaseImage]]: A dictionary of the base image versions declared in the module, keys are base image name and tag as string.
-    """
-    # Reverse the order of the members so that the latest version is first
-    cls_members = reversed(inspect.getmembers(sys.modules[__name__], inspect.isclass))
-    return {
-        cls_member.name_with_tag: cls_member
-        for _, cls_member in cls_members
-        if issubclass(type(cls_member), type(AirbytePythonConnectorBaseImage))
-        and cls_member != AirbytePythonConnectorBaseImage
-        and cls_member != ABC
-    }
-
-
-ALL_BASE_IMAGES = get_all_python_base_images()
