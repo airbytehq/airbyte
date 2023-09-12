@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.ReservedKeywords;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -550,7 +551,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
    * Snowflake json object access is done using double-quoted strings, e.g. `SELECT "_airbyte_data":"foo"`.
    * As such, we need to escape double-quotes in the field name.
    */
-  public static String escapeJsonIdentifier(final String identifier) {
+  public static String escapeJsonIdentifier(String identifier) {
+    if (ReservedKeywords.SNOWFLAKE.contains(identifier.toUpperCase())) {
+      identifier = "_" + identifier;
+    }
+
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be doubled.
     return identifier.replace("\"", "\"\"");
