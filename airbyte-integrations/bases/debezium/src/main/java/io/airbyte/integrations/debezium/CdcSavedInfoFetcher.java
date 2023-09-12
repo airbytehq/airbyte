@@ -17,4 +17,5 @@ public interface CdcSavedInfoFetcher {
   JsonNode getSavedOffset();
 
   SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory();
+
 }
