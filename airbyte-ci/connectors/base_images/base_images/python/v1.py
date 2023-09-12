@@ -167,3 +167,5 @@ class _1_1_1(_1_1_0):
 # DECLARE NEW BASE IMAGE VERSIONS BELOW THIS LINE
 # Non breaking version should ideally inherit from the previous version.
 # class _1_1_2(_1_1_1):
+
+# Breaking version should inherit from AirbytePythonConnectorBaseImage and be declared in a v2 module.
