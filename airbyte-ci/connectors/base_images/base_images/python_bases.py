@@ -187,7 +187,7 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
             raise errors.SanityCheckError("failed to run bash --version.") from e
 
 
-class _1_0_1(_1_0_0):
+class _1_1_0(_1_0_0):
     changelog_entry: str = "Install poetry 1.6.1"
 
     EXPECTED_POETRY_VERSION: str = "1.6.1"
@@ -204,7 +204,7 @@ class _1_0_1(_1_0_0):
 
     @staticmethod
     async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
-        await _1_0_1.check_poetry_version(base_image_version)
+        await _1_1_0.check_poetry_version(base_image_version)
 
     @staticmethod
     async def check_poetry_version(base_image_version: common.AirbyteConnectorBaseImage):
@@ -214,13 +214,13 @@ class _1_0_1(_1_0_0):
             ).stdout()
         except dagger.ExecError as e:
             raise errors.SanityCheckError("failed to run poetry --version.") from e
-        if not poetry_version_output.startswith(f"Poetry (version {_1_0_1.EXPECTED_POETRY_VERSION})"):
+        if not poetry_version_output.startswith(f"Poetry (version {_1_1_0.EXPECTED_POETRY_VERSION})"):
             raise errors.SanityCheckError(f"unexpected poetry version: {poetry_version_output}")
 
 
 # DECLARE NEW BASE IMAGE VERSIONS BELOW THIS LINE
 # Non breaking version should ideally inherit from the previous version.
-# class _1_0_2(_1_0_1):
+# class _1_1_1(_1_1_2):
 
 # Breaking version should inherit from AirbytePythonConnectorBaseImage.
 # class _2_0_0(AirbyteConnectorBaseImage):
