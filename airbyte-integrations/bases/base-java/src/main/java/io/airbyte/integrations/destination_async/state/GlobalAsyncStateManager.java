@@ -272,7 +272,6 @@ public class GlobalAsyncStateManager {
       streamToLastestState.put(resolvedDescriptor, message.getSerialized());
       stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
       registerNewStateId(resolvedDescriptor);
-      log.error("************************ State: " + message.getSerialized());
       allocateMemoryToState(sizeInBytes);
     }
   }
