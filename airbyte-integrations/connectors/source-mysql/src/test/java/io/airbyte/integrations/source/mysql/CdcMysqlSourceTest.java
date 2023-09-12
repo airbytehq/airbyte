@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
@@ -89,6 +90,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   private Database database;
   private MySqlSource source;
   private JsonNode config;
+  private static final Random RANDOM = new Random();
 
   @BeforeEach
   public void setup() throws SQLException {
@@ -125,7 +127,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .put("is_test", true)
         .build());
   }
@@ -738,10 +740,9 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final int length = 32;
 
     final StringBuilder randomString = new StringBuilder(length);
-    final Random random = new Random();
 
     for (int i = 0; i < length; i++) {
-      final int index = random.nextInt(characters.length());
+      final int index = RANDOM.nextInt(characters.length());
       final char randomChar = characters.charAt(index);
       randomString.append(randomChar);
     }

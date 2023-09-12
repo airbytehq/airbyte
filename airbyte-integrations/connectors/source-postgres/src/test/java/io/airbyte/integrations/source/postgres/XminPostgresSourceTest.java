@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
@@ -174,7 +175,7 @@ class XminPostgresSourceTest {
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", getReplicationMethod())
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build());
   }
 
