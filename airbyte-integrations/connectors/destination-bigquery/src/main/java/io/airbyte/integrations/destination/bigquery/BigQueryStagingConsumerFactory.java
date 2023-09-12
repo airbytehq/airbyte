@@ -9,7 +9,6 @@ import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INT
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
@@ -22,7 +21,6 @@ import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -68,21 +66,6 @@ public class BigQueryStagingConsumerFactory {
         catalog,
         new BufferManager(),
         defaultNamespace);
-  }
-
-
-  // TODO Commenting this out for now since it slows down syncs
-  private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
-    // final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
-    return (streamId) -> {
-      // if (!valve.containsKey(streamId)) {
-      // valve.addStream(streamId);
-      // }
-      // if (valve.readyToTypeAndDedupe(streamId)) {
-      // typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
-      // valve.updateTimeAndIncreaseInterval(streamId);
-      // }
-    };
   }
 
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
@@ -179,7 +162,6 @@ public class BigQueryStagingConsumerFactory {
       typerDeduper.typeAndDedupe();
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final Map.Entry<StreamDescriptor, BigQueryWriteConfig> entry : writeConfigs.entrySet()) {
-        typerDeduper.typeAndDedupe(entry.getKey().getNamespace(), entry.getKey().getName());
         bigQueryGcsOperations.dropStageIfExists(entry.getValue().datasetId(), entry.getValue().streamName());
       }
       typerDeduper.commitFinalTables();
