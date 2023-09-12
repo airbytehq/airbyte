@@ -8,7 +8,7 @@ You can use the provided search bar, or simply scroll down the list to find the 
 
 ![](../.gitbook/assets/add-a-source/getting-started-source-page.png)
 
-The left half of the screen contains a set of fields that we will have to fill out. In the **Source name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the source (ie, `Google Sheets`).
+The left half of the page contains a set of fields that we will have to fill out. In the **Source name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the source (ie, `Google Sheets`).
 
 Each connector in Airbyte will have its own set of authentication methods and configurable parameters. In the case of Google Sheets, we are given a couple options for authenticating the connection, and must provide the link to the Google Sheet we want to replicate. You can always refer to your source's provided setup guide for specific instructions on filling out each field. Once you've entered all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. Happy replicating!
 
