@@ -187,7 +187,7 @@ class TestBackoff:
             # we did get the second account because both queries are executed in parallel
             assert [x.qs.get("limit")[0] for x in res_second_account.request_history] == ['100', '50', '25', '12', '6', '3', '1', '1', '1', '1', '1', '1', '1', '1', '1']
 
-    def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
+    def test_limit_error_retry_revert_page_size(self, source, requests_mock, api, account_id, second_account_id):
         """Error every time, check limit parameter decreases by 2 times every new call"""
 
         error = {
@@ -218,11 +218,18 @@ class TestBackoff:
             [error, success, error, success],
         )
 
-        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        res2 = requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{second_account_id}/activities",
+            [error, success, error, success],
+            )
+
+        stream = Activities(source=source, api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except FacebookRequestError:
             assert [x.qs.get("limit")[0] for x in res.request_history] == ['100', '50', '100', '50']
+            assert [x.qs.get("limit")[0] for x in res2.request_history] == ['100', '50', '100', '50']
 
     def test_limit_error_retry_next_page(self, source, fb_call_amount_data_response, requests_mock, api, account_id, second_account_id):
         """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""

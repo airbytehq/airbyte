@@ -111,8 +111,8 @@ def test_custom_ads_insights_breakdowns(api):
     assert stream.action_breakdowns == []
 
 
-def test_custom_ads_insights_action_report_times():
-    kwargs = {"api": None, "start_date": pendulum.now(), "end_date": pendulum.now(
+def test_custom_ads_insights_action_report_times(source, api):
+    kwargs = {"source": source, "api": api, "start_date": pendulum.now(), "end_date": pendulum.now(
     ), "insights_lookback_window": 1, "action_breakdowns": ["action_destination"], "breakdowns": []}
     stream = AdsInsights(**kwargs)
     assert stream.action_report_time == "mixed"
