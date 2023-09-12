@@ -3,7 +3,7 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-connector-acceptance-test'
-    id 'org.jetbrains.kotlin.jvm' version '1.9.0'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 application {
@@ -31,10 +31,10 @@ dependencies {
     implementation project(':airbyte-integrations:bases:debezium')
     implementation libs.airbyte.protocol
 
-    implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
+    implementation libs.mongo.driver.sync
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
-    testImplementation "org.jetbrains.kotlinx:kotlinx-cli:0.3.5"
+    testImplementation libs.kotlinx.cli
     testImplementation libs.connectors.testcontainers.mongodb
 
     integrationTestJavaImplementation libs.apache.commons.lang
@@ -44,8 +44,8 @@ dependencies {
 
     debeziumTestImplementation libs.bundles.debezium.bundle
     debeziumTestImplementation libs.bundles.slf4j
-    debeziumTestImplementation "org.slf4j:slf4j-simple:1.7.36"
-    debeziumTestImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    debeziumTestImplementation libs.slf4j.simple
+    debeziumTestImplementation libs.kotlinx.cli.jvm
     debeziumTestImplementation libs.spotbugs.annotations
 }
 

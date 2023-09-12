@@ -10,7 +10,7 @@ FROM airbyte/integration-base-java:dev AS build
 
 WORKDIR /airbyte
 
-ENV APPLICATION source-mongodb-internal-poc
+ENV APPLICATION source-mongodb-v2
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
@@ -20,9 +20,9 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-ENV APPLICATION source-mongodb-internal-poc
+ENV APPLICATION source-mongodb-v2
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.0.1
-LABEL io.airbyte.name=airbyte/source-mongodb-internal-poc
+LABEL io.airbyte.version=0.2.5
+LABEL io.airbyte.name=airbyte/source-mongodb-v2

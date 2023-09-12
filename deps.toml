@@ -20,6 +20,7 @@ hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
 junit-jupiter = "5.9.1"
+kotlin = "1.9.0"
 log4j = "2.17.2"
 lombok = "1.18.24"
 micronaut = "3.8.3"
@@ -90,6 +91,8 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
+kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" }
+kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = "0.3.5" }
 launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
@@ -100,6 +103,7 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.6.1" }
 mockk = { module = "io.mockk:mockk", version = "1.13.3" }
+mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
 otel-sdk = { module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0" }
 otel-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha" }
@@ -115,6 +119,7 @@ reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "react
 s3 = { module = "software.amazon.awssdk:s3", version = "2.20.20" }
 segment-java-analytics = { module = "com.segment.analytics.java:analytics", version.ref = "segment" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
 temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
@@ -168,3 +173,7 @@ micronaut-test-annotation-processor = ["micronaut-inject-java"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]
 debezium-bundle = ["debezium-api", "debezium-embedded", "debezium-sqlserver", "debezium-mysql", "debezium-postgres", "debezium-mongodb"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
