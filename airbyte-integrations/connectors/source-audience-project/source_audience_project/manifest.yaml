@@ -6,85 +6,73 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: [ "data" ]
-
   requester:
     type: HttpRequester
-    url_base: "https://campaign-api.audiencereport.com/"
+    url_base: "https://campaign-api.audiencereport.com"
     http_method: "GET"
     authenticator:
-      type: ApiKeyAuthenticator
-      header: "Authorization"
-      api_token: "Bearer {{ config['credentials']['access_token'] }}"
-      #oauth_authenticator:
-      #  type: OAuth
-      #  token_refresh_endpoint: https://oauth.audiencereport.com/oauth/access_token
-      #  client_id: "{{ config['credentials']['client_id'] }}"
-      #  client_secret: "{{ config['credentials']['client_secret'] }}"
-      #bearer_authenticator:
-      #  type: ApiKeyAuthenticator
-      #  header: "Authorization"
-      #  api_token: " {{ config['credentials']['access_token'] }}}"
-
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['access_token'] }}"
   retriever:
     type: SimpleRetriever
     record_selector:
       $ref: "#/definitions/selector"
-
+    paginator:
+      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-
   base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
 
-#'page_token_option': {'anyOf': [{'$ref': '#/definitions/RequestOption'},
-#                                                    {'$ref': '#/definitions/RequestPath'}]},
-#                    'pagination_strategy': {'anyOf': [{'$ref': '#/definitions/CursorPagination'},
-#                                                      {'$ref': '#/definitions/CustomPaginationStrategy'},
-#                                                      {'$ref': '#/definitions/OffsetIncrement'},
-#                                                      {'$ref': '#/definitions/PageIncrement'}],
-
   default_paginator:
     type: "DefaultPaginator"
     pagination_strategy:
-      type: "PageIncrement"
-      start_from_page: 0
-      page_size: 100
+      type: ""
 
   double_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
-      class_name: "source_audience_project.item_pagination_strategy.ItemPaginationStrategy"
+      class_name: "source_audience_project.streams.CampaignsStreamPagination"
       type: "CustomPaginationStrategy"
+      page_size: 100
 
-  path:
-    type: HttpRequester
-    class_name: "source_audience_project.item_pagination_strategy.ItemPathStrategy"
+  custom_requester:
+    $ref: "#/definitions/requester"
+    class_name: "source_audience_project.streams.CampaignsParamRequester"
+    type: CustomRequester
+
 
   campaigns_stream:
     $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "campaigns"
-      primary_key: "id"
-      start_from_page: 0
-      page_size: 100
-      path: ""
+    name: "campaigns"
+    primary_key: ""
     retriever:
       $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      requester:
+        path: "campaigns"
+        $ref: "#/definitions/custom_requester"
       paginator:
         $ref: "#/definitions/double_paginator"
-
-
-
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "maxResults"
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "start"
 
 streams:
   - "#/definitions/campaigns_stream"
 
 check:
   type: CheckStream
-  stream_names:
-    - "campaigns"
+  stream_names: ["campaigns"]
+
 
 spec:
   type: Spec
@@ -97,7 +85,6 @@ spec:
       - start_date
     additionalProperties: true
     properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
       credentials:
         title: Authentication Method
         description: >-
@@ -166,4 +153,4 @@ spec:
         order: 4
         description: >-
           Fetch data based on date range. By default it's False.
-      
+
