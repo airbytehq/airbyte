@@ -299,6 +299,7 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
                 return super().should_retry(response)
         return super().should_retry(response)
 
+
 class Comments(HttpSubStream, IncrementalNotionStream):
     """
     Comments Object Docs: https://developers.notion.com/reference/comment-object
