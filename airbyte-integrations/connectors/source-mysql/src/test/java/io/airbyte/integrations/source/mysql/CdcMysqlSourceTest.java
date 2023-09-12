@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
@@ -128,7 +129,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", replicationMethod)
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .put("is_test", true)
         .build());
   }
