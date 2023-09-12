@@ -10,17 +10,19 @@
         "properties": {
           "pinecone_key": {
             "title": "Pinecone API key",
+            "description": "The Pinecone API key to use matching the environment (copy from Pinecone console)",
             "airbyte_secret": true,
             "type": "string"
           },
           "pinecone_environment": {
-            "title": "Pinecone environment",
-            "description": "Pinecone environment to use",
+            "title": "Pinecone Environment",
+            "description": "Pinecone Cloud environment to use",
+            "examples": ["us-west1-gcp", "gcp-starter"],
             "type": "string"
           },
           "index": {
             "title": "Index",
-            "description": "Pinecone index to use",
+            "description": "Pinecone index in your project to load data into",
             "type": "string"
           }
         },

@@ -20,8 +20,6 @@ dependencies {
 
     integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
     integrationTestJavaImplementation project(':airbyte-config-oss:config-models-oss')
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
