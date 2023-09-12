@@ -1,7 +1,7 @@
-# Langchain Destination
+# Milvus Destination
 
-This is the repository for the Langchain destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/langchain).
+This is the repository for the Milvus destination connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/milvus).
 
 ## Local development
 
@@ -36,12 +36,12 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/langchain)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/milvus)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_langchain/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination langchain test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination milvus test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -101,11 +101,11 @@ Coming soon:
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-langchain:unitTest
+./gradlew :airbyte-integrations:connectors:destination-milvus:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-langchain:integrationTest
+./gradlew :airbyte-integrations:connectors:destination-milvus:integrationTest
 ```
 
 ## Dependency Management

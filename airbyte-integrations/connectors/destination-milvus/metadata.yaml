@@ -6,14 +6,14 @@ data:
       enabled: true
   connectorSubtype: database
   connectorType: destination
-  definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
+  definitionId: 65de8962-48c9-11ee-be56-0242ac120002
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/destination-milvus
   githubIssueLabel: destination-milvus
   icon: milvus.svg
   license: MIT
   name: Milvus
-  releaseDate: 2023-07-15
+  releaseDate: 2023-08-15
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/milvus
   tags:

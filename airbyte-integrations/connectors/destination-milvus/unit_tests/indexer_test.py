@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
@@ -26,10 +27,8 @@ class TestMilvusIndexer(unittest.TestCase):
                 "text_field": "text",
             }
         )
-        self.mock_embedder = Mock()
-        self.mock_embedder.embedding_dimensions = 128
-        self.milvus_indexer = MilvusIndexer(self.mock_config, self.mock_embedder)
-        self.milvus_indexer._create_client = Mock()
+        self.milvus_indexer = MilvusIndexer(self.mock_config, 128)
+        self.milvus_indexer._create_client = Mock()  # This is mocked out because testing separate processes is hard
         self.milvus_indexer._collection = Mock()
 
     def test_check_returns_expected_result(self):
@@ -43,6 +42,25 @@ class TestMilvusIndexer(unittest.TestCase):
         self.assertIsNone(result)
 
         self.milvus_indexer._collection.describe.assert_called()
+
+    def test_check_secure_endpoint(self):
+        self.milvus_indexer._collection.describe.return_value = {
+            "auto_id": True,
+            "fields": [{"name": "vector", "type": DataType.FLOAT_VECTOR, "params": {"dim": 128}}],
+        }
+        test_cases = [
+            ("cloud", "http://example.org", "Host must start with https://"),
+            ("cloud", "https://example.org", None),
+            ("", "http://example.org", None),
+            ("", "https://example.org", None)
+        ]
+        for deployment_mode, uri, expected_error_message in test_cases:
+            os.environ["DEPLOYMENT_MODE"] = deployment_mode
+            self.milvus_indexer.config.host = uri
+
+            result = self.milvus_indexer.check()
+
+            self.assertEqual(result, expected_error_message)
 
     def test_check_handles_failure_conditions(self):
         # Test 1: Collection does not exist
@@ -82,7 +100,7 @@ class TestMilvusIndexer(unittest.TestCase):
         }
         result = self.milvus_indexer.check()
         self.assertEqual(
-            result, f"Vector field {self.mock_config.vector_field} is not a {self.mock_embedder.embedding_dimensions}-dimensional vector"
+            result, f"Vector field {self.mock_config.vector_field} is not a 128-dimensional vector"
         )
 
     def test_pre_sync_calls_delete(self):
@@ -112,20 +130,18 @@ class TestMilvusIndexer(unittest.TestCase):
         self.milvus_indexer._collection.delete.assert_not_called()
 
     def test_index_calls_insert(self):
-        self.mock_embedder.embed_texts.return_value = [[1, 2, 3]]
-        self.milvus_indexer.index([Mock(metadata={"key": "value"}, page_content="some content")], [])
+        self.milvus_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1,2,3])], [])
 
-        self.mock_embedder.embed_texts.assert_called_with(["some content"])
         self.milvus_indexer._collection.insert.assert_called_with(
-            [{"key": "value", "vector": self.mock_embedder.embed_texts.return_value[0], "text": "some content"}]
+            [{"key": "value", "vector": [1,2,3], "text": "some content"}]
         )
 
     def test_index_calls_delete(self):
         mock_iterator = Mock()
-        mock_iterator.next.side_effect = [[{"id": "123"}], []]
+        mock_iterator.next.side_effect = [[{"id": "123"}, {"id": "456"}], [{"id": "789"}], []]
         self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
 
         self.milvus_indexer.index([], ["some_id"])
 
         self.milvus_indexer._collection.query_iterator.assert_called_with(expr='_ab_record_id in ["some_id"]')
-        self.milvus_indexer._collection.delete.assert_called_with(expr="id in [123]")
+        self.milvus_indexer._collection.delete.assert_has_calls([call(expr="id in [123, 456]"), call(expr="id in [789]")], any_order=False)

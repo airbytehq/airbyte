@@ -7,8 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
-from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, FromFieldEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
@@ -19,24 +18,23 @@ from destination_milvus.indexer import MilvusIndexer
 BATCH_SIZE = 128
 
 
-embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
+embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder, "from_field": FromFieldEmbedder}
 
 
 class DestinationMilvus(Destination):
     indexer: Indexer
-    processor: DocumentProcessor
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
-        self.indexer = MilvusIndexer(config.indexing, self.embedder)
+        self.indexer = MilvusIndexer(config.indexing, self.embedder.embedding_dimensions)
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
-        writer = Writer(config_model.processing, self.indexer, batch_size=BATCH_SIZE)
+        writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
         yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
