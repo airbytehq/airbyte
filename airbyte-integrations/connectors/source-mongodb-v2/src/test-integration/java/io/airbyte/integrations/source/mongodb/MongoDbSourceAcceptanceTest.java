@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -162,7 +163,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    return Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config));
   }
 
   @Override

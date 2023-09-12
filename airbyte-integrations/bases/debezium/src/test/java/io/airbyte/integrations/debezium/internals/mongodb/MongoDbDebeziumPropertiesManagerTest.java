@@ -52,7 +52,6 @@ class MongoDbDebeziumPropertiesManagerTest {
   void testDebeziumProperties() {
     final List<ConfiguredAirbyteStream> streams = createStreams(4);
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
-    final AirbyteSchemaHistoryStorage schemaHistoryManager = mock(AirbyteSchemaHistoryStorage.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
 
