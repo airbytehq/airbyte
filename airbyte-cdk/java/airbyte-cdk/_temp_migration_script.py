@@ -11,8 +11,31 @@ EXCLUDE_DIRS = [
     "node_modules", "lib", "bin", "__pycache__", ".gradle"
 ]
 EXCLUDE_FILES = [
-    "pom.xml", "README.md", "LICENSE", "build", ".coverage.*", "_temp_*",
+    "pom\.xml", "README\.md", "LICENSE", "build", ".coverage\..*",
+    "_temp_.*", ".*\.dat", ".*\.bin",
 ]
+MAIN_PACKAGES = [
+    # Core capabilities:
+    "airbyte-db/db-lib",
+    "airbyte-integrations/bases/base-java",
+    "airbyte-integrations/bases/base-java-s3",
+    "airbyte-integrations/bases/base-typing-deduping",
+    "airbyte-integrations/connectors/source-relational-db",
+    "airbyte-integrations/bases/bases-destination-jdbc",
+    # Hybrid projects: capabilities plus test fixtures:
+    "airbyte-integrations/bases/debezium",
+    "airbyte-integrations/connectors/source-jdbc",
+]
+TEST_FIXTURE_PACKAGES = [
+    # Test fixture projects:
+    "airbyte-integrations/bases/base-typing-deduping-test",
+    "airbyte-integrations/bases/s3-destination-base-integration-test",
+    "airbyte-integrations/bases/standard-destination-test",
+    "airbyte-integrations/bases/standard-source-test",
+    "airbyte-integrations/bases/base-standard-source-test-file",
+    "airbyte-test-utils"
+]
+
 def move_files(source_dir, dest_dir, path_desc):
     if os.path.isdir(source_dir):
         print(f"Moving '{path_desc}' files (ignoring existing)...\n - From: {source_dir}\n - To:   {dest_dir}")
@@ -42,7 +65,7 @@ def list_remnant_files(from_dir: str):
         for f in files:
             print(os.path.join(root, f))
 
-def move_package(old_package_root):
+def move_package(old_package_root: str, as_test_fixture: bool):
     # Define source and destination directories
     old_main_path = os.path.join(old_package_root, "src/main/java/io/airbyte")
     old_test_path = os.path.join(old_package_root, "src/test/java/io/airbyte")
@@ -51,17 +74,31 @@ def move_package(old_package_root):
     old_main_resources_path = os.path.join(old_package_root, "src/main/resources")
     old_test_resources_path = os.path.join(old_package_root, "src/test/resources")
     old_integtest_resources_path = os.path.join(old_package_root, "src/test-integration/resources")
+    old_testfixture_resources_path = os.path.join(old_package_root, "src/testfixtures/resources")
 
     dest_main_path = os.path.join(CDK_ROOT, "src/main/java/io/airbyte/cdk")
     dest_test_path = os.path.join(CDK_ROOT, "src/test/java/io/airbyte/cdk")
     dest_integtest_path = os.path.join(CDK_ROOT, "src/test-integration/java/io/airbyte/cdk")
     dest_testfixture_path = os.path.join(CDK_ROOT, "src/testFixtures/java/io/airbyte/cdk")
 
+
     old_project_name = str(Path(old_package_root).parts[-1])
-    dest_main_resources_path = os.path.join(CDK_ROOT, "src/main/resources", old_project_name)
-    dest_test_resources_path = os.path.join(CDK_ROOT, "src/test/resources", old_project_name)
-    dest_integtest_resources_path = os.path.join(CDK_ROOT, "src/test-integration/resources", old_project_name)
     remnants_archive_path = os.path.join(CDK_ROOT, "archive", old_project_name)
+
+    dest_main_resources_path = os.path.join(CDK_ROOT, "src/main/resources")
+    dest_test_resources_path = os.path.join(CDK_ROOT, "src/test/resources")
+    dest_integtest_resources_path = os.path.join(CDK_ROOT, "src/test-integration/resources")
+    dest_testfixture_resources_path = os.path.join(CDK_ROOT, "src/testFixtures/resources")
+
+    # dest_main_resources_path += f"/{old_project_name}"
+    # dest_test_resources_path += f"/{old_project_name}"
+    # dest_integtest_resources_path += f"/{old_project_name}"
+    # dest_testfixture_resources_path += f"/{old_project_name}"
+
+    if as_test_fixture:
+        # Move the test project's 'main' files to the test fixtures directory
+        dest_main_path = dest_testfixture_path
+        dest_main_resources_path = dest_testfixture_resources_path
 
     # Define source and destination directories as lists
 
@@ -73,6 +110,7 @@ def move_package(old_package_root):
         ("main resources", old_main_resources_path, dest_main_resources_path),
         ("test resources", old_test_resources_path, dest_test_resources_path),
         ("integ test resources", old_integtest_resources_path, dest_integtest_resources_path),
+        ("test fixtures resources", old_testfixture_resources_path, dest_testfixture_resources_path),
         ("remnants to archive", old_package_root, remnants_archive_path)
     ]
 
@@ -128,7 +166,11 @@ def migrate_package_refs(
 
             # Read the file contents
             with open(file_path, "r") as f:
-                contents = f.read()
+                try:
+                    contents = f.read()
+                except UnicodeDecodeError:
+                    print(f"Skipping file {file_path} due to UnicodeDecodeError")
+                    continue
 
             # Perform the find and replace operation
             new_contents = re.sub(text_pattern, text_replacement, contents)
@@ -136,8 +178,8 @@ def migrate_package_refs(
             # Write the updated contents back to the file
             with open(file_path, "w") as f:
                 f.write(new_contents)
-        else:
-            print(f"No files found to scan within {within_dir}")
+        # else:
+        #     print(f"No files found to scan within {within_dir}")
 
 def update_cdk_package_defs() -> None:
     """Within CDK_ROOT, packages should be declared as 'package io.airbyte.cdk...'"""
@@ -172,23 +214,22 @@ def main() -> None:
     # Remove empty directories in CDK_ROOT
     remove_empty_dirs(CDK_ROOT)
 
-    # Check if there was a CLI argument passed
-    paths_to_migrate: list[str] = [
-        "airbyte-integrations/bases/base-java",
-    ]
+    paths_to_migrate = MAIN_PACKAGES + TEST_FIXTURE_PACKAGES
     if len(sys.argv) > 1:
-        paths_to_migrate = [sys.argv[1]]
+        if sys.argv[1] == "test":
+            # Do a quick test
+            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")            
+            return
+
+        # If a CLI argument is passed, expect csv and override packages to migrate
+        paths_to_migrate = sys.argv[1].split(",")
 
     for old_package_root in paths_to_migrate:
         # Remove empty directories in the OLD_PACKAGE_ROOT
-        move_package(old_package_root)
+        as_test_fixture = old_package_root in TEST_FIXTURE_PACKAGES
+        move_package(old_package_root, as_test_fixture)
         remove_empty_dirs(old_package_root)
         update_cdk_package_defs()
-
-    # Move remaining files in the OLD_PACKAGE_ROOT to the CDK 'archive' directory
-    # print(f"Moving renaming files...\n - From: {OLD_PACKAGE_ROOT}\n - To:   {REMNANTS_ARCHIVE_PATH}")
-    # os.makedirs(REMNANTS_ARCHIVE_PATH, exist_ok=True)
-    # shutil.move(OLD_PACKAGE_ROOT, REMNANTS_ARCHIVE_PATH)
 
     print("Migration operation complete!")
 
