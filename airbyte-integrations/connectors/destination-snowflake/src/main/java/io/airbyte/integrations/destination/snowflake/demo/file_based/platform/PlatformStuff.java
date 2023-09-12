@@ -82,12 +82,16 @@ public class PlatformStuff<T extends StorageLocation> {
 
           // whenever we finish a file (either by reaching the target size, or by hitting a 15-minute deadline)
           // push it into the destination code
+          // This would need to actually be threadsafe; I'm writing it dumbly to keep the intentions clear.
           final boolean fileReadyToUpload = false;
           if (fileReadyToUpload) {
             final StreamDestination<? super T> streamDestination = streamDestinations.get(message.getRecord().getStream());
             streamDestination.upload(writer.getCurrentLocation(), 42, 42);
+
             // emit state messages
             // update last commit time = now()
+
+            writer.roll();
           }
         }
         case STATE -> {
