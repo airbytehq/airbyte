@@ -22,15 +22,11 @@ from pydantic import BaseModel, Field
 
 
 
-class LocalServerAuth(BaseModel):
-    mode: Literal["local_server"] = Field("local_server", const=True)
-    host: str = Field(..., title="Host", description="Host of the Qdrant instance")
-    port: str = Field(..., title="Port", description="Port of the Qdrant instance")
-    grpc_port: str = Field(default="", title="gRPC Port", description="gRPC Port of the Qdrant instance")
+class NoAuth(BaseModel):
+    mode: Literal["no_auth"] = Field("no_auth", const=True)
 
-class CloudAuth(BaseModel):
-    mode: Literal["cloud"] = Field("cloud", const=True)
-    url: str = Field(..., title="url", description="url of the Qdrant instance")
+class ApiKeyAuth(BaseModel):
+    mode: Literal["api_key_auth"] = Field("api_key_auth", const=True)
     api_key: str = Field(..., title="API Key", description="API Key for the Qdrant instance", airbyte_secret=True)
 
 class DistanceMetricEnum(str, Enum):
@@ -39,7 +35,8 @@ class DistanceMetricEnum(str, Enum):
     euc = 'Euclidean distance'
 
 class QdrantIndexingConfigModel(BaseModel):
-    auth_method: Union[LocalServerAuth, CloudAuth] = Field(
+    url: str = Field(..., title="url", description="Public Endpoint of the Qdrant instance")
+    auth_method: Union[NoAuth, ApiKeyAuth] = Field(
         ..., title="Authentication Method", description="Method to connect to the Qdrant Instance", discriminator="mode", type="object", order=0
     )
     prefer_grpc: bool = Field(
@@ -47,7 +44,7 @@ class QdrantIndexingConfigModel(BaseModel):
     )
     collection: str = Field(..., title="Collection Name", description="The collection to load data into")
     distance_metric: DistanceMetricEnum = Field(
-        ..., title="Distance Metric", description="Select the Distance metrics are used to measure similarities among vectors."
+        default=DistanceMetricEnum.cos, title="Distance Metric", enum=["dot", "cos", "euc"], description="Select the Distance metrics used to measure similarities among vectors."
     )
     text_field: str = Field(title="Text Field", description="The field in the payload that contains the embedded text", default="text")
 

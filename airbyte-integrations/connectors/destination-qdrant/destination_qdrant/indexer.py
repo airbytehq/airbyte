@@ -33,8 +33,9 @@ DISTANCE_METRIC_MAP = {
 class QdrantIndexer(Indexer):
     config: QdrantIndexingConfigModel
 
-    def __init__(self, config: QdrantIndexingConfigModel):
+    def __init__(self, config: QdrantIndexingConfigModel, embedding_dimensions: int):
         super().__init__(config)
+        self.embedding_dimensions = embedding_dimensions
 
     def check(self) -> Optional[str]:
         try:
@@ -47,7 +48,7 @@ class QdrantIndexer(Indexer):
                 distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
                 self._client.recreate_collection(
                     collection_name=self.config.collection,
-                    vectors_config=VectorParams(size=100, distance=distance_metric),
+                    vectors_config=VectorParams(size=self.embedding_dimensions, distance=distance_metric),
                 )
         except Exception as e:
             return format_exception(e)
@@ -89,7 +90,7 @@ class QdrantIndexer(Indexer):
                     vector=chunk.embedding,
                 )
             )
-        self._client.upload_records(collection_name=self.config.collection, records=entities)
+        self._client.upload_records(collection_name=self.config.collection, records=entities, parallel=10)
 
     def post_sync(self) -> List[AirbyteMessage]:
         try:
@@ -100,23 +101,14 @@ class QdrantIndexer(Indexer):
 
     def _create_client(self):
         auth_method = self.config.auth_method
-        self.prefer_grpc = self.config.prefer_grpc
+        url = self.config.url
+        prefer_grpc = self.config.prefer_grpc
 
-        if auth_method.mode == "local_server":
-            host = auth_method.host
-            port = auth_method.port
-            grpc_port = auth_method.grpc_port if self.prefer_grpc else None
-
-            if (self.prefer_grpc and not grpc_port) or not self.prefer_grpc:
-                self._client = QdrantClient(host=host, port=port)
-            else:
-                self._client = QdrantClient(host=host, port=port, prefer_grpc=self.prefer_grpc, grpc_port=grpc_port)
-
-        elif auth_method.mode == "cloud":
-            url = auth_method.url
+        if auth_method.mode == "no_auth":
+            self._client = QdrantClient(url=url, prefer_grpc=prefer_grpc)
+        elif auth_method.mode == "api_key_auth":
             api_key = auth_method.api_key
-
-            self._client = QdrantClient(url=url, prefer_grpc=self.prefer_grpc, api_key=api_key)
+            self._client = QdrantClient(url=url, prefer_grpc=prefer_grpc, api_key=api_key)
 
     def _delete_for_filter(self, selector: PointsSelector) -> None:
         self._client.delete(

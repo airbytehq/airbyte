@@ -39,7 +39,7 @@ class DestinationQdrant(Destination):
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
-        self.indexer = QdrantIndexer(config.indexing)
+        self.indexer = QdrantIndexer(config.indexing, self.embedder.embedding_dimensions)
 
 
     def write(
