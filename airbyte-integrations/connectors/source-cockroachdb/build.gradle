@@ -28,8 +28,6 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")

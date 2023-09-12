@@ -14,7 +14,6 @@ data:
   license: MIT
   name: Outbrain Amplify
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   tags:
     - language:low-code

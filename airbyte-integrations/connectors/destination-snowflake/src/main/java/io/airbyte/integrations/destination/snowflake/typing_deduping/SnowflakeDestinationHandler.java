@@ -40,8 +40,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         ORDER BY ordinal_position;
         """,
         databaseName.toUpperCase(),
-        id.finalNamespace(),
-        id.finalName()).stream()
+        id.finalNamespace().toUpperCase(),
+        id.finalName().toUpperCase()).stream()
         .collect(LinkedHashMap::new,
             (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
             LinkedHashMap::putAll);
@@ -65,8 +65,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
           AND table_name = ?
         """,
         databaseName.toUpperCase(),
-        id.finalNamespace(),
-        id.finalName());
+        id.finalNamespace().toUpperCase(),
+        id.finalName().toUpperCase());
     return rowCount == 0;
   }
 

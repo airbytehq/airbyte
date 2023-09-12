@@ -57,9 +57,8 @@ def chunk_date_range(
     After 2 hours next page tokens will be expired, finally resulting in page token expired error
     Currently this method returns `start_date` and `end_date` with `range_days` difference which is 15 days in most cases.
     """
-    today = pendulum.today(tz=time_zone)
-    end_date = min(pendulum.parse(end_date, tz=time_zone), today) if end_date else today
     start_date = pendulum.parse(start_date, tz=time_zone)
+    end_date = pendulum.parse(end_date, tz=time_zone)
 
     # For some metrics we can only get data not older than N days, it is Google Ads policy
     if days_of_data_storage:
@@ -96,7 +95,11 @@ class GoogleAdsStream(Stream, ABC):
 
     def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
         for result in response:
-            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
+            # value can be integer or float so change type to float
+            if self.name == "accounts" and isinstance(record.get("customer.optimization_score_weight"), int):
+                record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
+            yield record
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
