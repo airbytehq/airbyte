@@ -6,12 +6,25 @@ import sys
 
 REPO_ROOT = "."
 CDK_ROOT = f"{REPO_ROOT}/airbyte-cdk/java/airbyte-cdk"
-
+EXCLUDE_DIRS = [
+    "target", "out", "build", "dist",
+    "node_modules", "lib", "bin", "__pycache__", ".gradle"
+]
+EXCLUDE_FILES = [
+    "pom.xml", "README.md", "LICENSE", "build", ".coverage.*", "_temp_*",
+]
 def move_files(source_dir, dest_dir, path_desc):
     if os.path.isdir(source_dir):
         print(f"Moving '{path_desc}' files (ignoring existing)...\n - From: {source_dir}\n - To:   {dest_dir}")
         os.makedirs(dest_dir, exist_ok=True)
-        shutil.copytree(source_dir, dest_dir, dirs_exist_ok=True)
+        for root, dirs, files in os.walk(source_dir):
+            for file in files:
+                src_file = os.path.join(root, file)
+                dst_file = os.path.join(dest_dir, file)
+
+                os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+
+                shutil.move(src_file, dst_file)
     else:
         print(f"The source directory does not exist: {source_dir} ('{path_desc}')")
 
@@ -75,7 +88,6 @@ def migrate_package_refs(
     within_dir: str,
     exclude_files: list,
     exclude_dirs: list,
-    include_dirs: list,
 ):
     """
     Migrates a Java package to the new CDK package structure.
@@ -84,42 +96,37 @@ def migrate_package_refs(
         package_root (str): The root directory of the package to migrate.
         exclude_files (list): A list of file patterns to exclude from the migration.
         exclude_dirs (list): A list of directory patterns to exclude from the migration.
-        include_dirs (list): A list of directory patterns to include in the migration.
 
     Returns:
         None
     """
-
-    # Define the directories to include in the search
-    search_dirs = [os.path.join(within_dir, d) for d in include_dirs]
-
     # Define the files to exclude from the search
     exclude_files_pattern = "|".join(exclude_files)
     exclude_files_regex = re.compile(exclude_files_pattern)
 
-    # Define the directories to exclude from the search
-    exclude_dirs_pattern = "|".join(exclude_dirs)
-    exclude_dirs_regex = re.compile(exclude_dirs_pattern)
-
     # Walk the directory tree and perform the find and replace operation on each file
     for root, dirs, files in os.walk(within_dir):
-        # Exclude directories that match the exclude_dirs pattern
-        dirs = [d for d in dirs if not exclude_dirs_regex.match(d)]
-
         # Exclude files that match the exclude_files pattern
         files = [f for f in files if not exclude_files_regex.match(f)]
 
-        # Only search directories that are included in the search_dirs list
-        if root not in search_dirs:
-            continue
-
         for file in files:
+            file_path = os.path.join(root, file)
+            if (
+                any(
+                    [
+                        exclude_dir in file_path.split("/")
+                        for exclude_dir in exclude_dirs
+                    ]
+                )
+            ):
+                continue
+
+            # print("Scanning file: ", file_path)
             # Exclude files that match the exclude_files pattern
             if exclude_files_regex.match(file):
                 continue
 
             # Read the file contents
-            file_path = os.path.join(root, file)
             with open(file_path, "r") as f:
                 contents = f.read()
 
@@ -129,30 +136,35 @@ def migrate_package_refs(
             # Write the updated contents back to the file
             with open(file_path, "w") as f:
                 f.write(new_contents)
+        else:
+            print(f"No files found to scan within {within_dir}")
+
+def update_cdk_package_defs() -> None:
+    """Within CDK_ROOT, packages should be declared as 'package io.airbyte.cdk...'"""
+    migrate_package_refs(
+        text_pattern=r"package io\.airbyte\.(?!cdk\.)(?!cdk$)",
+        text_replacement=r"package io.airbyte.cdk.",
+        within_dir=CDK_ROOT,
+        exclude_files=EXCLUDE_FILES,
+        exclude_dirs=EXCLUDE_DIRS,
+    )
 
 
 def migrate_all_packages_refs() -> None:
     for text_pattern, text_replacement, within_dir, exclude_dirs in [
         (
-            r"package io\.airbyte\.(?<!\.cdk)",
-            r"package io.airbyte.cdk.",
-            CDK_ROOT,
-            ["target", "out", "build", "dist", "node_modules", "lib", "bin"]
-        ),
-        (
             r"(?<!package )io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
             r"io.airbyte.cdk.\2",
             REPO_ROOT,
-            ["target", "out", "build", "dist", "node_modules", "lib", "bin", CDK_ROOT]
+            ["target", "out", "build", "dist", "node_modules", "lib", "bin"]
         )
     ]:
         migrate_package_refs(
             text_pattern,
             text_replacement,
             within_dir=within_dir,
-            exclude_files=["pom.xml", "README.md", "LICENSE"],
-            exclude_dirs=exclude_dirs,
-            include_dirs=["src"],
+            exclude_files=EXCLUDE_FILES,
+            exclude_dirs=list(set(exclude_dirs + EXCLUDE_DIRS)),
         )
 
 
@@ -161,7 +173,9 @@ def main() -> None:
     remove_empty_dirs(CDK_ROOT)
 
     # Check if there was a CLI argument passed
-    paths_to_migrate: list[str] = []
+    paths_to_migrate: list[str] = [
+        "airbyte-integrations/bases/base-java",
+    ]
     if len(sys.argv) > 1:
         paths_to_migrate = [sys.argv[1]]
 
@@ -169,6 +183,7 @@ def main() -> None:
         # Remove empty directories in the OLD_PACKAGE_ROOT
         move_package(old_package_root)
         remove_empty_dirs(old_package_root)
+        update_cdk_package_defs()
 
     # Move remaining files in the OLD_PACKAGE_ROOT to the CDK 'archive' directory
     # print(f"Moving renaming files...\n - From: {OLD_PACKAGE_ROOT}\n - To:   {REMNANTS_ARCHIVE_PATH}")
