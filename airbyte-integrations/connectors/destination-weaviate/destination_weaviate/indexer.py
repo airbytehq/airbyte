@@ -102,7 +102,8 @@ class WeaviateIndexer(Indexer):
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             weaviate_object = {**self._normalize(chunk.metadata), self.config.text_field: chunk.page_content}
-            object_id = uuid.uuid4()
+            print(weaviate_object)
+            object_id = str(uuid.uuid4())
             self.client.batch.add_data_object(weaviate_object, self.config.class_name, object_id, vector=chunk.embedding)
             self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, self.config.class_name)
         if len(document_chunks) > 0:
@@ -114,6 +115,9 @@ class WeaviateIndexer(Indexer):
         for key, value in metadata.items():
             # Property names in Weaviate have to start with lowercase letter
             normalized_key = key[0].lower() + key[1:]
+            # "id" and "additional" are reserved properties in Weaviate, prefix to disambiguate
+            if key == "id" or key == "_id" or key == "_additional":
+                normalized_key = f"__{key}"
             if isinstance(value, list) and len(value) == 0:
                 # Handling of empty list that's not part of defined schema otherwise Weaviate throws invalid string property
                 continue
