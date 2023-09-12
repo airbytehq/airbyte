@@ -41,7 +41,7 @@
 #                      io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 #                      io.airbyte.cdk.integrations.destination.StandardNameTransformer
 #                      io.airbyte.cdk.integrations.destination.jdbc
-#                    # io.airbyte.cdk.integrations.destination.normalization  << Considering removing this package
+#                      io.airbyte.cdk.integrations.destination.normalization
 #                      io.airbyte.cdk.integrations.destination.record_buffer
 #                      io.airbyte.cdk.integrations.destination.buffered_stream_consumer
 #                      io.airbyte.cdk.integrations.destination.dest_state_lifecycle_manager
@@ -78,8 +78,7 @@
 #                       `...destination.s3_glue`
 #   - Within rest of repo:
 #     - Find (regex) based on the above list:
-#         io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)
-#       # io\.airbyte\.(integrations\.destination\.normalization)  << Considering removing this from the package list
+#         io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)
 #     - Replace with: io.airbyte.cdk.$1
 #     - Exclude files: _temp_migration_script.sh,*.html,build,bin
 # - Replace references to the moved packages with the new package names.
@@ -98,7 +97,6 @@ if [ -z "$1" ]; then
   $MIGRATE_SH airbyte-db/db-lib
   $MIGRATE_SH airbyte-integrations/bases/base-java
   $MIGRATE_SH airbyte-integrations/bases/base-java-s3
-  # $MIGRATE_SH airbyte-integrations/bases/base-normalization
   $MIGRATE_SH airbyte-integrations/bases/base-typing-deduping
   $MIGRATE_SH airbyte-integrations/connectors/source-relational-db
   $MIGRATE_SH airbyte-integrations/bases/bases-destination-jdbc
