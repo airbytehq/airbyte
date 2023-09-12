@@ -39,10 +39,12 @@ class QdrantIndexer(Indexer):
     def check(self) -> Optional[str]:
         try:
             self._create_client()
-            distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
+            if not self._client.get_collections():
+                return "Qdrant client is not alive."
             try:
                 self._client.get_collection(collection_name=self.config.collection)
             except ValueError:
+                distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
                 self._client.recreate_collection(
                     collection_name=self.config.collection,
                     vectors_config=VectorParams(size=100, distance=distance_metric),
@@ -51,7 +53,6 @@ class QdrantIndexer(Indexer):
             return format_exception(e)
         finally:
             self._client.close()
-            return
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
@@ -106,7 +107,10 @@ class QdrantIndexer(Indexer):
             port = auth_method.port
             grpc_port = auth_method.grpc_port if self.prefer_grpc else None
 
-            self._client = QdrantClient(host=host, port=port, prefer_grpc=self.prefer_grpc, grpc_port=grpc_port)
+            if (self.prefer_grpc and not grpc_port) or not self.prefer_grpc:
+                self._client = QdrantClient(host=host, port=port)
+            else:
+                self._client = QdrantClient(host=host, port=port, prefer_grpc=self.prefer_grpc, grpc_port=grpc_port)
 
         elif auth_method.mode == "cloud":
             url = auth_method.url

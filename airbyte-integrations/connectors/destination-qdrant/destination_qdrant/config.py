@@ -26,7 +26,7 @@ class LocalServerAuth(BaseModel):
     mode: Literal["local_server"] = Field("local_server", const=True)
     host: str = Field(..., title="Host", description="Host of the Qdrant instance")
     port: str = Field(..., title="Port", description="Port of the Qdrant instance")
-    grpc_port: str = Field(..., title="gRPC Port", description="gRPC Port of the Qdrant instance", default="")
+    grpc_port: str = Field(default="", title="gRPC Port", description="gRPC Port of the Qdrant instance")
 
 class CloudAuth(BaseModel):
     mode: Literal["cloud"] = Field("cloud", const=True)
