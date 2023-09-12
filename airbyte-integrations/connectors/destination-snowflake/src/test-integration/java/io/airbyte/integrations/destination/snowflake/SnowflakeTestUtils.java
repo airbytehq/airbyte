@@ -87,22 +87,7 @@ public class SnowflakeTestUtils {
             """
             SELECT ${columns} FROM ${table} ORDER BY ${extracted_at} ASC
             """)),
-        new SnowflakeTestSourceOperations()::rowToJson)
-        .stream().peek(row -> {
-          // Downcase the airbyte_* fields so that our test framework can recognize them.
-          Stream.of(
-              JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-              JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-              JavaBaseConstants.COLUMN_NAME_DATA,
-              JavaBaseConstants.COLUMN_NAME_AB_META).forEach(columnName -> {
-                final JsonNode value = row.get(columnName.toUpperCase());
-                if (value != null) {
-                  ((ObjectNode) row).set(columnName, value);
-                  ((ObjectNode) row).remove(columnName.toUpperCase());
-                }
-              });
-        }).toList();
+        new SnowflakeTestSourceOperations()::rowToJson);
   }
 
   private static String quote(final String name) {
