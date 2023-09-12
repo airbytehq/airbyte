@@ -67,7 +67,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -497,12 +496,14 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   @Tags(value = {@Tag("INVALID-EU-TZ")})
   // Issue: https://github.com/airbytehq/airbyte/issues/24659
   public void testSettingTimezoneToOverrideBadValue() throws Exception {
-    final Record timezone = database.query(trx -> trx.fetch("SELECT @@system_time_zone;\n")).get(0);
+    final String systemTimeZone = "@@system_time_zone";
     final JdbcDatabase jdbcDatabase = source.createDatabase(config);
     final Properties properties = MySqlCdcProperties.getDebeziumProperties(jdbcDatabase);
+    final String databaseTimezone = jdbcDatabase.unsafeQuery(String.format("SELECT %s;", systemTimeZone)).toList().get(0).get(systemTimeZone).asText();
+    final String debeziumEngineTimezone = properties.getProperty("database.connectionTimeZone");
 
-    assertEquals(timezone.get(0, String.class), INVALID_TIMEZONE_CEST);
-    assertEquals(properties.getProperty("database.connectionTimeZone"), "America/Los_Angeles");
+    assertEquals(INVALID_TIMEZONE_CEST, databaseTimezone);
+    assertEquals("America/Los_Angeles", debeziumEngineTimezone);
   }
 
   @Test
