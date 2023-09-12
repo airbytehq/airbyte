@@ -5,27 +5,30 @@
     "type": "object",
     "properties": {
       "indexing": {
-        "title": "Pinecone",
+        "title": "Indexing",
         "type": "object",
         "properties": {
           "pinecone_key": {
             "title": "Pinecone API key",
+            "description": "The Pinecone API key to use matching the environment (copy from Pinecone console)",
             "airbyte_secret": true,
             "type": "string"
           },
           "pinecone_environment": {
-            "title": "Pinecone environment",
-            "description": "Pinecone environment to use",
+            "title": "Pinecone Environment",
+            "description": "Pinecone Cloud environment to use",
+            "examples": ["us-west1-gcp", "gcp-starter"],
             "type": "string"
           },
           "index": {
             "title": "Index",
-            "description": "Pinecone index to use",
+            "description": "Pinecone index in your project to load data into",
             "type": "string"
           }
         },
         "required": ["pinecone_key", "pinecone_environment", "index"],
-        "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings."
+        "description": "Pinecone is a popular vector store that can be used to store and retrieve embeddings.",
+        "group": "indexing"
       },
       "embedding": {
         "title": "Embedding",
@@ -71,7 +74,7 @@
               }
             },
             "required": ["cohere_key"],
-            "description": "Use the Cohere API to embed text. This option is using the embed-english-light-v2.0 model with 1024 embedding dimensions."
+            "description": "Use the Cohere API to embed text."
           },
           {
             "title": "Fake",
@@ -107,7 +110,7 @@
           },
           "text_fields": {
             "title": "Text fields to embed",
-            "description": "List of fields in the record that should be used to calculate the embedding. All other fields are passed along as meta fields. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
+            "description": "List of fields in the record that should be used to calculate the embedding. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered text fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.",
             "default": [],
             "always_show": true,
             "examples": ["text", "user.name", "users.*.name"],
@@ -117,11 +120,11 @@
             }
           },
           "metadata_fields": {
-            "title": "Metadata fields",
-            "description": "List of fields in the record that should be stored as metadata. ",
+            "title": "Fields to store as metadata",
+            "description": "List of fields in the record that should be stored as metadata. The field list is applied to all streams in the same way and non-existing fields are ignored. If none are defined, all fields are considered metadata fields. When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array. When specifying nested paths, all matching values are flattened into an array set to a field named by the path.",
             "default": [],
             "always_show": true,
-            "examples": ["text", "user.name", "users.*.name"],
+            "examples": ["age", "user", "user.name"],
             "type": "array",
             "items": {
               "type": "string"
