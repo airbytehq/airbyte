@@ -39,10 +39,11 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
        ```
        {
             "database": "database_name",
-            "user": "username",
+            "username": "username",
             "password": "password",
             "connection_string": "mongodb+srv://cluster0.abcd1.mongodb.net/",
-            "auth_source": "auth_database"
+            "auth_source": "auth_database",
+            "installation_type": "ATLAS"
        }
       ```
 
