@@ -16,7 +16,6 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation libs.airbyte.protocol
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation group: 'com.ibm.db2', name: 'jcc', version: '11.5.5.0'
 
@@ -27,7 +26,6 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-db2')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }
 

@@ -10,7 +10,9 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 
 from .utils import read_full_refresh, read_incremental, safe_max
@@ -29,6 +31,13 @@ class JiraStream(HttpStream, ABC):
     api_v1 = False
     skip_http_status_codes = []
     raise_on_http_errors = True
+    error_messages = {
+        requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
+    }
+    config_error_status_codes = [
+        requests.codes.UNAUTHORIZED,
+    ]
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -90,6 +99,15 @@ class JiraStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except HTTPError as e:
+            user_error_message = self.error_messages.get(e.response.status_code)
+            if user_error_message:
+                self.logger.error(user_error_message)
+            if e.response.status_code in self.config_error_status_codes:
+                raise AirbyteTracedException(
+                    message="Config validation error: " + user_error_message,
+                    internal_message=str(e),
+                    failure_type=FailureType.config_error,
+                ) from e
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
 
@@ -194,6 +212,11 @@ class Boards(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     extract_field = "values"
     use_cache = True
@@ -321,6 +344,8 @@ class Issues(IncrementalJiraStream):
     cursor_field = "updated"
     extract_field = "issues"
     use_cache = False  # disable caching due to OOM errors in kubernetes
+
+    skip_http_status_codes = [requests.codes.FORBIDDEN]
 
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -1266,6 +1291,11 @@ class WorkflowStatuses(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "status"

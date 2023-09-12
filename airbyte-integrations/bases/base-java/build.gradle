@@ -23,12 +23,6 @@ dependencies {
     implementation libs.connectors.testcontainers.jdbc
     implementation libs.bundles.datadog
 
-    implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
-
     testImplementation 'commons-lang:commons-lang:2.6'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
-}
-
-tasks.named('airbyteDocker').configure {
-    dependsOn project(':airbyte-integrations:bases:base').tasks.named('assemble')
 }
