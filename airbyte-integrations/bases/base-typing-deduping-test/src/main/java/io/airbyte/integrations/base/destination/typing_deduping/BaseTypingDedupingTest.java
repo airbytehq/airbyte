@@ -153,11 +153,12 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * If the destination connector uses a nonstandard schema for the final table, override this method. For example,
-   * destination-snowflake upcases all column names in the final tables.
+   * If the destination connector uses a nonstandard schema for the final table, override this method.
+   * For example, destination-snowflake upcases all column names in the final tables.
    * <p>
-   * You only need to add mappings for the airbyte metadata column names (_airbyte_raw_id, _airbyte_extracted_at, etc.).
-   * The test framework automatically populates mappings for the primary key and cursor using the SqlGenerator.
+   * You only need to add mappings for the airbyte metadata column names (_airbyte_raw_id,
+   * _airbyte_extracted_at, etc.). The test framework automatically populates mappings for the primary
+   * key and cursor using the SqlGenerator.
    */
   protected Map<String, String> getFinalMetadataColumnNames() {
     return new HashMap<>();

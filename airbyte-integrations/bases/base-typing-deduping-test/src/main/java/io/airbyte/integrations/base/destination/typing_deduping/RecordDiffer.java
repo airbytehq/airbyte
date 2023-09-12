@@ -50,8 +50,8 @@ public class RecordDiffer {
   /**
    * @param rawRecordColumnNames
    * @param finalRecordColumnNames
-   * @param identifyingColumns     Which fields constitute a unique record (typically PK+cursor). Do _not_
-   *                               include extracted_at; it is handled automatically.
+   * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do _not_
+   *        include extracted_at; it is handled automatically.
    */
   @SafeVarargs
   public RecordDiffer(final Map<String, String> rawRecordColumnNames,
@@ -163,9 +163,11 @@ public class RecordDiffer {
   }
 
   /**
-   * See {@link #buildIdentityComparator(Pair[], Map<String, String>)} for an explanation of dataExtractor.
+   * See {@link #buildIdentityComparator(Pair[], Map<String, String>)} for an explanation of
+   * dataExtractor.
    */
-  private Function<JsonNode, String> buildIdentityExtractor(final Pair<String, AirbyteType>[] identifyingColumns, final Map<String, String> columnNames) {
+  private Function<JsonNode, String> buildIdentityExtractor(final Pair<String, AirbyteType>[] identifyingColumns,
+                                                            final Map<String, String> columnNames) {
     return record -> Arrays.stream(identifyingColumns)
         .map(column -> getPrintableFieldIfPresent(record, column.getKey()))
         .collect(Collectors.joining(", "))
@@ -190,11 +192,11 @@ public class RecordDiffer {
    * ability to assert on the exact raw_id if desired; we simply assume that raw_id is always expected
    * to be present.
    *
-   * @param identityComparator     Returns 0 iff two records are the "same" record (i.e. have the same
-   *                               PK+cursor+extracted_at)
-   * @param sortComparator         Behaves identically to identityComparator, but if two records are the same,
-   *                               breaks that tie using _airbyte_raw_id
-   * @param recordIdExtractor      Dump the record's PK+cursor+extracted_at into a human-readable string
+   * @param identityComparator Returns 0 iff two records are the "same" record (i.e. have the same
+   *        PK+cursor+extracted_at)
+   * @param sortComparator Behaves identically to identityComparator, but if two records are the same,
+   *        breaks that tie using _airbyte_raw_id
+   * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable string
    * @return The diff, or empty string if there were no differences
    */
   private String diffRecords(final List<JsonNode> originalExpectedRecords,
