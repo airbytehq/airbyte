@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
@@ -153,7 +155,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build());
   }
 
@@ -933,8 +935,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
     final JsonNode config = getConfig();
-    ((ObjectNode) config).put("sync_checkpoint_seconds", 1);
-    ((ObjectNode) config).put("sync_checkpoint_records", 100_000);
+    ((ObjectNode) config).put(SYNC_CHECKPOINT_DURATION_PROPERTY, 1);
+    ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 100_000);
 
     final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
