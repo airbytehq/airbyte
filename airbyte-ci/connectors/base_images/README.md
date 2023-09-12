@@ -62,3 +62,10 @@ class _1_0_1(_1_0_0):
 
 ## How to update an existing base image version
 **Existing base image version must not be updated! Please reach out to the Connector Operations team if you have a good reason to do that.**
+
+## Running tests locally
+```bash
+poetry run pytest
+# Static typing checks
+poetry run mypy base_images --check-untyped-defs
+```
