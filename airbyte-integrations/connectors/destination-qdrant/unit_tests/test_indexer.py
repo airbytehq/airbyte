@@ -18,11 +18,9 @@ class TestQdrantIndexer(unittest.TestCase):
     def setUp(self):
         self.mock_config = QdrantIndexingConfigModel(
             **{
+                "url": "localhost:6333",
                 "auth_method": {
-                    "mode": "local_server",
-                    "host": "localhost",
-                    "port": "8080"
-                    # "grpc_port": "8081"
+                    "mode": "no_auth",
                 },
                 "prefer_grpc": False,
                 "collection": "dummy-collection",
@@ -30,7 +28,7 @@ class TestQdrantIndexer(unittest.TestCase):
                 "text_field": "text"
             }
         )
-        self.qdrant_indexer = QdrantIndexer(self.mock_config)
+        self.qdrant_indexer = QdrantIndexer(self.mock_config, 100)
         self.qdrant_indexer._create_client = Mock()
         self.qdrant_indexer._client = Mock()
 

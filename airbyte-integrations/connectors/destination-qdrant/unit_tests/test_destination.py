@@ -17,11 +17,9 @@ class TestDestinationQdrant(unittest.TestCase):
             "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
             "embedding": {"mode": "openai", "openai_key": "mykey"},
             "indexing": {
+                "url": "localhost:6333",
                 "auth_method": {
-                    "mode": "local_server",
-                    "host": "localhost",
-                    "port": "8080"
-                    # "grpc_port": "8081"
+                    "mode": "no_auth",
                 },
                 "prefer_grpc": False,
                 "collection": "dummy-collection",
