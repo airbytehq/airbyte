@@ -8,7 +8,7 @@
     "required" : ["instance_type"],
     "additionalProperties" : true,
     "properties" : {
-      "instance_type" : {
+      "installation_type" : {
         "type" : "object",
         "title" : "Instance Type",
         "description" : "Configures the MongoDB replica set based on instance type.",
@@ -98,7 +98,7 @@
               "connection_string" : {
                 "title" : "Connection String",
                 "type" : "string",
-                "description" : "The connection string of the cluster that you want to replicate.  See https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string for more information.",
+                "description" : "The connection string of the cluster that you want to replicate.  https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string for more information.",
                 "examples" : [
                   "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/",
                   "mongodb://example.host.com:27017/"
