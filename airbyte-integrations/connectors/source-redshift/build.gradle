@@ -33,6 +33,5 @@ dependencies {
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-redshift')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 

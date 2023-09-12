@@ -20,7 +20,6 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
     implementation 'junit:junit:4.13.1'

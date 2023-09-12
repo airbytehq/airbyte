@@ -537,6 +537,7 @@
             "title": "AWS Access Key ID",
             "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
             "airbyte_secret": true,
+            "always_show": true,
             "order": 1,
             "type": "string"
           },
@@ -544,6 +545,7 @@
             "title": "AWS Secret Access Key",
             "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
             "airbyte_secret": true,
+            "always_show": true,
             "order": 2,
             "type": "string"
           },
