@@ -60,7 +60,7 @@ class TestConnector:
 
     def test_metadata_query_match(self, mocker):
         connector = utils.Connector("source-faker")
-        mocker.patch.object(utils.Connector, "metadata", {"dockerRepository": "airbyte/source-faker", "ab_internal" : {"ql": 100}})
+        mocker.patch.object(utils.Connector, "metadata", {"dockerRepository": "airbyte/source-faker", "ab_internal": {"ql": 100}})
         assert connector.metadata_query_match("data.dockerRepository == 'airbyte/source-faker'")
         assert connector.metadata_query_match("'source' in data.dockerRepository")
         assert not connector.metadata_query_match("data.dockerRepository == 'airbyte/source-faker2'")
@@ -92,7 +92,7 @@ def gradle_file_with_dependencies(tmpdir) -> Path:
     }
     """
     )
-    expected_dependencies = [Path("path/to/dependency1"), Path("path/to/dependency2"), Path('airbyte-cdk/java/airbyte-cdk')]
+    expected_dependencies = [Path("path/to/dependency1"), Path("path/to/dependency2"), Path("airbyte-cdk/java/airbyte-cdk")]
     expected_test_dependencies = [Path("path/to/test/dependency"), Path("path/to/test/dependency1"), Path("path/to/test/dependency2")]
 
     return test_gradle_file, expected_dependencies, expected_test_dependencies

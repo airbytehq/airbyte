@@ -6,20 +6,19 @@ import functools
 import logging
 import os
 import re
-import git
-import requests
-import yaml
-
 from dataclasses import dataclass
 from enum import Enum
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Set, Tuple, Union
-from simpleeval import simple_eval
 
+import git
+import requests
+import yaml
 from ci_credentials import SecretsManager
 from pydash.objects import get
 from rich.console import Console
+from simpleeval import simple_eval
 
 console = Console()
 
@@ -319,7 +318,6 @@ class Connector:
             # Skip on error as we not all fields are present in all connectors.
             logging.debug(f"Failed to evaluate query string {query_string} for connector {self.technical_name}, error: {e}")
             return False
-
 
     @property
     def ab_internal_sl(self) -> int:

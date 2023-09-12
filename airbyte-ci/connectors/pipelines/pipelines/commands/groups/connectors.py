@@ -82,7 +82,9 @@ def get_selected_connectors_with_modified_files(
     selected_connectors_by_name = {c for c in ALL_CONNECTORS if c.technical_name in selected_names}
     selected_connectors_by_support_level = {connector for connector in ALL_CONNECTORS if connector.support_level in selected_support_levels}
     selected_connectors_by_language = {connector for connector in ALL_CONNECTORS if connector.language in selected_languages}
-    selected_connectors_by_query = {connector for connector in ALL_CONNECTORS if connector.metadata_query_match(metadata_query)} if metadata_query else set()
+    selected_connectors_by_query = (
+        {connector for connector in ALL_CONNECTORS if connector.metadata_query_match(metadata_query)} if metadata_query else set()
+    )
 
     non_empty_connector_sets = [
         connector_set
@@ -178,7 +180,14 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names, support_levels, languages, modified, metadata_changes_only, metadata_query, ctx.obj["modified_files"], enable_dependency_scanning
+        names,
+        support_levels,
+        languages,
+        modified,
+        metadata_changes_only,
+        metadata_query,
+        ctx.obj["modified_files"],
+        enable_dependency_scanning,
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 

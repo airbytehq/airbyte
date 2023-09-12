@@ -3,11 +3,12 @@
 #
 
 
+import os
 from datetime import datetime
 
 import pandas as pd
 import pytest
-import os
+
 
 @pytest.fixture(scope="module")
 def adoption_metrics_per_connector_version():
@@ -54,7 +55,7 @@ def dummy_qa_report() -> pd.DataFrame:
         ]
     )
 
+
 @pytest.fixture()
 def set_working_dir_to_repo_root(monkeypatch):
     monkeypatch.chdir(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-
