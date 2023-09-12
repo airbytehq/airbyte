@@ -75,6 +75,9 @@ def generateSourceTestDocs = tasks.register('generateSourceTestDocs', Javadoc) {
 
     outputs.upToDateWhen { false }
 }
+tasks.register('generate').configure {
+    dependsOn generateSourceTestDocs
+}
 
 application {
     mainClass = 'io.airbyte.integrations.standardtest.source.PythonSourceAcceptanceTest'
