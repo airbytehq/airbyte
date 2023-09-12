@@ -80,7 +80,7 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         try:
             printenv_output: str = await base_image_version.container.with_exec(["printenv"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run printenv.") from e
+            raise errors.SanityCheckError(e)
         env_vars = set([line.split("=")[0] for line in printenv_output.splitlines()])
         missing_env_vars = AirbytePythonConnectorBaseImage.EXPECTED_ENV_VARS - env_vars
         if missing_env_vars:
@@ -102,12 +102,14 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
 
     @property
     def container(self) -> dagger.Container:
+        pip_cache: dagger.CacheVolume = self.dagger_client.cache_volume("pip_cache")
+
         return (
-            self.base_container
+            self.base_container.with_mounted_cache("/root/.cache/pip", pip_cache)
             # Set the timezone to UTC
             .with_exec(["ln", "-snf", f"/usr/share/zoneinfo/{self.TIMEZONE}", "/etc/localtime"])
             # Upgrade pip to the expected version
-            .with_exec(["pip", "install", "--upgrade", f"pip=={self.EXPECTED_PIP_VERSION}"])
+            .with_exec(["pip", "install", "--upgrade", "pip==23.2.1"])
         )
 
     @staticmethod
@@ -133,7 +135,7 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
                 ["python", "--version"], skip_entrypoint=True
             ).stdout()
         except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run python --version.") from e
+            raise errors.SanityCheckError(e)
         if python_version_output != f"Python {_1_0_0.EXPECTED_PYTHON_VERSION}\n":
             raise errors.SanityCheckError(f"unexpected python version: {python_version_output}")
 
@@ -150,7 +152,7 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
         try:
             pip_version_output: str = await base_image_version.container.with_exec(["pip", "--version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run pip --version.") from e
+            raise errors.SanityCheckError(e)
         if not pip_version_output.startswith(f"pip {_1_0_0.EXPECTED_PIP_VERSION}"):
             raise errors.SanityCheckError(f"unexpected pip version: {pip_version_output}")
 
@@ -167,7 +169,7 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
         try:
             tz_output: str = await base_image_version.container.with_exec(["date"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run date.") from e
+            raise errors.SanityCheckError(e)
         if "UTC" not in tz_output:
             raise errors.SanityCheckError(f"unexpected timezone: {tz_output}")
 
@@ -184,7 +186,7 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
         try:
             await base_image_version.container.with_exec(["bash", "--version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run bash --version.") from e
+            raise errors.SanityCheckError(e)
 
 
 class _1_1_0(_1_0_0):
@@ -199,28 +201,46 @@ class _1_1_0(_1_0_0):
             .container.with_env_variable("POETRY_VIRTUALENVS_CREATE", "false")
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
-            .with_exec(["pip", "install", f"poetry=={self.EXPECTED_POETRY_VERSION}"])
+            .with_exec(["pip", "install", "poetry==1.6.1"], skip_entrypoint=True)
         )
 
     @staticmethod
     async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
-        await _1_1_0.check_poetry_version(base_image_version)
+        await _1_0_0.run_sanity_checks(base_image_version)
+        await _1_1_0.check_poetry_version(base_image_version, _1_1_0.EXPECTED_POETRY_VERSION)
 
     @staticmethod
-    async def check_poetry_version(base_image_version: common.AirbyteConnectorBaseImage):
+    async def check_poetry_version(base_image_version: common.AirbyteConnectorBaseImage, expected_poetry_version: str):
         try:
             poetry_version_output: str = await base_image_version.container.with_exec(
                 ["poetry", "--version"], skip_entrypoint=True
             ).stdout()
         except dagger.ExecError as e:
-            raise errors.SanityCheckError("failed to run poetry --version.") from e
-        if not poetry_version_output.startswith(f"Poetry (version {_1_1_0.EXPECTED_POETRY_VERSION})"):
+            raise errors.SanityCheckError(e)
+        if not poetry_version_output.startswith(f"Poetry (version {expected_poetry_version})"):
             raise errors.SanityCheckError(f"unexpected poetry version: {poetry_version_output}")
+
+
+# TODO: remove before release
+# EXAMPLE OF A FIX
+class _1_1_1(_1_1_0):
+    changelog_entry = "Fix: we should use Poetry 1.6.0 instead of 1.6.1"
+    EXPECTED_POETRY_VERSION: str = "1.6.0"
+
+    @property
+    def container(self) -> dagger.Container:
+        return super().container.with_exec(["pip", "install", "poetry==1.6.0"], skip_entrypoint=True)
+
+    @staticmethod
+    async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage):
+        # As this is version is a fix, we are not running _1_1_0 sanity checks because they will fail as the poetry version is different.
+        await _1_0_0.run_sanity_checks(base_image_version)
+        await _1_1_0.check_poetry_version(base_image_version, _1_1_1.EXPECTED_POETRY_VERSION)
 
 
 # DECLARE NEW BASE IMAGE VERSIONS BELOW THIS LINE
 # Non breaking version should ideally inherit from the previous version.
-# class _1_1_1(_1_1_2):
+# class _1_1_2(_1_1_1):
 
 # Breaking version should inherit from AirbytePythonConnectorBaseImage.
 # class _2_0_0(AirbyteConnectorBaseImage):
