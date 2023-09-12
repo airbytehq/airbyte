@@ -14,7 +14,7 @@ EXCLUDE_DIRS = [
 EXCLUDE_FILES = [
     "pom\.xml", "README\.md", "LICENSE", "build", ".coverage\..*", ".*\.zip", ".*\.gz", 
     "_temp_.*", ".*\.dat", ".*\.bin", ".*\.csv", ".*\.jsonl", ".*\.png", ".*\.db", 
-    ".*\.pyc", 
+    ".*\.pyc", ".*\.jar", ".*\.archive", ".*\.coverage", 
 ]
 MAIN_PACKAGES = [
     # Core capabilities:
@@ -201,7 +201,7 @@ def update_cdk_package_defs() -> None:
 def refactor_cdk_package_refs() -> None:
     for text_pattern, text_replacement, within_dir in [
         (
-            r"(?<!package )io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
+            r"(?<!package )io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.standardtest|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
             r"io.airbyte.cdk.\1",
             REPO_ROOT,
         ),
@@ -229,6 +229,7 @@ def main() -> None:
         if sys.argv[1] == "test":
             # Do a quick test
             os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")            
+            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build")            
             return
 
         # If a CLI argument is passed, expect csv and override packages to migrate
