@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
 import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
 
@@ -34,8 +34,8 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public SchemaHistoryInfo getSavedSchemaHistory() {
-    return new SchemaHistoryInfo(Optional.ofNullable(savedSchemaHistory), isSavedSchemaHistoryCompressed, COMPRESSION_ENABLED);
+  public SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
+    return new SchemaHistory<>(Optional.ofNullable(savedSchemaHistory), isSavedSchemaHistoryCompressed);
   }
 
 }

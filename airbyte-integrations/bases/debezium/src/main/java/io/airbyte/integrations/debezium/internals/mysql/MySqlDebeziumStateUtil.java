@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.debezium.internals.mysql;
 
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,7 +12,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.CdcSavedInfoFetcher.SchemaHistoryInfo;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
@@ -257,8 +257,7 @@ public class MySqlDebeziumStateUtil {
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());
     final AirbyteSchemaHistoryStorage schemaHistoryStorage =
-        AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistoryInfo(Optional.empty(), false,
-            MysqlCdcStateConstants.COMPRESSION_ENABLED));
+        AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
         database.getSourceConfig(),

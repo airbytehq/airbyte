@@ -29,7 +29,7 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, SchemaHistory ignored) {
+  public AirbyteMessage saveState(final Map<String, String> offset, SchemaHistory<String> ignored) {
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
 
     LOGGER.info("Saving Debezium state {}...", cdcState);
