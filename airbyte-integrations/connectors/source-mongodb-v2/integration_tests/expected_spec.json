@@ -9,121 +9,114 @@
     "additionalProperties": true,
     "properties": {
       "instance_type": {
-        "type" : "object",
-        "title" : "Instance Type",
-        "description" : "Configures the MongoDB replica set based on instance type.",
-        "order" : 1,
-        "group" : "connection",
-        "default" : "",
-        "display_type" : "radio",
-        "oneOf" : [
+        "type": "object",
+        "title": "Instance Type",
+        "description": "Configures the MongoDB replica set based on instance type.",
+        "order": 1,
+        "group": "connection",
+        "default": "",
+        "display_type": "radio",
+        "oneOf": [
           {
-            "title" : "MongoDB Atlas Replica Set",
-            "description" : "MongoDB Atlas-hosted cluster configured as a replica set",
-            "required" : [
+            "title": "MongoDB Atlas Replica Set",
+            "description": "MongoDB Atlas-hosted cluster configured as a replica set",
+            "required": [
               "connection_string",
               "database",
               "username",
               "password",
               "auth_source"
             ],
-            "additionalProperties" : true,
-            "properties" : {
-              "connection_string" : {
-                "title" : "Connection String",
-                "type" : "string",
-                "description" : "The connection string of the cluster that you want to replicate.",
-                "examples" : ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
-                "order" : 1,
-                "group" : "db"
+            "additionalProperties": true,
+            "properties": {
+              "connection_string": {
+                "title": "Connection String",
+                "type": "string",
+                "description": "The connection string of the cluster that you want to replicate.",
+                "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
+                "order": 1,
+                "group": "db"
               },
-              "database" : {
-                "title" : "Database Name",
-                "type" : "string",
-                "description" : "The database you want to replicate.",
-                "order" : 2,
-                "group" : "db"
+              "database": {
+                "title": "Database Name",
+                "type": "string",
+                "description": "The database you want to replicate.",
+                "order": 2,
+                "group": "db"
               },
-              "username" : {
-                "title" : "Username",
-                "type" : "string",
-                "description" : "The username which is used to access the database.",
-                "order" : 3,
-                "group" : "auth"
+              "username": {
+                "title": "Username",
+                "type": "string",
+                "description": "The username which is used to access the database.",
+                "order": 3,
+                "group": "auth"
               },
-              "password" : {
-                "title" : "Password",
-                "type" : "string",
-                "description" : "The password associated with this username.",
-                "airbyte_secret" : true,
-                "order" : 4,
-                "group" : "auth"
+              "password": {
+                "title": "Password",
+                "type": "string",
+                "description": "The password associated with this username.",
+                "airbyte_secret": true,
+                "order": 4,
+                "group": "auth"
               },
-              "auth_source" : {
-                "title" : "Authentication Source",
-                "type" : "string",
-                "description" : "The authentication source where the user information is stored.",
-                "default" : "admin",
-                "examples" : [
-                  "admin"
-                ],
-                "order" : 5,
-                "group" : "auth"
+              "auth_source": {
+                "title": "Authentication Source",
+                "type": "string",
+                "description": "The authentication source where the user information is stored.",
+                "default": "admin",
+                "examples": ["admin"],
+                "order": 5,
+                "group": "auth"
               }
             }
           },
           {
-            "title" : "Self-Managed Replica Set",
-            "description" : "MongoDB self-hosted cluster configured as a replica set",
-            "required" : [
-              "connection_string",
-              "database"
-            ],
-            "additionalProperties" : true,
-            "properties" : {
-              "connection_string" : {
-                "title" : "Connection String",
-                "type" : "string",
-                "description" : "The connection string of the cluster that you want to replicate.  See https://www.mongodb.com/docs/manual/reference/connection-string/ for more information.",
-                "examples" : [
+            "title": "Self-Managed Replica Set",
+            "description": "MongoDB self-hosted cluster configured as a replica set",
+            "required": ["connection_string", "database"],
+            "additionalProperties": true,
+            "properties": {
+              "connection_string": {
+                "title": "Connection String",
+                "type": "string",
+                "description": "The connection string of the cluster that you want to replicate.  See https://www.mongodb.com/docs/manual/reference/connection-string/ for more information.",
+                "examples": [
                   "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/",
                   "mongodb://example.host.com:27017/"
                 ],
-                "order" : 1,
-                "group" : "db"
+                "order": 1,
+                "group": "db"
               },
-              "database" : {
-                "title" : "Database Name",
-                "type" : "string",
-                "description" : "The database you want to replicate.",
-                "order" : 2,
-                "group" : "db"
+              "database": {
+                "title": "Database Name",
+                "type": "string",
+                "description": "The database you want to replicate.",
+                "order": 2,
+                "group": "db"
               },
-              "username" : {
-                "title" : "Username",
-                "type" : "string",
-                "description" : "The username which is used to access the database.",
-                "order" : 3,
-                "group" : "auth"
+              "username": {
+                "title": "Username",
+                "type": "string",
+                "description": "The username which is used to access the database.",
+                "order": 3,
+                "group": "auth"
               },
-              "password" : {
-                "title" : "Password",
-                "type" : "string",
-                "description" : "The password associated with this username.",
-                "airbyte_secret" : true,
-                "order" : 4,
-                "group" : "auth"
+              "password": {
+                "title": "Password",
+                "type": "string",
+                "description": "The password associated with this username.",
+                "airbyte_secret": true,
+                "order": 4,
+                "group": "auth"
               },
-              "auth_source" : {
-                "title" : "Authentication Source",
-                "type" : "string",
-                "description" : "The authentication source where the user information is stored.",
-                "default" : "admin",
-                "examples" : [
-                  "admin"
-                ],
-                "order" : 5,
-                "group" : "auth"
+              "auth_source": {
+                "title": "Authentication Source",
+                "type": "string",
+                "description": "The authentication source where the user information is stored.",
+                "default": "admin",
+                "examples": ["admin"],
+                "order": 5,
+                "group": "auth"
               }
             }
           }

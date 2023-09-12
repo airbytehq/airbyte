@@ -54,8 +54,8 @@ public class MongoConnectionUtils {
 
   private static String buildConnectionString(final JsonNode config) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
-            .asText()
-            .replaceAll(CREDENTIALS_PLACEHOLDER, "");
+        .asText()
+        .replaceAll(CREDENTIALS_PLACEHOLDER, "");
     return connectionString +
         "?readPreference=secondary" +
         "&retryWrites=false" +

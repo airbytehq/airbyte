@@ -114,7 +114,8 @@ class MongoDbDebeziumStateUtilTest {
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
-    assertThrows(IllegalStateException.class, () -> mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, mongoClient, DATABASE));
+    assertThrows(IllegalStateException.class,
+        () -> mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeTokenDocument, mongoClient, DATABASE));
   }
 
   @Test
