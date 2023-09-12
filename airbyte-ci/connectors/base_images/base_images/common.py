@@ -161,7 +161,8 @@ class AirbyteConnectorBaseImage(ABC):
             dagger.Container: The container using the base python image.
         """
         return (
-            self.dagger_client.container()
+            self.dagger_client.pipeline(self.name_with_tag)
+            .container()
             .from_(self.base_base_image_name)
             .with_env_variable("AIRBYTE_BASE_BASE_IMAGE", self.base_base_image_name)
             .with_env_variable("AIRBYTE_BASE_IMAGE", self.name_with_tag)
