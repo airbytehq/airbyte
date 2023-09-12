@@ -150,8 +150,8 @@ class ShopifyDeletedEventsStream(ShopifyStream):
                 "id": event["subject_id"],
                 self.cursor_field: event["created_at"],
                 "updated_at": event["created_at"],
-                "message": event["message"],
-                "description": event["description"],
+                "deleted_message": event["message"],
+                "deleted_description": event["description"],
                 "shop_url": event["shop_url"],
             }
 

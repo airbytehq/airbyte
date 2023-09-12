@@ -45,10 +45,10 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "message": {
+    "deleted_message": {
       "type": ["null", "string"]
     },
-    "description": {
+    "deleted_description": {
       "type": ["null", "string"]
     }
   }
