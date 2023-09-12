@@ -135,8 +135,8 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
                     'id': 234,
                     'deleted_at': '2023-09-05T14:02:00-07:00',
                     'updated_at': '2023-09-05T14:02:00-07:00',
-                    'message': 'Test Message',
-                    'description': 'Test Description',
+                    'deleted_message': 'Test Message',
+                    'deleted_description': 'Test Description',
                     'shop_url': 'airbyte-integration-test',
                     }
             ],
