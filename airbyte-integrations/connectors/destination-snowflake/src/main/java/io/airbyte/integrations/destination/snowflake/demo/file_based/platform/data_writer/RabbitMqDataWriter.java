@@ -3,10 +3,10 @@ package io.airbyte.integrations.destination.snowflake.demo.file_based.platform.d
 import java.io.IOException;
 import org.apache.commons.io.function.IOConsumer;
 
-// basically identical to LocalDataWriter, but writes to GCS instead of FileOutputStream
-public class GcsDataWriter implements DataWriter<GcsDataWriter.GcsFileLocation> {
+public class RabbitMqDataWriter implements DataWriter<RabbitMqDataWriter.RabbitMqStorageLocation> {
+
   @Override
-  public GcsFileLocation getCurrentLocation() {
+  public RabbitMqStorageLocation getCurrentLocation() {
     return null;
   }
 
@@ -20,7 +20,6 @@ public class GcsDataWriter implements DataWriter<GcsDataWriter.GcsFileLocation> 
     return null;
   }
 
-  public record GcsFileLocation(String bucket, String path) implements StorageLocation {
-
+  public record RabbitMqStorageLocation(int offset) implements StorageLocation {
   }
 }

@@ -6,12 +6,9 @@ import org.apache.commons.io.function.IOConsumer;
 /**
  * Writes airbyte records to some underlying storage.\
  */
-public interface DataWriter {
+public interface DataWriter<T extends StorageLocation> {
 
-  /**
-   * Naming needs work. Returns a string which uniquely identifies the current output location.
-   */
-  String getCurrentFilename();
+  T getCurrentLocation();
 
   /**
    * Get a thing that writes rendered records to the underlying storage.

@@ -1,25 +1,24 @@
 package io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer;
 
-import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.DataWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 import org.apache.commons.io.function.IOConsumer;
 
-public class LocalFileDataWriter implements DataWriter {
+public class LocalFileDataWriter implements DataWriter<LocalFileDataWriter.LocalFileLocation> {
 
   private final String path;
   private String filename;
   private OutputStream out;
 
-  public LocalFileDataWriter(String path) {
+  public LocalFileDataWriter(final String path) {
     this.path = path;
   }
 
   @Override
-  public String getCurrentFilename() {
-    return null;
+  public LocalFileLocation getCurrentLocation() {
+    return new LocalFileLocation(path + "/" + filename);
   }
 
   @Override
@@ -34,5 +33,9 @@ public class LocalFileDataWriter implements DataWriter {
   @Override
   public IOConsumer<byte[]> getCurrentOutputStream() {
     return bytes -> out.write(bytes);
+  }
+
+  public record LocalFileLocation(String path) implements StorageLocation {
+
   }
 }

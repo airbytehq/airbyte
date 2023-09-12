@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.iface.StreamDestination;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.iface.StreamDestinationFactory;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.LocalFileDataWriter;
 
-public class SnowflakeStreamDestinationFactory implements StreamDestinationFactory {
+public class SnowflakeStreamDestinationFactory implements StreamDestinationFactory<LocalFileDataWriter.LocalFileLocation> {
 
   @Override
   public void setup(final JsonNode config) {
@@ -13,7 +14,7 @@ public class SnowflakeStreamDestinationFactory implements StreamDestinationFacto
   }
 
   @Override
-  public StreamDestination build(final StreamConfig stream) {
+  public StreamDestination<LocalFileDataWriter.LocalFileLocation> build(final StreamConfig stream) {
     // Pass the connection pool into this constructor
     return new SnowflakeStreamDestination(stream, null, null);
   }

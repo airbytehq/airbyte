@@ -2,15 +2,12 @@ package io.airbyte.integrations.destination.snowflake.demo.file_based.platform.d
 
 public interface StorageLocation {
 
-  record LocalFileLocation(String path) implements StorageLocation {
+  /**
+   * Delete the data from this location. For example, if the underlying storage is a file, delete the
+   * file.
+   */
+  default void delete() throws Exception {
 
   }
 
-  record GcsFileLocation(String bucket, String path) implements StorageLocation {
-
-  }
-
-  record RabbitMq() implements StorageLocation {
-
-  }
 }

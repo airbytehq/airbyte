@@ -17,7 +17,7 @@ public class SnowflakeDestination {
     // Might be a little tricky to wire this up directly within the jvm, but it's the easiest thing to describe
     // and gives us an easy solution for old versions of platform. We could also define a new interface for destinations
     // to implement, and have main() just call that method.
-    final PlatformStuff platform = new PlatformStuff(
+    final PlatformStuff<LocalFileDataWriter.LocalFileLocation> platform = new PlatformStuff<>(
         inputCatalog,
         inputConfig,
         new SnowflakeStreamDestinationFactory(),
