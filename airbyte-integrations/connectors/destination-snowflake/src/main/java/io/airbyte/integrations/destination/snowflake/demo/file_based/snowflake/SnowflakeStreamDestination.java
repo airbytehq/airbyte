@@ -57,6 +57,8 @@ public class SnowflakeStreamDestination implements StreamDestination<LocalFileDa
       // typeAndDedupe is threadsafe, so we don't need to explicity lock here.
       typerDeduper.typeAndDedupe(originalStreamNamespace, originalStreamName);
     }
+
+    storage.delete();
   }
 
   @Override
