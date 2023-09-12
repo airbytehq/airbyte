@@ -60,15 +60,22 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -77,6 +84,8 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
 public class CdcMysqlSourceTest extends CdcSourceTest {
+
+  private String INVALID_TIMEZONE_CEST = "CEST";
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
@@ -88,16 +97,19 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   private JsonNode config;
 
   @BeforeEach
-  public void setup() throws SQLException {
+  public void setup(final TestInfo testInfo) throws SQLException {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    init();
+    init(testInfo);
     revokeAllPermissions();
     grantCorrectPermissions();
     super.setup();
   }
 
-  private void init() {
+  private void init(final TestInfo testInfo) {
     container = new MySQLContainer<>("mysql:8.0");
+    if (testInfo.getTags().contains("INVALID-EU-TZ")) {
+      container.withEnv(Map.of("TZ", INVALID_TIMEZONE_CEST));
+    }
     container.start();
     source = new MySqlSource();
     database = new Database(DSLContextFactory.create(
@@ -112,7 +124,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .put("time_zone", "America/Los_Angeles")
+        .put("server_time_zone", "America/Los_Angeles")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -159,12 +171,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         "test",
         DRIVER_CLASS,
         String.format("jdbc:mysql://%s:%s",
-            container.getHost(),
-            container.getFirstMappedPort()),
+                      container.getHost(),
+                      container.getFirstMappedPort()),
         Collections.emptyMap());
-    final JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
-
-    return MySqlCdcTargetPosition.targetPosition(jdbcDatabase);
+    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(dataSource));
   }
 
   @Override
@@ -480,6 +490,18 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomTableSchema())));
     assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
+  }
+
+  @Test
+  @Timeout(10)
+  @Tags(value = {@Tag("INVALID-EU-TZ")})
+  public void testSettingTimezoneToOverrideBadValue() throws Exception {
+    final Record timezone = database.query(trx -> trx.fetch("SELECT @@system_time_zone;\n")).get(0);
+    final JdbcDatabase jdbcDatabase = source.createDatabase(config);
+    final Properties properties = MySqlCdcProperties.getDebeziumProperties(jdbcDatabase);
+
+    assertEquals(timezone.get(0, String.class), INVALID_TIMEZONE_CEST);
+    assertEquals(properties.getProperty("database.connectionTimeZone"), "America/Los_Angeles");
   }
 
   @Test
