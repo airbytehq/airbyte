@@ -142,15 +142,16 @@ DEST_TESTFIXTURE_PATH="$CDK_ROOT/src/testFixtures/java/io/airbyte/cdk"
 DEST_MAIN_RESOURCES_PATH="$CDK_ROOT/src/main/resources/$OLD_PROJECT_NAME"
 DEST_TEST_RESOURCES_PATH="$CDK_ROOT/src/test/resources/$OLD_PROJECT_NAME"
 DEST_INTEGTEST_RESOURCES_PATH="$CDK_ROOT/src/test-integration/resources/$OLD_PROJECT_NAME"
+REMNANTS_ARCHIVE_PATH="airbyte-cdk/java/airbyte-cdk/archive/$OLD_PROJECT_NAME"
 
 # Check if flag is 'asTestFixture'. If so, send 'main/java' to 'testFixtures/java':
 if [ "$FLAG" = "asTestFixture" ]; then
   DEST_MAIN_PATH="$DEST_TESTFIXTURE_PATH"
 fi
 
-declare -a PATH_DESC=(  "main classes"   "main test classes" "integ test classes"   "test fixtures"          "main resources"            "test resources"            "integ test resources")
-declare -a SOURCE_DIRS=("$OLD_MAIN_PATH" "$OLD_TEST_PATH"    "$OLD_INTEGTEST_PATH"  "$OLD_TESTFIXTURE_PATH"  "$OLD_MAIN_RESOURCES_PATH"  "$OLD_TEST_RESOURCES_PATH"  "$OLD_INTEGTEST_RESOURCES_PATH")
-declare -a DEST_DIRS=( "$DEST_MAIN_PATH" "$DEST_TEST_PATH"   "$DEST_INTEGTEST_PATH" "$DEST_TESTFIXTURE_PATH" "$DEST_MAIN_RESOURCES_PATH" "$DEST_TEST_RESOURCES_PATH" "$DEST_INTEGTEST_RESOURCES_PATH")
+declare -a PATH_DESC=(  "main classes"   "main test classes" "integ test classes"   "test fixtures"          "main resources"            "test resources"            "integ test resources"           "remnamts to archive" )
+declare -a SOURCE_DIRS=("$OLD_MAIN_PATH" "$OLD_TEST_PATH"    "$OLD_INTEGTEST_PATH"  "$OLD_TESTFIXTURE_PATH"  "$OLD_MAIN_RESOURCES_PATH"  "$OLD_TEST_RESOURCES_PATH"  "$OLD_INTEGTEST_RESOURCES_PATH"  "$OLD_PACKAGE_ROOT" )
+declare -a DEST_DIRS=( "$DEST_MAIN_PATH" "$DEST_TEST_PATH"   "$DEST_INTEGTEST_PATH" "$DEST_TESTFIXTURE_PATH" "$DEST_MAIN_RESOURCES_PATH" "$DEST_TEST_RESOURCES_PATH" "$DEST_INTEGTEST_RESOURCES_PATH" "$REMNANTS_ARCHIVE_PATH" )
 
 for ((i=0;i<${#SOURCE_DIRS[@]};++i)); do
   # Check if source directory exists
@@ -173,14 +174,13 @@ echo "Files remaining in $OLD_PACKAGE_ROOT:"
 find "$OLD_PACKAGE_ROOT" -type f
 
 # Move remaining files in the OLD_PACKAGE_ROOT to the CDK 'archive' directory
-ARCHIVE_ROOT="airbyte-cdk/java/airbyte-cdk/archive"
-echo -e "Moving renaming files... \n - From: $OLD_PACKAGE_ROOT\n - To:   $ARCHIVE_ROOT"
+# echo -e "Moving renaming files... \n - From: $OLD_PACKAGE_ROOT\n - To:   $ARCHIVE_ROOT"
 
 # Ensure the parent directory exists
-mkdir -p "$ARCHIVE_ROOT/"
+# mkdir -p "$ARCHIVE_ROOT/"
 
-# Move the entire remnants of `base-java` to the archived directory
-mv "$OLD_PACKAGE_ROOT/" "$ARCHIVE_ROOT/"
+# # Move the entire remnants of the package root to the archived directory
+# mv "$OLD_PACKAGE_ROOT/" "$ARCHIVE_ROOT/"
 
 echo -e "Migration operation complete!\n"
 
