@@ -2,7 +2,6 @@
 {"stream": "daily_active_users", "data": {"property_id": "314186564", "date": "20230902", "active1DayUsers": 981}, "emitted_at": 1694468998026}
 {"stream": "weekly_active_users", "data": {"property_id": "314186564", "date": "20230901", "active7DayUsers": 14068}, "emitted_at": 1694468999170}
 {"stream": "weekly_active_users", "data": {"property_id": "314186564", "date": "20230904", "active7DayUsers": 13916}, "emitted_at": 1694468999171}
-{"stream": "four_weekly_active_users", "data": {"property_id": "314186564", "date": "20230910", "active28DayUsers": 50667}, "emitted_at": 1694468999874}
 {"stream": "four_weekly_active_users", "data": {"property_id": "314186564", "date": "20230906", "active28DayUsers": 50716}, "emitted_at": 1694468999874}
 {"stream": "devices", "data": {"property_id": "314186564", "date": "20230908", "deviceCategory": "desktop", "operatingSystem": "Windows", "browser": "Coc Coc", "totalUsers": 1, "newUsers": 1, "sessions": 1, "sessionsPerUser": 1.0, "averageSessionDuration": 18.264283, "screenPageViews": 1, "screenPageViewsPerSession": 1.0, "bounceRate": 0.0}, "emitted_at": 1694470835327}
 {"stream": "devices", "data": {"property_id": "314186564", "date": "20230908", "deviceCategory": "mobile", "operatingSystem": "Android", "browser": "Opera", "totalUsers": 1, "newUsers": 0, "sessions": 2, "sessionsPerUser": 0.0, "averageSessionDuration": 5.3349965, "screenPageViews": 2, "screenPageViewsPerSession": 1.0, "bounceRate": 0.5}, "emitted_at": 1694470835327}
