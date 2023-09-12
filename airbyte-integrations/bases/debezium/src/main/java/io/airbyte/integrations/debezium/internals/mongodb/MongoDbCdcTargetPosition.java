@@ -6,7 +6,6 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
@@ -35,19 +34,6 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
 
   public MongoDbCdcTargetPosition(final BsonDocument resumeToken) {
     this.resumeTokenTimestamp = ResumeTokens.getTimestamp(resumeToken);
-  }
-
-  /**
-   * Constructs a new {@link MongoDbCdcTargetPosition} by fetching the most recent resume token from
-   * the MongoDB database.
-   *
-   * @param mongoClient A {@link MongoClient} used to retrieve the resume token.
-   * @return The {@link MongoDbCdcTargetPosition} set to the most recent resume token present in the
-   *         database.
-   */
-  public static MongoDbCdcTargetPosition targetPosition(final MongoClient mongoClient) {
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
-    return new MongoDbCdcTargetPosition(resumeToken);
   }
 
   @VisibleForTesting

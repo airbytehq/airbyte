@@ -19,6 +19,7 @@ import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.ExcludedField;
@@ -99,11 +100,12 @@ public class MongoDbCdcInitializer {
     // configured catalog then we will be outputting incorrect data.
     final Set<ExcludedField> fieldsNotIncludedInCatalog = mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(mongoClient, databaseName);
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
     final JsonNode cdcState = (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null) ? initialDebeziumState
         : Jsons.clone(stateManager.getCdcState().state());
-    final Optional<BsonDocument> savedOffset = mongoDbDebeziumStateUtil.savedOffset(
+    final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState,
@@ -111,13 +113,13 @@ public class MongoDbCdcInitializer {
         mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
-    if (cdcState != null && savedOffset.isEmpty()) {
+    if (cdcState != null && optSavedOffset.isEmpty()) {
       throw new RuntimeException(
           "Unable extract the offset out of state, State mutation might not be working. " + cdcState);
     }
 
     final boolean savedOffsetIsValid =
-        savedOffset.filter(resumeToken -> mongoDbDebeziumStateUtil.isValidResumeToken(resumeToken, mongoClient)).isPresent();
+        optSavedOffset.filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient)).isPresent();
 
     if (!savedOffsetIsValid) {
       LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
@@ -141,7 +143,7 @@ public class MongoDbCdcInitializer {
             emittedAt, getCheckpointInterval(config));
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
-        MongoDbCdcTargetPosition.targetPosition(mongoClient), false, firstRecordWaitTime, queueSize);
+        new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 

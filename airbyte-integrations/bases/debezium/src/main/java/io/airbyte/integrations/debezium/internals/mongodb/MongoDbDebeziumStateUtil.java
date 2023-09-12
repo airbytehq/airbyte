@@ -58,9 +58,8 @@ public class MongoDbDebeziumStateUtil {
    * @return The initial Debezium offset state storage document as a {@link JsonNode}.
    * @throws IllegalStateException if unable to determine the replica set.
    */
-  public JsonNode constructInitialDebeziumState(final MongoClient mongoClient, final String serverId) {
+  public JsonNode constructInitialDebeziumState(final BsonDocument resumeToken, final MongoClient mongoClient, final String serverId) {
     final String replicaSet = getReplicaSetName(mongoClient);
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
     final JsonNode state = formatState(serverId, replicaSet, ((BsonString) ResumeTokens.getData(resumeToken)).getValue());
     LOGGER.info("Initial Debezium state constructed: {}", state);
     return state;
@@ -116,7 +115,7 @@ public class MongoDbDebeziumStateUtil {
 
     final ChangeStreamIterable<BsonDocument> stream = mongoClient.watch(BsonDocument.class);
     stream.resumeAfter(savedOffset);
-    try (var ignored = stream.cursor()) {
+    try (final var ignored = stream.cursor()) {
       LOGGER.info("Valid resume token '{}' present.  Incremental sync will be performed for up-to-date streams.",
           ResumeTokens.getData(savedOffset).asString().getValue());
       return true;
