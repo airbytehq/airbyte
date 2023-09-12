@@ -75,6 +75,8 @@ acceptance_tests:
           pivot_report:
             - name: "sessions"
               bypass_reason: "Volatile data"
+            - name: "endDate"
+              bypass_reason: "Dynamic field"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
