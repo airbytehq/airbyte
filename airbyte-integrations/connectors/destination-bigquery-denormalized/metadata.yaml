@@ -11,10 +11,8 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 1.5.3 # last known working version
     oss:
       enabled: true
-      dockerImageTag: 1.5.3 # last known working version
   releases:
     breakingChanges:
       2.0.0:
