@@ -51,7 +51,6 @@ public class BufferEnqueue {
 
   private void handleRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
     final StreamDescriptor streamDescriptor = extractStateFromRecord(message);
-    log.error("||||||||||||||||||||||||||||||| Stream descriptor: " + streamDescriptor.getNamespace() + " " + streamDescriptor.getName());
     if (streamDescriptor != null && !buffers.containsKey(streamDescriptor)) {
       buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
     }
