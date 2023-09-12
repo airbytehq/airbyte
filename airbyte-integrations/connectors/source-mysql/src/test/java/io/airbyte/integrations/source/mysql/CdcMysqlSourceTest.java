@@ -495,6 +495,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   @Test
   @Timeout(10)
   @Tags(value = {@Tag("INVALID-EU-TZ")})
+  // Issue: https://github.com/airbytehq/airbyte/issues/24659
   public void testSettingTimezoneToOverrideBadValue() throws Exception {
     final Record timezone = database.query(trx -> trx.fetch("SELECT @@system_time_zone;\n")).get(0);
     final JdbcDatabase jdbcDatabase = source.createDatabase(config);
