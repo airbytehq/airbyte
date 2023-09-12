@@ -405,6 +405,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314) | Stop patching gradle files to make them work with airbyte-ci.                                             |
 | 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279) | Fix correctness issues in layer caching by making atomic execution groupings                              |
 | 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252) | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                                 |
 | 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509) | Refactor the airbyte-ci test command to run tests on any poetry package.                                  |
