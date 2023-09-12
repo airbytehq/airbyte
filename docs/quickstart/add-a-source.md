@@ -1,18 +1,16 @@
 # Add a Source
 
-You can either follow this tutorial from the onboarding or through the UI, where you can first navigate to the `Sources` tab on the left bar.
+Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the `Sources` tab to bring up a list of all available sources.
 
-Our demo source will pull data from an external API, which will pull down the information on one specified Pokémon.
+![](../.gitbook/assets/add-a-source/getting-started-source-list.png)
 
-To set it up, just follow the instructions on the screenshot below.
+You can use the provided search bar, or simply scroll down the list to find the source you want to replicate data from. Let's use Google Sheets as an example. Clicking on the Google Sheets card will bring us to its setup page.
 
-:::info
+![](../.gitbook/assets/add-a-source/getting-started-source-page.png)
 
-You might have to wait ~30 seconds before the fields show up because it is the first time you're using Airbyte.
+The left half of the screen contains a set of fields that we will have to fill out. In the **Source name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the source (ie, `Google Sheets`).
 
-:::
-
-![](../.gitbook/assets/getting-started-source.png)
+Each connector in Airbyte will have its own set of authentication methods and configurable parameters. In the case of Google Sheets, we are given a couple options for authenticating the connection, and must provide the link to the Google Sheet we want to replicate. You can always refer to your source's provided setup guide for specific instructions on filling out each field. Once you've entered all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. Happy replicating!
 
 Can't find the connectors that you want? Try your hand at easily building one yourself using our [Python CDK for HTTP API sources!](../connector-development/cdk-python/)
 
