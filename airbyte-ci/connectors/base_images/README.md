@@ -56,7 +56,7 @@ class _0_1_1(_0_1_0):
         try:
             await self.container.with_exec(["ffmpeg", "-version"], skip_entrypoint=True).stdout()
         except dagger.ExecError as e:
-            raise common.SanityCheckError("failed to run ffmpeg --version.") from e
+            raise errors.SanityCheckError("failed to run ffmpeg --version.") from e
 ```
 
 ## How to update an existing base image version

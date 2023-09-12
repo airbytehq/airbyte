@@ -4,10 +4,11 @@
 import sys
 from itertools import product
 from pathlib import Path
+from typing import List
 
 import anyio
 import dagger
-from base_images import common, consts, utils
+from base_images import consts, errors, utils
 from rich.console import Console
 from rich.status import Status
 
@@ -15,7 +16,10 @@ console = Console()
 
 try:
     from base_images import python_bases  # , java_bases
-except common.BaseImageVersionError as e:
+except errors.BaseImageVersionError as e:
+    # This error occurs if a base image version class name does not follow semver.
+    # We handle the error for nice console output.
+    # It might happen if a developer implement a new version class without following our required class name convention.
     console.log(f":cross_mark: {e}", style="bold red")
     sys.exit(1)
 
@@ -25,8 +29,10 @@ ALL_BASE_IMAGES = {**python_bases.ALL_BASE_IMAGES}  # , **java_bases.ALL_BASE_IM
 async def run_all_sanity_checks(status: Status) -> bool:
     """
     Runs sanity checks on all the base images.
+    Sanity checks are declared in the base image version classes by implementing the run_sanity_checks function.
+    Sanity checks are command executed on the base image container, we check the output of these command to make sure the base image is working as expected.
     """
-    errors = []
+    sanity_check_errors: List[errors.SanityCheckError] = []
     async with dagger.Connection(dagger.Config()) as dagger_client:
         for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES.values()):
             status.update(f":mag_right: Running sanity checks on {BaseImageVersion.name_with_tag} for {platform}")
@@ -35,20 +41,29 @@ async def run_all_sanity_checks(status: Status) -> bool:
                 console.log(
                     f":white_check_mark: Successfully ran sanity check on {BaseImageVersion.name_with_tag} for {platform}", highlight=False
                 )
-            except common.SanityCheckError as sanity_check_error:
+            except errors.SanityCheckError as sanity_check_error:
                 console.log(
                     f":cross_mark: Sanity check failure on {BaseImageVersion.name_with_tag} for {platform}: {sanity_check_error}",
                     style="bold red",
                     highlight=False,
                 )
-                errors.append(sanity_check_error)
+                sanity_check_errors.append(sanity_check_error)
 
-    return not errors
+    return not sanity_check_errors
 
 
 def build():
     """
-    Runs sanity checks on all the base images and writes the changelog.
+    This function is called by the build command, currently via poetry run build.
+    It's currently meant to be run locally by developers to generate the changelog and run sanity checks.
+    It can eventually be run in CI to generate the changelog and run sanity checks.
+
+    1. Run sanity checks on all the base images.
+    2. Write the changelog for the python base image.
+
+    This function calls Dagger to run the sanity checks.
+    If you don't have the base base image locally it will be pulled, which can take a while.
+    Subsequent runs will be faster as the base images layers and sanity checks layers will be cached locally.
     """
     with console.status("Building the project", spinner="hamburger") as status:
         status.update("Running sanity checks on all the base images")

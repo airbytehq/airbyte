@@ -1,6 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+"""This module declares constants used by the base_images module.
+"""
+
 from pathlib import Path
 
 import dagger
