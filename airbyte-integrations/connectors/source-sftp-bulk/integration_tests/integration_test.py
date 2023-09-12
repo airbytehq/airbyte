@@ -99,6 +99,61 @@ def config_fixture_pk(private_key, docker_services):
     yield config
 
 
+def get_outcome(logger: logging.Logger, config: Mapping):
+    return SourceFtp().check(logger, config)
+
+
+def is_responsive(
+    source_ftp: SourceFtp,
+    logger: logging.Logger,
+    config: Mapping,
+):
+    try:
+        outcome = SourceFtp().check(logger, config)
+        if outcome.status == Status.SUCCEEDED:
+            return True
+    except ConnectionError:
+        return False
+
+
+@pytest.fixture(scope="session")
+def sftp_service(config, docker_services):
+    """Ensure that SFTP service is up and responsive."""
+
+    sftp_service = SourceFtp()
+
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=0.1,
+        check=lambda: is_responsive(
+            sftp_service,
+            logger,
+            config,
+        ),
+    )
+
+    return sftp_service
+
+
+@pytest.fixture(scope="session")
+def sftp_service_pk(config_pk, docker_services):
+    """Ensure that SFTP service is up and responsive."""
+
+    sftp_service_pk = SourceFtp()
+
+    docker_services.wait_until_responsive(
+        timeout=30.0,
+        pause=0.1,
+        check=lambda: is_responsive(
+            sftp_service_pk,
+            logger,
+            config_pk,
+        ),
+    )
+
+    return sftp_service_pk
+
+
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {
@@ -122,38 +177,53 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
 
 
-def test_check_valid_config_pk(config_pk: Mapping):
-    outcome = SourceFtp().check(logger, config_pk)
+def test_check_valid_config_pk(
+    config_pk: Mapping,
+    sftp_service_pk: SourceFtp,
+):
+    # actual test
+    outcome = sftp_service_pk.check(logger, config_pk)
     assert outcome.status == Status.SUCCEEDED
 
 
-def test_check_valid_config_pk_bad_pk(config_pk: Mapping):
-    outcome = SourceFtp().check(
+def test_check_valid_config_pk_bad_pk(
+    config_pk: Mapping,
+    sftp_service_pk: SourceFtp,
+):
+    bad_config_pk = {
+        **config_pk,
+        "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----",
+    }
+
+    bad_outcome = sftp_service_pk.check(
         logger,
-        {
-            **config_pk,
-            "private_key": "-----BEGIN OPENSSH PRIVATE KEY-----\nbaddata\n-----END OPENSSH PRIVATE KEY-----",
-        },
+        bad_config_pk,
     )
+
+    assert bad_outcome.status == Status.FAILED
+
+
+def test_check_invalid_config(config: Mapping, sftp_service: SourceFtp):
+    invalid_config = {**config, "password": "wrongpass"}
+    outcome = sftp_service.check(logger, invalid_config)
     assert outcome.status == Status.FAILED
 
 
-def test_check_invalid_config(config: Mapping):
-    outcome = SourceFtp().check(logger, {**config, "password": "wrongpass"})
-    assert outcome.status == Status.FAILED
-
-
-def test_check_valid_config(config: Mapping):
-    outcome = SourceFtp().check(logger, config)
+def test_check_valid_config(
+    config: Mapping,
+    sftp_service: SourceFtp,
+):
+    # actual test
+    outcome = sftp_service.check(logger, config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_get_files_no_pattern_json(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         config,
         configured_catalog,
@@ -171,9 +241,9 @@ def test_get_files_no_pattern_json(
 def test_get_files_pattern_json(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {**config, "file_pattern": "test_1.+"},
         configured_catalog,
@@ -191,9 +261,9 @@ def test_get_files_pattern_json(
 def test_get_files_pattern_json_new_separator(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {**config, "file_pattern": "test_2.+"},
         configured_catalog,
@@ -211,9 +281,9 @@ def test_get_files_pattern_json_new_separator(
 def test_get_files_pattern_no_match_json(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {**config, "file_pattern": "bad_pattern.+"},
         configured_catalog,
@@ -226,9 +296,9 @@ def test_get_files_pattern_no_match_json(
 def test_get_files_no_pattern_csv(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {**config, "file_type": "csv", "folder_path": "files/csv"},
         configured_catalog,
@@ -246,9 +316,9 @@ def test_get_files_no_pattern_csv(
 def test_get_files_pattern_csv(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {
             **config,
@@ -271,9 +341,9 @@ def test_get_files_pattern_csv(
 def test_get_files_pattern_csv_new_separator(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {
             **config,
@@ -296,9 +366,9 @@ def test_get_files_pattern_csv_new_separator(
 def test_get_files_pattern_csv_new_separator_with_config(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {
             **config,
@@ -322,9 +392,9 @@ def test_get_files_pattern_csv_new_separator_with_config(
 def test_get_files_pattern_no_match_csv(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {
             **config,
@@ -342,9 +412,9 @@ def test_get_files_pattern_no_match_csv(
 def test_get_files_empty_files(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {**config, "folder_path": "files/json_empty"},
         configured_catalog,
@@ -358,9 +428,9 @@ def test_get_files_empty_files(
 def test_get_files_handle_null_values(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
 ):
-    source = SourceFtp()
-    result_iter = source.read(
+    result_iter = sftp_service.read(
         logger,
         {**config, "folder_path": "files/csv_null_values", "file_type": "csv"},
         configured_catalog,
