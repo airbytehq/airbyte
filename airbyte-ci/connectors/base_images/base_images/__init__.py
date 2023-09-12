@@ -33,11 +33,12 @@ async def run_all_sanity_checks(status: Status) -> bool:
     Sanity checks are command executed on the base image container, we check the output of these command to make sure the base image is working as expected.
     """
     sanity_check_errors: List[errors.SanityCheckError] = []
-    async with dagger.Connection(dagger.Config()) as dagger_client:
+    dagger_config = dagger.Config(log_output=sys.stderr) if consts.DEBUG else dagger.Config()
+    async with dagger.Connection(dagger_config) as dagger_client:
         for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES.values()):
             status.update(f":mag_right: Running sanity checks on {BaseImageVersion.name_with_tag} for {platform}")
             try:
-                await BaseImageVersion(dagger_client, platform).run_sanity_checks()
+                await BaseImageVersion(dagger_client, platform).run_sanity_checks_for_version()
                 console.log(
                     f":white_check_mark: Successfully ran sanity check on {BaseImageVersion.name_with_tag} for {platform}", highlight=False
                 )
@@ -66,7 +67,7 @@ def build():
     Subsequent runs will be faster as the base images layers and sanity checks layers will be cached locally.
     """
     try:
-        with console.status("Building the project", spinner="hamburger") as status:
+        with console.status("Building the project", spinner="bouncingBall") as status:
             status.update("Running sanity checks on all the base images")
             if not anyio.run(run_all_sanity_checks, status):
                 console.log(":bomb: Sanity checks failed, aborting the build.", style="bold red")
