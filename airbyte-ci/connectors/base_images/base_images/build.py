@@ -28,7 +28,7 @@ def generate_dockerfile(base_image_version: common.AirbyteConnectorBaseImage):
     dockerfile_directory = Path(consts.PROJECT_DIR / "generated" / "dockerfiles" / base_image_version.platform)
     dockerfile_directory.mkdir(exist_ok=True, parents=True)
     dockerfile_path = Path(dockerfile_directory / f"{base_image_version.name_with_tag}.Dockerfile")
-    dockerfile = DOCKERFILE_HEADER + "\n" + dockerfile
+    dockerfile = DOCKERFILE_HEADER + "\n" + dockerfile + "\n"
     dockerfile_path.write_text(dockerfile)
     console.log(
         f":whale2: Generated Dockerfile for {base_image_version.name_with_tag} for {base_image_version.platform}: {dockerfile_path}",
