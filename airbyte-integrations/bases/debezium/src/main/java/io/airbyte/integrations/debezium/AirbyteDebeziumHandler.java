@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.debezium;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -117,10 +122,10 @@ public class AirbyteDebeziumHandler<T> {
         firstRecordWaitTime);
 
     final Duration syncCheckpointDuration =
-        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
-            : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
-        : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
+        config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
+            : SYNC_CHECKPOINT_DURATION;
+    final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
+        : SYNC_CHECKPOINT_RECORDS;
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
         eventIterator,
         cdcStateHandler,

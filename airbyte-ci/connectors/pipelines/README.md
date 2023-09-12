@@ -18,7 +18,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 
 This project requires Python 3.10 and pipx.
 
-## General Installation
+## Install or Update
 
 The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
@@ -32,10 +32,12 @@ python -m pipx ensurepath
 Once pipx is installed, navigate to the root directory of the project, then run:
 
 ```bash
-pipx install airbyte-ci/connectors/pipelines/
+pipx install airbyte-ci/connectors/pipelines/ --force
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
+
+_Note: `--force` is required to ensure updates are applied on subsequent installs._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
 
@@ -403,6 +405,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314) | Stop patching gradle files to make them work with airbyte-ci.                                             |
+| 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279) | Fix correctness issues in layer caching by making atomic execution groupings                              |
 | 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252) | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                                 |
 | 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509) | Refactor the airbyte-ci test command to run tests on any poetry package.                                  |
 | 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232) | Remove release stages in favor of support level from airbyte-ci.                                          |
