@@ -2,6 +2,8 @@ data:
   allowedHosts:
     hosts:
       - "*.${indexing.pinecone_environment}.pinecone.io"
+      - api.openai.com
+      - api.cohere.ai
   registries:
     cloud:
       enabled: true
@@ -10,7 +12,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/destination-pinecone
   githubIssueLabel: destination-pinecone
   icon: pinecone.svg
