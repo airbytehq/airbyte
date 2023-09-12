@@ -8,6 +8,7 @@ import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -27,8 +28,8 @@ import org.slf4j.LoggerFactory;
 public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateIterator.class);
-  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
-  public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
+  public static final Duration SYNC_CHECKPOINT_DURATION = DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
+  public static final Integer SYNC_CHECKPOINT_RECORDS = DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
 
   private final Iterator<AirbyteMessageWithCtid> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;

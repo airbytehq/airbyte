@@ -86,6 +86,7 @@ The Zendesk Support source connector supports the following streams:
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
+- [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-deleted-tickets) \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
 - [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
@@ -122,6 +123,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.7.0`  | 2023-09-11 | [30259](https://github.com/airbytehq/airbyte/pull/30259) | Add stream `Deleted Tickets`                                                                                                                                                                                                       |
 | `1.6.0`  | 2023-09-09 | [30168](https://github.com/airbytehq/airbyte/pull/30168) | Make `start_date` field optional                                                                                                                                                                                                   |
 | `1.5.1`  | 2023-09-05 | [30142](https://github.com/airbytehq/airbyte/pull/30142) | Handle non-JSON Response                                                                                                                                                                                                           |
 | `1.5.0`  | 2023-09-04 | [30138](https://github.com/airbytehq/airbyte/pull/30138) | Add new Streams: `Article Votes`, `Article Comments`, `Article Comment Votes`                                                                                                                                                      |
