@@ -87,10 +87,11 @@ class ContentAnalyticsStream(Stream, ABC):
 
     @property
     def period_dates(self) -> Dict:
+        date_to = datetime.combine(self.date_to + timedelta(days=1), datetime.min.time()) - timedelta(seconds=1)
         return {
             "period": {
                 "begin": datetime.fromordinal(self.date_from.toordinal()).strftime("%Y-%m-%d %H:%M:%S"),
-                "end": datetime.fromordinal(self.date_to.toordinal()).strftime("%Y-%m-%d %H:%M:%S"),
+                "end": date_to.strftime("%Y-%m-%d %H:%M:%S"),
             }
         }
 
