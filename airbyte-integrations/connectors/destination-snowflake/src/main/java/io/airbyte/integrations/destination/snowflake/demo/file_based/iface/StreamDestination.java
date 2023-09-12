@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.snowflake.demo.file_based.iface;
 
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.StorageId;
 import java.io.File;
 
 public interface StreamDestination extends AutoCloseable {
@@ -16,5 +17,5 @@ public interface StreamDestination extends AutoCloseable {
    * <p>
    * This method <b>MUST</b> be thread-safe.
    */
-  void upload(File file, int numRecords, int numBytes) throws Exception;
+  void upload(StorageId id, int numRecords, int numBytes) throws Exception;
 }

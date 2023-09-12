@@ -4,6 +4,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.iface.StreamDestination;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.StorageId;
 import java.io.File;
 
 public class SnowflakeStreamDestination implements StreamDestination {
@@ -42,7 +43,11 @@ public class SnowflakeStreamDestination implements StreamDestination {
   }
 
   @Override
-  public void upload(final File file, final int numRecords, final int numBytes) throws Exception {
+  public void upload(final StorageId id, final int numRecords, final int numBytes) throws Exception {
+    // Hypothetically, we could also support GCS/S3 IDs here, but there's no real reason to do so.
+    if (!(id instanceof StorageId.LocalFileId)) {
+      throw new IllegalArgumentException("Expected a local file id");
+    }
     // Snowflake's T+D code isn't safe to run concurrently with COPY INTO. Lock out other threads.
     typerDeduper.getRawTableWriteLock().lock();
     try {

@@ -1,7 +1,8 @@
 package io.airbyte.integrations.destination.snowflake.demo.file_based.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.CsvV2RecordWriter;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.record_renderer.CsvV2RecordRenderer;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.LocalFileDataWriter;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.PlatformStuff;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 
@@ -20,7 +21,9 @@ public class SnowflakeDestination {
         inputCatalog,
         inputConfig,
         new SnowflakeStreamDestinationFactory(),
-        CsvV2RecordWriter::new,
+        new CsvV2RecordRenderer(),
+        // shrug, this is probably something that platform would provide
+        () -> new LocalFileDataWriter("/tmp/default/file/path"),
         // Various destination-specific parameters can be hardcoded here.
         // For example, maybe Snowflake wants 200MB files.
         200 * 1024 * 1024

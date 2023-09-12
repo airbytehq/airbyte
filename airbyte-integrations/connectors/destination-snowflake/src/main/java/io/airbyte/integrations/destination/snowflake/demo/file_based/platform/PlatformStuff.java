@@ -9,6 +9,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.iface.StreamDestination;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.iface.StreamDestinationFactory;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.DataWriter;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.record_renderer.RecordRenderer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -19,15 +21,17 @@ public class PlatformStuff {
   private final ParsedCatalog catalog;
   private final JsonNode config;
   private final StreamDestinationFactory streamDestinationFactory;
-  private final Supplier<RecordWriter> recordWriterFactory;
+  private final RecordRenderer recordRenderer;
+  private final Supplier<DataWriter> recordWriterFactory;
   private final int targetByteSizePerFile;
 
   // There are probably a ton more parameters here. In reality we would make this a builder.
   public PlatformStuff(final ConfiguredAirbyteCatalog inputCatalog,
                        final JsonNode config,
                        final StreamDestinationFactory streamDestinationFactory,
-                       final Supplier<RecordWriter> recordWriterFactory,
+                       final RecordRenderer recordRenderer, final Supplier<DataWriter> recordWriterFactory,
                        final int targetByteSizePerFile) {
+    this.recordRenderer = recordRenderer;
     this.recordWriterFactory = recordWriterFactory;
     // TODO: remove the sqlgenerator argument from this constructor
     final CatalogParser parser = new CatalogParser(null);
@@ -39,6 +43,7 @@ public class PlatformStuff {
   }
 
   public void doTheSyncThing() throws Exception {
+    // maybe we should just pass config into the factory constructor...
     streamDestinationFactory.setup(config);
 
     // Parallel maps :( the StreamDestination and RecordWriter should probably be bundled together under a single class.
@@ -48,7 +53,7 @@ public class PlatformStuff {
             StreamConfig::id,
             streamDestinationFactory::build
         ));
-    final Map<StreamId, RecordWriter> streamWriters = catalog.streams().stream()
+    final Map<StreamId, DataWriter> streamWriters = catalog.streams().stream()
         .collect(toMap(
             StreamConfig::id,
             stream -> recordWriterFactory.get()
@@ -68,6 +73,9 @@ public class PlatformStuff {
       switch (message.getType()) {
         case RECORD -> {
           // Write record to file, track memory, etc.
+          final byte[] data = recordRenderer.render(message.getRecord());
+          streamWriters.get(message.getRecord().getStream()).getCurrentOutputStream().accept(data);
+          // track the total size of data in bytes, record count, etc.
 
           // whenever we finish a file (either by reaching the target size, or by hitting a 15-minute deadline)
           // push it into the destination code
