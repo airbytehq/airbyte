@@ -48,7 +48,7 @@ class MongoDbCdcTargetPositionTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     assertNotNull(targetPosition);
     assertEquals(ResumeTokens.getTimestamp(resumeTokenDocument), targetPosition.getResumeTokenTimestamp());
   }
@@ -70,7 +70,7 @@ class MongoDbCdcTargetPositionTest {
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
     final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
     when(changeEvent.value()).thenReturn(changeEventJson.replaceAll("\"ts_ms\": \\d+,", "\"ts_ms\": 1590221043000,"));
@@ -95,7 +95,7 @@ class MongoDbCdcTargetPositionTest {
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
     final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata));
   }
 
@@ -116,7 +116,7 @@ class MongoDbCdcTargetPositionTest {
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
     final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
   }
 
@@ -132,7 +132,7 @@ class MongoDbCdcTargetPositionTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     final BsonTimestamp heartbeatTimestamp = new BsonTimestamp(
         Long.valueOf(ResumeTokens.getTimestamp(resumeTokenDocument).getTime() + TimeUnit.HOURS.toSeconds(1)).intValue(),
         0);
@@ -153,7 +153,7 @@ class MongoDbCdcTargetPositionTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
 
     assertTrue(targetPosition.isHeartbeatSupported());
   }
@@ -171,7 +171,7 @@ class MongoDbCdcTargetPositionTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
 
     final Map<String, ?> sourceOffset = Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS, resumeTokenTimestamp.getTime(),
         MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, resumeTokenTimestamp.getInc(),
@@ -201,7 +201,7 @@ class MongoDbCdcTargetPositionTest {
     final Map<String, String> offset =
         Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     final boolean result = targetPosition.isEventAheadOffset(offset, changeEventWithMetadata);
     assertTrue(result);
   }
@@ -225,7 +225,7 @@ class MongoDbCdcTargetPositionTest {
     final Map<String, String> offsetC =
         Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, OTHER_RESUME_TOKEN), new TypeReference<>() {});
 
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
 
     assertTrue(targetPosition.isSameOffset(offsetA, offsetA));
     assertTrue(targetPosition.isSameOffset(offsetA, offsetB));

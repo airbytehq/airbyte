@@ -346,7 +346,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     validateAllStreamsComplete(stateMessages2, List.of(
         new StreamDescriptor().withName(collectionName).withNamespace(databaseName)));
 
-    var idFilter = new Document(DOCUMENT_ID_FIELD, insertedId);
+    final var idFilter = new Document(DOCUMENT_ID_FIELD, insertedId);
     mongoClient.getDatabase(databaseName).getCollection(collectionName).updateOne(idFilter, Updates.combine(Updates.set("newField", "new")));
 
     // Start another sync that finds the update change
@@ -476,7 +476,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   void testReachedTargetPosition() {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -503,8 +503,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   void testIsSameOffset() {
-    final MongoDbCdcTargetPosition targetPosition = MongoDbCdcTargetPosition.targetPosition(mongoClient);
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
     final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
