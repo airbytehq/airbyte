@@ -343,7 +343,7 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = False  # disable caching due to OOM errors in kubernetes
+    use_cache = True
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
