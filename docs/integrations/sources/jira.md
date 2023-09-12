@@ -126,6 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.14  | 2023-09-11 | [\#30297](https://github.com/airbytehq/airbyte/pull/30297) | Remove `requests` and `pendulum` from setup dependencies                                                                |
 | 0.3.13  | 2023-09-01 | [\#30108](https://github.com/airbytehq/airbyte/pull/30108) | Skip 404 error for stream `IssueWatchers`                                                                               |
 | 0.3.12  | 2023-06-01 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Expand on `leads` for `projects` stream                                                                                 |
 | 0.3.11  | 2023-06-01 | [\#26906](https://github.com/airbytehq/airbyte/pull/26906) | Handle project permissions error                                                                                        |

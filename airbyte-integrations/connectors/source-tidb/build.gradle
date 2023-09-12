@@ -32,7 +32,5 @@ dependencies {
 
     integrationTestJavaImplementation libs.connectors.testcontainers.tidb
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 
