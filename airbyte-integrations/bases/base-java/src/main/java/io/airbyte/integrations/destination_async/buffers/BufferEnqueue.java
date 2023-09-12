@@ -51,9 +51,7 @@ public class BufferEnqueue {
 
   private void handleRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
     final StreamDescriptor streamDescriptor = extractStateFromRecord(message);
-    if (streamDescriptor != null) {
-      buffers.putIfAbsent(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
-    }
+    buffers.computeIfAbsent(streamDescriptor, _k -> new StreamAwareQueue(memoryManager.requestMemory()));
     final long stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor);
 
     final var queue = buffers.get(streamDescriptor);
