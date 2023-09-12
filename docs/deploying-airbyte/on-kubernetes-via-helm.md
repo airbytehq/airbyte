@@ -122,10 +122,10 @@ helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 
 1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
-2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the root directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
+2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the `configs` directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
 
-```text
-cp airbyte.sample.yml airbyte.yml
+```sh
+cp configs/airbyte.sample.yml configs/airbyte.yml
 ```
 
 Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
