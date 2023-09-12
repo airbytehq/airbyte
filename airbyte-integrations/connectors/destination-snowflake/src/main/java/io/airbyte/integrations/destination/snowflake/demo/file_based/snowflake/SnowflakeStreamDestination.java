@@ -4,8 +4,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.snowflake.demo.file_based.iface.StreamDestination;
-import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.StorageId;
-import java.io.File;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.StorageLocation;
 
 public class SnowflakeStreamDestination implements StreamDestination {
 
@@ -43,10 +42,12 @@ public class SnowflakeStreamDestination implements StreamDestination {
   }
 
   @Override
-  public void upload(final StorageId id, final int numRecords, final int numBytes) throws Exception {
-    // Hypothetically, we could also support GCS/S3 IDs here, but there's no real reason to do so.
-    if (!(id instanceof StorageId.LocalFileId)) {
-      throw new IllegalArgumentException("Expected a local file id");
+  public void upload(final StorageLocation storage, final int numRecords, final int numBytes) throws Exception {
+    // Hypothetically, we could also support GCS/S3 here, but there's no real reason to do so.
+    // It's a little dumb to do this check at runtime, but it'll trivially fail tests if we mess up, and java doesn't provide
+    // a good way to accept multiple specific StorageLocation subclasses
+    if (!(storage instanceof StorageLocation.LocalFileLocation)) {
+      throw new IllegalArgumentException("Expected a local file");
     }
     // Snowflake's T+D code isn't safe to run concurrently with COPY INTO. Lock out other threads.
     typerDeduper.getRawTableWriteLock().lock();

@@ -2,8 +2,7 @@ package io.airbyte.integrations.destination.snowflake.demo.file_based.iface;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.StorageId;
-import java.io.File;
+import io.airbyte.integrations.destination.snowflake.demo.file_based.platform.data_writer.StorageLocation;
 
 public class NoopStreamDestinationFactory implements StreamDestinationFactory {
   @Override
@@ -26,7 +25,7 @@ public class NoopStreamDestinationFactory implements StreamDestinationFactory {
       }
 
       @Override
-      public void upload(final StorageId id, final int numRecords, final int numBytes) throws Exception {
+      public void upload(final StorageLocation id, final int numRecords, final int numBytes) throws Exception {
 
       }
     };
