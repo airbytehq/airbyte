@@ -68,15 +68,21 @@ public class PlatformStuff {
       switch (message.getType()) {
         case RECORD -> {
           // Write record to file, track memory, etc.
+          RecordWriter writer = streamWriters.get(message.getRecord().getStream());
+          writer.write(message.getRecord());
 
           // whenever we finish a file (either by reaching the target size, or by hitting a 15-minute deadline)
           // push it into the destination code
+          // This would need to actually be threadsafe; I'm writing it dumbly to keep the intentions clear.
           final boolean fileReadyToUpload = false;
           if (fileReadyToUpload) {
             final StreamDestination streamDestination = streamDestinations.get(message.getRecord().getStream());
-            streamDestination.upload(null, 42, 42);
+            streamDestination.upload(writer.getCurrentFilename(), 42, 42);
+
             // emit state messages
             // update last commit time = now()
+
+            writer.rotateFile();
           }
         }
         case STATE -> {

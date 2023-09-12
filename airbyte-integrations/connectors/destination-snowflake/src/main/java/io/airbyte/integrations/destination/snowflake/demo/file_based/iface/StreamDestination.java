@@ -16,5 +16,5 @@ public interface StreamDestination extends AutoCloseable {
    * <p>
    * This method <b>MUST</b> be thread-safe.
    */
-  void upload(File file, int numRecords, int numBytes) throws Exception;
+  void upload(String file, int numRecords, int numBytes) throws Exception;
 }

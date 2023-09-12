@@ -42,7 +42,7 @@ public class SnowflakeStreamDestination implements StreamDestination {
   }
 
   @Override
-  public void upload(final File file, final int numRecords, final int numBytes) throws Exception {
+  public void upload(final String file, final int numRecords, final int numBytes) throws Exception {
     // Snowflake's T+D code isn't safe to run concurrently with COPY INTO. Lock out other threads.
     typerDeduper.getRawTableWriteLock().lock();
     try {
