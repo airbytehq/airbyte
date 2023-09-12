@@ -150,7 +150,7 @@ test {
 // Convert yaml to java: relationaldb.models
 jsonSchema2Pojo {
     sourceType = SourceType.YAMLSCHEMA
-    source = files("${sourceSets.main.output.resourcesDir}/db_models.yaml")
+    source = files("${sourceSets.main.output.resourcesDir}/db_models")
     targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
     removeOldOutput = true
 

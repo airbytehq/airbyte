@@ -7,12 +7,13 @@ import sys
 REPO_ROOT = "."
 CDK_ROOT = f"{REPO_ROOT}/airbyte-cdk/java/airbyte-cdk"
 EXCLUDE_DIRS = [
-    "target", "out", "build", "dist",
-    "node_modules", "lib", "bin", "__pycache__", ".gradle"
+    "target", "out", "build", "dist", ".git", "docs", ".venv", "sample_files",
+    "node_modules", "lib", "bin", "__pycache__", ".gradle", ".symlinks",
 ]
 EXCLUDE_FILES = [
-    "pom\.xml", "README\.md", "LICENSE", "build", ".coverage\..*",
-    "_temp_.*", ".*\.dat", ".*\.bin",
+    "pom\.xml", "README\.md", "LICENSE", "build", ".coverage\..*", ".*\.zip", ".*\.gz", 
+    "_temp_.*", ".*\.dat", ".*\.bin", ".*\.csv", ".*\.jsonl", ".*\.png", ".*\.db", 
+    ".*\.pyc", 
 ]
 MAIN_PACKAGES = [
     # Core capabilities:
@@ -43,7 +44,9 @@ def move_files(source_dir, dest_dir, path_desc):
         for root, dirs, files in os.walk(source_dir):
             for file in files:
                 src_file = os.path.join(root, file)
-                dst_file = os.path.join(dest_dir, file)
+                sub_dir = os.path.relpath(root, source_dir)
+                dst_file = os.path.join(dest_dir, sub_dir, file)
+                # raise Exception(f"Moving files: root={root}, file={file}, dest_dir={dest_dir}, src_file={src_file}, dst_file={dst_file}")
 
                 os.makedirs(os.path.dirname(dst_file), exist_ok=True)
 
@@ -80,7 +83,6 @@ def move_package(old_package_root: str, as_test_fixture: bool):
     dest_test_path = os.path.join(CDK_ROOT, "src/test/java/io/airbyte/cdk")
     dest_integtest_path = os.path.join(CDK_ROOT, "src/test-integration/java/io/airbyte/cdk")
     dest_testfixture_path = os.path.join(CDK_ROOT, "src/testFixtures/java/io/airbyte/cdk")
-
 
     old_project_name = str(Path(old_package_root).parts[-1])
     remnants_archive_path = os.path.join(CDK_ROOT, "archive", old_project_name)
@@ -175,9 +177,12 @@ def migrate_package_refs(
             # Perform the find and replace operation
             new_contents = re.sub(text_pattern, text_replacement, contents)
 
-            # Write the updated contents back to the file
-            with open(file_path, "w") as f:
-                f.write(new_contents)
+            # Write back the file if it has changed
+            if contents != new_contents:
+                # Write the updated contents back to the file
+                with open(file_path, "w") as f:
+                    f.write(new_contents)
+
         # else:
         #     print(f"No files found to scan within {within_dir}")
 
@@ -192,11 +197,11 @@ def update_cdk_package_defs() -> None:
     )
 
 
-def migrate_all_packages_refs() -> None:
+def refactor_cdk_package_refs() -> None:
     for text_pattern, text_replacement, within_dir, exclude_dirs in [
         (
             r"(?<!package )io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
-            r"io.airbyte.cdk.\2",
+            r"io.airbyte.cdk.\1",
             REPO_ROOT,
             ["target", "out", "build", "dist", "node_modules", "lib", "bin"]
         )
@@ -230,6 +235,8 @@ def main() -> None:
         move_package(old_package_root, as_test_fixture)
         remove_empty_dirs(old_package_root)
         update_cdk_package_defs()
+
+    refactor_cdk_package_refs()
 
     print("Migration operation complete!")
 
