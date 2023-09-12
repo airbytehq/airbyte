@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "1861552880916640": { "reportDate": "20990101" } },
+      "stream_descriptor": { "name": "sponsored_products_report_stream" }
+    }
+  }
+]
