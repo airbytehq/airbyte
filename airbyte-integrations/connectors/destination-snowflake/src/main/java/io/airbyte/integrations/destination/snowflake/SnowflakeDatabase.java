@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDatabase.class);
-  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
+  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token TTL is 10min and can't be modified
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);
