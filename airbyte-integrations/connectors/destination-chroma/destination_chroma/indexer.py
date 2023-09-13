@@ -26,11 +26,11 @@ class ChromaIndexer(Indexer):
         collection_name_validation_error = is_valid_collection_name(self.collection_name)
         if collection_name_validation_error:
             return collection_name_validation_error
-        
+
         auth_method = self.config.auth_method
         if auth_method.mode == "persistent_client" and not auth_method.path.startswith("/local/"):
-                return "Path must be prefixed with /local"
-        
+            return "Path must be prefixed with /local"
+
         client = self._get_client()
         try:
             heartbeat = client.heartbeat()
@@ -53,7 +53,12 @@ class ChromaIndexer(Indexer):
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             entities.append(
-                {"id": str(uuid.uuid4()), "embedding": chunk.embedding, "metadata": self._normalize(chunk.metadata), "document": chunk.page_content}
+                {
+                    "id": str(uuid.uuid4()),
+                    "embedding": chunk.embedding,
+                    "metadata": self._normalize(chunk.metadata),
+                    "document": chunk.page_content,
+                }
             )
         self._write_data(entities)
 
@@ -66,7 +71,6 @@ class ChromaIndexer(Indexer):
             self._delete_by_filter(field_name=METADATA_STREAM_FIELD, field_values=streams_to_overwrite)
 
     def _get_client(self):
-
         auth_method = self.config.auth_method
         if auth_method.mode == "persistent_client":
             path = auth_method.path
@@ -99,10 +103,7 @@ class ChromaIndexer(Indexer):
     def _normalize(self, metadata: dict) -> dict:
         result = {}
         for key, value in metadata.items():
-            if isinstance(value, list) and len(value) == 0:
-                # Handling of empty list that's not part of defined schema otherwise Weaviate throws invalid string property
-                continue
-            if isinstance(value, (str, int, float, bool)) or (isinstance(value, list) and all(isinstance(item, str) for item in value)):
+            if isinstance(value, (str, int, float, bool)):
                 result[key] = value
             else:
                 # JSON encode all other types

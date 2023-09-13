@@ -6,7 +6,6 @@ import re
 from ipaddress import ip_address
 
 
-
 def is_valid_collection_name(stream_name: str):
     # Check length constraint
     if len(stream_name) < 3 or len(stream_name) > 63:
