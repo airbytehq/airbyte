@@ -163,7 +163,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config));
+    return config;
   }
 
   @Override
