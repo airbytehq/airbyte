@@ -98,7 +98,7 @@ class SourceJira(AbstractSource):
             return True, None
         except (requests.exceptions.RequestException, ValidationError) as e:
             if isinstance(e, requests.exceptions.RequestException):
-                message = " ".join(map(str, e.response.json().get("errorMessages", '')))
+                message = " ".join(map(str, e.response.json().get("errorMessages", "")))
                 return False, f"{message} {e}"
 
             return False, e
