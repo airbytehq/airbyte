@@ -96,3 +96,7 @@ poetry run pytest
 # Static typing checks
 poetry run mypy base_images --check-untyped-defs
 ```
+
+## Base images changelog
+The base changelog files are automatically generated and updated by the build pipeline.
+* [airbyte-python-connector-base changelog]("https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
