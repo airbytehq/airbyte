@@ -26,7 +26,6 @@ dependencies {
     testImplementation libs.junit.jupiter.system.stubs
     testImplementation libs.connectors.testcontainers.mysql
 
-    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:connectors:source-mysql')
 
 }
