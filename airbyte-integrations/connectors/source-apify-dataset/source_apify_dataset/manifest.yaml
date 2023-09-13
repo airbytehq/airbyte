@@ -46,7 +46,7 @@ definitions:
   datasets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "datasets"
+      name: "Dataset catalog"
       primary_key: "id"
       path: "datasets"
     retriever:
@@ -69,7 +69,7 @@ definitions:
   dataset_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "dataset"
+      name: "Dataset"
       primary_key: "id"
       path: "datasets/{{ stream_partition.parent_id }}"
     retriever:
@@ -82,7 +82,7 @@ definitions:
   item_collection_wcc_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "item_collection_wcc"
+      name: "Item Collection - Website Content Crawler (WCC)"
       path: "datasets/{{ stream_partition.parent_id }}/items"
     retriever:
       $ref: "#/definitions/retriever"
@@ -104,6 +104,6 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "datasets"
-    - "dataset"
-    - "item_collection_wcc"
+    - "Dataset catalog"
+    - "Dataset"
+    - "Item Collection - Website Content Crawler (WCC)"

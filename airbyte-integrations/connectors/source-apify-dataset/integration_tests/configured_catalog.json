@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "datasets",
+        "name": "Dataset catalog",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,7 +11,7 @@
     },
     {
       "stream": {
-        "name": "dataset",
+        "name": "Dataset",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -20,7 +20,7 @@
     },
     {
       "stream": {
-        "name": "item_collection_wcc",
+        "name": "Item Collection - Website Content Crawler (WCC)",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
