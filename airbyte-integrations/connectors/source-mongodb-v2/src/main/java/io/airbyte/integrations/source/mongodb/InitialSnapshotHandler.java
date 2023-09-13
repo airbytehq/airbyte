@@ -66,12 +66,13 @@ public class InitialSnapshotHandler {
 
           final var idTypes = aggregateIdField(collection);
           if (idTypes.size() > 1) {
-            throw new ConfigErrorException("The _id fields in a collection must be consistently typed.");
+            throw new ConfigErrorException("The _id fields in a collection must be consistently typed (collection = " + collectionName + ").");
           }
 
           idTypes.stream().findFirst().ifPresent(idType -> {
             if (IdType.findByBsonType(idType).isEmpty()) {
-              throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED);
+              throw new ConfigErrorException("Only _id fields with the following types are currently supported: " + IdType.SUPPORTED
+                  + " (collection = " + collectionName + ").");
             }
           });
 
