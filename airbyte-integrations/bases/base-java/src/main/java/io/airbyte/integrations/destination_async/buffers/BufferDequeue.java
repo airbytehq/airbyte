@@ -52,11 +52,11 @@ public class BufferDequeue {
    * @return autocloseable batch object, that frees memory.
    */
   public MemoryAwareMessageBatch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
+    final var lock = bufferLocks.computeIfAbsent(streamDescriptor, _k -> new ReentrantLock());
+    lock.lock();
+
     final var queue = buffers.get(streamDescriptor);
 
-    bufferLocks.computeIfAbsent(streamDescriptor, _k -> new ReentrantLock());
-
-    bufferLocks.get(streamDescriptor).lock();
     try {
       final AtomicLong bytesRead = new AtomicLong();
 
@@ -82,7 +82,7 @@ public class BufferDequeue {
           memoryManager,
           stateManager);
     } finally {
-      bufferLocks.get(streamDescriptor).unlock();
+      lock.unlock();
     }
   }
 
