@@ -58,7 +58,7 @@ class GradleTask(Step, ABC):
             [
                 # The gradle command is chained in between a couple of rsyncs which load from- and store to the cache volume.
                 "(rsync -a --stats /root/gradle-cache/ /root/.gradle || true)",
-                f"(./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task} > >(tee /root/stdout) 2> >(tee /root/stderr >&2))",
+                f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task}",
                 "(rsync -a --stats /root/.gradle/ /root/gradle-cache || true)",
             ]
         )
@@ -109,12 +109,12 @@ class GradleTask(Step, ABC):
                         # Otherwise, we risk caching stale package URLs.
                         "yum update -y",
                         f"yum install -y {' '.join(yum_packages_to_install)}",
+                        # Remove any dangly bits.
+                        "yum clean all",
                         # Deliberately soft-remove docker, so that the `docker` CLI is unavailable by default.
                         # This is a defensive choice to enforce the expectation that, as a general rule, gradle tasks do not rely on docker.
                         "yum remove -y --noautoremove docker",  # remove docker package but not its dependencies
                         "yum install -y --downloadonly docker",  # have docker package in place for quick install
-                        # Remove any dangly bits.
-                        "yum clean all",
                     ]
                 )
             )
