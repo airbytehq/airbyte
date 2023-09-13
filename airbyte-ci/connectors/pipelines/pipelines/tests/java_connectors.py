@@ -55,6 +55,7 @@ class UnitTests(GradleTask):
 
     title = "Java Connector Unit Tests"
     gradle_task_name = "check"
+    bind_to_docker_host = True
 
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
