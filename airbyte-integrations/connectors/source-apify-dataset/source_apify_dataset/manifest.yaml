@@ -45,8 +45,6 @@ spec:
 definitions:
   retriever:
     type: SimpleRetriever
-    paginator:
-      type: "NoPagination"
     requester:
       type: HttpRequester
       url_base: "https://api.apify.com/v2/"
@@ -54,20 +52,19 @@ definitions:
       authenticator:
         type: BearerAuthenticator
         api_token: "{{ config['token'] }}"
-
-  paginator:
-    type: "DefaultPaginator"
-    page_size_option:
-      type: "RequestOption"
-      inject_into: "request_parameter"
-      field_name: "limit"
-    pagination_strategy:
-      type: "OffsetIncrement"
-      page_size: 50
-    page_token_option:
-      type: "RequestOption"
-      field_name: "offset"
-      inject_into: "request_parameter"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 50
+      page_token_option:
+        type: "RequestOption"
+        field_name: "offset"
+        inject_into: "request_parameter"
 
 streams:
   - type: DeclarativeStream
@@ -77,8 +74,6 @@ streams:
       path: "datasets"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -92,8 +87,6 @@ streams:
       path: "datasets/{{ config['dataset_id'] }}"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -106,8 +99,6 @@ streams:
       path: "datasets/{{ config['dataset_id'] }}/items"
     retriever:
       $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/paginator"
       record_selector:
         type: RecordSelector
         extractor:
