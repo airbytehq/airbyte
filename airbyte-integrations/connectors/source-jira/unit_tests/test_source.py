@@ -57,7 +57,7 @@ def test_check_connection_config_error(config, caplog):
 
 
 @responses.activate
-def test_check_connection_404_error(config, projects_response, labels_response):
+def test_check_connection_404_error(config):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
