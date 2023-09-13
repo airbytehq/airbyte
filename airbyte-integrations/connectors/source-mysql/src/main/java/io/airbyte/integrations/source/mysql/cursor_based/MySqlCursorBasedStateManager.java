@@ -5,7 +5,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
@@ -16,9 +15,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +38,6 @@ public class MySqlCursorBasedStateManager extends StreamStateManager {
         return new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
             // Temporarily include legacy state for backwards compatibility with the platform
-            .withData(Jsons.jsonNode(generateDbState(pairToCursorInfoMap)))
             .withStream(generateStreamState(pair.get(), cursorInfo.get()));
       } else {
         LOGGER.warn("Cursor information could not be located in state for stream {}.  Returning a new, empty state message...", pair);
@@ -51,22 +47,6 @@ public class MySqlCursorBasedStateManager extends StreamStateManager {
       LOGGER.warn("Stream not provided.  Returning a new, empty state message...");
       return new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
     }
-  }
-
-  /**
-   * Generates the legacy global state for backwards compatibility.
-   *
-   * @param pairToCursorInfoMap The map of stream name/namespace tuple to the current cursor
-   *        information for that stream
-   * @return The legacy {@link DbState}.
-   */
-  private DbState generateDbState(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
-    return new DbState()
-        .withCdc(false)
-        .withStreams(pairToCursorInfoMap.entrySet().stream()
-                         .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-                         .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
-                         .collect(Collectors.toList()));
   }
 
   /**

@@ -316,11 +316,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
 
+  @Override
   protected List<AirbyteMessage> getTestMessages() {
     return getTestMessages(streamName);
   }
 
-  @Override
   protected List<AirbyteMessage> getTestMessages(final String streamName) {
     return Lists.newArrayList(
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)

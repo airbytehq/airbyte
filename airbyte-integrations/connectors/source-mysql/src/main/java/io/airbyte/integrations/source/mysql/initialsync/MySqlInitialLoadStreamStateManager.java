@@ -4,14 +4,11 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyLoadStatusMap;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
@@ -40,7 +37,7 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
                                             final InitialLoadStreams initialLoadStreams,
                                             final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo) {
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
-    this.pairToPrimaryKeyLoadStatus = initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
+    this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
   }
 
   @Override
@@ -55,7 +52,6 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
-        .withData(Jsons.jsonNode(getFinalState(pair)))
         .withStream(getAirbyteStreamState(pair, (streamStateForIncrementalRun)));
   }
 
@@ -77,8 +73,6 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
         .withStream(getAirbyteStreamState(pair, Jsons.jsonNode(pkLoadStatus)));
   }
 
-
-
   private AirbyteStreamState getAirbyteStreamState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
     LOGGER.info("STATE DATA FOR {}: {}", pair.getNamespace().concat("_").concat(pair.getName()), stateData);
     assert Objects.nonNull(pair.getName());
@@ -88,18 +82,6 @@ public class MySqlInitialLoadStreamStateManager implements MySqlInitialLoadState
         .withStreamDescriptor(
             new StreamDescriptor().withName(pair.getName()).withNamespace(pair.getNamespace()))
         .withStreamState(stateData);
-  }
-
-
-
-  private DbStreamState getFinalState(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair) {
-    assert Objects.nonNull(pair);
-    assert Objects.nonNull(pair.getName());
-    assert Objects.nonNull(pair.getNamespace());
-
-    return new DbStreamState()
-        .withStreamName(pair.getName())
-        .withStreamNamespace(pair.getNamespace());
   }
 
 }

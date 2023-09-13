@@ -15,33 +15,23 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -145,39 +135,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Test
-  void testReadOneTableIncrementallyTwice() throws Exception {
-    final String namespace = getDefaultNamespace();
-    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
-    configuredCatalog.getStreams().forEach(airbyteStream -> {
-      airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
-      airbyteStream.setCursorField(List.of(COL_ID));
-      airbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
-    });
-
-    final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, createEmptyState(streamName, namespace)));
-
-    final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
-        .filter(r -> r.getType() == Type.STATE).findFirst();
-    assertTrue(stateAfterFirstSyncOptional.isPresent());
-
-    executeStatementReadIncrementallyTwice();
-
-    final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, extractState(stateAfterFirstSyncOptional.get())));
-
-    assertEquals(2,
-                 (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == Type.RECORD).count());
-    final List<AirbyteMessage> expectedMessages = getExpectedAirbyteMessagesSecondSync(namespace);
-
-    setEmittedAtToNull(actualMessagesSecondSync);
-
-    assertEquals(expectedMessages.size(), actualMessagesSecondSync.size());
-    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
-    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
-  }
-
-  @Test
   void testSpec() throws Exception {
     final ConnectorSpecification actual = source.spec();
     final ConnectorSpecification expected = Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class);
@@ -275,66 +232,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
-  }
-
-  @Override
-  protected void incrementalDateCheck() throws Exception {
-    incrementalCursorCheck(
-        COL_UPDATED_AT,
-        "2005-10-18",
-        "2006-10-19",
-        List.of(getTestMessages().get(1), getTestMessages().get(2)));
-  }
-
-
-
-
-  protected List<AirbyteMessage> getTestMessages() {
-    return List.of(
-        new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
-        new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
-        new AirbyteMessage().withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
-  }
-
-  @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    final DbStreamState state = new DbStreamState()
-        .withStreamName(streamName)
-        .withStreamNamespace(namespace)
-        .withCursorField(List.of(COL_ID))
-        .withCursor("5")
-        .withCursorRecordCount(1L);
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
-    return expectedMessages;
   }
 
   @Override

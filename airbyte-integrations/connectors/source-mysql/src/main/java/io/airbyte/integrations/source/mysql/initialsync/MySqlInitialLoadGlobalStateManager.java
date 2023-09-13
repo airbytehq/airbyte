@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyLoadStatusMap;
-import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initStreamsCompletedSnapshot;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
@@ -21,8 +18,10 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,9 +44,22 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
                                             final CdcState cdcState,
                                             final ConfiguredAirbyteCatalog catalog) {
     this.cdcState = cdcState;
-    this.pairToPrimaryKeyLoadStatus = initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
+    this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
+  }
+
+  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams,
+                                                                                  final ConfiguredAirbyteCatalog catalog) {
+    final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
+    catalog.getStreams().forEach(configuredAirbyteStream -> {
+      if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
+          && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+        streamsThatHaveCompletedSnapshot.add(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      }
+    });
+    return streamsThatHaveCompletedSnapshot;
   }
 
   @Override

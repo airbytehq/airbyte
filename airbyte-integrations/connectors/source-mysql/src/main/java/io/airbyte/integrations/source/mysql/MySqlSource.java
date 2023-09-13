@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
@@ -13,7 +13,6 @@ import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.assertCust
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
-import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.logStreamSyncStatus;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.convertNameNamespacePairFromV0;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.initPairToPrimaryKeyInfoMap;
@@ -351,7 +350,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
     final JsonNode sourceConfig = database.getSourceConfig();
     final MySqlFeatureFlags mySqlFeatureFlags = new MySqlFeatureFlags(sourceConfig);
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("Using PK + CDC");
       return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {

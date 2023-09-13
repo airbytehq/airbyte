@@ -17,9 +17,7 @@ import io.airbyte.integrations.source.mysql.internal.models.InternalModels.State
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -220,11 +218,6 @@ public class MySqlQueryUtils {
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
-  }
-
-  public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
 
   public static void logStreamSyncStatus(final List<ConfiguredAirbyteStream> streams, final String syncType) {

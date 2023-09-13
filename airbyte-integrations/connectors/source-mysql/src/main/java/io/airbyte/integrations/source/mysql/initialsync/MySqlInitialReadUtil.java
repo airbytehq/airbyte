@@ -174,30 +174,6 @@ public class MySqlInitialReadUtil {
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
   }
 
-  public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> initPairToPrimaryKeyLoadStatusMap(
-                                                                                                                                       final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPkStatus) {
-    final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> map = new HashMap<>();
-    pairToPkStatus.forEach((pair, pkStatus) -> {
-      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair updatedPair =
-          new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
-      map.put(updatedPair, pkStatus);
-    });
-    return map;
-  }
-
-  public static Set<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams,
-                                                                                                            final ConfiguredAirbyteCatalog catalog) {
-    final Set<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot = new HashSet<>();
-    catalog.getStreams().forEach(configuredAirbyteStream -> {
-      if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
-          && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-        streamsThatHaveCompletedSnapshot.add(
-            new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(),
-                configuredAirbyteStream.getStream().getNamespace()));
-      }
-    });
-    return streamsThatHaveCompletedSnapshot;
-  }
 
   /**
    * CDC specific: Determines the streams to sync for initial primary key load. These include streams

@@ -436,7 +436,7 @@ public abstract class JdbcSourceAcceptanceTest {
             source.read(config, getConfiguredCatalogWithOneStream(getDefaultNamespace()), null));
 
     setEmittedAtToNull(actualMessages);
-    final List<AirbyteMessage> expectedMessages = getTestMessages(streamName);
+    final List<AirbyteMessage> expectedMessages = getTestMessages();
     assertThat(expectedMessages, Matchers.containsInAnyOrder(actualMessages.toArray()));
     assertThat(actualMessages, Matchers.containsInAnyOrder(expectedMessages.toArray()));
   }
@@ -457,7 +457,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesReadOneColumn() {
-    final List<AirbyteMessage> expectedMessages = getTestMessages(streamName).stream()
+    final List<AirbyteMessage> expectedMessages = getTestMessages().stream()
         .map(Jsons::clone)
         .peek(m -> {
           ((ObjectNode) m.getRecord().getData()).remove(COL_NAME);
@@ -473,7 +473,7 @@ public abstract class JdbcSourceAcceptanceTest {
   void testReadMultipleTables() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithOneStream(
         getDefaultNamespace());
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages(streamName));
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
 
     for (int i = 2; i < 10; i++) {
       final int iFinal = i;
@@ -514,7 +514,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
-    return getTestMessages(streamName)
+    return getTestMessages()
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
@@ -541,7 +541,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessages);
 
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages(streamName));
+    final List<AirbyteMessage> expectedMessages = new ArrayList<>(getTestMessages());
     expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
@@ -550,7 +550,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
-    return getTestMessages(streamName)
+    return getTestMessages()
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
@@ -582,7 +582,7 @@ public abstract class JdbcSourceAcceptanceTest {
         COL_ID,
         null,
         "3",
-        getTestMessages(streamName));
+        getTestMessages());
   }
 
   @Test
@@ -591,7 +591,7 @@ public abstract class JdbcSourceAcceptanceTest {
         COL_ID,
         "2",
         "3",
-        List.of(getTestMessages(streamName).get(2)));
+        List.of(getTestMessages().get(2)));
   }
 
   @Test
@@ -600,7 +600,7 @@ public abstract class JdbcSourceAcceptanceTest {
         COL_NAME,
         "patent",
         "vash",
-        List.of(getTestMessages(streamName).get(0), getTestMessages(streamName).get(2)));
+        List.of(getTestMessages().get(0), getTestMessages().get(2)));
   }
 
   @Test
@@ -618,13 +618,13 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(final ConfiguredAirbyteStream streamWithSpaces) {
-    final AirbyteMessage firstMessage = getTestMessages(streamName).get(0);
+    final AirbyteMessage firstMessage = getTestMessages().get(0);
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_UPDATED_AT);
     ((ObjectNode) firstMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
         ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_NAME));
 
-    final AirbyteMessage secondMessage = getTestMessages(streamName).get(2);
+    final AirbyteMessage secondMessage = getTestMessages().get(2);
     secondMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) secondMessage.getRecord().getData()).remove(COL_UPDATED_AT);
     ((ObjectNode) secondMessage.getRecord().getData()).set(COL_LAST_NAME_WITH_SPACE,
@@ -643,7 +643,7 @@ public abstract class JdbcSourceAcceptanceTest {
         COL_UPDATED_AT,
         "2005-10-18",
         "2006-10-19",
-        List.of(getTestMessages(streamName).get(1), getTestMessages(streamName).get(2)));
+        List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
   @Test
@@ -656,7 +656,7 @@ public abstract class JdbcSourceAcceptanceTest {
         // records to (incorrectly) be filtered out.
         "data",
         "vash",
-        getTestMessages(streamName));
+        getTestMessages());
   }
 
   @Test
@@ -800,7 +800,7 @@ public abstract class JdbcSourceAcceptanceTest {
             .withCursor("3")
             .withCursorRecordCount(1L));
 
-    final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages(streamName));
+    final List<AirbyteMessage> expectedMessagesFirstSync = new ArrayList<>(getTestMessages());
     expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams1.get(0), expectedStateStreams1));
     expectedMessagesFirstSync.addAll(secondStreamExpectedMessages);
     expectedMessagesFirstSync.add(createStateMessage(expectedStateStreams2.get(1), expectedStateStreams2));
@@ -813,7 +813,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
-    return getTestMessages(streamName)
+    return getTestMessages()
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
@@ -1049,7 +1049,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  protected List<AirbyteMessage> getTestMessages(final String streamName) {
+  protected List<AirbyteMessage> getTestMessages() {
     return List.of(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
