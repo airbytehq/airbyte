@@ -91,6 +91,22 @@ streams:
           field_name: page
         pagination_strategy:
           type: PageIncrement
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      start_time_option:
+        type: RequestOption
+        field_name: q[updated_at_gteq]
+        inject_into: request_parameter
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ day_delta(-1) }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S.%f%z'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
     name: service_entries
     primary_key: []
