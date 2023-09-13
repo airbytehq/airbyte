@@ -3,7 +3,7 @@
 #
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode, AirbyteMessage, Type, AirbyteLogMessage, Level
@@ -102,6 +102,16 @@ class TestQdrantIndexer(unittest.TestCase):
         )
 
         self.qdrant_indexer._client.delete.assert_not_called()
+    
+    def test_pre_sync_calls_create_payload_index(self):
+        self.qdrant_indexer.pre_sync(Mock(streams=[]))
+
+        calls = [
+            call(collection_name=self.mock_config.collection, field_name="_ab_record_id", field_schema="keyword"), 
+            call(collection_name=self.mock_config.collection, field_name="_ab_stream", field_schema="keyword")
+            ]
+
+        self.qdrant_indexer._client.create_payload_index.assert_has_calls(calls)
 
     def test_index_calls_insert(self):
         self.qdrant_indexer.index([

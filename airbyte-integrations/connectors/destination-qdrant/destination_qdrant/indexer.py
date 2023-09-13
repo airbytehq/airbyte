@@ -68,6 +68,8 @@ class QdrantIndexer(Indexer):
                     )
                 )
             )
+        for field in [METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD]:
+            self._client.create_payload_index(collection_name=self.config.collection, field_name=field, field_schema="keyword")
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
