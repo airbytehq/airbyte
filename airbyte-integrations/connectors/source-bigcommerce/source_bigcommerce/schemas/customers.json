@@ -59,6 +59,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "first_name": {
             "type": ["null", "string"]
@@ -109,7 +110,7 @@
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
-                    "type": ["name", "string"]
+                    "type": ["null", "string"]
                   },
                   "value": {
                     "oneOf": [
@@ -127,7 +128,7 @@
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
-                    "type": ["name", "string"]
+                    "type": ["null", "string"]
                   },
                   "value": {
                     "oneOf": [
