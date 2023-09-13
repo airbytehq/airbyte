@@ -11,6 +11,8 @@ data:
   name: MongoDb
   registries:
     cloud:
+      dockerImageTag: 0.2.5
+      dockerRepository: airbyte/source-mongodb-strict-encrypt
       enabled: true
     oss:
       enabled: true
