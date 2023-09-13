@@ -135,7 +135,7 @@ public class MySqlInitialReadUtil {
           quoteString,
           initialLoadStateManager,
           namespacePair -> Jsons.emptyObject(),
-          getTableSizeInfoForStreams(database, catalog.getStreams(), quoteString));
+          getTableSizeInfoForStreams(database, initialLoadStreams.streamsForInitialLoad(), quoteString));
 
       initialLoadIterator.addAll(initialLoadHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
