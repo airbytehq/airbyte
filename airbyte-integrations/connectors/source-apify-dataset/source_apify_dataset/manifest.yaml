@@ -6,6 +6,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["data"]
+
   requester:
     type: HttpRequester
     url_base: "https://api.apify.com/v2/"
@@ -59,31 +60,22 @@ definitions:
           type: DpathExtractor
           field_path: ["data", "items"]
 
-  datasets_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/datasets_stream"
-        parent_key: "id"
-        partition_field: "parent_id"
-
   dataset_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "Dataset"
       primary_key: "id"
-      path: "datasets/{{ stream_partition.parent_id }}"
+      path: "datasets/{{ config['datasetId'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/base_paginator"
-      partition_router:
-        $ref: "#/definitions/datasets_partition_router"
 
   item_collection_wcc_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "Item Collection - Website Content Crawler (WCC)"
-      path: "datasets/{{ stream_partition.parent_id }}/items"
+      path: "datasets/{{ config['datasetId'] }}/items"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -93,8 +85,6 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
-      partition_router:
-        $ref: "#/definitions/datasets_partition_router"
 
 streams:
   - "#/definitions/datasets_stream"
