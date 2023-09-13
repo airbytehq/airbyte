@@ -53,7 +53,7 @@ data:
     - language:python
   ab_internal:
     sl: 300
-    ql: 200
+    ql: 400
   supportLevel: certified
   allowedHosts:
     hosts:
