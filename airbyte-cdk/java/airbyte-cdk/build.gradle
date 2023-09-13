@@ -51,6 +51,7 @@ dependencies {
     implementation "io.aesy:datasize:1.0.0"
     implementation libs.apache.commons
     implementation libs.apache.commons.lang
+    testImplementation 'commons-lang:commons-lang:2.6'
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.apache.commons:commons-csv:1.4'
 
