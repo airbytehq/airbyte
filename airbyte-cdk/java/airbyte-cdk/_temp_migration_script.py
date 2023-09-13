@@ -34,7 +34,6 @@ import re
 import shutil
 from pathlib import Path
 import sys
-from typing import cast
 
 REPO_ROOT = "."
 CDK_ROOT = f"{REPO_ROOT}/airbyte-cdk/java/airbyte-cdk"
@@ -47,44 +46,68 @@ EXCLUDE_FILES = [
     "_temp_.*", ".*\.dat", ".*\.bin", ".*\.csv", ".*\.jsonl", ".*\.png", ".*\.db", 
     ".*\.pyc", ".*\.jar", ".*\.archive", ".*\.coverage", 
 ]
-MAIN_PACKAGES = [
-    # Core capabilities:
-    "airbyte-db/db-lib",
-    "airbyte-integrations/bases/base-java",
-    "airbyte-integrations/bases/base-java-s3",
-    "airbyte-integrations/bases/base-typing-deduping",
-    "airbyte-integrations/connectors/source-relational-db",
-    "airbyte-integrations/bases/bases-destination-jdbc",
-    # Hybrid projects: capabilities plus test fixtures:
-    "airbyte-integrations/bases/debezium",
-    "airbyte-integrations/connectors/source-jdbc",
-]
-TEST_FIXTURE_PACKAGES = [
-    # Test fixture projects:
-    "airbyte-integrations/bases/base-typing-deduping-test",
-    "airbyte-integrations/bases/s3-destination-base-integration-test",
-    "airbyte-integrations/bases/standard-destination-test",
-    "airbyte-integrations/bases/standard-source-test",
-    "airbyte-integrations/bases/base-standard-source-test-file",
-    "airbyte-test-utils"
+CORE_FEATURE = "core"
+DB_SOURCES_FEATURE = "db-sources-feature"
+DB_DESTINATIONS_FEATURE = "db-destinations-feature"
+
+MAIN_PACKAGES = {
+    CORE_FEATURE: [
+        "airbyte-db/db-lib",
+        "airbyte-integrations/bases/base-java",
+        "airbyte-integrations/bases/base-java-s3",
+    ],
+    DB_SOURCES_FEATURE: [
+        "airbyte-integrations/bases/debezium",
+        "airbyte-integrations/connectors/source-jdbc",
+        "airbyte-integrations/connectors/source-relational-db",
+    ],
+    DB_DESTINATIONS_FEATURE: [
+        "airbyte-integrations/bases/bases-destination-jdbc",
+        "airbyte-integrations/bases/base-typing-deduping",
+    ],
+}
+TEST_FIXTURE_PACKAGES = {
+    CORE_FEATURE: [
+        "airbyte-integrations/bases/base-standard-source-test-file",
+        "airbyte-test-utils",
+    ],
+    DB_SOURCES_FEATURE: [
+        "airbyte-integrations/bases/standard-source-test",
+    ],
+    DB_DESTINATIONS_FEATURE: [
+        "airbyte-integrations/bases/base-typing-deduping-test",
+        "airbyte-integrations/bases/s3-destination-base-integration-test",
+        "airbyte-integrations/bases/standard-destination-test",
+    ]
+}
+TEST_CMDS = [
+    # # Working on this:
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
+    # These should pass:
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
+    # Failing:
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build", # 11 failing tests
 ]
 
 def move_files(source_dir, dest_dir, path_desc):
     if os.path.isdir(source_dir):
-        print(f"Moving '{path_desc}' files (ignoring existing)...\n - From: {source_dir}\n - To:   {dest_dir}")
+        print(
+            f"Moving '{path_desc}' files (ignoring existing)...\n"
+            f" - From: {source_dir}\n"
+            f" - To:   {dest_dir}"
+        )
         os.makedirs(dest_dir, exist_ok=True)
         for root, dirs, files in os.walk(source_dir):
             for file in files:
                 src_file = os.path.join(root, file)
                 sub_dir = os.path.relpath(root, source_dir)
                 dst_file = os.path.join(dest_dir, sub_dir, file)
-                # raise Exception(f"Moving files: root={root}, file={file}, dest_dir={dest_dir}, src_file={src_file}, dst_file={dst_file}")
 
                 os.makedirs(os.path.dirname(dst_file), exist_ok=True)
-
                 shutil.move(src_file, dst_file)
     else:
-        print(f"The source directory does not exist: {source_dir} ('{path_desc}')")
+        pass
+        # print(f"The source directory does not exist: {source_dir} ('{path_desc}')")
 
 def remove_empty_dirs(root_dir):
     for root, dirs, files in os.walk(root_dir, topdown=False):
@@ -100,7 +123,7 @@ def list_remnant_files(from_dir: str):
         for f in files:
             print(os.path.join(root, f))
 
-def move_package(old_package_root: str, as_test_fixture: bool):
+def move_package(old_package_root: str, feature_name: str, as_test_fixture: bool):
     # Define source and destination directories
     old_main_path = os.path.join(old_package_root, "src/main/java/io/airbyte")
     old_test_path = os.path.join(old_package_root, "src/test/java/io/airbyte")
@@ -111,31 +134,25 @@ def move_package(old_package_root: str, as_test_fixture: bool):
     old_integtest_resources_path = os.path.join(old_package_root, "src/test-integration/resources")
     old_testfixture_resources_path = os.path.join(old_package_root, "src/testfixtures/resources")
 
-    dest_main_path = os.path.join(CDK_ROOT, "src/main/java/io/airbyte/cdk")
-    dest_test_path = os.path.join(CDK_ROOT, "src/test/java/io/airbyte/cdk")
-    dest_integtest_path = os.path.join(CDK_ROOT, "src/test-integration/java/io/airbyte/cdk")
-    dest_testfixture_path = os.path.join(CDK_ROOT, "src/testFixtures/java/io/airbyte/cdk")
+    dest_main_path = os.path.join(CDK_ROOT, feature_name, "src/main/java/io/airbyte/cdk")
+    dest_test_path = os.path.join(CDK_ROOT, feature_name, "src/test/java/io/airbyte/cdk")
+    dest_integtest_path = os.path.join(CDK_ROOT, feature_name, "src/test-integration/java/io/airbyte/cdk")
+    dest_testfixture_path = os.path.join(CDK_ROOT, feature_name, "src/testFixtures/java/io/airbyte/cdk")
 
     old_project_name = str(Path(old_package_root).parts[-1])
     remnants_archive_path = os.path.join(CDK_ROOT, "archive", old_project_name)
 
-    dest_main_resources_path = os.path.join(CDK_ROOT, "src/main/resources")
-    dest_test_resources_path = os.path.join(CDK_ROOT, "src/test/resources")
-    dest_integtest_resources_path = os.path.join(CDK_ROOT, "src/test-integration/resources")
-    dest_testfixture_resources_path = os.path.join(CDK_ROOT, "src/testFixtures/resources")
-
-    # dest_main_resources_path += f"/{old_project_name}"
-    # dest_test_resources_path += f"/{old_project_name}"
-    # dest_integtest_resources_path += f"/{old_project_name}"
-    # dest_testfixture_resources_path += f"/{old_project_name}"
+    dest_main_resources_path = os.path.join(CDK_ROOT, feature_name, "src/main/resources")
+    dest_test_resources_path = os.path.join(CDK_ROOT, feature_name, "src/test/resources")
+    dest_integtest_resources_path = os.path.join(CDK_ROOT, feature_name, "src/test-integration/resources")
+    dest_testfixture_resources_path = os.path.join(CDK_ROOT, feature_name, "src/testFixtures/resources")
 
     if as_test_fixture:
         # Move the test project's 'main' files to the test fixtures directory
         dest_main_path = dest_testfixture_path
         dest_main_resources_path = dest_testfixture_resources_path
 
-    # Define source and destination directories as lists
-
+    # Define source and destination directories as list of tuples
     paths = [
         ("main classes", old_main_path, dest_main_path),
         ("main test classes", old_test_path, dest_test_path),
@@ -147,8 +164,6 @@ def move_package(old_package_root: str, as_test_fixture: bool):
         ("test fixtures resources", old_testfixture_resources_path, dest_testfixture_resources_path),
         ("remnants to archive", old_package_root, remnants_archive_path)
     ]
-
-    remove_empty_dirs(old_package_root)
     for path_desc, source_dir, dest_dir in paths:
         move_files(source_dir, dest_dir, path_desc)
     remove_empty_dirs(old_package_root)
@@ -214,9 +229,9 @@ def migrate_package_refs(
                 # Write the updated contents back to the file
                 with open(file_path, "w") as f:
                     f.write(new_contents)
-
         # else:
         #     print(f"No files found to scan within {within_dir}")
+
 
 def update_cdk_package_defs() -> None:
     """Within CDK_ROOT, packages should be declared as 'package io.airbyte.cdk...'"""
@@ -255,28 +270,25 @@ def main() -> None:
     # Remove empty directories in CDK_ROOT
     remove_empty_dirs(CDK_ROOT)
 
-    paths_to_migrate = MAIN_PACKAGES + TEST_FIXTURE_PACKAGES
     if len(sys.argv) > 1:
         if sys.argv[1] == "test":
-            # Working on this:
-            os.system(f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble")
-
-            # This should pass:
-            # os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")
-
-            # 11 tests failing:
-            # os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build")
+            for cmd in TEST_CMDS:
+                print(f"Running test command: {cmd}")
+                os.system(cmd)
             return
+        else:
+            raise ValueError(f"Unknown argument: {sys.argv[1]}")
 
-        # If a CLI argument is passed, expect csv and override packages to migrate
-        paths_to_migrate = sys.argv[1].split(",")
-
-    for old_package_root in paths_to_migrate:
-        # Remove empty directories in the OLD_PACKAGE_ROOT
-        as_test_fixture = old_package_root in TEST_FIXTURE_PACKAGES
-        move_package(old_package_root, as_test_fixture)
-        remove_empty_dirs(old_package_root)
-        update_cdk_package_defs()
+    for feature_name in MAIN_PACKAGES.keys():
+        paths_to_migrate = (
+            MAIN_PACKAGES[feature_name] + TEST_FIXTURE_PACKAGES[feature_name]
+        )
+        for old_package_root in paths_to_migrate:
+            # Remove empty directories in the OLD_PACKAGE_ROOT
+            as_test_fixture = old_package_root in TEST_FIXTURE_PACKAGES
+            move_package(old_package_root, feature_name, as_test_fixture)
+            remove_empty_dirs(old_package_root)
+            update_cdk_package_defs()
 
     refactor_cdk_package_refs()
 
@@ -285,4 +297,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
