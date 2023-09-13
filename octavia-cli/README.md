@@ -178,7 +178,7 @@ headers:
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
 | **`octavia init`**                        | Initialize required directories for the project.                                           |
 | **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.                      |
-| **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.                 |
+| **`octavia list connectors destinations`** | List all destinations connectors available on the remote Airbyte instance.                 |
 | **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                                    |
 | **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                               |
 | **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                                |

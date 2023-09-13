@@ -5,11 +5,14 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.timestampToString;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,6 +37,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -70,8 +74,13 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
+  protected StreamId buildStreamId(final String namespace, final String finalTableName, final String rawTableName) {
+    return new StreamId(namespace.toUpperCase(), finalTableName.toUpperCase(), namespace.toUpperCase(), rawTableName, namespace, finalTableName);
+  }
+
+  @Override
   protected void createNamespace(final String namespace) throws SQLException {
-    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace + '"');
+    database.execute("CREATE SCHEMA IF NOT EXISTS \"" + namespace.toUpperCase() + '"');
   }
 
   @Override
@@ -89,37 +98,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
-  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws Exception {
-    final String cdcDeletedAt = includeCdcDeletedAt ? "\"_ab_cdc_deleted_at\" TIMESTAMP_TZ," : "";
-    database.execute(new StringSubstitutor(Map.of(
-        "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
-        "cdc_deleted_at", cdcDeletedAt)).replace(
-            """
-            CREATE TABLE ${final_table_id} (
-              "_airbyte_raw_id" TEXT NOT NULL,
-              "_airbyte_extracted_at" TIMESTAMP_TZ NOT NULL,
-              "_airbyte_meta" VARIANT NOT NULL,
-              "id1" NUMBER,
-              "id2" NUMBER,
-              "updated_at" TIMESTAMP_TZ,
-              ${cdc_deleted_at}
-              "struct" OBJECT,
-              "array" ARRAY,
-              "string" TEXT,
-              "number" FLOAT,
-              "integer" NUMBER,
-              "boolean" BOOLEAN,
-              "timestamp_with_timezone" TIMESTAMP_TZ,
-              "timestamp_without_timezone" TIMESTAMP_NTZ,
-              "time_with_timezone" TEXT,
-              "time_without_timezone" TIME,
-              "date" DATE,
-              "unknown" VARIANT
-            )
-            """));
-  }
-
-  @Override
   protected List<JsonNode> dumpRawTableRecords(final StreamId streamId) throws Exception {
     return SnowflakeTestUtils.dumpRawTable(database, streamId.rawTableId(SnowflakeSqlGenerator.QUOTE));
   }
@@ -130,12 +108,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         database,
         databaseName,
         streamId.finalNamespace(),
-        streamId.finalName() + suffix);
+        streamId.finalName() + suffix.toUpperCase());
   }
 
   @Override
   protected void teardownNamespace(final String namespace) throws SQLException {
-    database.execute("DROP SCHEMA IF EXISTS \"" + namespace + '"');
+    database.execute("DROP SCHEMA IF EXISTS \"" + namespace.toUpperCase() + '"');
   }
 
   @Override
@@ -145,7 +123,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                                          final List<JsonNode> records)
       throws Exception {
     final List<String> columnNames = includeCdcDeletedAt ? FINAL_TABLE_COLUMN_NAMES_CDC : FINAL_TABLE_COLUMN_NAMES;
-    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_ab_cdc_deleted_at\"" : "";
+    final String cdcDeletedAtName = includeCdcDeletedAt ? ",\"_AB_CDC_DELETED_AT\"" : "";
     final String cdcDeletedAtExtract = includeCdcDeletedAt ? ",column19" : "";
     final String recordsText = records.stream()
         // For each record, convert it to a string like "(rawId, extractedAt, loadedAt, data)"
@@ -158,7 +136,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     database.execute(new StringSubstitutor(
         Map.of(
-            "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix),
+            "final_table_id", streamId.finalTableId(SnowflakeSqlGenerator.QUOTE, suffix.toUpperCase()),
             "cdc_deleted_at_name", cdcDeletedAtName,
             "cdc_deleted_at_extract", cdcDeletedAtExtract,
             "records", recordsText),
@@ -168,24 +146,24 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
             // parse_json().
             """
             INSERT INTO #{final_table_id} (
-              "_airbyte_raw_id",
-              "_airbyte_extracted_at",
-              "_airbyte_meta",
-              "id1",
-              "id2",
-              "updated_at",
-              "struct",
-              "array",
-              "string",
-              "number",
-              "integer",
-              "boolean",
-              "timestamp_with_timezone",
-              "timestamp_without_timezone",
-              "time_with_timezone",
-              "time_without_timezone",
-              "date",
-              "unknown"
+              "_AIRBYTE_RAW_ID",
+              "_AIRBYTE_EXTRACTED_AT",
+              "_AIRBYTE_META",
+              "ID1",
+              "ID2",
+              "UPDATED_AT",
+              "STRUCT",
+              "ARRAY",
+              "STRING",
+              "NUMBER",
+              "INTEGER",
+              "BOOLEAN",
+              "TIMESTAMP_WITH_TIMEZONE",
+              "TIMESTAMP_WITHOUT_TIMEZONE",
+              "TIME_WITH_TIMEZONE",
+              "TIME_WITHOUT_TIMEZONE",
+              "DATE",
+              "UNKNOWN"
               #{cdc_deleted_at_name}
             )
             SELECT
@@ -264,9 +242,12 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
     final String sql = generator.createTable(incrementalDedupStream, "", false);
     destinationHandler.execute(sql);
 
-    final Optional<String> tableKind = database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "users_final", namespace))
-        .stream().map(record -> record.get("kind").asText())
-        .findFirst();
+    // Note that USERS_FINAL is uppercased here. This is intentional, because snowflake upcases unquoted
+    // identifiers.
+    final Optional<String> tableKind =
+        database.queryJsons(String.format("SHOW TABLES LIKE '%s' IN SCHEMA \"%s\";", "USERS_FINAL", namespace.toUpperCase()))
+            .stream().map(record -> record.get("kind").asText())
+            .findFirst();
     final Map<String, String> columns = database.queryJsons(
         """
         SELECT column_name, data_type, numeric_precision, numeric_scale
@@ -277,8 +258,8 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         ORDER BY ordinal_position;
         """,
         databaseName,
-        namespace,
-        "users_final").stream()
+        namespace.toUpperCase(),
+        "USERS_FINAL").stream()
         .collect(toMap(
             record -> record.get("COLUMN_NAME").asText(),
             record -> {
@@ -293,26 +274,68 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
         () -> assertEquals(Optional.of("TABLE"), tableKind, "Table should be permanent, not transient"),
         () -> assertEquals(
             ImmutableMap.builder()
-                .put("_airbyte_raw_id", "TEXT")
-                .put("_airbyte_extracted_at", "TIMESTAMP_TZ")
-                .put("_airbyte_meta", "VARIANT")
-                .put("id1", "NUMBER(38, 0)")
-                .put("id2", "NUMBER(38, 0)")
-                .put("updated_at", "TIMESTAMP_TZ")
-                .put("struct", "OBJECT")
-                .put("array", "ARRAY")
-                .put("string", "TEXT")
-                .put("number", "FLOAT")
-                .put("integer", "NUMBER(38, 0)")
-                .put("boolean", "BOOLEAN")
-                .put("timestamp_with_timezone", "TIMESTAMP_TZ")
-                .put("timestamp_without_timezone", "TIMESTAMP_NTZ")
-                .put("time_with_timezone", "TEXT")
-                .put("time_without_timezone", "TIME")
-                .put("date", "DATE")
-                .put("unknown", "VARIANT")
+                .put("_AIRBYTE_RAW_ID", "TEXT")
+                .put("_AIRBYTE_EXTRACTED_AT", "TIMESTAMP_TZ")
+                .put("_AIRBYTE_META", "VARIANT")
+                .put("ID1", "NUMBER(38, 0)")
+                .put("ID2", "NUMBER(38, 0)")
+                .put("UPDATED_AT", "TIMESTAMP_TZ")
+                .put("STRUCT", "OBJECT")
+                .put("ARRAY", "ARRAY")
+                .put("STRING", "TEXT")
+                .put("NUMBER", "FLOAT")
+                .put("INTEGER", "NUMBER(38, 0)")
+                .put("BOOLEAN", "BOOLEAN")
+                .put("TIMESTAMP_WITH_TIMEZONE", "TIMESTAMP_TZ")
+                .put("TIMESTAMP_WITHOUT_TIMEZONE", "TIMESTAMP_NTZ")
+                .put("TIME_WITH_TIMEZONE", "TEXT")
+                .put("TIME_WITHOUT_TIMEZONE", "TIME")
+                .put("DATE", "DATE")
+                .put("UNKNOWN", "VARIANT")
                 .build(),
             columns));
+  }
+
+  /**
+   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key and
+   * a custom error message
+   */
+  @Override
+  @Test
+  public void incrementalDedupInvalidPrimaryKey() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "");
+    insertRawTableRecords(
+        streamId,
+        List.of(
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {}
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
+                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+                  "_airbyte_data": {"id1": 1, "id2": 100}
+                }
+                """)));
+
+    final String sql = generator.updateTable(incrementalDedupStream, "");
+    final Exception exception = assertThrows(
+        SnowflakeSQLException.class,
+        () -> destinationHandler.execute(sql));
+
+    assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
+    assertTrue(exception.getMessage().contains("\"users_raw\" has rows missing a primary key"));
+
+    DIFFER.diffFinalTableRecords(
+        emptyList(),
+        dumpFinalTableRecords(streamId, ""));
   }
 
   @Override

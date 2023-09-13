@@ -22,6 +22,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "amount_reversed": {
       "type": ["null", "integer"]
     },

@@ -10,7 +10,9 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 
 from .utils import read_full_refresh, read_incremental, safe_max
@@ -29,6 +31,13 @@ class JiraStream(HttpStream, ABC):
     api_v1 = False
     skip_http_status_codes = []
     raise_on_http_errors = True
+    error_messages = {
+        requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
+    }
+    config_error_status_codes = [
+        requests.codes.UNAUTHORIZED,
+    ]
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -90,6 +99,15 @@ class JiraStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except HTTPError as e:
+            user_error_message = self.error_messages.get(e.response.status_code)
+            if user_error_message:
+                self.logger.error(user_error_message)
+            if e.response.status_code in self.config_error_status_codes:
+                raise AirbyteTracedException(
+                    message="Config validation error: " + user_error_message,
+                    internal_message=str(e),
+                    failure_type=FailureType.config_error,
+                ) from e
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
 
@@ -194,6 +212,11 @@ class Boards(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     extract_field = "values"
     use_cache = True
@@ -320,7 +343,9 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = False  # disable caching due to OOM errors in kubernetes
+    use_cache = True
+
+    skip_http_status_codes = [requests.codes.FORBIDDEN]
 
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -382,7 +407,9 @@ class Issues(IncrementalJiraStream):
             # we should skip the slice with wrong permissions on project level
             errors = response.json().get("errorMessages")
             self.logger.error(
-                f"Stream `{self.name}`. An error occurred, details: {errors}." f"Check permissions for this project. Skipping for now."
+                f"Stream `{self.name}`. An error occurred, details: {errors}."
+                f"Check permissions for this project. Skipping for now. "
+                f"The user doesn't have permission to the project. Please grant the user to the project."
             )
             setattr(self, "raise_on_http_errors", False)
             return False
@@ -688,6 +715,10 @@ class IssueWatchers(StartDateJiraStream):
 
     # extract_field = "watchers"
     primary_key = None
+    skip_http_status_codes = [
+        # Issue is not found or the user does not have permission to view it.
+        requests.codes.NOT_FOUND
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1106,6 +1137,29 @@ class Sprints(JiraStream):
         super().__init__(**kwargs)
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
+    def get_user_message_from_error_message(self, errors: List[str]) -> str:
+        for error_message in errors:
+            if "The board does not support sprints" in error_message:
+                return (
+                    "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                    "does it have sprints enabled under project settings? If it's a company-managed one,"
+                    " check that it has at least one Scrum board associated with it."
+                )
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            errors = response.json().get("errorMessages")
+            message = self.get_user_message_from_error_message(errors)
+            if message:
+                self.logger.error(
+                    f"Stream `{self.name}`. An error occurred, details: {errors}."
+                    f"Skipping for now. {self.get_user_message_from_error_message(errors)}"
+                )
+                setattr(self, "raise_on_http_errors", False)
+                return False
+        else:
+            return super().should_retry(response)
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"board/{stream_slice['board_id']}/sprint"
 
@@ -1262,6 +1316,11 @@ class WorkflowStatuses(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "status"
