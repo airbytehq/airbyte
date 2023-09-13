@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "app_token": {
+      "type": ["null", "string"]
+    },
+    "table_id": {
+      "type": ["null", "string"]
+    },
+    "record_id": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "fields": {
+      "type": ["null", "string"]
+    }
+  }
+}
