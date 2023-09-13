@@ -130,15 +130,18 @@ def move_package(old_package_root: str, feature_name: str, as_test_fixture: bool
     old_main_path = os.path.join(old_package_root, "src/main/java/io/airbyte")
     old_test_path = os.path.join(old_package_root, "src/test/java/io/airbyte")
     old_integtest_path = os.path.join(old_package_root, "src/test-integration/java/io/airbyte")
+    old_perftest_path = os.path.join(old_package_root, "src/test-performance/java/io/airbyte")
     old_testfixture_path = os.path.join(old_package_root, "src/testfixtures/java/io/airbyte")
     old_main_resources_path = os.path.join(old_package_root, "src/main/resources")
     old_test_resources_path = os.path.join(old_package_root, "src/test/resources")
     old_integtest_resources_path = os.path.join(old_package_root, "src/test-integration/resources")
+    old_perftest_resources_path = os.path.join(old_package_root, "src/test-performance/resources")
     old_testfixture_resources_path = os.path.join(old_package_root, "src/testfixtures/resources")
 
     dest_main_path = os.path.join(CDK_ROOT, feature_name, "src/main/java/io/airbyte/cdk")
     dest_test_path = os.path.join(CDK_ROOT, feature_name, "src/test/java/io/airbyte/cdk")
     dest_integtest_path = os.path.join(CDK_ROOT, feature_name, "src/test-integration/java/io/airbyte/cdk")
+    dest_perftest_path = os.path.join(CDK_ROOT, feature_name, "src/test-performance/java/io/airbyte/cdk")
     dest_testfixture_path = os.path.join(CDK_ROOT, feature_name, "src/testFixtures/java/io/airbyte/cdk")
 
     old_project_name = str(Path(old_package_root).parts[-1])
@@ -147,6 +150,7 @@ def move_package(old_package_root: str, feature_name: str, as_test_fixture: bool
     dest_main_resources_path = os.path.join(CDK_ROOT, feature_name, "src/main/resources")
     dest_test_resources_path = os.path.join(CDK_ROOT, feature_name, "src/test/resources")
     dest_integtest_resources_path = os.path.join(CDK_ROOT, feature_name, "src/test-integration/resources")
+    dest_perftest_resources_path = os.path.join(CDK_ROOT, feature_name, "src/test-performance/resources")
     dest_testfixture_resources_path = os.path.join(CDK_ROOT, feature_name, "src/testFixtures/resources")
 
     if as_test_fixture:
@@ -159,10 +163,12 @@ def move_package(old_package_root: str, feature_name: str, as_test_fixture: bool
         ("main classes", old_main_path, dest_main_path),
         ("main test classes", old_test_path, dest_test_path),
         ("integ test classes", old_integtest_path, dest_integtest_path),
+        ("perf test classes", old_perftest_path, dest_perftest_path),
         ("test fixtures", old_testfixture_path, dest_testfixture_path),
         ("main resources", old_main_resources_path, dest_main_resources_path),
         ("test resources", old_test_resources_path, dest_test_resources_path),
         ("integ test resources", old_integtest_resources_path, dest_integtest_resources_path),
+        ("perf test resources", old_perftest_resources_path, dest_perftest_resources_path),
         ("test fixtures resources", old_testfixture_resources_path, dest_testfixture_resources_path),
         ("remnants to archive", old_package_root, remnants_archive_path)
     ]
