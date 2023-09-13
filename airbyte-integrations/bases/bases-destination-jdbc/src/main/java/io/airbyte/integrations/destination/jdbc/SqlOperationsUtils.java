@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -36,27 +37,6 @@ public class SqlOperationsUtils {
                                                    final List<AirbyteRecordMessage> records)
       throws SQLException {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
-  }
-
-  /**
-   * Inserts "raw" records in a single query. The purpose of helper to abstract away database-specific
-   * SQL syntax from this query.
-   *
-   * This version does not add a semicolon at the end of the INSERT statement.
-   *
-   * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
-   *        data, emitted_at)
-   * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
-   * @param jdbcDatabase jdbc database
-   * @param records records to write
-   * @throws SQLException exception
-   */
-  public static void insertRawRecordsInSingleQueryNoSem(final String insertQueryComponent,
-                                                        final String recordQueryComponent,
-                                                        final JdbcDatabase jdbcDatabase,
-                                                        final List<AirbyteRecordMessage> records)
-      throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
   }
 
   @VisibleForTesting
@@ -91,12 +71,19 @@ public class SqlOperationsUtils {
 
         try (final PreparedStatement statement = connection.prepareStatement(s1)) {
           // second loop: bind values to the SQL string.
+          // 1-indexed
           int i = 1;
           for (final AirbyteRecordMessage message : partition) {
-            // 1-indexed
+            // Airbyte Raw ID
             statement.setString(i, uuidSupplier.get().toString());
+            // Message Data
             statement.setString(i + 1, Jsons.serialize(message.getData()));
+            // Extracted At
             statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
+            if (TypingAndDedupingFlag.isDestinationV2()) {
+              // Loaded At
+              statement.setTimestamp(i++, null);
+            }
             i += 3;
           }
 

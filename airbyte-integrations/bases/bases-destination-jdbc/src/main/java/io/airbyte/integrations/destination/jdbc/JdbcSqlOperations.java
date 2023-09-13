@@ -107,8 +107,12 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       for (final AirbyteRecordMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
         final var jsonData = Jsons.serialize(formatData(record.getData()));
-        final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
-        csvPrinter.printRecord(uuid, jsonData, emittedAt);
+        final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+        if (TypingAndDedupingFlag.isDestinationV2()) {
+          csvPrinter.printRecord(uuid, jsonData, extractedAt, null);
+        } else {
+          csvPrinter.printRecord(uuid, jsonData, extractedAt);
+        }
       }
     }
   }

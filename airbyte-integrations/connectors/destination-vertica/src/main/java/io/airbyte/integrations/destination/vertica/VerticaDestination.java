@@ -15,7 +15,11 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.*;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -142,7 +146,8 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), verticaSqlOperations, namingResolver, config,
-        catalog);
+                                              catalog, new io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper()
+    );
   }
 
 }
