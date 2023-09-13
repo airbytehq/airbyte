@@ -40,7 +40,6 @@ dependencies {
     integrationTestJavaImplementation libs.apache.commons.lang
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     debeziumTestImplementation libs.bundles.debezium.bundle
     debeziumTestImplementation libs.bundles.slf4j

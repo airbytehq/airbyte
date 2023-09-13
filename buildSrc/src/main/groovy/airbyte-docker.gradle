@@ -158,6 +158,10 @@ class AirbyteDockerTaskFactory {
             // Special case: this image is not built by this repo.
             return false
         }
+        if (!taggedImage.endsWith(":dev")) {
+            // Special case: this image is owned by this repo but built separate. e.g. source-file-secure
+            return false
+        }
         // Otherwise, assume the image is built by this repo.
         return true
     }
