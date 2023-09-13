@@ -33,6 +33,8 @@ public class DetectStreamToFlush {
   private final AtomicBoolean isClosing;
   private final DestinationFlushFunction flusher;
 
+  private long lastTimeCalled = System.currentTimeMillis();
+
   public DetectStreamToFlush(final BufferDequeue bufferDequeue,
                              final RunningFlushWorkers runningFlushWorkers,
                              final AtomicBoolean isClosing,
@@ -127,9 +129,11 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
-    final Boolean isTimeTriggered = bufferDequeue.getTimeOfLastRecord(stream)
-        .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MIN, ChronoUnit.MINUTES)))
-        .orElse(false);
+    final Boolean isTimeTriggered = lastTimeCalled <= (System.currentTimeMillis() - 5 * 60 * 1000);
+
+    if (isTimeTriggered) {
+      lastTimeCalled = System.currentTimeMillis();
+    }
 
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
 
