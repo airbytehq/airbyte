@@ -115,29 +115,38 @@ public class MySqlQueryUtils {
         final String fullTableName =
             getFullyQualifiedTableNameWithQuoting(name, namespace, quoteString);
         final List<JsonNode> tableEstimateResult = getTableEstimate(database, namespace, name);
-        Preconditions.checkState(tableEstimateResult.size() == 1);
-        final long tableEstimateBytes = tableEstimateResult.get(0).get(TABLE_SIZE_BYTES_COL).asLong();
-        final long avgTableRowSizeBytes = tableEstimateResult.get(0).get(AVG_ROW_LENGTH).asLong();
-        LOGGER.info("Stream {} size estimate is {}, average row size estimate is {}", fullTableName, tableEstimateBytes, avgTableRowSizeBytes);
-        final TableSizeInfo tableSizeInfo = new TableSizeInfo(tableEstimateBytes, avgTableRowSizeBytes);
-        final AirbyteStreamNameNamespacePair namespacePair =
-            new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-        tableSizeInfoMap.put(namespacePair, tableSizeInfo);
-      } catch (final SQLException e) {
+
+        if (tableEstimateResult != null
+            && tableEstimateResult.size() == 1
+            && tableEstimateResult.get(0).get(TABLE_SIZE_BYTES_COL) != null
+            && tableEstimateResult.get(0).get(AVG_ROW_LENGTH) != null) {
+          final long tableEstimateBytes = tableEstimateResult.get(0).get(TABLE_SIZE_BYTES_COL).asLong();
+          final long avgTableRowSizeBytes = tableEstimateResult.get(0).get(AVG_ROW_LENGTH).asLong();
+          LOGGER.info("Stream {} size estimate is {}, average row size estimate is {}", fullTableName, tableEstimateBytes, avgTableRowSizeBytes);
+          final TableSizeInfo tableSizeInfo = new TableSizeInfo(tableEstimateBytes, avgTableRowSizeBytes);
+          final AirbyteStreamNameNamespacePair namespacePair =
+              new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+          tableSizeInfoMap.put(namespacePair, tableSizeInfo);
+        }
+      } catch (final Exception e) {
         LOGGER.warn("Error occurred while attempting to estimate sync size", e);
       }
     });
     return tableSizeInfoMap;
   }
 
-  private static List<JsonNode> getTableEstimate(final JdbcDatabase database, final String namespace, final String name)
-      throws SQLException {
-    // Construct the table estimate query.
-    final String tableEstimateQuery =
-        String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
-    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-    Preconditions.checkState(jsonNodes.size() == 1);
+  private static List<JsonNode> getTableEstimate(final JdbcDatabase database, final String namespace, final String name) {
+    List<JsonNode> jsonNodes = Collections.EMPTY_LIST;
+    try {
+      // Construct the table estimate query.
+      final String tableEstimateQuery =
+          String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
+      jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      Preconditions.checkState(jsonNodes.size() == 1);
+    } catch (final SQLException e) {
+      LOGGER.warn("Error occurred while attempting to estimate table size", e);
+    }
     return jsonNodes;
   }
 
