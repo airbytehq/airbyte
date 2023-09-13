@@ -15,7 +15,7 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
-class Build(BaseModel):
+class ConnectorBuildOptions(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -199,7 +199,7 @@ class Data(BaseModel):
     name: str
     icon: Optional[str] = None
     definitionId: UUID
-    build: Optional[Build] = None
+    connectorBuildOptions: Optional[ConnectorBuildOptions] = None
     connectorType: Literal["destination", "source"]
     dockerRepository: str
     dockerImageTag: str

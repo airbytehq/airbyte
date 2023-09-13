@@ -1,7 +1,7 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/Build.yaml
-title: Build
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorBuildOptions.yaml
+title: ConnectorBuildOptions
 description: metadata specific to the build process.
 type: object
 additionalProperties: false

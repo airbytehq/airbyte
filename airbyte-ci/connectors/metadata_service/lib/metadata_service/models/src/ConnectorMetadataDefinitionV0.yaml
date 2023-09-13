@@ -34,8 +34,8 @@ properties:
       definitionId:
         type: string
         format: uuid
-      build:
-        "$ref": Build.yaml
+      connectorBuildOptions:
+        "$ref": ConnectorBuildOptions.yaml
       connectorType:
         type: string
         enum:

@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - "*.googleapis.com"
-  build:
+  connectorBuildOptions:
     baseImage: airbyte/airbyte-python-connectors-base:0.1.0
   connectorSubtype: file
   connectorType: source
