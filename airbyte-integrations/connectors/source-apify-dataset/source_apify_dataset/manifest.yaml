@@ -43,21 +43,17 @@ spec:
     additionalProperties: true
 
 definitions:
-  requester:
-    type: HttpRequester
-    url_base: "https://api.apify.com/v2/"
-    http_method: "GET"
-    authenticator:
-      type: NoAuth
-    request_parameters:
-      token: "{{ config['token'] }}"
-
   retriever:
     type: SimpleRetriever
     paginator:
       type: "NoPagination"
     requester:
-      $ref: "#/definitions/requester"
+      type: HttpRequester
+      url_base: "https://api.apify.com/v2/"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['token'] }}"
 
   base_paginator:
     type: "DefaultPaginator"
