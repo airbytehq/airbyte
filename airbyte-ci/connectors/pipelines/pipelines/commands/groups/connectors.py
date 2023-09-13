@@ -54,6 +54,7 @@ def get_selected_connectors_with_modified_files(
     selected_languages: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
+    metadata_query: str,
     modified_files: Set[Path],
     enable_dependency_scanning: bool = False,
 ) -> List[ConnectorWithModifiedFiles]:
@@ -81,17 +82,22 @@ def get_selected_connectors_with_modified_files(
     selected_connectors_by_name = {c for c in ALL_CONNECTORS if c.technical_name in selected_names}
     selected_connectors_by_support_level = {connector for connector in ALL_CONNECTORS if connector.support_level in selected_support_levels}
     selected_connectors_by_language = {connector for connector in ALL_CONNECTORS if connector.language in selected_languages}
+    selected_connectors_by_query = (
+        {connector for connector in ALL_CONNECTORS if connector.metadata_query_match(metadata_query)} if metadata_query else set()
+    )
+
     non_empty_connector_sets = [
         connector_set
         for connector_set in [
             selected_connectors_by_name,
             selected_connectors_by_support_level,
             selected_connectors_by_language,
+            selected_connectors_by_query,
             selected_modified_connectors,
         ]
         if connector_set
     ]
-    # The selected connectors are the intersection of the selected connectors by name, support_level, language and modified.
+    # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
 
     selected_connectors_with_modified_files = []
@@ -134,6 +140,11 @@ def get_selected_connectors_with_modified_files(
     default=False,
     type=bool,
 )
+@click.option(
+    "--metadata-query",
+    help="Filter connectors by metadata query using `simpleeval`. e.g. 'data.ab_internal.ql == 200'",
+    type=str,
+)
 @click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
 @click.option(
     "--execute-timeout",
@@ -156,6 +167,7 @@ def connectors(
     support_levels: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
+    metadata_query: str,
     concurrency: int,
     execute_timeout: int,
     enable_dependency_scanning: bool,
@@ -168,7 +180,14 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names, support_levels, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning
+        names,
+        support_levels,
+        languages,
+        modified,
+        metadata_changes_only,
+        metadata_query,
+        ctx.obj["modified_files"],
+        enable_dependency_scanning,
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
@@ -500,6 +519,6 @@ def format_code(ctx: click.Context) -> bool:
 def log_selected_connectors(selected_connectors_with_modified_files: List[ConnectorWithModifiedFiles]) -> None:
     if selected_connectors_with_modified_files:
         selected_connectors_names = [c.technical_name for c in selected_connectors_with_modified_files]
-        main_logger.info(f"Will run on the following connectors: {', '.join(selected_connectors_names)}.")
+        main_logger.info(f"Will run on the following {len(selected_connectors_names)} connectors: {', '.join(selected_connectors_names)}.")
     else:
         main_logger.info("No connectors to run.")
