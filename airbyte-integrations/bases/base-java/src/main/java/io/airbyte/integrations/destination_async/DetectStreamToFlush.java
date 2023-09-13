@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -33,7 +34,7 @@ public class DetectStreamToFlush {
   private final AtomicBoolean isClosing;
   private final DestinationFlushFunction flusher;
 
-  private long lastTimeCalled = System.currentTimeMillis();
+  private AtomicLong lastTimeCalled = new AtomicLong(System.currentTimeMillis());
 
   public DetectStreamToFlush(final BufferDequeue bufferDequeue,
                              final RunningFlushWorkers runningFlushWorkers,
@@ -129,10 +130,10 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
-    final Boolean isTimeTriggered = lastTimeCalled <= (System.currentTimeMillis() - 5 * 60 * 1000);
+    final Boolean isTimeTriggered = lastTimeCalled.get() <= (System.currentTimeMillis() - 5 * 60 * 1000);
 
     if (isTimeTriggered) {
-      lastTimeCalled = System.currentTimeMillis();
+      lastTimeCalled.set(System.currentTimeMillis());
     }
 
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
