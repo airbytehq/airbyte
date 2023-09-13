@@ -97,7 +97,7 @@ def get_selected_connectors_with_modified_files(
         ]
         if connector_set
     ]
-    # The selected connectors are the intersection of the selected connectors by name, support_level, language and modified.
+    # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
 
     selected_connectors_with_modified_files = []
