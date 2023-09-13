@@ -6,6 +6,8 @@ package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+
 import java.util.Optional;
 
 /**
@@ -25,8 +27,8 @@ public class MongoDbCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.empty();
+  public AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
+    return null;
   }
 
 }

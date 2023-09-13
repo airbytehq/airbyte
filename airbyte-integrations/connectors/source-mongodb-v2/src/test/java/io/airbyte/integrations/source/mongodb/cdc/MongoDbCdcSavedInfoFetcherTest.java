@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
@@ -30,7 +30,7 @@ class MongoDbCdcSavedInfoFetcherTest {
     final JsonNode offset = MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN);
     final MongoDbCdcState offsetState = new MongoDbCdcState(offset);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(offsetState);
-    assertTrue(cdcSavedInfoFetcher.getSavedSchemaHistory().isEmpty());
+    assertNull(cdcSavedInfoFetcher.getSavedSchemaHistory());
   }
 
 }
