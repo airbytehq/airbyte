@@ -17,6 +17,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from paramiko.ssh_exception import SSHException
 from source_sftp_bulk import SourceFtp
 
 pytest_plugins = ("connector_acceptance_test.plugin",)
@@ -113,8 +114,8 @@ def is_responsive(
         if outcome.status == Status.SUCCEEDED:
             logger.info("SFTP service is up!")
             return True
-    except ConnectionError:
-        logger.info("SFTP service is not up yet")
+    except Exception as e:
+        logger.info("SFTP service is not up yet. Reason: %s", e)
         return False
 
 
@@ -490,7 +491,6 @@ def test_get_files_recusively_depth_level_0(
     assert res.record.data["int_col"] == 2
     assert res.record.data["path_col"] == "test_0.csv"
 
-
 def test_get_files_recusively_depth_level_1(
     config: Mapping,
     configured_catalog: ConfiguredAirbyteCatalog,
@@ -511,19 +511,93 @@ def test_get_files_recusively_depth_level_1(
     )
     result = [m for m in result_iter if m.type is Type.RECORD]
 
-    assert len(result) == 8
+    assert len(result) == 10
 
-    res = result[0]
-    assert res.type == Type.RECORD
-    assert res.record.data["string_col"] == "hello"
-    assert res.record.data["int_col"] == 1
-    assert res.record.data["path_col"] == "test_0.csv"
+    expected_keys = {"string_col", "int_col", "path_col", "last_modified"}
 
-    res = result[1]
-    assert res.type == Type.RECORD
-    assert res.record.data["string_col"] == "foo"
-    assert res.record.data["int_col"] == 2
-    assert res.record.data["path_col"] == "test_0.csv"
+    for r in result:
+        assert r.record.data.keys() == expected_keys
+        assert r.type == Type.RECORD
+        assert "dir_1/dir_2/test_3.csv" != r.record.data["path_col"]
+        assert "dir_1/dir_2/test_4.csv" != r.record.data["path_col"]
+
+        if r.record.data["int_col"] == 1:
+            assert r.record.data["string_col"] == "hello"
+
+        if r.record.data["int_col"] == 2:
+            assert r.record.data["string_col"] == "foo"
+
+
+def test_get_files_recusively_depth_level_2(
+    config: Mapping,
+    configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
+):
+    updated_config = {
+        **config,
+        "folder_path": "files/csv_nested",
+        "file_type": "csv",
+        "max_depth": 2,
+    }
+
+    result_iter = sftp_service.read(
+        logger,
+        updated_config,
+        configured_catalog,
+        None,
+    )
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
+    assert len(result) == 14
+
+    expected_keys = {"string_col", "int_col", "path_col", "last_modified"}
+
+    for r in result:
+        assert r.record.data.keys() == expected_keys
+        assert r.type == Type.RECORD
+
+        if r.record.data["int_col"] == 1:
+            assert r.record.data["string_col"] == "hello"
+
+        if r.record.data["int_col"] == 2:
+            assert r.record.data["string_col"] == "foo"
+
+@pytest.mark.parametrize("max_depth", [3, 5, 100])
+def test_get_files_recusively_depth_level_no_further_levels(
+    config: Mapping,
+    configured_catalog: ConfiguredAirbyteCatalog,
+    sftp_service: SourceFtp,
+    max_depth: int,
+):
+    updated_config = {
+        **config,
+        "folder_path": "files/csv_nested",
+        "file_type": "csv",
+        "max_depth": max_depth,
+    }
+
+    result_iter = sftp_service.read(
+        logger,
+        updated_config,
+        configured_catalog,
+        None,
+    )
+    result = [m for m in result_iter if m.type is Type.RECORD]
+
+    assert len(result) == 14
+
+    expected_keys = {"string_col", "int_col", "path_col", "last_modified"}
+
+    for r in result:
+        assert r.record.data.keys() == expected_keys
+        assert r.type == Type.RECORD
+
+        if r.record.data["int_col"] == 1:
+            assert r.record.data["string_col"] == "hello"
+
+        if r.record.data["int_col"] == 2:
+            assert r.record.data["string_col"] == "foo"
+
 
 
 @pytest.mark.parametrize("prefix", ["col_", "custom_prefix_"])

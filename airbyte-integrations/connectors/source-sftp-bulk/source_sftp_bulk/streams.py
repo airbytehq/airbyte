@@ -74,6 +74,7 @@ class FTPStream(Stream, IncrementalMixin):
             self.config.get("file_pattern"),
             modified_since=self._cursor_value,
             most_recent_only=self._only_most_recent_file,
+            max_level=self.config.get("max_depth", 0),
         )
 
         for cursor, records in self.connection.fetch_files(
