@@ -481,10 +481,13 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         .with_exec(
             sh_dash_c(
                 [
-                    "apk update"
-                    "apk add fuse-overlayfs"
-                    "mkdir /etc/docker"
-                    "(echo {\\\"storage-driver\\\": \\\"fuse-overlayfs\\\"} > /etc/docker/daemon.json)"
+                    # Update package metadata.
+                    "apk update",
+                    # Install the storage driver package.
+                    "apk add fuse-overlayfs",
+                    # Update daemon config with storage driver.
+                    "mkdir /etc/docker",
+                    "(echo {\\\"storage-driver\\\": \\\"fuse-overlayfs\\\"} > /etc/docker/daemon.json)",
                 ]
             )
         )
