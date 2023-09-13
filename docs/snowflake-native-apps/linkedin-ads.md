@@ -17,7 +17,7 @@ A LinkedIn Ads account with permission to access data from accounts you want to 
 2. On the left sidebar, click Marketplace.
 3. Search for `Linkedin Ads Connector` by Airbyte or navigate to https://app.snowflake.com/marketplace/listing/GZTYZ9BCRSJ/airbyte-linkedin-ads-connector-by-airbyte
 4. Click `Request`. This will send a request that we will manually service as soon as we can.
-5. On the left sidebar, click `Apps.
+5. On the left sidebar, click `Apps`.
 6. Under the `Recently Shared with You` section, you should see the `Linkedin Ads Connector by Airbyte`. Click `Get`.
 7. Expand `Options`.
     1. You can rename the application or leave the default. This is how you will reference the application from a worksheet
