@@ -519,7 +519,7 @@ def test_sprints_stream(config, sprints_response):
 
 
 @responses.activate
-def test_board_does_not_support_sprints(config):
+def test_board_does_not_support_sprints(config, caplog):
     url = f"https://{config['domain']}/rest/agile/1.0/board/4/sprint?maxResults=50"
     error = {'errorMessages': ['The board does not support sprints'], 'errors': {}}
     responses.add(responses.GET, url, json=error, status=400)
@@ -529,6 +529,9 @@ def test_board_does_not_support_sprints(config):
     response = requests.get(url)
     actual = stream.should_retry(response)
     assert actual is False
+    assert ("The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+            "does it have sprints enabled under project settings? If it's a company-managed one,"
+            " check that it has at least one Scrum board associated with it.") in caplog.text
 
 
 @responses.activate
@@ -703,7 +706,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     records = list(read_full_refresh(stream))
     assert len(records) == 1
     assert len(responses.calls) == 4
-    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now."
+    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert error_message in caplog.messages
 
 
