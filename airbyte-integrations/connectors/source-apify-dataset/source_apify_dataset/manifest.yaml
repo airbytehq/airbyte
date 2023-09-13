@@ -43,12 +43,6 @@ spec:
     additionalProperties: true
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data"]
-
   requester:
     type: HttpRequester
     url_base: "https://api.apify.com/v2/"
@@ -60,8 +54,6 @@ definitions:
 
   retriever:
     type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
     paginator:
       type: "NoPagination"
     requester:
@@ -97,7 +89,7 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["data", "items"]
@@ -112,6 +104,11 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/base_paginator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data"]
 
   item_collection_wcc_stream:
     $ref: "#/definitions/base_stream"
@@ -123,7 +120,7 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
