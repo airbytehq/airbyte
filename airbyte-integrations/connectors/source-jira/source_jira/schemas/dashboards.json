@@ -2114,11 +2114,17 @@
         }
       }
     },
-    "iswritable": {
+    "isWritable": {
       "type": ["null", "boolean"]
     },
     "systemDashboard": {
       "type": ["null", "boolean"]
+    },
+    "editPermissions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
     }
   },
   "additionalProperties": true,
