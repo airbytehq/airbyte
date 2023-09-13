@@ -139,11 +139,12 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
     return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
 def _docs_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path, latest: bool) -> Tuple[bool, str]:
-    [connector_type, connector_name] = metadata_file_path.parent.name.split('-', 1)
+    connector_type = metadata.data.connectorType
+    doc_file_name = metadata.data.documentationUrl.split('/')[-1]
     docs_folder_path = metadata_file_path.parents[3] / DOCS_FOLDER_PATH / f"{connector_type}s"
     
-    local_doc_path = docs_folder_path / f"{connector_name}.md"
-    local_inapp_doc_path = docs_folder_path / f"{connector_name}.inapp.md"
+    local_doc_path = docs_folder_path / f"{doc_file_name}.md"
+    local_inapp_doc_path = docs_folder_path / f"{doc_file_name}.inapp.md"
 
     remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, False)
     remote_inapp_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, True)

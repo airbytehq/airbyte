@@ -40,7 +40,7 @@ def test_file_not_found_fails():
 
 
 def mock_metadata_upload_info(
-    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, metadata_file_path: str
+    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, doc_version_uploaded: bool, doc_inapp_version_uploaded: bool, doc_latest_uploaded: bool, doc_inapp_latest_uploaded: bool, metadata_file_path: str
 ) -> MetadataUploadInfo:
     return MetadataUploadInfo(
         uploaded=(latest_uploaded or version_uploaded),
@@ -51,29 +51,38 @@ def mock_metadata_upload_info(
         icon_uploaded=icon_uploaded,
         icon_blob_id="icon_blob_id" if icon_uploaded else None,
         metadata_file_path=metadata_file_path,
+        doc_version_uploaded=doc_version_uploaded,
+        doc_version_blob_id="doc_version_blob_id" if doc_version_uploaded else None,
+        doc_inapp_version_uploaded=doc_inapp_version_uploaded,
+        doc_inapp_version_blob_id="doc_inapp_version_blob_id" if doc_inapp_version_uploaded else None,
+        doc_latest_uploaded=doc_latest_uploaded,
+        doc_latest_blob_id="doc_latest_blob_id" if doc_latest_uploaded else None,
+        doc_inapp_latest_uploaded=doc_inapp_latest_uploaded,
+        doc_inapp_latest_blob_id="doc_inapp_latest_blob_id" if doc_inapp_latest_uploaded else None,
     )
 
 
 # TEST UPLOAD COMMAND
 @pytest.mark.parametrize(
-    "latest_uploaded, version_uploaded, icon_uploaded",
+    "latest_uploaded, version_uploaded, icon_uploaded, doc_version_uploaded, doc_inapp_version_uploaded, doc_latest_uploaded, doc_inapp_latest_uploaded",
     [
-        (False, False, False),
-        (True, False, False),
-        (False, True, False),
-        (False, False, True),
-        (True, True, False),
-        (True, False, True),
-        (False, True, True),
-        (True, True, True),
+        (False, False, False, False, False, False, False),
+        (True, False, False, False, False, False, False),
+        (False, True, False, False, False, False, False),
+        (False, False, True, False, False, False, False),
+        (True, True, False, False, False, False, False),
+        (True, False, True, False, False, False, False),
+        (False, True, True, False, False, False, False),
+        (True, True, True, False, False, False, False),
+        (True, True, True, True, True, True, True),
     ],
 )
-def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uploaded, icon_uploaded):
+def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uploaded, icon_uploaded, doc_version_uploaded, doc_inapp_version_uploaded, doc_latest_uploaded, doc_inapp_latest_uploaded):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     metadata_file_path = valid_metadata_yaml_files[0]
-    upload_info = mock_metadata_upload_info(latest_uploaded, version_uploaded, icon_uploaded, metadata_file_path)
+    upload_info = mock_metadata_upload_info(latest_uploaded, version_uploaded, icon_uploaded, doc_version_uploaded, doc_inapp_version_uploaded, doc_latest_uploaded, doc_inapp_latest_uploaded, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
         commands.upload, [metadata_file_path, "my-bucket"]
@@ -93,7 +102,27 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
 
     if icon_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The icon file {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+            [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+        )
+    
+    if doc_version_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")]
+        )
+
+    if doc_inapp_version_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green")]
+        )
+
+    if doc_latest_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", color="green")]
+        )
+
+    if doc_inapp_latest_uploaded:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", color="green")]
         )
 
     if not (latest_uploaded or version_uploaded):
@@ -112,7 +141,7 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files):
     metadata_file_path = valid_metadata_yaml_files[0]
     validator_opts = ValidatorOptions(prerelease_tag=prerelease_tag)
 
-    upload_info = mock_metadata_upload_info(False, True, False, metadata_file_path)
+    upload_info = mock_metadata_upload_info(False, True, False, True, False, False, False, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
         commands.upload, [metadata_file_path, bucket, "--prerelease", prerelease_tag]
