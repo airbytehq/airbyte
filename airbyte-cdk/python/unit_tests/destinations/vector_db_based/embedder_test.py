@@ -32,7 +32,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
         (OpenAIEmbedder, OpenAIEmbeddingConfigModel, {"mode": "openai", "openai_key": "abc"}, OPEN_AI_VECTOR_SIZE),
         (CohereEmbedder, CohereEmbeddingConfigModel, {"mode": "cohere", "cohere_key": "abc"}, COHERE_VECTOR_SIZE),
         (FakeEmbedder, FakeEmbeddingConfigModel, {"mode": "fake"}, OPEN_AI_VECTOR_SIZE),
-        (AzureOpenAIEmbedder, AzureOpenAIEmbeddingConfigModel, {"mode": "azure_openai", "openai_key": "abc", "api_base": "https://my-resource.openai.azure.com", "deployment": "my-deployment" }, OPEN_AI_VECTOR_SIZE),
+        (AzureOpenAIEmbedder, AzureOpenAIEmbeddingConfigModel, {"mode": "azure_openai", "openai_key": "abc", "api_base": "https://my-resource.openai.azure.com", "deployment": "my-deployment"}, OPEN_AI_VECTOR_SIZE),
     )
 )
 def test_embedder(embedder_class, config_model, config_data, dimensions):
