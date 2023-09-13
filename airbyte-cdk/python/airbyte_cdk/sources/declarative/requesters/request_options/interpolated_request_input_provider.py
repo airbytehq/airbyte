@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -31,7 +31,11 @@ class InterpolatedRequestInputProvider:
             self._interpolator = InterpolatedMapping(self._request_inputs, parameters=parameters)
 
     def eval_request_inputs(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Mapping[str, Any] = None,
+        valid_types: List[Type[Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Returns the request inputs to set on an outgoing HTTP request
@@ -42,7 +46,7 @@ class InterpolatedRequestInputProvider:
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        interpolated_value = self._interpolator.eval(self.config, **kwargs)
+        interpolated_value = self._interpolator.eval(self.config, valid_types=valid_types, **kwargs)
 
         if isinstance(interpolated_value, dict):
             non_null_tokens = {k: v for k, v in interpolated_value.items() if v is not None}

@@ -3,7 +3,8 @@
 #
 
 import ast
-from typing import Optional
+import json
+from typing import Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
@@ -58,7 +59,14 @@ class JinjaInterpolation(Interpolation):
         for builtin in self.RESTRICTED_BUILTIN_FUNCTIONS:
             self._environment.globals.pop(builtin, None)
 
-    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
+    def eval(
+        self,
+        input_str: str,
+        config: Config,
+        default: Optional[str] = None,
+        valid_types: Optional[Tuple[Type]] = None,
+        **additional_parameters,
+    ):
         context = {"config": config, **additional_parameters}
 
         for alias, equivalent in self.ALIASES.items():
@@ -74,20 +82,29 @@ class JinjaInterpolation(Interpolation):
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    return self._literal_eval(result)
+                    return self._literal_eval(result, valid_types)
             else:
                 # If input is not a string, return it as is
                 raise Exception(f"Expected a string. got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._literal_eval(self._eval(default, context))
+        return self._literal_eval(self._eval(default, context), valid_types)
 
-    def _literal_eval(self, result):
+    def _literal_eval(self, result, valid_types: Optional[Tuple[Type]]):
         try:
-            return ast.literal_eval(result)
+            evaluated = ast.literal_eval(result)
         except (ValueError, SyntaxError):
             return result
+        if valid_types and isinstance(evaluated, tuple(valid_types)):
+            return evaluated
+        elif valid_types and isinstance(evaluated, dict):
+            # try to turn the evaluated object into a json-deserializable string
+            try:
+                return json.dumps(evaluated, separators=(",", ":"))
+            except TypeError:
+                return result
+        return result
 
     def _eval(self, s: str, context):
         try:
