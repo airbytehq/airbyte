@@ -1,15 +1,39 @@
-The LINKEDIN_ADS_TEST Snowflake Native Application allows you to sync records from LinkedIn Ads to Snowflake all within Snowflake.
+The Airbyte connector for LinkedIn Ads is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a database of your choice within Snowflake.
+
+> **Info**  
+> The LinkedIn Ads Connector is in _private preview_ and is subject to further development that may affect setup and configuration of the application.
 
 # Getting started
 
-## Onboarding steps  
-Even though you can request that app in the Snowflake Marketplace, this will not grant you access as it is in private preview. 
-If you have been granted access, you should be able to add the application to your workspace by clicking on `GET` in the `Apps` section.
+## Prerequisite
+A LinkedIn Ads account with permission to access data from accounts you want to sync.
+
+## Installing the App
+
+> **Warning**  
+> Do not refresh the Apps page while the application is being installed. This may cause installation to fail.
+
+1. Log into your Snowflake account.
+2. On the left sidebar, click Marketplace.
+3. Search for `Linkedin Ads Connector` by Airbyte or navigate to https://app.snowflake.com/marketplace/listing/GZTYZ9BCRSJ/airbyte-linkedin-ads-connector-by-airbyte
+4. Click `Request`. This will send a request that we will manually service as soon as we can.
+5. On the left sidebar, click `Apps.
+6. Under the `Recently Shared with You` section, you should see the `Linkedin Ads Connector by Airbyte`. Click `Get`.
+7. Expand `Options`.
+    1. You can rename the application or leave the default. This is how you will reference the application from a worksheet
+    2. Specify the warehouse that the application will be installed to.
+8. Click `Get`.
+9. Wait for the application to install. Once complete, the pop-up window should automatically close.
+
+You should now see the application under `Installed Apps`. You may need to refresh the page.
 
 ## LinkedIn Account
 In order for the Snowflake Native App to query LinkedIn, you will need an account with the right permissions. Please follow [the LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
 
 ## Snowflake Native App Authorizations
+> **Note**  
+> All the queries below use `LINKEDIN_ADS_TEST` but if you have renamed your application, you will have to use this name as a reference.
+
 1. Create the database where the app will access the authorization. This database can be different from the database where the sync will output the records.
 ```
 CREATE DATABASE <database>;
@@ -72,3 +96,14 @@ Once you have access to the app, select `New Connection` and fill the fields as 
 
 ## Run a sync
 Once a connection is configured, go in `Connections List` and click on `Sync Now` for the connection you want to sync. Under the hood, this simply calls the procedure `call LINKEDIN_ADS_TEST.APP.SYNC(<connection ID>);`. Once the sync is done, you should be able to validate that the records are in `<database>.<schema>`
+
+### Supported Streams
+
+As of now, all supported streams are full refresh as incremental syncs are not supported. Here are the list of streams supported:
+* Accounts
+* Account Users
+* Ad Analytics by Campaign
+* Ad Analytics by Creative
+* Campaigns
+* Campaign Groups
+* Creatives
