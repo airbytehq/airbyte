@@ -53,12 +53,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
+import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.BsonTimestamp;
 import org.bson.BsonValue;
@@ -80,6 +82,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String OBJECT_TEST_FIELD = "object_test";
   private static final String TEST_FIELD = "test";
   private static final String TEST_ARRAY_FIELD = "test_array";
+  private static final ObjectId OBJECT_ID1 = new ObjectId("64c0029d95ad260d69ef28a0");
+  private static final ObjectId OBJECT_ID2 = new ObjectId("64c0029d95ad260d69ef28a1");
+  private static final ObjectId OBJECT_ID3 = new ObjectId("64c0029d95ad260d69ef28a2");
 
   private JsonNode config;
   private String collectionName;
@@ -124,16 +129,16 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         new Document("testObject", new Document(NAME_FIELD, "subName").append("testField1", "testField1").append(INT_TEST_FIELD, 10)
             .append("thirdLevelDocument", new Document("data", "someData").append("intData", 1)));
 
-    final var doc1 = new Document(DOCUMENT_ID_FIELD, new ObjectId("64c0029d95ad260d69ef28a0"))
+    final var doc1 = new Document(DOCUMENT_ID_FIELD, OBJECT_ID1)
         .append(ID_FIELD, "0001").append(NAME_FIELD, "Test")
         .append(TEST_FIELD, 10).append(TEST_ARRAY_FIELD, new BsonArray(List.of(new BsonString("test"), new BsonString("mongo"))))
         .append(DOUBLE_TEST_FIELD, 100.12).append(INT_TEST_FIELD, 100).append(OBJECT_TEST_FIELD, objectDocument);
 
-    final var doc2 = new Document(DOCUMENT_ID_FIELD, new ObjectId("64c0029d95ad260d69ef28a1"))
+    final var doc2 = new Document(DOCUMENT_ID_FIELD, OBJECT_ID2)
         .append(ID_FIELD, "0002").append(NAME_FIELD, "Mongo").append(TEST_FIELD, "test_value").append(INT_TEST_FIELD, 201)
         .append(OBJECT_TEST_FIELD, objectDocument);
 
-    final var doc3 = new Document(DOCUMENT_ID_FIELD, new ObjectId("64c0029d95ad260d69ef28a2"))
+    final var doc3 = new Document(DOCUMENT_ID_FIELD, OBJECT_ID3)
         .append(ID_FIELD, "0003").append(NAME_FIELD, "Source").append(TEST_FIELD, null)
         .append(DOUBLE_TEST_FIELD, 212.11).append(INT_TEST_FIELD, 302).append(OBJECT_TEST_FIELD, objectDocument);
 
@@ -324,6 +329,10 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     assertEquals(recordCount, recordMessages.size());
     assertEquals(recordCount + 1, stateMessages.size());
+
+    validateCdcEventRecordData(recordMessages.get(0), new BsonObjectId(OBJECT_ID1), false);
+    validateCdcEventRecordData(recordMessages.get(1), new BsonObjectId(OBJECT_ID2), false);
+    validateCdcEventRecordData(recordMessages.get(2), new BsonObjectId(OBJECT_ID3), false);
 
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     validateStateMessages(stateMessages);
