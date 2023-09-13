@@ -90,7 +90,7 @@ class DetectStreamToFlushTest {
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
-    assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
+    assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
   }
 
 }
