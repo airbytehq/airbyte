@@ -25,17 +25,23 @@ version = props.getProperty('version')
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
 dependencies {
+    // First party main dependencies
     implementation project(':airbyte-api')
-    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
-
-    implementation libs.airbyte.protocol
+    implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-config-oss:init-oss')
-    implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
 
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation libs.airbyte.protocol
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+
+    // First party test dependencies
     testImplementation project(':airbyte-test-utils')
+    
+    // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
 
@@ -46,8 +52,6 @@ dependencies {
     implementation libs.jooq
     testImplementation libs.junit.jupiter.engine
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
-    implementation 'com.azure:azure-storage-blob:12.12.0'
-    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
     implementation "io.aesy:datasize:1.0.0"
     implementation libs.apache.commons
     implementation libs.apache.commons.lang
@@ -55,8 +59,15 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.apache.commons:commons-csv:1.4'
 
-    // testImplementation libs.junit.jupiter.api
+    // Optional dependencies
+    // TODO: Change these to 'compileOnly' or 'testCompileOnly'
+    implementation 'com.azure:azure-storage-blob:12.12.0'
+    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+    implementation libs.postgresql
+    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+
+    // testImplementation libs.junit.jupiter.api
     implementation libs.hikaricp
     implementation libs.bundles.debezium.bundle
 
@@ -85,13 +96,7 @@ dependencies {
     implementation ('org.apache.hadoop:hadoop-common:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
 
-    implementation libs.postgresql
-    testImplementation libs.postgresql
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-
     testImplementation libs.junit.jupiter.system.stubs
-
 }
 
 publishing {
