@@ -490,7 +490,7 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
                     "apk add fuse-overlayfs",
                     # Update daemon config with storage driver.
                     "mkdir /etc/docker",
-                    "(echo {\\\"storage-driver\\\": \\\"fuse-overlayfs\\\"} > /etc/docker/daemon.json)",
+                    '(echo {\\"storage-driver\\": \\"fuse-overlayfs\\"} > /etc/docker/daemon.json)',
                 ]
             )
         )
@@ -499,7 +499,9 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         # Mount the docker cache volumes.
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
         # Run the docker daemon and bind it to the exposed TCP port.
-        .with_exec(["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True)
+        .with_exec(
+            ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        )
     )
 
 

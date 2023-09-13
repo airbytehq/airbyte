@@ -92,7 +92,8 @@ async def run_connectors_pipelines(
         async with anyio.create_task_group() as tg_main:
             tg_main.start_soon(dockerd_service.sync)
             await (  # Wait for the docker service to be ready
-                dagger_client.container().from_(DOCKER_CLI_IMAGE)
+                dagger_client.container()
+                .from_(DOCKER_CLI_IMAGE)
                 .with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
                 .with_service_binding(DOCKER_HOST_NAME, dockerd_service)
                 .with_exec(["docker", "info"])
