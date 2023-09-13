@@ -15,15 +15,17 @@ install.all: ## Install using poetry using all extras
 # ---------------------------------------------------------------------------- #
 
 
-test.unit: install.all ## Run unit tests
+test.unit: ## Run unit tests
 	@poetry run pytest unit_tests
 
-test.integration.local: install.all ## Run local integration tests
+test.integration.local: ## Run local integration tests
 	@poetry run pytest integration_tests
 
 test.all: ## Run both unit and local integration tests
 	@poetry run pytest
 
-test.integration.general: install.all ## Run integration tests
+test.integration.general: ## Run integration tests
 	@poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=.
 
+test.clean_containers: ## Clean up stray containers used for integration tests left by vscode. See <https://github.com/microsoft/vscode-python/issues/7055>
+	docker container rm -f $$(docker ps --filter name=^pytest.*-mysftp.*$$ -q)
