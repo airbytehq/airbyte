@@ -252,7 +252,6 @@ class Connector:
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
-            return ConnectorLanguage.PYTHON
         try:
             with open(self.code_directory / "Dockerfile") as dockerfile:
                 if "FROM airbyte/integration-base-java" in dockerfile.read():
