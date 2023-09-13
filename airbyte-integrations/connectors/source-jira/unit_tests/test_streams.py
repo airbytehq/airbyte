@@ -724,7 +724,7 @@ def test_issue_comments_stream(config, mock_projects_responses, mock_issues_resp
     records = [r for r in
                stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -865,7 +865,7 @@ def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -881,7 +881,7 @@ def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueWatchers(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -898,7 +898,7 @@ def test_issue_votes_stream(config, mock_projects_responses, mock_issues_respons
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -915,7 +915,7 @@ def test_issue_remote_links_stream(config, mock_projects_responses, mock_issues_
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 2
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
