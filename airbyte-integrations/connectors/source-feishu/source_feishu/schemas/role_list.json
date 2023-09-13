@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "app_token": {
+      "type": ["null", "string"]
+    },
+    "role_id": {
+      "type": ["null", "string"]
+    },
+    "role_name": {
+      "type": ["null", "string"]
+    },
+    "table_roles": {
+      "type": ["null", "array"]
+    },
+    "block_roles": {
+      "type": ["null", "array"]
+    }
+  }
+}
