@@ -196,20 +196,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
    * like {@code SELECT TRY_CAST((get("_airbyte_data", '$' + '{foo}')::text) as INTEGER) FROM ...}.
    */
   private String extractAndCastInsideScript(final ColumnId column, final AirbyteType airbyteType) {
-    final String[] parts = column.originalName().split("\\$\\{");
+    final String[] parts = column.originalName().split("\\$\\{", -1);
 
     final String hackReplacement = "$' || '{";
     String escapedAndQuotedColumnName = Arrays.stream(parts)
         .map(SnowflakeSqlGenerator::escapeSingleQuotedString)
         .collect(joining(hackReplacement));
-    // string.split doesn't include the leading/trailing empty string if the string starts/ends with
-    // the delimiter, so we need to handle this manually.
-    if (column.originalName().startsWith("${")) {
-      escapedAndQuotedColumnName = hackReplacement + escapedAndQuotedColumnName;
-    }
-    if (column.originalName().endsWith("${")) {
-      escapedAndQuotedColumnName = escapedAndQuotedColumnName + hackReplacement;
-    }
     escapedAndQuotedColumnName = "'" + escapedAndQuotedColumnName + "'";
     final String extract = "get(\"_airbyte_data\", " + escapedAndQuotedColumnName + ")";
     return cast(extract, airbyteType);
