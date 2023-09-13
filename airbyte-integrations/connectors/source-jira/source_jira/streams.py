@@ -343,7 +343,7 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = False  # disable caching due to OOM errors in kubernetes
+    use_cache = True
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
@@ -407,7 +407,9 @@ class Issues(IncrementalJiraStream):
             # we should skip the slice with wrong permissions on project level
             errors = response.json().get("errorMessages")
             self.logger.error(
-                f"Stream `{self.name}`. An error occurred, details: {errors}." f"Check permissions for this project. Skipping for now."
+                f"Stream `{self.name}`. An error occurred, details: {errors}."
+                f"Check permissions for this project. Skipping for now. "
+                f"The user doesn't have permission to the project. Please grant the user to the project."
             )
             setattr(self, "raise_on_http_errors", False)
             return False
@@ -1134,6 +1136,29 @@ class Sprints(JiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
+    def get_user_message_from_error_message(self, errors: List[str]) -> str:
+        for error_message in errors:
+            if "The board does not support sprints" in error_message:
+                return (
+                    "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                    "does it have sprints enabled under project settings? If it's a company-managed one,"
+                    " check that it has at least one Scrum board associated with it."
+                )
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            errors = response.json().get("errorMessages")
+            message = self.get_user_message_from_error_message(errors)
+            if message:
+                self.logger.error(
+                    f"Stream `{self.name}`. An error occurred, details: {errors}."
+                    f"Skipping for now. {self.get_user_message_from_error_message(errors)}"
+                )
+                setattr(self, "raise_on_http_errors", False)
+                return False
+        else:
+            return super().should_retry(response)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"board/{stream_slice['board_id']}/sprint"
