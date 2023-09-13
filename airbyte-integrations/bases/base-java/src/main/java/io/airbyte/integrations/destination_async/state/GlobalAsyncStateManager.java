@@ -146,11 +146,12 @@ public class GlobalAsyncStateManager {
   public List<PartialAirbyteMessage> flushStates() {
     final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
-    for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
-      // Remove all states with 0 counters.
-      // Per-stream synchronized is required to make sure the state (at the head of the queue)
-      // logic is applied to is the state actually removed.
-      synchronized (this) {
+    synchronized (this) {
+      for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
+        // Remove all states with 0 counters.
+        // Per-stream synchronized is required to make sure the state (at the head of the queue)
+        // logic is applied to is the state actually removed.
+
         final LinkedList<Long> stateIdQueue = entry.getValue();
         while (true) {
           final Long oldestState = stateIdQueue.peek();
