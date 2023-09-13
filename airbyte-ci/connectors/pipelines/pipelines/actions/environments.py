@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -473,17 +473,28 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
     return (
         dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
         # We set this env var because we need to use a non-default zombie reaper setting.
-        # The reason for this is that by default it will want to set its parent process to 1 when reaping.
+        # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
+        # See https://github.com/krallin/tini#subreaping for details.
         .with_env_variable("TINI_SUBREAPER", "")
         # Expose the docker host port.
         .with_exposed_port(2375)
         # Mount the docker cache volumes.
-        .with_mounted_cache("/tmp", dagger_client.cache_volume("shared-tmp"))
+        .with_mounted_cache("/tmp", dagger_client.cache_volume("shared-tmp"), sharing=CacheSharingMode.PRIVATE)
         # Mount /var/lib/docker so docker writes to the host file system, i.e. the dagger engine.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("shared-var-lib-docker"))
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("shared-var-lib-docker"), sharing=CacheSharingMode.PRIVATE)
         # Run the docker daemon and bind it to the exposed TCP port.
-        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        .with_exec(
+            sh_dash_c(
+                [
+                    # We just want /var/lib/docker to be mounted as a volume, never mind the caching. We'd rather it be empty.
+                    "(cd /var/lib/docker; rm -rf -- ..?* .[!.]* *)",
+                    # Start the docker daemon.
+                    "dockerd --log-level=error --host=tcp://0.0.0.0:2375 --tls=false",
+                ]
+            ),
+            insecure_root_capabilities=True,
+        )
     )
 
 

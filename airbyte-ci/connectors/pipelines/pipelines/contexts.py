@@ -42,18 +42,17 @@ class PipelineContext:
 
     DEFAULT_EXCLUDED_FILES = (
         [".git", "airbyte-ci/connectors/pipelines/*"]
-        + glob("**/__pycache__", recursive=True)
-        + glob("**/.DS_Store", recursive=True)
-        + glob("**/.eggs", recursive=True)
-        + glob("**/.gradle", recursive=True)
-        + glob("**/.mypy_cache", recursive=True)
-        + glob("**/.pytest_cache", recursive=True)
-        + glob("**/.venv", recursive=True)
-        + glob("**/.vscode", recursive=True)
-        + glob("**/*.egg-info", recursive=True)
-        + glob("**/airbyte_ci_logs", recursive=True)
         + glob("**/build", recursive=True)
+        + glob("**/.venv", recursive=True)
         + glob("**/secrets", recursive=True)
+        + glob("**/__pycache__", recursive=True)
+        + glob("**/*.egg-info", recursive=True)
+        + glob("**/.vscode", recursive=True)
+        + glob("**/.pytest_cache", recursive=True)
+        + glob("**/.eggs", recursive=True)
+        + glob("**/.mypy_cache", recursive=True)
+        + glob("**/.DS_Store", recursive=True)
+        + glob("**/airbyte_ci_logs", recursive=True)
     )
 
     def __init__(
