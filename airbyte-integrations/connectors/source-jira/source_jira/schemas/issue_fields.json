@@ -173,6 +173,9 @@
           "readOnly": true
         }
       }
+    },
+    "untranslatedName": {
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,
