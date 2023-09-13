@@ -30,6 +30,7 @@ python_connector_base_image: dagger.Container = ALL_BASE_IMAGES_INDEX["airbyte-p
 
 ## How to add a new base image version
 
+0. Please install the repo pre-commit hook: from airbyte repo root run `pre-commit install`. It will make sure that the changelog file is up to date and committed on changes.
 1. `poetry install`
 2. Open the latest version module: e.g `base_images/python/v1.py`.
 3. Declare a new class inheriting from `AirbytePythonConnectorBaseImage` or an other existing version. **The class name must follow the semver pattern `_<major>_<minor>_<patch>(AirbytePythonConnectorBaseImage)`.**
