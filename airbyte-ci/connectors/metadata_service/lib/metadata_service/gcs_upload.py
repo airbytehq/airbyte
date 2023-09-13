@@ -13,7 +13,7 @@ from typing import Optional, Tuple
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
-from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME, METADATA_FOLDER, DOCS_FOLDER_PATH
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME, METADATA_FOLDER, DOCS_FOLDER_PATH, DOC_FILE_NAME, DOC_INAPP_FILE_NAME
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
@@ -30,6 +30,15 @@ class MetadataUploadInfo:
     icon_uploaded: bool
     icon_blob_id: Optional[str]
     metadata_file_path: str
+    doc_version_uploaded: bool
+    doc_version_blob_id: Optional[str]
+    doc_inapp_version_uploaded: bool
+    doc_inapp_version_blob_id: Optional[str]
+    doc_latest_uploaded: bool
+    doc_latest_blob_id: Optional[str]
+    doc_inapp_latest_uploaded: bool
+    doc_inapp_latest_blob_id: Optional[str]
+
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -55,6 +64,16 @@ def get_icon_remote_file_path(dockerRepository: str, version: str) -> str:
     """
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{ICON_FILE_NAME}"
 
+def get_doc_remote_file_path(dockerRepository: str, version: str, inapp: bool) -> str:
+    """Get the path to the icon file for a specific version of a connector.
+
+    Args:
+        dockerRepository (str): Name of the connector docker image.
+        version (str): Version of the connector.
+    Returns:
+        str: Path to the icon file.
+    """
+    return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{DOC_INAPP_FILE_NAME if inapp else DOC_FILE_NAME}"
 
 def compute_gcs_md5(file_name: str) -> str:
     hash_md5 = hashlib.md5()
@@ -119,17 +138,28 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
         return False, f"No Icon found at {local_icon_path}"
     return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
-def _docs_upload(metadata: ConnectorMetadataDefinitionV0, bucker: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
-    [connector_type, connector_name] = metadata_file_path.parent.name.split('-')
+def _docs_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path, latest: bool) -> Tuple[bool, str]:
+    [connector_type, connector_name] = metadata_file_path.parent.name.split('-', 1)
     docs_folder_path = metadata_file_path.parents[3] / DOCS_FOLDER_PATH / f"{connector_type}s"
+    
     local_doc_path = docs_folder_path / f"{connector_name}.md"
-    local_inapp_doc_path = docs_folder_path / f"{connector_name}_inapp.md"
-    print("local_doc_path:", local_doc_path)
-    print("local_inapp_doc_path:", local_inapp_doc_path)
-    if not local_doc_path.exists():
-        print("No Doc found at ", local_doc_path)
-        return False, f"No Doc found at {local_doc_path}"
-    return True, "blobId"
+    local_inapp_doc_path = docs_folder_path / f"{connector_name}.inapp.md"
+
+    remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, False)
+    remote_inapp_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, True)
+    
+    if local_doc_path.exists():
+        doc_uploaded, doc_blob_id = upload_file_if_changed(local_doc_path, bucket, remote_doc_path)
+    else:
+        doc_uploaded, doc_blob_id = False, f"No doc found at {local_doc_path}"
+
+    if local_inapp_doc_path.exists():
+        doc_inapp_uploaded, doc_inapp_blob_id = upload_file_if_changed(local_inapp_doc_path, bucket, remote_inapp_doc_path)
+    else:
+        doc_inapp_uploaded, doc_inapp_blob_id = False, f"No inapp doc found at {local_inapp_doc_path}"
+    
+    return doc_uploaded, doc_blob_id, doc_inapp_uploaded, doc_inapp_blob_id
+
 
 def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
     metadata, error = validate_and_load(metadata_file_path, [], validator_opts)
@@ -184,13 +214,15 @@ def upload_metadata_to_gcs(
     bucket = storage_client.bucket(bucket_name)
 
     icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path)
-    docs_uploaded, doc_blob_id = _docs_upload(metadata, bucket, metadata_file_path)
+    doc_version_uploaded, doc_version_blob_id, doc_inapp_version_uploaded, doc_inapp_version_blob_id = _docs_upload(metadata, bucket, metadata_file_path, False)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
     if not validator_opts.prerelease_tag:
         latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
+        doc_latest_uploaded, doc_latest_blob_id, doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _docs_upload(metadata, bucket, metadata_file_path, True)
     else:
         latest_uploaded, latest_blob_id = False, None
+        doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
 
     return MetadataUploadInfo(
         uploaded=version_uploaded or latest_uploaded,
@@ -201,4 +233,12 @@ def upload_metadata_to_gcs(
         icon_blob_id=icon_blob_id,
         icon_uploaded=icon_uploaded,
         metadata_file_path=str(metadata_file_path),
+        doc_version_uploaded=doc_version_uploaded,
+        doc_version_blob_id=doc_version_blob_id,
+        doc_inapp_version_uploaded=doc_inapp_version_uploaded,
+        doc_inapp_version_blob_id=doc_inapp_version_blob_id,
+        doc_latest_uploaded=doc_latest_uploaded,
+        doc_latest_blob_id=doc_latest_blob_id,
+        doc_inapp_latest_uploaded=doc_inapp_latest_uploaded,
+        doc_inapp_latest_blob_id=doc_inapp_latest_blob_id,
     )

@@ -24,7 +24,28 @@ def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
         )
     if metadata_upload_info.icon_uploaded:
         click.secho(
-            f"The icon file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.", color="green"
+            f"The icon file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.",
+            color="green"
+        )
+    if metadata_upload_info.doc_version_uploaded:
+        click.secho(
+            f"The doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_version_blob_id}.",
+            color="green"
+        )
+    if metadata_upload_info.doc_latest_uploaded:
+        click.secho(
+            f"The doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_latest_blob_id}.",
+            color="green"
+        )
+    if metadata_upload_info.doc_inapp_version_uploaded:
+        click.secho(
+            f"The inapp doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_inapp_version_blob_id}.",
+            color="green"
+        )
+    if metadata_upload_info.doc_inapp_latest_uploaded:
+        click.secho(
+            f"The inapp doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_inapp_latest_blob_id}.",
+            color="green"
         )
 
 
