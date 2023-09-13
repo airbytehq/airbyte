@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: database
   connectorType: source
   definitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
@@ -11,8 +14,6 @@ data:
   name: MongoDb
   registries:
     cloud:
-      dockerImageTag: 0.2.5
-      dockerRepository: airbyte/source-mongodb-strict-encrypt
       enabled: true
     oss:
       enabled: true
