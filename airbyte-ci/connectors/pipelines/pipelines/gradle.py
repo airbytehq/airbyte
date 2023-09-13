@@ -130,7 +130,6 @@ class GradleTask(Step, ABC):
             # Hence, why we synchronize the writes by setting the `sharing` parameter to LOCKED.
             .with_mounted_cache("/root/gradle-cache", self.connector_java_build_cache, sharing=CacheSharingMode.LOCKED)
             # Mount the parts of the repo which interest us in /airbyte.
-            .with_exec(["mkdir", "/airbyte"])
             .with_workdir("/airbyte")
             .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())

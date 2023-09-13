@@ -31,7 +31,7 @@ class BuildConnectorDistributionTar(GradleTask):
             return StepResult(
                 self,
                 StepStatus.SUCCESS,
-                stderr="The distribution tar file for the current java connector was built.",
+                stdout="The distribution tar file for the current java connector was built.",
                 output_artifact=with_built_tar.file(tar_files[0]),
             )
         elif len(tar_files) == 0:
