@@ -12,6 +12,7 @@ application {
 
 dependencies {
     implementation libs.airbyte.protocol
+    implementation project(':airbyte-integrations:connectors:destination-clickhouse')
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 

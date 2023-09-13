@@ -29,6 +29,8 @@ dependencies {
     testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
     testImplementation libs.junit.jupiter.system.stubs
+
+    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 }
 
 jsonSchema2Pojo {

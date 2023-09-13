@@ -14,8 +14,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CatalogParser {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CatalogParser.class);
 
   private final SqlGenerator<?> sqlGenerator;
   private final String rawNamespace;
@@ -41,6 +45,9 @@ public class CatalogParser {
           || streamConfigs.stream().anyMatch(s -> s.id().rawTableId("").equals(originalStreamConfig.id().rawTableId("")))) {
         final String originalNamespace = stream.getStream().getNamespace();
         final String originalName = stream.getStream().getName();
+
+        LOGGER.info("Detected table name collision for {}.{}", originalNamespace, originalName);
+
         // ... this logic is ported from legacy normalization, and maybe should change?
         // We're taking a hash of the quoted namespace and the unquoted stream name
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);
@@ -96,6 +103,11 @@ public class CatalogParser {
         // None of the existing columns have the same name. We can add this new column as-is.
         columnId = originalColumnId;
       } else {
+        LOGGER.info(
+            "Detected column name collision for {}.{}.{}",
+            stream.getStream().getNamespace(),
+            stream.getStream().getName(),
+            entry.getKey());
         // One of the existing columns has the same name. We need to handle this collision.
         // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
         int i = 1;

@@ -17,7 +17,3 @@ dependencies {
 
     integrationTestJavaImplementation libs.connectors.testcontainers.tidb
 }
-
-tasks.named('airbyteDocker').configure {
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDockerTiDB')
-}

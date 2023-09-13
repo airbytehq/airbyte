@@ -19,8 +19,5 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.connectors.testcontainers.mssqlserver
-}
 
-tasks.named('airbyteDocker').configure {
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDockerMSSql')
 }

@@ -61,37 +61,54 @@ cd ../../
 At this point you can run `airbyte-ci` commands from the root of the repository.
 
 ## Commands reference
-- [`airbyte-ci` command group](#airbyte-ci)
-  * [Options](#options)
-- [`connectors` command subgroup](#connectors-command-subgroup)
-  * [Options](#options-1)
-- [`connectors list` command](#connectors-list-command)
-- [`connectors format` command](#connectors-format-command)
-- [`connectors test` command](#connectors-test-command)
-  * [Examples](#examples-)
-  * [What it runs](#what-it-runs-)
-- [`connectors build` command](#connectors-build-command)
-  * [What it runs](#what-it-runs)
-- [`connectors publish` command](#connectors-publish-command)
-- [Examples](#examples)
-- [Options](#options-2)
-  * [What it runs](#what-it-runs-1)
-- [`metadata` command subgroup](#metadata-command-subgroup)
-- [`metadata validate` command](#metadata-validate-command)
-  * [Example](#example)
-  * [Options](#options-3)
-- [`metadata upload` command](#metadata-upload-command)
-  * [Example](#example-1)
-  * [Options](#options-4)
-- [`metadata deploy orchestrator` command](#metadata-deploy-orchestrator-command)
-  * [Example](#example-2)
-  * [What it runs](#what-it-runs--1)
-- [`metadata test lib` command](#metadata-test-lib-command)
-  * [Example](#example-3)
-- [`metadata test orchestrator` command](#metadata-test-orchestrator-command)
-  * [Example](#example-4)
-- [`tests` command](#test-command)
-  * [Example](#example-5)
+- [Airbyte CI CLI](#airbyte-ci-cli)
+  - [What is it?](#what-is-it)
+  - [How to install](#how-to-install)
+    - [Requirements](#requirements)
+  - [Requirements](#requirements-1)
+  - [Install or Update](#install-or-update)
+  - [Installation for development](#installation-for-development)
+      - [Pre-requisites](#pre-requisites)
+      - [Installation](#installation)
+  - [Commands reference](#commands-reference)
+    - [`airbyte-ci` command group](#airbyte-ci-command-group)
+      - [Options](#options)
+    - [`connectors` command subgroup](#connectors-command-subgroup)
+      - [Options](#options-1)
+    - [`connectors list` command](#connectors-list-command)
+      - [Examples](#examples)
+    - [`connectors format` command](#connectors-format-command)
+      - [Examples](#examples-1)
+    - [`connectors test` command](#connectors-test-command)
+      - [Examples](#examples-2)
+      - [What it runs](#what-it-runs)
+      - [Options](#options-2)
+    - [`connectors build` command](#connectors-build-command)
+      - [What it runs](#what-it-runs-1)
+    - [`connectors publish` command](#connectors-publish-command)
+    - [Examples](#examples-3)
+    - [Options](#options-3)
+      - [What it runs](#what-it-runs-2)
+    - [`metadata` command subgroup](#metadata-command-subgroup)
+    - [`metadata validate` command](#metadata-validate-command)
+      - [Example](#example)
+      - [Options](#options-4)
+    - [`metadata upload` command](#metadata-upload-command)
+      - [Example](#example-1)
+      - [Options](#options-5)
+    - [`metadata deploy orchestrator` command](#metadata-deploy-orchestrator-command)
+      - [Example](#example-2)
+      - [What it runs](#what-it-runs-3)
+    - [`metadata test lib` command](#metadata-test-lib-command)
+      - [Example](#example-3)
+    - [`metadata test orchestrator` command](#metadata-test-orchestrator-command)
+      - [Example](#example-4)
+    - [`tests` command](#tests-command)
+      - [Arguments](#arguments)
+      - [Options](#options-6)
+      - [Example](#example-5)
+  - [Changelog](#changelog)
+  - [More info](#more-info)
 ### <a id="airbyte-ci-command-group"></a>`airbyte-ci` command group
 **The main command group option has sensible defaults. In local use cases you're not likely to pass options to the `airbyte-ci` command group.**
 
@@ -122,6 +139,7 @@ Available commands:
 | `--use-remote-secrets`                                         | False    | True                             | If True, connectors configuration will be pulled from Google Secret Manager. Requires the GCP_GSM_CREDENTIALS environment variable to be set with a service account with permission to read GSM secrets. If False the connector configuration will be read from the local connector `secrets` folder. |
 | `--name`                                                       | True     |                                  | Select a specific connector for which the pipeline will run. Can be used multiple time to select multiple connectors. The expected name is the connector technical name. e.g. `source-pokeapi`                                                                                                        |
 | `--support-level`                                              | True     |                                  | Select connectors with a specific support level: `community`, `certified`.  Can be used multiple times to select multiple support levels.                                                                                                                                                             |
+| `--metadata-query`                                              | False     |                                | Filter connectors by the `data` field in the metadata file using a [simpleeval](https://github.com/danthedeckie/simpleeval) query. e.g. 'data.ab_internal.ql == 200' |
 | `--language`                                                   | True     |                                  | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
 | `--modified`                                                   | False    | False                            | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`                                                | False    | 5                                | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
@@ -405,6 +423,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add `--metadata-query` option to connectors command                                                       |
 | 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314) | Stop patching gradle files to make them work with airbyte-ci.                                             |
 | 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279) | Fix correctness issues in layer caching by making atomic execution groupings                              |
 | 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252) | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                                 |
