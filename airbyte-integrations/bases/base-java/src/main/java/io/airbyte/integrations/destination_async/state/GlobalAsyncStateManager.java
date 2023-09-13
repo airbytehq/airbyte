@@ -169,6 +169,7 @@ public class GlobalAsyncStateManager {
           if (noPrevRecs || allRecsEmitted) {
             var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
             output.add(stateIdToState.get(oldestState).getLeft());
+            stateIdToState.remove(oldestState);
             bytesFlushed += stateIdToState.get(oldestState).getRight();
           } else {
             break;
