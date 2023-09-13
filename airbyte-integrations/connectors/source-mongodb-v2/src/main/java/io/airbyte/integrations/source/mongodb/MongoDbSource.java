@@ -62,27 +62,29 @@ public class MongoDbSource extends BaseConnector implements Source {
          */
         if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
           return new AirbyteConnectionStatus()
-                  .withMessage("Target MongoDB database does not contain any authorized collections.")
-                  .withStatus(AirbyteConnectionStatus.Status.FAILED);
+              .withMessage("Target MongoDB database does not contain any authorized collections.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
         if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
           LOGGER.error("Target MongoDB instance is not a replica set cluster.");
           return new AirbyteConnectionStatus()
-                  .withMessage("Target MongoDB instance is not a replica set cluster.")
-                  .withStatus(AirbyteConnectionStatus.Status.FAILED);
+              .withMessage("Target MongoDB instance is not a replica set cluster.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
       } catch (final Exception e) {
         LOGGER.error("Unable to perform source check operation.", e);
         return new AirbyteConnectionStatus()
-                .withMessage(e.getMessage())
-                .withStatus(AirbyteConnectionStatus.Status.FAILED);
+            .withMessage(e.getMessage())
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
       }
 
       LOGGER.info("The source passed the check operation test!");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } else {
-      LOGGER.error("Unable to perform connection check.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
-      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("Database connection configuration missing.");
+      LOGGER
+          .error("Unable to perform connection check.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Database connection configuration missing.");
     }
   }
 
@@ -96,7 +98,8 @@ public class MongoDbSource extends BaseConnector implements Source {
         return new AirbyteCatalog().withStreams(streams);
       }
     } else {
-      LOGGER.error("Unable to perform schema discovery.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
+      LOGGER
+          .error("Unable to perform schema discovery.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
       throw new IllegalArgumentException("Database connection configuration missing.");
     }
   }
@@ -116,7 +119,8 @@ public class MongoDbSource extends BaseConnector implements Source {
       final MongoClient mongoClient = createMongoClient(databaseConfig);
 
       try {
-        final var iteratorList = cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog, stateManager, emittedAt, databaseConfig);
+        final var iteratorList =
+            cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog, stateManager, emittedAt, databaseConfig);
         return AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace);
       } catch (final Exception e) {
         mongoClient.close();

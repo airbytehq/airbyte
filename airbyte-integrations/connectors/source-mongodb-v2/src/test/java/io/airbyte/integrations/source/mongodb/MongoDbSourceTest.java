@@ -38,14 +38,13 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -207,8 +206,7 @@ class MongoDbSourceTest {
   void testDiscoverOperationWithMissingConfiguration() throws IOException {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
     final List<Map<String, Object>> schemaDiscoveryJsonResponses =
-            Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {
-            });
+        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
     final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
     final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoCollection mongoCollection = mock(MongoCollection.class);

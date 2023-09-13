@@ -38,14 +38,15 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
    1. Insert below json to the file with your configuration
        ```
        {
+            "installation_type": "ATLAS"
             "database": "database_name",
             "username": "username",
             "password": "password",
             "connection_string": "mongodb+srv://cluster0.abcd1.mongodb.net/",
             "auth_source": "auth_database",
-            "installation_type": "ATLAS"
        }
       ```
+      where `installation_type` is one of `ATLAS` or `SELF_HOSTED` depending on the location of the target cluster.
 
 ## Airbyte Employee
 
