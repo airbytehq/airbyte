@@ -18,5 +18,6 @@ except BaseImageVersionError as e:
     sys.exit(1)
 
 PYTHON_BASE_IMAGES = python.ALL_BASE_IMAGES
-LATEST_PYTHON_BASE_IMAGE = next(iter(PYTHON_BASE_IMAGES.values()))
-ALL_BASE_IMAGES = {**python.ALL_BASE_IMAGES}  # , **java_bases.ALL_BASE_IMAGES}
+LATEST_PYTHON_BASE_IMAGE = PYTHON_BASE_IMAGES[0]
+ALL_BASE_IMAGES = python.ALL_BASE_IMAGES  # + java_bases.ALL_BASE_IMAGES
+ALL_BASE_IMAGES_INDEX = {base_image.name_with_tag: base_image for base_image in ALL_BASE_IMAGES}
