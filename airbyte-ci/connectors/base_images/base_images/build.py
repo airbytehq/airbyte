@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import os
+import shutil
 import sys
 from itertools import product
 from pathlib import Path
@@ -20,13 +21,15 @@ DOCKERFILE_HEADER = """
 # It is meant for documentation and debugging purposes.
 """
 
+DOCKERFILES_DIRECTORY = Path(consts.PROJECT_DIR / "generated" / "dockerfiles")
 
-def generate_dockerfile(base_image_version: common.AirbyteConnectorBaseImage):
+
+def generate_dockerfile(dockerfile_directory: Path, base_image_version: common.AirbyteConnectorBaseImage):
     """
     Generates the dockerfiles for all the base images.
     """
     dockerfile = hacks.get_container_dockerfile(base_image_version.container)
-    dockerfile_directory = Path(consts.PROJECT_DIR / "generated" / "dockerfiles" / base_image_version.platform)
+    dockerfile_directory = dockerfile_directory / base_image_version.platform
     dockerfile_directory.mkdir(exist_ok=True, parents=True)
     dockerfile_path = Path(dockerfile_directory / f"{base_image_version.name_with_tag}.Dockerfile")
     dockerfile = DOCKERFILE_HEADER + "\n" + dockerfile + "\n"
@@ -92,13 +95,14 @@ async def a_build(current_status: Status) -> bool:
         dagger_config = dagger.Config(log_output=open(dagger_logs_path))
         console.log(f":information_source: Dagger logs will be written to {dagger_logs_path}")
     sanity_check_successes = []
+    shutil.rmtree(DOCKERFILES_DIRECTORY, ignore_errors=True)
     async with dagger.Connection(dagger_config) as dagger_client:
         for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES):
             base_image_version = BaseImageVersion(dagger_client, platform)
             current_status.update(
                 f":whale2: Generating dockerfile for {base_image_version.name_with_tag} for {base_image_version.platform}"
             )
-            generate_dockerfile(base_image_version)
+            generate_dockerfile(DOCKERFILES_DIRECTORY, base_image_version)
             current_status.update(
                 f":mag_right: Running sanity checks on {base_image_version.name_with_tag} for {base_image_version.platform}"
             )
