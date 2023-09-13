@@ -43,7 +43,6 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -73,7 +72,6 @@ import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
@@ -676,7 +674,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
    * which allows us to test that the next sync is able to work fine when provided with a compressed blob in the state.
    */
   @Test
-  @Disabled("Enable when the COMPRESSION_ENABLED parameter in class MysqlCdcStateConstants will be set to true")
   public void testCompressedSchemaHistory() throws Exception {
     createTablesToIncreaseSchemaHitorySize();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
