@@ -519,7 +519,7 @@ def with_bound_docker_host(
     )
 
 
-def bound_docker_host(context: ConnectorContext) -> Container:
+def bound_docker_host(context: ConnectorContext) -> Callable[[Container], Container]:
     def bound_docker_host_inner(container: Container) -> Container:
         return with_bound_docker_host(context, container)
 
