@@ -18,10 +18,13 @@ from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
-    AMAZONCORRETTO_TAG,
+    AMAZONCORRETTO_IMAGE,
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
+    DOCKER_HOST_NAME,
+    DOCKER_HOST_PORT,
+    DOCKER_TMP_VOLUME_NAME,
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
@@ -492,11 +495,11 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
             )
         )
         # Expose the docker host port.
-        .with_exposed_port(2375)
+        .with_exposed_port(DOCKER_HOST_PORT)
         # Mount the docker cache volumes.
-        .with_mounted_cache("/tmp", dagger_client.cache_volume("shared-tmp"), sharing=CacheSharingMode.PRIVATE)
+        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
         # Run the docker daemon and bind it to the exposed TCP port.
-        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        .with_exec(["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
@@ -512,12 +515,10 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = context.dockerd_service
-    docker_hostname = "global-docker-host"
     return (
-        container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
-        .with_service_binding(docker_hostname, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+        container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
+        .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
 
 
@@ -635,7 +636,7 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     return (
         context.dagger_client.container(platform=build_platform)
         # Use a linux+jdk base image with long-term support, such as amazoncorretto.
-        .from_(f"amazoncorretto:{AMAZONCORRETTO_TAG}")
+        .from_(AMAZONCORRETTO_IMAGE)
         # Install a bunch of packages as early as possible.
         .with_exec(
             sh_dash_c(

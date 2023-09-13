@@ -10,7 +10,7 @@ from typing import ClassVar, List, Tuple
 from dagger import CacheSharingMode, CacheVolume, Container, Directory
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult, StepStatus
-from pipelines.consts import AMAZONCORRETTO_TAG
+from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.contexts import PipelineContext
 from pipelines.utils import sh_dash_c
 
@@ -100,7 +100,7 @@ class GradleTask(Step, ABC):
         gradle_container = (
             self.dagger_client.container()
             # Use a linux+jdk base image with long-term support, such as amazoncorretto.
-            .from_(f"amazoncorretto:{AMAZONCORRETTO_TAG}")
+            .from_(AMAZONCORRETTO_IMAGE)
             # Install a bunch of packages as early as possible.
             .with_exec(
                 sh_dash_c(
