@@ -6,6 +6,7 @@ from dagger import Client, Directory, Secret
 from pipelines.actions import environments
 from pipelines.bases import Step, StepResult
 from pipelines.github import AIRBYTE_GITHUB_REPO
+from pipelines.utils import sh_dash_c
 
 
 class GitPushChanges(Step):
@@ -109,7 +110,7 @@ class GitPushEmptyCommit(GitPushChanges):
             .with_mounted_directory("/airbyte", self.airbyte_repo)
             .with_workdir("/airbyte")
             .with_exec(["git", "checkout", self.git_branch])
-            .with_exec(["sh", "-c", "git remote set-url origin $AUTHENTICATED_REPO_URL"])
+            .with_exec(sh_dash_c(["git remote set-url origin $AUTHENTICATED_REPO_URL"]))
             .with_exec(["git", "commit", "--allow-empty", "-m", self.get_commit_message(commit_message, skip_ci)])
             .with_exec(["git", "pull", "--rebase", "origin", self.git_branch])
             .with_exec(["git", "push"])

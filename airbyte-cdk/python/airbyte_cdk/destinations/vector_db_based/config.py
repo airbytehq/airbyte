@@ -63,6 +63,12 @@ class AzureOpenAIEmbeddingConfigModel(BaseModel):
         description="The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
         examples=["https://your-resource-name.openai.azure.com"],
     )
+    deployment: str = Field(
+        ...,
+        title="Deployment",
+        description="The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+        examples=["your-resource-name"],
+    )
 
     class Config:
         title = "Azure OpenAI"
@@ -78,6 +84,22 @@ class FakeEmbeddingConfigModel(BaseModel):
         title = "Fake"
         schema_extra = {
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+        }
+
+
+class FromFieldEmbeddingConfigModel(BaseModel):
+    mode: Literal["from_field"] = Field("from_field", const=True)
+    field_name: str = Field(
+        ..., title="Field name", description="Name of the field in the record that contains the embedding", examples=["embedding", "vector"]
+    )
+    dimensions: int = Field(
+        ..., title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
+    )
+
+    class Config:
+        title = "From Field"
+        schema_extra = {
+            "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
         }
 
 
