@@ -29,13 +29,25 @@ File = Dict[str, Any]
 class SFTPClient:
     _connection = None
 
-    def __init__(self, host, username, password=None, private_key=None, port=None, timeout=REQUEST_TIMEOUT):
+    def __init__(
+        self,
+        host,
+        username,
+        password=None,
+        private_key=None,
+        port=None,
+        timeout=REQUEST_TIMEOUT,
+    ):
         self.host = host
         self.username = username
         self.password = password
         self.port = int(port) or 22
 
-        self.key = paramiko.RSAKey.from_private_key(io.StringIO(private_key)) if private_key else None
+        self.key = (
+            paramiko.RSAKey.from_private_key(io.StringIO(private_key))
+            if private_key
+            else None
+        )
         self.timeout = float(timeout) if timeout else REQUEST_TIMEOUT
 
         if not self.password and not self.key:
@@ -44,11 +56,22 @@ class SFTPClient:
         self._connect()
 
     def handle_backoff(details):
-        logger.warning("SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(**details))
+        logger.warning(
+            "SSH Connection closed unexpectedly. Waiting {wait} seconds and retrying...".format(
+                **details
+            )
+        )
 
     # If connection is snapped during connect flow, retry up to a
     # minute for SSH connection to succeed. 2^6 + 2^5 + ...
-    @backoff.on_exception(backoff.expo, (EOFError), max_tries=6, on_backoff=handle_backoff, jitter=None, factor=2)
+    @backoff.on_exception(
+        backoff.expo,
+        (EOFError),
+        max_tries=6,
+        on_backoff=handle_backoff,
+        jitter=None,
+        factor=2,
+    )
     def _connect(self):
         if self._connection is not None:
             return
@@ -56,7 +79,12 @@ class SFTPClient:
         try:
             self.transport = paramiko.Transport((self.host, self.port))
             self.transport.use_compression(True)
-            self.transport.connect(username=self.username, password=self.password, hostkey=None, pkey=self.key)
+            self.transport.connect(
+                username=self.username,
+                password=self.password,
+                hostkey=None,
+                pkey=self.key,
+            )
             self._connection = paramiko.SFTPClient.from_transport(self.transport)
 
             # get 'socket' to set the timeout
@@ -95,11 +123,12 @@ class SFTPClient:
         return [f for f in files if matcher.search(f["filepath"])]
 
     # backoff for 60 seconds as there is possibility the request will backoff again in 'discover.get_schema'
-    @backoff.on_exception(backoff.constant, (socket.timeout), max_time=60, interval=10, jitter=None)
+    @backoff.on_exception(
+        backoff.constant, (socket.timeout), max_time=60, interval=10, jitter=None
+    )
     def get_files_by_prefix(
         self,
         prefix: str,
-        current_level: int = 0,
         max_level: int = 0,
     ) -> List[File]:
         def is_empty(a):
@@ -116,21 +145,23 @@ class SFTPClient:
         try:
             result = self._connection.listdir_attr(prefix)
         except FileNotFoundError as e:
-            raise Exception("Directory '{}' does not exist".format(prefix)) from e
+            raise RuntimeError("Directory '{}' does not exist".format(prefix)) from e
 
         for file_attr in result:
             # NB: This only looks at the immediate level beneath the prefix directory
             if is_directory(file_attr):
-                if current_level <= max_level:
+                if max_level > 0:
                     files.extend(
                         self.get_files_by_prefix(
                             prefix=prefix + "/" + file_attr.filename,
-                            current_level=current_level + 1,
-                            max_level=max_level,
+                            max_level=max_level - 1,
                         )
                     )
                 else:
-                    logger.info("Skipping directory: %s (max depth exceeded)", file_attr.filename)
+                    logger.info(
+                        "Skipping directory: %s (max depth exceeded)",
+                        file_attr.filename,
+                    )
 
             else:
                 if is_empty(file_attr):
@@ -140,14 +171,17 @@ class SFTPClient:
                 last_modified = file_attr.st_mtime
                 if last_modified is None:
                     logger.warning(
-                        "Cannot read m_time for file %s, defaulting to current epoch time", os.path.join(prefix, file_attr.filename)
+                        "Cannot read m_time for file %s, defaulting to current epoch time",
+                        os.path.join(prefix, file_attr.filename),
                     )
                     last_modified = datetime.utcnow().timestamp()
 
                 files.append(
                     {
                         "filepath": prefix + "/" + file_attr.filename,
-                        "last_modified": datetime.utcfromtimestamp(last_modified).replace(tzinfo=None),
+                        "last_modified": datetime.utcfromtimestamp(
+                            last_modified
+                        ).replace(tzinfo=None),
                     }
                 )
         return files
@@ -159,11 +193,9 @@ class SFTPClient:
         modified_since=None,
         most_recent_only=False,
         max_level=0,
-        current_level=0,
     ) -> List[File]:
         files = self.get_files_by_prefix(
             prefix,
-            current_level=current_level,
             max_level=max_level,
         )
 
@@ -178,19 +210,34 @@ class SFTPClient:
             matching_files = self.get_files_matching_pattern(files, search_pattern)
 
         if matching_files and search_pattern:
-            logger.info('Found %s files in "%s" matching "%s"', len(matching_files), prefix, search_pattern)
+            logger.info(
+                'Found %s files in "%s" matching "%s"',
+                len(matching_files),
+                prefix,
+                search_pattern,
+            )
 
         if not matching_files and search_pattern:
-            logger.warning('Found no files on specified SFTP server at "%s" matching "%s"', prefix, search_pattern)
+            logger.warning(
+                'Found no files on specified SFTP server at "%s" matching "%s"',
+                prefix,
+                search_pattern,
+            )
 
         if modified_since is not None:
-            matching_files = [f for f in matching_files if f["last_modified"] > modified_since]
+            matching_files = [
+                f for f in matching_files if f["last_modified"] > modified_since
+            ]
 
         # sort files in increasing order of "last_modified"
-        sorted_files = sorted(matching_files, key=lambda x: (x["last_modified"]).timestamp())
+        sorted_files = sorted(
+            matching_files, key=lambda x: (x["last_modified"]).timestamp()
+        )
 
         if most_recent_only:
-            logger.info(f"Returning only the most recently modified file: {sorted_files[-1]}.")
+            logger.info(
+                f"Returning only the most recently modified file: {sorted_files[-1]}."
+            )
             sorted_files = sorted_files[-1:]
 
         return sorted_files
@@ -202,12 +249,55 @@ class SFTPClient:
         return line
 
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
+    def sniff_number_columns(
+        self,
+        fn: Mapping[str, Any],
+        separator,
+        file_type="csv",
+    ) -> pd.DataFrame:
+        try:
+            with self._connection.open(fn["filepath"], "r") as f:
+                df: pd.DataFrame = None
+
+                if file_type == "csv":
+                    if not separator:
+                        dialect = csv.Sniffer().sniff(self.peek_line(f=f))
+                        separator = dialect.delimiter
+
+                    reader = csv.reader(f, delimiter=separator)
+                    ncols = len(next(reader))
+
+                elif file_type == "json":
+                    df = pd.read_json(f, lines=True)
+                    ncols = len(df.columns)
+                else:
+                    raise ValueError("Unsupported file type: %s" % file_type)
+
+                return ncols
+
+        except OSError as e:
+            if "Permission denied" in str(e):
+                logger.warning(
+                    "Skipping %s file because you do not have enough permissions.",
+                    f["filepath"],
+                )
+            else:
+                logger.warning(
+                    "Skipping %s file because it is unable to be read.", f["filepath"]
+                )
+
+            raise Exception("Unable to read file: %s" % e) from e
+
+    @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
     def fetch_file(
         self,
         fn: Mapping[str, Any],
         separator,
         file_type="csv",
-        header_names: Optional[list[str]] = None,
+        column_names: Optional[list[str]] = None,
+        autogenerate_column_names: bool = False,
+        autogenerated_column_names_prefix: str = "col_",
+        column_names_separator: str = "|",
     ) -> pd.DataFrame:
         try:
             with self._connection.open(fn["filepath"], "r") as f:
@@ -219,12 +309,32 @@ class SFTPClient:
 
                 # Using pandas to make reading files in different formats easier
                 if file_type == "csv":
-                    header = header_names or 0
+
+                    colnames = None
+
+                    if column_names and column_names_separator:
+                        colnames = column_names.split(column_names_separator)
+                    elif autogenerate_column_names:
+                        n_cols = self.sniff_number_columns(
+                            fn=fn,
+                            file_type=file_type,
+                            separator=separator,
+                        )
+
+                        colnames = [
+                            f"{autogenerated_column_names_prefix}{i}"
+                            for i in range(n_cols)
+                        ]
+
+                    header = 0 if colnames is None else None
+                    names = colnames or None
+
                     df = pd.read_csv(
                         f,
                         engine="python",
                         sep=separator,
                         header=header,
+                        names=names,
                     )
                 elif file_type == "json":
                     df = pd.read_json(f, lines=True)
@@ -239,16 +349,38 @@ class SFTPClient:
 
         except OSError as e:
             if "Permission denied" in str(e):
-                logger.warning("Skipping %s file because you do not have enough permissions.", f["filepath"])
+                logger.warning(
+                    "Skipping %s file because you do not have enough permissions.",
+                    f["filepath"],
+                )
             else:
-                logger.warning("Skipping %s file because it is unable to be read.", f["filepath"])
+                logger.warning(
+                    "Skipping %s file because it is unable to be read.", f["filepath"]
+                )
 
             raise Exception("Unable to read file: %s" % e) from e
 
-    def fetch_files(self, files, separator, file_type="csv") -> Tuple[datetime, Dict[str, Any]]:
+    def fetch_files(
+        self,
+        files,
+        separator,
+        file_type="csv",
+        column_names: Optional[list[str]] = None,
+        autogenerate_column_names: bool = False,
+        autogenerated_column_names_prefix: str = "col_",
+        column_names_separator: str = "|",
+    ) -> Tuple[datetime, Dict[str, Any]]:
         logger.info("Fetching %s files", len(files))
         for fn in files:
-            records = self.fetch_file(fn=fn, separator=separator, file_type=file_type)
+            records = self.fetch_file(
+                fn=fn,
+                separator=separator,
+                file_type=file_type,
+                column_names=column_names,
+                autogenerate_column_names=autogenerate_column_names,
+                autogenerated_column_names_prefix=autogenerated_column_names_prefix,
+                column_names_separator=column_names_separator,
+            )
             yield (fn["last_modified"], records.to_dict("records"))
 
         self.close()

@@ -28,4 +28,5 @@ test.integration.general: ## Run integration tests
 	@poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=.
 
 test.clean_containers: ## Clean up stray containers used for integration tests left by vscode. See <https://github.com/microsoft/vscode-python/issues/7055>
-	docker container rm -f $$(docker ps --filter name=^pytest.*-mysftp.*$$ -q)
+	docker container rm -f $$(docker ps --filter name=^pytest.*-mysftp.*$$ -q) || true
+	docker network rm $$(docker network ls --filter name=^pytest.*$$ -q) || true
