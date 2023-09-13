@@ -1,14 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import importlib
-import inspect
-import pkgutil
+from __future__ import annotations
+
 from abc import ABC
-from typing import Final, Set, Type, final
+from typing import Final, List, Set, Type, final
 
 import dagger
-from base_images import common, errors, sanity_checks
+from base_images import common, errors, sanity_checks, utils
 
 
 class PythonBase(common.BaseBaseImage):
@@ -69,6 +68,11 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         await common.AirbyteConnectorBaseImage.run_sanity_checks(base_image_version)
         await AirbytePythonConnectorBaseImage.check_env_vars(base_image_version)
 
+    async def run_sanity_checks_for_version(self):
+        await common.AirbyteConnectorBaseImage.run_sanity_checks(self)
+        await AirbytePythonConnectorBaseImage.check_env_vars(self)
+        return await super().run_sanity_checks_for_version()
+
     @staticmethod
     async def check_env_vars(base_image_version: common.AirbyteConnectorBaseImage):
         """Checks that the expected environment variables are set on the base image.
@@ -84,10 +88,10 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         for expected_env_var in AirbytePythonConnectorBaseImage.expected_env_vars:
             await sanity_checks.check_env_var_with_printenv(base_image_version.container, expected_env_var)
 
-    def get_previous_version(self):
-        all_base_images_version_classes = list(ALL_BASE_IMAGES.values())
-        for i, value in enumerate(all_base_images_version_classes):
-            if value == self.__class__:
+    def get_previous_version(self) -> Type[AirbytePythonConnectorBaseImage]:
+        all_base_images_version_classes = utils.get_all_version_classes_in_package(AirbytePythonConnectorBaseImage, __package__)
+        for i, version_class in enumerate(all_base_images_version_classes):
+            if version_class == self.__class__:
                 try:
                     return all_base_images_version_classes[i + 1]
                 except IndexError:
@@ -95,36 +99,6 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage, ABC):
         raise errors.BaseImageVersionError(f"Could not find the previous version of {self.__class__.__name__}.")
 
 
-# HELPER FUNCTIONS
-def get_all_python_base_images() -> dict[str, Type[AirbytePythonConnectorBaseImage]]:
-    """Discover the base image versions declared in the module.
-    It saves us from hardcoding the list of base images version: implementing a new class should be the only step to make a new base version available.
-
-    Returns:
-        dict[str, Type[AirbytePythonConnectorBaseImage]]: A dictionary of the base image versions declared in the module, keys are base image name and tag as string.
-    """
-
-    current_package = __package__ or ""
-
-    package_path = current_package.replace(".", "/")
-    package_modules = [module_name for _, module_name, _ in pkgutil.iter_modules([package_path])]
-
-    all_base_image_classes = {}
-    for module_name in package_modules:
-        module = importlib.import_module(f"{current_package}.{module_name}")
-
-        cls_members = list(reversed(inspect.getmembers(module, inspect.isclass)))
-        all_base_image_classes.update(
-            {
-                cls_member.name_with_tag: cls_member
-                for _, cls_member in cls_members
-                if issubclass(type(cls_member), type(AirbytePythonConnectorBaseImage))
-                and cls_member != AirbytePythonConnectorBaseImage
-                and cls_member != ABC
-            }
-        )
-
-    return all_base_image_classes
-
-
-ALL_BASE_IMAGES = get_all_python_base_images()
+ALL_BASE_IMAGES: List[Type[AirbytePythonConnectorBaseImage]] = utils.get_all_version_classes_in_package(
+    AirbytePythonConnectorBaseImage, __package__
+)

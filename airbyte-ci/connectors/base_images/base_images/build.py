@@ -4,7 +4,7 @@
 import sys
 from itertools import product
 from pathlib import Path
-from typing import Mapping, Type
+from typing import List, Type
 from unittest.mock import MagicMock
 
 import anyio
@@ -58,24 +58,21 @@ async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage
         return False
 
 
-def write_changelog_file(changelog_path: Path, base_image_name: str, base_images: Mapping[str, Type[common.AirbyteConnectorBaseImage]]):
+def write_changelog_file(changelog_path: Path, base_image_name: str, base_images_classes: List[Type[common.AirbyteConnectorBaseImage]]):
     """Writes the changelog file locally for a given base image. Per version entries are generated from the base_images Mapping.
 
     Args:
         changelog_path (Path): Local absolute path to the changelog file.
         base_image_name (str): The name of the base image e.g airbyte-python-connectors-base .
-        base_images (Mapping[str, Type[common.AirbyteConnectorBaseImage]]): All the base images versions for a given base image.
+        base_images_classes (List[Type[common.AirbyteConnectorBaseImage]): All the base images versions for a given base image.
     """
-
-    def get_version_with_link_md(cls: Type[common.AirbyteConnectorBaseImage]) -> str:
-        return f"[{cls.version}]({cls.github_url})"
 
     entries = [
         {
-            "Version": get_version_with_link_md(base_cls),
-            "Changelog": base_cls.changelog_entry,
+            "Version": f"[{base_version_image_class.version}]({base_version_image_class.github_url})",
+            "Changelog": base_version_image_class.changelog_entry,
         }
-        for _, base_cls in base_images.items()
+        for base_version_image_class in base_images_classes
     ]
     markdown = markdown_table(entries).set_params(row_sep="markdown", quote=False).get_markdown()
     with open(changelog_path, "w") as f:
@@ -83,16 +80,27 @@ def write_changelog_file(changelog_path: Path, base_image_name: str, base_images
         f.write(markdown)
 
 
-async def a_build(status: Status) -> bool:
-    dagger_config = dagger.Config(log_output=sys.stderr) if consts.DEBUG else dagger.Config()
+async def a_build(current_status: Status) -> bool:
+    current_status.update(":dagger: Initializing Dagger")
+    if consts.DEBUG:
+        dagger_config = dagger.Config(log_output=sys.stderr)
+    else:
+        dagger_logs_path = Path("/tmp/base_images_project_build_dagger_logs.log")
+        dagger_logs_path.unlink(missing_ok=True)
+        dagger_logs_path.touch()
+        dagger_config = dagger.Config(log_output=open(dagger_logs_path))
+        console.log(f":information_source: Dagger logs will be written to {dagger_logs_path}")
     sanity_check_successes = []
-    status.update(":dagger: Initializing dagger client")
     async with dagger.Connection(dagger_config) as dagger_client:
-        for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES.values()):
+        for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES):
             base_image_version = BaseImageVersion(dagger_client, platform)
-            status.update(f":hammer_and_wrench: Generating Dockerfile for {base_image_version.name_with_tag} for {platform}")
+            current_status.update(
+                f":whale2: Generating dockerfile for {base_image_version.name_with_tag} for {base_image_version.platform}"
+            )
             generate_dockerfile(base_image_version)
-            status.update(f":mag_right: Running sanity checks on {base_image_version.name_with_tag} for {platform}")
+            current_status.update(
+                f":mag_right: Running sanity checks on {base_image_version.name_with_tag} for {base_image_version.platform}"
+            )
             success = await run_sanity_checks(base_image_version)
             sanity_check_successes.append(success)
     return all(sanity_check_successes)
@@ -115,8 +123,8 @@ def main():
         default_build_status = console.status("Building the project", spinner="bouncingBall")
         disabled_build_status = MagicMock(default_build_status)
         build_status = default_build_status if not consts.DEBUG else disabled_build_status  # type: ignore
-        with build_status as current_status:  # type: ignore
-            success = anyio.run(a_build, build_status)
+        with build_status as current_status:
+            success = anyio.run(a_build, current_status)
             python_changelog_path = Path(consts.PROJECT_DIR / "CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
             if not success:
                 console.log(
@@ -124,14 +132,14 @@ def main():
                     style="bold red",
                 )
             else:
-                current_status.update(f"Writing the changelog to {python_changelog_path}")
+                # build_status.update(f"Writing the changelog to {python_changelog_path}")
                 write_changelog_file(python_changelog_path, python.AirbytePythonConnectorBaseImage.image_name, python.ALL_BASE_IMAGES)
                 console.log(
                     f":memo: Wrote the updated changelog to {python_changelog_path}.",
                 )
                 console.log("[bold green]You can now commit and push the changelog and the generated dockerfiles![/bold green]")
-        if not success:
-            sys.exit(1)
+            if not success:
+                sys.exit(1)
     except KeyboardInterrupt:
         console.log(":bomb: Aborted the build.", style="bold red")
         sys.exit(1)
