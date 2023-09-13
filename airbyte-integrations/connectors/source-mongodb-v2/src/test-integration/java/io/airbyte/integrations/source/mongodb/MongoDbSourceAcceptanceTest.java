@@ -435,7 +435,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(50, recordMessages2.size());
     assertEquals(51, stateMessages2.size());
 
-    //get state message where stream 1 has completed, stream 2 is in progress, and stream 3 has not started
+    // get state message where stream 1 has completed, stream 2 is in progress, and stream 3 has not
+    // started
     final AirbyteStateMessage airbyteStateMessage = stateMessages2.get(0);
 
     final Optional<AirbyteStreamState> collectionStreamState = getStreamState(airbyteStateMessage,
@@ -445,7 +446,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final Optional<AirbyteStreamState> otherCollection1StreamState = getStreamState(airbyteStateMessage,
         new StreamDescriptor().withName(otherCollection1Name).withNamespace(databaseName));
     assertTrue(otherCollection1StreamState.isPresent());
-    assertEquals(InitialSnapshotStatus.IN_PROGRESS, Jsons.object(otherCollection1StreamState.get().getStreamState(), MongoDbStreamState.class).status());
+    assertEquals(InitialSnapshotStatus.IN_PROGRESS,
+        Jsons.object(otherCollection1StreamState.get().getStreamState(), MongoDbStreamState.class).status());
 
     final Optional<AirbyteStreamState> otherCollection2StreamState = getStreamState(airbyteStateMessage,
         new StreamDescriptor().withName(otherCollection2Name).withNamespace(databaseName));
@@ -610,14 +612,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(lastStateMessage.getGlobal().getSharedState().isEmpty());
     completedStreams.forEach(s -> {
       assertTrue(lastStateMessage.getGlobal().getStreamStates().stream().anyMatch(createStateStreamFilter(s)));
-      Assertions.assertEquals(InitialSnapshotStatus.COMPLETE, Jsons.object(getStreamState(lastStateMessage, s).get().getStreamState(), MongoDbStreamState.class).status());
+      Assertions.assertEquals(InitialSnapshotStatus.COMPLETE,
+          Jsons.object(getStreamState(lastStateMessage, s).get().getStreamState(), MongoDbStreamState.class).status());
     });
   }
 
   private Optional<AirbyteStreamState> getStreamState(final AirbyteStateMessage stateMessage, final StreamDescriptor streamDescriptor) {
     return stateMessage.getGlobal().getStreamStates().stream().filter(createStateStreamFilter(streamDescriptor)).findFirst();
   }
-
 
   private Predicate<AirbyteStreamState> createStateStreamFilter(final StreamDescriptor streamDescriptor) {
     return s -> s.getStreamDescriptor().equals(streamDescriptor);
