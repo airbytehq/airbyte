@@ -20,6 +20,7 @@ public class MongoConstants {
   public static final String COUNT_KEY = "count";
   public static final String CREDENTIALS_PLACEHOLDER = MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
   public static final String DATABASE_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
+  public static final String DATABASE_CONFIG_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.DATABASE_CONFIG_CONFIGURATION_KEY;
   public static final String DRIVER_NAME = "Airbyte";
   public static final String ID_FIELD = "_id";
   public static final String IS_TEST_CONFIGURATION_KEY = "is_test";

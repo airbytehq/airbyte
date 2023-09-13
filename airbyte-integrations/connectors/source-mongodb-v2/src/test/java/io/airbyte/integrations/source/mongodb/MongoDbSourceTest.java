@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,6 +44,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +66,7 @@ class MongoDbSourceTest {
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
     source = spy(new MongoDbSource(cdcInitializer));
-    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
+    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY));
   }
 
   @Test
@@ -80,6 +83,23 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, airbyteConnectionStatus.getStatus());
+  }
+
+  @Test
+  void testCheckOperationWithMissingConfiguration() throws IOException {
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoDatabase.runCommand(any())).thenReturn(response);
+    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+
+    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(Jsons.jsonNode(Map.of()));
+    assertNotNull(airbyteConnectionStatus);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
+    assertEquals("Database connection configuration missing.", airbyteConnectionStatus.getMessage());
   }
 
   @Test
@@ -184,6 +204,29 @@ class MongoDbSourceTest {
   }
 
   @Test
+  void testDiscoverOperationWithMissingConfiguration() throws IOException {
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
+            Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {
+            });
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(Document::new).toList();
+    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    when(cursor.hasNext()).thenReturn(true, true, false);
+    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
+    when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
+    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+
+    assertThrows(IllegalArgumentException.class, () -> source.discover(Jsons.jsonNode(Map.of())));
+  }
+
+  @Test
   void testDiscoverOperationWithUnexpectedFailure() {
     final String expectedMessage = "This is just a test failure.";
     when(mongoClient.getDatabase(any())).thenThrow(new IllegalArgumentException(expectedMessage));
@@ -194,10 +237,17 @@ class MongoDbSourceTest {
   @Test
   void testReadClosesMongoClient() {
     final MongoClient mongoClient = mock(MongoClient.class);
-    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig);
+    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY));
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(new RuntimeException());
     assertThrows(RuntimeException.class, () -> source.read(airbyteSourceConfig, null, null));
     verify(mongoClient, times(1)).close();
+  }
+
+  @Test
+  void testReadWithMissingConfiguration() {
+    final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
+    final JsonNode state = mock(JsonNode.class);
+    assertThrows(IllegalArgumentException.class, () -> source.read(Jsons.jsonNode(Map.of()), catalog, state));
   }
 
   @Test
@@ -220,7 +270,7 @@ class MongoDbSourceTest {
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));
     password.ifPresent(p -> config.put(MongoConstants.PASSWORD_CONFIGURATION_KEY, p));
-    return Jsons.deserialize(Jsons.serialize(config));
+    return Jsons.deserialize(Jsons.serialize(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
   }
 
 }
