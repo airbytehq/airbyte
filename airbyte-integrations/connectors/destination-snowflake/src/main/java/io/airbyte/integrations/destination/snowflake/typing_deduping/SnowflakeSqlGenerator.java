@@ -566,8 +566,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public static String escapeSqlIdentifier(String identifier) {
     // Snowflake scripting language does something weird when the `${` bigram shows up in the script
     // so replace these with something else.
+    // For completeness, if we trigger this, also replace closing curly braces with underscores.
     if (identifier.contains("${")) {
-      identifier = identifier.replace("${", "__");
+      identifier = identifier
+          .replace("$", "_")
+          .replace("{", "_")
+          .replace("}", "_");
     }
 
     return escapeJsonIdentifier(identifier);
