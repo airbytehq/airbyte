@@ -10,19 +10,36 @@ class AirbyteJavaConnectorExtension {
 
     boolean useCdkProjectRef = false
     String cdkVersionRequired
+    List<String> features = []  // e.g. 'db-sources', 'db-destinations'
     Project project
 
     AirbyteJavaConnectorExtension(Project project) {
         this.project = project
+    }
 
+    void addCdkDependencies() {
+        project.dependencies {
+            integrationTestJavaImplementation project
+        }
         if (useCdkProjectRef) {
             project.dependencies {
-                // TODO: debug circular reference:
-                implementation project.project(':airbyte-cdk:java:airbyte-cdk')
+                implementation project.project(":airbyte-cdk:java:airbyte-cdk:core")
+                features.each { feature ->
+                    implementation project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature")
+                    testImplementation testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature"))
+                    integrationTestJavaImplementation testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature"))
+                    performanceTestJavaImplementation testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature"))
+                }
             }
         } else {
             project.dependencies {
-                implementation "io.airbyte:airbyte-cdk:${cdkVersionRequired}"
+                implementation "io.airbyte:airbyte-cdk-core:${cdkVersionRequired}"
+                features.each { feature ->
+                    implementation ":airbyte-cdk:java:airbyte-cdk-${feature}:${cdkVersionRequired}"
+                    testImplementation ":airbyte-cdk-${feature}-test-fixtures:${cdkVersionRequired}"
+                    integrationTestJavaImplementation ":airbyte-cdk-${feature}-test-fixtures:${cdkVersionRequired}"
+                    performanceTestJavaImplementation ":airbyte-cdk-${feature}-test-fixtures:${cdkVersionRequired}"
+                }
             }
         }
     }
@@ -33,19 +50,12 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.plugins.apply(AirbyteJavaCDKPlugin)
+        // def cdkTargetVersion = project.ext.getCdkTargetVersion(project)
+        def extension = project.extensions.create('airbyteJavaConnector', AirbyteJavaConnectorExtension, project)
 
-        cdkTargetVersion = project.ext.readCdkTargetVersion(project)
-
-        if (extension.useCdkProjectRef) {
-            project.dependencies {
-                implementation project.project(':airbyte-cdk:java:airbyte-cdk:core')
-                // testImplementation testFixtures(project.project(':airbyte-cdk:java:airbyte-cdk:core'))
-            }
-        } else {
-            project.dependencies {
-                implementation "io.airbyte:airbyte-cdk:${cdkTargetVersion}"
-            }
-        }
+        project.plugins.apply(AirbyteJavaCdkPlugin)
+        project.plugins.apply(AirbyteIntegrationTestJavaPlugin)
+        project.plugins.apply(AirbytePerformanceTestJavaPlugin)
+        project.plugins.apply(AirbyteConnectorAcceptanceTestPlugin)
     }
 }

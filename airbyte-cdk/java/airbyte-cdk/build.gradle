@@ -1,22 +1,17 @@
-plugins {
-    id 'airbyte-java-cdk'
-}
-
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
+    apply plugin: 'airbyte-docker'
+    apply plugin: 'airbyte-java-cdk'
     apply plugin: 'airbyte-integration-test-java'
     apply plugin: 'airbyte-performance-test-java'
     apply plugin: 'java-test-fixtures'
-    apply plugin: 'airbyte-docker'
 
     group 'io.airbyte'
     version = getCdkTargetVersion()
 }
 
 subprojects { subproject ->
-    apply plugin: 'java-test-fixtures'
-
     def artifactBaseName = 'airbyte-cdk-' + subproject.name.replace('-feature', '')
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 

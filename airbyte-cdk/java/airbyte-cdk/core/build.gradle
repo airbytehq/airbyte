@@ -12,6 +12,7 @@ dependencies {
 
     // First party test dependencies
     testImplementation project(':airbyte-test-utils')
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources-feature'))
     
     // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
     implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')

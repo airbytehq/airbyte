@@ -1,7 +1,8 @@
 """Migration script.
 
 Usage:
-    python3 _temp_migration_script.py [package1,package2,...]
+    python3 ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.py
+    python3 ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.py test
 
 # Manual post-migration steps
 
@@ -68,10 +69,10 @@ MAIN_PACKAGES = {
 }
 TEST_FIXTURE_PACKAGES = {
     CORE_FEATURE: [
-        "airbyte-integrations/bases/base-standard-source-test-file",
-        "airbyte-test-utils",
     ],
     DB_SOURCES_FEATURE: [
+        "airbyte-test-utils",
+        "airbyte-integrations/bases/base-standard-source-test-file",
         "airbyte-integrations/bases/standard-source-test",
     ],
     DB_DESTINATIONS_FEATURE: [
@@ -83,12 +84,20 @@ TEST_FIXTURE_PACKAGES = {
 TEST_CMDS = [
     # These should pass:
     f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
 
     # Working on:
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
 
     # Failing:
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build", # 11 failing tests
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:build", # 10 failing tests (mostly due to s3)
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:build", # 1 failure: Could not find cursor information for stream: public_cars
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:build", # 1 failure: Could not find cursor information for stream: public_cars
+
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:test", # Failing due to jooq issue
 ]
 
 def move_files(source_dir, dest_dir, path_desc):
@@ -250,6 +259,14 @@ def update_cdk_package_defs() -> None:
         exclude_files=EXCLUDE_FILES,
         exclude_dirs=EXCLUDE_DIRS,
     )
+    # Undo any dupes if they exist.
+    migrate_package_refs(
+        text_pattern=r"package io\.airbyte\.cdk\.cdk",
+        text_replacement=r"package io.airbyte.cdk",
+        within_dir=CDK_ROOT,
+        exclude_files=EXCLUDE_FILES,
+        exclude_dirs=EXCLUDE_DIRS,
+    )
 
 
 def refactor_cdk_package_refs() -> None:
@@ -293,7 +310,7 @@ def main() -> None:
         )
         for old_package_root in paths_to_migrate:
             # Remove empty directories in the OLD_PACKAGE_ROOT
-            as_test_fixture = old_package_root in TEST_FIXTURE_PACKAGES
+            as_test_fixture = old_package_root in TEST_FIXTURE_PACKAGES[feature_name]
             move_package(old_package_root, feature_name, as_test_fixture)
             remove_empty_dirs(old_package_root)
             update_cdk_package_defs()

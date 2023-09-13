@@ -1,10 +1,19 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
+    id 'airbyte-java-connector'
     id 'airbyte-integration-test-java'
-    id 'airbyte-java-cdk'
+    id 'airbyte-performance-test-java'
     id 'airbyte-connector-acceptance-test'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    useCdkProjectRef = true
+    features = ['db-sources']
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.bigquery.BigQuerySource'
@@ -17,5 +26,6 @@ dependencies {
     implementation libs.airbyte.protocol
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
+    // integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-bigquery')
 }
 
