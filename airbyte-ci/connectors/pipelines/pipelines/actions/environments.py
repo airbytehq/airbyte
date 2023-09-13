@@ -477,24 +477,23 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
         # See https://github.com/krallin/tini#subreaping for details.
         .with_env_variable("TINI_SUBREAPER", "")
+        # Similarly, because of container-ception, we have to use the fuse-overlayfs storage engine.
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apk update"
+                    "apk add fuse-overlayfs"
+                    "mkdir /etc/docker"
+                    "(echo {\\\"storage-driver\\\": \\\"fuse-overlayfs\\\"} > /etc/docker/daemon.json)"
+                ]
+            )
+        )
         # Expose the docker host port.
         .with_exposed_port(2375)
         # Mount the docker cache volumes.
         .with_mounted_cache("/tmp", dagger_client.cache_volume("shared-tmp"), sharing=CacheSharingMode.PRIVATE)
-        # Mount /var/lib/docker so docker writes to the host file system, i.e. the dagger engine.
-        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("shared-var-lib-docker"), sharing=CacheSharingMode.PRIVATE)
         # Run the docker daemon and bind it to the exposed TCP port.
-        .with_exec(
-            sh_dash_c(
-                [
-                    # We just want /var/lib/docker to be mounted as a volume, never mind the caching. We'd rather it be empty.
-                    "(cd /var/lib/docker; rm -rf -- ..?* .[!.]* *)",
-                    # Start the docker daemon.
-                    "dockerd --log-level=error --host=tcp://0.0.0.0:2375 --tls=false",
-                ]
-            ),
-            insecure_root_capabilities=True,
-        )
+        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
