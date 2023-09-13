@@ -36,8 +36,7 @@ class MongoDbCdcStateHandlerTest {
   void testSavingState() {
     final Map<String, String> offset =
         Jsons.object(MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN), new TypeReference<>() {});
-    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, "");
-
+    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, null);
     assertNotNull(airbyteMessage);
     assertEquals(AirbyteMessage.Type.STATE, airbyteMessage.getType());
     assertNotNull(airbyteMessage.getState());
