@@ -5,8 +5,9 @@
 """This module declares all the airbyte python connector base image for version 1.
 Please create a v2.py module if you want to declare a new major version.
 """
+from __future__ import annotations
 
-from typing import Final, final
+from typing import Final, Type, final
 
 import dagger
 from base_images import common, sanity_checks
@@ -42,6 +43,9 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
         await sanity_checks.check_a_command_is_available_using_version_option(base_image_version.container, "bash")
         await sanity_checks.check_python_version(base_image_version.container, "3.9.18")
         await sanity_checks.check_pip_version(base_image_version.container, "23.2.1")
+
+    def get_previous_version(self) -> Type[AirbytePythonConnectorBaseImage]:
+        return AirbytePythonConnectorBaseImage
 
 
 class _1_1_0(AirbytePythonConnectorBaseImage):

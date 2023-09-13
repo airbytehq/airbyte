@@ -12,11 +12,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import final
+from typing import Type, final
 
 import dagger
-import semver
-from base_images import consts, errors, sanity_checks
+from base_images import consts, errors, sanity_checks, utils
 
 
 @dataclass
@@ -55,101 +54,14 @@ class AirbyteConnectorBaseImage(ABC):
         self.platform = platform
         self._validate_platform_availability()
 
-    @property
-    @abstractmethod
-    def base_base_image(cls) -> BaseBaseImage:
-        """Returns the base image used to build the Airbyte base image.
-
-        Raises:
-            NotImplementedError: Raised if a subclass does not define a 'base_base_image' attribute.
-
-        Returns:
-            BaseBaseImage: The base image used to build the Airbyte base image.
-        """
-        raise NotImplementedError("Subclasses must define a 'base_base_image'.")
-
-    @property
-    @abstractmethod
-    def image_name(cls) -> str:
-        """This is the name of the final base image. By name we mean DockerHub image name without the tag.
-
-        Raises:
-            NotImplementedError: Raised if a subclass does not define an 'image_name' attribute.
-
-        Returns:
-            str: The name of the final base image.
-        """
-        raise NotImplementedError("Subclasses must define an 'image_name'.")
-
-    @property
-    @abstractmethod
-    def changelog_entry(cls) -> str:
-        """This is the changelog entry for a new base image version.
-        It will automatically be used to generate the changelog entry for the release notes.
-
-        Raises:
-            NotImplementedError: Raised if a subclass does not define a 'changelog_entry' attribute.
-
-        Returns:
-            str: The changelog entry for a new base image version.
-        """
-        raise NotImplementedError("Subclasses must define a 'changelog_entry' attribute.")
-
-    @property
-    @abstractmethod
-    def run_previous_version_sanity_checks(cls) -> bool:
-        """This is a flag to run the previous version sanity checks on the current version.
-        It is helpful to detect breaking changes or regression in a new base image version.
-        Raises:
-            NotImplementedError: Raised if a subclass does not define a 'run_previous_version_sanity_checks' attribute.
-
-        Returns:
-            bool: A flag to run the previous version sanity checks on the current version.
-        """
-        raise NotImplementedError("Subclasses must define a 'run_previous_version_sanity_checks' attribute.")
-
     def __init_subclass__(cls) -> None:
         cls.github_url = AirbyteConnectorBaseImage.get_github_url(cls)
         if not inspect.isabstract(cls):
-            cls.version = AirbyteConnectorBaseImage.get_version_from_class_name(cls)
-            AirbyteConnectorBaseImage._validate_version(cls)
+            cls.version = utils.get_version_from_class_name(cls)
             cls.name_with_tag = f"{cls.image_name}:{cls.version}"
         return super().__init_subclass__()
 
-    @final
-    @staticmethod
-    def get_version_from_class_name(cls):
-        """The version is parsed from the class name.
-
-        Returns:
-            str: The tag in the format `x.y.z`.
-        """
-        return ".".join(cls.__name__.replace("__", "-").split("_")[1:])
-
-    @final
-    @staticmethod
-    def _validate_version(cls):
-        """Validate the version follows semantic versioning naming.
-
-        Raises:
-            VersionError: Raised if the version is not following semantic versioning naming.
-        """
-        try:
-            semver.VersionInfo.parse(cls.version)
-        except ValueError as e:
-            raise errors.BaseImageVersionError(
-                f"The version class {cls.__name__} is not in the expected semantic versioning naming format: e.g `_1_0_0`."
-            ) from e
-
-    @final
-    def _validate_platform_availability(self):
-        """Validates that the base image supports the platform passed at initialization.
-
-        Raises:
-            ValueError: Raised if the platform is not supported by the base image.
-        """
-        if self.platform not in self.base_base_image.value:
-            raise errors.PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.base_base_image.name}.")
+    # INSTANCE PROPERTIES:
 
     @final
     @property
@@ -182,19 +94,90 @@ class AirbyteConnectorBaseImage(ABC):
             .with_label("io.airbyte.base_image", self.name_with_tag)
         )
 
+    # MANDATORY SUBCLASSES ATTRIBUTES / PROPERTIES:
+
+    @property
+    @abstractmethod
+    def base_base_image(cls) -> BaseBaseImage:
+        """Returns the base image used to build the Airbyte base image.
+
+        Raises:
+            NotImplementedError: Raised if a subclass does not define a 'base_base_image' attribute.
+
+        Returns:
+            BaseBaseImage: The base image used to build the Airbyte base image.
+        """
+        raise NotImplementedError("Subclasses must define a 'base_base_image'.")
+
+    @property
+    @abstractmethod
+    def image_name(cls) -> str:
+        """This is the name of the final base image. By name we mean DockerHub image name without the tag.
+
+        Raises:
+            NotImplementedError: Raised if a subclass does not define an 'image_name' attribute.
+
+        Returns:
+            str: The name of the final base image.
+        """
+        raise NotImplementedError("Subclasses must define an 'image_name'.")
+
+    @property
+    @abstractmethod
+    def changelog_entry(cls) -> str:
+        """This is the changelog entry for a new base image version.
+        It will automatically be used to generate the changelog entry for the release notes.
+        It is solely used for the release notes.
+
+        Raises:
+            NotImplementedError: Raised if a subclass does not define a 'changelog_entry' attribute.
+
+        Returns:
+            str: The changelog entry for a new base image version.
+        """
+        raise NotImplementedError("Subclasses must define a 'changelog_entry' attribute.")
+
     @property
     @abstractmethod
     def container(self) -> dagger.Container:
-        """Returns a container of the Airbyte connector base image. This is where version specific definitions, like with_exec, should occur."""
+        """Returns the container of the Airbyte connector base image. This is where version specific definitions, like with_exec, should occur."""
         raise NotImplementedError("Subclasses must define a 'container' property.")
 
-    async def run_sanity_checks_for_version(self):
-        """Runs sanity checks on the base image container.
-        This method is called on base image build.
-        The following sanity checks are meant to check that labels and environment variables about the base's base image and the current Airbyte base image are correctly set.
+    @property
+    @abstractmethod
+    def run_previous_version_sanity_checks(cls) -> bool:
+        """This is a flag to run the previous version sanity checks on the current version.
+        It is helpful to detect breaking changes or regression in a new base image version.
+        Raises:
+            NotImplementedError: Raised if a subclass does not define a 'run_previous_version_sanity_checks' attribute.
+
+        Returns:
+            bool: A flag to run the previous version sanity checks on the current version.
+        """
+        raise NotImplementedError("Subclasses must define a 'run_previous_version_sanity_checks' attribute.")
+
+    # MANDATORY SUBCLASSES METHODS:
+
+    @abstractmethod
+    def get_previous_version(self) -> Type[AirbyteConnectorBaseImage]:
+        raise NotImplementedError("Subclasses must define a 'get_previous_version' method.")
+
+    # INSTANCE METHODS:
+
+    @final
+    def _validate_platform_availability(self):
+        """Validates that the base image supports the platform passed at initialization.
 
         Raises:
-            SanityCheckError: Raised if a sanity check fails.
+            ValueError: Raised if the platform is not supported by the base image.
+        """
+        if self.platform not in self.base_base_image.value:
+            raise errors.PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.base_base_image.name}.")
+
+    async def run_sanity_checks_for_version(self):
+        """Runs sanity checks on the current base image version instance.
+        We run sanity checks on the previous version if the flag 'run_previous_version_sanity_checks' is set to True.
+          base image container.
         """
         await self.__class__.__base__.run_sanity_checks(self)
         if self.run_previous_version_sanity_checks:
@@ -203,6 +186,7 @@ class AirbyteConnectorBaseImage(ABC):
                 await PreviousVersion(self.dagger_client, self.platform).run_sanity_checks(self)
         await self.run_sanity_checks(self)
 
+    # STATIC METHODS:
     @staticmethod
     async def run_sanity_checks(base_image_version: AirbyteConnectorBaseImage):
         """Runs sanity checks on the base image container.
@@ -241,7 +225,3 @@ class AirbyteConnectorBaseImage(ABC):
         absolute_module_path = inspect.getfile(cls)
         relative_module_path = Path(absolute_module_path).relative_to(consts.AIRBYTE_ROOT_DIR)
         return f"{consts.AIRBYTE_GITHUB_REPO_URL}/blob/{consts.MAIN_BRANCH_NAME}/{relative_module_path}"
-
-    @abstractmethod
-    def get_previous_version(self):
-        raise NotImplementedError("Subclasses must define a 'get_previous_version' method.")

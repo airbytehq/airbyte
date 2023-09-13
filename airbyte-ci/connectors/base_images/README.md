@@ -5,6 +5,12 @@ It is intended to be used as a python library.
 Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) **will** use this library to build the connector images.
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
+## Where are the Dockerfiles?
+Our base images are not declared using Dockerfiles.
+They are declared in code using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
+We prefer this approach because it allows us to interact with base images container as code: we can use python to declare the base images and use the full power of the language to build and test them.
+However, we do artificially generate Dockerfiles for debugging and documentation purposes.
+Feel free to check the `generated/dockerfiles` directory.
 
 
 ## How to get our base images
@@ -15,9 +21,10 @@ You'll be able to get our base images from our [Docker Hub](https://hub.docker.c
 Install this library as a dependency of your project and import `ALL_BASE_IMAGES` from it:
 ```python
 import dagger
-from base_images import ALL_BASE_IMAGES
+from base_images import ALL_BASE_IMAGES_INDEX
 
-python_connector_base_image: dagger.Container = ALL_BASE_IMAGES["airbyte-python-connector-base:0.1.0"].container
+
+python_connector_base_image: dagger.Container = ALL_BASE_IMAGES_INDEX["airbyte-python-connector-base:0.1.0"].container
 ```
 
 
@@ -28,40 +35,60 @@ python_connector_base_image: dagger.Container = ALL_BASE_IMAGES["airbyte-python-
 3. Declare a new class inheriting from `AirbytePythonConnectorBaseImage` or an other existing version. **The class name must follow the semver pattern `_<major>_<minor>_<patch>(AirbytePythonConnectorBaseImage)`.**
 4. Implement the `container` property which must return a `dagger.Container` object.
 5. Declare the `changelog` class attribute to describe the change provided by the new version.
-6. *Recommended*: Override the `run_sanity_check` method to add a sanity check to your new base image version, please call the previous version sanity check to avoid breaking change: e.g `await _1_0_0.run_sanity_checks().`
-7. Build the project: `poetry run build` it will run sanity checks on the images, generate dockerfiles and update the changelog file.
-8. If you face any issue, feel free to run `LOG_LEVEL=DEBUG poetry run build` to get access to the full logs.
-9. Commit and push your changes.
-10. Create a PR and ask for a review from the Connector Operations team.
-11. Your new base image version will be available for use in the connector build pipeline once your PR is merged.
+6. *Recommended*: Override the `run_sanity_check` method to add a sanity check to your new base image version
+7. To detect regressions you can set the run_previous_version_sanity_checks attribute to True .`
+8. Build the project: `poetry run build` it will run sanity checks on the images, generate dockerfiles and update the changelog file.
+9. If you face any issue, feel free to run `LOG_LEVEL=DEBUG poetry run build` to get access to the full logs.
+10. Commit and push your changes.
+11. Create a PR and ask for a review from the Connector Operations team.
+12. Your new base image version will be available for use in the connector build pipeline once your PR is merged.
 
 **Example: declaring a new base image version to add a system dependency (`ffmpeg`) on top of the previous version**
 
 ```python
 # In base_images/python/v1.py
-class _1_0_1(_1_0_0):
+
+from base_images import sanity_checks, python
+
+# We enforce direct inheritance from AirbytePythonConnectorBaseImage
+class _1_0_1(python.AirbytePythonConnectorBaseImage):
+
+    base_base_image: Final[PythonBase] = PythonBase.PYTHON_3_9_18
 
     changelog: str = "Add ffmpeg to the base image."
+    
+    # This will run the previous version sanity checks on top of the new version.
+    # This is helpful to detect regressions.
+    run_previous_version_sanity_checks = True
 
     @property
-    def container(self) -> dagger.Container:        
+    def container(self) -> dagger.Container:
+        # We encourage declarative programming here to facilitate the maintenance of the base images.
+        # To prevent refactoring side effects we'd love this container property to be idempotent and not call any external code except the base_container and Dagger API.
+        pip_cache_volume: dagger.CacheVolume = self.dagger_client.cache_volume(AirbytePythonConnectorBaseImage.pip_cache_name)
+      
         return (
-            super()
-            .container
+            self.base_container.with_mounted_cache("/root/.cache/pip", pip_cache_volume)
+            # Set the timezone to UTC
+            .with_exec(["ln", "-snf", "/usr/share/zoneinfo/Etc/UTC", "/etc/localtime"])
+            # Upgrade pip to the expected version
+            .with_exec(["pip", "install", "--upgrade", "pip==23.2.1"])
+            # Install ffmpeg
             .with_exec(["sh", "-c", "apt-get update && apt-get install -y ffmpeg"])
         )
         
 
     async def run_sanity_checks(base_image_version: AirbyteConnectorBaseImage):
-        await _1_0_0.run_sanity_checks(base_image_version)
         try:
-            await base_image_version.container.with_exec(["ffmpeg", "-version"], skip_entrypoint=True).stdout()
-        except dagger.ExecError as e:
-            raise errors.SanityCheckError(e)
+            # Feel free to add additional re-usable sanity checks in the sanity_checks module.
+            await sanity_checks.check_a_command_is_available_using_version_option(
+                base_image_version.container, 
+                "ffmpeg"
+            )
 ```
 
 ## How to update an existing base image version
-**Existing base image version must not be updated! Please reach out to the Connector Operations team if you have a good reason to do that.**
+**Existing base image version must not be updated or deleted! Please reach out to the Connector Operations team if you have a good reason to do that.**
 
 ## Running tests locally
 ```bash
