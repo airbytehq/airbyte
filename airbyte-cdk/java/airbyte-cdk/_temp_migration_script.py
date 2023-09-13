@@ -12,6 +12,21 @@ Usage:
     // @Override // CDK TODO: This was commented out because the compiler said it was not an override.
     protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
 
+## Known issues
+
+Issue:
+
+    FAILURE: Build failed with an exception.
+
+    * What went wrong:
+    Could not determine the dependencies of task ':airbyte-integrations:connectors:source-postgres:assemble'.
+    > Could not create task ':airbyte-integrations:connectors:source-postgres:airbyteDocker'.
+    > no known project for image airbyte/integration-base-java:dev
+
+Workaround:
+
+- Delete the Dockerfile (or rename to Dockerfile.bak)
+
 """
 
 import os
@@ -243,9 +258,14 @@ def main() -> None:
     paths_to_migrate = MAIN_PACKAGES + TEST_FIXTURE_PACKAGES
     if len(sys.argv) > 1:
         if sys.argv[1] == "test":
-            # Do a quick test
-            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")
-            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build")
+            # Working on this:
+            os.system(f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble")
+
+            # This should pass:
+            # os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")
+
+            # 11 tests failing:
+            # os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build")
             return
 
         # If a CLI argument is passed, expect csv and override packages to migrate
