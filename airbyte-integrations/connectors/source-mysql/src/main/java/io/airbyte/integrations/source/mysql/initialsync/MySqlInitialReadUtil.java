@@ -174,7 +174,6 @@ public class MySqlInitialReadUtil {
             AirbyteTraceMessageUtility::emitStreamStatusTrace));
   }
 
-
   /**
    * CDC specific: Determines the streams to sync for initial primary key load. These include streams
    * that are (i) currently in primary key load (ii) newly added incremental streams.

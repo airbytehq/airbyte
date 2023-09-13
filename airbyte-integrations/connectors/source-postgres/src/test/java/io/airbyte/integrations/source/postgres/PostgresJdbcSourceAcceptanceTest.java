@@ -315,7 +315,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertEquals(expected, actual);
   }
 
-
   @Override
   protected List<AirbyteMessage> getTestMessages() {
     return getTestMessages(streamName);

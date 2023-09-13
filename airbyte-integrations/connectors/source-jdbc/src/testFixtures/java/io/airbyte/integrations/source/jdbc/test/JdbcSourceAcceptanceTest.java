@@ -502,7 +502,6 @@ public abstract class JdbcSourceAcceptanceTest {
       expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2));
     }
 
-
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 
@@ -513,12 +512,12 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
-  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
+  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
-          m.getRecord().setStream(streamName2);
+          m.getRecord().setStream(streamName);
           m.getRecord().setNamespace(getDefaultNamespace());
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
@@ -1277,8 +1276,8 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,
-                                                                      final String streamName,
-                                                                      final String field) {
+                                                                  final String streamName,
+                                                                  final String field) {
     return extractStateMessage(messages).stream()
         .filter(s -> s.getStream().getStreamDescriptor().getName().equals(streamName))
         .map(s -> s.getStream().getStreamState().get(field) != null ? s.getStream().getStreamState().get(field).asText() : "").toList();
@@ -1296,7 +1295,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   protected List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages, final String streamName) {
     return messages.stream().filter(r -> r.getType() == Type.STATE &&
-            r.getState().getStream().getStreamDescriptor().getName().equals(streamName)).map(AirbyteMessage::getState)
+        r.getState().getStream().getStreamDescriptor().getName().equals(streamName)).map(AirbyteMessage::getState)
         .collect(Collectors.toList());
   }
 
