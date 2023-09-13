@@ -5,6 +5,7 @@
 import datetime
 import json
 import logging
+import pendulum
 import pkgutil
 import uuid
 from abc import ABC
@@ -52,7 +53,19 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
-            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+
+            try:
+                metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            except HTTPError as e:
+                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                    internal_message = f"Unauthorized error reached."
+                    message = f"Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
+
+                    unauthorized_error = AirbyteTracedException(
+                        message=message, internal_message=internal_message, failure_type=FailureType.config_error
+                    )
+                    raise unauthorized_error
+
             if not metadata:
                 raise Exception("failed to get metadata, over quota, try later")
             self._metadata = {
@@ -156,7 +169,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                d: {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
+                d.replace(":", "_"): {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
                 for d in self.config["dimensions"]
             }
         )
@@ -171,7 +184,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                m: {
+                m.replace(":", "_"): {
                     "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
                     "description": self.metadata["metrics"].get(m, {}).get("description", m),
                 }
@@ -199,23 +212,24 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             return {"offset": self.offset}
 
     def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"properties/{self.config['property_id']}:runReport"
 
     def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
-        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
-        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
+        dimensions = [h.get("name").replace(":", "_") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name").replace(":", "_") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
             record = {
@@ -247,10 +261,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         return current_stream_state
 
     def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
 
         payload = {
@@ -266,7 +280,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         return payload
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         today: datetime.date = datetime.date.today()
@@ -294,10 +308,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
 class PivotReport(GoogleAnalyticsDataApiBaseStream):
     def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
 
@@ -309,7 +323,8 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         return payload
 
     def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"properties/{self.config['property_id']}:runPivotReport"
 
@@ -318,15 +333,15 @@ class CohortReportMixin:
     cursor_field = []
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from [None]
 
     def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec#Cohort.FIELDS.date_range
         # In a cohort request, this dateRange is required and the dateRanges in the RunReportRequest or RunPivotReportRequest
@@ -349,7 +364,8 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
         return None
 
     def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+            self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"properties/{self.config['property_id']}/metadata"
 
@@ -358,6 +374,21 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
+    @property
+    def default_date_ranges_start_date(self) -> str:
+        # set default date ranges start date to 2 years ago
+        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
+
+    def _validate_and_transform_start_date(self, start_date: str) -> datetime.date:
+        start_date = self.default_date_ranges_start_date if not start_date else start_date
+
+        try:
+            start_date = utils.string_to_date(start_date)
+        except ValueError as e:
+            raise ConfigurationError(str(e))
+
+        return start_date
+
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
         if "custom_reports" in config:
             if isinstance(config["custom_reports"], str):
@@ -396,10 +427,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             except ValueError:
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
 
-        try:
-            config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
-        except ValueError as e:
-            raise ConfigurationError(str(e))
+        config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
 
         if not config.get("window_in_days"):
             source_spec = self.spec(logging.getLogger("airbyte"))
