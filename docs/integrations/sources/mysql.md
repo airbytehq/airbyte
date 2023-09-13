@@ -264,6 +264,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.6   | 2023-09-12 | [30308](https://github.com/airbytehq/airbyte/pull/30308)   | CDC : Enable compression of schema history blob in state                                                                                        |
 | 3.0.5   | 2023-09-12 | [30289](https://github.com/airbytehq/airbyte/pull/30289)   | CDC : Introduce logic for compression of schema history blob in state                                                                           |
 | 3.0.4   | 2023-09-06 | [30213](https://github.com/airbytehq/airbyte/pull/30213)   | CDC : Checkpointable initial snapshot                                                                                                           |
 | 3.0.3   | 2023-08-31 | [29821](https://github.com/airbytehq/airbyte/pull/29821)   | Set replication_method display_type to radio                                                                                                    |
