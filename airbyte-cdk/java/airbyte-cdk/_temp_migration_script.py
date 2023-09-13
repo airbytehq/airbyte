@@ -89,6 +89,8 @@ TEST_CMDS = [
     f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
 
     # Working on:
 
@@ -277,7 +279,7 @@ def refactor_cdk_package_refs() -> None:
             REPO_ROOT,
         ),
         (
-            r"(?<!package )io\.airbyte\.integrations\.destination\.s3\.(avro|constant|credential|csv|jsonl|parquet|S3DestinationConfig|S3DestinationConstants|S3Format|S3FormatConfig|StorageProvider|template|util|writer)\b",
+            r"(?<!package )io\.airbyte\.integrations\.destination\.s3\.(avro|constant|credential|csv|jsonl|parquet|S3BaseChecks|S3ConsumerFactory|S3DestinationConfig|S3DestinationConstants|S3Format|S3FormatConfig|S3FormatConfigs|SerializedBufferFactory|StorageProvider|S3StorageOperations|template|util|writer)\b",
             r"io.airbyte.cdk.integrations.destination.s3.\1",
             REPO_ROOT,
         )

@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-java-cdk'
+    id 'airbyte-java-connector'
 }
 
 application {
@@ -10,9 +10,15 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-dependencies {
-    implementation 'io.airbyte:airbyte-cdk:0.0.1'
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    useCdkProjectRef = true
+    features = ['db-destinations']
+}
 
+airbyteJavaConnector.addCdkDependencies()
+
+dependencies {
     implementation 'com.google.cloud:google-cloud-bigquery:2.27.0'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
