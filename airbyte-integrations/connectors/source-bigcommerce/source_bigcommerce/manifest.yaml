@@ -55,7 +55,7 @@ definitions:
     start_datetime:
       type: MinMaxDatetime
       datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: '%Y-%m-%d'
     end_datetime:
       type: MinMaxDatetime
       datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
@@ -143,6 +143,13 @@ definitions:
         type: MinMaxDatetime
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    transformations:
+      - type: CustomTransformation
+        class_name: source_bigcommerce.components.DateTimeTransformer
+        fields:
+          - path:
+              - date_modified
+            value: '{{ record.date_modified }}'
   transactions_stream:
     type: DeclarativeStream
     name: transactions
