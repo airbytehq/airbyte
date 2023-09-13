@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.debezium.internals.mysql;
 
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.COMPRESSION_ENABLED;
 import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,6 +14,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
@@ -29,6 +31,7 @@ import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,8 +56,6 @@ import org.slf4j.LoggerFactory;
 public class MySqlDebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDebeziumStateUtil.class);
-  public static final String MYSQL_CDC_OFFSET = "mysql_cdc_offset";
-  public static final String MYSQL_DB_HISTORY = "mysql_db_history";
 
   public boolean savedOffsetStillPresentOnServer(final JdbcDatabase database, final MysqlDebeziumStateAttributes savedState) {
     if (savedState.gtidSet().isPresent()) {
@@ -255,7 +256,8 @@ public class MySqlDebeziumStateUtil {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         constructBinlogOffset(database, database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText()),
         Optional.empty());
-    final AirbyteSchemaHistoryStorage schemaHistoryStorage = AirbyteSchemaHistoryStorage.initializeDBHistory(Optional.empty());
+    final AirbyteSchemaHistoryStorage schemaHistoryStorage =
+        AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(properties,
         database.getSourceConfig(),
@@ -264,9 +266,15 @@ public class MySqlDebeziumStateUtil {
         Optional.of(schemaHistoryStorage),
         DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB)) {
       publisher.start(queue);
+      final Instant engineStartTime = Instant.now();
       while (!publisher.hasClosed()) {
         final ChangeEvent<String, String> event = queue.poll(10, TimeUnit.SECONDS);
         if (event == null) {
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5L)) > 0) {
+            LOGGER.error("No record is returned even after 5 minutes of waiting, closing the engine");
+            publisher.close();
+
+          }
           continue;
         }
         LOGGER.info("A record is returned, closing the engine since the state is constructed");
@@ -278,19 +286,25 @@ public class MySqlDebeziumStateUtil {
     }
 
     final Map<String, String> offset = offsetManager.read();
-    final String dbHistory = schemaHistoryStorage.read();
+    final SchemaHistory schemaHistory = schemaHistoryStorage.read();
 
     assert !offset.isEmpty();
-    assert Objects.nonNull(dbHistory);
+    assert Objects.nonNull(schemaHistory);
+    assert Objects.nonNull(schemaHistory.schema());
 
-    final Map<String, Object> state = new HashMap<>();
-    state.put(MYSQL_CDC_OFFSET, offset);
-    state.put(MYSQL_DB_HISTORY, dbHistory);
-
-    final JsonNode asJson = Jsons.jsonNode(state);
+    final JsonNode asJson = serialize(offset, schemaHistory);
     LOGGER.info("Initial Debezium state constructed: {}", asJson);
 
     return asJson;
+  }
+
+  public static JsonNode serialize(final Map<String, String> offset, final SchemaHistory dbHistory) {
+    final Map<String, Object> state = new HashMap<>();
+    state.put(MysqlCdcStateConstants.MYSQL_CDC_OFFSET, offset);
+    state.put(MysqlCdcStateConstants.MYSQL_DB_HISTORY, dbHistory.schema());
+    state.put(MysqlCdcStateConstants.IS_COMPRESSED, dbHistory.isCompressed());
+
+    return Jsons.jsonNode(state);
   }
 
   /**
