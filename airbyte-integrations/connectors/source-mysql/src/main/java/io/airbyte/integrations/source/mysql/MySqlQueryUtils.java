@@ -136,18 +136,18 @@ public class MySqlQueryUtils {
   }
 
   private static List<JsonNode> getTableEstimate(final JdbcDatabase database, final String namespace, final String name) {
-    List<JsonNode> jsonNodes = Collections.EMPTY_LIST;
     try {
       // Construct the table estimate query.
       final String tableEstimateQuery =
           String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
-      jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
           resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-      Preconditions.checkState(jsonNodes.size() == 1);
-    } catch (final SQLException e) {
+
+      return jsonNodes.size() > 0 ? jsonNodes : Collections.emptyList();
+    } catch (final Exception e) {
       LOGGER.warn("Error occurred while attempting to estimate table size", e);
     }
-    return jsonNodes;
+    return Collections.emptyList();
   }
 
 }
