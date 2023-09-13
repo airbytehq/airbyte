@@ -126,6 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2023-09-13 | [\#30365](https://github.com/airbytehq/airbyte/pull/30365) | Add missing fields to streams                                                                                           |
 | 0.3.17  | 2023-09-13 | [\#30343](https://github.com/airbytehq/airbyte/pull/30343) | Enable caching for `Issues`  stream                                                                                     |
 | 0.3.16  | 2023-09-12 | [\#30340](https://github.com/airbytehq/airbyte/pull/30340) | Update error messages for user in case of bad request for streams issues and sprints                                    |
 | 0.3.15  | 2023-09-12 | [\#30300](https://github.com/airbytehq/airbyte/pull/30300) | Add handling for 403 and 401 errors                                                                                     |
