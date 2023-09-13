@@ -64,3 +64,10 @@ repos:
               /connectors/destination-e2e-test|
               /connectors/source-e2e-test
           ).*$
+  - repo: local
+    hooks:
+      - id: base-images-build
+        name: Build and commit generated file on base_images change
+        language: system
+        entry: airbyte-ci/connectors/base_images/pre-commit-hook.sh
+        files: ^airbyte-ci/connectors/base_images/

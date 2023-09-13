@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import os
 import sys
 from itertools import product
 from pathlib import Path
@@ -137,7 +138,10 @@ def main():
                 console.log(
                     f":memo: Wrote the updated changelog to {python_changelog_path}.",
                 )
-                console.log("[bold green]You can now commit and push the changelog and the generated dockerfiles![/bold green]")
+                if os.getenv("GIT_HOOK"):
+                    console.log("[bold green] The updated changelog and dockerfile files were commited.[/bold green]")
+                else:
+                    console.log("[bold green]You can now commit and push the changelog and the generated dockerfiles![/bold green]")
             if not success:
                 sys.exit(1)
     except KeyboardInterrupt:
