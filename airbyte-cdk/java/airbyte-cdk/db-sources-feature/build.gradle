@@ -1,0 +1,24 @@
+import org.jsonschema2pojo.SourceType
+
+plugins {
+    id "com.github.eirnym.js2p" version "1.0"
+}
+
+// Convert yaml to java: relationaldb.models
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/db_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
+
+    targetPackage = 'io.airbyte.cdk.integrations.source.relationaldb.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+}

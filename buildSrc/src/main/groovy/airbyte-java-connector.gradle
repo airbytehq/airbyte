@@ -1,0 +1,51 @@
+/*
+This class also facilitates importing and working with the Java CDK.
+*/
+
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
+
+class AirbyteJavaConnectorExtension {
+
+    boolean useCdkProjectRef = false
+    String cdkVersionRequired
+    Project project
+
+    AirbyteJavaConnectorExtension(Project project) {
+        this.project = project
+
+        if (useCdkProjectRef) {
+            project.dependencies {
+                // TODO: debug circular reference:
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk')
+            }
+        } else {
+            project.dependencies {
+                implementation "io.airbyte:airbyte-cdk:${cdkVersionRequired}"
+            }
+        }
+    }
+}
+
+
+class AirbyteJavaConnectorPlugin implements Plugin<Project> {
+
+    @Override
+    void apply(Project project) {
+        project.plugins.apply(AirbyteJavaCDKPlugin)
+
+        cdkTargetVersion = project.ext.readCdkTargetVersion(project)
+
+        if (extension.useCdkProjectRef) {
+            project.dependencies {
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:core')
+                // testImplementation testFixtures(project.project(':airbyte-cdk:java:airbyte-cdk:core'))
+            }
+        } else {
+            project.dependencies {
+                implementation "io.airbyte:airbyte-cdk:${cdkTargetVersion}"
+            }
+        }
+    }
+}

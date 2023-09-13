@@ -1,0 +1,3 @@
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+}
