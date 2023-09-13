@@ -9,11 +9,11 @@ from types import ModuleType
 from typing import List, Type
 
 import semver
-from base_images import errors
+from base_images import errors, consts
 
 
 def find_modules_in_package(package: str) -> List[ModuleType]:
-    package_path = package.replace(".", "/")
+    package_path = f'{consts.PROJECT_DIR}/{package.replace(".", "/")}'
     return [importlib.import_module(f"{package}.{module_name}") for _, module_name, _ in pkgutil.iter_modules([package_path])]
 
 
