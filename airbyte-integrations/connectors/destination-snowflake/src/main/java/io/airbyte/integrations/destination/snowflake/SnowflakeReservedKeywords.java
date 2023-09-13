@@ -1,12 +1,12 @@
-package io.airbyte.integrations.base.destination.typing_deduping;
+package io.airbyte.integrations.destination.snowflake;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 
-public class ReservedKeywords {
+public class SnowflakeReservedKeywords {
 
   // https://docs.snowflake.com/en/sql-reference/reserved-keywords.html
-  public static final List<String> SNOWFLAKE = ImmutableList.of(
+  public static final List<String> RESERVED_KEYWORDS = ImmutableList.of(
       "ALL",
       "ALTER",
       "AND",
@@ -97,7 +97,6 @@ public class ReservedKeywords {
       "WHEN",
       "WHENEVER",
       "WHERE",
-      "WITH"
-  );
+      "WITH");
 
 }

@@ -12,7 +12,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.ColumnId;
-import io.airbyte.integrations.base.destination.typing_deduping.ReservedKeywords;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -20,6 +19,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.integrations.destination.snowflake.SnowflakeReservedKeywords;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -50,7 +50,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public ColumnId buildColumnId(final String name) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(escapeSqlIdentifier(name).toUpperCase(), name, name.toUpperCase());
+    return new ColumnId(prefixReservedKeyword(escapeSqlIdentifier(name).toUpperCase()), name, name.toUpperCase());
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -551,11 +551,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
    * Snowflake json object access is done using double-quoted strings, e.g. `SELECT "_airbyte_data":"foo"`.
    * As such, we need to escape double-quotes in the field name.
    */
-  public static String escapeJsonIdentifier(String identifier) {
-    if (ReservedKeywords.SNOWFLAKE.contains(identifier.toUpperCase())) {
-      identifier = "_" + identifier;
-    }
-
+  public static String escapeJsonIdentifier(final String identifier) {
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be doubled.
     return identifier.replace("\"", "\"\"");
@@ -580,6 +576,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     }
 
     return escapeJsonIdentifier(identifier);
+  }
+
+  private static String prefixReservedKeyword(final String columnName) {
+    return SnowflakeReservedKeywords.RESERVED_KEYWORDS.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ?
+        "_" + columnName : columnName;
   }
 
   public static String escapeSingleQuotedString(final String str) {
