@@ -8,7 +8,7 @@ services:
     volumes:
       - ./files:/home/foo/files
     ports:
-      - ":22"
+      - "2223:22"
     command: foo:pass
 
   mysftpssh:
@@ -17,5 +17,5 @@ services:
       - ./files:/home/foo/files
       - ./ssh/keys/test_source-sftp-bulk_id_rsa.pub:/home/foo/.ssh/keys/id_rsa.pub
     ports:
-      - ":22"
+      - "2224:22"
     command: foo:pass:1001
