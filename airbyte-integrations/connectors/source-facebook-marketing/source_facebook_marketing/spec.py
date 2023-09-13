@@ -139,7 +139,7 @@ class ConnectorConfig(BaseConfig):
     page_size: Optional[PositiveInt] = Field(
         title="Page Size of Requests",
         order=7,
-        default=100,
+        default=500,
     )
 
     insights_lookback_window: Optional[PositiveInt] = Field(
