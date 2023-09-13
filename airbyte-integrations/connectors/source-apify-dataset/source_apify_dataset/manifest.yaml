@@ -55,7 +55,7 @@ definitions:
         type: BearerAuthenticator
         api_token: "{{ config['token'] }}"
 
-  base_paginator:
+  paginator:
     type: "DefaultPaginator"
     page_size_option:
       type: "RequestOption"
@@ -69,13 +69,8 @@ definitions:
       field_name: "offset"
       inject_into: "request_parameter"
 
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-
   datasets_stream:
-    $ref: "#/definitions/base_stream"
+    type: DeclarativeStream
     $parameters:
       name: "Dataset catalog"
       primary_key: "id"
@@ -83,7 +78,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
-        $ref: "#/definitions/base_paginator"
+        $ref: "#/definitions/paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -91,7 +86,7 @@ definitions:
           field_path: ["data", "items"]
 
   dataset_stream:
-    $ref: "#/definitions/base_stream"
+    type: DeclarativeStream
     $parameters:
       name: "Dataset"
       primary_key: "id"
@@ -99,7 +94,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
-        $ref: "#/definitions/base_paginator"
+        $ref: "#/definitions/paginator"
       record_selector:
         type: RecordSelector
         extractor:
@@ -107,14 +102,14 @@ definitions:
           field_path: ["data"]
 
   item_collection_wcc_stream:
-    $ref: "#/definitions/base_stream"
+    type: DeclarativeStream
     $parameters:
       name: "Item Collection - Website Content Crawler (WCC)"
       path: "datasets/{{ config['dataset_id'] }}/items"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
-        $ref: "#/definitions/base_paginator"
+        $ref: "#/definitions/paginator"
       record_selector:
         type: RecordSelector
         extractor:
