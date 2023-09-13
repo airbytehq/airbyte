@@ -3,7 +3,7 @@ data:
     oss:
       enabled: false
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
