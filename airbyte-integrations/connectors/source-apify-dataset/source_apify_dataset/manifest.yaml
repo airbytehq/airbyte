@@ -10,11 +10,11 @@ spec:
     type: object
     required:
       - token
-      - datasetId
+      - dataset_id
     properties:
       token:
         type: string
-        title: Personal API token
+        title: API token
         description: >-
           Personal API token of your Apify account. In Apify Console, you can find your API token in the
           <a href="https://console.apify.com/account/integrations">Settings section under the Integrations tab</a>
@@ -23,7 +23,7 @@ spec:
         examples:
           - apify_api_PbVwb1cBbuvbfg2jRmAIHZKgx3NQyfEMG7uk
         airbyte_secret: true
-      datasetId:
+      dataset_id:
         type: string
         title: Dataset ID
         description: >-
@@ -99,7 +99,7 @@ definitions:
     $parameters:
       name: "Dataset"
       primary_key: "id"
-      path: "datasets/{{ config['datasetId'] }}"
+      path: "datasets/{{ config['dataset_id'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -114,7 +114,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "Item Collection - Website Content Crawler (WCC)"
-      path: "datasets/{{ config['datasetId'] }}/items"
+      path: "datasets/{{ config['dataset_id'] }}/items"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
