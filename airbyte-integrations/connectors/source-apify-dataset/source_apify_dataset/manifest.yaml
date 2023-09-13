@@ -69,8 +69,8 @@ definitions:
       field_name: "offset"
       inject_into: "request_parameter"
 
-  datasets_stream:
-    type: DeclarativeStream
+streams:
+  - type: DeclarativeStream
     $parameters:
       name: "Dataset catalog"
       primary_key: "id"
@@ -85,8 +85,7 @@ definitions:
           type: DpathExtractor
           field_path: ["data", "items"]
 
-  dataset_stream:
-    type: DeclarativeStream
+  - type: DeclarativeStream
     $parameters:
       name: "Dataset"
       primary_key: "id"
@@ -101,8 +100,7 @@ definitions:
           type: DpathExtractor
           field_path: ["data"]
 
-  item_collection_wcc_stream:
-    type: DeclarativeStream
+  - type: DeclarativeStream
     $parameters:
       name: "Item Collection - Website Content Crawler (WCC)"
       path: "datasets/{{ config['dataset_id'] }}/items"
@@ -115,11 +113,6 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: []
-
-streams:
-  - "#/definitions/datasets_stream"
-  - "#/definitions/dataset_stream"
-  - "#/definitions/item_collection_wcc_stream"
 
 check:
   type: CheckStream
