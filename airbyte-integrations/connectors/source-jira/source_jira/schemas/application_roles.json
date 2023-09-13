@@ -54,16 +54,19 @@
       "items": { "type": ["null", "object"] }
     },
     "defaultGroupsDetails": {
-      "type": ["null", "object"],
-      "properties": {
-        "groupId": {
-          "type": ["null", "string"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        },
-        "self": {
-          "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "groupId": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "self": {
+            "type": ["null", "string"]
+          }
         }
       }
     }
