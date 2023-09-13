@@ -17,13 +17,26 @@ Only one stream will exist to collect data from all source streams. This will be
 
 For each record, a UUID string is generated and used as the document id. The embeddings generated as defined will be stored as embeddings. Data in the text fields will be stored as documents and those in the metadata fields will be stored as metadata.
 
-## Getting Started
-
-Airbyte Cloud only supports connecting to your Chroma Instance instance in client/server mode.
-
 ## Getting Started \(Airbyte Open-Source\)
 
+
 You can connect to a Chroma instance either in client/server mode or in a local persistent mode. For the local persistent mode, the database file will be saved in the path defined in the `path` config parameter. Note that `path` must be an absolute path, prefixed with `/local`.
+
+:::danger
+
+Persistent Client mode is not supported on Kubernetes
+
+:::
+
+By default, the `LOCAL_ROOT` env variable in the `.env` file is set `/tmp/airbyte_local`.
+
+The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` is substituted by `/tmp/airbyte_local` by default.
+
+:::caution
+
+Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
+
+:::
 
 #### Requirements
 
