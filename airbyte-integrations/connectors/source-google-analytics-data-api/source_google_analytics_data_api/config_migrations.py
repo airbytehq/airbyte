@@ -19,9 +19,9 @@ class MigrateCustomReports:
     This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
-    Specifically, starting from `1.2.0`, the `property_id` property should be like :
+    Specifically, starting from `1.3.0`, the `property_id` property should be like :
         > List(["<property_id 1>", "<property_id 2>", ..., "<property_id n>"])
-    instead of, in `1.1.3`:
+    instead of, in `1.2.0`:
         > JSON STR: "<property_id>"
     """
 
