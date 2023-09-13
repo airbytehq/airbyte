@@ -110,7 +110,8 @@ public class AirbyteDebeziumHandler<T> {
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager =
-        schemaHistoryManager(cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState());
+        trackSchemaHistory ? schemaHistoryManager(cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState())
+            : Optional.empty();
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
         schemaHistoryManager, debeziumConnectorType);
     publisher.start(queue);
