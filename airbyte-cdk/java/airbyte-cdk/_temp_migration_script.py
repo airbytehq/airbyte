@@ -1,3 +1,19 @@
+"""Migration script.
+
+Usage:
+    python3 _temp_migration_script.py [package1,package2,...]
+
+# Manual post-migration steps
+
+## Manual patches to files
+
+- airbyte-cdk/java/airbyte-cdk/src/test/java/io/airbyte/cdk/integrations/source/jdbc/DefaultJdbcSourceAcceptanceTest.java:
+
+    // @Override // CDK TODO: This was commented out because the compiler said it was not an override.
+    protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+
+"""
+
 import os
 import re
 import shutil
@@ -228,8 +244,8 @@ def main() -> None:
     if len(sys.argv) > 1:
         if sys.argv[1] == "test":
             # Do a quick test
-            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")            
-            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build")            
+            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble")
+            os.system(f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build")
             return
 
         # If a CLI argument is passed, expect csv and override packages to migrate
