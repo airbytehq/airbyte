@@ -79,12 +79,31 @@ definitions:
       partition_router:
         $ref: "#/definitions/datasets_partition_router"
 
+  item_collection_wcc_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "item_collection_wcc"
+      path: "datasets/{{ stream_partition.parent_id }}/items"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        $ref: "#/definitions/datasets_partition_router"
+
 streams:
   - "#/definitions/datasets_stream"
   - "#/definitions/dataset_stream"
+  - "#/definitions/item_collection_wcc_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "datasets"
     - "dataset"
+    - "item_collection_wcc"
