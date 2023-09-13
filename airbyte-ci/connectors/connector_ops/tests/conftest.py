@@ -3,6 +3,7 @@
 #
 
 
+import os
 from datetime import datetime
 
 import pandas as pd
@@ -53,3 +54,12 @@ def dummy_qa_report() -> pd.DataFrame:
             }
         ]
     )
+
+
+@pytest.fixture(autouse=True)
+def set_working_dir_to_repo_root(monkeypatch):
+    """Set working directory to the root of the repository.
+
+    HACK: This is a workaround for the fact that these tests are not run from the root of the repository.
+    """
+    monkeypatch.chdir(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
