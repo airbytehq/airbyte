@@ -68,10 +68,13 @@ definitions:
 
 streams:
   - type: DeclarativeStream
+    name: "Dataset Collection"
+    primary_key: "id"
     $parameters:
-      name: "Dataset catalog"
-      primary_key: "id"
       path: "datasets"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "schemas/dataset_collection.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -81,10 +84,13 @@ streams:
           field_path: ["data", "items"]
 
   - type: DeclarativeStream
+    name: "Dataset"
+    primary_key: "id"
     $parameters:
-      name: "Dataset"
-      primary_key: "id"
       path: "datasets/{{ config['dataset_id'] }}"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "schemas/dataset.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -94,9 +100,12 @@ streams:
           field_path: ["data"]
 
   - type: DeclarativeStream
+    name: "Item Collection - Website Content Crawler (WCC)"
     $parameters:
-      name: "Item Collection - Website Content Crawler (WCC)"
       path: "datasets/{{ config['dataset_id'] }}/items"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "schemas/item_collection_wcc.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -108,6 +117,6 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "Dataset catalog"
+    - "Dataset Collection"
     - "Dataset"
     - "Item Collection - Website Content Crawler (WCC)"

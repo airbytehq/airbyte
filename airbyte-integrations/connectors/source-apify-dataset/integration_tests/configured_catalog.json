@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "Dataset catalog",
+        "name": "Dataset Collection",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
