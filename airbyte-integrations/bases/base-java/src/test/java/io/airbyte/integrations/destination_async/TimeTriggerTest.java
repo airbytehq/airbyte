@@ -37,8 +37,11 @@ public class TimeTriggerTest {
 
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, null, null, mockedNowProvider);
     assertEquals(false, detect.isTimeTriggered(DESC1).getLeft());
+    assertEquals(START_TIME, detect.getLastTimeCalledPerStream().get(DESC1));
     assertEquals(false, detect.isTimeTriggered(DESC1).getLeft());
+    assertEquals(START_TIME, detect.getLastTimeCalledPerStream().get(DESC1));
     assertEquals(true, detect.isTimeTriggered(DESC1).getLeft());
+    assertEquals(FIVE_MINUTES_AFTER_SECOND_TIME, detect.getLastTimeCalledPerStream().get(DESC1));
   }
 
 }
