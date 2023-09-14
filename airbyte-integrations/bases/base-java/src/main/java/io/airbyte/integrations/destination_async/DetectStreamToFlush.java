@@ -14,7 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -32,16 +37,23 @@ public class DetectStreamToFlush {
   private final RunningFlushWorkers runningFlushWorkers;
   private final AtomicBoolean isClosing;
   private final DestinationFlushFunction flusher;
+  private final LongSupplier nowProvider;
+
+  private AtomicLong lastTimeCalled = new AtomicLong(System.currentTimeMillis());
+  private ConcurrentMap<StreamDescriptor, Long> lastTimeCalledPerStream = new ConcurrentHashMap<>();
 
   public DetectStreamToFlush(final BufferDequeue bufferDequeue,
                              final RunningFlushWorkers runningFlushWorkers,
                              final AtomicBoolean isClosing,
-                             final DestinationFlushFunction flusher) {
+                             final DestinationFlushFunction flusher,
+                             final LongSupplier nowProvider) {
     this.bufferDequeue = bufferDequeue;
     this.runningFlushWorkers = runningFlushWorkers;
     this.isClosing = isClosing;
     this.flusher = flusher;
+    this.nowProvider = nowProvider;
   }
+
 
   /**
    * Get the best, next stream that is ready to be flushed.
@@ -106,7 +118,6 @@ public class DetectStreamToFlush {
 
       if (isSizeTriggeredResult.getLeft() || isTimeTriggeredResult.getLeft()) {
         log.info("flushing: {}", debugString);
-
         return Optional.of(stream);
       }
     }
@@ -127,11 +138,19 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
-    final Boolean isTimeTriggered = bufferDequeue.getTimeOfLastRecord(stream)
-        .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MIN, ChronoUnit.MINUTES)))
-        .orElse(false);
+
+    final long now = nowProvider.getAsLong();
+
+    lastTimeCalledPerStream.putIfAbsent(stream, now);
+
+    final Boolean isTimeTriggered =
+            lastTimeCalledPerStream.get(stream) <= (now - 5 * 60 * 1000);
 
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
+
+    if (isTimeTriggered) {
+      lastTimeCalledPerStream.put(stream, nowProvider.getAsLong());
+    }
 
     return ImmutablePair.of(isTimeTriggered, debugString);
   }
@@ -167,6 +186,10 @@ public class DetectStreamToFlush {
         AirbyteFileUtils.byteCountToDisplaySize(currentQueueSize),
         AirbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate),
         AirbyteFileUtils.byteCountToDisplaySize(queueSizeAfterRunningWorkers));
+
+    if (isSizeTriggered) {
+      lastTimeCalledPerStream.put(stream, nowProvider.getAsLong());
+    }
 
     return ImmutablePair.of(isSizeTriggered, debugString);
   }
@@ -227,4 +250,8 @@ public class DetectStreamToFlush {
         .collect(Collectors.toList());
   }
 
+  @VisibleForTesting
+  ConcurrentMap<StreamDescriptor, Long> getLastTimeCalledPerStream() {
+    return lastTimeCalledPerStream;
+  }
 }

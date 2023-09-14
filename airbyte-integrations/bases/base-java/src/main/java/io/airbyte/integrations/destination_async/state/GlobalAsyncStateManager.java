@@ -70,7 +70,6 @@ public class GlobalAsyncStateManager {
   boolean preState = true;
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
   private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> streamToStateIdQ = new ConcurrentHashMap<>();
-
   private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
   // empty in the STREAM case.
 
@@ -144,30 +143,41 @@ public class GlobalAsyncStateManager {
   public List<PartialAirbyteMessage> flushStates() {
     final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
-    for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
-      // Remove all states with 0 counters.
-      // Per-stream synchronized is required to make sure the state (at the head of the queue)
-      // logic is applied to is the state actually removed.
-      synchronized (this) {
+    synchronized (this) {
+      for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
+        // Remove all states with 0 counters.
+        // Per-stream synchronized is required to make sure the state (at the head of the queue)
+        // logic is applied to is the state actually removed.
+
         final LinkedList<Long> stateIdQueue = entry.getValue();
         while (true) {
-          final Long oldestState = stateIdQueue.peek();
+          final Long oldestStateId = stateIdQueue.peek();
+          // no state to flush for this stream
+          if (oldestStateId == null) {
+            break;
+          }
+
+          final var oldestState = stateIdToState.get(oldestStateId);
+          // technically possible this map hasn't been updated yet since we don't lock
           if (oldestState == null) {
             break;
           }
 
-          // technically possible this map hasn't been updated yet.
-          final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
-          if (noCorrespondingStateMsg) {
+          final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
+          // technically possible this map hasn't been updated yet since we don't lock
+          if (oldestStateCounter == null) {
             break;
           }
 
-          final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
-          final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
-          if (noPrevRecs || allRecsEmitted) {
-            var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
-            output.add(stateIdToState.get(oldestState).getLeft());
-            bytesFlushed += stateIdToState.get(oldestState).getRight();
+          final var allRecordsCommitted = oldestStateCounter.get() == 0;
+          if (allRecordsCommitted) {
+            output.add(oldestState.getLeft());
+            bytesFlushed += oldestState.getRight();
+
+            // cleanup
+            entry.getValue().poll();
+            stateIdToState.remove(oldestStateId);
+            stateIdToCounter.remove(oldestStateId);
           } else {
             break;
           }
@@ -265,7 +275,6 @@ public class GlobalAsyncStateManager {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
     stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
     registerNewStateId(resolvedDescriptor);
-
     allocateMemoryToState(sizeInBytes);
   }
 
@@ -293,10 +302,14 @@ public class GlobalAsyncStateManager {
       }
     }
     memoryUsed.addAndGet(sizeInBytes);
-    LOGGER.debug("State Manager memory usage: Allocated: {}, Used: {}, % Used {}",
-        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-        (double) memoryUsed.get() / memoryAllocated.get());
+    LOGGER.debug(getMemoryUsageMessage());
+  }
+
+  public String getMemoryUsageMessage() {
+    return String.format("State Manager memory usage: Allocated: %s, Used: %s, percentage Used %f",
+            FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+            FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+            (double) memoryUsed.get() / memoryAllocated.get());
   }
 
   private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message) {

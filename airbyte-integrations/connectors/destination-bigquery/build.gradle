@@ -49,7 +49,6 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
     integrationTestJavaImplementation project(':airbyte-commons')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 
 configurations.all {

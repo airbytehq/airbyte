@@ -20,7 +20,7 @@ public class FlushThresholdTest {
   void testBaseThreshold() {
     final AtomicBoolean isClosing = new AtomicBoolean(false);
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null, () -> System.currentTimeMillis());
     assertEquals(SIZE_10MB, detect.computeQueueThreshold());
   }
 
@@ -28,7 +28,7 @@ public class FlushThresholdTest {
   void testClosingThreshold() {
     final AtomicBoolean isClosing = new AtomicBoolean(true);
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null, () -> System.currentTimeMillis());
     assertEquals(0, detect.computeQueueThreshold());
   }
 
@@ -38,7 +38,7 @@ public class FlushThresholdTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(8L);
     when(bufferDequeue.getMaxQueueSizeBytes()).thenReturn(10L);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null, () -> System.currentTimeMillis());
     assertEquals(SIZE_10MB, detect.computeQueueThreshold());
   }
 
@@ -48,7 +48,7 @@ public class FlushThresholdTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(9L);
     when(bufferDequeue.getMaxQueueSizeBytes()).thenReturn(10L);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, isClosing, null, () -> System.currentTimeMillis());
     assertEquals(0, detect.computeQueueThreshold());
   }
 

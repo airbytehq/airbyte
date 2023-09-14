@@ -181,3 +181,9 @@ async def test_check_path_in_workdir(dagger_client):
     assert await utils.check_path_in_workdir(container, "setup.py")
     assert await utils.check_path_in_workdir(container, "requirements.txt")
     assert await utils.check_path_in_workdir(container, "not_existing_file") is False
+
+
+def test_sh_dash_c():
+    assert utils.sh_dash_c(["foo", "bar"]) == ["sh", "-c", "set -o xtrace && foo && bar"]
+    assert utils.sh_dash_c(["foo"]) == ["sh", "-c", "set -o xtrace && foo"]
+    assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]

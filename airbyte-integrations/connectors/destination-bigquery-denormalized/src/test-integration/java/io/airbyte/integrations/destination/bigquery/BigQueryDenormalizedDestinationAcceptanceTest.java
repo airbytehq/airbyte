@@ -126,7 +126,9 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
       // will hide the dataset, so we don't do it as we do for other destinations
-      assertEquals("99namespace", actualNormalizedNamespace, message);
+      final int underscoreIndex = expectedNormalizedNamespace.indexOf("_", 1);
+      final String randomSuffix = expectedNormalizedNamespace.substring(underscoreIndex);
+      assertEquals("99namespace" + randomSuffix, actualNormalizedNamespace, message);
     } else {
       assertEquals(expectedNormalizedNamespace, actualNormalizedNamespace, message);
     }
