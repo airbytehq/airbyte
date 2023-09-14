@@ -24,6 +24,6 @@ ENV APPLICATION source-mysql-strict-encrypt
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=3.0.4
+LABEL io.airbyte.version=3.0.7
 
 LABEL io.airbyte.name=airbyte/source-mysql-strict-encrypt
