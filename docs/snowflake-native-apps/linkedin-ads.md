@@ -1,3 +1,5 @@
+# LinkedIn Ads Connector
+
 The Airbyte connector for LinkedIn Ads is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a database of your choice within Snowflake.
 
 > **Info**  
@@ -5,7 +7,7 @@ The Airbyte connector for LinkedIn Ads is a Snowflake Native Application that al
 
 # Getting started
 
-## Prerequisite
+## Prerequisites
 A LinkedIn Ads account with permission to access data from accounts you want to sync.
 
 ## Installing the App
@@ -27,22 +29,24 @@ A LinkedIn Ads account with permission to access data from accounts you want to 
 
 You should now see the application under `Installed Apps`. You may need to refresh the page.
 
-## LinkedIn Account
-In order for the Snowflake Native App to query LinkedIn, you will need an account with the right permissions. Please follow [the LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
+## LinkedIn Ads Account
+In order for the Snowflake Native App to query LinkedIn Ads, you will need an account with the right permissions. Please follow [the LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
 
 ## Snowflake Native App Authorizations
 > **Note**  
-> All the queries below use `LINKEDIN_ADS_TEST` but if you have renamed your application, you will have to use this name as a reference.
+> By default the app will be installed using the name `AIRBYTE_LINKEDIN_ADS`, but if you renamed the app during installation, you will have to use that name as a reference.
 
 1. Create the database where the app will access the authorization. This database can be different from the database where the sync will output the records.
 ```
 CREATE DATABASE <database>;
 USE <database>;
 ```
+
 2. The native app will validate the output database and create it if it does not exist. In order to do that, the app needs access to the database:
 ```
-GRANT CREATE DATABASE ON ACCOUNT TO APPLICATION LINKEDIN_ADS_TEST;
+GRANT CREATE DATABASE ON ACCOUNT TO APPLICATION <app_name>;
 ```
+
 3. We also need to allow outgoing network traffic based on the domain of the source. In the case of LinkedIn Ads, simply run:
 ```
 CREATE OR REPLACE NETWORK RULE linkedin_apis_network_rule
@@ -52,11 +56,11 @@ CREATE OR REPLACE NETWORK RULE linkedin_apis_network_rule
 ```
 
 > **Note**  
-> As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-network-rule) mentions this is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
+> As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
 
-4. Once we have access, we need authorization/authentication. Provide the credentials to the app as such:
+4. Once we have external access configured, we need define our authorization/authentication. Provide the credentials to the app as such:
 ```
-CREATE OR REPLACE SECRET integration_tests_linkedin_oauth
+CREATE OR REPLACE SECRET integration_linkedin_ads_oauth
   TYPE = GENERIC_STRING
   SECRET_STRING = '{
     "auth_method": "oAuth2.0",
@@ -66,27 +70,38 @@ CREATE OR REPLACE SECRET integration_tests_linkedin_oauth
   }';
 ```
 ... where `client_id`, `client_secret` and `refresh_token` are strings. For more information, see [the LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source).
-5. Once the network rule and the secret is in Snowflake, we just need to make them available to the app.
+
+5. Once the network rule and the secret is defined in Snowflake, we just need to make them available to the app by using an external access integration.
 ```
--- create external access integration
-CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION LINKEDIN_ADS_TEST
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION integration_linkedin_ads
   ALLOWED_NETWORK_RULES = (linkedin_apis_network_rule)
-  ALLOWED_AUTHENTICATION_SECRETS = (integration_tests_linkedin_oauth)
+  ALLOWED_AUTHENTICATION_SECRETS = (integration_linkedin_ads_oauth)
   ENABLED = true;
-  
--- grant permissions to access the integration
-GRANT USAGE ON INTEGRATION integration_tests_linkedin_integration TO APPLICATION LINKEDIN_ADS_TEST;
--- grant access the the secret
-GRANT USAGE ON DATABASE <your database> TO APPLICATION LINKEDIN_ADS_TEST;
-GRANT USAGE ON SCHEMA public TO APPLICATION LINKEDIN_ADS_TEST;
-GRANT READ ON SECRET integration_tests_linkedin_oauth TO APPLICATION LINKEDIN_ADS_TEST;
 ```
+
+6. Grant permission for the app to access the integration.
+```
+GRANT USAGE ON INTEGRATION integration_linkedin_ads TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+```
+
+7. Grant permissions for the app to access the database that houses the secret and read the secret.
+```
+GRANT USAGE ON DATABASE <your_database> TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT USAGE ON SCHEMA <your_schema> TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT READ ON SECRET integration_linkedin_ads_oauth TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+```
+
+8. Grant permission to create a database, schema, and tables. The app will automatically create the output database and schema if they do not already exist.
+```
+GRANT CREATE DATABASE ON ACCOUNT TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+```
+
 
 ## Configure a connection
 Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `LINKEDIN_ADS_TEST`. You will have to accept the Anaconda terms in order to use Streamlit.
 Once you have access to the app, select `New Connection` and fill the fields as such:
-* Secret: `<database>.public.integration_tests_linkedin_oauth`
-* External Access Integration: `integration_tests_linkedin_integration`
+* Secret: `<database>.<your_schema>.integration_linkedin_ads_oauth`
+* External Access Integration: `integration_linkedin_ads`
 * start_date: UTC date in the format 2020-09-17. Any data before this date will not be replicated.
 * account_ids: Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the [LinkedIn Ads docs](https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details) for more info.
 * Output Database: The database where the records will be saved. Snowflake's database naming restriction applies here.
@@ -95,11 +110,10 @@ Once you have access to the app, select `New Connection` and fill the fields as 
 * Replication Frequency: How often do the records will be fetched
 
 ## Run a sync
-Once a connection is configured, go in `Connections List` and click on `Sync Now` for the connection you want to sync. Under the hood, this simply calls the procedure `call LINKEDIN_ADS_TEST.APP.SYNC(<connection ID>);`. Once the sync is done, you should be able to validate that the records are in `<database>.<schema>`
+Once a connection is configured, go in `Connections List` and click on `Sync Now` for the connection you want to sync. Once the sync is complete, you should be able to validate that the records have been stored in `<your_database>.<your_schema>`
 
 ### Supported Streams
-
-As of now, all supported streams are full refresh as incremental syncs are not supported. Here are the list of streams supported:
+As of now, all supported streams perform a full refresh. Incremental syncs are not yet supported. Here are the list of supported streams:
 * Accounts
 * Account Users
 * Ad Analytics by Campaign
