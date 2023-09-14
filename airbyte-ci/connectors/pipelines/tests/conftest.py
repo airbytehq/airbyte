@@ -3,9 +3,10 @@
 #
 
 import os
+import platform
 import sys
 from pathlib import Path
-from typing import Set
+from typing import List
 
 import dagger
 import git
@@ -68,5 +69,10 @@ def from_airbyte_root(airbyte_repo_path):
 
 
 @pytest.fixture(scope="session")
-def all_connectors() -> Set[Connector]:
-    return ALL_CONNECTORS
+def all_connectors() -> List[Connector]:
+    return sorted(ALL_CONNECTORS, key=lambda connector: connector.technical_name)
+
+
+@pytest.fixture(scope="session")
+def current_platform():
+    return dagger.Platform(f"linux/{platform.machine()}")
