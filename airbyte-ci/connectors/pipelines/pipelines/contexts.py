@@ -53,6 +53,7 @@ class PipelineContext:
         + glob("**/.mypy_cache", recursive=True)
         + glob("**/.DS_Store", recursive=True)
         + glob("**/airbyte_ci_logs", recursive=True)
+        + glob("**/.gradle", recursive=True)
     )
 
     def __init__(

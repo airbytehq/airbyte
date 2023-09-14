@@ -49,6 +49,34 @@ class OpenAIEmbeddingConfigModel(BaseModel):
         }
 
 
+class AzureOpenAIEmbeddingConfigModel(BaseModel):
+    mode: Literal["azure_openai"] = Field("azure_openai", const=True)
+    openai_key: str = Field(
+        ...,
+        title="Azure OpenAI API key",
+        airbyte_secret=True,
+        description="The API key for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+    )
+    api_base: str = Field(
+        ...,
+        title="Resource base URL",
+        description="The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+        examples=["https://your-resource-name.openai.azure.com"],
+    )
+    deployment: str = Field(
+        ...,
+        title="Deployment",
+        description="The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+        examples=["your-resource-name"],
+    )
+
+    class Config:
+        title = "Azure OpenAI"
+        schema_extra = {
+            "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+        }
+
+
 class FakeEmbeddingConfigModel(BaseModel):
     mode: Literal["fake"] = Field("fake", const=True)
 
