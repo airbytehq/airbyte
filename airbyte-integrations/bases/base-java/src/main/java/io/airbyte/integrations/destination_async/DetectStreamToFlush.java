@@ -118,7 +118,6 @@ public class DetectStreamToFlush {
 
       if (isSizeTriggeredResult.getLeft() || isTimeTriggeredResult.getLeft()) {
         log.info("flushing: {}", debugString);
-        lastTimeCalledPerStream.put(stream, nowProvider.getAsLong());
         return Optional.of(stream);
       }
     }
@@ -142,11 +141,16 @@ public class DetectStreamToFlush {
 
     final long now = nowProvider.getAsLong();
 
+    lastTimeCalledPerStream.putIfAbsent(stream, now);
+
     final Boolean isTimeTriggered =
-            lastTimeCalledPerStream.getOrDefault(stream, now) <= (now - 5 * 60 * 1000);
+            lastTimeCalledPerStream.get(stream) <= (now - 5 * 60 * 1000);
 
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
-    lastTimeCalledPerStream.put(stream, now);
+
+    if (isTimeTriggered) {
+      lastTimeCalledPerStream.put(stream, nowProvider.getAsLong());
+    }
 
     return ImmutablePair.of(isTimeTriggered, debugString);
   }
@@ -182,6 +186,10 @@ public class DetectStreamToFlush {
         AirbyteFileUtils.byteCountToDisplaySize(currentQueueSize),
         AirbyteFileUtils.byteCountToDisplaySize(sizeOfRunningWorkersEstimate),
         AirbyteFileUtils.byteCountToDisplaySize(queueSizeAfterRunningWorkers));
+
+    if (isSizeTriggered) {
+      lastTimeCalledPerStream.put(stream, nowProvider.getAsLong());
+    }
 
     return ImmutablePair.of(isSizeTriggered, debugString);
   }
