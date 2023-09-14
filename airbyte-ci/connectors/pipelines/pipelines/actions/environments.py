@@ -14,13 +14,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
+    AMAZONCORRETTO_IMAGE,
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
+    DOCKER_HOST_NAME,
+    DOCKER_HOST_PORT,
+    DOCKER_TMP_VOLUME_NAME,
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
@@ -470,14 +474,34 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         Container: The container running dockerd as a service
     """
     return (
-        dagger_client.container()
-        .from_(consts.DOCKER_DIND_IMAGE)
-        .with_mounted_cache(
-            "/tmp",
-            dagger_client.cache_volume("shared-tmp"),
+        dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
+        # We set this env var because we need to use a non-default zombie reaper setting.
+        # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
+        # This won't be possible because of container-ception: dind is running inside the dagger engine.
+        # See https://github.com/krallin/tini#subreaping for details.
+        .with_env_variable("TINI_SUBREAPER", "")
+        # Similarly, because of container-ception, we have to use the fuse-overlayfs storage engine.
+        .with_exec(
+            sh_dash_c(
+                [
+                    # Update package metadata.
+                    "apk update",
+                    # Install the storage driver package.
+                    "apk add fuse-overlayfs",
+                    # Update daemon config with storage driver.
+                    "mkdir /etc/docker",
+                    '(echo {\\"storage-driver\\": \\"fuse-overlayfs\\"} > /etc/docker/daemon.json)',
+                ]
+            )
         )
-        .with_exposed_port(2375)
-        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        # Expose the docker host port.
+        .with_exposed_port(DOCKER_HOST_PORT)
+        # Mount the docker cache volumes.
+        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        # Run the docker daemon and bind it to the exposed TCP port.
+        .with_exec(
+            ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        )
     )
 
 
@@ -493,16 +517,14 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = context.dockerd_service
-    docker_hostname = "global-docker-host"
     return (
-        container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
-        .with_service_binding(docker_hostname, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+        container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
+        .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
 
 
-def bound_docker_host(context: ConnectorContext) -> Container:
+def bound_docker_host(context: ConnectorContext) -> Callable[[Container], Container]:
     def bound_docker_host_inner(container: Container) -> Container:
         return with_bound_docker_host(context, container)
 
@@ -520,78 +542,6 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
     return with_bound_docker_host(context, docker_cli)
-
-
-def with_gradle(
-    context: ConnectorContext,
-    sources_to_include: List[str] = None,
-    bind_to_docker_host: bool = True,
-) -> Container:
-    """Create a container with Gradle installed and bound to a persistent docker host.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
-        bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-
-    Returns:
-        Container: A container with Gradle installed and Java sources from the repository.
-    """
-
-    include = [
-        ".root",
-        ".env",
-        "build.gradle",
-        "deps.toml",
-        "gradle.properties",
-        "gradle",
-        "gradlew",
-        "LICENSE_SHORT",
-        "settings.gradle",
-        "build.gradle",
-        "tools/gradle",
-        "spotbugs-exclude-filter-file.xml",
-        "buildSrc",
-        "tools/bin/build_image.sh",
-        "tools/lib/lib.sh",
-        "tools/gradle/codestyle",
-        "pyproject.toml",
-    ]
-
-    if sources_to_include:
-        include += sources_to_include
-    # TODO re-enable once we have fixed the over caching issue
-    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
-
-    openjdk_with_docker = (
-        context.dagger_client.container()
-        .from_("openjdk:17.0.1-jdk-slim")
-        .with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y curl jq rsync npm pip",
-                ]
-            )
-        )
-        .with_env_variable("VERSION", consts.DOCKER_VERSION)
-        .with_exec(sh_dash_c(["curl -fsSL https://get.docker.com | sh"]))
-        .with_env_variable("GRADLE_HOME", "/root/.gradle")
-        .with_exec(["mkdir", "/airbyte"])
-        .with_workdir("/airbyte")
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
-        .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        # TODO (ben) reenable once we have fixed the over caching issue
-        # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
-        # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
-        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
-    )
-
-    if bind_to_docker_host:
-        return with_bound_docker_host(context, openjdk_with_docker)
-    else:
-        return openjdk_with_docker
 
 
 async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
@@ -678,30 +628,47 @@ def with_integration_base(context: PipelineContext, build_platform: Platform) ->
     )
 
 
-def with_integration_base_java(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
+def with_integration_base_java(context: PipelineContext, build_platform: Platform) -> Container:
     integration_base = with_integration_base(context, build_platform)
+    yum_packages_to_install = [
+        "tar",  # required to untar java connector binary distributions.
+        "openssl",  # required because we need to ssh and scp sometimes.
+        "findutils",  # required for xargs, which is shipped as part of findutils.
+    ]
     return (
         context.dagger_client.container(platform=build_platform)
-        .from_(f"amazoncorretto:{jdk_version}")
-        .with_directory("/airbyte", integration_base.directory("/airbyte"))
+        # Use a linux+jdk base image with long-term support, such as amazoncorretto.
+        .from_(AMAZONCORRETTO_IMAGE)
+        # Install a bunch of packages as early as possible.
         .with_exec(
             sh_dash_c(
                 [
+                    # Update first, but in the same .with_exec step as the package installation.
+                    # Otherwise, we risk caching stale package URLs.
                     "yum update -y",
-                    "yum install -y tar openssl",
+                    #
+                    f"yum install -y {' '.join(yum_packages_to_install)}",
+                    # Remove any dangly bits.
                     "yum clean all",
                 ]
             )
         )
+        # Add what files we need to the /airbyte directory.
+        # Copy base.sh from the airbyte/integration-base image.
+        .with_directory("/airbyte", integration_base.directory("/airbyte"))
         .with_workdir("/airbyte")
+        # Download a utility jar from the internet.
         .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
+        # Copy javabase.sh from the git repo.
         .with_file("javabase.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh"))
+        # Set a bunch of env variables used by base.sh.
         .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
         .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
         .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
         .with_env_variable("AIRBYTE_READ_CMD", "/airbyte/javabase.sh --read")
         .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        # Set image labels.
         .with_label("io.airbyte.version", "0.1.2")
         .with_label("io.airbyte.name", "airbyte/integration-base-java")
     )
@@ -808,6 +775,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_exec(
             sh_dash_c(
                 [
+                    "yum update -y",
                     f"yum install -y {' '.join(yum_packages_to_install)}",
                     "yum clean all",
                     "alternatives --install /usr/bin/python python /usr/bin/python3 60",
