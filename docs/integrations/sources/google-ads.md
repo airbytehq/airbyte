@@ -191,6 +191,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.8.1`  | 2023-09-13 | [30376](https://github.com/airbytehq/airbyte/pull/30376) | Revert pagination changes from 0.8.0                                                                                                 |
 | `0.8.0`  | 2023-09-01 | [30071](https://github.com/airbytehq/airbyte/pull/30071) | Delete start_date from required parameters and fix pagination                                                                        |
 | `0.7.4`  | 2023-07-28 | [28832](https://github.com/airbytehq/airbyte/pull/28832) | Update field descriptions                                                                                                            |
 | `0.7.3`  | 2023-07-24 | [28510](https://github.com/airbytehq/airbyte/pull/28510) | Set dates with client's timezone                                                                                                     |
