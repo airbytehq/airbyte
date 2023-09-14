@@ -162,7 +162,6 @@ This connector outputs the following incremental streams:
   - [tech_screen_resolution_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   - [tech_app_version_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   - [tech_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
-  - [tech_platform_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   - [tech_platform_device_category_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   - [tech_operating_system_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)
   - [tech_os_with_version_report](https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport)

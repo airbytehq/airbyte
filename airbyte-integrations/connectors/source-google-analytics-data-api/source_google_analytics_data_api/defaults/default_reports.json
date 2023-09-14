@@ -739,6 +739,7 @@
       "newUsers",
       "engagedSessions",
       "engagementRate",
+      "eventCount",
       "conversions",
       "totalRevenue"
     ]
