@@ -58,12 +58,12 @@ These instructions assume that the MongoDB shell is installed.  To install the M
 ```shell
 > mongosh <connection string to cluster> --username <user with admin permissions>
 ```  
-2. Switch to the `admin` databaseand run the MongoDB shell `mongo` shell, switch to `admin` database:
+2. Switch to the `admin` database:
 ```shell
 test> use admin
 switched to db admin
 ```
-3. Create a `READ_ONLY_USER` with the read only role:
+3. Create a `READ_ONLY_USER` with the `read` role:
 ```javascript
 admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
