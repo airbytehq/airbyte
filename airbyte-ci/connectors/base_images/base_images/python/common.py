@@ -17,18 +17,18 @@ class PythonBase(common.BaseBaseImage):
     """
 
     PYTHON_3_9_18 = {
-        # https://hub.docker.com/layers/library/python/3.9.18-bookworm/images/sha256-40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58
+        # https://hub.docker.com/layers/library/python/3.9.18-slim-bookworm/images/sha256-3b4e3a36cce74c444b333a26958d65d08b0ded00869f1557faffe8d131a0bdc6
         dagger.Platform("linux/amd64"): common.PlatformAwareDockerImage(
             image_name="python",
-            tag="3.9.18-bookworm",
-            sha="40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58",
+            tag="3.9.18-slim-bookworm",
+            sha="3b4e3a36cce74c444b333a26958d65d08b0ded00869f1557faffe8d131a0bdc6",
             platform=dagger.Platform("linux/amd64"),
         ),
-        # https://hub.docker.com/layers/library/python/3.9.18-bookworm/images/sha256-0d132e30eb9325d53c790738e5478e9abffc98b69115e7de429d7c6fc52dddac
+        # https://hub.docker.com/layers/library/python/3.9.18-slim-bookworm/images/sha256-ac1eb5caf138ab249f57f2d19666d8d55f25449e3408c2630479523c3537c0f1
         dagger.Platform("linux/arm64"): common.PlatformAwareDockerImage(
             image_name="python",
-            tag="3.9.18-bookworm",
-            sha="0d132e30eb9325d53c790738e5478e9abffc98b69115e7de429d7c6fc52dddac",
+            tag="3.9.18-slim-bookworm",
+            sha="ac1eb5caf138ab249f57f2d19666d8d55f25449e3408c2630479523c3537c0f1",
             platform=dagger.Platform("linux/arm64"),
         ),
     }

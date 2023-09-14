@@ -3,10 +3,10 @@
 # It is not used by Airbyte internal build process.
 # It is meant for documentation and debugging purposes.
 
-FROM python:3.9.18-bookworm@sha256:40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58
-ENV AIRBYTE_BASE_BASE_IMAGE=python:3.9.18-bookworm@sha256:40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58
+FROM python:3.9.18-slim-bookworm@sha256:3b4e3a36cce74c444b333a26958d65d08b0ded00869f1557faffe8d131a0bdc6
+ENV AIRBYTE_BASE_BASE_IMAGE=python:3.9.18-slim-bookworm@sha256:3b4e3a36cce74c444b333a26958d65d08b0ded00869f1557faffe8d131a0bdc6
 ENV AIRBYTE_BASE_IMAGE=airbyte-python-connector-base:1.1.0
-LABEL io.airbyte.base_base_image=python:3.9.18-bookworm@sha256:40582fe697811beb7bfceef2087416336faa990fd7e24984a7c18a86d3423d58
+LABEL io.airbyte.base_base_image=python:3.9.18-slim-bookworm@sha256:3b4e3a36cce74c444b333a26958d65d08b0ded00869f1557faffe8d131a0bdc6
 LABEL io.airbyte.base_image=airbyte-python-connector-base:1.1.0
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN pip install --upgrade pip==23.2.1
