@@ -83,8 +83,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     this.v1V2Migrator = v1V2Migrator;
     this.v2TableMigrator = v2TableMigrator;
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
-    this.tdLocks = new HashMap<>();
-    this.internalTdLocks = new HashMap<>();
+    this.tdLocks = new ConcurrentHashMap<>();
+    this.internalTdLocks = new ConcurrentHashMap<>();
     this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
         new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
