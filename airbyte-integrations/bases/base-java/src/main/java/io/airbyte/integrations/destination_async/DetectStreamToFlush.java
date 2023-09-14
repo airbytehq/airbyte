@@ -234,9 +234,4 @@ public class DetectStreamToFlush {
         .collect(Collectors.toList());
   }
 
-  @VisibleForTesting
-  ConcurrentMap<StreamDescriptor, Long> getLatestFlushTimePerStream() {
-    return latestFlushTimeMsPerStream;
-  }
-
 }
