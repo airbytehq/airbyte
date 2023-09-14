@@ -24,5 +24,4 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-scaffold-java-jdbc')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
 }
