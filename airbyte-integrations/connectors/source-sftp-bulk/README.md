@@ -9,11 +9,11 @@ For information about how to use this connector within Airbyte, see [the documen
 
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.9.0`
+#### Minimum Python version required `= 3.10.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 
-From this connector directory, create a virtual environment:
+From this connector directory, create a virtual environment.
 
 ```bash
 python -m venv .venv
@@ -24,15 +24,39 @@ development environment of choice. To activate it from the terminal, run:
 
 ```bash
 source .venv/bin/activate
-pip install -r requirements.txt
+```
+
+Alternatively, we recommend using `poetry`, install it by following the instructions [here](https://python-poetry.org/docs/#installation). You can configure poetry to create this virtual environment for you by running:
+
+```bash
+poetry config virtualenvs.create true
+```
+
+You can also configure it so that the virtual environment is created in the project directory at `./.venv` by running:
+
+```bash
+poetry config virtualenvs.in-project true
+```
+
+With a virtual environment activated, install the dependencies:
+
+```bash
+poetry install
+```
+
+If you want to install the `connector-acceptance-test` package at the root of the airbyte project, run:
+
+```bash
+poetry install --with acceptance-tests
+```
+
+If you want to install testing dependencies, run:
+
+```bash
+poetry install -E tests
 ```
 
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
 
 #### Building via Gradle
 
@@ -46,7 +70,7 @@ From the Airbyte repository root, run:
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/sftp-bulk)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_sftp_bulk/spec.json` file.
-Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
+Note that the `secrets` directory is ignored by git by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source ftp test creds`
@@ -70,6 +94,8 @@ First, make sure you build the latest Docker image:
 ```bash
 docker build . -t airbyte/source-sftp-bulk:dev
 ```
+
+or alternatively `make docker.build_dev`.
 
 You can also build the connector image via Gradle:
 
@@ -95,6 +121,12 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
+
+```bash
+poetry install -E tests
+```
+
+or alternatively:
 
 ```bash
 pip install .[tests]
@@ -149,18 +181,21 @@ To run acceptance and custom integration tests:
 
 ## Dependency Management
 
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-We split dependencies between two groups, dependencies that are:
+This connector uses [Poetry](https://python-poetry.org/) for dependency management. To add a new dependency, run:
 
-- required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-- required for the testing need to go to `TEST_REQUIREMENTS` list
+```bash
+poetry add <package-name> [--optional]
+```
+
+Make a dependency optional by passing `--optional`. Add a dependency to an optional group (e.g. `tests`) by editing `pyproject.toml`.
 
 ### Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 
 1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+2. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
+3. Bump the package version at `pyproject.toml`
+4. Create a Pull Request.
+5. Pat yourself on the back for being an awesome contributor.
+6. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
