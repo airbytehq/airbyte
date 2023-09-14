@@ -70,7 +70,6 @@ public class GlobalAsyncStateManager {
   boolean preState = true;
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
   private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> streamToStateIdQ = new ConcurrentHashMap<>();
-
   private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
   // empty in the STREAM case.
 
@@ -152,24 +151,33 @@ public class GlobalAsyncStateManager {
 
         final LinkedList<Long> stateIdQueue = entry.getValue();
         while (true) {
-          final Long oldestState = stateIdQueue.peek();
+          final Long oldestStateId = stateIdQueue.peek();
+          // no state to flush for this stream
+          if (oldestStateId == null) {
+            break;
+          }
+
+          final var oldestState = stateIdToState.get(oldestStateId);
+          // technically possible this map hasn't been updated yet since we don't lock
           if (oldestState == null) {
             break;
           }
 
-          // technically possible this map hasn't been updated yet.
-          final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
-          if (noCorrespondingStateMsg) {
+          final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
+          // technically possible this map hasn't been updated yet since we don't lock
+          if (oldestStateCounter == null) {
             break;
           }
 
-          final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
-          final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
-          if (noPrevRecs || allRecsEmitted) {
-            var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
-            output.add(stateIdToState.get(oldestState).getLeft());
-            bytesFlushed += stateIdToState.get(oldestState).getRight();
-            stateIdToState.remove(oldestState);
+          final var allRecordsCommitted = oldestStateCounter.get() == 0;
+          if (allRecordsCommitted) {
+            output.add(oldestState.getLeft());
+            bytesFlushed += oldestState.getRight();
+
+            // cleanup
+            entry.getValue().poll();
+            stateIdToState.remove(oldestStateId);
+            stateIdToCounter.remove(oldestStateId);
           } else {
             break;
           }
@@ -268,7 +276,6 @@ public class GlobalAsyncStateManager {
     stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
     registerNewStateId(resolvedDescriptor);
     allocateMemoryToState(sizeInBytes);
-
   }
 
   /**
