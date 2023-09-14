@@ -20,6 +20,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigrated
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +38,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new StreamId(
-        escapeIdentifier(namespace).toUpperCase(),
-        escapeIdentifier(name).toUpperCase(),
-        escapeIdentifier(rawNamespaceOverride),
-        escapeIdentifier(StreamId.concatenateRawTableName(namespace, name)),
+        escapeSqlIdentifier(namespace).toUpperCase(),
+        escapeSqlIdentifier(name).toUpperCase(),
+        escapeSqlIdentifier(rawNamespaceOverride),
+        escapeSqlIdentifier(StreamId.concatenateRawTableName(namespace, name)),
         namespace,
         name);
   }
@@ -48,7 +49,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public ColumnId buildColumnId(final String name) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(escapeIdentifier(name).toUpperCase(), name, name.toUpperCase());
+    return new ColumnId(escapeSqlIdentifier(name).toUpperCase(), name, name.toUpperCase());
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -177,10 +178,40 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
+    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.originalName()) + "\"", airbyteType);
+  }
+
+  /**
+   * The `${` bigram causes problems inside script blocks. For example, a perfectly innocuous query like
+   * `SELECT "_airbyte_data":"${foo}" FROM ...` works fine normally, but running this block will throw
+   * an error:
+   * <pre>{@code
+   * EXECUTE IMMEDIATE 'BEGIN
+   * LET x INTEGER := (SELECT "_airbyte_data":"${foo}" FROM ...);
+   * END;';
+   * }</pre>
+   * <p>
+   * This method is a workaround for this behavior. We switch to using the {@code get} method to extract
+   * JSON values, and avoid the `${` sequence by using string concatenation. This generates a sql statement
+   * like {@code SELECT TRY_CAST((get("_airbyte_data", '$' + '{foo}')::text) as INTEGER) FROM ...}.
+   */
+  private String extractAndCastInsideScript(final ColumnId column, final AirbyteType airbyteType) {
+    final String[] parts = column.originalName().split("\\$\\{", -1);
+
+    final String hackReplacement = "$' || '{";
+    String escapedAndQuotedColumnName = Arrays.stream(parts)
+        .map(SnowflakeSqlGenerator::escapeSingleQuotedString)
+        .collect(joining(hackReplacement));
+    escapedAndQuotedColumnName = "'" + escapedAndQuotedColumnName + "'";
+    final String extract = "get(\"_airbyte_data\", " + escapedAndQuotedColumnName + ")";
+    return cast(extract, airbyteType);
+  }
+
+  private String cast(final String sqlExpression, final AirbyteType airbyteType) {
     if (airbyteType instanceof final Union u) {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
-      return extractAndCast(column, chosenType);
+      return cast(sqlExpression, chosenType);
     } else if (airbyteType == AirbyteProtocolType.TIME_WITH_TIMEZONE) {
       // We're using TEXT for this type, so need to explicitly check the string format.
       // There's a bunch of ways we could do this; this regex is approximately correct and easy to
@@ -190,18 +221,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       // 12:34:56.7+08:00
       // 12:34:56.7890123-0800
       // 12:34:56-08
-      return new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
+      return new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
           """
           CASE
-            WHEN NOT ("_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
+            WHEN NOT ((${expression})::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
               THEN NULL
-            ELSE "_airbyte_data":"${column_name}"
+            ELSE ${expression}
           END
           """);
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
-        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
+        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             // Handle offsets in +/-HHMM and +/-HH formats
             // The four cases, in order, match:
             // 2023-01-01T12:34:56-0800
@@ -211,42 +242,42 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             // And the ELSE will try to handle everything else.
             """
             CASE
-              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
-                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
-                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
-              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
-                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
-              WHEN "_airbyte_data":"${column_name}"::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
-                THEN TO_TIMESTAMP_TZ("_airbyte_data":"${column_name}"::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-              ELSE TRY_CAST("_airbyte_data":"${column_name}"::TEXT AS TIMESTAMP_TZ)
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+              ELSE TRY_CAST((${expression})::TEXT AS TIMESTAMP_TZ)
             END
             """);
         // try_cast doesn't support variant/array/object, so handle them specially
-        case "VARIANT" -> "\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"";
+        case "VARIANT" -> sqlExpression;
         // We need to validate that the struct is actually a struct.
         // Note that struct columns are actually nullable in two ways. For a column `foo`:
         // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
         // JSON null).
-        case "OBJECT" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
+        case "OBJECT" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
             CASE
-              WHEN TYPEOF("_airbyte_data":"${column_name}") != 'OBJECT'
+              WHEN TYPEOF(${expression}) != 'OBJECT'
                 THEN NULL
-              ELSE "_airbyte_data":"${column_name}"
+              ELSE ${expression}
             END
             """);
         // Much like the object case, arrays need special handling.
-        case "ARRAY" -> new StringSubstitutor(Map.of("column_name", escapeIdentifier(column.originalName()))).replace(
+        case "ARRAY" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
             CASE
-              WHEN TYPEOF("_airbyte_data":"${column_name}") != 'ARRAY'
+              WHEN TYPEOF(${expression}) != 'ARRAY'
                 THEN NULL
-              ELSE "_airbyte_data":"${column_name}"
+              ELSE ${expression}
             END
             """);
-        case "TEXT" -> "(\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"::text)"; // we don't need TRY_CAST on strings.
-        default -> "TRY_CAST(\"_airbyte_data\":\"" + escapeIdentifier(column.originalName()) + "\"::text as " + dialectType + ")";
+        case "TEXT" -> "((" + sqlExpression + ")::text)"; // we don't need TRY_CAST on strings.
+        default -> "TRY_CAST((" + sqlExpression + ")::text as " + dialectType + ")";
       };
     }
   }
@@ -264,17 +295,17 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
-          final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
+          final String jsonExtract = extractAndCastInsideScript(pk, streamColumns.get(pk));
           return "AND " + jsonExtract + " IS NULL";
         }).collect(joining("\n"));
 
     final String script = new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "raw_table_id_no_single_quotes", escapeSingleQuotedString(id.rawTableId(QUOTE)),
+        "raw_table_id_for_string", escapeSingleQuotedString(id.rawTableId(QUOTE)),
         "pk_null_checks", pkNullChecks)).replace(
             // Wrap this inside a script block so that we can use the scripting language
             """
-            DECLARE _ab_missing_primary_key EXCEPTION (-20001, 'Table ${raw_table_id_no_single_quotes} has rows missing a primary key');
+            DECLARE _ab_missing_primary_key EXCEPTION (-20001, 'Table ${raw_table_id_for_string} has rows missing a primary key');
             BEGIN
               LET missing_pk_count INTEGER := (
                 SELECT COUNT(1)
@@ -300,7 +331,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
-            "raw_col_name", escapeIdentifier(col.getKey().originalName()),
+            "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
             "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
             "col_type", toDialectType(col.getValue()),
             "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
@@ -515,10 +546,35 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 """);
   }
 
-  public static String escapeIdentifier(final String identifier) {
+  /**
+   * Snowflake json object access is done using double-quoted strings, e.g. `SELECT "_airbyte_data":"foo"`.
+   * As such, we need to escape double-quotes in the field name.
+   */
+  public static String escapeJsonIdentifier(final String identifier) {
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be doubled.
     return identifier.replace("\"", "\"\"");
+  }
+
+  /**
+   * SQL identifiers are also double-quoted strings. They have slightly more stringent requirements
+   * than JSON field identifiers.
+   * <p>
+   * This method is separate from {@link #escapeJsonIdentifier(String)} because we need to retain the
+   * original field name for JSON access, e.g. `SELECT "_airbyte_data":"${FOO" AS "__FOO"`.
+   */
+  public static String escapeSqlIdentifier(String identifier) {
+    // Snowflake scripting language does something weird when the `${` bigram shows up in the script
+    // so replace these with something else.
+    // For completeness, if we trigger this, also replace closing curly braces with underscores.
+    if (identifier.contains("${")) {
+      identifier = identifier
+          .replace("$", "_")
+          .replace("{", "_")
+          .replace("}", "_");
+    }
+
+    return escapeJsonIdentifier(identifier);
   }
 
   public static String escapeSingleQuotedString(final String str) {

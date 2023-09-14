@@ -41,7 +41,7 @@ class MongoDbCdcStateHandlerTest {
         SOURCE_ORDER, String.valueOf(order),
         SOURCE_RESUME_TOKEN, RESUME_TOKEN);
 
-    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, "");
+    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, null);
 
     assertNotNull(airbyteMessage);
     assertEquals(AirbyteMessage.Type.STATE, airbyteMessage.getType());

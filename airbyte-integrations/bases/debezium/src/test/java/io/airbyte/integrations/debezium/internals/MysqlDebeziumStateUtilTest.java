@@ -67,7 +67,9 @@ public class MysqlDebeziumStateUtilTest {
       final JdbcDatabase database = getJdbcDatabase(container);
       final MySqlDebeziumStateUtil mySqlDebeziumStateUtil = new MySqlDebeziumStateUtil();
       final JsonNode debeziumState = mySqlDebeziumStateUtil.constructInitialDebeziumState(MYSQL_PROPERTIES, CONFIGURED_CATALOG, database);
-      Assertions.assertEquals(2, Jsons.object(debeziumState, Map.class).size());
+      Assertions.assertEquals(3, Jsons.object(debeziumState, Map.class).size());
+      Assertions.assertTrue(debeziumState.has("is_compressed"));
+      Assertions.assertFalse(debeziumState.get("is_compressed").asBoolean());
       Assertions.assertTrue(debeziumState.has("mysql_db_history"));
       Assertions.assertNotNull(debeziumState.get("mysql_db_history"));
       Assertions.assertTrue(debeziumState.has("mysql_cdc_offset"));
