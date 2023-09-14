@@ -406,7 +406,6 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | 1.3.0   | [#TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Start building Python connectors using our base images.                                                                    |
 | 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477) | Fix a test regression introduced the previous version.                                            |
 | 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438) | Add workaround to always stream logs properly with --is-local.                                            |
-| 1.3.0   | [#TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Start building Python connectors using our base images.                                                                    |
 | 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384) | Java connector test performance fixes.                                                                    |
 | 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add `--metadata-query` option to connectors command                                                       |
 | 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314) | Stop patching gradle files to make them work with airbyte-ci.                                             |
