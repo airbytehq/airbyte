@@ -5,13 +5,14 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar, Tuple
+from typing import ClassVar, List, Tuple
 
-from dagger import CacheVolume, Container, Directory, QueryError
-from pipelines import consts
+from dagger import CacheSharingMode, CacheVolume, Container, Directory
 from pipelines.actions import environments
-from pipelines.bases import Step, StepResult
+from pipelines.bases import Step, StepResult, StepStatus
+from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.contexts import PipelineContext
+from pipelines.utils import sh_dash_c
 
 
 class GradleTask(Step, ABC):
@@ -19,22 +20,24 @@ class GradleTask(Step, ABC):
     A step to run a Gradle task.
 
     Attributes:
-        task_name (str): The Gradle task name to run.
         title (str): The step title.
+        gradle_task_name (str): The Gradle task name to run.
+        bind_to_docker_host (bool): Whether to install the docker client and bind it to the host.
+        mount_connector_secrets (bool): Whether to mount connector secrets.
     """
 
-    DEFAULT_TASKS_TO_EXCLUDE = ["assemble", "airbyteDocker"]
-    BIND_TO_DOCKER_HOST = True
-    gradle_task_name: ClassVar
-    gradle_task_options: Tuple[str, ...] = ()
+    DEFAULT_GRADLE_TASK_OPTIONS = ("--no-daemon", "--scan", "--build-cache", "--console=plain")
 
-    def __init__(self, context: PipelineContext, with_java_cdk_snapshot: bool = True) -> None:
+    gradle_task_name: ClassVar[str]
+    bind_to_docker_host: ClassVar[bool] = False
+    mount_connector_secrets: ClassVar[bool] = False
+
+    def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
-        self.with_java_cdk_snapshot = with_java_cdk_snapshot
 
     @property
     def connector_java_build_cache(self) -> CacheVolume:
-        return self.context.dagger_client.cache_volume("connector_java_build_cache")
+        return self.context.dagger_client.cache_volume("gradle-cache")
 
     @property
     def build_include(self) -> List[str]:
@@ -50,66 +53,106 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    def _get_gradle_command(self, extra_options: Tuple[str, ...] = ("--no-daemon", "--scan", "--build-cache")) -> List:
-        command = (
-            ["./gradlew"]
-            + list(extra_options)
-            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
-            + list(self.gradle_task_options)
+    def _get_gradle_command(self, task: str) -> List[str]:
+        return sh_dash_c(
+            [
+                # The gradle command is chained in between a couple of rsyncs which load from- and store to the cache volume.
+                "(rsync -a --stats /root/gradle-cache/ /root/.gradle || true)",
+                f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task}",
+                "(rsync -a --stats /root/.gradle/ /root/gradle-cache || true)",
+            ]
         )
-        for task in self.DEFAULT_TASKS_TO_EXCLUDE:
-            command += ["-x", task]
-        return command
 
     async def _run(self) -> StepResult:
-        includes = self.build_include
-        if self.with_java_cdk_snapshot:
-            includes + ["./airbyte-cdk/java/airbyte-cdk/**"]
 
-        connector_under_test = (
-            environments.with_gradle(self.context, includes, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
+        include = [
+            ".root",
+            ".env",
+            "build.gradle",
+            "deps.toml",
+            "gradle.properties",
+            "gradle",
+            "gradlew",
+            "LICENSE_SHORT",
+            "settings.gradle",
+            "build.gradle",
+            "tools/gradle",
+            "spotbugs-exclude-filter-file.xml",
+            "buildSrc",
+            "tools/bin/build_image.sh",
+            "tools/lib/lib.sh",
+            "tools/gradle/codestyle",
+            "pyproject.toml",
+            "airbyte-cdk/java/airbyte-cdk/**",
+        ] + self.build_include
+
+        yum_packages_to_install = [
+            "docker",  # required by :integrationTestJava.
+            "findutils",  # gradle requires xargs, which is shipped in findutils.
+            "jq",  # required by :airbyte-connector-test-harnesses:acceptance-test-harness to inspect docker images.
+            "npm",  # required by :format.
+            "pip",  # required by :format.
+            "rsync",  # required for gradle cache synchronization.
+        ]
+
+        # Define a gradle container which will be cached and re-used for all tasks.
+        # We should do our best to cram any generic & expensive layers in here.
+        gradle_container = (
+            self.dagger_client.container()
+            # Use a linux+jdk base image with long-term support, such as amazoncorretto.
+            .from_(AMAZONCORRETTO_IMAGE)
+            # Install a bunch of packages as early as possible.
+            .with_exec(
+                sh_dash_c(
+                    [
+                        # Update first, but in the same .with_exec step as the package installation.
+                        # Otherwise, we risk caching stale package URLs.
+                        "yum update -y",
+                        f"yum install -y {' '.join(yum_packages_to_install)}",
+                        # Remove any dangly bits.
+                        "yum clean all",
+                        # Deliberately soft-remove docker, so that the `docker` CLI is unavailable by default.
+                        # This is a defensive choice to enforce the expectation that, as a general rule, gradle tasks do not rely on docker.
+                        "yum remove -y --noautoremove docker",  # remove docker package but not its dependencies
+                        "yum install -y --downloadonly docker",  # have docker package in place for quick install
+                    ]
+                )
+            )
+            # Set GRADLE_HOME and GRADLE_USER_HOME to the directory which will be rsync-ed with the gradle cache volume.
+            .with_env_variable("GRADLE_HOME", "/root/.gradle")
+            .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
+            # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
+            # This is consumed by settings.gradle in the repo root.
+            .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            # Mount the gradle cache volume.
+            # We deliberately don't mount it at $GRADLE_HOME, instead we load it there and store it from there using rsync.
+            # This is because the volume is accessed concurrently by all GradleTask instances.
+            # Hence, why we synchronize the writes by setting the `sharing` parameter to LOCKED.
+            .with_mounted_cache("/root/gradle-cache", self.connector_java_build_cache, sharing=CacheSharingMode.LOCKED)
+            # Mount the parts of the repo which interest us in /airbyte.
+            .with_workdir("/airbyte")
+            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             # Disable the Ryuk container because it needs privileged docker access that does not work:
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
-            .with_(environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets"))
+            # Run gradle once to populate the container's local maven repository.
+            # This step is useful also to serve as a basic sanity check and to warm the gradle cache.
+            # This will download gradle itself, a bunch of poms and jars, compile the gradle plugins, configure tasks, etc.
+            .with_exec(self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"))
         )
-        if self.with_java_cdk_snapshot:
-            connector_under_test = connector_under_test.with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"])
-        connector_under_test = connector_under_test.with_exec(self._get_gradle_command())
 
-        results = await self.get_step_result(connector_under_test)
-
-        await self._export_gradle_dependency_cache(connector_under_test)
-        return results
-
-    async def _export_gradle_dependency_cache(self, gradle_container: Container) -> Container:
-        """Export the Gradle writable dependency cache to the read-only dependency cache path.
-        The read-only dependency cache is persisted thanks to mounted cache volumes in environments.with_gradle().
-        You can read more about Shared readonly cache here: https://docs.gradle.org/current/userguide/dependency_resolution.html#sub:shared-readonly-cache
-        Args:
-            gradle_container (Container): The Gradle container.
-
-        Returns:
-            Container: The Gradle container, with the updated cache.
-        """
-        try:
-            cache_dirs = await gradle_container.directory(consts.GRADLE_CACHE_PATH).entries()
-        except QueryError:
-            cache_dirs = []
-        if "modules-2" in cache_dirs:
-            with_cache = gradle_container.with_exec(
-                [
-                    "rsync",
-                    "--archive",
-                    "--quiet",
-                    "--times",
-                    "--exclude",
-                    "*.lock",
-                    "--exclude",
-                    "gc.properties",
-                    f"{consts.GRADLE_CACHE_PATH}/modules-2/",
-                    f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
-                ]
+        # From this point on, we add layers which are task-dependent.
+        if self.mount_connector_secrets:
+            gradle_container = gradle_container.with_(
+                await environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
             )
-            return await with_cache
-        return gradle_container
+        if self.bind_to_docker_host:
+            # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
+            gradle_container = environments.with_bound_docker_host(self.context, gradle_container)
+            # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
+            gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"])
+
+        # Run the gradle task that we actually care about.
+        connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
+        gradle_container = gradle_container.with_exec(self._get_gradle_command(connector_task))
+        return await self.get_step_result(gradle_container)

@@ -39,6 +39,7 @@ def patch_base_class(mocker):
 
     return {
         "config": {
+            "property_ids": ["496180525"],
             "property_id": "496180525",
             "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
             "dimensions": ["date", "deviceCategory", "operatingSystem", "browser"],
@@ -307,6 +308,7 @@ def test_stream_slices():
 
 def test_read_incremental(requests_mock):
     config = {
+        "property_ids": [123],
         "property_id": 123,
         "date_ranges_start_date": datetime.date(2022, 12, 29),
         "window_in_days": 1,

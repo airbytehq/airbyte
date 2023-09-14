@@ -4,7 +4,9 @@
 
 from unittest.mock import MagicMock
 
+import pytest
 import responses
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_jira.source import SourceJira
 
 
@@ -32,6 +34,47 @@ def test_check_connection(config, projects_response, labels_response):
     logger_mock = MagicMock()
 
     assert source.check_connection(logger=logger_mock, config=config) == (True, None)
+
+
+@responses.activate
+def test_check_connection_config_error(config, caplog):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        status=401
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
+        status=401
+    )
+    source = SourceJira()
+    logger_mock = MagicMock()
+    with pytest.raises(AirbyteTracedException):
+        source.check_connection(logger=logger_mock, config=config)
+
+    assert "Invalid creds were provided, please check your api token, domain and/or email." in caplog.text
+
+
+@responses.activate
+def test_check_connection_404_error(config):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        status=404,
+        json={'errorMessages': ['Not Found project.']}
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
+        status=404,
+        json={'errorMessages': ['Not Found Labels.']}
+    )
+    source = SourceJira()
+    logger_mock = MagicMock()
+    is_connected, reason = source.check_connection(logger=logger_mock, config=config)
+    assert is_connected is False
+    assert "Not Found Labels. 404 Client Error: Not Found for url" in reason
 
 
 def test_get_authenticator(config):
