@@ -2,19 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
-import dpath.util
-
 from dataclasses import dataclass
 from typing import Optional
 
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+import dpath.util
+import pendulum
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass
 class DateTimeTransformer(AddFields):
-
     def transform(
         self,
         record: Record,
