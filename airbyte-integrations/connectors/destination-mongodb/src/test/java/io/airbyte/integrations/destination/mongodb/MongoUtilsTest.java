@@ -2,9 +2,9 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.db;
+package io.airbyte.integrations.destination.mongodb;
 
-import static io.airbyte.db.mongodb.MongoUtils.AIRBYTE_SUFFIX;
+import static io.airbyte.integrations.destination.mongodb.MongoUtils.AIRBYTE_SUFFIX;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.mongodb.MongoUtils;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
