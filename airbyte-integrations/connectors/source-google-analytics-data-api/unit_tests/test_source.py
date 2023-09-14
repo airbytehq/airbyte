@@ -33,7 +33,7 @@ json_credentials = """
 def patch_base_class():
     return {
         "config": {
-            "property_id": "108176369",
+            "property_ids": ["108176369"],
             "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
             "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
         }
@@ -43,7 +43,7 @@ def patch_base_class():
 @pytest.fixture
 def config():
     return {
-        "property_id": "108176369",
+        "property_ids": ["108176369"],
         "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
         "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
         "custom_reports": json.dumps([{
@@ -117,7 +117,7 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
     assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
     if not is_successful:
         with pytest.raises(AirbyteTracedException) as e:
-            source.check(logger, config_gen(property_id="UA-11111111"))
+            source.check(logger, config_gen(property_ids=["UA-11111111"]))
         assert e.value.failure_type == FailureType.config_error
 
 
