@@ -31,35 +31,35 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: date_modified
     cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%SZ'
-      - '%Y-%m-%dT%H:%M:%S+00:00'
-    datetime_format: '%Y-%m-%d'
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S+00:00"
+    datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%d'
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
     start_time_option:
       inject_into: request_parameter
       field_name: date_modified:min
       type: RequestOption
     end_datetime:
       type: MinMaxDatetime
-      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   base_id_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: id
     cursor_datetime_formats:
-      - '%s'
-    datetime_format: '%Y-%m-%d'
+      - "%s"
+    datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%d'
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
     end_datetime:
       type: MinMaxDatetime
-      datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   id_incremental_sync:
     $ref: "#/definitions/base_id_incremental_sync"
     start_time_option:
@@ -105,7 +105,7 @@ definitions:
       paginator:
         $ref: "#/definitions/paginator"
     incremental_sync:
-      $ref: "#/definitions/date_modified_incremental_sync"   
+      $ref: "#/definitions/date_modified_incremental_sync"
   orders_stream:
     type: DeclarativeStream
     name: orders
@@ -128,28 +128,28 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_modified
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-        - '%Y-%m-%dT%H:%M:%S+00:00'
-      datetime_format: '%Y-%m-%d'
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S+00:00"
+      datetime_format: "%Y-%m-%d"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%d'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
       start_time_option:
         inject_into: request_parameter
         field_name: min_date_modified
         type: RequestOption
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - type: CustomTransformation
         class_name: source_bigcommerce.components.DateTimeTransformer
         fields:
           - path:
               - date_modified
-            value: '{{ record.date_modified }}'
+            value: "{{ record.date_modified }}"
   transactions_stream:
     type: DeclarativeStream
     name: transactions
@@ -166,7 +166,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/order_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/id_incremental_sync"  
+      $ref: "#/definitions/id_incremental_sync"
   pages_stream:
     type: DeclarativeStream
     name: pages
@@ -209,7 +209,7 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
-        path: channels
+        path: /v3/channels
         request_parameters:
           sort: date_modified
       record_selector:
@@ -257,7 +257,7 @@ definitions:
       partition_router:
         $ref: "#/definitions/order_id_partition_router"
     incremental_sync:
-      $ref: "#/definitions/base_id_incremental_sync"  
+      $ref: "#/definitions/base_id_incremental_sync"
   brands_stream:
     type: DeclarativeStream
     name: brands
@@ -274,7 +274,7 @@ definitions:
       paginator:
         $ref: "#/definitions/paginator"
     incremental_sync:
-      $ref: "#/definitions/base_id_incremental_sync" 
+      $ref: "#/definitions/base_id_incremental_sync"
   categories_stream:
     type: DeclarativeStream
     name: categories
@@ -291,7 +291,7 @@ definitions:
       paginator:
         $ref: "#/definitions/paginator"
     incremental_sync:
-      $ref: "#/definitions/base_id_incremental_sync" 
+      $ref: "#/definitions/base_id_incremental_sync"
 
 streams:
   - "#/definitions/customers_stream"

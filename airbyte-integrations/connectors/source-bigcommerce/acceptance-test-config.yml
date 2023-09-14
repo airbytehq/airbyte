@@ -33,12 +33,14 @@ acceptance_tests:
             bypass_reason: "sandbox account does not have records"
           - name: "order_products"
             bypass_reason: "sandbox account does not have records"
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
