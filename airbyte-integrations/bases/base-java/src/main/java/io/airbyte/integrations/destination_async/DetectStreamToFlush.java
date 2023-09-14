@@ -8,7 +8,6 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +51,6 @@ public class DetectStreamToFlush {
     this.flusher = flusher;
     this.nowProvider = nowProvider;
   }
-
 
   /**
    * Get the best, next stream that is ready to be flushed.
@@ -144,7 +141,7 @@ public class DetectStreamToFlush {
     lastTimeCalledPerStream.putIfAbsent(stream, now);
 
     final Boolean isTimeTriggered =
-            lastTimeCalledPerStream.get(stream) <= (now - 5 * 60 * 1000);
+        lastTimeCalledPerStream.get(stream) <= (now - 5 * 60 * 1000);
 
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
 
@@ -254,4 +251,5 @@ public class DetectStreamToFlush {
   ConcurrentMap<StreamDescriptor, Long> getLastTimeCalledPerStream() {
     return lastTimeCalledPerStream;
   }
+
 }

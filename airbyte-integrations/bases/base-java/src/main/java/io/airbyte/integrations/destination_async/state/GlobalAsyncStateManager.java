@@ -307,9 +307,9 @@ public class GlobalAsyncStateManager {
 
   public String getMemoryUsageMessage() {
     return String.format("State Manager memory usage: Allocated: %s, Used: %s, percentage Used %f",
-            FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-            FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-            (double) memoryUsed.get() / memoryAllocated.get());
+        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+        (double) memoryUsed.get() / memoryAllocated.get());
   }
 
   private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message) {
