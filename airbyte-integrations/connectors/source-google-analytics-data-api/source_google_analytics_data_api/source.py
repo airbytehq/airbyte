@@ -123,6 +123,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         for field in date_fields:
             if field in self.config.get("dimensions", []):
                 return field
+        return []
 
     @property
     def primary_key(self):
