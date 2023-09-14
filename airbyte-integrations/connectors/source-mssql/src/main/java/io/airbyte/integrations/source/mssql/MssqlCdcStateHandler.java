@@ -10,6 +10,7 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -31,10 +32,10 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory) {
     final Map<String, Object> state = new HashMap<>();
     state.put(MSSQL_CDC_OFFSET, offset);
-    state.put(MSSQL_DB_HISTORY, dbHistory);
+    state.put(MSSQL_DB_HISTORY, dbHistory.schema());
 
     final JsonNode asJson = Jsons.jsonNode(state);
 

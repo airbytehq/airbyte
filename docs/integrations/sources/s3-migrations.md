@@ -12,7 +12,7 @@ Given that you are not affected by the above, your migration should proceed auto
 * Run at least one sync for all your source-s3 connectors
   * Migration will be performed and an AirbyteControlMessage will be emitted to the platform so that the migrated config is persisted
 
-If a user tries to modify the config after source-s3 is upgraded to v4.0.0 and before there was a sync or a periodic discover check, he will have to update the already provided fields manually. To avoid this, he can run a sync on any of the connections for this source.
+If a user tries to modify the config after source-s3 is upgraded to v4.0.0 and before there was a sync or a periodic discover check, they will have to update the already provided fields manually. To avoid this, a sync can be executed on any of the connections for this source.
 
 Other than breaking changes, we have changed the UI from which the user configures the source:
 * You can now configure multiple streams by clicking on `Add` under `Streams`.
