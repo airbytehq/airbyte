@@ -114,17 +114,9 @@ def test_child_incremental_events_read(mock_ads_client, config, customers):
                             stream_slice=stream_slices[0]))
     assert len(result) == 4
 
-    deleted_records = [
-        {'change_status.last_change_date_time': '2023-06-13 12:36:03.772447', 'customer.id': None, 'campaign.id': None,
-         'campaign_criterion.resource_name': '3', 'campaign_criterion.campaign': None,
-         'campaign_criterion.age_range.type': None, 'campaign_criterion.mobile_application.name': None,
-         'campaign_criterion.negative': None, 'campaign_criterion.youtube_channel.channel_id': None,
-         'campaign_criterion.youtube_video.video_id': None},
-        {'change_status.last_change_date_time': '2023-06-13 12:36:04.772447', 'customer.id': None, 'campaign.id': None,
-         'campaign_criterion.resource_name': '4', 'campaign_criterion.campaign': None,
-         'campaign_criterion.age_range.type': None, 'campaign_criterion.mobile_application.name': None,
-         'campaign_criterion.negative': None, 'campaign_criterion.youtube_channel.channel_id': None,
-         'campaign_criterion.youtube_video.video_id': None}]
+    deleted_records = [{'campaign_criterion.resource_name': '3', 'deleted_at': '2023-06-13 12:36:03.772447'},
+                       {'campaign_criterion.resource_name': '4', 'deleted_at': '2023-06-13 12:36:04.772447'}]
+
     assert all([deleted_record in result for deleted_record in deleted_records])
 
     assert stream.state == {'change_status': {'123': {'change_status.last_change_date_time': '2023-06-13'}}}

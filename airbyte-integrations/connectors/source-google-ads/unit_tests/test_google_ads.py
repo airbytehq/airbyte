@@ -4,6 +4,7 @@
 
 from datetime import date
 
+import pendulum
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException
 from google.auth import exceptions
@@ -92,7 +93,8 @@ def test_interval_chunking():
         {"start_date": "2021-07-27", "end_date": "2021-08-05"},
         {"start_date": "2021-08-06", "end_date": "2021-08-10"},
     ]
-    intervals = list(chunk_date_range("2021-07-01", 14, "2021-08-10", range_days=10, time_zone="UTC"))
+    intervals = list(chunk_date_range(start_date="2021-07-01", end_date="2021-08-10", conversion_window=14,
+                                      slice_duration=pendulum.Duration(days=9), time_zone="UTC"))
     assert mock_intervals == intervals
 
 
