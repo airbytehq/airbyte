@@ -91,8 +91,11 @@ public class BufferManager {
               entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
           .append(System.lineSeparator());
     }
+
+    queueInfo.append(stateManager.getMemoryUsageMessage())
+            .append(System.lineSeparator());
+
     log.info(queueInfo.toString());
-    log.info(stateManager.getMemoryUsageMessage());
   }
 
 }
