@@ -18,13 +18,27 @@ Feel free to check the `generated/dockerfiles` directory.
 You'll be able to get our base images from our [Docker Hub](https://hub.docker.com/u/airbyte) registry. The publish pipeline for these image is not built yet.
 
 ### If you are a Dagger user:
-Install this library as a dependency of your project and import `ALL_BASE_IMAGES` from it:
+Install this library as a dependency of your project and import `GLOBAL_REGISTRY` from it:
 ```python
+import platform
+
+import anyio
 import dagger
-from base_images import ALL_BASE_IMAGES_INDEX
 
+# You must have this library installed in your project
+from base_images import GLOBAL_REGISTRY
 
-python_connector_base_image: dagger.Container = ALL_BASE_IMAGES_INDEX["airbyte-python-connector-base:0.1.0"].container
+CURRENT_PLATFORM = dagger.Platform(f"linux/{platform.machine()}")
+BaseImageVersion = GLOBAL_REGISTRY.get_version("airbyte-python-connector-base:0.1.0")
+
+async def main():
+    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
+        python_connector_base_container: dagger.Container = BaseImageVersion(dagger_client, CURRENT_PLATFORM).container
+        # Do something with the container
+        python_version_output: str = await python_connector_base_container.with_exec(["python", "--version"]).stdout()
+        print(python_version_output)
+
+anyio.run(main)
 ```
 
 
