@@ -3,32 +3,25 @@
 #
 
 
-
 import uuid
 from typing import List, Optional
 
-from airbyte_cdk.destinations.vector_db_based.document_processor import (
-    METADATA_RECORD_ID_FIELD,
-    METADATA_STREAM_FIELD,
-    Chunk
-)
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type, AirbyteLogMessage, Level
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, Level, Type
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from destination_qdrant.config import QdrantIndexingConfigModel
 from qdrant_client import QdrantClient, models
-from qdrant_client.models import Distance, VectorParams
 from qdrant_client.conversions.common_types import PointsSelector
-
-from destination_qdrant.config import QdrantIndexingConfigModel, DistanceMetricEnum
-
-
+from qdrant_client.models import Distance, VectorParams
 
 DISTANCE_METRIC_MAP = {
-    DistanceMetricEnum.dot: Distance.DOT,
-    DistanceMetricEnum.cos: Distance.COSINE,
-    DistanceMetricEnum.euc: Distance.EUCLID
+    "dot": Distance.DOT,
+    "cos": Distance.COSINE,
+    "euc": Distance.EUCLID,
 }
+
 
 class QdrantIndexer(Indexer):
     config: QdrantIndexingConfigModel
@@ -64,7 +57,10 @@ class QdrantIndexer(Indexer):
             self._delete_for_filter(
                 models.FilterSelector(
                     filter=models.Filter(
-                        should=[models.FieldCondition(key=METADATA_STREAM_FIELD, match=models.MatchValue(value=stream)) for stream in streams_to_overwrite]
+                        should=[
+                            models.FieldCondition(key=METADATA_STREAM_FIELD, match=models.MatchValue(value=stream))
+                            for stream in streams_to_overwrite
+                        ]
                     )
                 )
             )
@@ -76,7 +72,9 @@ class QdrantIndexer(Indexer):
             self._delete_for_filter(
                 models.FilterSelector(
                     filter=models.Filter(
-                        should=[models.FieldCondition(key=METADATA_RECORD_ID_FIELD, match=models.MatchValue(value=_id)) for _id in delete_ids]
+                        should=[
+                            models.FieldCondition(key=METADATA_RECORD_ID_FIELD, match=models.MatchValue(value=_id)) for _id in delete_ids
+                        ]
                     )
                 )
             )
@@ -97,9 +95,11 @@ class QdrantIndexer(Indexer):
     def post_sync(self) -> List[AirbyteMessage]:
         try:
             self._client.close()
-            return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"))
+            return AirbyteMessage(
+                type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully")
+            )
         except Exception as e:
-            return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(e))) 
+            return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(e)))
 
     def _create_client(self):
         auth_method = self.config.auth_method
@@ -113,7 +113,4 @@ class QdrantIndexer(Indexer):
             self._client = QdrantClient(url=url, prefer_grpc=prefer_grpc, api_key=api_key)
 
     def _delete_for_filter(self, selector: PointsSelector) -> None:
-        self._client.delete(
-            collection_name=self.config.collection, 
-            points_selector=selector
-            )
+        self._client.delete(collection_name=self.config.collection, points_selector=selector)

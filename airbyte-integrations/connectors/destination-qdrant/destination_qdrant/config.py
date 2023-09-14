@@ -3,13 +3,12 @@
 #
 
 
-import dpath.util
 import json
 import re
-
-from jsonschema import RefResolver
+from enum import Enum
 from typing import Literal, Union
 
+import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
@@ -17,34 +16,38 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
-from enum import Enum
+from jsonschema import RefResolver
 from pydantic import BaseModel, Field
-
 
 
 class NoAuth(BaseModel):
     mode: Literal["no_auth"] = Field("no_auth", const=True)
 
+
 class ApiKeyAuth(BaseModel):
     mode: Literal["api_key_auth"] = Field("api_key_auth", const=True)
     api_key: str = Field(..., title="API Key", description="API Key for the Qdrant instance", airbyte_secret=True)
 
-class DistanceMetricEnum(str, Enum):
-    dot = 'Dot product'
-    cos = 'Cosine similarity'
-    euc = 'Euclidean distance'
 
 class QdrantIndexingConfigModel(BaseModel):
-    url: str = Field(..., title="url", description="Public Endpoint of the Qdrant instance")
-    auth_method: Union[NoAuth, ApiKeyAuth] = Field(
-        ..., title="Authentication Method", description="Method to connect to the Qdrant Instance", discriminator="mode", type="object", order=0
+    url: str = Field(..., title="Public Endpoint", description="Public Endpoint of the Qdrant cluser", order=0)
+    auth_method: Union[ApiKeyAuth, NoAuth] = Field(
+        default="api_key_auth",
+        title="Authentication Method",
+        description="Method to authenticate with the Qdrant Instance",
+        discriminator="mode",
+        type="object",
+        order=1,
     )
     prefer_grpc: bool = Field(
         title="Prefer gRPC", description="Whether to prefer gRPC over HTTP. Set to true for Qdrant cloud clusters", default=True
     )
-    collection: str = Field(..., title="Collection Name", description="The collection to load data into")
-    distance_metric: DistanceMetricEnum = Field(
-        default=DistanceMetricEnum.cos, title="Distance Metric", enum=["dot", "cos", "euc"], description="Select the Distance metrics used to measure similarities among vectors."
+    collection: str = Field(..., title="Collection Name", description="The collection to load data into", order=2)
+    distance_metric: Union[Literal["dot"], Literal["cos"], Literal["euc"]] = Field(
+        default="cos",
+        title="Distance Metric",
+        enum=["dot", "cos", "euc"],
+        description="The Distance metric used to measure similarities among vectors. This field is only used if the collection defined in the does not exist yet and is created automatically by the connector.",
     )
     text_field: str = Field(title="Text Field", description="The field in the payload that contains the embedded text", default="text")
 
@@ -58,9 +61,9 @@ class QdrantIndexingConfigModel(BaseModel):
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, FromFieldEmbeddingConfigModel] = Field(
-        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
-    )
+    embedding: Union[
+        OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, FromFieldEmbeddingConfigModel
+    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: QdrantIndexingConfigModel
 
     class Config:
@@ -89,6 +92,7 @@ class ConfigModel(BaseModel):
     def remove_discriminator(schema: dict) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
         dpath.util.delete(schema, "properties/*/discriminator")
+        dpath.util.delete(schema, "properties/**/discriminator")
 
     @classmethod
     def schema(cls):
