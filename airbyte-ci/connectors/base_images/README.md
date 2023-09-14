@@ -57,7 +57,7 @@ anyio.run(main)
 5. Declare the `changelog` class attribute to describe the change provided by the new version.
 6. *Recommended*: Override the `run_sanity_check` method to add a sanity check to your new base image version
 7. To detect regressions you can set the run_previous_version_sanity_checks attribute to True .`
-8. Build the project: `poetry run build` it will run sanity checks on the images, generate dockerfiles and update the changelog file.
+8. Build the project: run `make build` it will run sanity checks on the images, generate dockerfiles and update the changelog file.
 9. If you face any issue, feel free to run `LOG_LEVEL=DEBUG poetry run build` to get access to the full logs.
 10. Commit and push your changes.
 11. Create a PR and ask for a review from the Connector Operations team.
