@@ -376,7 +376,7 @@ url = "../common_utils"
 
 [[package]]
 name = "connector-ops"
-version = "0.2.2"
+version = "0.2.3"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 optional = false
 python-versions = "^3.10"
@@ -2109,4 +2109,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "637d1486ee29c47b83a19acb28753cdc70e308e33b5fb485ab748d97d7ebf2ab"
+content-hash = "c7a0838f5a2bd33f21d49e5a2fa088010613b89a8da5805367413f8d77a18dac"
