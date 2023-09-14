@@ -1025,11 +1025,12 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
     # library called transform [1] to perform the regexp matching on a stream and this library hard-codes a buffer
     # size of 4096 bytes for each regex [2].
     #
-    # Remove the special local case whenever dagger implements scrubbing differently [3].
+    # Remove the special local case whenever dagger implements scrubbing differently [3,4].
     #
     # [1] https://golang.org/x/text/transform
     # [2] https://cs.opensource.google/go/x/text/+/refs/tags/v0.13.0:transform/transform.go;l=130
     # [3] https://github.com/dagger/dagger/blob/v0.6.4/cmd/shim/main.go#L294
+    # [4] https://github.com/airbytehq/airbyte/issues/30394
     #
     if context.is_local:
         # Special case for local development.
