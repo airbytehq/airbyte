@@ -404,7 +404,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           final List<Exception> exceptionsThrown = new ArrayList<>();
           writeConfigs.get().forEach((streamId, uploader) -> {
             try {
-              typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
               uploader.close(hasFailed, outputRecordCollector, null);
             } catch (final Exception e) {
               exceptionsThrown.add(e);
