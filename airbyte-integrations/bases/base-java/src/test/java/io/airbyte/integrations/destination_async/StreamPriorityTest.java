@@ -33,7 +33,7 @@ public class StreamPriorityTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L)).thenReturn(Optional.of(0L));
     when(bufferDequeue.getQueueSizeBytes(DESC2)).thenReturn(Optional.of(0L)).thenReturn(Optional.of(1L));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null, () -> System.currentTimeMillis());
 
     assertEquals(List.of(DESC1, DESC2), detect.orderStreamsByPriority(DESCS));
     assertEquals(List.of(DESC2, DESC1), detect.orderStreamsByPriority(DESCS));
@@ -45,7 +45,7 @@ public class StreamPriorityTest {
     when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(0L));
     when(bufferDequeue.getTimeOfLastRecord(DESC1)).thenReturn(Optional.of(FIVE_MIN_AGO)).thenReturn(Optional.of(NOW));
     when(bufferDequeue.getTimeOfLastRecord(DESC2)).thenReturn(Optional.of(NOW)).thenReturn(Optional.of(FIVE_MIN_AGO));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null, () -> System.currentTimeMillis());
     assertEquals(List.of(DESC1, DESC2), detect.orderStreamsByPriority(DESCS));
     assertEquals(List.of(DESC2, DESC1), detect.orderStreamsByPriority(DESCS));
   }
@@ -55,7 +55,7 @@ public class StreamPriorityTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getQueueSizeBytes(any())).thenReturn(Optional.of(0L));
     when(bufferDequeue.getTimeOfLastRecord(any())).thenReturn(Optional.of(NOW));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null);
+    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, new AtomicBoolean(false), null, () -> System.currentTimeMillis());
     final List<StreamDescriptor> descs = List.of(Jsons.clone(DESC1), Jsons.clone(DESC2));
     assertEquals(List.of(descs.get(0), descs.get(1)), detect.orderStreamsByPriority(new HashSet<>(descs)));
     descs.get(0).setName("test3");

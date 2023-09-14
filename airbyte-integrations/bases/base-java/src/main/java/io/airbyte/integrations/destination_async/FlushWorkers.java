@@ -82,7 +82,7 @@ public class FlushWorkers implements AutoCloseable {
     workerPool = Executors.newFixedThreadPool(5);
     isClosing = new AtomicBoolean(false);
     runningFlushWorkers = new RunningFlushWorkers();
-    detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher);
+    detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, isClosing, flusher, () -> System.currentTimeMillis());
   }
 
   public void start() {
