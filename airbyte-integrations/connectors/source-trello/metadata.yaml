@@ -30,7 +30,4 @@ data:
   supportLevel: community
   tags:
     - language:low-code
-  ab_internal:
-    sl: 200
-    ql: 300
 metadataSpecVersion: "1.0"
