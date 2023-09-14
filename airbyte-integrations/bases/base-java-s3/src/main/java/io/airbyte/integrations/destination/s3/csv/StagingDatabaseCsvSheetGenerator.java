@@ -33,7 +33,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   private final List<String> header;
 
   public StagingDatabaseCsvSheetGenerator() {
-    this(true);
+    this(false);
   }
 
   public StagingDatabaseCsvSheetGenerator(final boolean useDestinationsV2Columns) {

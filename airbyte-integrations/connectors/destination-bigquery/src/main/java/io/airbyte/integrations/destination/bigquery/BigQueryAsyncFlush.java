@@ -44,7 +44,7 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     try {
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
-          new StagingDatabaseCsvSheetGenerator(),
+          new StagingDatabaseCsvSheetGenerator(true),
           true);
 
       stream.forEach(record -> {
