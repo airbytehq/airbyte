@@ -14,6 +14,7 @@ from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseSt
 
 from .utils import read_incremental
 
+
 @pytest.fixture
 def patch_base_class(mocker, config):
     # Mock abstract methods to enable instantiating abstract class
