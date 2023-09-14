@@ -129,4 +129,4 @@ def test_streams(mocker, patch_base_class):
 
     streams = source.streams(patch_base_class["config"])
     expected_streams_number = 56
-    assert len(streams) == expected_streams_number
+    assert len(set(streams)) == expected_streams_number
