@@ -11,12 +11,11 @@ import inspect
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 from typing import final
 
 import dagger
 import semver
-from base_images import consts, errors, registries, sanity_checks
+from base_images import errors, registries, sanity_checks
 
 
 @dataclass
@@ -40,7 +39,6 @@ class AirbyteConnectorBaseImage(ABC):
     """
 
     name_with_tag: str
-    github_url: str
     version: semver.VersionInfo
 
     @final
@@ -56,7 +54,6 @@ class AirbyteConnectorBaseImage(ABC):
         self._validate_platform_availability()
 
     def __init_subclass__(cls) -> None:
-        cls.github_url = AirbyteConnectorBaseImage.get_github_url(cls)
         if not inspect.isabstract(cls):
             cls.version = registries.get_version_from_class_name(cls)
             cls.name_with_tag = f"{cls.image_name}:{cls.version}"
@@ -200,16 +197,3 @@ class AirbyteConnectorBaseImage(ABC):
         await sanity_checks.check_label_defined_with_dagger(
             base_image_version.container, "io.airbyte.base_image", base_image_version.name_with_tag
         )
-
-    @staticmethod
-    def get_github_url(cls) -> str:
-        """This method returns the GitHub URL of the file where the class is defined on the main branch.
-        This URL is used to generate the changelog entry for the release notes.
-        This URL will resolve once the code is pushed to the main branch.
-
-        Returns:
-            str: The GitHub URL of the file where the class is defined on the main branch.
-        """
-        absolute_module_path = inspect.getfile(cls)
-        relative_module_path = Path(absolute_module_path).relative_to(consts.AIRBYTE_ROOT_DIR)
-        return f"{consts.AIRBYTE_GITHUB_REPO_URL}/blob/{consts.MAIN_BRANCH_NAME}/{relative_module_path}"

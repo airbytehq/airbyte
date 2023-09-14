@@ -121,7 +121,7 @@ class VersionRegistry:
         self.changelog_path.unlink(missing_ok=True)
         entries = [
             {
-                "Version": f"[{base_version_image_class.version}]({base_version_image_class.github_url})",
+                "Version": base_version_image_class.version,
                 "Changelog": base_version_image_class.changelog_entry,
             }
             for base_version_image_class in self.versions
