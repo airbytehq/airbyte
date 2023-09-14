@@ -48,12 +48,13 @@ class ZendeskConfigException(AirbyteTracedException):
 class BaseZendeskSupportStream(HttpStream, ABC):
     raise_on_http_errors = True
 
-    def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
+    def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, include_deleted: bool = False, **kwargs):
         super().__init__(**kwargs)
 
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
+        self._include_deleted = include_deleted
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -514,9 +515,18 @@ class Tickets(SourceZendeskIncrementalExportStream):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     cursor_field = "generated_timestamp"
+    deleted_cursor_field = "deleted_at"
 
     def path(self, **kwargs) -> str:
         return "incremental/tickets/cursor.json"
+
+    @property
+    def default_deleted_state_comparison_value(self) -> Union[int, str]:
+        """
+        Set the default STATE comparison value for cases when the deleted record doesn't have it's value.
+        We expect the `deleted_at` cursor field for destroyed records would be always type of String.
+        """
+        return ""
 
     def request_params(
         self,
@@ -535,7 +545,11 @@ class Tickets(SourceZendeskIncrementalExportStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
-        return {self.cursor_field: max(new_value, old_value)}
+        state = {self.cursor_field: max(new_value, old_value)}
+        last_deleted_record_value = latest_record.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
+        current_deleted_state_value = current_stream_state.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
+        state.update({self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)})
+        return state
 
     def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
         """
@@ -549,6 +563,24 @@ class Tickets(SourceZendeskIncrementalExportStream):
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
         """
         return super().check_start_time_param(requested_start_time, value=3)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        )
+        if self._include_deleted:
+            yield from DeletedTickets(
+                start_date=self._start_date,
+                subdomain=self._subdomain,
+                ignore_pagination=self._ignore_pagination,
+                authenticator=self._session.auth,
+            ).read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):

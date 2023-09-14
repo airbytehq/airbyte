@@ -30,7 +30,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "generated_timestamp": 8001820514 },
+      "stream_state": { "generated_timestamp": 8001820514, "deleted_at": "2222-04-23T15:34:20Z" },
       "stream_descriptor": { "name": "tickets" }
     }
   },
