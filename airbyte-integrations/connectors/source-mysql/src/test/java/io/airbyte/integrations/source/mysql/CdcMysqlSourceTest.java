@@ -88,7 +88,8 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @ExtendWith(SystemStubsExtension.class)
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
-  private String INVALID_TIMEZONE_CEST = "CEST";
+  private static final String START_DB_CONTAINER_WITH_INVALID_TIMEZONE = "START-DB-CONTAINER-WITH-INVALID-TIMEZONE";
+  private static final String INVALID_TIMEZONE_CEST = "CEST";
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
@@ -111,7 +112,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private void init(final TestInfo testInfo) {
     container = new MySQLContainer<>("mysql:8.0");
-    if (testInfo.getTags().contains("INVALID-EU-TZ")) {
+    if (testInfo.getTags().contains(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)) {
       container.withEnv(Map.of("TZ", INVALID_TIMEZONE_CEST));
     }
     container.start();
@@ -175,8 +176,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         "test",
         DRIVER_CLASS,
         String.format("jdbc:mysql://%s:%s",
-                      container.getHost(),
-                      container.getFirstMappedPort()),
+            container.getHost(),
+            container.getFirstMappedPort()),
         Collections.emptyMap());
     return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(dataSource));
   }
@@ -497,18 +498,29 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Test
-  @Timeout(10)
-  @Tags(value = {@Tag("INVALID-EU-TZ")})
-  // Issue: https://github.com/airbytehq/airbyte/issues/24659
-  public void testSettingTimezoneToOverrideBadValue() throws Exception {
+  @Timeout(value = 60)
+  @Tags(value = {@Tag(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)})
+  public void syncWouldWorkWithDBWithInvalidTimezone() throws Exception {
     final String systemTimeZone = "@@system_time_zone";
-    final JdbcDatabase jdbcDatabase = source.createDatabase(config);
+    final JdbcDatabase jdbcDatabase = ((MySqlSource) getSource()).createDatabase(getConfig());
     final Properties properties = MySqlCdcProperties.getDebeziumProperties(jdbcDatabase);
-    final String databaseTimezone = jdbcDatabase.unsafeQuery(String.format("SELECT %s;", systemTimeZone)).toList().get(0).get(systemTimeZone).asText();
+    final String databaseTimezone = jdbcDatabase.unsafeQuery(String.format("SELECT %s;", systemTimeZone)).toList().get(0).get(systemTimeZone)
+        .asText();
     final String debeziumEngineTimezone = properties.getProperty("database.connectionTimeZone");
 
     assertEquals(INVALID_TIMEZONE_CEST, databaseTimezone);
     assertEquals("America/Los_Angeles", debeziumEngineTimezone);
+
+    final AutoCloseableIterator<AirbyteMessage> read = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+
+    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
+
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
+
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
+    assertExpectedStateMessages(stateMessages);
   }
 
   @Test
@@ -699,7 +711,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
    */
   @Test
   public void testCompressedSchemaHistory() throws Exception {
-    createTablesToIncreaseSchemaHitorySize();
+    createTablesToIncreaseSchemaHistorySize();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
@@ -741,7 +753,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
   }
 
-  private void createTablesToIncreaseSchemaHitorySize() {
+  private void createTablesToIncreaseSchemaHistorySize() {
     for (int i = 0; i <= 200; i++) {
       final String tableName = generateRandomStringOf32Characters();
       final StringBuilder createTableQuery = new StringBuilder("CREATE TABLE models_schema." + tableName + "(");
