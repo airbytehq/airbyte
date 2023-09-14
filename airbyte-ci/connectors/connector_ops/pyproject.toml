@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector_ops"
-version = "0.2.2"
+version = "0.2.3"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -16,7 +16,7 @@ PyYAML = "^6.0"
 GitPython = "^3.1.29"
 pydantic = "^1.9"
 PyGithub = "^1.58.0"
-rich = "^11.0.1"
+rich = "^13.0.1"
 pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}

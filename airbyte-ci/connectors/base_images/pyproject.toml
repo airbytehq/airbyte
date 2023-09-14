@@ -11,7 +11,7 @@ python = "^3.10"
 dagger-io = "0.6.4"
 py-markdown-table = "0.4.0"
 gitpython = "^3.1.35"
-rich = "^13.5.2"
+rich = "^13.0.1"
 semver = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]
