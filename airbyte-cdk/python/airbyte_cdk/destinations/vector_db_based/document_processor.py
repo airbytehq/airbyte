@@ -50,7 +50,7 @@ class DocumentProcessor:
     def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
         if splitter_config is None:
             splitter_config = SeparatorSplitterConfigModel()
-        if splitter_config.mode == "token":
+        if splitter_config.mode == "separator":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
