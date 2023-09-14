@@ -1,63 +1,74 @@
 # Mongo DB
 
-The MongoDB source allows to sync data from MongoDb. Source supports Full Refresh and Incremental sync strategies.
+Airbyte's certified MongoDB connector offers the following features:
 
-## Resulting schema
+* [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) via [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/)/[Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/).
+* Reliable replication of any collection size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of data reads.
 
-MongoDB does not have anything like table definition, thus we have to define column types from actual attributes and their values. Discover phase have two steps:
+## Quick Start
 
-### Step 1. Find all unique properties
+Here is an outline of the minimum required steps to configure a MongoDB connector:
+1. Create or discover the configuration of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/), either hosted in [MongoDB Atlas](https://www.mongodb.com/atlas/database) or self-hosted.
+2. Create a new MongoDB source in the Airbyte UI
+3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
-Connector select 10k documents to collect all distinct field.
+Once this is complete, you will be able to select MongoDB as a source for replicating data.
 
-### Step 2. Determine property types
+#### Step 1: Create a dedicated read-only MongoDB user
 
-For each property found, connector determines its type, if all the selected values have the same type - connector will set appropriate type to the property. In all other cases connector will fallback to `string` type.
+These steps create a dedicated, read-only user for replicating data.  Alternatively, you can use an existing MongoDB user with
+access to the database.
 
-## Features
+##### MongoDB Atlas
 
-| Feature                       | Supported |
-| :---------------------------- | :-------- |
-| Full Refresh Sync             | Yes       |
-| Incremental - Append Sync     | Yes       |
-| Replicate Incremental Deletes | No        |
-| Namespaces                    | No        |
+1. Log in to the MongoDB Atlas dashboard.
+2. From the dashboard, click on "Database Access" under "Security"
 
-### Full Refresh sync
+![Security Database Access](mongodb/assets/mongodb_atlas_database_user_step_2.png)
 
-Works as usual full refresh sync.
+3. Click on the "+ ADD NEW DATABASE USER" button.
 
-### Incremental sync
+![Add New Database User](mongodb/assets/mongodb_atlas_database_user_step_3.png)
 
-Cursor field can not be nested. Currently only top level document properties are supported.
+4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-Cursor should **never** be blank. In case cursor is blank - the incremental sync results might be unpredictable and will totally rely on MongoDB comparison algorithm.
+![Authentication Method](mongodb/assets/mongodb_atlas_database_user_step_4.png)
 
-Only `datetime` and `number` cursor types are supported. Cursor type is determined based on the cursor field name:
+5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
 
-- `datetime` - if cursor field name contains a string from: `time`, `date`, `_at`, `timestamp`, `ts`
-- `number` - otherwise
+![Username and Password](mongodb/assets/mongodb_atlas_database_user_step_5.png)
 
-## Getting started
+6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
 
-This guide describes in details how you can configure MongoDB for integration with Airbyte.
+![Database User Privileges](mongodb/assets/mongodb_atlas_database_user_step_6.png)
 
-### Create users
+7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
-Run `mongo` shell, switch to `admin` database and create a `READ_ONLY_USER`. `READ_ONLY_USER` will be used for Airbyte integration. Please make sure that user has read-only privileges.
+![Restrict Access](mongodb/assets/mongodb_atlas_database_user_step_7.png)
 
-```javascript
-mongo
-use admin;
-db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
+8. Click on "Add User" at the bottom to save the user.
+
+![Add User](mongodb/assets/mongodb_atlas_database_user_step_8.png)
+
+##### Self Hosted
+
+These instructions assume that the MongoDB shell is installed.  To install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
+
+1. From a terminal window, launch the MongoDB shell:
+```shell
+> mongosh <connection string to cluster> --username <user with admin permissions>
+```  
+2. Switch to the `admin` databaseand run the MongoDB shell `mongo` shell, switch to `admin` database:
+```shell
+test> use admin
+switched to db admin
 ```
-
-**Make sure the user have appropriate access levels, a user with higher access levels may throw an exception.**
-
-### Enable MongoDB authentication
-
-Open `/etc/mongod.conf` and add/replace specific keys:
-
+3. Create a `READ_ONLY_USER` with the read only role:
+```javascript
+admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
+```
+Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated.
+4. Next, enable authentication, if not already enabled.  Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
 ```yaml
 net:
   bindIp: 0.0.0.0
@@ -65,43 +76,79 @@ net:
 security:
   authorization: enabled
 ```
+Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address.  Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database.
 
-Binding to `0.0.0.0` will allow to connect to database from any IP address.
+#### Step 2: Discover the MongoDB cluster connection configuration
 
-The last line will enable MongoDB security. Now only authenticated users will be able to access the database.
+These steps outline how to discover the connection configuration of your MongoDB instance.
 
-### Configure firewall
+##### MongoDB Atlas
 
-Make sure that MongoDB is accessible from external servers. Specific commands will depend on the firewall you are using \(UFW/iptables/AWS/etc\). Please refer to appropriate documentation.
+Atlas is MongoDB's [cloud-hosted offering](https://www.mongodb.com/atlas/database).  Below are the steps to discover
+the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
-Your `READ_ONLY_USER` should now be ready for use with Airbyte.
+1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
+2. From the dashboard, click on the "Connect" button of the source cluster.
 
-### TLS/SSL on a Connection
+![Connect to Source Cluster](mongodb/assets/mongodb_atlas_connection_string_step_2.png)
 
-It is recommended to use encrypted connection. Connection with TLS/SSL security protocol for MongoDb Atlas Cluster and Replica Set instances is enabled by default. To enable TSL/SSL connection with Standalone MongoDb instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
+3. On the "Connect to <cluster name>" modal dialog, select "Compass" under the "Access your data through tools" section.
 
-### Сonfiguration Parameters
+![Compass Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
 
-- Database: database name
-- Authentication Source: specifies the database that the supplied credentials should be validated against. Defaults to `admin`.
-- User: username to use when connecting
-- Password: used to authenticate the user
-- **Standalone MongoDb instance**
-  - Host: URL of the database
-  - Port: Port to use for connecting to the database
-  - TLS: indicates whether to create encrypted connection
-- **Replica Set**
-  - Server addresses: the members of a replica set
-  - Replica Set: A replica set name
-- **MongoDb Atlas Cluster**
-  - Cluster URL: URL of a cluster to connect to
+4. Copy the connection string from the entry labelled #2 on the modal dialog.
 
-For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.3/fundamentals/connection/).
+![Copy Connection String](mongodb/assets/mongodb_atlas_connection_string_step_4.png)
+
+##### Self Hosted Cluster
+
+Self-hosted clusters are MongoDB instances that are hosted outside of [MongoDB Atlas](https://www.mongodb.com/atlas/database).  Below are the steps to discover
+the connection configuration for a MongoDB self-hosted replica set cluster.
+
+1.  Refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions
+on discovering a self-hosted deployment connection string.
+
+#### Step 3: Configure the Airbyte MongoDB Source
+
+To configure the Airbyte MongoDB source, use the database credentials and connection string from steps 1 and 2, respectively.
+The source will test the connection to the MongoDB instance
+
+## Replication Methods
+
+The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
+
+#### CDC
+
+Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
+
+## Limitations & Troubleshooting
+
+* Currently only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster types.
+* Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of 1000 documents to collect all distinct top-level fields.  This is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.
+* TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
+* Views, capped collections and clustered collections are not supported.
+* Collections with different data types for the values in the `_id` field among the documents in a collection are not supported.  All `_id` values within the collection must be the same data type.
+* [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which has retention limitations.  Syncs that run less frequently than the retention period of the oplog may encounter issues with missing data.
+
+## Сonfiguration Parameters
+
+| Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                        |
+|:-------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                  |
+| Connection String                          | The connection string of the source MongoDB cluster.  For Atlas hosted clusters, see below for steps to find the connection string.  For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. 
+| Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                           | 
+| Username                                   | The username which is used to access the database.  Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                           |
+| Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                   |
+| Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`.  See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                   |
+| Initial Waiting Time in Seconds (Advanced) | The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.                                                                                                                                                                                   |
+| Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                     |
+
+For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-| :------ | :--------- |:---------------------------------------------------------| :-------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- |:---------------------------------------------------------| :-------------------------------------------------------------------------------------------------------- |
 | 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815) | Revert back to version 0.2.0                                                                              |
 | 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760) | Fix bug preventing some syncs from succeeding when collecting stats                                       |
 | 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733) | Fix bug preventing syncs from discovering field types                                                     |
