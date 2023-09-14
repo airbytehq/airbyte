@@ -12,7 +12,6 @@ dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation('org.apache.spark:spark-sql_2.13:3.3.2') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
