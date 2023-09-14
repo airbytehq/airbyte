@@ -84,7 +84,7 @@ public class BigQueryUtils {
       throw new RuntimeException("Job no longer exists");
     } else if (completedJob.getStatus().getError() != null) {
       // You can also look at queryJob.getStatus().getExecutionErrors() for all
-      // errors, not just the latest one.
+      // errors and not just the latest one.
       return ImmutablePair.of(null, (completedJob.getStatus().getError().toString()));
     }
 

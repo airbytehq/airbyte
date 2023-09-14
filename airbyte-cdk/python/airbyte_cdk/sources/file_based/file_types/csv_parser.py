@@ -34,6 +34,7 @@ class _CsvReader:
         file_read_mode: FileReadMode,
     ) -> Generator[Dict[str, Any], None, None]:
         config_format = _extract_format(config)
+        lineno = 0
 
         # Formats are configured individually per-stream so a unique dialect should be registered for each stream.
         # We don't unregister the dialect because we are lazily parsing each csv file to generate records
@@ -56,14 +57,23 @@ class _CsvReader:
                 + config_format.skip_rows_after_header
             )
             self._skip_rows(fp, rows_to_skip)
+            lineno += rows_to_skip
 
             reader = csv.DictReader(fp, dialect=dialect_name, fieldnames=headers)  # type: ignore
             try:
                 for row in reader:
+                    lineno += 1
+
                     # The row was not properly parsed if any of the values are None. This will most likely occur if there are more columns
                     # than headers or more headers dans columns
-                    if None in row or None in row.values():
-                        raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD)
+                    if None in row:
+                        raise RecordParseError(
+                            FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_COLUMNS,
+                            filename=file.uri,
+                            lineno=lineno,
+                        )
+                    if None in row.values():
+                        raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD_MISMATCHED_ROWS, filename=file.uri, lineno=lineno)
                     yield row
             finally:
                 # due to RecordParseError or GeneratorExit
