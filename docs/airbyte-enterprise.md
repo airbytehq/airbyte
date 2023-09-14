@@ -59,4 +59,4 @@ Your Okta app is now set up and you're ready to deploy Airbyte with SSO! Take no
 - Client ID
 - Client Secret
 
-Visit [Airbyte Enterprise deployment](/deploying-airbyte/on-kubernetes-via-helm#alpha-airbyte-enterprise-deployment) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
+Visit [Airbyte Enterprise deployment](/deploying-airbyte/on-kubernetes-via-helm#early-access-airbyte-enterprise-deployment) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.

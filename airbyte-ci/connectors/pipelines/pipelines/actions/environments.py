@@ -14,17 +14,21 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
+    AMAZONCORRETTO_IMAGE,
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
+    DOCKER_HOST_NAME,
+    DOCKER_HOST_PORT,
+    DOCKER_TMP_VOLUME_NAME,
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
-from pipelines.utils import check_path_in_workdir, get_file_contents
+from pipelines.utils import check_path_in_workdir, get_file_contents, sh_dash_c
 
 if TYPE_CHECKING:
     from pipelines.contexts import ConnectorContext, PipelineContext
@@ -49,10 +53,16 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
     base_container = (
         context.dagger_client.container()
         .from_(f"python:{python_version}-slim")
-        .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "build-essential", "cmake", "g++", "libffi-dev", "libstdc++6", "git"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_exec(["pip", "install", "pip==23.1.2"])
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y build-essential cmake g++ libffi-dev libstdc++6 git",
+                    "pip install pip==23.1.2",
+                ]
+            )
+        )
     )
 
     return base_container
@@ -82,17 +92,29 @@ def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Conta
     return (
         dagger_client.container()
         .from_("alpine:latest")
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apk update",
+                    "apk add git tar wget",
+                    f"git config --global user.email {ci_git_user}@users.noreply.github.com",
+                    f"git config --global user.name {ci_git_user}",
+                    "git config --global --add --bool push.autoSetupRemote true",
+                ]
+            )
+        )
         .with_secret_variable("GITHUB_TOKEN", ci_github_access_token_secret)
-        .with_exec(["apk", "update"])
-        .with_exec(["apk", "add", "git", "tar", "wget"])
         .with_workdir("/ghcli")
-        .with_exec(["wget", "https://github.com/cli/cli/releases/download/v2.30.0/gh_2.30.0_linux_amd64.tar.gz", "-O", "ghcli.tar.gz"])
-        .with_exec(["tar", "--strip-components=1", "-xf", "ghcli.tar.gz"])
-        .with_exec(["rm", "ghcli.tar.gz"])
-        .with_exec(["cp", "bin/gh", "/usr/local/bin/gh"])
-        .with_exec(["git", "config", "--global", "user.email", f"{ci_git_user}@users.noreply.github.com"])
-        .with_exec(["git", "config", "--global", "user.name", ci_git_user])
-        .with_exec(["git", "config", "--global", "--add", "--bool", "push.autoSetupRemote", "true"])
+        .with_exec(
+            sh_dash_c(
+                [
+                    "wget https://github.com/cli/cli/releases/download/v2.30.0/gh_2.30.0_linux_amd64.tar.gz -O ghcli.tar.gz",
+                    "tar --strip-components=1 -xf ghcli.tar.gz",
+                    "rm ghcli.tar.gz",
+                    "cp bin/gh /usr/local/bin/gh",
+                ]
+            )
+        )
     )
 
 
@@ -452,14 +474,34 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         Container: The container running dockerd as a service
     """
     return (
-        dagger_client.container()
-        .from_(consts.DOCKER_DIND_IMAGE)
-        .with_mounted_cache(
-            "/tmp",
-            dagger_client.cache_volume("shared-tmp"),
+        dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
+        # We set this env var because we need to use a non-default zombie reaper setting.
+        # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
+        # This won't be possible because of container-ception: dind is running inside the dagger engine.
+        # See https://github.com/krallin/tini#subreaping for details.
+        .with_env_variable("TINI_SUBREAPER", "")
+        # Similarly, because of container-ception, we have to use the fuse-overlayfs storage engine.
+        .with_exec(
+            sh_dash_c(
+                [
+                    # Update package metadata.
+                    "apk update",
+                    # Install the storage driver package.
+                    "apk add fuse-overlayfs",
+                    # Update daemon config with storage driver.
+                    "mkdir /etc/docker",
+                    '(echo {\\"storage-driver\\": \\"fuse-overlayfs\\"} > /etc/docker/daemon.json)',
+                ]
+            )
         )
-        .with_exposed_port(2375)
-        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        # Expose the docker host port.
+        .with_exposed_port(DOCKER_HOST_PORT)
+        # Mount the docker cache volumes.
+        .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
+        # Run the docker daemon and bind it to the exposed TCP port.
+        .with_exec(
+            ["dockerd", "--log-level=error", f"--host=tcp://0.0.0.0:{DOCKER_HOST_PORT}", "--tls=false"], insecure_root_capabilities=True
+        )
     )
 
 
@@ -475,16 +517,14 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = context.dockerd_service
-    docker_hostname = "global-docker-host"
     return (
-        container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
-        .with_service_binding(docker_hostname, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+        container.with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
+        .with_service_binding(DOCKER_HOST_NAME, context.dockerd_service)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
 
 
-def bound_docker_host(context: ConnectorContext) -> Container:
+def bound_docker_host(context: ConnectorContext) -> Callable[[Container], Container]:
     def bound_docker_host_inner(container: Container) -> Container:
         return with_bound_docker_host(context, container)
 
@@ -502,72 +542,6 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
     return with_bound_docker_host(context, docker_cli)
-
-
-def with_gradle(
-    context: ConnectorContext,
-    sources_to_include: List[str] = None,
-    bind_to_docker_host: bool = True,
-) -> Container:
-    """Create a container with Gradle installed and bound to a persistent docker host.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-        sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
-        bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-
-    Returns:
-        Container: A container with Gradle installed and Java sources from the repository.
-    """
-
-    include = [
-        ".root",
-        ".env",
-        "build.gradle",
-        "deps.toml",
-        "gradle.properties",
-        "gradle",
-        "gradlew",
-        "LICENSE_SHORT",
-        "settings.gradle",
-        "build.gradle",
-        "tools/gradle",
-        "spotbugs-exclude-filter-file.xml",
-        "buildSrc",
-        "tools/bin/build_image.sh",
-        "tools/lib/lib.sh",
-        "tools/gradle/codestyle",
-        "pyproject.toml",
-    ]
-
-    if sources_to_include:
-        include += sources_to_include
-    # TODO re-enable once we have fixed the over caching issue
-    # gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
-    # gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
-
-    openjdk_with_docker = (
-        context.dagger_client.container()
-        .from_("openjdk:17.0.1-jdk-slim")
-        .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
-        .with_env_variable("VERSION", consts.DOCKER_VERSION)
-        .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_env_variable("GRADLE_HOME", "/root/.gradle")
-        .with_exec(["mkdir", "/airbyte"])
-        .with_workdir("/airbyte")
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
-        .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
-        # TODO (ben) reenable once we have fixed the over caching issue
-        # .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
-        # .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
-        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
-    )
-
-    if bind_to_docker_host:
-        return with_bound_docker_host(context, openjdk_with_docker)
-    else:
-        return openjdk_with_docker
 
 
 async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
@@ -654,23 +628,47 @@ def with_integration_base(context: PipelineContext, build_platform: Platform) ->
     )
 
 
-def with_integration_base_java(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
+def with_integration_base_java(context: PipelineContext, build_platform: Platform) -> Container:
     integration_base = with_integration_base(context, build_platform)
+    yum_packages_to_install = [
+        "tar",  # required to untar java connector binary distributions.
+        "openssl",  # required because we need to ssh and scp sometimes.
+        "findutils",  # required for xargs, which is shipped as part of findutils.
+    ]
     return (
         context.dagger_client.container(platform=build_platform)
-        .from_(f"amazoncorretto:{jdk_version}")
+        # Use a linux+jdk base image with long-term support, such as amazoncorretto.
+        .from_(AMAZONCORRETTO_IMAGE)
+        # Install a bunch of packages as early as possible.
+        .with_exec(
+            sh_dash_c(
+                [
+                    # Update first, but in the same .with_exec step as the package installation.
+                    # Otherwise, we risk caching stale package URLs.
+                    "yum update -y",
+                    #
+                    f"yum install -y {' '.join(yum_packages_to_install)}",
+                    # Remove any dangly bits.
+                    "yum clean all",
+                ]
+            )
+        )
+        # Add what files we need to the /airbyte directory.
+        # Copy base.sh from the airbyte/integration-base image.
         .with_directory("/airbyte", integration_base.directory("/airbyte"))
-        .with_exec(["yum", "install", "-y", "tar", "openssl"])
-        .with_exec(["yum", "clean", "all"])
         .with_workdir("/airbyte")
+        # Download a utility jar from the internet.
         .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
+        # Copy javabase.sh from the git repo.
         .with_file("javabase.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh"))
+        # Set a bunch of env variables used by base.sh.
         .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
         .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
         .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
         .with_env_variable("AIRBYTE_READ_CMD", "/airbyte/javabase.sh --read")
         .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
+        # Set image labels.
         .with_label("io.airbyte.version", "0.1.2")
         .with_label("io.airbyte.name", "airbyte/integration-base-java")
     )
@@ -774,27 +772,37 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
 
     return (
         with_integration_base_java(context, build_platform)
-        .with_exec(["yum", "install", "-y"] + yum_packages_to_install)
-        .with_exec(["yum", "clean", "all"])
-        .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
+        .with_exec(
+            sh_dash_c(
+                [
+                    "yum update -y",
+                    f"yum install -y {' '.join(yum_packages_to_install)}",
+                    "yum clean all",
+                    "alternatives --install /usr/bin/python python /usr/bin/python3 60",
+                ]
+            )
+        )
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_exec(["python", "-m", "ensurepip", "--upgrade"])
-        # Workaround for https://github.com/yaml/pyyaml/issues/601
-        .with_exec(["pip3", "install", "Cython<3.0", "pyyaml~=5.4", "--no-build-isolation"])
-        .with_exec(["pip3", "install", dbt_adapter_package])
+        .with_exec(
+            sh_dash_c(
+                [
+                    "python -m ensurepip --upgrade",
+                    # Workaround for https://github.com/yaml/pyyaml/issues/601
+                    "pip3 install Cython<3.0 pyyaml~=5.4 --no-build-isolation",
+                    f"pip3 install {dbt_adapter_package}",
+                    # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
+                    "pip3 install urllib3<2",
+                ]
+            )
+        )
         .with_directory("airbyte_normalization", with_normalization(context, build_platform).directory("/airbyte"))
         .with_workdir("airbyte_normalization")
-        .with_exec(["sh", "-c", "mv * .."])
+        .with_exec(sh_dash_c(["mv * .."]))
         .with_workdir("/airbyte")
         .with_exec(["rm", "-rf", "airbyte_normalization"])
-        # We don't install the airbyte-protocol legacy package as its not used anymore and not compatible with Cython 3.x
-        # .with_workdir("/airbyte/base_python_structs")
-        # .with_exec(["pip3", "install", "--force-reinstall", "Cython<3.0", ".",])
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
-        # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
-        .with_exec(["pip3", "install", "urllib3<2"])
         .with_exec(["dbt", "deps"])
         .with_workdir("/airbyte")
         .with_file(
@@ -816,8 +824,14 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_workdir("/airbyte")
         .with_env_variable("APPLICATION", context.connector.technical_name)
         .with_file(f"{application}.tar", connector_java_tar_file)
-        .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
-        .with_exec(["rm", "-rf", f"{application}.tar"])
+        .with_exec(
+            sh_dash_c(
+                [
+                    f"tar xf {application}.tar --strip-components=1",
+                    f"rm -rf {application}.tar",
+                ]
+            )
+        )
     )
 
     if (
@@ -833,8 +847,8 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
-        .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
+        .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
+        .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
@@ -924,11 +938,17 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
     entrypoint = ["python", "/airbyte/integration_code/main.py"]
     builder = (
         base.with_workdir("/airbyte/integration_code")
-        .with_env_variable("DAGGER_BUILD", "True")
-        .with_exec(["apt-get", "update"])
+        .with_env_variable("DAGGER_BUILD", "1")
         .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_exec(["pip", "install", "--upgrade", "pip"])
-        .with_exec(["apt-get", "install", "-y", "tzdata"])
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y tzdata",
+                    "pip install --upgrade pip",
+                ]
+            )
+        )
         .with_file("setup.py", (await context.get_connector_dir(include="setup.py")).file("setup.py"))
     )
 
@@ -940,10 +960,17 @@ async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, b
 
     connector_container = (
         base.with_workdir("/airbyte/integration_code")
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y bash",
+                ]
+            )
+        )
         .with_directory("/usr/local", builder.directory("/install"))
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
         .with_new_file("/etc/timezone", contents="Etc/UTC")
-        .with_exec(["apt-get", "install", "-y", "bash"])
         .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
         .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
@@ -975,7 +1002,7 @@ def with_crane(
             # We use sh -c to be able to use environment variables in the command
             # This is a workaround as the default crane entrypoint doesn't support environment variables
             .with_exec(
-                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
+                sh_dash_c(["crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True
             )
         )
 
