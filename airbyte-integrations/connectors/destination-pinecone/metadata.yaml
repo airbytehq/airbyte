@@ -23,4 +23,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pinecone
   tags:
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
 metadataSpecVersion: "1.0"
