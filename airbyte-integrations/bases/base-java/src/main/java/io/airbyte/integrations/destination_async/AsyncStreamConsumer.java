@@ -140,7 +140,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
           if (Type.RECORD.equals(partial.getType()) && partial.getRecord().getData() != null) {
-            return partial.withSerialized(partial.getRecord().getData().toString());
+            var test = partial.withSerialized(partial.getRecord().getData().toString());
+            partial.getRecord().setData(null);
+            return test;
           } else if (Type.STATE.equals(partial.getType())) {
             return partial.withSerialized(messageString);
           } else {
