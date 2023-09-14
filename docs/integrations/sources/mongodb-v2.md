@@ -123,7 +123,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 
 ## Limitations & Troubleshooting
 
-* Currently only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster types.
+* Only supports [replica set](https://www.mongodb.com/docs/manual/replication/) cluster type.
 * Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of 1000 documents to collect all distinct top-level fields.  This is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.
 * TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 * Views, capped collections and clustered collections are not supported.
