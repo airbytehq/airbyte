@@ -136,7 +136,7 @@ class ConnectorConfig(BaseConfig):
         order=2,
         description=(
             "The date from which you'd like to replicate data for all incremental streams, "
-            "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and since 2 years for insight streams."
+            "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams."
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],

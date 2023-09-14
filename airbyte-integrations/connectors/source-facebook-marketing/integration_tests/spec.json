@@ -23,7 +23,7 @@
       },
       "start_date": {
         "title": "Start Date",
-        "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and since 2 years for insight streams.",
+        "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams.",
         "order": 2,
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],

@@ -42,7 +42,7 @@ ad_creative_response = {
 #     "name, friendly_msg, config_error_response",
 CONFIG_ERRORS = [
     ("error_400_validating_access_token_session_expired",
-     "Re-authenticate or update access token",
+     "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
      {
          "status_code": 400,
          "json": {
@@ -56,7 +56,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_400_validating_access_token_user_changed_their_password",
-     "Re-authenticate or update access token",
+     "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
      {
          "status_code": 400,
          "json": {
@@ -70,7 +70,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_400_validating_access_token_not_authorized_application",
-     "Re-authenticate or update access token",
+     "Invalid access token. Re-authenticate if FB oauth is used or refresh access token with all required permissions",
      {
          "status_code": 400,
          "json": {
@@ -85,7 +85,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_400_missing_permission",
-     "Re-authenticate to check whether correct Ad Account ID",
+     "Credentials don't have enough permissions. Check if correct Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh access token with all required permissions",
      {
          "status_code": 400,
          "json": {
@@ -105,7 +105,7 @@ CONFIG_ERRORS = [
      # Re-authenticate (for cloud) or refresh access token (for oss) and check if all required permissions are granted
      ),
     ("error_403_requires_permission",
-     "Re-authenticate because current credential does not have the necessary permissions",
+     "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
      {
          "status_code": 403,
          "json": {
@@ -118,7 +118,7 @@ CONFIG_ERRORS = [
      ),
 
     ("error_400_permission_must_be_granted",
-     "Re-authenticate because current credential does not have the necessary permissions",
+     "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
      {
          "status_code": 400,
          "json": {
@@ -131,7 +131,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_unsupported_get_request",
-     "Re-authenticate because current credential does not have the necessary permissions",
+     "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
      {
          "json": {
              "error": {
@@ -146,7 +146,7 @@ CONFIG_ERRORS = [
      }
      ),
     ("error_400_unknown_profile_is_no_linked",
-     "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page",
+     "Current profile is not linked to delegate page. Check if correct business (not personal) Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh access token with all required permissions.",
      {
          "status_code": 400,
          "json": {
@@ -165,7 +165,7 @@ CONFIG_ERRORS = [
      # Recommendations says that the problem can be fixed by switching to Business Ad Account Id
      ),
     ("error_400_unknown_profile_is_no_linked_es",
-     "Re-authenticate to check whether Business Ad Account Id is used, because current profile is not linked to delegate page",
+     "Current profile is not linked to delegate page. Check if correct business (not personal) Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh access token with all required permissions.",
      {
          "status_code": 400,
          "json": {
