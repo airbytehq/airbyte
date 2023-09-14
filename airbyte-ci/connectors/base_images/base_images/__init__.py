@@ -4,12 +4,13 @@
 import sys
 
 from base_images.errors import BaseImageVersionError
+from base_images.registries import GlobalRegistry
 from rich.console import Console
 
 console = Console()
 
 try:
-    from base_images import python  # , java_bases
+    from base_images import python  # , java
 except BaseImageVersionError as e:
     # This error occurs if a base image version class name does not follow semver.
     # We handle the error for nice console output.
@@ -17,7 +18,9 @@ except BaseImageVersionError as e:
     console.log(f":cross_mark: {e}", style="bold red")
     sys.exit(1)
 
-PYTHON_BASE_IMAGES = python.ALL_BASE_IMAGES
-LATEST_PYTHON_BASE_IMAGE = PYTHON_BASE_IMAGES[0]
-ALL_BASE_IMAGES = python.ALL_BASE_IMAGES  # + java_bases.ALL_BASE_IMAGES
-ALL_BASE_IMAGES_INDEX = {base_image.name_with_tag: base_image for base_image in ALL_BASE_IMAGES}
+
+GLOBAL_REGISTRY = GlobalRegistry(
+    [
+        python.VERSION_REGISTRY,
+    ]
+)  # ,  java.VERSION_REGISTRY])

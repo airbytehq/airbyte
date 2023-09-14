@@ -12,10 +12,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Type, final
+from typing import final
 
 import dagger
-from base_images import consts, errors, sanity_checks, utils
+import semver
+from base_images import consts, errors, registries, sanity_checks
 
 
 @dataclass
@@ -40,7 +41,7 @@ class AirbyteConnectorBaseImage(ABC):
 
     name_with_tag: str
     github_url: str
-    version: str
+    version: semver.VersionInfo
 
     @final
     def __init__(self, dagger_client: dagger.Client, platform: dagger.Platform):
@@ -57,7 +58,7 @@ class AirbyteConnectorBaseImage(ABC):
     def __init_subclass__(cls) -> None:
         cls.github_url = AirbyteConnectorBaseImage.get_github_url(cls)
         if not inspect.isabstract(cls):
-            cls.version = utils.get_version_from_class_name(cls)
+            cls.version = registries.get_version_from_class_name(cls)
             cls.name_with_tag = f"{cls.image_name}:{cls.version}"
         return super().__init_subclass__()
 
@@ -156,12 +157,6 @@ class AirbyteConnectorBaseImage(ABC):
         """
         raise NotImplementedError("Subclasses must define a 'run_previous_version_sanity_checks' attribute.")
 
-    # MANDATORY SUBCLASSES METHODS:
-
-    @abstractmethod
-    def get_previous_version(self) -> Type[AirbyteConnectorBaseImage]:
-        raise NotImplementedError("Subclasses must define a 'get_previous_version' method.")
-
     # INSTANCE METHODS:
 
     @final
@@ -175,15 +170,8 @@ class AirbyteConnectorBaseImage(ABC):
             raise errors.PlatformAvailabilityError(f"Platform {self.platform} is not supported by {self.base_base_image.name}.")
 
     async def run_sanity_checks_for_version(self):
-        """Runs sanity checks on the current base image version instance.
-        We run sanity checks on the previous version if the flag 'run_previous_version_sanity_checks' is set to True.
-          base image container.
-        """
-        await self.__class__.__base__.run_sanity_checks(self)
-        if self.run_previous_version_sanity_checks:
-            PreviousVersion: AirbyteConnectorBaseImage = self.get_previous_version()
-            if PreviousVersion is not None:
-                await PreviousVersion(self.dagger_client, self.platform).run_sanity_checks(self)
+        """Runs sanity checks on the current base image version instance."""
+        await self.__class__.__base__.run_sanity_checks(self)  # type: ignore
         await self.run_sanity_checks(self)
 
     # STATIC METHODS:

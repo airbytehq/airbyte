@@ -7,15 +7,14 @@ Please create a v2.py module if you want to declare a new major version.
 """
 from __future__ import annotations
 
-from typing import Final, Type, final
+from typing import Final, final
 
 import dagger
 from base_images import common, sanity_checks
-from base_images.python import AirbytePythonConnectorBaseImage, PythonBase
+from base_images.python.common import AirbytePythonConnectorBaseImage, PythonBase
 
 
 class _1_0_0(AirbytePythonConnectorBaseImage):
-
     base_base_image: Final[PythonBase] = PythonBase.PYTHON_3_9_18
 
     changelog_entry: Final[
@@ -44,12 +43,8 @@ class _1_0_0(AirbytePythonConnectorBaseImage):
         await sanity_checks.check_python_version(base_image_version.container, "3.9.18")
         await sanity_checks.check_pip_version(base_image_version.container, "23.2.1")
 
-    def get_previous_version(self) -> Type[AirbytePythonConnectorBaseImage]:
-        return AirbytePythonConnectorBaseImage
-
 
 class _1_1_0(AirbytePythonConnectorBaseImage):
-
     base_base_image: Final[PythonBase] = PythonBase.PYTHON_3_9_18
 
     changelog_entry: Final[str] = "Install poetry 1.6.1"

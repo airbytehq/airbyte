@@ -9,12 +9,12 @@ repos:
         args:
           ["--tmpl=LICENSE_SHORT", "--ext=py", "-x=**/models/__init__.py", "-f"]
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 23.9.1
     hooks:
       - id: black
         args: ["--config", "pyproject.toml"]
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         args:
@@ -26,7 +26,7 @@ repos:
           ]
         additional_dependencies: ["colorama"]
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.5.0
+    rev: v3.0.3
     hooks:
       - id: prettier
         types_or: [yaml, json]
@@ -37,14 +37,14 @@ repos:
           ).?$
 
   - repo: https://github.com/csachs/pyproject-flake8
-    rev: v6.0.0
+    rev: v6.0.0.post1
     hooks:
       - id: pyproject-flake8
         args: ["--config", "pyproject.toml"]
         additional_dependencies: ["mccabe"]
         alias: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.930
+    rev: v1.5.1
     hooks:
       - id: mypy
         args: ["--config-file", "pyproject.toml"]
@@ -67,7 +67,10 @@ repos:
   - repo: local
     hooks:
       - id: base-images-build
-        name: Build and commit generated files on base_images change
+        name: Run make build on base_images change
         language: system
-        entry: airbyte-ci/connectors/base_images/pre-commit-hook.sh
+        entry: make
+        args: ["-C", "airbyte-ci/connectors/base_images"]
         files: ^airbyte-ci/connectors/base_images/
+        pass_filenames: false
+        fail_fast: true

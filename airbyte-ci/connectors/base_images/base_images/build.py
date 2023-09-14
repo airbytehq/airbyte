@@ -6,13 +6,11 @@ import shutil
 import sys
 from itertools import product
 from pathlib import Path
-from typing import List, Type
 from unittest.mock import MagicMock
 
 import anyio
 import dagger
-from base_images import ALL_BASE_IMAGES, common, console, consts, errors, hacks, python
-from py_markdown_table.markdown_table import markdown_table  # type: ignore
+from base_images import GLOBAL_REGISTRY, common, console, consts, errors, hacks, registries
 from rich.status import Status
 
 DOCKERFILE_HEADER = """
@@ -29,9 +27,9 @@ def generate_dockerfile(dockerfile_directory: Path, base_image_version: common.A
     Generates the dockerfiles for all the base images.
     """
     dockerfile = hacks.get_container_dockerfile(base_image_version.container)
-    dockerfile_directory = dockerfile_directory / base_image_version.platform
+    dockerfile_directory = dockerfile_directory / base_image_version.image_name / base_image_version.platform
     dockerfile_directory.mkdir(exist_ok=True, parents=True)
-    dockerfile_path = Path(dockerfile_directory / f"{base_image_version.name_with_tag}.Dockerfile")
+    dockerfile_path = Path(dockerfile_directory / f"{base_image_version.version}.Dockerfile")
     dockerfile = DOCKERFILE_HEADER + "\n" + dockerfile + "\n"
     dockerfile_path.write_text(dockerfile)
     console.log(
@@ -40,7 +38,7 @@ def generate_dockerfile(dockerfile_directory: Path, base_image_version: common.A
     )
 
 
-async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage) -> bool:
+async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage, registry: registries.VersionRegistry) -> bool:
     """
     Runs sanity checks on a base images.
     Sanity checks are declared in the base image version classes by implementing the run_sanity_checks function.
@@ -52,6 +50,14 @@ async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage
             f":white_check_mark: Successfully ran sanity checks on {base_image_version.name_with_tag} for {base_image_version.platform}",
             highlight=False,
         )
+        if base_image_version.run_previous_version_sanity_checks:
+            PreviousVersion = registry.get_previous_version(base_image_version)
+            if PreviousVersion:
+                await PreviousVersion.run_sanity_checks(base_image_version)
+                console.log(
+                    f":white_check_mark: Successfully ran sanity checks on previous version: {PreviousVersion.name_with_tag} for {base_image_version.platform}",
+                    highlight=False,
+                )
         return True
     except errors.SanityCheckError as sanity_check_error:
         console.log(
@@ -62,29 +68,39 @@ async def run_sanity_checks(base_image_version: common.AirbyteConnectorBaseImage
         return False
 
 
-def write_changelog_file(changelog_path: Path, base_image_name: str, base_images_classes: List[Type[common.AirbyteConnectorBaseImage]]):
-    """Writes the changelog file locally for a given base image. Per version entries are generated from the base_images Mapping.
+async def build_registry(dagger_client: dagger.Client, current_status: Status, registry: registries.VersionRegistry) -> bool:
+    """Generate the dockerfiles, run the sanity checks and write the changelog for a registry.
 
     Args:
-        changelog_path (Path): Local absolute path to the changelog file.
-        base_image_name (str): The name of the base image e.g airbyte-python-connectors-base .
-        base_images_classes (List[Type[common.AirbyteConnectorBaseImage]): All the base images versions for a given base image.
+        dagger_client (dagger.Client): The dagger client.
+        current_status (Status): The rich status object to update.
+        registry (registries.VersionRegistry): The registry to build.
+
+    Returns:
+        bool: True if all the sanity checks passed, False otherwise.
     """
+    sanity_check_successes = []
+    for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, registry.versions):
+        base_image_version = BaseImageVersion(dagger_client, platform)
+        current_status.update(f":whale2: Generating dockerfile for {base_image_version.name_with_tag} for {base_image_version.platform}")
+        generate_dockerfile(DOCKERFILES_DIRECTORY, base_image_version)
+        current_status.update(f":mag_right: Running sanity checks on {base_image_version.name_with_tag} for {base_image_version.platform}")
+        success = await run_sanity_checks(base_image_version, registry)
+        sanity_check_successes.append(success)
+    fully_successful = all(sanity_check_successes)
+    if fully_successful:
+        console.log(f":tada: All sanity checks passed for {registry.base_image_name}", style="bold green")
+        current_status.update(f"Writing the changelog for {registry.base_image_name}")
+        changelog_path = registry.write_changelog()
+        console.log(
+            f":memo: Wrote the updated changelog for {registry.base_image_name} to {changelog_path}.",
+        )
+    else:
+        console.log(f":bomb: Did not write the changelog: sanity checks failed for {registry.base_image_name}", style="bold red")
+    return fully_successful
 
-    entries = [
-        {
-            "Version": f"[{base_version_image_class.version}]({base_version_image_class.github_url})",
-            "Changelog": base_version_image_class.changelog_entry,
-        }
-        for base_version_image_class in base_images_classes
-    ]
-    markdown = markdown_table(entries).set_params(row_sep="markdown", quote=False).get_markdown()
-    with open(changelog_path, "w") as f:
-        f.write(f"# Changelog for {base_image_name}\n\n")
-        f.write(markdown)
 
-
-async def a_build(current_status: Status) -> bool:
+async def build(current_status: Status) -> bool:
     current_status.update(":dagger: Initializing Dagger")
     if consts.DEBUG:
         dagger_config = dagger.Config(log_output=sys.stderr)
@@ -92,23 +108,17 @@ async def a_build(current_status: Status) -> bool:
         dagger_logs_path = Path("/tmp/base_images_project_build_dagger_logs.log")
         dagger_logs_path.unlink(missing_ok=True)
         dagger_logs_path.touch()
-        dagger_config = dagger.Config(log_output=open(dagger_logs_path))
+        dagger_config = dagger.Config(log_output=open(dagger_logs_path, "w"))
         console.log(f":information_source: Dagger logs will be written to {dagger_logs_path}")
-    sanity_check_successes = []
+    build_successes = []
+
+    # Clear the generated dockerfiles directory, we will regenerate them.
     shutil.rmtree(DOCKERFILES_DIRECTORY, ignore_errors=True)
+
     async with dagger.Connection(dagger_config) as dagger_client:
-        for platform, BaseImageVersion in product(consts.SUPPORTED_PLATFORMS, ALL_BASE_IMAGES):
-            base_image_version = BaseImageVersion(dagger_client, platform)
-            current_status.update(
-                f":whale2: Generating dockerfile for {base_image_version.name_with_tag} for {base_image_version.platform}"
-            )
-            generate_dockerfile(DOCKERFILES_DIRECTORY, base_image_version)
-            current_status.update(
-                f":mag_right: Running sanity checks on {base_image_version.name_with_tag} for {base_image_version.platform}"
-            )
-            success = await run_sanity_checks(base_image_version)
-            sanity_check_successes.append(success)
-    return all(sanity_check_successes)
+        for registry in GLOBAL_REGISTRY.all_registries:
+            build_successes.append(await build_registry(dagger_client, current_status, registry))
+    return all(build_successes)
 
 
 def main():
@@ -127,29 +137,23 @@ def main():
     try:
         default_build_status = console.status("Building the project", spinner="bouncingBall")
         disabled_build_status = MagicMock(default_build_status)
-        build_status = default_build_status if not consts.DEBUG else disabled_build_status  # type: ignore
-        with build_status as current_status:
-            success = anyio.run(a_build, current_status)
-            python_changelog_path = Path(consts.PROJECT_DIR / "CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
-            if not success:
+        build_status = default_build_status if not consts.DEBUG else disabled_build_status
+        with build_status as current_status:  # type: ignore
+            global_build_success = anyio.run(build, current_status)
+            if not global_build_success:
                 console.log(
-                    ":bomb: Sanity checks failed. Feel free to prepend the command with LOG_LEVEL=DEBUG if you want to investigate Dagger logs.",
+                    ":bomb: Build failed. Feel free to prepend the command with LOG_LEVEL=DEBUG if you want to investigate Dagger logs.",
                     style="bold red",
                 )
             else:
-                # build_status.update(f"Writing the changelog to {python_changelog_path}")
-                write_changelog_file(python_changelog_path, python.AirbytePythonConnectorBaseImage.image_name, python.ALL_BASE_IMAGES)
-                console.log(
-                    f":memo: Wrote the updated changelog to {python_changelog_path}.",
-                )
                 if os.getenv("GIT_HOOK"):
                     console.log("[bold green] The updated changelog and dockerfile files were commited.[/bold green]")
                 else:
                     console.log("[bold green]You can now commit and push the changelog and the generated dockerfiles![/bold green]")
-            if not success:
+            if not global_build_success:
                 sys.exit(1)
     except KeyboardInterrupt:
-        console.log(":bomb: Aborted the build.", style="bold red")
+        console.log(":bomb: User aborted the build.", style="bold red")
         sys.exit(1)
 
 
