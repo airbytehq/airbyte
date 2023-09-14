@@ -6,22 +6,13 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder, FromFieldEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, FromFieldEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
-from airbyte_cdk.models import (
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    Status,
-)
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-
-from destination_qdrant.indexer import QdrantIndexer
 from destination_qdrant.config import ConfigModel
-
-
+from destination_qdrant.indexer import QdrantIndexer
 
 BATCH_SIZE = 256
 
@@ -32,25 +23,23 @@ embedder_map = {
     "from_field": FromFieldEmbedder,
 }
 
+
 class DestinationQdrant(Destination):
     indexer: Indexer
     embedder: Embedder
-
 
     def _init_indexer(self, config: ConfigModel):
         self.embedder = embedder_map[config.embedding.mode](config.embedding)
         self.indexer = QdrantIndexer(config.indexing, self.embedder.embedding_dimensions)
 
-
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-        
+
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
         writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
         yield from writer.write(configured_catalog, input_messages)
-
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
 
@@ -62,7 +51,6 @@ class DestinationQdrant(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
         else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
 
