@@ -5,6 +5,11 @@ It is intended to be used as a python library.
 Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) **will** use this library to build the connector images.
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
+## Base images changelog
+The base changelog files are automatically generated and updated by the build pipeline.
+* [airbyte-python-connector-base changelog]("https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/generated/docs/base_images_changelog/airbyte-python-connector-base.md")
+
+
 ## Where are the Dockerfiles?
 Our base images are not declared using Dockerfiles.
 They are declared in code using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
@@ -112,6 +117,3 @@ poetry run pytest
 poetry run mypy base_images --check-untyped-defs
 ```
 
-## Base images changelog
-The base changelog files are automatically generated and updated by the build pipeline.
-* [airbyte-python-connector-base changelog]("https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/CHANGELOG_PYTHON_CONNECTOR_BASE_IMAGE.md")
