@@ -144,7 +144,7 @@ class GradleTask(Step, ABC):
         # From this point on, we add layers which are task-dependent.
         if self.mount_connector_secrets:
             gradle_container = gradle_container.with_(
-                environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
+                await environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
             )
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
