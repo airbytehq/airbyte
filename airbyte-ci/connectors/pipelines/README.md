@@ -90,7 +90,9 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors publish` command](#connectors-publish-command)
 - [Examples](#examples)
 - [Options](#options-2)
-  * [What it runs](#what-it-runs-1)
+- [`connectors bump-version` command](#connectors-bump-version)
+- [`connectors upgrade-base-image` command](#connectors-upgrade-base-image)
+- [`connectors migrate-to-base-image` command](#connectors-migrate-to-base-image)
 - [`metadata` command subgroup](#metadata-command-subgroup)
 - [`metadata validate` command](#metadata-validate-command)
   * [Example](#example)
@@ -342,6 +344,48 @@ flowchart TD
     validate-->check-->build-->upload_spec-->push-->pull-->upload_metadata
 ```
 
+
+### <a id="connectors-bump-version"></a>`connectors bump-version` command
+Bump the version of the selected connectors.
+
+### Examples
+Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump-version patch <pr-number> "<changelog-entry>"`
+
+#### Arguments
+| Argument              | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `BUMP_TYPE`           | major, minor or patch                                                  |
+| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
+| `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
+
+### <a id="connectors-upgrade-base-image"></a>`connectors upgrade-base-image` command
+Modify the selected connector metadata to use the latest base image version.
+
+### Examples
+Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade-base-image`
+
+### Options
+| Option                  | Required | Default | Mapped environment variable | Description                                                                                                     |
+| ----------------------- | -------- | ------- | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `--docker-hub-username` | True     |         | `DOCKER_HUB_USERNAME`       | Your username to connect to DockerHub. It's used to read the base image registry.                               |
+| `--docker-hub-password` | True     |         | `DOCKER_HUB_PASSWORD`       | Your password to connect to DockerHub. It's used to read the base image registry.                               |
+| `--set-if-not-exists`   | False    | True    |                             | Whether to set or not the baseImage metadata if no connectorBuildOptions is declared in the connector metadata. |
+
+### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
+Make a connector using a Dockerfile migrate to the base image by:
+* Removing its Dockerfile
+* Updating its metadata to use the latest base image version
+* Updating its documentation to explain the build process
+* Bumping by a patch version
+
+### Examples
+Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate-to-base-image`
+
+### Arguments
+| Argument              | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
+
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
 Available commands:
@@ -381,11 +425,12 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1.8.0   | [#31369](https://github.com/airbytehq/airbyte/pull/31369)  | Remove metadata test commands                                                                             |
-| 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                                  |
-| 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                                  |
-| 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                  |
-| 1.6.0   | [#30474](https://github.com/airbytehq/airbyte/pull/30474)  | Test connector inside their containers.                                                                  |
+| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
+| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
+| 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                            |
+| 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                           |
+| 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                 |
+| 1.6.0   | [#30474](https://github.com/airbytehq/airbyte/pull/30474)  | Test connector inside their containers.                                                                   |
 | 1.5.1   | [#31227](https://github.com/airbytehq/airbyte/pull/31227)  | Use python 3.11 in amazoncorretto-bazed gradle containers, run 'test' gradle task instead of 'check'.     |
 | 1.5.0   | [#30456](https://github.com/airbytehq/airbyte/pull/30456)  | Start building Python connectors using our base images.                                                   |
 | 1.4.6   | [ #31087](https://github.com/airbytehq/airbyte/pull/31087) | Throw error if airbyte-ci tools is out of date                                                            |
