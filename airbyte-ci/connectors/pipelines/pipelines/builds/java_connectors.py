@@ -11,36 +11,42 @@ from pipelines.gradle import GradleTask
 
 
 class BuildConnectorDistributionTar(GradleTask):
+    """
+    A step to build a Java connector image using the distTar Gradle task.
+    """
+
     title = "Build connector tar"
     gradle_task_name = "distTar"
 
+
     async def _run(self) -> StepResult:
-        cdk_includes = ["./airbyte-cdk/java/airbyte-cdk/**"]
-        with_built_tar = (
-            environments.with_gradle(
-                self.context,
-                self.build_include + cdk_includes,
-            )
-            .with_exec(["./gradlew", ":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"])
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            .with_exec(self._get_gradle_command())
-            .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
-        )
+        result = await super()._run()
+        if result.status is not StepStatus.SUCCESS:
+            return result
+
+        with_built_tar = result.output_artifact.with_workdir(f"{self.context.connector.code_directory}/build/distributions")
         distributions = await with_built_tar.directory(".").entries()
         tar_files = [f for f in distributions if f.endswith(".tar")]
-        await self._export_gradle_dependency_cache(with_built_tar)
         if len(tar_files) == 1:
             return StepResult(
                 self,
                 StepStatus.SUCCESS,
-                stdout="The tar file for the current connector was successfully built.",
+                stdout="The distribution tar file for the current java connector was built.",
                 output_artifact=with_built_tar.file(tar_files[0]),
+            )
+        elif len(tar_files) == 0:
+            return StepResult(
+                self,
+                StepStatus.FAILURE,
+                stderr="The distribution tar file for the current java connector was not built.",
             )
         else:
             return StepResult(
                 self,
                 StepStatus.FAILURE,
-                stderr="The distributions directory contains multiple connector tar files. We can't infer which one should be used. Please review and delete any unnecessary tar files.",
+                stderr="The distributions directory for this java connector contains multiple tar files. "
+                       "We can't infer which one should be used. "
+                       "Please review and delete any unnecessary tar files.",
             )
 
 

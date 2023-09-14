@@ -61,3 +61,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 3600
+        ignored_fields:
+          products_graph_ql:
+            - name: onlineStorePreviewUrl
+              bypass_reason: Floating URL values
