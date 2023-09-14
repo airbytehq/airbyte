@@ -20,7 +20,6 @@ data:
   releaseDate: 2021-08-19
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
   tags:
     - language:low-code
   ab_internal:
