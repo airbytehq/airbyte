@@ -6,10 +6,10 @@ from typing import Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
+    AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
-    AzureOpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
