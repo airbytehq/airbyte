@@ -33,13 +33,16 @@ class TestQdrantIndexer(unittest.TestCase):
         self.qdrant_indexer._client = Mock()
 
     def test_check_gets_existing_collection(self):
+        self.qdrant_indexer._client.get_collections.return_value = "collections=[CollectionDescription(name='dummy-collection')]"
+        self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.DOT))))
+
         check_result = self.qdrant_indexer.check()
 
         self.assertIsNone(check_result)
 
         self.qdrant_indexer._create_client.assert_called()
+        self.qdrant_indexer._client.get_collections.assert_called()
         self.qdrant_indexer._client.get_collection.assert_called()
-        # self.qdrant_indexer._client.recreate_collection.assert_called()
         self.qdrant_indexer._client.close.assert_called()
 
     def test_check_creates_new_collection_if_not_exists(self):
@@ -49,7 +52,7 @@ class TestQdrantIndexer(unittest.TestCase):
         self.assertIsNone(check_result)
 
         self.qdrant_indexer._create_client.assert_called()
-        self.qdrant_indexer._client.get_collection.assert_called()
+        self.qdrant_indexer._client.get_collections.assert_called()
         self.qdrant_indexer._client.recreate_collection.assert_called()
         self.qdrant_indexer._client.close.assert_called()
 
@@ -64,6 +67,18 @@ class TestQdrantIndexer(unittest.TestCase):
         self.qdrant_indexer._client.get_collections.return_value = None
         result = self.qdrant_indexer.check()
         self.assertEqual(result, "Qdrant client is not alive.")
+
+        self.qdrant_indexer._client.get_collections.return_value = "collections=[CollectionDescription(name='dummy-collection')]"
+
+        # Test 3: Test vector size does not match
+        self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=10, distance=models.Distance.DOT))))
+        result = self.qdrant_indexer.check()
+        self.assertTrue("The collection's vector's size must match the embedding dimensions" in result)
+
+        # Test 4: Test distance metric does not match
+        self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.COSINE))))
+        result = self.qdrant_indexer.check()
+        self.assertTrue("The colection's vector's distance metric must match the selected distance metric option" in result)
 
     def test_pre_sync_calls_delete(self):
         self.qdrant_indexer.pre_sync(

@@ -40,16 +40,22 @@ class QdrantIndexer(Indexer):
     def check(self) -> Optional[str]:
         try:
             self._create_client()
-            if not self._client.get_collections():
+
+            available_collections = self._client.get_collections()
+            if not available_collections:
                 return "Qdrant client is not alive."
-            try:
-                self._client.get_collection(collection_name=self.config.collection)
-            except ValueError:
-                distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
+            
+            distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
+            if  f"name='{self.config.collection}'" in str(available_collections):
+                collection_info = self._client.get_collection(collection_name=self.config.collection)
+                assert collection_info.config.params.vectors.size == self.embedding_dimensions, "The collection's vector's size must match the embedding dimensions"
+                assert collection_info.config.params.vectors.distance == distance_metric, "The colection's vector's distance metric must match the selected distance metric option"
+            else:
                 self._client.recreate_collection(
                     collection_name=self.config.collection,
                     vectors_config=VectorParams(size=self.embedding_dimensions, distance=distance_metric),
                 )
+
         except Exception as e:
             return format_exception(e)
         finally:
