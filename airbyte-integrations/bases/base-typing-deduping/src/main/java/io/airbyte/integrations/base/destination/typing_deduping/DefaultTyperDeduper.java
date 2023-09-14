@@ -101,7 +101,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     if (overwriteStreamsWithTmpTable != null) {
       throw new IllegalStateException("Tables were already prepared.");
     }
-    overwriteStreamsWithTmpTable = new HashSet<>();
+    overwriteStreamsWithTmpTable = ConcurrentHashMap.newKeySet();
     LOGGER.info("Preparing final tables");
     final Set<CompletableFuture<Optional<Exception>>> prepareTablesTasks = new HashSet<>();
     for (final StreamConfig stream : parsedCatalog.streams()) {
