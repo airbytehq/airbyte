@@ -7,16 +7,12 @@ import base64
 import logging
 import requests
 
-from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
-
+from dataclasses import dataclass
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
-
-
 logger = logging.getLogger("airbyte")
+
 
 @dataclass
 class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
@@ -28,7 +24,7 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
         -u "CLIENT_ID:SECRET" \
         -d "grant_type=client_credentials"
     """
-    
+
     # config: Mapping[str, Any]
     # client_id: Union[InterpolatedString, str]
     # client_secret: Union[InterpolatedString, str]
@@ -42,7 +38,7 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     def get_headers(self):
         basic_auth = base64.b64encode(bytes(f"{self.get_client_id()}:{self.get_client_secret()}", "utf-8")).decode("utf-8")
         return {"Authorization": f"Basic {basic_auth}"}
-        
+
     @backoff.on_exception(
         backoff.expo,
         DefaultBackoffException,
@@ -54,11 +50,8 @@ class PayPalOauth2Authenticator(DeclarativeOauth2Authenticator):
     def _get_refresh_access_token_response(self):
         try:
             response = requests.request(
-                method="POST", 
-                url=self.get_token_refresh_endpoint(), 
-                data=self.build_refresh_request_body(),
-                headers=self.get_headers())
-            
+                method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body(), headers=self.get_headers()
+            )
             self._log_response(response)
             response.raise_for_status()
             return response.json()
