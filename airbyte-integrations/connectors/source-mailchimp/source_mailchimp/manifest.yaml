@@ -12,30 +12,29 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - '{{ parameters.field_path }}'
+        - "{{ parameters.field_path }}"
   basic_authenticator:
-      type: BasicHttpAuthenticator
-      password: '{{ config.credentials.apikey }}'
-      username: 'anystring'
+    type: BasicHttpAuthenticator
+    password: "{{ config['credentials']['apikey'] }}"
+    username: "anystring"
   oauth_authenticator:
-      type: BearerAuthenticator
-      api_token: '{{ config.credentials.access_token }}'
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
   requester:
     type: CustomRequester
     class_name: source_mailchimp.components.MailchimpRequester
     http_method: GET
+    url_base: ""
     request_headers: {}
-    path: '{{ parameters.path }}'
+    path: "{{ parameters.path }}"
     request_parameters:
       sort_dir: ASC
-      sort_field: '{{ parameters.cursor_field }}'
+      sort_field: "{{ parameters.cursor_field }}"
     authenticator:
+      type: CustomAuthenticator
       class_name: source_mailchimp.components.MailchimpAuthenticator
       basic_auth: "#/definitions/basic_authenticator"
       oauth: "#/definitions/oauth_authenticator"
-    request_body_json: {}
-    # basic_auth: "#/definitions/basic_authenticator"
-    # oauth: "#/definitions/oauth_authenticator"
   paginator:
     type: DefaultPaginator
     page_token_option:
@@ -51,14 +50,16 @@ definitions:
       page_size: 1000
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: '{{ parameters.cursor_field }}'
+    step: "P15D"
+    cursor_granularity: "P15D"
+    cursor_field: "{{ parameters.cursor_field }}"
     cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%S+00:00'
-    datetime_format: '%Y-%m-%dT%H:%M:%S+00:00'
+      - "%Y-%m-%dT%H:%M:%S+00:00"
+    datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_datetime:
       type: MinMaxDatetime
-      datetime: '{{ config[''start_date''] }}'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime: "{{ day_delta(-365, '%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_time_option:
       type: RequestOption
       field_name: since_{{ parameters.cursor_field }}
@@ -126,8 +127,7 @@ definitions:
         $ref: "#/definitions/paginator"
       partition_router:
         - type: CustomPartitionRouter
-          class_name:
-            source_mailchimp.components.CampaignIdPartitionRouter
+          class_name: source_mailchimp.components.CampaignIdPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
@@ -136,14 +136,16 @@ definitions:
                 $ref: "#/definitions/campaigns_stream"
     incremental_sync:
       type: DatetimeBasedCursor
+      step: "P15D"
+      cursor_granularity: "P15D"
       cursor_field: timestamp
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ day_delta(-365, '%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: since
@@ -206,7 +208,8 @@ spec:
               apikey:
                 type: string
                 title: API Key
-                description: Mailchimp API Key. See the <a href="https://docs.airbyte.com/integrations/sources/mailchimp">docs</a>
+                description:
+                  Mailchimp API Key. See the <a href="https://docs.airbyte.com/integrations/sources/mailchimp">docs</a>
                   for information on how to generate this key.
                 airbyte_secret: true
       campaign_id:
@@ -227,8 +230,8 @@ spec:
           access_token:
             type: string
             path_in_connector_config:
-            - credentials
-            - access_token
+              - credentials
+              - access_token
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false

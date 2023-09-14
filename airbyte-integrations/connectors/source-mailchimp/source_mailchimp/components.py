@@ -34,11 +34,12 @@ class CampaignIdPartitionRouter(SubstreamPartitionRouter):
         """
 
         campaign_stream = self.parent_stream_configs[0].stream
-        if self.config.campaign_id:
+        if self.config.get("campaign_id"):
             # this is a workaround to speed up SATs and enable incremental tests
-            campaigns = [{"id": self.config.campaign_id}]
+            campaigns = [{"id": self.config.get("campaign_id")}]
         else:
             campaigns = campaign_stream.read_records(sync_mode=SyncMode.full_refresh)
+        
         for campaign in campaigns:
             slice_ = {"campaign_id": campaign["id"]}
             yield slice_
@@ -74,9 +75,6 @@ class MailchimpAuthenticator(DeclarativeAuthenticator):
 
 @dataclass
 class MailchimpRequester(HttpRequester):
-    # basic_auth: BasicHttpAuthenticator
-    # oauth: BearerAuthenticator
-    url_base = None
 
     @staticmethod
     def get_server_prefix(access_token: str) -> str:
@@ -89,21 +87,14 @@ class MailchimpRequester(HttpRequester):
             raise Exception(f"Cannot retrieve server_prefix for you account. \n {repr(e)}")
     
     def get_url_base(self) -> str:
-        auth_type = self.config.credentials.auth_type
+        credentials= self.config.get("credentials", {})
+        auth_type = credentials.get("auth_type")
         if auth_type == "apikey":
-            data_center = self.config.credentials.apikey.split("-").pop()
+            data_center = credentials.get("apikey", "").split("-").pop()
         elif auth_type == "oauth2.0":
-            data_center = self.get_server_prefix(self.config.credentials.access_token)
+            data_center = self.get_server_prefix(credentials.get("access_token"))
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
 
         return f"https://{data_center}.api.mailchimp.com/3.0/"
     
-    # def get_authenticator(self) -> DeclarativeAuthenticator:
-    #     auth_type = self.config.credentials.auth_type
-    #     if auth_type == "apikey":
-    #         return self.basic_auth
-    #     elif auth_type == "oauth2.0":
-    #         return self.oauth
-    #     else:
-    #         raise Exception(f"Invalid auth type: {auth_type}")
