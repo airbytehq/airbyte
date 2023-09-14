@@ -96,7 +96,7 @@ class JinjaInterpolation(Interpolation):
             evaluated = ast.literal_eval(result)
         except (ValueError, SyntaxError):
             return result
-        if valid_types and isinstance(evaluated, tuple(valid_types)):
+        if not valid_types or (valid_types and isinstance(evaluated, tuple(valid_types))):
             return evaluated
         elif valid_types and isinstance(evaluated, dict):
             # try to turn the evaluated object into a json-deserializable string
