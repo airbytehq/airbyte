@@ -92,11 +92,11 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
 ![Connect to Source Cluster](mongodb/assets/mongodb_atlas_connection_string_step_2.png)
 
-3. On the "Connect to <cluster name>" modal dialog, select "Compass" under the "Access your data through tools" section.
+3. On the "Connect to <cluster name>" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Compass Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
 
-4. Copy the connection string from the entry labelled #2 on the modal dialog.
+4. Copy the connection string from the entry labelled #2 on the modal dialog, removing/avoiding the quotation marks.
 
 ![Copy Connection String](mongodb/assets/mongodb_atlas_connection_string_step_4.png)
 
