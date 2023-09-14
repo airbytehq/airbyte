@@ -52,7 +52,7 @@ access to the database.
 
 ##### Self Hosted
 
-These instructions assume that the MongoDB shell is installed.  To install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
+These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed.  To install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
 
 1. From a terminal window, launch the MongoDB shell:
 ```shell
@@ -80,7 +80,7 @@ security:
 
 #### Step 2: Discover the MongoDB cluster connection string
 
-These steps outline how to discover the connection configuration of your MongoDB instance.
+These steps outline how to discover the connection string of your MongoDB instance.
 
 ##### MongoDB Atlas
 
@@ -96,14 +96,14 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
 ![Shell Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
 
-4. Copy the connection string from the entry labelled #2 on the modal dialog, removing/avoiding the quotation marks.
+4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog, removing/avoiding the quotation marks.
 
 ![Copy Connection String](mongodb/assets/mongodb_atlas_connection_string_step_4.png)
 
 ##### Self Hosted Cluster
 
 Self-hosted clusters are MongoDB instances that are hosted outside of [MongoDB Atlas](https://www.mongodb.com/atlas/database).  Below are the steps to discover
-the connection configuration for a MongoDB self-hosted replica set cluster.
+the connection string for a MongoDB self-hosted replica set cluster.
 
 1.  Refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for instructions
 on discovering a self-hosted deployment connection string.
@@ -111,7 +111,7 @@ on discovering a self-hosted deployment connection string.
 #### Step 3: Configure the Airbyte MongoDB Source
 
 To configure the Airbyte MongoDB source, use the database credentials and connection string from steps 1 and 2, respectively.
-The source will test the connection to the MongoDB instance
+The source will test the connection to the MongoDB instance upon creation.
 
 ## Replication Methods
 
