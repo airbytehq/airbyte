@@ -9,8 +9,8 @@
     "properties": {
       "database_config": {
         "type": "object",
-        "title": "Instance Type",
-        "description": "Configures the MongoDB replica set based on instance type.",
+        "title": "Cluster Type",
+        "description": "Configures the MongoDB cluster type.",
         "order": 1,
         "group": "connection",
         "display_type": "radio",
