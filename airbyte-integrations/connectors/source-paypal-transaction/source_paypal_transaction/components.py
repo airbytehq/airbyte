@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import backoff
 import base64
 import logging
-import requests
-
 from dataclasses import dataclass
+
+import backoff
+import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
