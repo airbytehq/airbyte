@@ -352,14 +352,11 @@
         "name": "ad_listing_group_criterions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["ad_group.id"],
-          ["ad_group_criterion.criterion_id"]
-        ]
+        "source_defined_primary_key": [["ad_group_criterion.resource_name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+      "primary_key": [["ad_group_criterion.resource_name"]]
     },
     {
       "stream": {

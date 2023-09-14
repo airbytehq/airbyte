@@ -122,13 +122,9 @@ class GoogleAdsStream(Stream, ABC):
         query = GoogleAds.convert_schema_into_query(schema=self.get_json_schema(), report_name=self.name, limit=self.mandatory_limit)
         return query
 
-    def parse_response(self, response: SearchPager) -> Iterable[Mapping]:
+    def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for result in response:
-            record = self.google_ads_client.parse_single_result(self.get_json_schema(), result)
-            # value can be integer or float so change type to float
-            if self.name == "accounts" and isinstance(record.get("customer.optimization_score_weight"), int):
-                record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
-            yield record
+            yield self.google_ads_client.parse_single_result(self.get_json_schema(), result)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         for customer in self.customers:
@@ -144,7 +140,7 @@ class GoogleAdsStream(Stream, ABC):
         try:
             response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
             for response in response_records:
-                yield from self.parse_response(response)
+                yield from self.parse_response(response, stream_slice)
         except GoogleAdsException as exc:
             exc.customer_id = customer_id
             if not self.CATCH_API_ERRORS:
@@ -220,6 +216,74 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 logger.bump()
                 yield chunk
 
+    def _update_state(self, customer_id: str, record: MutableMapping[str, Any]):
+        """Update the state based on the latest record's cursor value."""
+        current_state = self.current_state(customer_id)
+        if current_state:
+            date_in_current_stream = pendulum.parse(current_state)
+            date_in_latest_record = pendulum.parse(record[self.cursor_field])
+            cursor_value = (max(date_in_current_stream, date_in_latest_record)).format(self.cursor_time_format)
+            self.state = {customer_id: {self.cursor_field: cursor_value}}
+            # When large amount of data this log produces so much records so the enire log is not usable
+            # See: https://github.com/airbytehq/oncall/issues/2460
+            # self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
+        else:
+            self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
+            self.incremental_sieve_logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
+
+    def _handle_expired_page_exception(self, exception: GoogleAdsException, stream_slice: MutableMapping[str, Any], customer_id: str):
+        """
+        Handle GoogleAdsException errors, specifically, the EXPIRED_PAGE_TOKEN error by updating the stream slice.
+        """
+        self.incremental_sieve_logger.info(f"Caught a GoogleAdsException: {str(exception)}")
+        error = next(iter(exception.failure.errors))
+        if error.error_code.request_error == RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN:
+            start_date, end_date = parse_dates(stream_slice)
+            current_state = self.current_state(customer_id)
+            self.incremental_sieve_logger.info(f"Start date is {start_date}. End date is {end_date}. Current state is {current_state}")
+            if end_date - start_date <= self.slice_step:
+                # If range days less than slice_step, no need in retry, because it's the minimum date range
+                self.incremental_sieve_logger.error("Page token has expired.")
+                raise exception
+            elif current_state == stream_slice["start_date"]:
+                # It couldn't read all the records within one day, it will enter an infinite loop,
+                # so raise the error
+                self.incremental_sieve_logger.error("Page token has expired.")
+                raise exception
+            # Retry reading records from where it crushed
+            stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
+            self.incremental_sieve_logger.info(f"Retry reading records from where it crushed with a modified slice: {stream_slice}")
+        else:
+            # raise caught error for other error statuses
+            raise exception
+
+    def _handle_records_limit_hit(self, records_count: int, stream_slice: MutableMapping[str, Any], customer_id: str) -> bool:
+        """
+        Handle the scenario when the records limit is hit. Update the stream slice's start date if necessary.
+
+        Args:
+            records_count (int): The number of records fetched.
+            stream_slice (dict): The current stream slice.
+            customer_id (str): The ID of the customer.
+
+        Returns:
+            bool: True if the records limit is hit, otherwise False.
+        """
+        # if records limit is hit - update slice with new start_date to continue reading
+        if self.mandatory_limit and records_count == self.mandatory_limit:
+            # if state was not updated before hitting limit - add step to start_date to avoid infinite loop
+            if stream_slice["start_date"] == self.current_state(customer_id):
+                self.incremental_sieve_logger.warning(
+                    f"More then limit {self.mandatory_limit} records with same cursor field, next records with same cursor will be skipped"
+                )
+                stream_slice["start_date"] = pendulum.parse(
+                    self.current_state(customer_id, default=stream_slice["start_date"]) + self.slice_step
+                ).format(self.cursor_time_format)
+            else:
+                stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
+            return True
+        return False
+
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
@@ -234,62 +298,14 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             customer_id = stream_slice and stream_slice["customer_id"]
 
             try:
-                records = super().read_records(sync_mode, stream_slice=stream_slice)
-
                 # count records to update slice date range with latest record time when limit is hit
-                for records_count, record in enumerate(records, start=1):
-                    current_state = self.current_state(customer_id)
-                    if current_state:
-                        date_in_current_stream = pendulum.parse(current_state)
-                        date_in_latest_record = pendulum.parse(record[self.cursor_field])
-                        cursor_value = (max(date_in_current_stream, date_in_latest_record)).format(self.cursor_time_format)
-                        self.state = {customer_id: {self.cursor_field: cursor_value}}
-                        # When large amount of data this log produces so much records so the enire log is not usable
-                        # See: https://github.com/airbytehq/oncall/issues/2460
-                        # self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
-                    else:
-                        self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
-                        self.incremental_sieve_logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
+                for records_count, record in enumerate(super().read_records(sync_mode, stream_slice=stream_slice), start=1):
+                    self._update_state(customer_id, record)
                     yield record
-                    continue
             except GoogleAdsException as exception:
-                self.incremental_sieve_logger.info(f"Caught a GoogleAdsException: {str(exception)}")
-                error = next(iter(exception.failure.errors))
-                if error.error_code.request_error == RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN:
-                    start_date, end_date = parse_dates(stream_slice)
-                    current_state = self.current_state(customer_id)
-                    self.incremental_sieve_logger.info(
-                        f"Start date is {start_date}. End date is {end_date}. Current state is {current_state}"
-                    )
-                    if end_date - start_date <= self.slice_step:
-                        # If range days less than slice_step, no need in retry, because it's the minimum date range
-                        self.incremental_sieve_logger.error("Page token has expired.")
-                        raise exception
-                    elif current_state == stream_slice["start_date"]:
-                        # It couldn't read all the records within one day, it will enter an infinite loop,
-                        # so raise the error
-                        self.incremental_sieve_logger.error("Page token has expired.")
-                        raise exception
-                    # Retry reading records from where it crushed
-                    stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
-                    self.incremental_sieve_logger.info(f"Retry reading records from where it crushed with a modified slice: {stream_slice}")
-                else:
-                    # raise caught error for other error statuses
-                    raise exception
+                self._handle_expired_page_exception(exception, stream_slice, customer_id)
             else:
-                # if records limit is hit - update slice with new start_date to continue reading
-                if self.mandatory_limit and records_count == self.mandatory_limit:
-                    # if state was not updated before hitting limit - add step to start_date to avoid infinite loop
-                    if stream_slice["start_date"] == self.current_state(customer_id):
-                        self.incremental_sieve_logger.warning(
-                            f"More then limit {self.mandatory_limit} records with same cursor field, next records with same cursor will be skipped"
-                        )
-                        stream_slice["start_date"] = pendulum.parse(
-                            self.current_state(customer_id, default=stream_slice["start_date"]) + self.slice_step
-                        ).format(self.cursor_time_format)
-                    else:
-                        stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
-                else:
+                if not self._handle_records_limit_hit(records_count, stream_slice, customer_id):
                     # return the control if no exception is raised
                     self.incremental_sieve_logger.info("Current slice has been read. Exiting read_records()")
                     return
@@ -311,6 +327,12 @@ class Accounts(IncrementalGoogleAdsStream):
     """
 
     primary_key = ["customer.id", "segments.date"]
+
+    def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
+        for record in super().parse_response(response):
+            if isinstance(record.get("customer.optimization_score_weight"), int):
+                record["customer.optimization_score_weight"] = float(record["customer.optimization_score_weight"])
+            yield record
 
 
 class AccountLabels(GoogleAdsStream):
@@ -399,15 +421,6 @@ class AdGroupCriterionLabels(GoogleAdsStream):
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["ad_group_criterion_label.resource_name"]
-
-
-class AdListingGroupCriterions(GoogleAdsStream):
-    """
-    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
-    """
-
-    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id"]
 
 
 class AdGroupAds(IncrementalGoogleAdsStream):
@@ -524,7 +537,6 @@ class ChangeStatus(IncrementalGoogleAdsStream):
     """
 
     cursor_field = "change_status.last_change_date_time"
-    slice_duration = pendulum.duration(days=15)
     slice_step = pendulum.duration(microseconds=1)
     days_of_data_storage = 90
     cursor_time_format = "YYYY-MM-DD HH:mm:ss.SSSSSS"
@@ -608,6 +620,21 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             for customer in self.customers:
                 yield {"customer_id": customer.id, "updated_ids": set(), "deleted_ids": set(), "id_to_time": dict()}
 
+    def _process_parent_record(self, parent_record: MutableMapping[str, Any], child_slice: MutableMapping[str, Any]) -> bool:
+        """Process a single parent_record and update the child_slice."""
+        substream_id = parent_record.get(self.parent_id_field)
+        if not substream_id:
+            return False
+
+        # Save time of change
+        child_slice["id_to_time"][substream_id] = parent_record[self.parent_cursor_field]
+
+        # Add record id to list of changed or deleted items depending on status
+        slice_id_list = "deleted_ids" if parent_record.get("change_status.resource_status") == "REMOVED" else "updated_ids"
+        child_slice[slice_id_list].add(substream_id)
+
+        return True
+
     def read_parent_stream(
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
     ) -> Iterable[Mapping[str, Any]]:
@@ -621,24 +648,35 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 continue
 
             parent_slice["resource_type"] = self.resource_type
-            stream_is_updated = False
             for parent_record in self.parent_stream.read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=parent_slice):
-                substream_id = parent_record.get(self.parent_id_field)
-                if not substream_id:
-                    continue
-                stream_is_updated = True
+                self._process_parent_record(parent_record, child_slice)
 
-                # save time of change
-                child_slice["id_to_time"][substream_id] = parent_record[self.parent_cursor_field]
-
-                # Add record id to list of changed or deleted items depending on status
-                slice_id_list = "deleted_ids" if parent_record.get("change_status.resource_status") == "REMOVED" else "updated_ids"
-                child_slice[slice_id_list].add(substream_id)
-
-            if stream_is_updated:
+            # yield child slice if any records where read
+            if child_slice["id_to_time"]:
                 yield child_slice
-            else:
-                yield from []
+
+    def parse_response(self, response: SearchPager, stream_slice: MutableMapping[str, Any] = None) -> Iterable[Mapping]:
+        # update records with time obtained from parent stream
+        for record in super().parse_response(response):
+            record[self.cursor_field] = stream_slice.get("id_to_time", dict()).get(record[self.primary_key[0]])
+            yield record
+
+    def _update_state(self):
+        # if parent stream was used - copy state from it, otherwise set default state
+        if self.parent_stream.state:
+            self._state = {self.parent_stream_name: self.parent_stream.state}
+        else:
+            # full refresh sync without parent stream
+            self._state = {
+                self.parent_stream_name: {
+                    self.parent_cursor_field: pendulum.today().start_of("day").format(self.parent_stream.cursor_time_format)
+                }
+            }
+
+    def _read_deleted_records(self, stream_slice: MutableMapping[str, Any] = None):
+        # yield deleted records with id and time when record was deleted
+        for deleted_record_id in stream_slice.get("deleted_ids", []):
+            yield {self.id_field: deleted_record_id, "deleted_at": stream_slice["id_to_time"].get(deleted_record_id)}
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
@@ -650,25 +688,12 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         self.incremental_sieve_logger.info(f"Started reading records for slice: {stream_slice}")
 
         # if state is present read records by ids from slice otherwise full refresh sync
-        records = super().read_records(sync_mode, stream_slice=stream_slice)
-        for record in records:
-            record[self.cursor_field] = stream_slice["id_to_time"].get(record[self.primary_key[0]])
-            yield record
+        yield from super().read_records(sync_mode, stream_slice=stream_slice)
 
         # yield deleted items
-        for deleted_record_id in stream_slice.get("deleted_ids", []):
-            yield {self.id_field: deleted_record_id, self.cursor_field: stream_slice["id_to_time"].get(deleted_record_id)}
+        yield from self._read_deleted_records(stream_slice)
 
-        # update parent state in child stream
-        if self.parent_stream.state:
-            self._state = {self.parent_stream_name: self.parent_stream.state}
-        else:
-            # full refresh sync without parent stream
-            self._state = {
-                self.parent_stream_name: {
-                    self.parent_cursor_field: pendulum.today().start_of("day").format(self.parent_stream.cursor_time_format)
-                }
-            }
+        self._update_state()
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         query = GoogleAds.convert_schema_into_query(
@@ -688,6 +713,12 @@ class AdGroupCriterions(IncrementalEventsStream):
     id_field = "ad_group_criterion.resource_name"
     resource_type = "AD_GROUP_CRITERION"
     cursor_field = "change_status.last_change_date_time"
+
+
+class AdListingGroupCriterions(AdGroupCriterions):
+    """
+    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    """
 
 
 class CampaignCriterion(IncrementalEventsStream):

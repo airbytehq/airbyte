@@ -131,6 +131,10 @@ class GoogleAds:
         # field is a cursor for successors of IncrementalEventsStream, so should be present in schema, but it is obtained from parent stream
         if report_name != "change_status" and "change_status.last_change_date_time" in fields:
             fields.remove("change_status.last_change_date_time")
+        # deleted_at used in IncrementalEventsStream for deleted records, it is obtained from stream ChangeStatus
+        if "deleted_at" in fields:
+            fields.remove("deleted_at")
+
         fields = ", ".join(fields)
 
         query_template = f"SELECT {fields} FROM {from_category}"

@@ -181,7 +181,7 @@ class SourceGoogleAds(AbstractSource):
             AdGroupCriterions(**incremental_events_config),
             AdGroupCriterionLabels(google_api, customers=customers),
             AdGroupLabels(google_api, customers=customers),
-            AdListingGroupCriterions(google_api, customers=customers),
+            AdListingGroupCriterions(**incremental_events_config),
             Accounts(**incremental_config),
             AccountLabels(google_api, customers=customers),
             Audience(google_api, customers=customers),
