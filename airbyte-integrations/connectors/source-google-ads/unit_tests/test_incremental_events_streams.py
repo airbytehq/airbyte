@@ -119,6 +119,6 @@ def test_child_incremental_events_read(mock_ads_client, config, customers):
 
     assert all([deleted_record in result for deleted_record in deleted_records])
 
-    assert stream.state == {'change_status': {'123': {'change_status.last_change_date_time': '2023-06-13'}}}
+    assert stream.state == {'change_status': {'123': {'change_status.last_change_date_time': '2023-06-13 12:36:04.772447'}}}
 
     assert stream.get_query.call_count == 1
