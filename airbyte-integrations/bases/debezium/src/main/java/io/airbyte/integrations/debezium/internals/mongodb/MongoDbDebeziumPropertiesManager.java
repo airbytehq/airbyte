@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals.mongodb;
 
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
@@ -52,7 +53,10 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   protected Properties getConnectionConfiguration(final JsonNode config) {
     final Properties properties = new Properties();
 
-    properties.setProperty(MONGODB_CONNECTION_STRING_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
+    properties.setProperty(MONGODB_CONNECTION_STRING_KEY,
+            config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+                    .replaceAll("\"", "")
+                    .replace(CREDENTIALS_PLACEHOLDER, ""));
     properties.setProperty(MONGODB_CONNECTION_MODE_KEY, MONGODB_CONNECTION_MODE_VALUE);
 
     if (config.has(USERNAME_CONFIGURATION_KEY)) {
