@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.util.HostPortResolver;
