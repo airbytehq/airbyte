@@ -95,16 +95,57 @@ GRANT READ ON SECRET integration_linkedin_ads_oauth TO APPLICATION AIRBYTE_LINKE
 
 
 ## Configure a connection
-Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_LINKEDIN_ADS`. You will have to accept the Anaconda terms in order to use Streamlit.
-Once you have access to the app, select `New Connection` and fill the fields as such:
-* Secret: `<database>.<your_schema>.integration_linkedin_ads_oauth`
-* External Access Integration: `integration_linkedin_ads`
-* start_date: UTC date in the format 2020-09-17. Any data before this date will not be replicated.
-* account_ids: Leave empty, if you want to pull the data from all associated accounts. To specify individual account IDs to pull data from, separate them by a space. See the [LinkedIn Ads docs](https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details) for more info.
-* Output Database: The database where the records will be saved. Snowflake's database naming restriction applies here.
-* Output Schema: The table where the schema will be saved. Snowflake's table naming restriction applies here. 
-* Connection name: How the connection will be referred in the Streamlit app
-* Replication Frequency: How often records are fetched
+Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_LINKEDIN_ADS`. You will have to accept the Anaconda terms in order to use Streamlit. Once you have access to the app, select `New Connection` and fill the following fields:
+
+--- 
+
+`Secret` 
+
+The name of the secret prefixed by which database and schema. Based on the previous steps: `<database>.<your_schema>.integration_linkedin_ads_oauth`.
+
+---
+
+`External Access Integration`
+
+Name of the Snowflake integration where the secret and network rules are configured. Based on the previous steps: `integration_linkedin_ads`.
+
+--- 
+
+`start_date`
+
+UTC date in the format 2020-09-17. Any data before this date will not be replicated. 
+
+---
+
+`account_ids`
+
+Leave empty, if you want to pull the data from all associated accounts. To specify individual account IDs to pull data from, separate them by a space. See the [LinkedIn Ads docs](https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details) for more info.
+
+---
+
+`Output Database`
+
+The database where the records will be saved. Snowflake's database naming restriction applies here.
+
+---
+
+`Output Schema`
+
+The table where the schema will be saved. Snowflake's table naming restriction applies here. 
+
+--- 
+
+`Connection name`
+
+How the connection will be referred in the Streamlit app.
+
+--- 
+
+`Replication Frequency`
+
+How often records are fetched.
+
+---
 
 ## Run a sync
 Once a connection is configured, go in `Connections List` and click on `Sync Now` for the connection you want to sync. Once the sync is complete, you should be able to validate that the records have been stored in `<your_database>.<your_schema>`
@@ -118,3 +159,6 @@ As of now, all supported streams perform a full refresh. Incremental syncs are n
 * Campaigns
 * Campaign Groups
 * Creatives
+
+# Contact Us
+snowflake-native-apps@airbyte.io
