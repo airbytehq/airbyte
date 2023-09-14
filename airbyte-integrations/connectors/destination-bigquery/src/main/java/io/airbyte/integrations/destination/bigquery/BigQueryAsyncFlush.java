@@ -67,14 +67,14 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
 
     final BigQueryWriteConfig writeConfig = streamDescToWriteConfig.get(decs);
     try {
-      final String stagedFile = stagingOperations.uploadRecordsToStage(writeConfig.datasetId(), writeConfig.streamName(), writer);
+      final String stagedFileName = stagingOperations.uploadRecordsToStage(writeConfig.datasetId(), writeConfig.streamName(), writer);
 
       stagingOperations.copyIntoTableFromStage(
           writeConfig.datasetId(),
           writeConfig.streamName(),
           writeConfig.targetTableId(),
           writeConfig.tableSchema(),
-          List.of(stagedFile));
+          stagedFileName);
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
