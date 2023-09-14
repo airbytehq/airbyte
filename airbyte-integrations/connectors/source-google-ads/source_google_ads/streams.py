@@ -23,6 +23,7 @@ class cyclic_sieve:
     """
     A sieve to cyclically filter out logging messages based on a fraction.
     """
+
     def __init__(self, logger: logging.Logger, fraction: int = 10):
         self._logger = logger
         self._cycle_counter = 0
