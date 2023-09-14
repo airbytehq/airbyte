@@ -91,11 +91,6 @@ GRANT USAGE ON SCHEMA <your_schema> TO APPLICATION AIRBYTE_LINKEDIN_ADS;
 GRANT READ ON SECRET integration_linkedin_ads_oauth TO APPLICATION AIRBYTE_LINKEDIN_ADS;
 ```
 
-8. Grant permission to create a database, schema, and tables. The app will automatically create the output database and schema if they do not already exist.
-```
-GRANT CREATE DATABASE ON ACCOUNT TO APPLICATION AIRBYTE_LINKEDIN_ADS;
-```
-
 
 ## Configure a connection
 Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_LINKEDIN_ADS`. You will have to accept the Anaconda terms in order to use Streamlit.
