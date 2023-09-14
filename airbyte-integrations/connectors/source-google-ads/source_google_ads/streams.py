@@ -276,8 +276,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 self.incremental_sieve_logger.warning(
                     f"More then limit {self.mandatory_limit} records with same cursor field, next records with same cursor will be skipped"
                 )
-                stream_slice["start_date"] = pendulum.parse(
-                    self.current_state(customer_id, default=stream_slice["start_date"]) + self.slice_step
+                stream_slice["start_date"] = (
+                    pendulum.parse(self.current_state(customer_id, default=stream_slice["start_date"])) + self.slice_step
                 ).format(self.cursor_time_format)
             else:
                 stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
