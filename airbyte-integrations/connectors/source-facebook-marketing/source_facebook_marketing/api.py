@@ -75,7 +75,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
             )
 
         if usage_header_business:
-
             usage_header_business_loaded = json.loads(usage_header_business)
             for business_object_id in usage_header_business_loaded:
                 usage_limits = usage_header_business_loaded.get(business_object_id)[0]
