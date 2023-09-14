@@ -103,7 +103,7 @@ These streams support incremental updates, including deletions, leveraging the C
 
 The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
 
-It's important to note that the ChangeStatus stream has a limit of 10,000 records per day. If there are more than 10,000 updates in a single day for these streams, some records will be missed. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
+It's important to note that the ChangeStatus stream has a limit of 10,000 records per request. If there are more than 10,000 updates in a single microsecond for these streams, some records will be missed. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
 
 ## Supported Streams
 
