@@ -22,6 +22,7 @@ from airbyte_cdk.sources.file_based.stream.default_file_based_stream import Defa
 class MockFormat:
     pass
 
+
 @pytest.mark.parametrize(
     "input_schema, expected_output",
     [

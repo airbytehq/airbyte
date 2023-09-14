@@ -544,7 +544,6 @@ parquet_file_with_decimal_as_string_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "parquet"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -599,7 +598,6 @@ parquet_file_with_decimal_as_float_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "parquet"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -654,7 +652,6 @@ parquet_file_with_decimal_legacy_config_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "parquet"},
                     "format": {
                         "filetype": "parquet",
                     },
@@ -708,7 +705,6 @@ parquet_with_invalid_config_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "parquet"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {

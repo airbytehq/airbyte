@@ -629,7 +629,6 @@ avro_file_with_double_as_number_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "format": {"filetype": "avro"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {

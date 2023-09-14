@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Any, List, Mapping, Optional, Type, Union
+from typing import Any, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
