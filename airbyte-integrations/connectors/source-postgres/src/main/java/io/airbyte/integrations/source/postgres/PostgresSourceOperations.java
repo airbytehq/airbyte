@@ -73,7 +73,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    // the first call communicates with the database. after that the result is cached.
+    // the first call communicates with the database, after that the result is cached.
     final ResultSetMetaData metadata = queryContext.getMetaData();
     final int columnCount = metadata.getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
