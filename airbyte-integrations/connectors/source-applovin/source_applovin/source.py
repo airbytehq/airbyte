@@ -23,7 +23,7 @@ from airbyte_cdk.sources import Source, AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from source_applovin.streams import Campaigns, Creatives
+from source_applovin.streams import Campaigns, Creatives, Targets
 
 
 class SourceApplovin(AbstractSource):
@@ -72,6 +72,6 @@ class SourceApplovin(AbstractSource):
         args = {
             "authenticator": auth
         }
-        return [Campaigns(**args), Creatives(**args)]
+        return [Campaigns(**args), Creatives(**args), Targets(**args)]
 
 
