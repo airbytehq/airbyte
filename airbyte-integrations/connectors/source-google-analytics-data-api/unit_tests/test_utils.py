@@ -1,6 +1,7 @@
 import pytest
-from source_google_analytics_data_api.utils import \
-    serialize_to_date_string  # Replace 'your_module' with the actual module where serialize_to_date_string is defined
+from source_google_analytics_data_api.utils import (
+    serialize_to_date_string,  # Replace 'your_module' with the actual module where serialize_to_date_string is defined
+)
 
 
 def test_serialize_to_date_string_yearWeek():

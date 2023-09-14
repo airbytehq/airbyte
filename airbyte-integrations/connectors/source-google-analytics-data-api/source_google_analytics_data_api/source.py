@@ -242,12 +242,22 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format) if self.cursor_field == "date" else latest_record[self.cursor_field]
+        updated_state = (
+            utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+            if self.cursor_field == "date"
+            else latest_record[self.cursor_field]
+        )
         stream_state_value = current_stream_state.get(self.cursor_field)
         if stream_state_value:
-            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT) if self.cursor_field == "date" else stream_state_value
+            stream_state_value = (
+                utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
+                if self.cursor_field == "date"
+                else stream_state_value
+            )
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format) if self.cursor_field == "date" else updated_state
+        current_stream_state[self.cursor_field] = (
+            updated_state.strftime(self._record_date_format) if self.cursor_field == "date" else updated_state
+        )
         return current_stream_state
 
     def request_body_json(
@@ -256,7 +266,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
@@ -281,12 +290,13 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         today: datetime.date = datetime.date.today()
 
         start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
-            start_date = serialize_to_date_string(start_date, DATE_FORMAT, self.cursor_field) if not self.cursor_field == "date" else start_date
+            start_date = (
+                serialize_to_date_string(start_date, DATE_FORMAT, self.cursor_field) if not self.cursor_field == "date" else start_date
+            )
             start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
             start_date -= LOOKBACK_WINDOW
             start_date = max(start_date, self.config["date_ranges_start_date"])

@@ -9,9 +9,9 @@ import datetime
 import json
 import sys
 from typing import Dict
-import pandas as pd
 
 import jsonschema
+import pandas as pd
 from airbyte_cdk.sources.streams.http import auth
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 
@@ -138,7 +138,7 @@ def get_source_defined_primary_key(stream):
         return res.get(stream)
 
 
-def serialize_to_date_string(date: str, date_format: str, date_type:str) -> str:
+def serialize_to_date_string(date: str, date_format: str, date_type: str) -> str:
     if date_type == "yearWeek":
         return pd.to_datetime(f"{date}1", format="%Y%W%w").strftime(date_format)
     elif date_type == "yearMonth":

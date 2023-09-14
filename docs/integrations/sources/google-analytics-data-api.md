@@ -266,7 +266,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
-| 1.4.0   | 2023-09-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `yearWeek`, `yearMonth`, `year` dimensions cursor and `FilterExpressions` support  |
+| 1.4.0   | 2023-09-14 | [30421](https://github.com/airbytehq/airbyte/pull/30421) | Add `yearWeek`, `yearMonth`, `year` dimensions cursor and `FilterExpressions` support  |
 | 1.2.0   | 2023-09-11 | [30290](https://github.com/airbytehq/airbyte/pull/30290) | Add new preconfigured reports                                                          |
 | 1.1.3   | 2023-08-04 | [29103](https://github.com/airbytehq/airbyte/pull/29103) | Update input field descriptions                                                        |
 | 1.1.2   | 2023-07-03 | [27909](https://github.com/airbytehq/airbyte/pull/27909) | Limit the page size of custom report streams                                           |
