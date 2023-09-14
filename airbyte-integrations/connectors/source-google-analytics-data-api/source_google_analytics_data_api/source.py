@@ -58,8 +58,8 @@ class MetadataDescriptor:
                 metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             except HTTPError as e:
                 if e.response.status_code == HTTPStatus.UNAUTHORIZED:
-                    internal_message = f"Unauthorized error reached."
-                    message = f"Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
+                    internal_message = "Unauthorized error reached."
+                    message = "Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
 
                     unauthorized_error = AirbyteTracedException(
                         message=message, internal_message=internal_message, failure_type=FailureType.config_error
