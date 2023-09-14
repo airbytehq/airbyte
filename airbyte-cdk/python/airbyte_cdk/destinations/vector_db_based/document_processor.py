@@ -47,6 +47,18 @@ class DocumentProcessor:
 
     streams: Mapping[str, ConfiguredAirbyteStream]
 
+    @staticmethod
+    def check_config(config: ProcessingConfigModel) -> Optional[str]:
+        if config.text_splitter is not None and config.text_splitter.mode == "separator":
+            for s in config.text_splitter.separators:
+                try:
+                    separator = json.loads(s)
+                    if not isinstance(separator, str):
+                        return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
+                except:
+                    return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
+        return None
+
     def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
         if splitter_config is None:
             splitter_config = SeparatorSplitterConfigModel()
