@@ -98,7 +98,7 @@ GRANT CREATE DATABASE ON ACCOUNT TO APPLICATION AIRBYTE_LINKEDIN_ADS;
 
 
 ## Configure a connection
-Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `LINKEDIN_ADS_TEST`. You will have to accept the Anaconda terms in order to use Streamlit.
+Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_LINKEDIN_ADS`. You will have to accept the Anaconda terms in order to use Streamlit.
 Once you have access to the app, select `New Connection` and fill the fields as such:
 * Secret: `<database>.<your_schema>.integration_linkedin_ads_oauth`
 * External Access Integration: `integration_linkedin_ads`
