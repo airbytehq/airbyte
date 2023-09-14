@@ -106,7 +106,7 @@ public class SnowflakeTestUtils {
   }
 
   private static String quote(final String name) {
-    return '"' + SnowflakeSqlGenerator.escapeIdentifier(name) + '"';
+    return '"' + SnowflakeSqlGenerator.escapeJsonIdentifier(name) + '"';
   }
 
   public static String timestampToString(final String quotedName) {
