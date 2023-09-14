@@ -66,6 +66,16 @@ publish {
     dependsOn subprojects*.publish
 }
 
+// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
+task publishSnapshotIfNeeded {}
+
+if (version.endsWith("-SNAPSHOT")) {
+    logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
+    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
+} else {
+    logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
+}
+
 // Adds publishToMavenLocal as final command in the list of 'build' tasks.
 // build.dependsOn(publishToMavenLocal)
 
@@ -79,17 +89,6 @@ publish {
 //         println "Finished CDK publishToMavenLocal."
 //     }
 // }
-
-// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
-// task publishSnapshotIfNeeded {}
-
-// if (version.endsWith("-SNAPSHOT")) {
-//     logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
-//     publishSnapshotIfNeeded.dependsOn publishToMavenLocal
-// } else {
-//     logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
-// }
-
 // test {
 //     useJUnitPlatform()
 //     testLogging {
