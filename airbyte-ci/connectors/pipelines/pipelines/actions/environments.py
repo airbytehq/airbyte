@@ -1034,15 +1034,15 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
     #
     if context.is_local:
         # Special case for local development.
-
+        # Query dagger for the contents of the secrets and mount these strings as files in the container.
         contents = {}
         for secret_file_name, secret in context.connector_secrets.items():
             contents[secret_file_name] = await secret.plaintext()
 
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
             container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
-            for secret_file_name, secret in contents.items():
-                container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret, permissions=0o600)
+            for secret_file_name, secret_content_str in contents.items():
+                container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600)
             return container
 
         return with_secrets_mounted_as_regular_files
