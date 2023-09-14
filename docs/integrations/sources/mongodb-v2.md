@@ -78,7 +78,7 @@ security:
 ```
 Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address.  Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database.
 
-#### Step 2: Discover the MongoDB cluster connection configuration
+#### Step 2: Discover the MongoDB cluster connection string
 
 These steps outline how to discover the connection configuration of your MongoDB instance.
 
@@ -92,11 +92,11 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
 ![Connect to Source Cluster](mongodb/assets/mongodb_atlas_connection_string_step_2.png)
 
-3. On the "Connect to <cluster name>" modal dialog, select "Compass" under the "Access your data through tools" section.
+3. On the "Connect to <cluster name>" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Compass Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
 
-4. Copy the connection string from the entry labelled #2 on the modal dialog.
+4. Copy the connection string from the entry labelled #2 on the modal dialog, removing/avoiding the quotation marks.
 
 ![Copy Connection String](mongodb/assets/mongodb_atlas_connection_string_step_4.png)
 
@@ -135,7 +135,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 | Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                        |
 |:-------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                  |
-| Connection String                          | The connection string of the source MongoDB cluster.  For Atlas hosted clusters, see below for steps to find the connection string.  For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. 
+| Connection String                          | The connection string of the source MongoDB cluster.  For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string.  For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. 
 | Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                           | 
 | Username                                   | The username which is used to access the database.  Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                           |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                   |

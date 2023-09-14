@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.db.mongodb;
+package io.airbyte.integrations.destination.mongodb;
 
 import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
