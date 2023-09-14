@@ -4,3 +4,5 @@
 !source_sftp_bulk
 !setup.py
 !secrets
+!pyproject.toml
+!poetry.lock

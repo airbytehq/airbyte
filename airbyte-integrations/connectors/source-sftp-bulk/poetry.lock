@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.51.14"
+version = "0.51.15"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte-cdk-0.51.14.tar.gz", hash = "sha256:b5cdad2da796f8b42ab538cc7af53a531529c94f881d1fec0a8f03f745080ea5"},
-    {file = "airbyte_cdk-0.51.14-py3-none-any.whl", hash = "sha256:8e96c7cf57dfa41b1292deed756978619ad2a1d8c7d9f42df8e12b8484ef8079"},
+    {file = "airbyte-cdk-0.51.15.tar.gz", hash = "sha256:865047e0b83ee6d00cfe09a860a9c95ce4105ca74858894e8f21b8ead5198a14"},
+    {file = "airbyte_cdk-0.51.15-py3-none-any.whl", hash = "sha256:0657bedb05c45fef4bfcf5b609227dc3557c4bd1c80c97f3a9a2d4836f1576ca"},
 ]
 
 [package.dependencies]
@@ -54,7 +54,7 @@ pydantic = ">=1.9.2,<2.0.0"
 name = "anyio"
 version = "3.7.1"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "anyio-3.7.1-py3-none-any.whl", hash = "sha256:91dee416e570e92c64041bd18b900d1d6fa78dff7048769ce5ac5ddad004fbb5"},
@@ -75,7 +75,7 @@ trio = ["trio (<0.22)"]
 name = "atomicwrites"
 version = "1.4.1"
 description = "Atomic file writes."
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 files = [
     {file = "atomicwrites-1.4.1.tar.gz", hash = "sha256:81b2c9071a49367a7f770170e5eec8cb66567cfbbc8c73d20ce5ca4a8d71cf11"},
@@ -148,7 +148,7 @@ typecheck = ["mypy"]
 name = "beartype"
 version = "0.15.0"
 description = "Unbearably fast runtime type checking in pure Python."
-optional = true
+optional = false
 python-versions = ">=3.8.0"
 files = [
     {file = "beartype-0.15.0-py3-none-any.whl", hash = "sha256:52cd2edea72fdd84e4e7f8011a9e3007bf0125c3d6d7219e937b9d8868169177"},
@@ -395,7 +395,7 @@ files = [
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
-optional = true
+optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
@@ -406,7 +406,7 @@ files = [
 name = "connector-acceptance-test"
 version = "2.0.0"
 description = "Contains acceptance tests for connectors."
-optional = true
+optional = false
 python-versions = "^3.10"
 files = []
 develop = false
@@ -446,7 +446,7 @@ url = "../../bases/connector-acceptance-test"
 name = "coverage"
 version = "7.3.1"
 description = "Code coverage measurement for Python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "coverage-7.3.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:cd0f7429ecfd1ff597389907045ff209c8fdb5b013d38cfa7c60728cb484b6e3"},
@@ -558,7 +558,7 @@ test-randomorder = ["pytest-randomly"]
 name = "dagger-io"
 version = "0.6.4"
 description = "A client package for running Dagger pipelines in Python."
-optional = true
+optional = false
 python-versions = ">=3.10"
 files = [
     {file = "dagger_io-0.6.4-py3-none-any.whl", hash = "sha256:b1bea624d1428a40228fffaa96407292cc3d18a7eca5bc036e6ceb9abd903d9a"},
@@ -583,7 +583,7 @@ server = ["strawberry-graphql (>=0.187.0)", "typer[all] (>=0.6.1)"]
 name = "deepdiff"
 version = "5.8.1"
 description = "Deep Difference and Search of any Python object/data."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "deepdiff-5.8.1-py3-none-any.whl", hash = "sha256:e9aea49733f34fab9a0897038d8f26f9d94a97db1790f1b814cced89e9e0d2b7"},
@@ -628,7 +628,7 @@ files = [
 name = "docker"
 version = "6.1.3"
 description = "A Python library for the Docker Engine API."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "docker-6.1.3-py3-none-any.whl", hash = "sha256:aecd2277b8bf8e506e484f6ab7aec39abe0038e29fa4a6d3ba86c3fe01844ed9"},
@@ -674,7 +674,7 @@ test = ["pytest (>=6)"]
 name = "fancycompleter"
 version = "0.9.1"
 description = "colorful TAB completion for Python prompt"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "fancycompleter-0.9.1-py3-none-any.whl", hash = "sha256:dd076bca7d9d524cc7f25ec8f35ef95388ffef9ef46def4d3d25e9b044ad7080"},
@@ -715,7 +715,7 @@ files = [
 name = "gql"
 version = "3.4.1"
 description = "GraphQL client for Python"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "gql-3.4.1-py2.py3-none-any.whl", hash = "sha256:315624ca0f4d571ef149d455033ebd35e45c1a13f18a059596aeddcea99135cf"},
@@ -741,7 +741,7 @@ websockets = ["websockets (>=10,<11)", "websockets (>=9,<10)"]
 name = "graphql-core"
 version = "3.2.3"
 description = "GraphQL implementation for Python, a port of GraphQL.js, the JavaScript reference implementation for GraphQL."
-optional = true
+optional = false
 python-versions = ">=3.6,<4"
 files = [
     {file = "graphql-core-3.2.3.tar.gz", hash = "sha256:06d2aad0ac723e35b1cb47885d3e5c45e956a53bc1b209a9fc5369007fe46676"},
@@ -752,7 +752,7 @@ files = [
 name = "h11"
 version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "h11-0.14.0-py3-none-any.whl", hash = "sha256:e3fe4ac4b851c468cc8363d500db52c2ead036020723024a109d37346efaa761"},
@@ -763,7 +763,7 @@ files = [
 name = "httpcore"
 version = "0.18.0"
 description = "A minimal low-level HTTP client."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "httpcore-0.18.0-py3-none-any.whl", hash = "sha256:adc5398ee0a476567bf87467063ee63584a8bce86078bf748e48754f60202ced"},
@@ -784,7 +784,7 @@ socks = ["socksio (==1.*)"]
 name = "httpx"
 version = "0.25.0"
 description = "The next generation HTTP client."
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "httpx-0.25.0-py3-none-any.whl", hash = "sha256:181ea7f8ba3a82578be86ef4171554dd45fec26a02556a744db029a0a27b7100"},
@@ -807,7 +807,7 @@ socks = ["socksio (==1.*)"]
 name = "hypothesis"
 version = "6.84.3"
 description = "A library for property-based testing"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "hypothesis-6.84.3-py3-none-any.whl", hash = "sha256:4dd7de7a341a80c10d3e6beca12c084aab84c48ea270c1b9b8cee7e4aa5d7be2"},
@@ -839,7 +839,7 @@ zoneinfo = ["backports.zoneinfo (>=0.2.1)", "tzdata (>=2023.3)"]
 name = "hypothesis-jsonschema"
 version = "0.20.1"
 description = "Generate test data from JSON schemata with Hypothesis"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "hypothesis-jsonschema-0.20.1.tar.gz", hash = "sha256:a1db2461c8fbc59cb35aaa514a4cfba98ae13cc9ab4fa0da0eddbef74b774984"},
@@ -854,7 +854,7 @@ jsonschema = ">=3.0.2"
 name = "icdiff"
 version = "1.9.1"
 description = "improved colored diff"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "icdiff-1.9.1.tar.gz", hash = "sha256:66972dd03318da55280991db375d3ef6b66d948c67af96c1ebdb21587e86655e"},
@@ -875,7 +875,7 @@ files = [
 name = "inflection"
 version = "0.5.1"
 description = "A port of Ruby on Rails inflector to Python"
-optional = true
+optional = false
 python-versions = ">=3.5"
 files = [
     {file = "inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2"},
@@ -886,7 +886,7 @@ files = [
 name = "iniconfig"
 version = "2.0.0"
 description = "brain-dead simple config-ini parsing"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
@@ -1019,7 +1019,7 @@ files = [
 name = "multidict"
 version = "6.0.4"
 description = "multidict implementation"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "multidict-6.0.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:0b1a97283e0c85772d613878028fec909f003993e1007eafa715b24b377cb9b8"},
@@ -1136,7 +1136,7 @@ files = [
 name = "ordered-set"
 version = "4.1.0"
 description = "An OrderedSet is a custom MutableSet that remembers its order, so that every"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "ordered-set-4.1.0.tar.gz", hash = "sha256:694a8e44c87657c59292ede72891eb91d34131f6531463aab3009191c77364a8"},
@@ -1150,7 +1150,7 @@ dev = ["black", "mypy", "pytest"]
 name = "packaging"
 version = "23.1"
 description = "Core utilities for Python packages"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "packaging-23.1-py3-none-any.whl", hash = "sha256:994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61"},
@@ -1228,7 +1228,7 @@ invoke = ["invoke (>=1.3)"]
 name = "pdbpp"
 version = "0.10.3"
 description = "pdb++, a drop-in replacement for pdb"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pdbpp-0.10.3-py2.py3-none-any.whl", hash = "sha256:79580568e33eb3d6f6b462b1187f53e10cd8e4538f7d31495c9181e2cf9665d1"},
@@ -1297,7 +1297,7 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-co
 name = "pluggy"
 version = "1.3.0"
 description = "plugin and hook calling mechanisms for python"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "pluggy-1.3.0-py3-none-any.whl", hash = "sha256:d89c696a773f8bd377d18e5ecda92b7a3793cbe66c87060a6fb58c7b6e1061f7"},
@@ -1312,7 +1312,7 @@ testing = ["pytest", "pytest-benchmark"]
 name = "pprintpp"
 version = "0.4.0"
 description = "A drop-in replacement for pprint that's actually pretty"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pprintpp-0.4.0-py2.py3-none-any.whl", hash = "sha256:b6b4dcdd0c0c0d75e4d7b2f21a9e933e5b2ce62b26e1a54537f9651ae5a5c01d"},
@@ -1323,7 +1323,7 @@ files = [
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
-optional = true
+optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 files = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
@@ -1397,7 +1397,7 @@ email = ["email-validator (>=1.0.3)"]
 name = "pygments"
 version = "2.16.1"
 description = "Pygments is a syntax highlighting package written in Python."
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "Pygments-2.16.1-py3-none-any.whl", hash = "sha256:13fc09fa63bc8d8671a6d247e1eb303c4b343eaee81d861f3404db2935653692"},
@@ -1456,7 +1456,7 @@ testing = ["covdefaults (>=2.3)", "pytest (>=7.4)", "pytest-cov (>=4.1)", "pytes
 name = "pyreadline"
 version = "2.1"
 description = "A python implmementation of GNU readline."
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pyreadline-2.1.zip", hash = "sha256:4530592fc2e85b25b1a9f79664433da09237c1a270e4d78ea5aa3a2c7229e2d1"},
@@ -1466,7 +1466,7 @@ files = [
 name = "pyrepl"
 version = "0.9.0"
 description = "A library for building flexible command line interfaces"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pyrepl-0.9.0.tar.gz", hash = "sha256:292570f34b5502e871bbb966d639474f2b57fbfcd3373c2d6a2f3d56e681a775"},
@@ -1512,7 +1512,7 @@ files = [
 name = "pytest"
 version = "6.2.5"
 description = "pytest: simple powerful testing with Python"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
@@ -1536,7 +1536,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xm
 name = "pytest-cov"
 version = "3.0.0"
 description = "Pytest plugin for measuring coverage."
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pytest-cov-3.0.0.tar.gz", hash = "sha256:e7f0f5b1617d2210a2cabc266dfe2f4c75a8d32fb89eafb7ad9d06f6d076d470"},
@@ -1573,7 +1573,7 @@ tests = ["pytest-pycodestyle (>=2.0.0,<3.0)", "pytest-pylint (>=0.14.1,<1.0)", "
 name = "pytest-mock"
 version = "3.6.1"
 description = "Thin-wrapper around the mock package for easier use with pytest"
-optional = true
+optional = false
 python-versions = ">=3.6"
 files = [
     {file = "pytest-mock-3.6.1.tar.gz", hash = "sha256:40217a058c52a63f1042f0784f62009e976ba824c418cced42e88d5f40ab0e62"},
@@ -1590,7 +1590,7 @@ dev = ["pre-commit", "pytest-asyncio", "tox"]
 name = "pytest-sugar"
 version = "0.9.7"
 description = "pytest-sugar is a plugin for pytest that changes the default look and feel of pytest (e.g. progressbar, show tests that fail instantly)."
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pytest-sugar-0.9.7.tar.gz", hash = "sha256:f1e74c1abfa55f7241cf7088032b6e378566f16b938f3f08905e2cf4494edd46"},
@@ -1609,7 +1609,7 @@ dev = ["black", "flake8", "pre-commit"]
 name = "pytest-timeout"
 version = "1.4.2"
 description = "py.test plugin to abort hanging tests"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pytest-timeout-1.4.2.tar.gz", hash = "sha256:20b3113cf6e4e80ce2d403b6fb56e9e1b871b510259206d40ff8d609f48bda76"},
@@ -1659,7 +1659,7 @@ files = [
 name = "pywin32"
 version = "306"
 description = "Python for Window Extensions"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "pywin32-306-cp310-cp310-win32.whl", hash = "sha256:06d3420a5155ba65f0b72f2699b5bacf3109f36acbe8923765c22938a69dfc8d"},
@@ -1782,7 +1782,7 @@ yaml = ["pyyaml (>=5.4)"]
 name = "requests-mock"
 version = "1.9.3"
 description = "Mock out responses from the requests package"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "requests-mock-1.9.3.tar.gz", hash = "sha256:8d72abe54546c1fc9696fa1516672f1031d72a55a1d66c85184f972a24ba0eba"},
@@ -1828,7 +1828,7 @@ files = [
 name = "sniffio"
 version = "1.3.0"
 description = "Sniff out which async library your code is running under"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "sniffio-1.3.0-py3-none-any.whl", hash = "sha256:eecefdce1e5bbfb7ad2eeaabf7c1eeb404d7757c379bd1f7e5cce9d8bf425384"},
@@ -1839,7 +1839,7 @@ files = [
 name = "sortedcontainers"
 version = "2.4.0"
 description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"},
@@ -1850,7 +1850,7 @@ files = [
 name = "termcolor"
 version = "2.3.0"
 description = "ANSI color formatting for output in terminal"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "termcolor-2.3.0-py3-none-any.whl", hash = "sha256:3afb05607b89aed0ffe25202399ee0867ad4d3cb4180d98aaf8eefa6a5f7d475"},
@@ -1874,7 +1874,7 @@ files = [
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-optional = true
+optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 files = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
@@ -1885,7 +1885,7 @@ files = [
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
@@ -1998,7 +1998,7 @@ bracex = ">=2.1.1"
 name = "websocket-client"
 version = "1.6.3"
 description = "WebSocket client for Python with low level API options"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "websocket-client-1.6.3.tar.gz", hash = "sha256:3aad25d31284266bcfcfd1fd8a743f63282305a364b8d0948a43bd606acc652f"},
@@ -2014,7 +2014,7 @@ test = ["websockets"]
 name = "wmctrl"
 version = "0.4"
 description = "A tool to programmatically control windows inside X"
-optional = true
+optional = false
 python-versions = "*"
 files = [
     {file = "wmctrl-0.4.tar.gz", hash = "sha256:66cbff72b0ca06a22ec3883ac3a4d7c41078bdae4fb7310f52951769b10e14e0"},
@@ -2108,7 +2108,7 @@ files = [
 name = "yarl"
 version = "1.9.2"
 description = "Yet another URL library"
-optional = true
+optional = false
 python-versions = ">=3.7"
 files = [
     {file = "yarl-1.9.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:8c2ad583743d16ddbdf6bb14b5cd76bf43b0d0006e918809d5d4ddf7bde8dd82"},
@@ -2192,10 +2192,9 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [extras]
-acceptance-tests = ["connector-acceptance-test"]
 tests = ["coverage", "docker", "pytest", "pytest-docker", "pytest-mock", "requests-mock", "tox"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3b37d3ad98c48ffc55c4492e20171e08e8656ba04b650bda122a860943ff817f"
+content-hash = "69ffe95ae372359e2be0ca33395566d5659d0582479f84967b22f9eb2e6259b1"

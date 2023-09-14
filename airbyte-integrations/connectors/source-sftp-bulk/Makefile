@@ -7,8 +7,15 @@ help: ## Print this help
 install: ## Install using poetry
 	@poetry install
 	
+install.tests: ## Install using poetry using tests extras
+	@poetry install -E tests
+
 install.all: ## Install using poetry using all extras
-	@poetry install --all-extras
+	@poetry install -E tests --with dev
+
+
+docker.build_dev: ## Build docker development image
+	@docker build . -t airbyte/source-sftp-bulk:dev
 
 # ---------------------------------------------------------------------------- #
 #                                 test commands                                #
@@ -18,13 +25,13 @@ install.all: ## Install using poetry using all extras
 test.unit: ## Run unit tests
 	@poetry run pytest unit_tests
 
-test.integration.local: ## Run local integration tests
+test.integration_local: ## Run local integration tests
 	@poetry run pytest integration_tests
 
 test.all: ## Run both unit and local integration tests
 	@poetry run pytest
 
-test.integration.general: ## Run integration tests
+test.integration_general: ## Run integration tests
 	@poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=.
 
 test.clean_containers: ## Clean up stray containers used for integration tests left by vscode. See <https://github.com/microsoft/vscode-python/issues/7055>
