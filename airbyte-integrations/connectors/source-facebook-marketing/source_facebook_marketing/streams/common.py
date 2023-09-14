@@ -48,9 +48,9 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             "An unknown error occurred",
         ]
         if (
-            details.get("kwargs", {}).get("params", {}).get("limit")
-            and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
-            and exc.api_error_message() in error_patterns
+                details.get("kwargs", {}).get("params", {}).get("limit")
+                and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
+                and exc.api_error_message() in error_patterns
         ):
             # reduce the existing request `limit` param by a half and retry
             details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
@@ -132,20 +132,20 @@ def traced_exception(fb_exception: FacebookRequestError):
 
     elif "(#100) Missing permissions" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = "Credentials don't have enough permissions. Check if correct Ad Account Id is used (as in Ads Manager), "\
+        friendly_msg = "Credentials don't have enough permissions. Check if correct Ad Account Id is used (as in Ads Manager), " \
                        "re-authenticate if FB oauth is used or refresh access token with all required permissions"
 
     elif "permission" in msg:
         failure_type = FailureType.config_error
-        friendly_msg = "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token " \ 
+        friendly_msg = "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token " \
                        "with all required permissions."
 
     elif "An unknown error occurred" in msg and "error_user_title" in fb_exception._error:
         msg = fb_exception._error["error_user_title"]
         if "profile is not linked to delegate page" in msg or "el perfil no est" in msg:
             failure_type = FailureType.config_error
-            friendly_msg = "Current profile is not linked to delegate page. Check if correct business (not personal)" \
-                           " Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh " \ 
+            friendly_msg = "Current profile is not linked to delegate page. Check if correct business (not personal) " \
+                           "Ad Account Id is used (as in Ads Manager), re-authenticate if FB oauth is used or refresh " \
                            "access token with all required permissions."
 
     else:
