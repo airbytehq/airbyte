@@ -4,11 +4,13 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
 
@@ -16,11 +18,14 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
   private final JsonNode savedSchemaHistory;
+  private final boolean isSavedSchemaHistoryCompressed;
 
   public MySqlCdcSavedInfoFetcher(final CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState().get(MYSQL_CDC_OFFSET) : null;
     this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MYSQL_DB_HISTORY) : null;
+    this.isSavedSchemaHistoryCompressed =
+        savedStatePresent && savedState.getState().has(IS_COMPRESSED) && savedState.getState().get(IS_COMPRESSED).asBoolean();
   }
 
   @Override
@@ -29,8 +34,8 @@ public class MySqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.ofNullable(savedSchemaHistory);
+  public SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
+    return new SchemaHistory<>(Optional.ofNullable(savedSchemaHistory), isSavedSchemaHistoryCompressed);
   }
 
 }

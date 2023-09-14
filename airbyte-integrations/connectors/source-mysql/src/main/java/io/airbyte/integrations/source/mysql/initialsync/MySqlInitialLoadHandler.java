@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mysql.cj.MysqlType;
@@ -164,9 +167,9 @@ public class MySqlInitialLoadHandler {
             : currentPkLoadStatus.getIncrementalState();
 
     final Duration syncCheckpointDuration =
-        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
+        config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
             : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
+    final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
         : MySqlInitialSyncStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(

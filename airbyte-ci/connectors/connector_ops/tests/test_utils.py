@@ -44,19 +44,34 @@ class TestConnector:
             assert isinstance(connector.metadata, dict)
             assert isinstance(connector.support_level, str)
             assert isinstance(connector.acceptance_test_config, dict)
-            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.metadata['icon']}")
+            assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
             assert len(connector.version.split(".")) == 3
         else:
             assert connector.metadata is None
             assert connector.support_level is None
             assert connector.acceptance_test_config is None
-            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.name}.svg")
+            assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
             with pytest.raises(FileNotFoundError):
                 connector.version
             with pytest.raises(utils.ConnectorVersionNotFound):
                 Path(tmp_path / "Dockerfile").touch()
                 mocker.patch.object(utils.Connector, "code_directory", tmp_path)
                 utils.Connector(connector.technical_name).version
+
+    def test_metadata_query_match(self, mocker):
+        connector = utils.Connector("source-faker")
+        mocker.patch.object(utils.Connector, "metadata", {"dockerRepository": "airbyte/source-faker", "ab_internal": {"ql": 100}})
+        assert connector.metadata_query_match("data.dockerRepository == 'airbyte/source-faker'")
+        assert connector.metadata_query_match("'source' in data.dockerRepository")
+        assert not connector.metadata_query_match("data.dockerRepository == 'airbyte/source-faker2'")
+        assert not connector.metadata_query_match("'destination' in data.dockerRepository")
+        assert connector.metadata_query_match("data.ab_internal.ql == 100")
+        assert connector.metadata_query_match("data.ab_internal.ql >= 100")
+        assert connector.metadata_query_match("data.ab_internal.ql > 1")
+        assert not connector.metadata_query_match("data.ab_internal.ql == 101")
+        assert not connector.metadata_query_match("data.ab_internal.ql >= 101")
+        assert not connector.metadata_query_match("data.ab_internal.ql > 101")
+        assert not connector.metadata_query_match("data.ab_internal == whatever")
 
 
 @pytest.fixture()
@@ -77,7 +92,7 @@ def gradle_file_with_dependencies(tmpdir) -> Path:
     }
     """
     )
-    expected_dependencies = [Path("path/to/dependency1"), Path("path/to/dependency2")]
+    expected_dependencies = [Path("path/to/dependency1"), Path("path/to/dependency2"), Path("airbyte-cdk/java/airbyte-cdk")]
     expected_test_dependencies = [Path("path/to/test/dependency"), Path("path/to/test/dependency1"), Path("path/to/test/dependency2")]
 
     return test_gradle_file, expected_dependencies, expected_test_dependencies
@@ -85,7 +100,7 @@ def gradle_file_with_dependencies(tmpdir) -> Path:
 
 def test_parse_dependencies(gradle_file_with_dependencies):
     gradle_file, expected_regular_dependencies, expected_test_dependencies = gradle_file_with_dependencies
-    regular_dependencies, test_dependencies = utils.parse_dependencies(gradle_file)
+    regular_dependencies, test_dependencies = utils.parse_gradle_dependencies(gradle_file)
     assert len(regular_dependencies) == len(expected_regular_dependencies)
     assert all([regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies])
     assert len(test_dependencies) == len(expected_test_dependencies)
