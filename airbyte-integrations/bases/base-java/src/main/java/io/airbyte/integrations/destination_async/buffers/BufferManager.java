@@ -93,7 +93,7 @@ public class BufferManager {
     }
 
     queueInfo.append(stateManager.getMemoryUsageMessage())
-            .append(System.lineSeparator());
+        .append(System.lineSeparator());
 
     log.info(queueInfo.toString());
   }
