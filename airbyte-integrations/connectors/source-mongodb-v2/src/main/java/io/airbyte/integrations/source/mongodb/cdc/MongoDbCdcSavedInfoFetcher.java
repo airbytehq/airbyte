@@ -27,7 +27,7 @@ public class MongoDbCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   @Override
   public AirbyteSchemaHistoryStorage.SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
-    return null;
+    throw new RuntimeException("Schema history is not relevant for MongoDb");
   }
 
 }

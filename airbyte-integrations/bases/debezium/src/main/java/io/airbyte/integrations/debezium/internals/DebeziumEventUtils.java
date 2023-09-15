@@ -138,7 +138,7 @@ public class DebeziumEventUtils {
   private static JsonNode addCdcMetadata(final ObjectNode baseNode,
                                          final JsonNode source,
                                          final CdcMetadataInjector cdcMetadataInjector,
-                                         boolean isDelete) {
+                                         final boolean isDelete) {
 
     final long transactionMillis = source.get("ts_ms").asLong();
     final String transactionTimestamp = Instant.ofEpochMilli(transactionMillis).toString();
