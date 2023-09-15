@@ -193,7 +193,7 @@ definitions:
   shop_stream:
     $ref: "#/definitions/old_stream_without_extractor" # Shop endpoint is not available in new 2021-11 API version
     name: "shop"
-    primary_key: "id"
+    primary_key: ["shop", "store"]
     $parameters:
       path: "shop"
 
