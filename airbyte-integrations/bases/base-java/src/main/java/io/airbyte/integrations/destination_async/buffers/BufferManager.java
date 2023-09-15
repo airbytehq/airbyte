@@ -75,8 +75,8 @@ public class BufferManager {
 
   private void printQueueInfo() {
     final var queueInfo = new StringBuilder().append("START OF QUEUE INFO").append(System.lineSeparator())
-            .append("This represents an estimation of the size of the elements contain in the in memory buffer.")
-            .append(System.lineSeparator());
+        .append("This represents an estimation of the size of the elements contain in the in memory buffer.")
+        .append(System.lineSeparator());
 
     queueInfo
         .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s",
