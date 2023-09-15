@@ -14,10 +14,12 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -35,8 +37,12 @@ def to_int(s):
     return s
 
 
-class SourceZendeskException(Exception):
-    """default exception of custom SourceZendesk logic"""
+class ZendeskConfigException(AirbyteTracedException):
+    """default config exception to custom SourceZendesk logic"""
+
+    def __init__(self, **kwargs):
+        failure_type: FailureType = FailureType.config_error
+        super(ZendeskConfigException, self).__init__(failure_type=failure_type, **kwargs)
 
 
 class BaseZendeskSupportStream(HttpStream, ABC):
@@ -119,10 +125,28 @@ class BaseZendeskSupportStream(HttpStream, ABC):
             except requests.exceptions.JSONDecodeError:
                 reason = response.reason
                 error = {"title": f"{reason}", "message": "Received empty JSON response"}
-            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
+            self.logger.error(
+                f"Skipping stream {self.name}, error message: {error}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+            )
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            self.logger.error(
+                f"Skipping stream {self.name}: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+            )
 
 
 class SourceZendeskSupportStream(BaseZendeskSupportStream):
@@ -778,7 +802,7 @@ class UserSettingsStream(FullRefreshZendeskSupportStream):
     def get_settings(self) -> Mapping[str, Any]:
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
-        raise SourceZendeskException("not found settings")
+        raise ZendeskConfigException(message="Can not get access to settings endpoint; Please check provided credentials")
 
     def request_params(
         self,
@@ -931,3 +955,28 @@ class ArticleCommentVotes(AbstractVotes, HttpSubStream):
         article_id = stream_slice.get("parent").get("source_id")
         comment_id = stream_slice.get("parent").get("id")
         return f"help_center/articles/{article_id}/comments/{comment_id}/votes"
+
+
+class DeletedTickets(CursorPaginationZendeskSupportStream):
+    """Deleted Tickets Stream https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-deleted-tickets"""
+
+    response_list_name: str = "deleted_tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    cursor_field = "deleted_at"
+
+    def path(self, **kwargs) -> str:
+        return "deleted_tickets.json"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "sort_by": self.cursor_field,
+            "page[size]": self.page_size,
+        }
+        if next_page_token:
+            params.update(next_page_token)
+        return params

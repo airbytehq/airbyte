@@ -130,6 +130,27 @@ To run acceptance tests for multiple connectors using the local CDK, from the ro
 ./airbyte-cdk/python/bin/run-cats-with-local-cdk.sh -c <connector1>,<connector2>,...
 ```
 
+#### When you don't have access to the API
+There can be some time where you do not have access to the API (either because you don't have the credentials, network access, etc...) You will probably still want to do end-to-end testing at least once. In order to do so, you can emulate the server you would be reaching using a server stubbing tool.
+
+For example, using [mockserver](https://www.mock-server.com/), you can set up an expectation file like this:
+```
+{
+  "httpRequest": {
+    "method": "GET",
+    "path": "/data"
+  },
+  "httpResponse": {
+    "body": "{\"data\": [{\"record_key\": 1}, {\"record_key\": 2}]}"
+  }
+}
+```
+
+Assuming this file has been created at `secrets/mock_server_config/expectations.json`, running the following command will allow to match any requests on path `/data` to return the response defined in the expectation file:
+`docker run -d --rm -v $(pwd)/secrets/mock_server_config:/config -p 8113:8113 --env MOCKSERVER_LOG_LEVEL=TRACE --env MOCKSERVER_SERVER_PORT=8113 --env MOCKSERVER_WATCH_INITIALIZATION_JSON=true --env MOCKSERVER_PERSISTED_EXPECTATIONS_PATH=/config/expectations.json --env MOCKSERVER_INITIALIZATION_JSON_PATH=/config/expectations.json mockserver/mockserver:5.15.0`
+
+HTTP requests to `localhost:8113/data` should now return the body defined in the expectations file. To test this, the implementer either has to change the code which defines the base URL for Python source or update the `url_base` from low-code. With the Connector Builder running in docker, you will have to use domain `host.docker.internal` instead of `localhost` as the requests are executed within docker.
+
 #### Publishing a new version to PyPi
 
 1. Open a PR
