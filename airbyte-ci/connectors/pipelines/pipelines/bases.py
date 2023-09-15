@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Iterable, List, Optional, Set
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Set
 
 import anyio
 import asyncer
@@ -22,8 +22,8 @@ from connector_ops.utils import Connector, console
 from dagger import Container, DaggerError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines import sentry_utils
-from pipelines.actions import environments, remote_storage
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from pipelines.actions import remote_storage
+from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
 from pipelines.utils import METADATA_FILE_NAME, format_duration, get_exec_result
 from rich.console import Group
 from rich.panel import Panel
@@ -274,104 +274,6 @@ class Step(ABC):
             StepStatus.FAILURE,
             stdout=f"Timed out after the max duration of {format_duration(self.max_duration)}. Please checkout the Dagger logs to see what happened.",
         )
-
-
-class PytestStep(Step, ABC):
-    """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
-
-    PYTEST_INI_FILE_NAME = "pytest.ini"
-    PYPROJECT_FILE_NAME = "pyproject.toml"
-    extra_dependencies_names = ("dev", "tests")
-    skipped_exit_code = 5
-
-    @property
-    @abstractmethod
-    def test_directory_name(self) -> str:
-        raise NotImplementedError("test_directory_name must be implemented in the child class.")
-
-    async def _run(self, connector_under_test: Container) -> StepResult:
-        """Run all pytest tests declared in the test directory of the connector code.
-
-        Args:
-            connector_under_test (Container): The connector under test container.
-
-        Returns:
-            StepResult: Failure or success of the unit tests with stdout and stdout.
-        """
-        if not await self.check_if_tests_are_available(self.test_directory_name):
-            return self.skip(f"No {self.test_directory_name} directory found in the connector.")
-
-        connector_under_test = connector_under_test.with_(await self.testing_environment(self.extra_dependencies_names))
-
-        return await self.get_step_result(connector_under_test)
-
-    async def check_if_tests_are_available(self, test_directory_name: str) -> bool:
-        """Check if the tests are available in the connector directory.
-
-        Returns:
-            bool: True if the tests are available.
-        """
-        connector_dir = await self.context.get_connector_dir()
-        connector_dir_entries = await connector_dir.entries()
-        return test_directory_name in connector_dir_entries
-
-    async def testing_environment(self, extra_dependencies_names: Iterable[str]) -> Callable:
-        """Install all extra dependencies of a connector.
-
-        Args:
-            extra_dependencies_names (Iterable[str]): Extra dependencies to install.
-
-        Returns:
-            Callable: The decorator to use with the with_ method of a container.
-        """
-        secret_mounting_function = await environments.mounted_connector_secrets(self.context, "secrets")
-        connector_dir = await self.context.get_connector_dir()
-        connector_dir_entries = await connector_dir.entries()
-
-        if self.PYTEST_INI_FILE_NAME in connector_dir_entries:
-            config_file_name = self.PYTEST_INI_FILE_NAME
-            test_config = await self.context.get_connector_dir(include=[self.PYTEST_INI_FILE_NAME]).file(self.PYTEST_INI_FILE_NAME)
-            self.logger.info(f"Found {self.PYTEST_INI_FILE_NAME}, using it for testing.")
-        elif self.PYPROJECT_FILE_NAME in connector_dir_entries:
-            config_file_name = self.PYPROJECT_FILE_NAME
-            test_config = await self.context.get_connector_dir(include=[self.PYTEST_INI_FILE_NAME]).file(self.PYTEST_INI_FILE_NAME)
-            self.logger.info(f"Found {PYPROJECT_TOML_FILE_PATH} at connector level, using it for testing.")
-        else:
-            config_file_name = f"global_{self.PYPROJECT_FILE_NAME}"
-            test_config = await self.context.get_repo_dir(include=[self.PYPROJECT_FILE_NAME]).file(self.PYPROJECT_FILE_NAME)
-            self.logger.info(f"Found {PYPROJECT_TOML_FILE_PATH} at repo level, using it for testing.")
-
-        def prepare_for_testing(built_connector_container: Container) -> Container:
-            return (
-                built_connector_container
-                # Reset the entrypoint
-                .with_entrypoint([])
-                # Mount the connector directory in /test_environment
-                # For build optimization the full directory is not mounted by default
-                # We need the setup.py/pyproject.toml and the tests code to be available
-                # Install the extra dependencies
-                .with_mounted_directory("/test_environment", connector_dir)
-                # Jump in the /test_environment directory
-                .with_workdir("/test_environment").with_mounted_file(config_file_name, test_config)
-                # Mount the secrets
-                .with_(secret_mounting_function)
-                # Install the extra dependencies
-                .with_exec(["pip", "install", f".[{','.join(extra_dependencies_names)}]"], skip_entrypoint=True)
-                # Execute pytest on the test directory
-                .with_exec(
-                    [
-                        "python",
-                        "-m",
-                        "pytest",
-                        "-s",
-                        self.test_directory_name,
-                        "-c",
-                        config_file_name,
-                    ]
-                )
-            )
-
-        return prepare_for_testing
 
 
 class NoOpStep(Step):
