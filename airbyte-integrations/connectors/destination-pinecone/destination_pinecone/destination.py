@@ -7,7 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import AzureOpenAIEmbedder, CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
@@ -18,7 +18,7 @@ from destination_pinecone.indexer import PineconeIndexer
 BATCH_SIZE = 128
 
 
-embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder}
+embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder, "azure_openai": AzureOpenAIEmbedder}
 
 
 class DestinationPinecone(Destination):

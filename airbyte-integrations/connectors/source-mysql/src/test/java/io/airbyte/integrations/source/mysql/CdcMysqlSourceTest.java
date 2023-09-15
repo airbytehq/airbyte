@@ -7,8 +7,9 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_CDC_OFFSET;
-import static io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MYSQL_DB_HISTORY;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.IS_COMPRESSED;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
+import static io.airbyte.integrations.debezium.internals.mysql.MysqlCdcStateConstants.MYSQL_DB_HISTORY;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -39,6 +41,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -60,15 +63,22 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -78,6 +88,9 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @ExtendWith(SystemStubsExtension.class)
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
+  private static final String START_DB_CONTAINER_WITH_INVALID_TIMEZONE = "START-DB-CONTAINER-WITH-INVALID-TIMEZONE";
+  private static final String INVALID_TIMEZONE_CEST = "CEST";
+
   @SystemStub
   private EnvironmentVariables environmentVariables;
 
@@ -86,18 +99,22 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   private Database database;
   private MySqlSource source;
   private JsonNode config;
+  private static final Random RANDOM = new Random();
 
   @BeforeEach
-  public void setup() throws SQLException {
+  public void setup(final TestInfo testInfo) throws SQLException {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    init();
+    init(testInfo);
     revokeAllPermissions();
     grantCorrectPermissions();
     super.setup();
   }
 
-  private void init() {
+  private void init(final TestInfo testInfo) {
     container = new MySQLContainer<>("mysql:8.0");
+    if (testInfo.getTags().contains(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)) {
+      container.withEnv(Map.of("TZ", INVALID_TIMEZONE_CEST));
+    }
     container.start();
     source = new MySqlSource();
     database = new Database(DSLContextFactory.create(
@@ -112,7 +129,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .put("time_zone", "America/Los_Angeles")
+        .put("server_time_zone", "America/Los_Angeles")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -162,9 +179,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             container.getHost(),
             container.getFirstMappedPort()),
         Collections.emptyMap());
-    final JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
-
-    return MySqlCdcTargetPosition.targetPosition(jdbcDatabase);
+    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(dataSource));
   }
 
   @Override
@@ -483,6 +498,32 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Test
+  @Timeout(value = 60)
+  @Tags(value = {@Tag(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)})
+  public void syncWouldWorkWithDBWithInvalidTimezone() throws Exception {
+    final String systemTimeZone = "@@system_time_zone";
+    final JdbcDatabase jdbcDatabase = ((MySqlSource) getSource()).createDatabase(getConfig());
+    final Properties properties = MySqlCdcProperties.getDebeziumProperties(jdbcDatabase);
+    final String databaseTimezone = jdbcDatabase.unsafeQuery(String.format("SELECT %s;", systemTimeZone)).toList().get(0).get(systemTimeZone)
+        .asText();
+    final String debeziumEngineTimezone = properties.getProperty("database.connectionTimeZone");
+
+    assertEquals(INVALID_TIMEZONE_CEST, databaseTimezone);
+    assertEquals("America/Los_Angeles", debeziumEngineTimezone);
+
+    final AutoCloseableIterator<AirbyteMessage> read = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+
+    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
+
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
+
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
+    assertExpectedStateMessages(stateMessages);
+  }
+
+  @Test
   public void testCompositeIndexInitialLoad() throws Exception {
     // Simulate adding a composite index by modifying the catalog.
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
@@ -663,4 +704,85 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         MODELS_SCHEMA);
   }
 
+  /**
+   * This test creates lots of tables increasing the schema history size above the limit of {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB}
+   * forcing the {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of the state message
+   * which allows us to test that the next sync is able to work fine when provided with a compressed blob in the state.
+   */
+  @Test
+  public void testCompressedSchemaHistory() throws Exception {
+    createTablesToIncreaseSchemaHistorySize();
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final AirbyteStateMessage lastStateMessageFromFirstBatch = Iterables.getLast(extractStateMessages(dataFromFirstBatch));
+    assertNotNull(lastStateMessageFromFirstBatch.getGlobal().getSharedState());
+    assertNotNull(lastStateMessageFromFirstBatch.getGlobal().getSharedState().get("state"));
+    assertNotNull(lastStateMessageFromFirstBatch.getGlobal().getSharedState().get("state").get(IS_COMPRESSED));
+    assertNotNull(lastStateMessageFromFirstBatch.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
+    assertNotNull(lastStateMessageFromFirstBatch.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+    assertTrue(lastStateMessageFromFirstBatch.getGlobal().getSharedState().get("state").get(IS_COMPRESSED).asBoolean());
+
+    // INSERT records so that events are written to binlog and Debezium tries to parse them
+    final int recordsToCreate = 20;
+    // first batch of records. 20 created here and 6 created in setup method.
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, Jsons.jsonNode(Collections.singletonList(lastStateMessageFromFirstBatch)));
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+    final AirbyteStateMessage lastStateMessageFromSecondBatch = Iterables.getLast(extractStateMessages(dataFromSecondBatch));
+    assertNotNull(lastStateMessageFromSecondBatch.getGlobal().getSharedState());
+    assertNotNull(lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state"));
+    assertNotNull(lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state").get(IS_COMPRESSED));
+    assertNotNull(lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
+    assertNotNull(lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state").get(MYSQL_CDC_OFFSET));
+    assertTrue(lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state").get(IS_COMPRESSED).asBoolean());
+
+    assertEquals(lastStateMessageFromFirstBatch.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY),
+        lastStateMessageFromSecondBatch.getGlobal().getSharedState().get("state").get(MYSQL_DB_HISTORY));
+
+    assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
+  }
+
+  private void createTablesToIncreaseSchemaHistorySize() {
+    for (int i = 0; i <= 200; i++) {
+      final String tableName = generateRandomStringOf32Characters();
+      final StringBuilder createTableQuery = new StringBuilder("CREATE TABLE models_schema." + tableName + "(");
+      String firstCol = null;
+      for (int j = 1; j <= 250; j++) {
+        final String columnName = generateRandomStringOf32Characters();
+        if (j == 1) {
+          firstCol = columnName;
+
+        }
+        createTableQuery.append(columnName).append(" INTEGER, ");
+      }
+      createTableQuery.append("PRIMARY KEY (").append(firstCol).append("));");
+      executeQuery(createTableQuery.toString());
+    }
+  }
+
+  private static String generateRandomStringOf32Characters() {
+    final String characters = "abcdefghijklmnopqrstuvwxyz";
+    final int length = 32;
+
+    final StringBuilder randomString = new StringBuilder(length);
+
+    for (int i = 0; i < length; i++) {
+      final int index = RANDOM.nextInt(characters.length());
+      final char randomChar = characters.charAt(index);
+      randomString.append(randomChar);
+    }
+
+    return randomString.toString();
+  }
 }
