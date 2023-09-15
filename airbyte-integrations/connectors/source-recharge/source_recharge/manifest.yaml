@@ -68,20 +68,6 @@ definitions:
         request_headers:
           X-Recharge-Version: 2021-01
 
-  metafields_base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          owner_resource: |
-            {{
-              config['owner_resource']
-              if config['owner_resource']
-              else ''
-            }}
-
   incremental_sync_base:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters.incremental_cursor }}"
@@ -149,7 +135,7 @@ definitions:
       $ref: "#/definitions/incremental_sync_base"
 
   metafields_stream:
-    $ref: "#/definitions/metafields_base_stream"
+    $ref: "#/definitions/base_stream"
     name: "metafields"
     primary_key: "id"
     $parameters:
