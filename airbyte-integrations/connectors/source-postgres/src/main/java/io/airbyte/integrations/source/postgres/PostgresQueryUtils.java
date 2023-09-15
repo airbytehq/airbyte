@@ -255,7 +255,7 @@ public class PostgresQueryUtils {
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
             conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS_QUERY.formatted(fullTableName)).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        if (jsonNodes.size() != 0) {
+        if (!jsonNodes.isEmpty()) {
           Preconditions.checkState(jsonNodes.size() == 1);
           LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase, the table will be skipped from syncing data", fullTableName,
               jsonNodes.get(0).get("phase"));
