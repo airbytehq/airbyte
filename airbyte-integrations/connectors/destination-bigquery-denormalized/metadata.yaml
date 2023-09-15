@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 079d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 1.5.3
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/destination-bigquery-denormalized
   githubIssueLabel: destination-bigquery-denormalized
   icon: bigquery.svg
@@ -13,7 +13,12 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "`destination-bigquery-denormalized` is being retired in favor of `destination-bigquery`, and is no longer maintained. Please switch to destination-bigquery, which will produce similar tables and contains many improvements.  Learn more [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/)."
+        upgradeDeadline: "2023-11-01"
+  releaseStage: alpha
   resourceRequirements:
     jobSpecific:
       - jobType: sync

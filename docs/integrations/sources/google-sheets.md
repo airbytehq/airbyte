@@ -8,15 +8,15 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 ### Prerequisites
 - Spreadsheet Link - The link to the Google spreadsheet you want to sync.
-<env:cloud>
+<!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
-</env:cloud>
-<env:oss>
+<!-- /env:cloud -->
+<!-- env:oss -->
 -  **For Airbyte Open Source:** 
   - A GCP project
   - Enable the Google Sheets API in your GCP project
   - Service Account Key with access to the Spreadsheet you want to replicate
-</env:oss>
+<!-- /env:oss -->
 
 ## Setup guide
 

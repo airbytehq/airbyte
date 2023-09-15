@@ -13,6 +13,8 @@ import sys
 import anyio
 import click
 import dagger
+from pipelines.consts import DOCKER_VERSION
+from pipelines.utils import sh_dash_c
 
 
 @click.command()
@@ -52,14 +54,20 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
             pytest_container = await (
                 dagger_client.container()
                 .from_("python:3.10.12")
-                .with_exec(["apt-get", "update"])
-                .with_exec(["apt-get", "install", "-y", "bash", "git", "curl"])
-                .with_env_variable("VERSION", "24.0.2")
-                .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-                .with_exec(["pip", "install", "pipx"])
-                .with_exec(["pipx", "ensurepath"])
                 .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
-                .with_exec(["pipx", "install", "poetry"])
+                .with_exec(
+                    sh_dash_c(
+                        [
+                            "apt-get update",
+                            "apt-get install -y bash git curl",
+                            "pip install pipx",
+                            "pipx ensurepath",
+                            "pipx install poetry",
+                        ]
+                    )
+                )
+                .with_env_variable("VERSION", DOCKER_VERSION)
+                .with_exec(sh_dash_c(["curl -fsSL https://get.docker.com | sh"]))
                 .with_mounted_directory(
                     "/airbyte",
                     dagger_client.host().directory(
