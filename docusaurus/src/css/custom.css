@@ -58,6 +58,11 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
   display: none;
 }
 
+.navbar__logo img {
+  /* Correct for visual imbalance in the logo */
+  transform: translateY(-2px);
+}
+
 .navbar__items--right {
   gap: 4px;
 }

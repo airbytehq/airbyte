@@ -97,23 +97,22 @@ const config = {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
           srcDark: "img/logo-light.png",
-          width: 140,
           height: 40,
         },
         items: [
           {
             href: "https://airbyte.io/",
             position: "left",
-            label: "🌎 About Airbyte",
+            label: "About Airbyte",
           },
           {
             href: "https://airbyte.com/tutorials",
-            label: "📃 Tutorials",
+            label: "Tutorials",
             position: "left",
           },
           {
             href: "https://support.airbyte.com/",
-            label: "👩‍💻 Support",
+            label: "Support",
             position: "left",
           },
           // --- Right side ---
