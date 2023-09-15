@@ -347,9 +347,10 @@ class Issues(IncrementalJiraStream):
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
-    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
+    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, expand_transitions: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._expand_changelog = expand_changelog
+        self._expand_transitions = expand_transitions
         self._render_fields = render_fields
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -373,6 +374,8 @@ class Issues(IncrementalJiraStream):
         expand = []
         if self._expand_changelog:
             expand.append("changelog")
+        if self._expand_transitions:
+            expand.append("transitions")
         if self._render_fields:
             expand.append("renderedFields")
         if expand:
