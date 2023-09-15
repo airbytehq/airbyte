@@ -85,6 +85,7 @@ class MigratePropertyID:
                     cls.modify_and_save(config_path, source, config),
                 )
 
+
 class MigrateCustomReports:
     """
     This class stands for migrating the config at runtime,
