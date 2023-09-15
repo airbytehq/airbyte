@@ -10,12 +10,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FutureUtils {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(FutureUtils.class);
 
   /**
@@ -31,8 +31,8 @@ public class FutureUtils {
   }
 
   /**
-   * Log all exceptions from a list of futures, and rethrow the first exception if there is one.
-   * This mimics the behavior of running the futures in serial, where the first failure
+   * Log all exceptions from a list of futures, and rethrow the first exception if there is one. This
+   * mimics the behavior of running the futures in serial, where the first failure
    */
   public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)
       throws Exception {
