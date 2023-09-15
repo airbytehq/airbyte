@@ -48,13 +48,12 @@ class ZendeskConfigException(AirbyteTracedException):
 class BaseZendeskSupportStream(HttpStream, ABC):
     raise_on_http_errors = True
 
-    def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, include_deleted: bool = False, **kwargs):
+    def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
-        self._include_deleted = include_deleted
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """

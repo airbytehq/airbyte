@@ -191,24 +191,6 @@
     },
     "from_messaging_channel": {
       "type": ["null", "boolean"]
-    },
-    "actor": {
-      "type": ["null", "object"],
-      "properties": {
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "name": {
-            "type": ["null", "string"]
-          }
-        }
-    },
-    "deleted_at":  {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "previous_state": {
-      "type": ["null", "string"]
     }
   }
 }
