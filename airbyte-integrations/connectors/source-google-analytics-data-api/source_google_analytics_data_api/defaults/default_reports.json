@@ -732,21 +732,6 @@
     "name" : "tech_platform_report",
     "dimensions" : [
       "date",
-      "platform"
-    ],
-    "metrics" : [
-      "totalUsers",
-      "newUsers",
-      "engagedSessions",
-      "engagementRate",
-      "conversions",
-      "totalRevenue"
-    ]
-  },
-  {
-    "name" : "tech_platform_report",
-    "dimensions" : [
-      "date",
       "operatingSystemVersion"
     ],
     "metrics" : [
