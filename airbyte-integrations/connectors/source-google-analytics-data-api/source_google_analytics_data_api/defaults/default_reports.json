@@ -277,6 +277,19 @@
     ]
   },
   {
+    "name" : "weekly_events_report",
+    "dimensions" : [
+      "yearWeek",
+      "eventName"
+    ],
+    "metrics" : [
+      "eventCount",
+      "totalUsers",
+      "eventCountPerUser",
+      "totalRevenue"
+    ]
+  },
+  {
     "name" : "conversions_report",
     "dimensions" : [
       "date",
