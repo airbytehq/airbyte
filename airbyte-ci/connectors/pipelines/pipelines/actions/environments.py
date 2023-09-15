@@ -414,13 +414,13 @@ async def with_python_connector_installed(context: ConnectorContext) -> Containe
             ".dockerignore",
         ]
     ]
-    container = with_installed_python_package(
+    container = await with_installed_python_package(
         context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
 
     container = await apply_python_development_overrides(context, container)
 
-    return await container
+    return container
 
 
 async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:
