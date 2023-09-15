@@ -19,7 +19,7 @@
             "title": "MongoDB Atlas Replica Set",
             "description": "MongoDB Atlas-hosted cluster configured as a replica set",
             "required": [
-              "installation_type",
+              "cluster_type",
               "connection_string",
               "database",
               "username",
@@ -28,9 +28,9 @@
             ],
             "additionalProperties": true,
             "properties": {
-              "installation_type": {
+              "cluster_type": {
                 "type": "string",
-                "const": "ATLAS",
+                "const": "ATLAS_REPLICA_SET",
                 "order": 1
               },
               "connection_string": {
@@ -77,12 +77,12 @@
           {
             "title": "Self-Managed Replica Set",
             "description": "MongoDB self-hosted cluster configured as a replica set",
-            "required": ["installation_type", "connection_string", "database"],
+            "required": ["cluster_type", "connection_string", "database"],
             "additionalProperties": true,
             "properties": {
-              "installation_type": {
+              "cluster_type": {
                 "type": "string",
-                "const": "SELF_MANAGED",
+                "const": "SELF_MANAGED_REPLICA_SET",
                 "order": 1
               },
               "connection_string": {
