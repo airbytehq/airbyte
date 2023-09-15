@@ -92,13 +92,6 @@
         "description": "Makes each stream read a single page of data.",
         "title": "Should the connector read the second and further pages of data.",
         "airbyte_hidden": true
-      },
-      "include_deleted": {
-        "title": "Include Deleted Data in Streams",
-        "description": "Set to active if you want to include deleted data in streams.",
-        "default": false,
-        "order": 3,
-        "type": "boolean"
       }
     }
   },

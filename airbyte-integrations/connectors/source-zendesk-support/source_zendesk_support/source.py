@@ -24,7 +24,6 @@ from .streams import (
     AuditLogs,
     Brands,
     CustomRoles,
-    DeletedTickets,
     GroupMemberships,
     Groups,
     Macros,
@@ -137,7 +136,6 @@ class SourceZendeskSupport(AbstractSource):
             "start_date": config.get("start_date", cls.get_default_start_date()),
             "authenticator": cls.get_authenticator(config),
             "ignore_pagination": config.get("ignore_pagination", False),
-            "include_deleted": config.get("include_deleted", False),
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -151,7 +149,6 @@ class SourceZendeskSupport(AbstractSource):
             ArticleCommentVotes(**args),
             ArticleVotes(**args),
             AuditLogs(**args),
-            DeletedTickets(**args),
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),

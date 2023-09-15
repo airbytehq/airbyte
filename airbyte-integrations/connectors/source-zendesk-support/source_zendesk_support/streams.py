@@ -515,7 +515,6 @@ class Tickets(SourceZendeskIncrementalExportStream):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     cursor_field = "generated_timestamp"
-    deleted_cursor_field = "deleted_at"
 
     def path(self, **kwargs) -> str:
         return "incremental/tickets/cursor.json"
@@ -545,11 +544,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
-        state = {self.cursor_field: max(new_value, old_value)}
-        last_deleted_record_value = latest_record.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
-        current_deleted_state_value = current_stream_state.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
-        state.update({self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)})
-        return state
+        return {self.cursor_field: max(new_value, old_value)}
 
     def check_stream_state(self, stream_state: Mapping[str, Any] = None) -> int:
         """
@@ -563,24 +558,6 @@ class Tickets(SourceZendeskIncrementalExportStream):
         Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
         """
         return super().check_start_time_param(requested_start_time, value=3)
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        yield from super().read_records(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-        )
-        if self._include_deleted:
-            yield from DeletedTickets(
-                start_date=self._start_date,
-                subdomain=self._subdomain,
-                ignore_pagination=self._ignore_pagination,
-                authenticator=self._session.auth,
-            ).read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -987,28 +964,3 @@ class ArticleCommentVotes(AbstractVotes, HttpSubStream):
         article_id = stream_slice.get("parent").get("source_id")
         comment_id = stream_slice.get("parent").get("id")
         return f"help_center/articles/{article_id}/comments/{comment_id}/votes"
-
-
-class DeletedTickets(CursorPaginationZendeskSupportStream):
-    """Deleted Tickets Stream https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-deleted-tickets"""
-
-    response_list_name: str = "deleted_tickets"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    cursor_field = "deleted_at"
-
-    def path(self, **kwargs) -> str:
-        return "deleted_tickets.json"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {
-            "sort_by": self.cursor_field,
-            "page[size]": self.page_size,
-        }
-        if next_page_token:
-            params.update(next_page_token)
-        return params
