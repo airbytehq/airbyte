@@ -2,10 +2,9 @@
 
 The LinkedIn Ads Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a Snowflake database of your choice.
 
-![](./linkedin-ads-ui.gif)
-
-> **Info**  
-> The LinkedIn Ads Connector is in _private preview_ and is subject to further development that may affect setup and configuration of the application.
+:::info
+The LinkedIn Ads Connector is in _private preview_ and is subject to further development that may affect setup and configuration of the application.
+:::
 
 # Getting started
 
@@ -14,8 +13,9 @@ A LinkedIn Ads account with permission to access data from accounts you want to 
 
 ## Installing the App
 
-> **Warning**  
-> Do not refresh the Apps page while the application is being installed. This may cause installation to fail.
+:::warning
+Do not refresh the Apps page while the application is being installed. This may cause installation to fail.
+:::
 
 1. Log into your Snowflake account.
 2. On the left sidebar, click `Marketplace`.
@@ -32,11 +32,13 @@ A LinkedIn Ads account with permission to access data from accounts you want to 
 You should now see the LinkedIn Ads Connector by Airbyte application under `Installed Apps`. You may need to refresh the page.
 
 ## LinkedIn Ads Account
-In order for the Snowflake Native App to query LinkedIn Ads, you will need an account with the right permissions. Please follow [the LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
+In order for the Snowflake Native App to query LinkedIn Ads, you will need an account with the right permissions. Please follow the [LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
 
 ## Snowflake Native App Authorizations
-> **Note**  
-> By default the app will be installed using the name `AIRBYTE_LINKEDIN_ADS`, but if you renamed the app during installation, you will have to use that name as a reference.
+
+:::note
+By default the app will be installed using the name `AIRBYTE_LINKEDIN_ADS`, but if you renamed the app during installation, you will have to use that name as a reference.
+:::
 
 1. Create the database where the app will access the authorization. This database can be different from the database where the sync will output records.
 ```
@@ -57,8 +59,9 @@ CREATE OR REPLACE NETWORK RULE linkedin_apis_network_rule
   VALUE_LIST = ('api.linkedin.com', 'www.linkedin.com', 'linkedin.com');
 ```
 
-> **Note**  
-> As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
+:::note  
+As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
+::::
 
 4. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
 ```
@@ -95,7 +98,11 @@ GRANT READ ON SECRET integration_linkedin_ads_oauth TO APPLICATION AIRBYTE_LINKE
 
 
 ## Configure a connection
-Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_LINKEDIN_ADS`. You will have to accept the Anaconda terms in order to use Streamlit. Once you have access to the app, select `New Connection` and fill the following fields:
+Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_LINKEDIN_ADS`. You will have to accept the Anaconda terms in order to use Streamlit. 
+
+![](./linkedin-ads-ui.gif)
+
+Once you have access to the app, select `New Connection` and fill the following fields:
 
 --- 
 
