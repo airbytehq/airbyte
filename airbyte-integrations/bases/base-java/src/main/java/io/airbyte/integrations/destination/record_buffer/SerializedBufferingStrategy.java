@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import static java.util.stream.Collectors.joining;
+
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,8 +166,12 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
         LOGGER.error("Exception while closing stream buffer", e);
       }
     }
+    // For the sake of displaying a nicer message in the UI, we rethrow the first exception rather than
+    // combining all the exceptions.
     if (!exceptionsThrown.isEmpty()) {
-      throw new RuntimeException(String.format("Exceptions thrown while closing buffers: %s", Strings.join(exceptionsThrown, "\n")));
+      final String stacktraces = exceptionsThrown.stream().map(ExceptionUtils::getStackTrace).collect(joining("\n"));
+      LOGGER.error("Exceptions thrown while closing buffers: " + stacktraces + "\nRethrowing first exception.");
+      throw exceptionsThrown.get(0);
     }
   }
 

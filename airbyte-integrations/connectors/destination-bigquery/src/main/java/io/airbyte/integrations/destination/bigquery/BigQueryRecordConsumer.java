@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static java.util.stream.Collectors.joining;
+
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.commons.string.Strings;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,8 +135,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     });
     typerDeduper.commitFinalTables();
     typerDeduper.cleanup();
+    // For the sake of displaying a nicer message in the UI, we rethrow the first exception rather than
+    // combining all the exceptions.
     if (!exceptionsThrown.isEmpty()) {
-      throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
+      final String stacktraces = exceptionsThrown.stream().map(ExceptionUtils::getStackTrace).collect(joining("\n"));
+      LOGGER.error("Exceptions thrown while closing consumer: " + stacktraces + "\nRethrowing first exception.");
+      throw exceptionsThrown.get(0);
     }
   }
 
