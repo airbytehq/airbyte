@@ -29,7 +29,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
+    container = new PostgreSQLContainer<>(DockerImageName.parse(getServerImageName())
         .asCompatibleSubstituteFor("postgres"))
             .withCommand("postgres -c wal_level=logical");
     container.start();
@@ -77,6 +77,7 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
     }
   }
 
+  protected abstract String getServerImageName();
   public abstract ImmutableMap getCertificateConfiguration();
 
 }

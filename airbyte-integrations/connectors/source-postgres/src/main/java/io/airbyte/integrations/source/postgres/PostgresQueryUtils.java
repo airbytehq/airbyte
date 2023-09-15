@@ -323,7 +323,6 @@ public class PostgresQueryUtils {
   public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleEstimateForStreams(final JdbcDatabase database,
                                                                                                 final List<ConfiguredAirbyteStream> streams,
                                                                                                 final String quoteString) {
-    LOGGER.info("getTableMaxTupleEstimateForStreams");
     final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -342,7 +341,7 @@ public class PostgresQueryUtils {
       final String schemaName = stream.getNamespace();
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
-      LOGGER.info("*** running {}", CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName));
+      LOGGER.debug("running {}", CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName));
       final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
           conn -> conn.prepareStatement(CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName)).executeQuery(),
           resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));

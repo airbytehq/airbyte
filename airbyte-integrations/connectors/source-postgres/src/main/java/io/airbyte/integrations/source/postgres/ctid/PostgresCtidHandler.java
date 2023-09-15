@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class PostgresCtidHandler {
   private final CtidStateManager ctidStateManager;
   private final FileNodeHandler fileNodeHandler;
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
-  final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple;
+  final Optional<Map<AirbyteStreamNameNamespacePair, Integer>> tablesMaxTuple;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
   public PostgresCtidHandler(final JsonNode config,
@@ -66,7 +67,7 @@ public class PostgresCtidHandler {
     this.quoteString = quoteString;
     this.fileNodeHandler = fileNodeHandler;
     this.tableBlockSizes = tableBlockSizes;
-    this.tablesMaxTuple = tablesMaxTuple;
+    this.tablesMaxTuple = Optional.ofNullable(tablesMaxTuple);
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
   }
@@ -101,7 +102,7 @@ public class PostgresCtidHandler {
             table.getName(),
             tableBlockSizes.get(pair).tableSize(),
             tableBlockSizes.get(pair).blockSize(),
-            tablesMaxTuple.get(pair));
+            tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair));
         final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);

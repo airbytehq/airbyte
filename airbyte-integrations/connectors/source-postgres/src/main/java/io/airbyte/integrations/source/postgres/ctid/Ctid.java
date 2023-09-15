@@ -72,4 +72,7 @@ public class Ctid {
     return Objects.hash(page, tuple);
   }
 
+  public static Ctid inc(final Ctid ctid, final long maxTuple) {
+    return (ctid.tuple + 1 > maxTuple) ? Ctid.of(ctid.page + 1, 1) : Ctid.of(ctid.page, ctid.tuple + 1);
+  }
 }

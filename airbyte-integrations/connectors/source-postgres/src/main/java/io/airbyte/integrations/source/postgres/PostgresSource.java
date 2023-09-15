@@ -563,7 +563,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
 
-      LOGGER.info("*** ctid capable: {}", CtidUtils.isCtidCapableDBServer(database));
       final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
           CtidUtils.isCtidCapableDBServer(database) ? null :
               PostgresQueryUtils.getTableMaxTupleEstimateForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
