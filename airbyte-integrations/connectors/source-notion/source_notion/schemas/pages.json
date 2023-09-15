@@ -61,7 +61,10 @@
                   "type": {
                     "enum": ["rich_text"]
                   },
-                  "rich_text": { "$ref": "rich_text.json" }
+                  "rich_text": { 
+                    "type": ["null", "array"],
+                    "items": { "$ref": "rich_text.json" }
+                  }
                 }
               },
               {

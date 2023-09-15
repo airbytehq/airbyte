@@ -26,24 +26,21 @@
         }
       }
     },
-    "rich_text": {
+    "mention": {
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
-        "content": {
+        "type": {
           "type": ["null", "string"]
-        },
-        "link": {
-          "type": ["null", "object"],
-          "additionalProperties": true,
-          "properties": {
-            "type": {
-              "enum": ["url"]
-            },
-            "url": {
-              "type": ["null", "string"]
-            }
-          }
+        }
+      }
+    },
+    "equation": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "expression": {
+          "type": ["null", "string"]
         }
       }
     },
