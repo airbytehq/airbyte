@@ -3,22 +3,54 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "self": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "projectId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "projectKey": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "object"],
+      "properties": {
+        "projectId": {
+          "type": ["null", "integer"]
+        },
+        "userId": {
+          "type": ["null", "integer"]
+        },
+        "userAccountId": {
+          "type": ["null", "string"]
+        },
+        "displayName": {
+          "type": ["null", "string"]
+        },
+        "projectName": {
+          "type": ["null", "string"]
+        },
+        "projectKey": {
+          "type": ["null", "string"]
+        },
+        "projectTypeKey": {
+          "type": ["null", "string"]
+        },
+        "avatarURI": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

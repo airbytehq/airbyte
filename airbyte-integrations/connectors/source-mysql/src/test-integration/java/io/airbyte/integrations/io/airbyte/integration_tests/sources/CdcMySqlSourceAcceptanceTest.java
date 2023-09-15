@@ -49,12 +49,12 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @SystemStub
-  private EnvironmentVariables environmentVariables;
+  protected EnvironmentVariables environmentVariables;
 
-  private static final String STREAM_NAME = "id_and_name";
-  private static final String STREAM_NAME2 = "starships";
-  private MySQLContainer<?> container;
-  private JsonNode config;
+  protected static final String STREAM_NAME = "id_and_name";
+  protected static final String STREAM_NAME2 = "starships";
+  protected MySQLContainer<?> container;
+  protected JsonNode config;
 
   @Override
   protected String getImageName() {
@@ -100,41 +100,13 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
                     Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
   }
 
-  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                Field.of("id", JsonSchemaType.NUMBER)
-            /* no name field */)
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(INCREMENTAL)
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                /* no id field */
-                Field.of("name", JsonSchemaType.STRING))
-                .withSourceDefinedCursor(true)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(
-                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
-  }
-
   @Override
   protected JsonNode getState() {
     return null;
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) {
+  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -157,7 +129,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     createAndPopulateTables();
   }
 
-  private void createAndPopulateTables() {
+  protected void createAndPopulateTables() {
     executeQuery("CREATE TABLE id_and_name(id INTEGER PRIMARY KEY, name VARCHAR(200));");
     executeQuery(
         "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
@@ -166,17 +138,17 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
   }
 
-  private void revokeAllPermissions() {
+  protected void revokeAllPermissions() {
     executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
   }
 
-  private void grantCorrectPermissions() {
+  protected void grantCorrectPermissions() {
     executeQuery(
         "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
             + container.getUsername() + "@'%';");
   }
 
-  private void executeQuery(final String query) {
+  protected void executeQuery(final String query) {
     try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
@@ -227,11 +199,6 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
   }
 
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
-  }
-
   @Test
   public void testIncrementalReadSelectedColumns() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithPartialColumns();
@@ -240,7 +207,36 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteRecordMessage> records = filterRecords(allMessages);
     assertFalse(records.isEmpty(), "Expected a incremental sync to produce records");
     verifyFieldNotExist(records, STREAM_NAME, "name");
-    verifyFieldNotExist(records, STREAM_NAME2, "id");
+    verifyFieldNotExist(records, STREAM_NAME2, "name");
+  }
+
+  private ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
+    // We cannot strip the primary key field as that is required for a successful CDC sync
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    String.format("%s", STREAM_NAME),
+                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                    Field.of("id", JsonSchemaType.NUMBER)
+                    /* no name field */)
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    String.format("%s", STREAM_NAME2),
+                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                    /* no name field */
+                    Field.of("id", JsonSchemaType.NUMBER))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
   }
 
   private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {

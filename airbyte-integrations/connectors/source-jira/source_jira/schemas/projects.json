@@ -166,6 +166,9 @@
     "archivedBy": {
       "description": "The user who archived the project.",
       "readOnly": true
+    },
+    "entityId": {
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

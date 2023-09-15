@@ -124,13 +124,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), true);
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }
     });
     typerDeduper.commitFinalTables();
+    typerDeduper.cleanup();
     if (!exceptionsThrown.isEmpty()) {
       throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
     }
