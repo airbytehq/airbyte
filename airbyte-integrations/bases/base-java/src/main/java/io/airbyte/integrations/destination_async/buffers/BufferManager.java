@@ -94,7 +94,7 @@ public class BufferManager {
     }
 
     queueInfo.append(stateManager.getMemoryUsageMessage())
-            .append(System.lineSeparator());
+        .append(System.lineSeparator());
 
     queueInfo.append("END OF QUEUE INFO");
 

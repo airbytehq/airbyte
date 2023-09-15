@@ -145,10 +145,10 @@ public class GlobalAsyncStateManager {
     final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
     synchronized (this) {
-    for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : descToStateIdQ.entrySet()) {
-      // Remove all states with 0 counters.
-      // Per-stream synchronized is required to make sure the state (at the head of the queue)
-      // logic is applied to is the state actually removed.
+      for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : descToStateIdQ.entrySet()) {
+        // Remove all states with 0 counters.
+        // Per-stream synchronized is required to make sure the state (at the head of the queue)
+        // logic is applied to is the state actually removed.
 
         final LinkedList<Long> stateIdQueue = entry.getValue();
         while (true) {
@@ -291,10 +291,10 @@ public class GlobalAsyncStateManager {
         memoryAllocated.addAndGet(memoryManager.requestMemory());
         try {
           LOGGER.debug("Insufficient memory to store state message. Allocated: {}, Used: {}, Size of State Msg: {}, Needed: {}",
-                  FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-                  FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-                  FileUtils.byteCountToDisplaySize(sizeInBytes),
-                  FileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated.get() - memoryUsed.get())));
+              FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+              FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+              FileUtils.byteCountToDisplaySize(sizeInBytes),
+              FileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated.get() - memoryUsed.get())));
           sleep(1000);
         } catch (final InterruptedException e) {
           throw new RuntimeException(e);
@@ -306,9 +306,9 @@ public class GlobalAsyncStateManager {
 
   public String getMemoryUsageMessage() {
     return String.format("State Manager memory usage: Allocated: %s, Used: %s, percentage Used %f",
-      FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-      FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-      (double) memoryUsed.get() / memoryAllocated.get());
+        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+        (double) memoryUsed.get() / memoryAllocated.get());
   }
 
   private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message) {
@@ -344,5 +344,7 @@ public class GlobalAsyncStateManager {
     public static long getNextId() {
       return pk.incrementAndGet();
     }
+
   }
+
 }
