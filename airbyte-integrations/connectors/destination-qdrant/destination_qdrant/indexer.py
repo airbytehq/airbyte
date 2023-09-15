@@ -14,7 +14,7 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_qdrant.config import QdrantIndexingConfigModel
 from qdrant_client import QdrantClient, models
 from qdrant_client.conversions.common_types import PointsSelector
-from qdrant_client.models import Distance, VectorParams
+from qdrant_client.models import Distance, PayloadSchemaType, VectorParams
 
 DISTANCE_METRIC_MAP = {
     "dot": Distance.DOT,
@@ -36,14 +36,18 @@ class QdrantIndexer(Indexer):
 
             if not self._client:
                 return "Qdrant client is not alive."
-            
+
             available_collections = [collection.name for collection in self._client.get_collections().collections]
             distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
 
             if self.config.collection in available_collections:
                 collection_info = self._client.get_collection(collection_name=self.config.collection)
-                assert collection_info.config.params.vectors.size == self.embedding_dimensions, "The collection's vector's size must match the embedding dimensions"
-                assert collection_info.config.params.vectors.distance == distance_metric, "The colection's vector's distance metric must match the selected distance metric option"
+                assert (
+                    collection_info.config.params.vectors.size == self.embedding_dimensions
+                ), "The collection's vector's size must match the embedding dimensions"
+                assert (
+                    collection_info.config.params.vectors.distance == distance_metric
+                ), "The colection's vector's distance metric must match the selected distance metric option"
             else:
                 self._client.recreate_collection(
                     collection_name=self.config.collection,
@@ -73,7 +77,9 @@ class QdrantIndexer(Indexer):
                 )
             )
         for field in [METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD]:
-            self._client.create_payload_index(collection_name=self.config.collection, field_name=field, field_schema="keyword")
+            self._client.create_payload_index(
+                collection_name=self.config.collection, field_name=field, field_schema=PayloadSchemaType.KEYWORD
+            )
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
@@ -98,16 +104,18 @@ class QdrantIndexer(Indexer):
                     vector=chunk.embedding,
                 )
             )
-        self._client.upload_records(collection_name=self.config.collection, records=entities, parallel=10)
+        self._client.upload_records(collection_name=self.config.collection, records=entities)
 
     def post_sync(self) -> List[AirbyteMessage]:
         try:
             self._client.close()
-            return AirbyteMessage(
-                type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully")
-            )
+            return [
+                AirbyteMessage(
+                    type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully")
+                )
+            ]
         except Exception as e:
-            return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(e)))
+            return [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(e)))]
 
     def _create_client(self):
         auth_method = self.config.auth_method
