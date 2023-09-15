@@ -9,7 +9,8 @@ from typing import List
 
 import asyncer
 from dagger import Container
-from pipelines.actions import environments, secrets
+from pipelines.actions import secrets
+from pipelines.actions.environments import python
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
 from pipelines.builds.python_connectors import BuildConnectorImage
@@ -24,9 +25,9 @@ class CodeFormatChecks(Step):
 
     title = "Code format checks"
 
-    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
+    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{python.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
+    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{python.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
+    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{python.PYPROJECT_TOML_FILE_PATH}", "."]
 
     async def _run(self) -> StepResult:
         """Run a code format check on the container source code.
@@ -42,7 +43,7 @@ class CodeFormatChecks(Step):
         Returns:
             StepResult: Failure or success of the code format checks with stdout and stderr.
         """
-        connector_under_test = environments.with_python_connector_source(self.context)
+        connector_under_test = python.with_python_connector_source(self.context)
 
         formatter = (
             connector_under_test.with_exec(["echo", "Running black"])
@@ -68,7 +69,7 @@ class ConnectorPackageInstall(Step):
         Returns:
             StepResult: Failure or success of the package installation and the connector under test container (with the connector package installed).
         """
-        connector_under_test = await environments.with_python_connector_installed(self.context)
+        connector_under_test = await python.with_python_connector_installed(self.context)
         return await self.get_step_result(connector_under_test)
 
 
@@ -87,7 +88,7 @@ class UnitTests(PytestStep):
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
         connector_under_test_with_secrets = connector_under_test.with_(
-            await environments.mounted_connector_secrets(self.context, "secrets")
+            await python.mounted_connector_secrets(self.context, "secrets")
         )
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
 
@@ -107,8 +108,8 @@ class IntegrationTests(PytestStep):
             StepResult: Failure or success of the integration tests with stdout and stdout.
         """
 
-        connector_under_test = connector_under_test.with_(environments.bound_docker_host(self.context)).with_(
-            await environments.mounted_connector_secrets(self.context, "secrets")
+        connector_under_test = connector_under_test.with_(python.bound_docker_host(self.context)).with_(
+            await python.mounted_connector_secrets(self.context, "secrets")
         )
         return await self._run_tests_in_directory(connector_under_test, "integration_tests")
 

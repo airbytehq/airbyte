@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional, Set
 
 import dagger
-from pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
+from pipelines.actions.environments.python import with_pip_packages, with_poetry_module, with_python_base
 from pipelines.bases import Report, Step, StepResult
 from pipelines.contexts import PipelineContext
 from pipelines.helpers.steps import run_steps

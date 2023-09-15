@@ -8,7 +8,8 @@ from typing import List, Optional
 
 import anyio
 from dagger import File, QueryError
-from pipelines.actions import environments, secrets
+from pipelines.actions import secrets
+from pipelines.actions.environments import python
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
 from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
@@ -30,13 +31,13 @@ class IntegrationTests(GradleTask):
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
-        await environments.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
+        await python.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
     async def _load_connector_image(self, connector_tar_file: File):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
-        await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
+        await python.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
     async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:

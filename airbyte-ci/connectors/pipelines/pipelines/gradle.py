@@ -8,7 +8,7 @@ from abc import ABC
 from typing import ClassVar, List, Tuple
 
 from dagger import CacheSharingMode, CacheVolume, Container, Directory
-from pipelines.actions import environments
+from pipelines.actions.environments import python
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.contexts import PipelineContext
@@ -144,11 +144,11 @@ class GradleTask(Step, ABC):
         # From this point on, we add layers which are task-dependent.
         if self.mount_connector_secrets:
             gradle_container = gradle_container.with_(
-                await environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
+                await python.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
             )
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
-            gradle_container = environments.with_bound_docker_host(self.context, gradle_container)
+            gradle_container = python.with_bound_docker_host(self.context, gradle_container)
             # This installation should be cheap, as the package has already been downloaded, and its dependencies are already installed.
             gradle_container = gradle_container.with_exec(["yum", "install", "-y", "docker"])
 

@@ -10,7 +10,7 @@ import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
 from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pipelines import builds, consts
-from pipelines.actions import environments
+from pipelines.actions.environments import python
 from pipelines.actions.remote_storage import upload_to_gcs
 from pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from pipelines.contexts import PublishConnectorContext
@@ -24,7 +24,7 @@ class CheckConnectorImageDoesNotExist(Step):
     async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image.split(":")
         crane_ls = (
-            environments.with_crane(
+            python.with_crane(
                 self.context,
             )
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
@@ -86,7 +86,7 @@ class PullConnectorImageFromRegistry(Step):
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
         for platform in consts.BUILD_PLATFORMS:
-            inspect = environments.with_crane(self.context).with_exec(
+            inspect = python.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image}"]
             )
             try:

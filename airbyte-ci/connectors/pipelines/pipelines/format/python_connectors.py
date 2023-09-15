@@ -3,7 +3,7 @@
 #
 
 import asyncer
-from pipelines.actions import environments
+from pipelines.actions.environments import python
 from pipelines.bases import Step, StepResult
 from pipelines.utils import with_exit_code, with_stderr, with_stdout
 
@@ -17,11 +17,11 @@ class FormatConnectorCode(Step):
 
     @property
     def black_cmd(self):
-        return ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
+        return ["python", "-m", "black", f"--config=/{python.PYPROJECT_TOML_FILE_PATH}", "."]
 
     @property
     def isort_cmd(self):
-        return ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
+        return ["python", "-m", "isort", f"--settings-file=/{python.PYPROJECT_TOML_FILE_PATH}", "."]
 
     @property
     def licenseheaders_cmd(self):
@@ -29,14 +29,14 @@ class FormatConnectorCode(Step):
             "python",
             "-m",
             "licenseheaders",
-            f"--tmpl=/{environments.LICENSE_SHORT_FILE_PATH}",
+            f"--tmpl=/{python.LICENSE_SHORT_FILE_PATH}",
             "--ext=py",
             "--exclude=**/models/__init__.py",
         ]
 
     async def _run(self) -> StepResult:
         formatted = (
-            environments.with_testing_dependencies(self.context)
+            python.with_testing_dependencies(self.context)
             .with_mounted_directory("/connector_code", await self.context.get_connector_dir())
             .with_workdir("/connector_code")
             .with_exec(self.licenseheaders_cmd)

@@ -3,7 +3,7 @@
 #
 
 
-from pipelines.actions import environments
+from pipelines.actions.environments import python
 from pipelines.bases import StepResult
 from pipelines.gradle import GradleTask
 from pipelines.utils import get_exec_result

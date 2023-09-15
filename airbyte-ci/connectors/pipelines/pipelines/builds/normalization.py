@@ -3,7 +3,7 @@
 #
 
 from dagger import Platform
-from pipelines.actions import environments
+from pipelines.actions.environments import python
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext
 
@@ -28,7 +28,7 @@ class BuildOrPullNormalization(Step):
 
     async def _run(self) -> StepResult:
         if self.use_dev_normalization:
-            build_normalization_container = environments.with_normalization(self.context, self.build_platform)
+            build_normalization_container = python.with_normalization(self.context, self.build_platform)
         else:
             build_normalization_container = self.context.dagger_client.container().from_(self.normalization_image)
         return StepResult(self, StepStatus.SUCCESS, output_artifact=build_normalization_container)

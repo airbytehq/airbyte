@@ -153,8 +153,8 @@ class TestAcceptanceTests:
         test_context.connector_acceptance_test_image = "bash:latest"
         test_context.connector_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
 
-        mocker.patch.object(common.environments, "load_image_to_docker_host", return_value="image_sha")
-        mocker.patch.object(common.environments, "with_bound_docker_host", lambda _, cat_container: cat_container)
+        mocker.patch.object(common.python, "load_image_to_docker_host", return_value="image_sha")
+        mocker.patch.object(common.python, "with_bound_docker_host", lambda _, cat_container: cat_container)
         return common.AcceptanceTests(test_context)
 
     async def test_cat_container_provisioning(

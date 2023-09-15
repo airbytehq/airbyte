@@ -3,7 +3,7 @@
 #
 
 from dagger import Client, Directory, Secret
-from pipelines.actions import environments
+from pipelines.actions.environments import python
 from pipelines.bases import Step, StepResult
 from pipelines.github import AIRBYTE_GITHUB_REPO
 from pipelines.utils import sh_dash_c
@@ -51,7 +51,7 @@ class GitPushChanges(Step):
         self, changed_directory: Directory, changed_directory_path: str, commit_message: str, skip_ci: bool = True
     ) -> StepResult:
         diff = (
-            environments.with_git(self.dagger_client, self.context.ci_github_access_token_secret, self.ci_git_user)
+            python.with_git(self.dagger_client, self.context.ci_github_access_token_secret, self.ci_git_user)
             .with_secret_variable("AUTHENTICATED_REPO_URL", self.authenticated_repo_url)
             .with_mounted_directory("/airbyte", self.airbyte_repo)
             .with_workdir("/airbyte")
@@ -105,7 +105,7 @@ class GitPushEmptyCommit(GitPushChanges):
 
     async def _run(self, commit_message: str, skip_ci: bool = True) -> StepResult:
         push_empty_commit = (
-            environments.with_git(self.dagger_client, self.ci_github_access_token_secret, self.ci_git_user)
+            python.with_git(self.dagger_client, self.ci_github_access_token_secret, self.ci_git_user)
             .with_secret_variable("AUTHENTICATED_REPO_URL", self.authenticated_repo_url)
             .with_mounted_directory("/airbyte", self.airbyte_repo)
             .with_workdir("/airbyte")

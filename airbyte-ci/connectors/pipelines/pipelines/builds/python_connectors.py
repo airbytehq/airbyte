@@ -3,7 +3,7 @@
 #
 
 from dagger import QueryError
-from pipelines.actions.environments import with_airbyte_python_connector
+from pipelines.actions.environments.python import with_airbyte_python_connector
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
