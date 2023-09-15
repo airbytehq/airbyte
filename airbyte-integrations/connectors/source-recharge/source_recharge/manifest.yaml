@@ -70,16 +70,17 @@ definitions:
 
   incremental_sync_base:
     type: DatetimeBasedCursor
-    cursor_field: "{{ parameters.incremental_cursor }}"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    cursor_granularity: "PT0.000001S"
-    lookback_window: "P31D"
+    cursor_field: "updated_at"
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
+    cursor_granularity: "PT1S"
     start_datetime:
+      type: MinMaxDatetime
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
+      type: MinMaxDatetime
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     step: "P1M"
 
   addresses_stream:
@@ -89,7 +90,6 @@ definitions:
     $parameters:
       path: "addresses"
       extractor_path: "addresses"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
@@ -100,7 +100,6 @@ definitions:
     $parameters:
       path: "charges"
       extractor_path: "charges"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
@@ -119,7 +118,6 @@ definitions:
     $parameters:
       path: "customers"
       extractor_path: "customers"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
@@ -130,7 +128,6 @@ definitions:
     $parameters:
       path: "discounts"
       extractor_path: "discounts"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
@@ -141,7 +138,6 @@ definitions:
     $parameters:
       path: "metafields"
       extractor_path: "metafields"
-      incremental_cursor: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -167,7 +163,6 @@ definitions:
     $parameters:
       path: "onetimes"
       extractor_path: "onetimes"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
@@ -178,7 +173,6 @@ definitions:
     $parameters:
       path: "orders"
       extractor_path: "orders"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
@@ -204,7 +198,6 @@ definitions:
     $parameters:
       path: "subscriptions"
       extractor_path: "subscriptions"
-      incremental_cursor: "updated_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
