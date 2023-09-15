@@ -106,11 +106,12 @@ class ConnectorConfig(BaseConfig):
         title = "Source Facebook Marketing"
 
     account_id: str = Field(
-        title="Account ID",
+        title="Ad Account ID",
         order=0,
         description=(
-            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API."
-            " Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. "
+            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
+            "The Ad account ID number is in the account dropdown menu or in your browser's address "
+            'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
         pattern="^[0-9]+$",
@@ -118,12 +119,24 @@ class ConnectorConfig(BaseConfig):
         examples=["111111111111111"],
     )
 
-    start_date: datetime = Field(
-        title="Start Date",
+    access_token: str = Field(
+        title="Access Token",
         order=1,
         description=(
+            "The value of the generated access token. "
+            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+            'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
+        ),
+        airbyte_secret=True,
+    )
+
+    start_date: Optional[datetime] = Field(
+        title="Start Date",
+        order=2,
+        description=(
             "The date from which you'd like to replicate data for all incremental streams, "
-            "in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated."
+            "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams."
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
@@ -131,7 +144,7 @@ class ConnectorConfig(BaseConfig):
 
     end_date: Optional[datetime] = Field(
         title="End Date",
-        order=2,
+        order=3,
         description=(
             "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z."
             " All data generated between the start date and this end date will be replicated. "
@@ -140,18 +153,6 @@ class ConnectorConfig(BaseConfig):
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
         default_factory=lambda: datetime.now(tz=timezone.utc),
-    )
-
-    access_token: str = Field(
-        title="Access Token",
-        order=3,
-        description=(
-            "The value of the generated access token. "
-            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
-            'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
-            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
-        ),
-        airbyte_secret=True,
     )
 
     include_deleted: bool = Field(

@@ -15,7 +15,6 @@ data:
   name: Google Analytics 4 (GA4)
   registries:
     cloud:
-      dockerImageTag: 1.1.3 # pinning back in cloud due to OC issue 2951
       enabled: true
     oss:
       enabled: true

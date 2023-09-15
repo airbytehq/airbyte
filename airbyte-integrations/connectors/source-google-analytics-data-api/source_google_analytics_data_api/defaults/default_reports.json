@@ -732,7 +732,7 @@
     "name" : "tech_platform_report",
     "dimensions" : [
       "date",
-      "operatingSystemVersion"
+      "platform"
     ],
     "metrics" : [
       "totalUsers",
