@@ -41,9 +41,9 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-paypal-transaction:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-paypal-transaction:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev check --config /secrets/config_oauth.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-paypal-transaction:dev discover --config /secrets/config_oauth.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-paypal-transaction:dev read --config /secrets/config_oauth.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
 

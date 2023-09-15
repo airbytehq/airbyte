@@ -144,6 +144,10 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "transaction_updated_date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "payer_info": {
       "type": ["null", "object"],
       "additionalProperties": true,
