@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.record_buffer;
 
 import static java.util.stream.Collectors.joining;
 
-import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
