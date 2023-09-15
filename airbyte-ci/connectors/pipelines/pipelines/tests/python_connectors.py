@@ -4,17 +4,14 @@
 
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
-from datetime import timedelta
 from typing import List
 
 import asyncer
-from dagger import Container
 from pipelines.actions import environments, secrets
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
 from pipelines.builds.python_connectors import BuildConnectorImage
 from pipelines.contexts import ConnectorContext
-from pipelines.helpers.steps import run_steps
 from pipelines.tests.common import AcceptanceTests, PytestStep
 from pipelines.utils import export_container_to_tarball
 
@@ -55,62 +52,18 @@ class CodeFormatChecks(Step):
         return await self.get_step_result(formatter)
 
 
-class ConnectorPackageInstall(Step):
-    """A step to install the Python connector package in a container."""
-
-    title = "Connector package install"
-    max_duration = timedelta(minutes=20)
-    max_retries = 3
-
-    async def _run(self) -> StepResult:
-        """Install the connector under test package in a Python container.
-
-        Returns:
-            StepResult: Failure or success of the package installation and the connector under test container (with the connector package installed).
-        """
-        connector_under_test = await environments.with_python_connector_installed(self.context)
-        return await self.get_step_result(connector_under_test)
-
-
 class UnitTests(PytestStep):
     """A step to run the connector unit tests with Pytest."""
 
     title = "Unit tests"
-
-    async def _run(self, connector_under_test: Container) -> StepResult:
-        """Run all pytest tests declared in the unit_tests directory of the connector code.
-
-        Args:
-            connector_under_test (Container): The connector under test container.
-
-        Returns:
-            StepResult: Failure or success of the unit tests with stdout and stdout.
-        """
-        connector_under_test_with_secrets = connector_under_test.with_(
-            await environments.mounted_connector_secrets(self.context, "secrets")
-        )
-        return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
+    test_directory_name = "unit_tests"
 
 
 class IntegrationTests(PytestStep):
     """A step to run the connector integration tests with Pytest."""
 
     title = "Integration tests"
-
-    async def _run(self, connector_under_test: Container) -> StepResult:
-        """Run all pytest tests declared in the integration_tests directory of the connector code.
-
-        Args:
-            connector_under_test (Container): The connector under test container.
-
-        Returns:
-            StepResult: Failure or success of the integration tests with stdout and stdout.
-        """
-
-        connector_under_test = connector_under_test.with_(environments.bound_docker_host(self.context)).with_(
-            await environments.mounted_connector_secrets(self.context, "secrets")
-        )
-        return await self._run_tests_in_directory(connector_under_test, "integration_tests")
+    test_directory_name = "integration_tests"
 
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
@@ -122,18 +75,14 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the steps that ran or were skipped.
     """
+    step_results = []
+    build_connector_image_results = await BuildConnectorImage(context, LOCAL_BUILD_PLATFORM).run()
+    if build_connector_image_results.status is StepStatus.FAILURE:
+        return [build_connector_image_results]
+    step_results.append(build_connector_image_results)
 
-    step_results = await run_steps(
-        [
-            ConnectorPackageInstall(context),
-            BuildConnectorImage(context, LOCAL_BUILD_PLATFORM),
-        ]
-    )
-    if any([step_result.status is StepStatus.FAILURE for step_result in step_results]):
-        return step_results
-    connector_package_install_results, build_connector_image_results = step_results[0], step_results[1]
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
-    connector_container = connector_package_install_results.output_artifact
+    connector_container = build_connector_image_results.output_artifact
 
     context.connector_secrets = await secrets.get_connector_secrets(context)
 
