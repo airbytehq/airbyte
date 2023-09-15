@@ -25,6 +25,9 @@ data:
       4.0.0:
         message: "UX improvement, multi-stream support and deprecation of some parsing features"
         upgradeDeadline: "2023-10-05"
+      4.0.4:
+        message: "Following 4.0.0 config change, we are eliminating the `streams.*.file_type` field which was redundant with `streams.*.format`"
+        upgradeDeadline: "2023-10-18"
   ab_internal:
     sl: 300
     ql: 400
