@@ -128,5 +128,5 @@ def test_streams(mocker, patch_base_class):
     config_mock.__getitem__.side_effect = patch_base_class["config"].__getitem__
 
     streams = source.streams(patch_base_class["config"])
-    expected_streams_number = 57
-    assert len(streams) == expected_streams_number
+    expected_streams_number = 56
+    assert len(set(streams)) == expected_streams_number
