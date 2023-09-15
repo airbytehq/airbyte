@@ -63,7 +63,7 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
     assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
     if not is_successful:
         with pytest.raises(AirbyteTracedException) as e:
-            source.check(logger, config_gen(property_id="UA-11111111"))
+            source.check(logger, config_gen(property_ids=["UA-11111111"]))
         assert e.value.failure_type == FailureType.config_error
 
 
