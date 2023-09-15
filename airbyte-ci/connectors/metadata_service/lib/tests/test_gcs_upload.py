@@ -200,12 +200,12 @@ def test_upload_metadata_to_gcs_valid_metadata(
         assert version_metadata_uploaded_file.blob_id == mocks["mock_version_blob"].id
 
         doc_version_uploaded_file = next((file for file in upload_info.uploaded_files if file.id == "doc_version"), None)
-        # assert doc_version_uploaded_file, "doc_version not found in uploaded files."
-        # assert doc_version_uploaded_file.blob_id == mocks["mock_doc_version_blob"].id
+        assert doc_version_uploaded_file, "doc_version not found in uploaded files."
+        assert doc_version_uploaded_file.blob_id == mocks["mock_doc_version_blob"].id
 
         doc_latest_uploaded_file = next((file for file in upload_info.uploaded_files if file.id == "doc_latest"), None)
-        # assert doc_latest_uploaded_file, "doc_latest not found in uploaded files."
-        # assert doc_latest_uploaded_file.blob_id == mocks["mock_doc_latest_blob"].id
+        assert doc_latest_uploaded_file, "doc_latest not found in uploaded files."
+        assert doc_latest_uploaded_file.blob_id == mocks["mock_doc_latest_blob"].id
 
         if not version_blob_exists:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
