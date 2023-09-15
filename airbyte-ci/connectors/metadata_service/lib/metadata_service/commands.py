@@ -11,42 +11,25 @@ from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS
 from pydantic import ValidationError
 
 
+def log_if_uploaded(metadata_upload_info: MetadataUploadInfo, upload_success_key: str, upload_id_key: str, name: str):
+    success = getattr(metadata_upload_info, upload_success_key)
+    if success:
+        path = getattr(metadata_upload_info, upload_id_key)
+        click.secho(
+            f"The {name} file for {metadata_upload_info.metadata_file_path} was uploaded to {path}.",
+            color="green"
+        )
+        print(f"The {name} file for {metadata_upload_info.metadata_file_path} was uploaded to {path}.")
+
+
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
-    if metadata_upload_info.version_uploaded:
-        click.secho(
-            f"The metadata file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.version_blob_id}.",
-            color="green",
-        )
-    if metadata_upload_info.latest_uploaded:
-        click.secho(
-            f"The metadata file {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.latest_blob_id}.",
-            color="green",
-        )
-    if metadata_upload_info.icon_uploaded:
-        click.secho(
-            f"The icon file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.icon_blob_id}.",
-            color="green"
-        )
-    if metadata_upload_info.doc_version_uploaded:
-        click.secho(
-            f"The doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_version_blob_id}.",
-            color="green"
-        )
-    if metadata_upload_info.doc_latest_uploaded:
-        click.secho(
-            f"The doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_latest_blob_id}.",
-            color="green"
-        )
-    if metadata_upload_info.doc_inapp_version_uploaded:
-        click.secho(
-            f"The inapp doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_inapp_version_blob_id}.",
-            color="green"
-        )
-    if metadata_upload_info.doc_inapp_latest_uploaded:
-        click.secho(
-            f"The inapp doc file for {metadata_upload_info.metadata_file_path} was uploaded to {metadata_upload_info.doc_inapp_latest_blob_id}.",
-            color="green"
-        )
+    log_if_uploaded(metadata_upload_info, "version_uploaded", "version_blob_id", "metadata")
+    log_if_uploaded(metadata_upload_info, "latest_uploaded", "latest_blob_id", "metadata")
+    log_if_uploaded(metadata_upload_info, "icon_uploaded", "icon_blob_id", "icon")
+    log_if_uploaded(metadata_upload_info, "doc_version_uploaded", "doc_version_blob_id", "doc")
+    log_if_uploaded(metadata_upload_info, "doc_latest_uploaded", "doc_latest_blob_id", "doc")
+    log_if_uploaded(metadata_upload_info, "doc_inapp_version_uploaded", "doc_inapp_version_blob_id", "inapp doc")
+    log_if_uploaded(metadata_upload_info, "doc_inapp_latest_uploaded", "doc_inapp_latest_blob_id", "inapp doc")
 
 
 @click.group(help="Airbyte Metadata Service top-level command group.")
