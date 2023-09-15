@@ -53,7 +53,7 @@ DB_DESTINATIONS_FEATURE = "db-destinations-feature"
 
 MAIN_PACKAGES = {
     CORE_FEATURE: [
-        "airbyte-db/db-lib",
+        # "airbyte-db/db-lib",  # Jooq is fragile and reliant on manual code generation steps
         "airbyte-integrations/bases/base-java",
         "airbyte-integrations/bases/base-java-s3",
     ],
@@ -274,7 +274,7 @@ def update_cdk_package_defs() -> None:
 def refactor_cdk_package_refs() -> None:
     for text_pattern, text_replacement, within_dir in [
         (
-            r"(?<!package )io\.airbyte\.(db|integrations\.base|integrations\.debezium|integrations\.standardtest|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
+            r"(?<!package )io\.airbyte\.(integrations\.base|integrations\.debezium|integrations\.standardtest|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
             r"io.airbyte.cdk.\1",
             REPO_ROOT,
         ),
