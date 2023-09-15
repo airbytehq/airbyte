@@ -3,7 +3,7 @@
 The LinkedIn Ads Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a Snowflake database of your choice.
 
 :::info
-The LinkedIn Ads Connector is in _private preview_ and is subject to further development that may affect setup and configuration of the application. It also does not have feature-parity with the Airbyte platform as only full refresh without dedup is supported.
+The LinkedIn Ads Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a full table refresh without dedupe is supported.  
 :::
 
 # Getting started
