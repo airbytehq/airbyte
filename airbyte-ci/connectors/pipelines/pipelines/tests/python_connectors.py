@@ -4,18 +4,17 @@
 
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
-from datetime import timedelta
-from typing import List
+from abc import ABC, abstractmethod
+from typing import Callable, Iterable, List, Tuple
 
 import asyncer
-from dagger import Container
+from dagger import Container, File
 from pipelines.actions import environments, secrets
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.builds.python_connectors import BuildConnectorImages
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.contexts import ConnectorContext
-from pipelines.helpers.steps import run_steps
-from pipelines.tests.common import AcceptanceTests, PytestStep
+from pipelines.tests.common import AcceptanceTests
 from pipelines.utils import export_container_to_tarball
 
 
@@ -55,30 +54,26 @@ class CodeFormatChecks(Step):
         return await self.get_step_result(formatter)
 
 
-class ConnectorPackageInstall(Step):
-    """A step to install the Python connector package in a container."""
+class PytestStep(Step, ABC):
+    """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
-    title = "Connector package install"
-    max_duration = timedelta(minutes=20)
-    max_retries = 3
+    PYTEST_INI_FILE_NAME = "pytest.ini"
+    PYPROJECT_FILE_NAME = "pyproject.toml"
+    skipped_exit_code = 5
 
-    async def _run(self) -> StepResult:
-        """Install the connector under test package in a Python container.
+    @property
+    @abstractmethod
+    def test_directory_name(self) -> str:
+        raise NotImplementedError("test_directory_name must be implemented in the child class.")
 
-        Returns:
-            StepResult: Failure or success of the package installation and the connector under test container (with the connector package installed).
-        """
-        connector_under_test = await environments.with_test_python_connector_installed(self.context)
-        return await self.get_step_result(connector_under_test)
-
-
-class UnitTests(PytestStep):
-    """A step to run the connector unit tests with Pytest."""
-
-    title = "Unit tests"
+    @property
+    def extra_dependencies_names(self) -> Iterable[str]:
+        if self.context.connector.is_using_poetry:
+            return ("dev",)
+        return ("dev", "tests")
 
     async def _run(self, connector_under_test: Container) -> StepResult:
-        """Run all pytest tests declared in the unit_tests directory of the connector code.
+        """Run all pytest tests declared in the test directory of the connector code.
 
         Args:
             connector_under_test (Container): The connector under test container.
@@ -86,31 +81,114 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        connector_under_test_with_secrets = connector_under_test.with_(
-            await environments.mounted_connector_secrets(self.context, "secrets")
+        if not await self.check_if_tests_are_available(self.test_directory_name):
+            return self.skip(f"No {self.test_directory_name} directory found in the connector.")
+
+        test_config_file_name, test_config_file = await self.get_config_file_name_and_file()
+        test_environment = await self.install_testing_environment(
+            connector_under_test, test_config_file_name, test_config_file, self.extra_dependencies_names
         )
-        return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
+        pytest_command = self.get_pytest_command(test_config_file_name)
+        test_execution = test_environment.with_exec(pytest_command)
+
+        return await self.get_step_result(test_execution)
+
+    def get_pytest_command(self, test_config_file_name: str) -> List[str]:
+        """Get the pytest command to run.
+
+        Returns:
+            List[str]: The pytest command to run.
+        """
+        cmd = ["pytest", "-s", self.test_directory_name, "-c", test_config_file_name]
+        if self.context.connector.is_using_poetry:
+            return ["poetry", "run"] + cmd
+        return cmd
+
+    async def check_if_tests_are_available(self, test_directory_name: str) -> bool:
+        """Check if the tests are available in the connector directory.
+
+        Returns:
+            bool: True if the tests are available.
+        """
+        connector_dir = await self.context.get_connector_dir()
+        connector_dir_entries = await connector_dir.entries()
+        return test_directory_name in connector_dir_entries
+
+    async def get_config_file_name_and_file(self) -> Tuple[str, File]:
+        """Get the config file name and file to use for pytest.
+
+        The order of priority is:
+        - pytest.ini file in the connector directory
+        - pyproject.toml file in the connector directory
+        - pyproject.toml file in the repository directory
+
+        Returns:
+            Tuple[str, File]: The config file name and file to use for pytest.
+        """
+        connector_dir = await self.context.get_connector_dir()
+        connector_dir_entries = await connector_dir.entries()
+        if self.PYTEST_INI_FILE_NAME in connector_dir_entries:
+            config_file_name = self.PYTEST_INI_FILE_NAME
+            test_config = (await self.context.get_connector_dir(include=[self.PYTEST_INI_FILE_NAME])).file(self.PYTEST_INI_FILE_NAME)
+            self.logger.info(f"Found {self.PYTEST_INI_FILE_NAME}, using it for testing.")
+        elif self.PYPROJECT_FILE_NAME in connector_dir_entries:
+            config_file_name = self.PYPROJECT_FILE_NAME
+            test_config = (await self.context.get_connector_dir(include=[self.PYPROJECT_FILE_NAME])).file(self.PYPROJECT_FILE_NAME)
+            self.logger.info(f"Found {self.PYPROJECT_FILE_NAME} at connector level, using it for testing.")
+        else:
+            config_file_name = f"global_{self.PYPROJECT_FILE_NAME}"
+            test_config = (await self.context.get_repo_dir(include=[self.PYPROJECT_FILE_NAME])).file(self.PYPROJECT_FILE_NAME)
+            self.logger.info(f"Found {self.PYPROJECT_FILE_NAME} at repo level, using it for testing.")
+        return config_file_name, test_config
+
+    async def install_testing_environment(
+        self,
+        built_connector_container: Container,
+        test_config_file_name: str,
+        test_config_file: File,
+        extra_dependencies_names: Iterable[str],
+    ) -> Callable:
+        """Install the connector with the extra dependencies in /test_environment.
+
+        Args:
+            extra_dependencies_names (Iterable[str]): Extra dependencies to install.
+
+        Returns:
+            Callable: The decorator to use with the with_ method of a container.
+        """
+        secret_mounting_function = await environments.mounted_connector_secrets(self.context, "secrets")
+
+        container_with_test_deps = (
+            # Install the connector python package in /test_environment with the extra dependencies
+            await environments.with_python_connector_installed(
+                self.context,
+                # Reset the entrypoint to run non airbyte commands
+                built_connector_container.with_entrypoint([]),
+                str(self.context.connector.code_directory),
+                additional_dependency_groups=extra_dependencies_names,
+            )
+        )
+        return (
+            container_with_test_deps
+            # Mount the test config file
+            .with_mounted_file(test_config_file_name, test_config_file)
+            # Mount the secrets
+            .with_(secret_mounting_function).with_env_variable("PYTHONPATH", ".")
+        )
+
+
+class UnitTests(PytestStep):
+    """A step to run the connector unit tests with Pytest."""
+
+    title = "Unit tests"
+    test_directory_name = "unit_tests"
 
 
 class IntegrationTests(PytestStep):
     """A step to run the connector integration tests with Pytest."""
 
     title = "Integration tests"
-
-    async def _run(self, connector_under_test: Container) -> StepResult:
-        """Run all pytest tests declared in the integration_tests directory of the connector code.
-
-        Args:
-            connector_under_test (Container): The connector under test container.
-
-        Returns:
-            StepResult: Failure or success of the integration tests with stdout and stdout.
-        """
-
-        connector_under_test = connector_under_test.with_(environments.bound_docker_host(self.context)).with_(
-            await environments.mounted_connector_secrets(self.context, "secrets")
-        )
-        return await self._run_tests_in_directory(connector_under_test, "integration_tests")
+    test_directory_name = "integration_tests"
 
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
@@ -122,19 +200,14 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the steps that ran or were skipped.
     """
+    step_results = []
+    build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run()
+    if build_connector_image_results.status is StepStatus.FAILURE:
+        return [build_connector_image_results]
+    step_results.append(build_connector_image_results)
 
-    step_results = await run_steps(
-        [
-            ConnectorPackageInstall(context),
-            BuildConnectorImages(context, LOCAL_BUILD_PLATFORM),
-        ]
-    )
-    if any([step_result.status is StepStatus.FAILURE for step_result in step_results]):
-        return step_results
-    connector_package_install_results, build_connector_image_results = step_results[0], step_results[1]
     connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
     connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
-    connector_container = connector_package_install_results.output_artifact
 
     context.connector_secrets = await secrets.get_connector_secrets(context)
 
