@@ -23,7 +23,7 @@ class TestDestinationQdrant(unittest.TestCase):
                 },
                 "prefer_grpc": False,
                 "collection": "dummy-collection",
-                "distance_metric": "Dot product",
+                "distance_metric": "dot",
                 "text_field": "text"
             },
         }

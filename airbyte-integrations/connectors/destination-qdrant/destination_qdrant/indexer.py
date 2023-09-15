@@ -34,12 +34,13 @@ class QdrantIndexer(Indexer):
         try:
             self._create_client()
 
-            available_collections = self._client.get_collections()
-            if not available_collections:
+            if not self._client:
                 return "Qdrant client is not alive."
             
+            available_collections = [collection.name for collection in self._client.get_collections().collections]
             distance_metric = DISTANCE_METRIC_MAP[self.config.distance_metric]
-            if  f"name='{self.config.collection}'" in str(available_collections):
+
+            if self.config.collection in available_collections:
                 collection_info = self._client.get_collection(collection_name=self.config.collection)
                 assert collection_info.config.params.vectors.size == self.embedding_dimensions, "The collection's vector's size must match the embedding dimensions"
                 assert collection_info.config.params.vectors.distance == distance_metric, "The colection's vector's distance metric must match the selected distance metric option"
@@ -52,7 +53,8 @@ class QdrantIndexer(Indexer):
         except Exception as e:
             return format_exception(e)
         finally:
-            self._client.close()
+            if self._client:
+                self._client.close()
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
