@@ -75,7 +75,7 @@ class TestSourceFacebookMarketing:
         config["end_date"] = "2019-10-09T00:00:00"
         assert fb_marketing.check_connection(logger_mock, config=config) == (
             False,
-            "end_date must be equal or after start_date.",
+            "End date must be equal or after start date.",
         )
 
     def test_check_connection_empty_config(self, api, logger_mock, fb_marketing):
@@ -98,7 +98,7 @@ class TestSourceFacebookMarketing:
         ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
 
         assert not ok
-        assert error_msg == "RuntimeError('Something went wrong!')"
+        assert error_msg == "Unexpected error: RuntimeError('Something went wrong!')"
 
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)

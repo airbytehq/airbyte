@@ -88,7 +88,7 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date > pendulum.now():
                 return False, "Date range can not be in the future."
             if config.start_date and config.end_date < config.start_date:
-                return False, "end_date must be equal or after start_date."
+                return False, "End date must be equal or after start date."
 
             api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
@@ -102,14 +102,11 @@ class SourceFacebookMarketing(AbstractSource):
                 )
                 return False, message
 
+        except AirbyteTracedException as e:
+            return False, f"{e.message}. Full error: {e.internal_message}"
+
         except Exception as e:
-            if isinstance(e, AirbyteTracedException):
-                msg = f"{e.message}. Full error: {e.internal_message}"
-                if "(#100) Missing permissions" in msg:
-                    msg = f"Check if correct Ad Account id used. {msg}"
-            else:
-                msg = repr(e)
-            return False, msg
+            return False, f"Unexpected error: {repr(e)}"
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
