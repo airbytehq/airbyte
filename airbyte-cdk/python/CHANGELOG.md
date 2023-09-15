@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.16
+Connector Builder: fix datetime format inference for str parsable as int but not isdecimal
+
 ## 0.51.15
 Vector DB CDK: Add Azure OpenAI embedder
 
