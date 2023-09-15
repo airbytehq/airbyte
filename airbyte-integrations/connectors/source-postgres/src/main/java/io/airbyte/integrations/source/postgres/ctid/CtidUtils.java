@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class CtidUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidUtils.class);
-  public static final int POSTGRESQL_VERSION_CTID_CAPABLE = 14;
+  public static final int POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE = 14;
 
   public static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams,
@@ -68,7 +68,7 @@ public class CtidUtils {
    */
   public static boolean isTidScanCapableDBServer(final JdbcDatabase database) {
     try {
-      return database.getMetaData().getDatabaseMajorVersion() >= POSTGRESQL_VERSION_CTID_CAPABLE;
+      return database.getMetaData().getDatabaseMajorVersion() >= POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE;
     } catch (final SQLException e) {
       LOGGER.warn("Failed to get db server version", e);
     }
