@@ -84,6 +84,12 @@ public class BufferManager {
             (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes()))
         .append(System.lineSeparator());
 
+    queueInfo.append(String.format("  Current Total Memory %s, Current Max Memory %s Current Free Memory %s",
+                                   AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()),
+                                   AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory()),
+                                   AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory())))
+             .append(System.lineSeparator());
+
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
