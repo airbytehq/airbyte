@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.stream.Collectors.joining;
-
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
@@ -27,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

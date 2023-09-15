@@ -4,20 +4,13 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static java.util.stream.Collectors.joining;
-
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FutureUtils {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(FutureUtils.class);
 
   /**
    * Allow for configuring the number of typing and deduping threads via an enviornment variable in

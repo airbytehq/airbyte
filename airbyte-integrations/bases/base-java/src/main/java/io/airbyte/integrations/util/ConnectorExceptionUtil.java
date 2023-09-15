@@ -43,8 +43,7 @@ public class ConnectorExceptionUtil {
   public static String getDisplayMessage(final Throwable e) {
     if (e instanceof ConfigErrorException) {
       return ((ConfigErrorException) e).getDisplayMessage();
-    } else if (e instanceof ConnectionErrorException) {
-      final ConnectionErrorException connEx = (ConnectionErrorException) e;
+    } else if (e instanceof final ConnectionErrorException connEx) {
       return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), connEx);
     } else if (isRecoveryConnectionExceptionPredicate().test(e)) {
       return RECOVERY_CONNECTION_ERROR_MESSAGE;

@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import static java.util.stream.Collectors.joining;
-
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -17,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +60,6 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @param stream stream associated with record
    * @param message {@link AirbyteMessage} to buffer
    * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty)
-   * @throws Exception
    */
   @Override
   public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
