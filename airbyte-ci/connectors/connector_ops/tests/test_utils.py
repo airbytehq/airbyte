@@ -72,6 +72,25 @@ class TestConnector:
         assert not connector.metadata_query_match("data.ab_internal.ql > 101")
         assert not connector.metadata_query_match("data.ab_internal == whatever")
 
+    @pytest.fixture
+    def connector_without_dockerfile(self, mocker, tmp_path):
+        mocker.patch.object(utils.Connector, "code_directory", tmp_path)
+        connector = utils.Connector("source-faker")
+        return connector
+
+    def test_has_dockerfile_without_dockerfile(self, connector_without_dockerfile):
+        assert not connector_without_dockerfile.has_dockerfile
+
+    @pytest.fixture
+    def connector_with_dockerfile(self, mocker, tmp_path):
+        mocker.patch.object(utils.Connector, "code_directory", tmp_path)
+        connector = utils.Connector("source-faker")
+        tmp_path.joinpath("Dockerfile").touch()
+        return connector
+
+    def test_has_dockerfile_with_dockerfile(self, connector_with_dockerfile):
+        assert connector_with_dockerfile.has_dockerfile
+
 
 @pytest.fixture()
 def gradle_file_with_dependencies(tmpdir) -> Path:
