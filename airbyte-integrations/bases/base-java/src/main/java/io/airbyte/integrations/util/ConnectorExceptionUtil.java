@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * Utility class defining methods for handling configuration exceptions in connectors.
  */
 public class ConnectorExceptionUtil {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorExceptionUtil.class);
 
   public static final String COMMON_EXCEPTION_MESSAGE_TEMPLATE = "Could not connect with provided configuration. Error: %s";
@@ -71,12 +72,13 @@ public class ConnectorExceptionUtil {
   }
 
   /**
-   * Log all the exceptions, and rethrow the first. This is useful for e.g. running multiple futures and waiting for them
-   * to complete/fail. Rather than combining them into a single mega-exception (which works poorly in the UI), we just log
-   * all of them, and throw the first exception.
+   * Log all the exceptions, and rethrow the first. This is useful for e.g. running multiple futures
+   * and waiting for them to complete/fail. Rather than combining them into a single mega-exception
+   * (which works poorly in the UI), we just log all of them, and throw the first exception.
    * <p>
-   * In most cases, all the exceptions will look very similar, so the user only needs to see the first exception anyway.
-   * This mimics e.g. a for-loop over multiple tasks, where the loop would break on the first exception.
+   * In most cases, all the exceptions will look very similar, so the user only needs to see the first
+   * exception anyway. This mimics e.g. a for-loop over multiple tasks, where the loop would break on
+   * the first exception.
    */
   public static <T extends Throwable> void logAllAndThrowFirst(final String initialMessage, final Collection<? extends T> throwables) throws T {
     if (!throwables.isEmpty()) {
