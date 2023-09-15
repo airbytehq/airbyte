@@ -162,7 +162,12 @@ def test_streams_disabled_402(requests_mock, config_raw):
 def test_config_validation(config, success, expected_error_message, requests_mock):
     requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json={})
     requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json={})
-    is_success, message = SourceMixpanel().check_connection(None, config)
+    try:
+        is_success, message = SourceMixpanel().check_connection(None, config)
+    except AirbyteTracedException as e:
+        is_success = False
+        message = e.message
+
     assert is_success is success
     if not is_success:
         assert message == expected_error_message

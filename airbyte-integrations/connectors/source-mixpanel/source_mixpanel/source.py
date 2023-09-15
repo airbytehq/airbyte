@@ -110,11 +110,8 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        try:
-            config = self._validate_and_transform(config)
-            auth = self.get_authenticator(config)
-        except Exception as e:
-            return False, e.message
+        config = self._validate_and_transform(config)
+        auth = self.get_authenticator(config)
 
         # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
         # temporary solution, testing access for all streams to avoid 402 error
