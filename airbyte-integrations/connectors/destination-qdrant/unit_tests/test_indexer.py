@@ -16,9 +16,10 @@ class TestQdrantIndexer(unittest.TestCase):
     def setUp(self):
         self.mock_config = QdrantIndexingConfigModel(
             **{
-                "url": "localhost:6333",
+                "url": "https://client-url.io",
                 "auth_method": {
-                    "mode": "no_auth",
+                    "mode": "api_key_auth",
+                    "api_key": "api_key"
                 },
                 "prefer_grpc": False,
                 "collection": "dummy-collection",
@@ -58,18 +59,24 @@ class TestQdrantIndexer(unittest.TestCase):
         self.qdrant_indexer._client.close.assert_called()
 
     def test_check_handles_failure_conditions(self):
-        # Test 1: random exception
+        # Test 1: url starts with https://
+        self.qdrant_indexer.config.url = "client-url.io"
+        result = self.qdrant_indexer.check()
+        self.assertEqual(result, "Host must start with https://")
+
+        # Test 2: random exception
+        self.qdrant_indexer.config.url = "https://client-url.io"
         self.qdrant_indexer._create_client.side_effect = Exception("Random exception")
         result = self.qdrant_indexer.check()
         self.assertTrue("Random exception" in result)
 
-        # Test 2: client server is not alive
+        # Test 3: client server is not alive
         self.qdrant_indexer._create_client.side_effect = None
         self.qdrant_indexer._client = None
         result = self.qdrant_indexer.check()
         self.assertEqual(result, "Qdrant client is not alive.")
 
-        # Test 3: Test vector size does not match
+        # Test 4: Test vector size does not match
         mock_collections = Mock(collections=[Mock()])
         mock_collections.collections[0].name = "dummy-collection"
 
@@ -80,7 +87,7 @@ class TestQdrantIndexer(unittest.TestCase):
         result = self.qdrant_indexer.check()
         self.assertTrue("The collection's vector's size must match the embedding dimensions" in result)
 
-        # Test 4: Test distance metric does not match
+        # Test 5: Test distance metric does not match
         self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.COSINE))))
         result = self.qdrant_indexer.check()
         self.assertTrue("The colection's vector's distance metric must match the selected distance metric option" in result)
@@ -160,7 +167,7 @@ class TestQdrantIndexer(unittest.TestCase):
     def test_post_sync_calls_close(self):
         result = self.qdrant_indexer.post_sync()
         self.qdrant_indexer._client.close.assert_called_once()
-        self.assertEqual(result, AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully")))
+        self.assertEqual(result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"))])
 
     def test_post_sync_handles_failure(self):
         exception = Exception("Random exception")
@@ -168,4 +175,4 @@ class TestQdrantIndexer(unittest.TestCase):
         result = self.qdrant_indexer.post_sync()
 
         self.qdrant_indexer._client.close.assert_called_once()
-        self.assertEqual(result, AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(exception))) )
+        self.assertEqual(result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(exception)))] )
