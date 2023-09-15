@@ -264,6 +264,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.8   | 2023-09-14 | [30333](https://github.com/airbytehq/airbyte/pull/30333)   | CDC : Update the correct timezone parameter passed to Debezium to `database.connectionTimezone`                                                 |
 | 3.0.7   | 2023-09-13 | [30375](https://github.com/airbytehq/airbyte/pull/30375)   | Fix a bug causing a failure when DB views are included in sync                                                                                  |
 | 3.0.6   | 2023-09-12 | [30308](https://github.com/airbytehq/airbyte/pull/30308)   | CDC : Enable compression of schema history blob in state                                                                                        |
 | 3.0.5   | 2023-09-12 | [30289](https://github.com/airbytehq/airbyte/pull/30289)   | CDC : Introduce logic for compression of schema history blob in state                                                                           |
