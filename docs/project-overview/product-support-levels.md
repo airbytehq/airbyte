@@ -1,17 +1,17 @@
-# **Connector Support Levels**
+# Connector Support Levels
 
 The following table describes the support levels of Airbyte connectors.
 
 |                                   | Certified                  | Custom                      | Community              |
 | --------------------------------- | -------------------------- | -------------------------- | ---------------------- |
-| Availability                      | Available to all users     | Available to all users     | Available to all users |
-| Support: Cloud                    | Supported*                 | Supported**                | No Support |
-| Support: Powered by Airbyte       | Supported*                 | Supported**                | No Support |
-| Support: Self-Managed Enterprise  | Supported*                 | Supported**                | No Support |
-| Support: Community (OSS)          | Slack Support only         | Slack Support only         | No Support |
-| Who builds them?                  | Either the community or the Airbyte team. | Anyone can build custom connectors. We recommend using our https://docs.airbyte.com/connector-development/connector-builder-ui/overview or https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview. | Typically they are built by the community. The Airbyte team may upgrade them to Certified at any time. |
-| Who maintains them? | The Airbyte team | Users | Users |
-| Production Readiness | Guaranteed by Airbyte | Not guaranteed | Not guaranteed |
+| **Availability**                      | Available to all users     | Available to all users     | Available to all users |
+| **Support: Cloud**                    | Supported*                 | Supported**                | No Support |
+| **Support: Powered by Airbyte**       | Supported*                 | Supported**                | No Support |
+| **Support: Self-Managed Enterprise**  | Supported*                 | Supported**                | No Support |
+| **Support: Community (OSS)**          | Slack Support only         | Slack Support only         | No Support |
+| **Who builds them?**                  | Either the community or the Airbyte team. | Anyone can build custom connectors. We recommend using our https://docs.airbyte.com/connector-development/connector-builder-ui/overview or https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview. | Typically they are built by the community. The Airbyte team may upgrade them to Certified at any time. |
+| **Who maintains them?** | The Airbyte team | Users | Users |
+| **Production Readiness** | Guaranteed by Airbyte | Not guaranteed | Not guaranteed |
 
 \*For Certified connectors, Official Support SLAs are only available to customers with Premium Support included in their contract. Otherwise, please use our support portal and we will address your issues as soon as possible.
 
