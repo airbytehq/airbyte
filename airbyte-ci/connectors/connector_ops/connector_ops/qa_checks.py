@@ -5,7 +5,7 @@
 
 import sys
 from pathlib import Path
-from typing import Iterable, Optional, Set, Tuple
+from typing import Callable, Iterable, Optional, Set, Tuple
 
 from connector_ops.utils import Connector
 from pydash.objects import get
@@ -238,7 +238,7 @@ def check_metadata_version_matches_dockerfile_label(connector: Connector) -> boo
     return connector.version_in_dockerfile_label == connector.version
 
 
-QA_CHECKS = [
+DEFAULT_QA_CHECKS = (
     check_documentation_file_exists,
     check_migration_guide,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
@@ -250,8 +250,13 @@ QA_CHECKS = [
     # https://github.com/airbytehq/airbyte/issues/21606
     check_connector_https_url_only,
     check_connector_has_no_critical_vulnerabilities,
-    check_metadata_version_matches_dockerfile_label,
-]
+)
+
+
+def get_qa_checks_to_run(connector: Connector) -> Tuple[Callable]:
+    if connector.has_dockerfile:
+        return DEFAULT_QA_CHECKS + (check_metadata_version_matches_dockerfile_label,)
+    return DEFAULT_QA_CHECKS
 
 
 def remove_strict_encrypt_suffix(connector_technical_name: str) -> str:
@@ -285,7 +290,7 @@ def run_qa_checks():
     connector_technical_name = remove_strict_encrypt_suffix(connector_technical_name)
     connector = Connector(connector_technical_name)
     print(f"Running QA checks for {connector_technical_name}:{connector.version}")
-    qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in QA_CHECKS}
+    qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in get_qa_checks_to_run(connector)}
     if not all(qa_check_results.values()):
         print(f"QA checks failed for {connector_technical_name}:{connector.version}:")
         for check_name, check_result in qa_check_results.items():

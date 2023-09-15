@@ -237,6 +237,10 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def has_dockerfile(self) -> bool:
+        return (self.code_directory / "Dockerfile").is_file()
+
+    @property
     def metadata_file_path(self) -> Path:
         return self.code_directory / METADATA_FILE_NAME
 
@@ -253,22 +257,20 @@ class Connector:
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file():
             return ConnectorLanguage.PYTHON
-        try:
-            with open(self.code_directory / "Dockerfile") as dockerfile:
-                if "FROM airbyte/integration-base-java" in dockerfile.read():
-                    return ConnectorLanguage.JAVA
-        except FileNotFoundError:
-            pass
+        if Path(self.code_directory / "build.gradle").is_file():
+            return ConnectorLanguage.JAVA
         return None
 
     @property
-    def version(self) -> str:
+    def version(self) -> Optional[str]:
         if self.metadata is None:
             return self.version_in_dockerfile_label
         return self.metadata["dockerImageTag"]
 
     @property
-    def version_in_dockerfile_label(self) -> str:
+    def version_in_dockerfile_label(self) -> Optional[str]:
+        if not self.has_dockerfile:
+            return None
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
