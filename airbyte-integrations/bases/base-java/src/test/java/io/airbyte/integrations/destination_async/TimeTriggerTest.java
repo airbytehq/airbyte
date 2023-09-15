@@ -24,7 +24,7 @@ public class TimeTriggerTest {
 
     final LongSupplier mockedNowProvider = mock(LongSupplier.class);
     when(mockedNowProvider.getAsLong())
-            .thenReturn(NOW_MS);
+        .thenReturn(NOW_MS);
 
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, null, null, mockedNowProvider);
     assertEquals(false, detect.isTimeTriggered(NOW_MS).getLeft());

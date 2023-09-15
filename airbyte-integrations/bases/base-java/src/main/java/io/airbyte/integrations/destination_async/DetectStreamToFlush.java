@@ -90,8 +90,8 @@ public class DetectStreamToFlush {
    * Return an empty optional if no streams are ready.
    * <p>
    * A stream is ready to flush if it either meets a size threshold or a time threshold. See
-   * {@link #isSizeTriggered(StreamDescriptor, long)} and {@link #isTimeTriggered(long)}
-   * for details on these triggers.
+   * {@link #isSizeTriggered(StreamDescriptor, long)} and {@link #isTimeTriggered(long)} for details
+   * on these triggers.
    *
    * @param queueSizeThresholdBytes - the size threshold to use for determining if a stream is ready
    *        to flush.

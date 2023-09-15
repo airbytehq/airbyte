@@ -45,7 +45,8 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
 
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, System::currentTimeMillis);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, System::currentTimeMillis);
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
   }
 
@@ -55,7 +56,8 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, System::currentTimeMillis);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, System::currentTimeMillis);
     // if above threshold, triggers
     assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
     // if below threshold, no trigger
@@ -69,7 +71,8 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, System::currentTimeMillis);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, System::currentTimeMillis);
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
   }
 
@@ -82,17 +85,18 @@ class DetectStreamToFlushTest {
 
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, mockedNowProvider);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, mockedNowProvider);
 
     // initialize flush time
     when(mockedNowProvider.getAsLong())
-            .thenReturn(NOW.toEpochMilli());
+        .thenReturn(NOW.toEpochMilli());
 
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
 
     // check 5 minutes later
     when(mockedNowProvider.getAsLong())
-            .thenReturn(NOW.plus(FIVE_MIN).toEpochMilli());
+        .thenReturn(NOW.plus(FIVE_MIN).toEpochMilli());
 
     assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
 
@@ -101,7 +105,7 @@ class DetectStreamToFlushTest {
 
     // check another 5 minutes later
     when(mockedNowProvider.getAsLong())
-            .thenReturn(NOW.plus(FIVE_MIN).plus(FIVE_MIN).toEpochMilli());
+        .thenReturn(NOW.plus(FIVE_MIN).plus(FIVE_MIN).toEpochMilli());
 
     assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
   }
