@@ -1,5 +1,8 @@
 
 dependencies {
+    // Exported dependencies from upstream projects
+    api project(':airbyte-db:db-lib')
+
     // First party main dependencies
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-cli')
