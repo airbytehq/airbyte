@@ -55,10 +55,10 @@ class MongoConnectionUtilsTest {
     final String username = "user";
     final String password = "password";
     final JsonNode config = Jsons.jsonNode(Map.of(
-            MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "\"mongodb://" + host + ":" + port + "/\"",
-            MongoConstants.USERNAME_CONFIGURATION_KEY, username,
-            MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
-            MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource));
+        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "\"mongodb://" + host + ":" + port + "/\"",
+        MongoConstants.USERNAME_CONFIGURATION_KEY, username,
+        MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
+        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 

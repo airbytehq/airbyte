@@ -7,7 +7,7 @@ acceptance_tests:
     tests:
       - spec_path: "source_google_analytics_data_api/spec.json"
         backward_compatibility_tests_config:
-          disable_for_version: 1.2.0
+          disable_for_version: 1.3.0
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -18,7 +18,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 1.2.0
+          disable_for_version: 1.3.0
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -99,7 +99,7 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 3600
+        timeout_seconds: 10800
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

@@ -6,16 +6,13 @@ package io.airbyte.integrations.source.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.mongodb.MongoCommandException;
-import com.mongodb.MongoException;
-import com.mongodb.MongoSecurityException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.Aggregates;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -29,6 +26,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.slf4j.Logger;
@@ -67,13 +65,26 @@ public class MongoUtil {
   static final int MAX_QUEUE_SIZE = 10000;
 
   /**
+   * Tests whether the database exists in target MongoDB instance.
+   *
+   * @param mongoClient The {@link MongoClient} used to query the MongoDB server for the database
+   *        names.
+   * @param databaseName The database name from the source's configuration.
+   * @return {@code true} if the database exists, {@code false} otherwise.
+   */
+  public static boolean checkDatabaseExists(final MongoClient mongoClient, final String databaseName) {
+    final MongoIterable<String> databaseNames = mongoClient.listDatabaseNames();
+    return StreamSupport.stream(databaseNames.spliterator(), false)
+        .anyMatch(name -> name.equalsIgnoreCase(databaseName));
+  }
+
+  /**
    * Returns the set of collections that the current credentials are authorized to access.
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server for authorized
    *        collections.
    * @param databaseName The name of the database to query for authorized collections.
    * @return The set of authorized collection names (may be empty).
-   * @throws ConnectionErrorException if unable to perform the authorized collection query.
    */
   public static Set<String> getAuthorizedCollections(final MongoClient mongoClient, final String databaseName) {
     /*
@@ -83,24 +94,17 @@ public class MongoUtil {
      * find or any other action, on the database resource, the command lists all collections in the
      * database.
      */
-    try {
-      final Document document = mongoClient.getDatabase(databaseName).runCommand(new Document("listCollections", 1)
-          .append("authorizedCollections", true)
-          .append("nameOnly", true))
-          .append("filter", "{ 'type': 'collection' }");
-      return document.toBsonDocument()
-          .get("cursor").asDocument()
-          .getArray("firstBatch")
-          .stream()
-          .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
-          .filter(MongoUtil::isSupportedCollection)
-          .collect(Collectors.toSet());
-    } catch (final MongoSecurityException e) {
-      final MongoCommandException exception = (MongoCommandException) e.getCause();
-      throw new ConnectionErrorException(String.valueOf(exception.getCode()), e);
-    } catch (final MongoException e) {
-      throw new ConnectionErrorException(String.valueOf(e.getCode()), e);
-    }
+    final Document document = mongoClient.getDatabase(databaseName).runCommand(new Document("listCollections", 1)
+        .append("authorizedCollections", true)
+        .append("nameOnly", true))
+        .append("filter", "{ 'type': 'collection' }");
+    return document.toBsonDocument()
+        .get("cursor").asDocument()
+        .getArray("firstBatch")
+        .stream()
+        .map(bsonValue -> bsonValue.asDocument().getString("name").getValue())
+        .filter(MongoUtil::isSupportedCollection)
+        .collect(Collectors.toSet());
   }
 
   /**

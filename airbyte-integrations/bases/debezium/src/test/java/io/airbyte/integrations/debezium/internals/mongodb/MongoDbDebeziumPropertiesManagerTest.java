@@ -24,6 +24,7 @@ import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebezium
 import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager.MONGODB_USER_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,6 +50,7 @@ class MongoDbDebeziumPropertiesManagerTest {
 
   private static final String DATABASE_NAME = "test_database";
   private static final Path PATH = Path.of(".");
+  public static final String EXPECTED_CONNECTION_STRING = "mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true";
 
   @Test
   void testDebeziumProperties() {
@@ -71,9 +73,9 @@ class MongoDbDebeziumPropertiesManagerTest {
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(NAME_KEY));
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
-    assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
+    assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
     assertEquals(config.get(USERNAME_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
@@ -89,8 +91,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode)config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
-            .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -99,17 +101,16 @@ class MongoDbDebeziumPropertiesManagerTest {
     cdcProperties.put("test", "value");
 
     final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-            cdcProperties,
-            config,
-            catalog,
-            offsetManager);
+        cdcProperties,
+        config,
+        catalog,
+        offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(NAME_KEY));
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
-    assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText().replaceAll(CREDENTIALS_PLACEHOLDER, ""),
-            debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
+    assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
     assertEquals(config.get(USERNAME_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
@@ -125,7 +126,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode)config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -134,17 +135,16 @@ class MongoDbDebeziumPropertiesManagerTest {
     cdcProperties.put("test", "value");
 
     final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-            cdcProperties,
-            config,
-            catalog,
-            offsetManager);
+        cdcProperties,
+        config,
+        catalog,
+        offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(NAME_KEY));
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
-    assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText().replaceAll("\"", ""),
-            debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
+    assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
     assertEquals(config.get(USERNAME_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
     assertEquals(config.get(PASSWORD_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_PASSWORD_KEY));
@@ -176,9 +176,9 @@ class MongoDbDebeziumPropertiesManagerTest {
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(19 + cdcProperties.size(), debeziumProperties.size());
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(NAME_KEY));
-    assertEquals(DATABASE_NAME.replaceAll("_", "-"), debeziumProperties.get(TOPIC_PREFIX_KEY));
-    assertEquals(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(DATABASE_NAME), debeziumProperties.get(TOPIC_PREFIX_KEY));
+    assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
     assertFalse(debeziumProperties.containsKey(MONGODB_USER_KEY));
     assertFalse(debeziumProperties.containsKey(MONGODB_PASSWORD_KEY));
@@ -200,6 +200,41 @@ class MongoDbDebeziumPropertiesManagerTest {
     assertEquals(blankName, MongoDbDebeziumPropertiesManager.normalizeName(blankName));
     assertNull(MongoDbDebeziumPropertiesManager.normalizeName(nullName));
 
+  }
+
+  @Test
+  void testCreateConnectionString() {
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    assertNotNull(connectionString);
+    assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
+  }
+
+  @Test
+  void testCreateConnectionStringQuotedString() {
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
+    assertNotNull(connectionString);
+    assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
+  }
+
+  @Test
+  void testCreateConnectionStringUseSecondary() {
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, true);
+    assertNotNull(connectionString);
+    assertEquals("mongodb://localhost:27017/?retryWrites=false&provider=airbyte&tls=true&readPreference=secondary", connectionString);
+  }
+
+  @Test
+  void testCreateConnectionStringPlaceholderCredentials() {
+    final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
+    final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
+    assertNotNull(connectionString);
+    assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }
 
   private JsonNode createConfiguration(final Optional<String> username, final Optional<String> password, final Optional<String> authMode) {

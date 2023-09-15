@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CREDENTIALS_PLACEHOLDER;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DRIVER_NAME;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
@@ -19,6 +17,7 @@ import com.mongodb.MongoDriverInformation;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 
 /**
  * Helper utility for building a {@link MongoClient}.
@@ -53,15 +52,7 @@ public class MongoConnectionUtils {
   }
 
   private static String buildConnectionString(final JsonNode config) {
-    final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
-        .asText()
-        .replaceAll("\"", "")
-        .replaceAll(CREDENTIALS_PLACEHOLDER, "");
-    return connectionString +
-        "?readPreference=secondary" +
-        "&retryWrites=false" +
-        "&provider=airbyte" +
-        "&tls=true";
+    return MongoDbDebeziumPropertiesManager.buildConnectionString(config, true);
   }
 
 }

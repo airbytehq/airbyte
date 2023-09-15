@@ -30,7 +30,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
+import com.mongodb.client.MongoIterable;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector;
@@ -49,6 +49,20 @@ import org.junit.jupiter.api.Test;
 public class MongoUtilTest {
 
   private static final String JSON_TYPE_PROPERTY_NAME = "type";
+
+  @Test
+  void testCheckDatabaseExists() {
+    final String databaseName = "test";
+    final List<String> databaseNames = List.of("test", "test1", "test2");
+    final MongoIterable<String> iterable = mock(MongoIterable.class);
+    final MongoClient mongoClient = mock(MongoClient.class);
+
+    when(iterable.spliterator()).thenReturn(databaseNames.spliterator());
+    when(mongoClient.listDatabaseNames()).thenReturn(iterable);
+
+    assertTrue(MongoUtil.checkDatabaseExists(mongoClient, databaseName));
+    assertFalse(MongoUtil.checkDatabaseExists(mongoClient, "other"));
+  }
 
   @Test
   void testGetAirbyteStreams() throws IOException {
@@ -138,7 +152,7 @@ public class MongoUtilTest {
     when(mongoDatabase.runCommand(any())).thenThrow(new MongoException("test"));
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    assertThrows(ConnectionErrorException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+    assertThrows(MongoException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
   }
 
   @Test
@@ -153,7 +167,7 @@ public class MongoUtilTest {
     when(mongoDatabase.runCommand(any())).thenThrow(exception);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    assertThrows(ConnectionErrorException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
+    assertThrows(MongoSecurityException.class, () -> MongoUtil.getAuthorizedCollections(mongoClient, databaseName));
   }
 
   @Test

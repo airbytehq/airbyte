@@ -1,6 +1,8 @@
 package io.airbyte.integrations.source.mongodb
 
+import com.github.javafaker.Faker
 import io.airbyte.commons.json.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.default
@@ -10,6 +12,10 @@ import org.bson.Document
 import java.lang.System.currentTimeMillis
 
 object MongoDbInsertClient {
+
+    private const val BATCH_SIZE = 1000
+
+    private val logger = KotlinLogging.logger {}
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -32,20 +38,32 @@ object MongoDbInsertClient {
                 MongoConstants.USERNAME_CONFIGURATION_KEY to username,
                 MongoConstants.PASSWORD_CONFIGURATION_KEY to password)
 
+        val faker = Faker();
+
         MongoConnectionUtils.createMongoClient(Jsons.deserialize(Jsons.serialize(config))).use { mongoClient ->
             val documents = mutableListOf<Document>()
-            for (i in 0..numberOfDocuments) {
-                documents += Document().append("name", "Document $i")
-                        .append("description", "This is document #$i")
-                        .append("doubleField", i.toDouble())
-                        .append("intField", i)
+            val batches = if (numberOfDocuments > BATCH_SIZE) numberOfDocuments / BATCH_SIZE else 1;
+            val batchSize = if (numberOfDocuments > BATCH_SIZE) BATCH_SIZE else numberOfDocuments;
+            logger.info { "Inserting $batches batch(es) of $batchSize document(s) each..." }
+            for (i in 0..batches) {
+                logger.info { "Inserting batch ${i}..." }
+                for (j in 0..batchSize) {
+                    val index = (j+1)+((i+1)*batchSize)
+                    documents += Document().append("name", "Document $index")
+                        .append("title", "${faker.lorem().sentence(10)}")
+                        .append("description", "${faker.lorem().paragraph(25)}")
+                        .append("data", "${faker.lorem().paragraphs(100)}")
+                        .append("paragraph", "${faker.lorem().paragraph(25)}")
+                        .append("doubleField", index.toDouble())
+                        .append("intField", index)
                         .append("objectField", mapOf("key" to "value"))
                         .append("timestamp", BsonTimestamp(currentTimeMillis()))
+                }
+                mongoClient.getDatabase(databaseName).getCollection(collectionName).insertMany(documents)
+                documents.clear()
             }
-
-            mongoClient.getDatabase(databaseName).getCollection(collectionName).insertMany(documents)
         }
 
-        println("Inserted $numberOfDocuments document(s) to $databaseName.$collectionName")
+        logger.info { "Inserted $numberOfDocuments document(s) to $databaseName.$collectionName" }
     }
 }
