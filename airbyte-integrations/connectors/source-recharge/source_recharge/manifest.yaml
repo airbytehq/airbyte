@@ -148,13 +148,6 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
-  metafields_stream_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/metafields_stream"
-        parent_key: owner_resource
-        partition_field: owner_resource_slice
-
   metafields_stream:
     $ref: "#/definitions/metafields_base_stream"
     name: "metafields"
@@ -167,8 +160,17 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        request_parameters:
-          owner_resource: "{{ stream_slice.owner_resource_slice }}"
+      partition_router:
+        type: ListPartitionRouter
+        values:
+          - "customer"
+          - "store"
+          - "subscription"
+        cursor_field: "owner_resources"
+        request_option:
+          type: RequestOption
+          field_name: "owner_resource"
+          inject_into: "request_parameter"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
