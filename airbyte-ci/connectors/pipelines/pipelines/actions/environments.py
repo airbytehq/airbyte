@@ -365,6 +365,41 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
     return with_python_package(context, testing_environment, connector_source_path)
 
 
+async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
+    # TODO turn into a with helper
+    # We don't want finalize scripts to override the entrypoint so we keep it in memory to reset it after finalization
+    original_entrypoint = await connector_container.entrypoint()
+
+    # Run the connector using the local cdk if flag is set
+    if context.use_local_cdk:
+        context.logger.info("Using local CDK")
+        # mount the local cdk
+        path_to_cdk = "airbyte-cdk/python/"
+        directory_to_mount = context.get_repo_dir(path_to_cdk)
+
+        context.logger.info(f"Mounting {directory_to_mount}")
+
+        connector_container = (
+            connector_container
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_mounted_directory(f"/{path_to_cdk}", directory_to_mount)
+            .with_entrypoint(["bash", "-c"])
+            # view 5 levels deep
+            # install tree
+            # .with_exec(["apk", "add", "tree"])
+            # .with_exec(["tree", "-L", "5", f"."])
+            .with_exec(["ls", "-lah", f"."])
+            # .with_exec(["tree", "-L", "5", f"/"])
+            .with_exec(["ls", "-lah", f"/"])
+            # .e.g pip install --find-links=. --no-deps /airbyte-cdk
+            .with_entrypoint("pip")
+
+            .with_exec(["install", "--no-deps", "--find-links=.", f"/{path_to_cdk}"])
+        )
+
+
+    return connector_container.with_entrypoint(original_entrypoint)
+
 async def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
 
@@ -390,9 +425,13 @@ async def with_python_connector_installed(context: ConnectorContext) -> Containe
             ".dockerignore",
         ]
     ]
-    return await with_installed_python_package(
+    container = with_installed_python_package(
         context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
+
+    container = await apply_python_development_overrides(context, container)
+
+    return await container
 
 
 async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:
@@ -858,11 +897,16 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
     pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
-    pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
-    for package_name, package_version in pip_dependencies:
-        if package_name == "airbyte-cdk":
-            return package_version
-    return None
+    pip_dependencies = [dep for dep in pip_freeze_stdout.split("\n") if "airbyte-cdk" in dep]
+    if not pip_dependencies:
+        return None
+
+    airbyte_cdk_line = pip_dependencies[0]
+    if "file://" in airbyte_cdk_line:
+        return "LOCAL"
+
+    _, cdk_version = airbyte_cdk_line.split("==")
+    return cdk_version
 
 
 async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
@@ -876,8 +920,12 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
         .build(await context.get_connector_dir())
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+
+    connector_container = await apply_python_development_overrides(context, connector_container)
+
     cdk_version = await get_cdk_version_from_python_connector(connector_container)
     if cdk_version:
+        context.logger.info(f"Connector has a cdk dependency, using cdk version {cdk_version}")
         connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
         context.cdk_version = cdk_version
     if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:
