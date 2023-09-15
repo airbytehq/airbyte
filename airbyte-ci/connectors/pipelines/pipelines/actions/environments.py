@@ -379,15 +379,14 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         context.logger.info(f"Mounting {directory_to_mount}")
 
         connector_container = (
-            connector_container
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_mounted_directory(f"/{path_to_cdk}", directory_to_mount)
+            connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount)
             .with_entrypoint("pip")
             .with_exec(["install", "--no-deps", "--find-links=.", f"/{path_to_cdk}"])
         )
 
     # Return with the original entrypoint
     return connector_container.with_entrypoint(original_entrypoint)
+
 
 async def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
