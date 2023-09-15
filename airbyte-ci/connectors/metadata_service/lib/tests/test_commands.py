@@ -7,7 +7,7 @@ import pathlib
 import pytest
 from click.testing import CliRunner
 from metadata_service import commands
-from metadata_service.gcs_upload import MetadataUploadInfo
+from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
 from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydantic import BaseModel, ValidationError, error_wrappers
 
@@ -43,22 +43,52 @@ def mock_metadata_upload_info(
     latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, doc_version_uploaded: bool, doc_inapp_version_uploaded: bool, doc_latest_uploaded: bool, doc_inapp_latest_uploaded: bool, metadata_file_path: str
 ) -> MetadataUploadInfo:
     return MetadataUploadInfo(
-        uploaded=(latest_uploaded or version_uploaded),
-        latest_uploaded=latest_uploaded,
-        latest_blob_id="latest_blob_id" if latest_uploaded else None,
-        version_uploaded=version_uploaded,
-        version_blob_id="version_blob_id" if version_uploaded else None,
-        icon_uploaded=icon_uploaded,
-        icon_blob_id="icon_blob_id" if icon_uploaded else None,
+        metadata_uploaded=(latest_uploaded or version_uploaded),
         metadata_file_path=metadata_file_path,
-        doc_version_uploaded=doc_version_uploaded,
-        doc_version_blob_id="doc_version_blob_id" if doc_version_uploaded else None,
-        doc_inapp_version_uploaded=doc_inapp_version_uploaded,
-        doc_inapp_version_blob_id="doc_inapp_version_blob_id" if doc_inapp_version_uploaded else None,
-        doc_latest_uploaded=doc_latest_uploaded,
-        doc_latest_blob_id="doc_latest_blob_id" if doc_latest_uploaded else None,
-        doc_inapp_latest_uploaded=doc_inapp_latest_uploaded,
-        doc_inapp_latest_blob_id="doc_inapp_latest_blob_id" if doc_inapp_latest_uploaded else None,
+        uploaded_files=[
+            UploadedFile(
+                id="version_metadata",
+                uploaded=version_uploaded,
+                description="versioned metadata",
+                blob_id="version_blob_id" if version_uploaded else None,
+            ),
+            UploadedFile(
+                id="latest_metadata",
+                uploaded=latest_uploaded,
+                description="latest metadata",
+                blob_id="latest_blob_id" if latest_uploaded else None,
+            ),
+            UploadedFile(
+                id="icon",
+                uploaded=icon_uploaded,
+                description="icon",
+                blob_id="icon_blob_id" if icon_uploaded else None,
+            ),
+            UploadedFile(
+                id="doc_version",
+                uploaded=doc_version_uploaded,
+                description="versioned doc",
+                blob_id="doc_version_blob_id" if doc_version_uploaded else None,
+            ),
+            UploadedFile(
+                id="doc_latest",
+                uploaded=doc_latest_uploaded,
+                description="latest doc",
+                blob_id="doc_latest_blob_id" if doc_latest_uploaded else None,
+            ),
+            UploadedFile(
+                id="doc_inapp_version",
+                uploaded=doc_inapp_version_uploaded,
+                description="versioned inapp doc",
+                blob_id="doc_inapp_version_blob_id" if doc_inapp_version_uploaded else None,
+            ),
+            UploadedFile(
+                id="doc_inapp_latest",
+                uploaded=doc_inapp_latest_uploaded,
+                description="latest inapp doc",
+                blob_id="doc_inapp_latest_blob_id" if doc_inapp_latest_uploaded else None,
+            ),
+        ]
     )
 
 
@@ -90,13 +120,13 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
 
     if latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
+            [mocker.call(f"The latest metadata file for {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
         )
         assert result.exit_code == 0
 
     if version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The metadata file {metadata_file_path} was uploaded to version_blob_id.", color="green")]
+            [mocker.call(f"The versioned metadata file for {metadata_file_path} was uploaded to version_blob_id.", color="green")]
         )
         assert result.exit_code == 0
 
@@ -107,22 +137,22 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
     
     if doc_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")]
+            [mocker.call(f"The versioned doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")]
         )
 
     if doc_inapp_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green")]
+            [mocker.call(f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green")]
         )
 
     if doc_latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", color="green")]
+            [mocker.call(f"The latest doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", color="green")]
         )
 
     if doc_inapp_latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", color="green")]
+            [mocker.call(f"The latest inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", color="green")]
         )
 
     if not (latest_uploaded or version_uploaded):

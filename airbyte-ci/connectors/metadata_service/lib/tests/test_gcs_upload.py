@@ -3,7 +3,7 @@
 #
 
 import json
-import pathlib
+from pathlib import Path
 
 import pytest
 import yaml
@@ -20,6 +20,19 @@ MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["6.6.6", "6.0.0"]
 
 def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
     return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
+
+
+@pytest.fixture(autouse=True)
+def mock_local_doc_path_exists(monkeypatch):
+    original_exists = Path.exists
+    test_file_directory = Path(__file__).parent
+    mocked_relative_path = test_file_directory / "docs" / "integrations" / "sources" / "alloydb.md"
+
+    def fake_exists(self):
+        if self == Path("/Users/lakemossman/code/airbyte/airbyte-ci/connectors/metadata_service/lib/tests/docs/integrations/sources/alloydb.md"):
+            return True
+        return original_exists(self)
+    monkeypatch.setattr(Path, 'exists', fake_exists)
 
 
 def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash):
@@ -91,7 +104,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
     for valid_metadata_upload_file in valid_metadata_upload_files:
         mocks = setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash)
 
-        metadata_file_path = pathlib.Path(valid_metadata_upload_file)
+        metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
         expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
         expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
@@ -114,23 +127,26 @@ def test_upload_metadata_to_gcs_valid_metadata(
         gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
         mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
         mocks["mock_bucket"].blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_latest_key)])
-        assert upload_info.version_blob_id == mocks["mock_version_blob"].id
+
+        version_metadata_file = next((file for file in upload_info.uploaded_files if file.id == "version_metadata"), None)
+        assert version_metadata_file, "version_metadata not found in uploaded files."
+        assert version_metadata_file.blob_id == mocks["mock_version_blob"].id
 
         if not version_blob_exists:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert upload_info.uploaded
+            assert upload_info.metadata_uploaded
 
         if not latest_blob_exists:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert upload_info.uploaded
+            assert upload_info.metadata_uploaded
 
         if version_blob_md5_hash != local_file_md5_hash:
             mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert upload_info.uploaded
+            assert upload_info.metadata_uploaded
 
         if latest_blob_md5_hash != local_file_md5_hash:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-            assert upload_info.uploaded
+            assert upload_info.metadata_uploaded
 
         # clear the call count
         gcs_upload._latest_upload.reset_mock()
@@ -138,7 +154,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
-    metadata_file_path = pathlib.Path("./i_dont_exist.yaml")
+    metadata_file_path = Path("./i_dont_exist.yaml")
     with pytest.raises(FileNotFoundError):
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
@@ -148,7 +164,7 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
 
 def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
     for invalid_metadata_file in invalid_metadata_yaml_files:
-        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        metadata_file_path = Path(invalid_metadata_file)
         # If your test fails with 'Please set the DOCKER_HUB_USERNAME and DOCKER_HUB_PASSWORD environment variables.'
         # then your test data passed validation when it shouldn't have!
         with pytest.raises(ValueError, match="Validation error"):
@@ -163,7 +179,7 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
 
     # Test that all invalid metadata files throw a ValueError
     for invalid_metadata_file in invalid_metadata_upload_files:
-        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        metadata_file_path = Path(invalid_metadata_file)
         with pytest.raises(ValueError, match="does not exist in DockerHub"):
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
@@ -180,7 +196,7 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
 
     for valid_metadata_upload_file in valid_metadata_upload_files:
         # Assuming there is a valid metadata file in the list, if not, you might need to create one
-        metadata_file_path = pathlib.Path(valid_metadata_upload_file)
+        metadata_file_path = Path(valid_metadata_upload_file)
         prerelease_image_tag = "1.5.6-dev.f80318f754"
 
         gcs_upload.upload_metadata_to_gcs(

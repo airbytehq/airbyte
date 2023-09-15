@@ -8,7 +8,7 @@ import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 import yaml
 from google.cloud import storage
@@ -21,24 +21,18 @@ from pydash.objects import get
 
 
 @dataclass(frozen=True)
-class MetadataUploadInfo:
+class UploadedFile:
+    id: str
     uploaded: bool
-    latest_uploaded: bool
-    latest_blob_id: Optional[str]
-    version_uploaded: bool
-    version_blob_id: Optional[str]
-    icon_uploaded: bool
-    icon_blob_id: Optional[str]
-    metadata_file_path: str
-    doc_version_uploaded: bool
-    doc_version_blob_id: Optional[str]
-    doc_inapp_version_uploaded: bool
-    doc_inapp_version_blob_id: Optional[str]
-    doc_latest_uploaded: bool
-    doc_latest_blob_id: Optional[str]
-    doc_inapp_latest_uploaded: bool
-    doc_inapp_latest_blob_id: Optional[str]
+    description: str
+    blob_id: Optional[str]
 
+
+@dataclass(frozen=True)
+class MetadataUploadInfo:
+    metadata_uploaded: bool
+    metadata_file_path: str
+    uploaded_files: List[UploadedFile]
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -152,7 +146,7 @@ def _doc_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.
         if inapp:
             doc_uploaded, doc_blob_id = False, f"No doc found at {local_doc_path}"
         else:
-            raise ValueError(f"Expected to find connector doc file at {local_doc_path}, but none was found.")
+            raise FileNotFoundError(f"Expected to find connector doc file at {local_doc_path}, but none was found.")
     
     return doc_uploaded, doc_blob_id
 
@@ -223,20 +217,50 @@ def upload_metadata_to_gcs(
         doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
 
     return MetadataUploadInfo(
-        uploaded=version_uploaded or latest_uploaded,
-        latest_uploaded=latest_uploaded,
-        version_uploaded=version_uploaded,
-        version_blob_id=version_blob_id,
-        latest_blob_id=latest_blob_id,
-        icon_blob_id=icon_blob_id,
-        icon_uploaded=icon_uploaded,
+        metadata_uploaded=version_uploaded or latest_uploaded,
         metadata_file_path=str(metadata_file_path),
-        doc_version_uploaded=doc_version_uploaded,
-        doc_version_blob_id=doc_version_blob_id,
-        doc_inapp_version_uploaded=doc_inapp_version_uploaded,
-        doc_inapp_version_blob_id=doc_inapp_version_blob_id,
-        doc_latest_uploaded=doc_latest_uploaded,
-        doc_latest_blob_id=doc_latest_blob_id,
-        doc_inapp_latest_uploaded=doc_inapp_latest_uploaded,
-        doc_inapp_latest_blob_id=doc_inapp_latest_blob_id,
+        uploaded_files=[
+            UploadedFile(
+                id="version_metadata",
+                uploaded=version_uploaded,
+                description="versioned metadata",
+                blob_id=version_blob_id,
+            ),
+            UploadedFile(
+                id="latest_metadata",
+                uploaded=latest_uploaded,
+                description="latest metadata",
+                blob_id=latest_blob_id,
+            ),
+            UploadedFile(
+                id="icon",
+                uploaded=icon_uploaded,
+                description="icon",
+                blob_id=icon_blob_id,
+            ),
+            UploadedFile(
+                id="doc_version",
+                uploaded=doc_version_uploaded,
+                description="versioned doc",
+                blob_id=doc_version_blob_id,
+            ),
+            UploadedFile(
+                id="doc_latest",
+                uploaded=doc_latest_uploaded,
+                description="latest doc",
+                blob_id=doc_latest_blob_id,
+            ),
+            UploadedFile(
+                id="doc_inapp_version",
+                uploaded=doc_inapp_version_uploaded,
+                description="versioned inapp doc",
+                blob_id=doc_inapp_version_blob_id,
+            ),
+            UploadedFile(
+                id="doc_inapp_latest",
+                uploaded=doc_inapp_latest_uploaded,
+                description="latest inapp doc",
+                blob_id=doc_inapp_latest_blob_id,
+            ),
+        ]
     )
