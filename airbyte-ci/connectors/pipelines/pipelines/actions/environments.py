@@ -366,8 +366,7 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
 
 
 async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
-    # TODO turn into a with helper
-    # We don't want finalize scripts to override the entrypoint so we keep it in memory to reset it after finalization
+    # Maintain the original entry point during overrides
     original_entrypoint = await connector_container.entrypoint()
 
     # Run the connector using the local cdk if flag is set
@@ -383,21 +382,11 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
             connector_container
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_mounted_directory(f"/{path_to_cdk}", directory_to_mount)
-            .with_entrypoint(["bash", "-c"])
-            # view 5 levels deep
-            # install tree
-            # .with_exec(["apk", "add", "tree"])
-            # .with_exec(["tree", "-L", "5", f"."])
-            .with_exec(["ls", "-lah", f"."])
-            # .with_exec(["tree", "-L", "5", f"/"])
-            .with_exec(["ls", "-lah", f"/"])
-            # .e.g pip install --find-links=. --no-deps /airbyte-cdk
             .with_entrypoint("pip")
-
             .with_exec(["install", "--no-deps", "--find-links=.", f"/{path_to_cdk}"])
         )
 
-
+    # Return with the original entrypoint
     return connector_container.with_entrypoint(original_entrypoint)
 
 async def with_python_connector_installed(context: ConnectorContext) -> Container:
