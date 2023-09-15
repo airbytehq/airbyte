@@ -96,7 +96,7 @@ You may want to iterate on the acceptance test project itself: adding new tests,
 These iterations are more conveniently achieved by remaining in the current directory.
 
 1. Install dependencies via `poetry install`
-2. Run the unit tests on the acceptance tests themselves: `poetry run python -m pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
+2. Run the unit tests on the acceptance tests themselves: `poetry run pytest unit_tests` (add the `--pdb` option if you want to enable the debugger on test failure)
 3. To run specific unit test(s), add `-k` to the above command, e.g. `poetry run python -m pytest unit_tests -k 'test_property_can_store_secret'`. You can use wildcards `*` here as well.
 4. Make the changes you want:
     * Global pytest fixtures are defined in `./connector_acceptance_test/conftest.py`

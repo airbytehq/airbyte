@@ -14,7 +14,6 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
 

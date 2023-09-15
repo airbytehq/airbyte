@@ -184,7 +184,7 @@ definitions:
       $ref: "#/definitions/incremental_sync_base"
 
   orders_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "#/definitions/old_stream" # Orders endpoint loses email, first_name, last_name columns in 2021-11 API version
     name: "orders"
     primary_key: "id"
     $parameters:

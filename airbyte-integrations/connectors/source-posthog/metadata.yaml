@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - ${base_url}
@@ -8,6 +11,7 @@ data:
   definitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerImageTag: 0.1.14
   dockerRepository: airbyte/source-posthog
+  documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
   githubIssueLabel: source-posthog
   icon: posthog.svg
   license: MIT
@@ -18,12 +22,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/posthog
+  supportLevel: community
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

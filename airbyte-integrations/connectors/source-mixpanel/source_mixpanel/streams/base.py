@@ -147,6 +147,29 @@ class MixpanelStream(HttpStream, ABC):
 
 
 class DateSlicesMixin:
+    raise_on_http_errors = True
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            if "to_date cannot be later than today" in response.text:
+                self._timezone_mismatch = True
+                self.logger.warning(
+                    "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. "
+                    "Stopping current stream sync."
+                )
+                setattr(self, "raise_on_http_errors", False)
+                return False
+        return super().should_retry(response)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._timezone_mismatch = False
+
+    def parse_response(self, *args, **kwargs):
+        if self._timezone_mismatch:
+            return []
+        yield from super().parse_response(*args, **kwargs)
+
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -168,6 +191,8 @@ class DateSlicesMixin:
         end_date = min(self.end_date, pendulum.today(tz=self.project_timezone).date())
 
         while start_date <= end_date:
+            if self._timezone_mismatch:
+                return
             current_end_date = start_date + timedelta(days=self.date_window_size - 1)  # -1 is needed because dates are inclusive
             stream_slice = {
                 "start_date": str(start_date),
