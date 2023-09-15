@@ -7,7 +7,7 @@ import sys
 
 from airbyte_cdk.entrypoint import launch
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
-from source_google_analytics_data_api.config_migrations import MigratePropertyID, MigrateCustomReports
+from source_google_analytics_data_api.config_migrations import MigrateCustomReports, MigratePropertyID
 
 if __name__ == "__main__":
     source = SourceGoogleAnalyticsDataApi()
