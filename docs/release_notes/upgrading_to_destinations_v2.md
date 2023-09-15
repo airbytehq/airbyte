@@ -25,6 +25,8 @@ The upgrade to Destinations V2 is handled by moving your connections to use [upd
 
 As a Cloud user, existing connections using legacy normalization will be paused on **November 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Nov 1, 2023**.
 
+Note that Destinations V2 also removes the option to _only_ replicate raw data. The vast majority of Airbyte users prefer typed final tables, and our future feature development will rely on this implementation. Learn more [below](#upgrading-as-a-user-of-raw-tables).
+
 ### Breakdown of Breaking Changes
 
 The following table details the delivered data modified by Destinations V2:
@@ -46,7 +48,6 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 **[Airbyte Open Source Only]** You should upgrade to 0.50.24+ of the Airbyte Platform _before_ updating to Destinations V2. Failure to do so may cause upgraded connections to fail.
 
 :::
-
 
 The quickest path to upgrading is to click upgrade on any out-of-date connection in the UI:
 
@@ -133,7 +134,9 @@ If you have written downstream transformations directly from the output of raw t
 - When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will never alter your existing raw data. Although existing downstream dashboards will go stale, they will never be broken.
 - You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
-We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema.
+We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema, nor will features like error handling be implemented in the raw tables.
+
+As a user previously not running Normalization, Upgrading to Destinations V2 will increase the compute costs in your destination data warehouse. This is because Destinations V2 will now be performing the operations to generate a final typed table.
 
 ### Upgrade Paths for Connections using CDC
 
@@ -150,7 +153,7 @@ For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) sou
 For each destination connector, Destinations V2 is effective as of the following versions:
 
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible |
-| --------------------- | --------------------- |----------------------------|
+| --------------------- | --------------------- | -------------------------- |
 | BigQuery              | 1.4.4                 | 2.0.6+                     |
 | Snowflake             | 2.0.0                 | 3.1.0+                     |
 | Redshift              | 0.4.8                 | 2.0.0+                     |
@@ -163,11 +166,13 @@ For each destination connector, Destinations V2 is effective as of the following
 
 ### [Open Source Only] Rolling Back to Legacy Normalization
 
-If you upgrade to Destinations V2 and start encountering issues, as an Open Source user you can optionally roll back. If you are running an outdated Airbyte Platform version (prior to `v0.50.24`), this may occur more frequently by accidentally upgrading to Destinations V2.  However:
-* Rolling back will require resetting each of your upgraded connections. 
-* If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by **November 1, 2023**.
+If you upgrade to Destinations V2 and start encountering issues, as an Open Source user you can optionally roll back. If you are running an outdated Airbyte Platform version (prior to `v0.50.24`), this may occur more frequently by accidentally upgrading to Destinations V2. However:
+
+- Rolling back will require resetting each of your upgraded connections.
+- If you are hoping to receive support from the Airbyte team, you will need to re-upgrade to Destinations V2 by **November 1, 2023**.
 
 To roll back, follow these steps:
+
 1. In the Airbyte UI, go to the 'Settings page, then to 'Destinations'.
 2. Manually type in the previous destination version you were running, or one of the versions listed in the table above.
 3. Enter this older version to roll back to the previous connector version.
