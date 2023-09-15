@@ -139,6 +139,22 @@ def get_source_defined_primary_key(stream):
 
 
 def serialize_to_date_string(date: str, date_format: str, date_type: str) -> str:
+    """
+    Serialize a date string to a different date format based on the date_type.
+
+    Parameters:
+    - date (str): The input date string.
+    - date_format (str): The desired output format for the date string.
+    - date_type (str): The type of the date string ('yearWeek', 'yearMonth', or 'year').
+
+    Returns:
+    str: The date string formatted according to date_format.
+
+    Examples:
+    '202245' -> '2022-11-07'
+    '202210' -> '2022-10-01'
+    '2022' -> '2022-01-01'
+    """
     if date_type == "yearWeek":
         return pd.to_datetime(f"{date}1", format="%Y%W%w").strftime(date_format)
     elif date_type == "yearMonth":
