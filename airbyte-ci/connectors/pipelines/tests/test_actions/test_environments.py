@@ -4,7 +4,7 @@
 
 import pytest
 from connector_ops.utils import Connector
-from pipelines.actions.environments import python
+from pipelines.actions.environments.python import common
 from pipelines.contexts import PipelineContext
 
 pytestmark = [
@@ -31,7 +31,7 @@ def context(dagger_client):
 
 async def test_with_installed_python_package(context, python_connector):
     python_environment = context.dagger_client.container().from_("python:3.10")
-    installed_connector_package = await python.with_installed_python_package(
+    installed_connector_package = await common.with_installed_python_package(
         context,
         python_environment,
         str(python_connector.code_directory),

@@ -3,7 +3,7 @@
 #
 
 from dagger import ExecError, File, QueryError
-from pipelines.actions.environments import python
+from pipelines.actions.environments import java
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
@@ -57,7 +57,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
 
     async def _run(self, distribution_tar: File) -> StepResult:
         try:
-            java_connector = await python.with_airbyte_java_connector(self.context, distribution_tar, self.build_platform)
+            java_connector = await java.with_airbyte_java_connector(self.context, distribution_tar, self.build_platform)
             try:
                 await java_connector.with_exec(["spec"])
             except ExecError:

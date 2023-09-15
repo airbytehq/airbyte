@@ -11,7 +11,7 @@ from typing import List, Optional
 import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage
-from pipelines.actions.environments import python
+from pipelines.actions.environments.os import docker
 from pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from pipelines.contexts import ConnectorContext
 from pipelines.format import java_connectors, python_connectors
@@ -84,7 +84,7 @@ async def run_connectors_format_pipelines(
 ) -> List[ConnectorContext]:
     async with dagger.Connection(dagger.Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         requires_dind = any(context.connector.language == ConnectorLanguage.JAVA for context in contexts)
-        dockerd_service = python.with_global_dockerd_service(dagger_client)
+        dockerd_service = docker.with_global_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
             if requires_dind:
                 tg_main.start_soon(dockerd_service.sync)

@@ -16,7 +16,8 @@ import yaml
 from connector_ops.utils import Connector
 from dagger import Container, Directory, File
 from pipelines import hacks
-from pipelines.actions.environments import python
+from pipelines.actions.environments.common import tools
+import pipelines.actions.environments.common.secrets
 from pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
 from pipelines.utils import METADATA_FILE_NAME
 
@@ -143,7 +144,7 @@ class QaChecks(Step):
         Returns:
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
-        connector_ops = await python.with_connector_ops(self.context)
+        connector_ops = await tools.with_connector_ops(self.context)
         include = [
             str(self.context.connector.code_directory),
             str(self.context.connector.documentation_file_path),
@@ -270,7 +271,7 @@ class AcceptanceTests(PytestStep):
             .with_env_variable("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH", "/dagger_share/connector_under_test_image.tar")
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(await python.mounted_connector_secrets(self.context, "/test_input/secrets"))
+            .with_(await pipelines.actions.environments.common.secrets.mounted_connector_secrets(self.context, "/test_input/secrets"))
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")
