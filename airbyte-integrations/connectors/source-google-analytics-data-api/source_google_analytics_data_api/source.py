@@ -13,6 +13,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import dpath
 import jsonschema
+import pendulum
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -53,7 +54,19 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
-            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+
+            try:
+                metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            except HTTPError as e:
+                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                    internal_message = "Unauthorized error reached."
+                    message = "Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
+
+                    unauthorized_error = AirbyteTracedException(
+                        message=message, internal_message=internal_message, failure_type=FailureType.config_error
+                    )
+                    raise unauthorized_error
+
             if not metadata:
                 raise Exception("failed to get metadata, over quota, try later")
             self._metadata = {
@@ -157,7 +170,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                d: {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
+                d.replace(":", "_"): {
+                    "type": get_dimensions_type(d),
+                    "description": self.metadata["dimensions"].get(d, {}).get("description", d),
+                }
                 for d in self.config["dimensions"]
             }
         )
@@ -172,7 +188,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                m: {
+                m.replace(":", "_"): {
                     "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
                     "description": self.metadata["metrics"].get(m, {}).get("description", m),
                 }
@@ -214,9 +230,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
-        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
-        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
+        dimensions = [h.get("name").replace(":", "_") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name").replace(":", "_") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
             record = {
@@ -366,6 +382,21 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
+    @property
+    def default_date_ranges_start_date(self) -> str:
+        # set default date ranges start date to 2 years ago
+        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
+
+    def _validate_and_transform_start_date(self, start_date: str) -> datetime.date:
+        start_date = self.default_date_ranges_start_date if not start_date else start_date
+
+        try:
+            start_date = utils.string_to_date(start_date)
+        except ValueError as e:
+            raise ConfigurationError(str(e))
+
+        return start_date
+
     def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         if "custom_reports_array" in config:
             if isinstance(config["custom_reports_array"], str):
@@ -404,10 +435,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             except ValueError:
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
 
-        try:
-            config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
-        except ValueError as e:
-            raise ConfigurationError(str(e))
+        config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
 
         if not config.get("window_in_days"):
             source_spec = self.spec(logging.getLogger("airbyte"))
