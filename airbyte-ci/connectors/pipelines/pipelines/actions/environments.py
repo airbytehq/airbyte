@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -363,36 +363,6 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
     testing_environment: Container = with_testing_dependencies(context)
 
     return with_python_package(context, testing_environment, connector_source_path)
-
-
-async def with_python_connector_installed(context: ConnectorContext) -> Container:
-    """Install an airbyte connector python package in a testing environment.
-
-    Args:
-        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
-    Returns:
-        Container: A python environment container (with the connector installed).
-    """
-    connector_source_path = str(context.connector.code_directory)
-    testing_environment: Container = with_testing_dependencies(context)
-    exclude = [
-        f"{context.connector.code_directory}/{item}"
-        for item in [
-            "secrets",
-            "metadata.yaml",
-            "bootstrap.md",
-            "icon.svg",
-            "README.md",
-            "Dockerfile",
-            "acceptance-test-docker.sh",
-            "build.gradle",
-            ".hypothesis",
-            ".dockerignore",
-        ]
-    ]
-    return await with_installed_python_package(
-        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
-    )
 
 
 async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:
