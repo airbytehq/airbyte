@@ -28,9 +28,9 @@ class MixpanelStream(HttpStream, ABC):
     @property
     def state_checkpoint_interval(self) -> int:
         # to meet the requirement of emitting state at least once per 15 minutes,
-        # we assume there's at least 10 records per request returned in average. Given that each request is followed by a 60 seconds
-        # sleep, we'll have to emit state once per 150 records
-        return 150
+        # we assume there's at least 1 record per request returned. Given that each request is followed by a 60 seconds sleep
+        # we'll have to emit state every 15 records
+        return 15
 
     @property
     def url_base(self):
