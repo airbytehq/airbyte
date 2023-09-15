@@ -32,7 +32,7 @@ Do not refresh the Apps page while the application is being installed. This may 
 You should now see the LinkedIn Ads Connector by Airbyte application under `Installed Apps`. You may need to refresh the page.
 
 ## LinkedIn Ads Account
-In order for the Snowflake Native App to query LinkedIn Ads, you will need an account with the right permissions. Please follow [the LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
+In order for the Snowflake Native App to query LinkedIn Ads, you will need an account with the right permissions. Please follow the [LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
 
 ## Snowflake Native App Authorizations
 
