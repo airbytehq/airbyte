@@ -276,14 +276,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "limit": str(self.page_size),
         }
 
-        dimension_filter = self.config.get("dimensionFilter")
-        if dimension_filter:
-            payload.update({"dimensionFilter": dimension_filter})
-
-        metrics_filter = self.config.get("metricsFilter")
-        if metrics_filter:
-            payload.update({"metricsFilter": metrics_filter})
-
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
         return payload
@@ -498,8 +490,6 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         stream_config = {
             "metrics": report["metrics"],
             "dimensions": report["dimensions"],
-            "dimensionFilter": report.get("dimensionFilter"),
-            "metricsFilter": report.get("metricsFilter"),
             **config,
         }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
