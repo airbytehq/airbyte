@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOpe
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -135,13 +136,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     });
     typerDeduper.commitFinalTables();
     typerDeduper.cleanup();
-    // For the sake of displaying a nicer message in the UI, we rethrow the first exception rather than
-    // combining all the exceptions.
-    if (!exceptionsThrown.isEmpty()) {
-      final String stacktraces = exceptionsThrown.stream().map(ExceptionUtils::getStackTrace).collect(joining("\n"));
-      LOGGER.error("Exceptions thrown while closing consumer: " + stacktraces + "\nRethrowing first exception.");
-      throw exceptionsThrown.get(0);
-    }
+
+    ConnectorExceptionUtil.logAllAndThrowFirst("Exceptions thrown while closing consumer: ", exceptionsThrown);
   }
 
 }

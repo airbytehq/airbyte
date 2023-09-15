@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static java.util.stream.Collectors.joining;
 
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -41,11 +42,7 @@ public class FutureUtils {
         .filter(Optional::isPresent)
         .map(Optional::get)
         .toList();
-    if (!exceptions.isEmpty()) {
-      final String stacktraces = exceptions.stream().map(ExceptionUtils::getStackTrace).collect(joining("\n"));
-      LOGGER.error(initialMessage + stacktraces + "\nRethrowing first exception.");
-      throw exceptions.get(0);
-    }
+    ConnectorExceptionUtil.logAllAndThrowFirst(initialMessage, exceptions);
   }
 
 }
