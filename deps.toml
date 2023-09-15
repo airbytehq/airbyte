@@ -78,6 +78,7 @@ jackson-dataformat = { module = "com.fasterxml.jackson.dataformat:jackson-datafo
 jackson-datatype = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml_version" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "fasterxml_version" }
 java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0" }
+java-faker = { module = "com.github.javafaker:javafaker", version = "1.0.2" }
 javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
@@ -91,6 +92,7 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0" }
 kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" }
 kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = "0.3.5" }
 launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }

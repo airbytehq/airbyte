@@ -12,10 +12,16 @@ application {
 }
 
 configurations {
+    dataGenerator.extendsFrom testImplementation
     debeziumTest.extendsFrom testImplementation
 }
 
 sourceSets {
+    dataGenerator {
+        kotlin {
+            srcDirs('src/test/generator')
+        }
+    }
     debeziumTest {
         kotlin {
             srcDirs('src/test/debezium')
@@ -30,16 +36,25 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:debezium')
     implementation libs.airbyte.protocol
-
     implementation libs.mongo.driver.sync
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
-    testImplementation libs.kotlinx.cli
     testImplementation libs.connectors.testcontainers.mongodb
 
     integrationTestJavaImplementation libs.apache.commons.lang
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
+
+    dataGeneratorImplementation project(":airbyte-commons")
+    dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
+    dataGeneratorImplementation libs.mongo.driver.sync
+    dataGeneratorImplementation libs.kotlin.logging
+    dataGeneratorImplementation libs.kotlinx.cli
+    dataGeneratorImplementation libs.java.faker
+    dataGeneratorImplementation libs.jackson.databind
+    dataGeneratorImplementation libs.bundles.slf4j
+    dataGeneratorImplementation libs.slf4j.simple
+    dataGeneratorImplementation libs.kotlinx.cli.jvm
 
     debeziumTestImplementation libs.bundles.debezium.bundle
     debeziumTestImplementation libs.bundles.slf4j
@@ -76,7 +91,7 @@ tasks.register('generateTestData', JavaExec) {
         arguments.addAll(['--username', username])
     }
 
-    classpath = sourceSets.test.runtimeClasspath
+    classpath = sourceSets.dataGenerator.runtimeClasspath
     main 'io.airbyte.integrations.source.mongodb.MongoDbInsertClient'
     standardInput = System.in
     args arguments
