@@ -407,7 +407,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
-| 1.3.0   | [#30438](https://github.com/airbytehq/airbyte/pull/30438) | Add `--use-local-cdk` flag to all connectors commands                                                      |
+| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                                      |
 | 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477) | Fix a test regression introduced the previous version.                                            |
 | 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438) | Add workaround to always stream logs properly with --is-local.                                            |
 | 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384) | Java connector test performance fixes.                                                                    |
