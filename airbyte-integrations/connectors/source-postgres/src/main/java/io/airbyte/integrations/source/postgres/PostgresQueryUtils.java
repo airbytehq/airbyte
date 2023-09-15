@@ -320,20 +320,20 @@ public class PostgresQueryUtils {
             .toList();
   }
 
-  public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleEstimateForStreams(final JdbcDatabase database,
+  public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleForStreams(final JdbcDatabase database,
                                                                                                 final List<ConfiguredAirbyteStream> streams,
                                                                                                 final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
           new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final int maxTuple = getTableMaxTupleEstimateForStream(database, namespacePair, quoteString);
+      final int maxTuple = getTableMaxTupleForStream(database, namespacePair, quoteString);
       tableMaxTupleEstimates.put(namespacePair, maxTuple);
     });
     return tableMaxTupleEstimates;
   }
 
-  public static int getTableMaxTupleEstimateForStream(final JdbcDatabase database,
+  public static int getTableMaxTupleForStream(final JdbcDatabase database,
                                                       final AirbyteStreamNameNamespacePair stream,
                                                       final String quoteString) {
     try {
