@@ -91,7 +91,7 @@ class SourceGoogleAds(AbstractSource):
         incremental_stream_config = dict(
             api=google_api,
             customers=customers,
-            conversion_window_days=config["conversion_window_days"],
+            conversion_window_days=config.get("conversion_window_days", 0),
             start_date=start_date,
             end_date=end_date,
         )
