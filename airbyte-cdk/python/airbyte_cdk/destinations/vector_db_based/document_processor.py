@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import dpath.util
-from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, TextSplitterConfigModel, SeparatorSplitterConfigModel
+from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
@@ -27,7 +27,7 @@ class Chunk:
     embedding: Optional[List[float]] = None
 
 
-headers_to_split_on = ["^# ", "^## ", "^### ", "^#### ", "^##### ", "^###### "]
+headers_to_split_on = ["(?:^|\n)# ", "(?:^|\n)## ", "(?:^|\n)### ", "(?:^|\n)#### ", "(?:^|\n)##### ", "(?:^|\n)###### "]
 
 
 class DocumentProcessor:
@@ -43,6 +43,7 @@ class DocumentProcessor:
     except if you want to implement a custom writer.
 
     The config parameters specified by the ProcessingConfigModel has to be made part of the connector spec to allow the user to configure the document processor.
+    Calling DocumentProcessor.check_config(config) will validate the config and return an error message if the config is invalid.
     """
 
     streams: Mapping[str, ConfiguredAirbyteStream]
@@ -61,7 +62,7 @@ class DocumentProcessor:
 
     def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
         if splitter_config is None:
-            splitter_config = SeparatorSplitterConfigModel()
+            splitter_config = SeparatorSplitterConfigModel(mode="separator")
         if splitter_config.mode == "separator":
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
@@ -74,11 +75,14 @@ class DocumentProcessor:
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
                 separators=headers_to_split_on[: splitter_config.split_level],
+                is_separator_regex=True,
                 keep_separator=True,
             )
         if splitter_config.mode == "code":
-            return RecursiveCharacterTextSplitter.from_language(
-                chunk_size=chunk_size, chunk_overlap=chunk_overlap, language=splitter_config.language
+            return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=RecursiveCharacterTextSplitter.get_separators_for_language(splitter_config.language),
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):

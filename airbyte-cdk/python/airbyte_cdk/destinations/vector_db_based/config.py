@@ -10,7 +10,9 @@ from pydantic import BaseModel, Field
 class SeparatorSplitterConfigModel(BaseModel):
     mode: Literal["separator"] = Field("separator", const=True)
     separators: List[str] = Field(
-        default=['"\\n\\n"', '"\\n"', '" "', '""'], title="Separators", description='List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use ".". To split by a newline, use "\\n".',
+        default=['"\\n\\n"', '"\\n"', '" "', '""'],
+        title="Separators",
+        description='List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use ".". To split by a newline, use "\\n".',
     )
     keep_separator: bool = Field(default=False, title="Keep separator", description="Whether to keep the separator in the resulting chunks")
 
