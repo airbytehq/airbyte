@@ -518,14 +518,6 @@ class Tickets(SourceZendeskIncrementalExportStream):
     def path(self, **kwargs) -> str:
         return "incremental/tickets/cursor.json"
 
-    @property
-    def default_deleted_state_comparison_value(self) -> Union[int, str]:
-        """
-        Set the default STATE comparison value for cases when the deleted record doesn't have it's value.
-        We expect the `deleted_at` cursor field for destroyed records would be always type of String.
-        """
-        return ""
-
     def request_params(
         self,
         stream_state: Mapping[str, Any],
