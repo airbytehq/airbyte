@@ -180,6 +180,7 @@ class AcceptanceTests(Step):
     title = "Acceptance tests"
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
+    skipped_exit_code = 5
 
     @property
     def base_cat_command(self) -> List[str]:
