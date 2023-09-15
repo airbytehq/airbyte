@@ -286,12 +286,14 @@ definitions:
     $ref: "#/definitions/stream_incremental_search"
     $parameters:
       name: "contacts"
+      primary_key: "id"
       path: "contacts/search"
       page_size: 150
   conversations:
     $ref: "#/definitions/stream_incremental_search"
     $parameters:
       name: "conversations"
+      primary_key: "id"
       path: "conversations/search"
       data_field: "conversations"
       page_size: 150
