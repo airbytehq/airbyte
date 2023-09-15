@@ -12,7 +12,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.0.7
+  dockerImageTag: 0.0.8
   dockerRepository: airbyte/destination-pinecone
   githubIssueLabel: destination-pinecone
   icon: pinecone.svg
