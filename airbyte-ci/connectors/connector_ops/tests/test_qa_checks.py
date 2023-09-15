@@ -80,7 +80,7 @@ def test_run_qa_checks_success(capsys, mocker, user_input, expect_qa_checks_to_r
     mocker.patch.object(qa_checks, "Connector")
     mock_qa_check = mocker.Mock(return_value=True, __name__="mock_qa_check")
     if expect_qa_checks_to_run:
-        mocker.patch.object(qa_checks, "QA_CHECKS", [mock_qa_check])
+        mocker.patch.object(qa_checks, "get_qa_checks_to_run", return_value=[mock_qa_check])
     with pytest.raises(SystemExit) as wrapped_error:
         qa_checks.run_qa_checks()
     assert wrapped_error.value.code == 0
@@ -101,7 +101,7 @@ def test_run_qa_checks_error(capsys, mocker):
     mocker.patch.object(qa_checks.sys, "argv", ["", "source-faker"])
     mocker.patch.object(qa_checks, "Connector")
     mock_qa_check = mocker.Mock(return_value=False, __name__="mock_qa_check")
-    mocker.patch.object(qa_checks, "QA_CHECKS", [mock_qa_check])
+    mocker.patch.object(qa_checks, "DEFAULT_QA_CHECKS", (mock_qa_check,))
     with pytest.raises(SystemExit) as wrapped_error:
         qa_checks.run_qa_checks()
     assert wrapped_error.value.code == 1
@@ -201,7 +201,7 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
     }
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
 
-    assert qa_checks.check_migration_guide(connector) == False
+    assert qa_checks.check_migration_guide(connector) is False
     stdout, _ = capsys.readouterr()
     assert "Migration guide file is missing for foobar. Please create a foobar-migrations.md file in the docs folder" in stdout
 
@@ -241,6 +241,28 @@ def test_check_invalid_migration_guides(mocker, tmp_path, capsys, test_file, exp
 
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
 
-    assert qa_checks.check_migration_guide(connector) == False
+    assert qa_checks.check_migration_guide(connector) is False
     stdout, _ = capsys.readouterr()
     assert expected_stdout in stdout
+
+
+def test_get_qa_checks_to_run(mocker):
+    mocker.patch.object(utils.Connector, "has_dockerfile", False)
+    connector = utils.Connector("source-faker")
+
+    assert (
+        qa_checks.get_qa_checks_to_run(connector) == qa_checks.DEFAULT_QA_CHECKS
+    ), "A connector without a Dockerfile should run the default set of QA checks"
+    mocker.patch.object(utils.Connector, "has_dockerfile", True)
+    connector = utils.Connector("source-faker")
+    assert qa_checks.get_qa_checks_to_run(connector) == qa_checks.DEFAULT_QA_CHECKS + (
+        qa_checks.check_metadata_version_matches_dockerfile_label,
+    ), "A connector with a Dockerfile should run the default set of QA checks plus check_metadata_version_matches_dockerfile_label"
+
+
+def test_check_metadata_version_matches_dockerfile_label_without_dockerfile(mocker):
+    mocker.patch.object(utils.Connector, "has_dockerfile", False)
+    connector_without_dockerfile = utils.Connector("source-faker")
+    assert (
+        qa_checks.check_metadata_version_matches_dockerfile_label(connector_without_dockerfile) is False
+    ), "A connector without a Dockerfile should fail check_metadata_version_matches_dockerfile_label"
