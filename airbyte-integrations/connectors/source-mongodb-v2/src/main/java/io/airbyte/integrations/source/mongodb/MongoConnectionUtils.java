@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CREDENTIALS_PLACEHOLDER;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DRIVER_NAME;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;

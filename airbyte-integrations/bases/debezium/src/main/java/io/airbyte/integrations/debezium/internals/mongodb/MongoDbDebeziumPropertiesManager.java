@@ -103,8 +103,8 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   /**
-   * Builds the MongoDB connection string from the provided configuration.  This method
-   * handles removing any values accidentally copied and pasted from the MongoDB Atlas UI.
+   * Builds the MongoDB connection string from the provided configuration. This method handles
+   * removing any values accidentally copied and pasted from the MongoDB Atlas UI.
    *
    * @param config The connector configuration.
    * @param useSecondary Whether to use the secondary for reads.
@@ -112,16 +112,17 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
    */
   public static String buildConnectionString(final JsonNode config, final boolean useSecondary) {
     final String connectionString = config.get(CONNECTION_STRING_CONFIGURATION_KEY)
-            .asText()
-            .trim()
-            .replaceAll(DOUBLE_QUOTES_PATTERN, "")
-            .replaceAll(CREDENTIALS_PLACEHOLDER, "");
+        .asText()
+        .trim()
+        .replaceAll(DOUBLE_QUOTES_PATTERN, "")
+        .replaceAll(CREDENTIALS_PLACEHOLDER, "");
     final StringBuilder builder = new StringBuilder();
     builder.append(connectionString);
     builder.append("?retryWrites=false&provider=airbyte&tls=true");
-    if(useSecondary) {
+    if (useSecondary) {
       builder.append("&readPreference=secondary");
     }
     return builder.toString();
   }
+
 }

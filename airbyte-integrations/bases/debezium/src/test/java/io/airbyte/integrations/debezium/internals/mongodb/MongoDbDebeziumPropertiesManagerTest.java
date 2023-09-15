@@ -91,8 +91,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode)config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
-            .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -101,10 +101,10 @@ class MongoDbDebeziumPropertiesManagerTest {
     cdcProperties.put("test", "value");
 
     final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-            cdcProperties,
-            config,
-            catalog,
-            offsetManager);
+        cdcProperties,
+        config,
+        catalog,
+        offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
@@ -126,7 +126,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final AirbyteFileOffsetBackingStore offsetManager = mock(AirbyteFileOffsetBackingStore.class);
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode)config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
 
     when(offsetManager.getOffsetFilePath()).thenReturn(PATH);
     when(catalog.getStreams()).thenReturn(streams);
@@ -135,10 +135,10 @@ class MongoDbDebeziumPropertiesManagerTest {
     cdcProperties.put("test", "value");
 
     final MongoDbDebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(
-            cdcProperties,
-            config,
-            catalog,
-            offsetManager);
+        cdcProperties,
+        config,
+        catalog,
+        offsetManager);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     assertEquals(22 + cdcProperties.size(), debeziumProperties.size());
@@ -214,7 +214,7 @@ class MongoDbDebeziumPropertiesManagerTest {
   void testCreateConnectionStringQuotedString() {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
-    ((ObjectNode)config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, "\"" + config.get(CONNECTION_STRING_CONFIGURATION_KEY) + "\"");
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
   }
@@ -230,8 +230,8 @@ class MongoDbDebeziumPropertiesManagerTest {
   @Test
   void testCreateConnectionStringPlaceholderCredentials() {
     final JsonNode config = createConfiguration(Optional.of("username"), Optional.of("password"), Optional.of("admin"));
-    ((ObjectNode)config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
-            .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
+    ((ObjectNode) config).put(CONNECTION_STRING_CONFIGURATION_KEY, config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText()
+        .replaceAll("mongodb://", "mongodb://" + CREDENTIALS_PLACEHOLDER));
     final String connectionString = MongoDbDebeziumPropertiesManager.buildConnectionString(config, false);
     assertNotNull(connectionString);
     assertEquals(EXPECTED_CONNECTION_STRING, connectionString);
