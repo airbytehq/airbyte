@@ -18,7 +18,7 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, Destinatio
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
-def initialize_processor(config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)):
+def initialize_processor(config=ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -215,6 +215,7 @@ def test_process_multiple_chunks_with_relevant_fields():
         assert chunk.metadata["age"] == 25
     assert id_to_delete is None
 
+
 @pytest.mark.parametrize(
     "label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks",
     [
@@ -370,6 +371,7 @@ def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config,
         assert chunk.page_content == expected_chunks[i]
     assert id_to_delete is None
 
+
 @pytest.mark.parametrize(
     "label, split_config, has_error_message",
     [
@@ -406,7 +408,6 @@ def test_text_splitter_check(label, split_config, has_error_message):
         assert error is not None
     else:
         assert error is None
-
 
 
 @pytest.mark.parametrize(

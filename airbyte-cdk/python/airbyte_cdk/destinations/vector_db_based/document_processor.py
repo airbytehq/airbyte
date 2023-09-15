@@ -12,7 +12,7 @@ from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigMode
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
-from langchain.text_splitter import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_ab_stream"
@@ -56,7 +56,7 @@ class DocumentProcessor:
                     separator = json.loads(s)
                     if not isinstance(separator, str):
                         return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
-                except:
+                except json.decoder.JSONDecodeError:
                     return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
         return None
 
