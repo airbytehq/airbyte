@@ -46,4 +46,6 @@ data:
       1.0.0:
         message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
         upgradeDeadline: "2023-07-19"
+      2.0.0:
+        message: "Stream `Deleted Tickets` is removed"
 metadataSpecVersion: "1.0"
