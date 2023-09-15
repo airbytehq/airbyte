@@ -97,15 +97,15 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
                         }
                     }
                 })
-                .using(io.debezium.engine.DebeziumEngine.CompletionCallback { success: Boolean, message: String?, error: Throwable? ->
+                .using { _: Boolean, message: String?, error: Throwable? ->
                     LOGGER.info("Initial sync Debezium engine shutdown.")
                     if (error != null) {
                         LOGGER.error("error occurred: {}", message, error)
                     }
                     engineLatch.countDown()
                     thrownError.set(error)
-                })
-                .build()
+                }
+            .build()
         executorService.execute(engine)
         Thread.sleep((45 * 1000).toLong())
         engine.close()
@@ -126,7 +126,7 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
         val engine2: DebeziumEngine<io.debezium.engine.ChangeEvent<String, String>> = DebeziumEngine.create<String>(io.debezium.engine.format.Json::class.java)
                 .using(getDebeziumProperties(path, listOf("$databaseName\\.$collectionName").stream().collect(Collectors.joining(","))))
                 .using(io.debezium.engine.spi.OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
-                .notifying(Consumer<io.debezium.engine.ChangeEvent<String, String>> { e: io.debezium.engine.ChangeEvent<String, String> ->
+                .notifying { e: io.debezium.engine.ChangeEvent<String, String> ->
                     // debezium outputs a tombstone event that has a value of null. this is an artifact of how it
                     // interacts with kafka. we want to ignore it.
                     // more on the tombstone:
@@ -138,8 +138,8 @@ class DebeziumMongoDbConnectorTest internal constructor(private val connectionSt
                             inserted = queue.offer(e)
                         }
                     }
-                })
-                .using(io.debezium.engine.DebeziumEngine.CompletionCallback { success: Boolean, message: String?, error: Throwable? ->
+                }
+            .using(io.debezium.engine.DebeziumEngine.CompletionCallback { success: Boolean, message: String?, error: Throwable? ->
                     LOGGER.info("Incremental snapshot Debezium engine shutdown.")
                     if (error != null) {
                         LOGGER.error("error occurred: {}", message, error)
