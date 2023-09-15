@@ -48,4 +48,5 @@ data:
         upgradeDeadline: "2023-07-19"
       2.0.0:
         message: "Stream `Deleted Tickets` is removed"
+        upgradeDeadline: "2023-09-29"
 metadataSpecVersion: "1.0"
