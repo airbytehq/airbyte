@@ -61,7 +61,7 @@ CREATE OR REPLACE NETWORK RULE linkedin_apis_network_rule
 
 :::note  
 As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
-::::
+:::
 
 4. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
 ```
