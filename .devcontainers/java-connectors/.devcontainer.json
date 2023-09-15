@@ -1,0 +1,52 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+    "name": "Java Connectors DevContainer (Base)",
+
+	"image": "mcr.microsoft.com/devcontainers/java:0-17",
+	"features": {
+        "ghcr.io/devcontainers/features/docker-in-docker": {},
+		"ghcr.io/devcontainers/features/java:1": {
+			"installGradle": true,
+			"version": "latest",
+			"jdkDistro": "open",
+			"gradleVersion": "7.5.1"
+			// "mavenVersion": "latest",
+			// "antVersion": "latest"
+		}
+	},
+
+    // Configure tool-specific properties.
+    "customizations": {
+        "vscode": {
+            "extensions": [
+				"vscjava.vscode-gradle",
+				"tamasfe.even-better-toml"
+			],
+            "settings": {
+                "extensions.ignoreRecommendations": true,
+                "git.openRepositoryInParentFolders": "always"
+            }
+        }
+    },
+
+    "containerEnv": {
+        "CONNECTOR_NAME": "destination-snowflake"
+    },
+
+    // Mark the root directory as 'safe' for git.
+    "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
+
+    "workspaceFolder": "/workspaces/airbyte"
+
+    // // Mount to project's directory:
+    // "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/destination-snowflake",
+    // // Symlink important files and directories that are needed during connector development
+    // "onCreateCommand": "mkdir -p ./.symlinks && echo '*' > ./.symlinks/.gitignore && ln -sf /workspaces/airbyte/ ./.symlinks/airbyte-root && ln -sf /workspaces/airbyte/.devcontainer/destination-snowflake/devcontainer.json ./.symlinks/destination-snowflake-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/destinations/snowflake.md ./.symlinks/destination-snowflake-docs.md"
+
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    // "remoteUser": "root"
+}
