@@ -366,9 +366,6 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
 
 
 async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
-    # Maintain the original entry point during overrides
-    original_entrypoint = await connector_container.entrypoint()
-
     # Run the connector using the local cdk if flag is set
     if context.use_local_cdk:
         context.logger.info("Using local CDK")
@@ -378,14 +375,13 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
 
         context.logger.info(f"Mounting {directory_to_mount}")
 
-        connector_container = (
-            connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount)
-            .with_entrypoint("pip")
-            .with_exec(["install", "--no-deps", "--find-links=.", f"/{path_to_cdk}"])
+        # Install the airbyte-cdk package from the local directory
+        # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
+        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
+            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
         )
 
-    # Return with the original entrypoint
-    return connector_container.with_entrypoint(original_entrypoint)
+    return connector_container
 
 
 async def with_python_connector_installed(context: ConnectorContext) -> Container:
@@ -885,15 +881,14 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
     pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
-    pip_dependencies = [dep for dep in pip_freeze_stdout.split("\n") if "airbyte-cdk" in dep]
-    if not pip_dependencies:
+    cdk_dependency_line = next((line for line in pip_freeze_stdout.split("\n") if "airbyte-cdk" in line), None)
+    if not cdk_dependency_line:
         return None
 
-    airbyte_cdk_line = pip_dependencies[0]
-    if "file://" in airbyte_cdk_line:
+    if "file://" in cdk_dependency_line:
         return "LOCAL"
 
-    _, cdk_version = airbyte_cdk_line.split("==")
+    _, cdk_version = cdk_dependency_line.split("==")
     return cdk_version
 
 
