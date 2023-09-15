@@ -259,6 +259,12 @@ def get_qa_checks_to_run(connector: Connector) -> Tuple[Callable]:
     return DEFAULT_QA_CHECKS
 
 
+def get_qa_checks_to_run(connector: Connector) -> Tuple[Callable]:
+    if connector.has_dockerfile:
+        return DEFAULT_QA_CHECKS + (check_metadata_version_matches_dockerfile_label,)
+    return DEFAULT_QA_CHECKS
+
+
 def remove_strict_encrypt_suffix(connector_technical_name: str) -> str:
     """Remove the strict encrypt suffix from a connector name.
 
