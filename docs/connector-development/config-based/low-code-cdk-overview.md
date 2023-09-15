@@ -138,7 +138,7 @@ For a deep dive into each of the components, refer to [Understanding the YAML fi
 
 ## Tutorial
 
-This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+This section is a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
 
 0. [Getting started](tutorial/0-getting-started.md)
 1. [Creating a source](tutorial/1-create-source.md)
