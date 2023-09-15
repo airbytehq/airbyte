@@ -171,10 +171,13 @@ class SourceGoogleSheets(Source):
                 # if the last row of the interval goes outside the sheet - this is normal, we will return
                 # only the real data of the sheet and in the next iteration we will loop out.
                 while row_cursor <= sheet_row_counts[sheet]:
-                    range = client.create_range(sheet, row_cursor)
-                    logger.info(f"Fetching range {range}")
                     row_batch = SpreadsheetValues.parse_obj(
-                        client.get_values(spreadsheetId=spreadsheet_id, ranges=range, majorDimension="ROWS")
+                        client.get_values(
+                            sheet=sheet,
+                            row_cursor=row_cursor,
+                            spreadsheetId=spreadsheet_id,
+                            majorDimension="ROWS",
+                        )
                     )
 
                     row_cursor += client.Backoff.row_batch_size + 1
