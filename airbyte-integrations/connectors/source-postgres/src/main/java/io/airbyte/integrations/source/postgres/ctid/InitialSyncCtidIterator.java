@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
 public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSyncCtidIterator.class);
-//  private static final int TEMP_TUPLES_IN_PAGE = 51;
-
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final long blockSize;
   private final List<String> columnNames;
@@ -189,7 +187,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
           + " times but VACUUM is still happening in between the sync, Please reach out to the customer to understand their VACUUM frequency.");
     }
     subQueriesPlan.clear();
-    subQueriesPlan.addAll(getQueryPlan(null)); // TODO: check here
+    subQueriesPlan.addAll(getQueryPlan(null));
     numberOfTimesReSynced++;
   }
 
