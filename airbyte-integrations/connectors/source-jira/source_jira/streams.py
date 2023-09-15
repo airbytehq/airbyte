@@ -1171,6 +1171,10 @@ class Sprints(JiraStream):
                 self.logger.info(f"Fetching sprints for board: {board_details}")
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["boardId"] = stream_slice["board_id"]
+        return record
+
 
 class SprintIssues(IncrementalJiraStream):
     """
