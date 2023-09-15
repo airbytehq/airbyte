@@ -5,50 +5,52 @@
   "additionalProperties": true,
   "properties": {
     "crawl": {
+      "additionalProperties": true,
       "properties": {
         "depth": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "httpStatusCode": {
-          "type": "number"
+          "type": ["null", "number"]
         },
         "loadedTime": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "loadedUrl": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "referrerUrl": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "markdown": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "metadata": {
+      "additionalProperties": true,
       "properties": {
         "canonicalUrl": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "languageCode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "title": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "text": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "url": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

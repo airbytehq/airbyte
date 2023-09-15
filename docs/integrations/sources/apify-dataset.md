@@ -44,7 +44,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version   | Date        | Pull Request                                                  | Subject                                                                     |
 | :-------- | :---------- | :------------------------------------------------------------ | :-------------------------------------------------------------------------- |
-|   1.1.0   | 2023-09-14  | [30428](https://github.com/airbytehq/airbyte/pull/30428)      | Fix broken stream, manifest refactor                                                          |
+|   2.0.0   | 2023-09-18  | [30428](https://github.com/airbytehq/airbyte/pull/30428)      | Fix broken stream, manifest refactor                                                          |
 |   1.0.0   | 2023-08-25  | [29859](https://github.com/airbytehq/airbyte/pull/29859)      | Migrate to lowcode                                                          |
 |   0.2.0   | 2022-06-20  | [28290](https://github.com/airbytehq/airbyte/pull/28290)      | Make connector work with platform changes not syncing empty stream schemas. |
 |   0.1.11  | 2022-04-27  | [12397](https://github.com/airbytehq/airbyte/pull/12397)      | No changes. Used connector to test publish workflow changes.                |
