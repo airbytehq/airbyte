@@ -35,6 +35,7 @@ def one_year_ago():
 def config(one_year_ago):
     return {
         "property_id": "108176369",
+        "property_ids": ["108176369"],
         "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
         "date_ranges_start_date": one_year_ago,
         "dimensions": ["date", "deviceCategory", "operatingSystem", "browser"],
@@ -60,6 +61,7 @@ def config(one_year_ago):
 def config_without_date_range():
     return {
         "property_id": "108176369",
+        "property_ids": ["108176369"],
         "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
         "custom_reports": [],
     }
