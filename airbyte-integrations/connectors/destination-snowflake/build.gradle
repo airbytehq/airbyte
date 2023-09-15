@@ -24,6 +24,11 @@ application {
 
 }
 
+integrationTestJava {
+    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+    jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
+}
+
 dependencies {
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
