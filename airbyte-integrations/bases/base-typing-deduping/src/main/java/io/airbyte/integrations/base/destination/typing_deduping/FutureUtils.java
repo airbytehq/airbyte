@@ -4,13 +4,19 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FutureUtils {
+  private static final Logger LOGGER = LoggerFactory.getLogger(FutureUtils.class);
 
   /**
    * Allow for configuring the number of typing and deduping threads via an enviornment variable in
@@ -24,16 +30,21 @@ public class FutureUtils {
         .orElse(defaultThreads);
   }
 
+  /**
+   * Log all exceptions from a list of futures, and rethrow the first exception if there is one.
+   * This mimics the behavior of running the futures in serial, where the first failure
+   */
   public static void reduceExceptions(final Collection<CompletableFuture<Optional<Exception>>> potentialExceptions, final String initialMessage)
       throws Exception {
-    final var exceptionMessages = potentialExceptions.stream()
+    final List<Exception> exceptions = potentialExceptions.stream()
         .map(CompletableFuture::join)
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .map(Exception::getMessage)
-        .collect(Collectors.joining("\n"));
-    if (StringUtils.isNotBlank(exceptionMessages)) {
-      throw new Exception(initialMessage + exceptionMessages);
+        .toList();
+    if (!exceptions.isEmpty()) {
+      final String stacktraces = exceptions.stream().map(ExceptionUtils::getStackTrace).collect(joining("\n"));
+      LOGGER.error(initialMessage + stacktraces + "\nRethrowing first exception.");
+      throw exceptions.get(0);
     }
   }
 
