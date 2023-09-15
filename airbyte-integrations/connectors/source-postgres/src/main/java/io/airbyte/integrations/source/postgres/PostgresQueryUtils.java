@@ -347,7 +347,7 @@ public class PostgresQueryUtils {
           resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
       Preconditions.checkState(jsonNodes.size() == 1);
       final int maxTuple = jsonNodes.get(0).get("max_tuple").asInt();
-      LOGGER.info("Stream {} estimated max tuple is {}", fullTableName, maxTuple);
+      LOGGER.info("Stream {} max tuple is {}", fullTableName, maxTuple);
       return maxTuple;
     } catch (final SQLException e) {
       throw new RuntimeException(e);
