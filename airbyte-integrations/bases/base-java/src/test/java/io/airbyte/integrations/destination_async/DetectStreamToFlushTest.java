@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -75,15 +77,14 @@ class DetectStreamToFlushTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
-    when(bufferDequeue.getTimeOfLastRecord(DESC1))
+    final Clock nowProvider = mock(Clock.class);
+    when(nowProvider.millis())
         // because we eagerly load values and later access them again
         // double the mocks for correctness; two calls here equals one test case.
-        .thenReturn(Optional.empty())
-        .thenReturn(Optional.empty())
-        .thenReturn(Optional.of(NOW))
-        .thenReturn(Optional.of(NOW))
-        .thenReturn(Optional.of(FIVE_MIN_AGO))
-        .thenReturn(Optional.of(FIVE_MIN_AGO));
+        .thenReturn(NOW.toEpochMilli())
+        .thenReturn(NOW.toEpochMilli())
+        .thenReturn(FIVE_MIN_AGO.toEpochMilli())
+        .thenReturn(FIVE_MIN_AGO.toEpochMilli());
 
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
