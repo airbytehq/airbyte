@@ -9,6 +9,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CON
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -55,22 +56,33 @@ public class MongoDbSource extends BaseConnector implements Source {
       try (final MongoClient mongoClient = createMongoClient(databaseConfig)) {
         final String databaseName = databaseConfig.get(DATABASE_CONFIGURATION_KEY).asText();
 
-        /*
-         * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
-         * needs to actually execute a command in order to fetch the cluster description. Querying for the
-         * authorized collections guarantees that the cluster description will be available to the driver.
-         */
-        if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
-          return new AirbyteConnectionStatus()
-              .withMessage("Target MongoDB database does not contain any authorized collections.")
-              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
+          /*
+           * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
+           * needs to actually execute a command in order to fetch the cluster description. Querying for the
+           * authorized collections guarantees that the cluster description will be available to the driver.
+           */
+          if (MongoUtil.getAuthorizedCollections(mongoClient, databaseName).isEmpty()) {
+            return new AirbyteConnectionStatus()
+                .withMessage("Target MongoDB database does not contain any authorized collections.")
+                .withStatus(AirbyteConnectionStatus.Status.FAILED);
+          }
+          if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
+            LOGGER.error("Target MongoDB instance is not a replica set cluster.");
+            return new AirbyteConnectionStatus()
+                .withMessage("Target MongoDB instance is not a replica set cluster.")
+                .withStatus(AirbyteConnectionStatus.Status.FAILED);
+          }
+        } else {
+          LOGGER.error("Unable to perform connection check.  Database '" + databaseName + "' does not exist.");
+          return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Database does not exist.  Please check the source's configured database name.");
         }
-        if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
-          LOGGER.error("Target MongoDB instance is not a replica set cluster.");
-          return new AirbyteConnectionStatus()
-              .withMessage("Target MongoDB instance is not a replica set cluster.")
-              .withStatus(AirbyteConnectionStatus.Status.FAILED);
-        }
+      } catch (final MongoSecurityException e) {
+        LOGGER.error("Unable to perform source check operation.", e);
+        return new AirbyteConnectionStatus()
+            .withMessage("Authentication failed.  Please check the source's configured credentials.")
+            .withStatus(AirbyteConnectionStatus.Status.FAILED);
       } catch (final Exception e) {
         LOGGER.error("Unable to perform source check operation.", e);
         return new AirbyteConnectionStatus()

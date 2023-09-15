@@ -21,6 +21,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoSecurityException;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
@@ -28,6 +30,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.json.Jsons;
@@ -65,6 +68,10 @@ class MongoDbSourceTest {
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
     source = spy(new MongoDbSource(cdcInitializer));
+    final MongoIterable<String> iterable = mock(MongoIterable.class);
+
+    when(iterable.spliterator()).thenReturn(List.of(DB_NAME).spliterator());
+    when(mongoClient.listDatabaseNames()).thenReturn(iterable);
     doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY));
   }
 
@@ -82,6 +89,26 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, airbyteConnectionStatus.getStatus());
+  }
+
+  @Test
+  void testCheckOperationMissingDatabase() throws IOException {
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+    final Document response = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+    final MongoIterable<String> iterable = mock(MongoIterable.class);
+
+    when(iterable.spliterator()).thenReturn(List.of("other").spliterator());
+    when(mongoClient.listDatabaseNames()).thenReturn(iterable);
+
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoDatabase.runCommand(any())).thenReturn(response);
+    when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+
+    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
+    assertNotNull(airbyteConnectionStatus);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
   }
 
   @Test
@@ -133,6 +160,20 @@ class MongoDbSourceTest {
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
     assertEquals("Target MongoDB instance is not a replica set cluster.", airbyteConnectionStatus.getMessage());
+  }
+
+  @Test
+  void testCheckOperationAuthenticationFailure() {
+    final ClusterDescription clusterDescription = mock(ClusterDescription.class);
+
+    when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
+    when(mongoClient.getDatabase(any())).thenThrow(new MongoSecurityException(
+        MongoCredential.createCredential("username", DB_NAME, "password".toCharArray()), "test"));
+    when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+
+    final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
+    assertNotNull(airbyteConnectionStatus);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
   }
 
   @Test
