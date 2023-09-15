@@ -1,21 +1,18 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/google-analytics-data-api",
-  "connectionSpecification" : {
-    "$schema" : "https://json-schema.org/draft-07/schema#",
-    "title" : "Google Analytics (Data API) Spec",
-    "type" : "object",
-    "required" : [
-      "property_ids",
-      "date_ranges_start_date"
-    ],
-    "additionalProperties" : true,
-    "properties" : {
-      "credentials" : {
-        "order" : 0,
-        "type" : "object",
-        "title" : "Credentials",
-        "description" : "Credentials for the service",
-        "oneOf" : [
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-data-api",
+  "connectionSpecification": {
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "title": "Google Analytics (Data API) Spec",
+    "type": "object",
+    "required": ["property_ids"],
+    "additionalProperties": true,
+    "properties": {
+      "credentials": {
+        "order": 0,
+        "type": "object",
+        "title": "Credentials",
+        "description": "Credentials for the service",
+        "oneOf": [
           {
             "title" : "Authenticate via Google (Oauth)",
             "type" : "object",
