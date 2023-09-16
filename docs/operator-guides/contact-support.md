@@ -1,6 +1,6 @@
 # Airbyte Support
 
-Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there! 
+Hold up! Have you looked through [the docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there! 
 
 ## Airbyte Open Source Support
 
@@ -22,7 +22,7 @@ If you require personalized support, reach out to our sales team to inquire abou
 
 ## Airbyte Cloud Support
 
-If you have questions about connector setup, error resolution, or want to report a bug, Airbyte Support is available to assist you. We recommend checking [our documentation](https://docs.airbyte.com/) and searching our [Help Center](https://support.airbyte.com/hc/en-us) before opening a support ticket.
+If you have questions about connector setup, error resolution, or want to report a bug, Airbyte Support is available to assist you. We recommend first checking [our documentation](https://docs.airbyte.com/) and searching our [Help Center](https://support.airbyte.com/hc/en-us) before opening a support ticket.
 
 If you couldn't find the information you need in our docs or Help Center, open a ticket within the Airbyte Cloud platform by selecting the "Support" icon in the lower left navigation bar. Alternatively, you can submit a ticket through our [Help Center](https://support.airbyte.com/hc/en-us) by completing an Airbyte Cloud Support Request.
 
