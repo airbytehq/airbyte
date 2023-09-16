@@ -333,10 +333,10 @@ def _install_python_dependencies_from_poetry(
 ) -> Container:
     pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-    poetry_install_no_venv_cmd = ["poetry", "install", "--no-root",]
+    poetry_install_no_venv_cmd = ["poetry", "install", "--no-root"]
     if additional_dependency_groups:
         for group in additional_dependency_groups:
-             poetry_install_no_venv_cmd += ["--with", group]
+            poetry_install_no_venv_cmd += ["--with", group]
 
     return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
 
@@ -373,11 +373,9 @@ async def with_installed_python_package(
 
     if has_pyproject_toml:
         container = _install_python_dependencies_from_poetry(container)
-
-    if has_setup_py:
+    elif has_setup_py:
         container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
-
-    if has_requirements_txt:
+    elif has_requirements_txt:
         container = _install_python_dependencies_from_requirements_txt(container)
 
     return container

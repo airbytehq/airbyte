@@ -15,7 +15,8 @@ pytestmark = [
 @pytest.fixture
 def python_connectors() -> Connector:
     return [
-        Connector("source-openweather"), # setup.py based
+        Connector("source-openweather"),  # setup.py based
+        Connector("destination-duckdb"),  # pyproject.toml based
     ]
 
 
