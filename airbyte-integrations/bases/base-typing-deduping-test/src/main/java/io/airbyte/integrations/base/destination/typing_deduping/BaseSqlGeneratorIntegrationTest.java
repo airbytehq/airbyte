@@ -797,9 +797,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * primary key, or cursor.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"$", "\"", "'", "`", ".", "$$", "\\"})
+  @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
-    final String str = namespace + "_" + specialChars;
+    final String str = specialChars + "_" + namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
     final StreamId modifiedStreamId = buildStreamId(
         originalStreamId.finalNamespace(),

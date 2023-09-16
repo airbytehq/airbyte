@@ -270,7 +270,7 @@ class AcceptanceTests(PytestStep):
             .with_env_variable("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH", "/dagger_share/connector_under_test_image.tar")
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
-            .with_(environments.mounted_connector_secrets(self.context, secret_directory_path="/test_input/secrets"))
+            .with_(await environments.mounted_connector_secrets(self.context, "/test_input/secrets"))
         )
         if "_EXPERIMENTAL_DAGGER_RUNNER_HOST" in os.environ:
             self.context.logger.info("Using experimental dagger runner host to run CAT with dagger-in-dagger")

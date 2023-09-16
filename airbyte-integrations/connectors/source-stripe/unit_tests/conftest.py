@@ -35,8 +35,8 @@ def incremental_args_fixture(stream_args):
 
 
 @pytest.fixture(name="invoices")
-def invoices_fixture(incremental_stream_args):
-    def mocker(incremental_args=incremental_stream_args):
+def invoices_fixture(stream_args):
+    def mocker(args=stream_args):
         return IncrementalStripeStream(
             name="invoices",
             path="invoices",
@@ -55,7 +55,7 @@ def invoices_fixture(incremental_stream_args):
                 "invoice.updated",
                 "invoice.voided",
             ],
-            **incremental_stream_args
+            **args
         )
     return mocker
 

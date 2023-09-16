@@ -18,6 +18,7 @@ import yaml
 from ci_credentials import SecretsManager
 from pydash.objects import get
 from rich.console import Console
+from simpleeval import simple_eval
 
 console = Console()
 
@@ -259,7 +260,6 @@ class Connector:
         except FileNotFoundError:
             pass
         return None
-        # raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
 
     @property
     def version(self) -> str:
@@ -287,6 +287,37 @@ class Connector:
     @property
     def support_level(self) -> Optional[str]:
         return self.metadata.get("supportLevel") if self.metadata else None
+
+    def metadata_query_match(self, query_string: str) -> bool:
+        """Evaluate a query string against the connector metadata.
+
+        Based on the simpleeval library:
+        https://github.com/danthedeckie/simpleeval
+
+        Examples
+        --------
+        >>> connector.metadata_query_match("'s3' in data.name")
+        True
+
+        >>> connector.metadata_query_match("data.supportLevel == 'certified'")
+        False
+
+        >>> connector.metadata_query_match("data.ab_internal.ql >= 100")
+        True
+
+        Args:
+            query_string (str): The query string to evaluate.
+
+        Returns:
+            bool: True if the query string matches the connector metadata, False otherwise.
+        """
+        try:
+            matches = simple_eval(query_string, names={"data": self.metadata})
+            return bool(matches)
+        except Exception as e:
+            # Skip on error as we not all fields are present in all connectors.
+            logging.debug(f"Failed to evaluate query string {query_string} for connector {self.technical_name}, error: {e}")
+            return False
 
     @property
     def ab_internal_sl(self) -> int:

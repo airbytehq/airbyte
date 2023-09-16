@@ -16,7 +16,6 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation libs.airbyte.protocol
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.1.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -21,6 +21,7 @@ pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
 pandas = "^2.0.3"
+simpleeval = "^0.9.13"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"

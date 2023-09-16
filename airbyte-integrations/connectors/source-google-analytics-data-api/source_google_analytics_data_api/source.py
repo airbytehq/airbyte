@@ -13,6 +13,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import dpath
 import jsonschema
+import pendulum
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -52,7 +53,19 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
-            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+
+            try:
+                metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            except HTTPError as e:
+                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                    internal_message = "Unauthorized error reached."
+                    message = "Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
+
+                    unauthorized_error = AirbyteTracedException(
+                        message=message, internal_message=internal_message, failure_type=FailureType.config_error
+                    )
+                    raise unauthorized_error
+
             if not metadata:
                 raise Exception("failed to get metadata, over quota, try later")
             self._metadata = {
@@ -156,7 +169,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                d: {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
+                d.replace(":", "_"): {
+                    "type": get_dimensions_type(d),
+                    "description": self.metadata["dimensions"].get(d, {}).get("description", d),
+                }
                 for d in self.config["dimensions"]
             }
         )
@@ -171,7 +187,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                m: {
+                m.replace(":", "_"): {
                     "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
                     "description": self.metadata["metrics"].get(m, {}).get("description", m),
                 }
@@ -213,9 +229,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
-        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
-        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
+        dimensions = [h.get("name").replace(":", "_") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name").replace(":", "_") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
             record = {
@@ -252,7 +268,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
-
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
@@ -268,7 +283,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         today: datetime.date = datetime.date.today()
 
         start_date = stream_state and stream_state.get(self.cursor_field)
@@ -358,6 +372,21 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
+    @property
+    def default_date_ranges_start_date(self) -> str:
+        # set default date ranges start date to 2 years ago
+        return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
+
+    def _validate_and_transform_start_date(self, start_date: str) -> datetime.date:
+        start_date = self.default_date_ranges_start_date if not start_date else start_date
+
+        try:
+            start_date = utils.string_to_date(start_date)
+        except ValueError as e:
+            raise ConfigurationError(str(e))
+
+        return start_date
+
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
         if "custom_reports" in config:
             if isinstance(config["custom_reports"], str):
@@ -396,10 +425,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             except ValueError:
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
 
-        try:
-            config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
-        except ValueError as e:
-            raise ConfigurationError(str(e))
+        config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
 
         if not config.get("window_in_days"):
             source_spec = self.spec(logging.getLogger("airbyte"))
@@ -413,67 +439,79 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return authenticator_class(**get_credentials(credentials))
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
-        try:
-            config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
-        except ConfigurationError as e:
-            return False, str(e)
-        config["authenticator"] = self.get_authenticator(config)
+        for property_id in config["property_ids"]:
+            reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
+            try:
+                config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
+            except ConfigurationError as e:
+                return False, str(e)
+            config["authenticator"] = self.get_authenticator(config)
 
-        metadata = None
-        try:
-            # explicitly setting small page size for the check operation not to cause OOM issues
-            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
-            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-        except HTTPError as e:
-            error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
-            if e.response.status_code in error_list:
-                internal_message = f"Incorrect Property ID: {config['property_id']}"
-                property_id_docs_url = (
-                    "https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id"
-                )
-                message = f"Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics {property_id_docs_url} to find your Property ID."
+            _config = config.copy()
+            _config["property_id"] = property_id
 
-                wrong_property_id_error = AirbyteTracedException(
-                    message=message, internal_message=internal_message, failure_type=FailureType.config_error
-                )
-                raise wrong_property_id_error
+            metadata = None
+            try:
+                # explicitly setting small page size for the check operation not to cause OOM issues
+                stream = GoogleAnalyticsDataApiMetadataStream(config=_config, authenticator=_config["authenticator"])
+                metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            except HTTPError as e:
+                error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
+                if e.response.status_code in error_list:
+                    internal_message = f"Incorrect Property ID: {property_id}"
+                    property_id_docs_url = (
+                        "https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id"
+                    )
+                    message = f"Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics {property_id_docs_url} to find your Property ID."
 
-        if not metadata:
-            return False, "failed to get metadata, over quota, try later"
+                    wrong_property_id_error = AirbyteTracedException(
+                        message=message, internal_message=internal_message, failure_type=FailureType.config_error
+                    )
+                    raise wrong_property_id_error
 
-        dimensions = {d["apiName"] for d in metadata["dimensions"]}
-        metrics = {d["apiName"] for d in metadata["metrics"]}
+            if not metadata:
+                return False, "Failed to get metadata, over quota, try later"
 
-        for report in config["custom_reports"]:
-            invalid_dimensions = set(report["dimensions"]) - dimensions
-            if invalid_dimensions:
-                invalid_dimensions = ", ".join(invalid_dimensions)
-                return False, WRONG_DIMENSIONS.format(fields=invalid_dimensions, report_name=report["name"])
-            invalid_metrics = set(report["metrics"]) - metrics
-            if invalid_metrics:
-                invalid_metrics = ", ".join(invalid_metrics)
-                return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
-            report_stream = self.instantiate_report_class(report, config, page_size=100)
-            # check if custom_report dimensions + metrics can be combined and report generated
-            stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
-            next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
-        return True, None
+            dimensions = {d["apiName"] for d in metadata["dimensions"]}
+            metrics = {d["apiName"] for d in metadata["metrics"]}
+
+            for report in _config["custom_reports"]:
+                # Check if custom report dimensions supported. Compare them with dimensions provided by GA API
+                invalid_dimensions = set(report["dimensions"]) - dimensions
+                if invalid_dimensions:
+                    invalid_dimensions = ", ".join(invalid_dimensions)
+                    return False, WRONG_DIMENSIONS.format(fields=invalid_dimensions, report_name=report["name"])
+
+                # Check if custom report metrics supported. Compare them with metrics provided by GA API
+                invalid_metrics = set(report["metrics"]) - metrics
+                if invalid_metrics:
+                    invalid_metrics = ", ".join(invalid_metrics)
+                    return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
+
+                report_stream = self.instantiate_report_class(report, _config, page_size=100)
+                # check if custom_report dimensions + metrics can be combined and report generated
+                stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+                next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+
+            return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
         config["authenticator"] = self.get_authenticator(config)
-        return [self.instantiate_report_class(report, config) for report in reports + config["custom_reports"]]
+        return [stream for report in reports + config["custom_reports"] for stream in self.instantiate_report_streams(report, config)]
 
-    @staticmethod
-    def instantiate_report_class(report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+    def instantiate_report_streams(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+        for property_id in config["property_ids"]:
+            yield self.instantiate_report_class(report=report, config={**config, "property_id": property_id})
+
+    def instantiate_report_class(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
         stream_config = {
+            **config,
             "metrics": report["metrics"],
             "dimensions": report["dimensions"],
-            **config,
         }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:

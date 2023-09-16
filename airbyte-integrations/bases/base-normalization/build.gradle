@@ -34,11 +34,13 @@ checkSshScriptCopy.configure {
     dependsOn copySshScript
 }
 
-tasks.named('airbyteDocker').configure {
+def generate = tasks.register('generate')
+generate.configure {
     dependsOn checkSshScriptCopy
 }
+
 tasks.named('check').configure {
-    dependsOn checkSshScriptCopy
+    dependsOn generate
 }
 
 def customIntegrationTestPython = tasks.register('customIntegrationTestPython', PythonTask) {
@@ -60,44 +62,6 @@ static def getDockerImageName(String customConnector) {
 
 static def getImageNameWithTag(String customConnector) {
     return "${getDockerImageName(customConnector)}:dev"
-}
-
-def buildAirbyteDocker(String customConnector) {
-    // def baseCommand = ['docker', 'build', '.', '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector)]
-    // As the base dbt image (https://hub.docker.com/r/fishtownanalytics/dbt/tags) we are using is only build for amd64, we need to use buildkit to force builds for your local environment
-    // We are lucky that all the python code dbt uses is mutli-arch compatible
-
-    def arch = 'linux/amd64'
-    if (Os.isArch("aarch_64") || Os.isArch("aarch64")) {
-        arch = 'linux/arm64'
-    }
-
-    def cmdArray = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
-    // println("Building normalization container: " + cmdArray.join(" "))
-
-    return {
-        commandLine cmdArray
-    }
-}
-
-[ 'airbyteDockerMSSql': 'mssql',
-  'airbyteDockerMySql': 'mysql',
-  'airbyteDockerOracle': 'oracle',
-  'airbyteDockerClickhouse': 'clickhouse',
-  'airbyteDockerSnowflake': 'snowflake',
-  'airbyteDockerRedshift': 'redshift',
-  'airbyteDockerTiDB': 'tidb',
-  'airbyteDockerDuckDB': 'duckdb'
-].forEach {taskName, customConnector ->
-    def task = tasks.register(taskName, Exec) {
-        configure buildAirbyteDocker(customConnector)
-    }
-    task.configure {
-        dependsOn checkSshScriptCopy
-    }
-    tasks.named('assemble').configure {
-        dependsOn task
-    }
 }
 
 def customIntegrationTestsCoverage = tasks.named('_customIntegrationTestsCoverage')

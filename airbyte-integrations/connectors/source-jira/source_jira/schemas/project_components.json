@@ -505,6 +505,12 @@
       "type": "integer",
       "description": "The ID of the project the component is assigned to.",
       "readOnly": true
+    },
+    "componentBean": {
+      "type": ["null", "object"]
+    },
+    "issueCount": {
+      "type": ["null", "integer"]
     }
   },
   "additionalProperties": true,
