@@ -57,14 +57,11 @@ class GitPushChanges(AutoCommitStep):
     """
 
     title = "Push changes to the remote repository"
-    skip_ci = False
 
     async def _run(self) -> StepResult:
-        commit_and_push = await (
-            self.container_with_airbyte_repo.with_exec(["git", "pull", "--rebase", "origin", self.context.git_branch])
-            .with_exec(["git", "commit", "--allow-empty", "-m", self.commit_message])
-            .with_exec(["git", "push", "origin", f"HEAD:{self.context.git_branch}"])
-        )
+        commit_and_push = await self.container_with_airbyte_repo.with_exec(
+            ["git", "pull", "--rebase", "origin", self.context.git_branch]
+        ).with_exec(["git", "push", "origin", f"HEAD:{self.context.git_branch}"])
 
         return StepResult(
             self, StepStatus.SUCCESS, stdout=f"Changes pushed to {self.context.git_branch} branch", output_artifact=commit_and_push
