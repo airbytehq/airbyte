@@ -10,7 +10,7 @@ import os
 from typing import TYPE_CHECKING, Optional
 
 from connector_ops.utils import console
-from pipelines import main_logger
+from pipelines import consts, main_logger
 from pipelines.bases import CIContext
 
 if TYPE_CHECKING:
@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 from github import Github, PullRequest
 
-AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 
@@ -52,7 +51,7 @@ def update_commit_status_check(
     safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
     try:
         github_client = Github(os.environ["CI_GITHUB_ACCESS_TOKEN"])
-        airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
+        airbyte_repo = github_client.get_repo(consts.AIRBYTE_GITHUB_REPO)
     except Exception as e:
         if logger:
             logger.error("No commit status check sent, the connection to Github API failed", exc_info=True)
@@ -87,7 +86,7 @@ def get_pull_request(pull_request_number: int, github_access_token: str) -> Pull
         PullRequest: The pull request object.
     """
     github_client = Github(github_access_token)
-    airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
+    airbyte_repo = github_client.get_repo(consts.AIRBYTE_GITHUB_REPO)
     return airbyte_repo.get_pull(pull_request_number)
 
 

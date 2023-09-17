@@ -3,7 +3,6 @@
 #
 
 import platform
-from pathlib import Path
 
 from dagger import Platform
 
@@ -38,3 +37,5 @@ GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
+AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
+AIRBYTE_GITHUB_REPO_URL = f"https://github.com/{AIRBYTE_GITHUB_REPO}.git"
