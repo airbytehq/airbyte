@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from base_images import build, errors
 from base_images.python import v1 as python_v1
