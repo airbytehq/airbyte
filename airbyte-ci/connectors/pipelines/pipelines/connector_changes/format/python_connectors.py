@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import asyncer
+from typing import List, Tuple
+
 from pipelines.actions import environments
-from pipelines.bases import Step, StepResult
-from pipelines.utils import with_exit_code, with_stderr, with_stdout
+from pipelines.bases import StepResult
+from pipelines.connector_changes.common import ConnectorChangeStep
 
 
-class FormatConnectorCode(Step):
+class FormatConnectorCode(ConnectorChangeStep):
     """
     A step to format a Python connector code.
     """
@@ -34,24 +35,25 @@ class FormatConnectorCode(Step):
             "--exclude=**/models/__init__.py",
         ]
 
-    async def _run(self) -> StepResult:
+    async def make_connector_change(self) -> Tuple[StepResult, List[str]]:
+        in_container_code_dir = f"/airbyte/{self.context.connector.code_directory}"
+
         formatted = (
             environments.with_testing_dependencies(self.context)
-            .with_mounted_directory("/connector_code", await self.context.get_connector_dir())
-            .with_workdir("/connector_code")
+            .with_mounted_directory(in_container_code_dir, await (await self.get_connector_dir()))
+            .with_workdir(in_container_code_dir)
             .with_exec(self.licenseheaders_cmd)
             .with_exec(self.isort_cmd)
             .with_exec(self.black_cmd)
         )
-        async with asyncer.create_task_group() as task_group:
-            soon_exit_code = task_group.soonify(with_exit_code)(formatted)
-            soon_stderr = task_group.soonify(with_stderr)(formatted)
-            soon_stdout = task_group.soonify(with_stdout)(formatted)
-
+        format_result = await self.get_step_result(formatted)
+        self.container_with_airbyte_repo = self.container_with_airbyte_repo.with_directory(
+            in_container_code_dir, format_result.output_artifact.directory(in_container_code_dir)
+        )
         return StepResult(
             self,
-            self.get_step_status_from_exit_code(await soon_exit_code),
-            stderr=soon_stderr.value,
-            stdout=soon_stdout.value,
-            output_artifact=formatted.directory("/connector_code"),
+            status=format_result.status,
+            stdout=format_result.stdout,
+            stderr=format_result.stderr,
+            output_artifact=self.container_with_airbyte_repo,
         )

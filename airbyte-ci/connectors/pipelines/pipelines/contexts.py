@@ -74,6 +74,7 @@ class PipelineContext:
         ci_gcs_credentials: Optional[str] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
+        open_report_in_browser: bool = True,
     ):
         """Initialize a pipeline context.
 
@@ -116,6 +117,7 @@ class PipelineContext:
         self.started_at = None
         self.stopped_at = None
         self.secrets_to_mask = []
+        self.open_report_in_browser = open_report_in_browser
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -320,6 +322,7 @@ class ConnectorContext(PipelineContext):
         fail_fast: bool = False,
         fast_tests_only: bool = False,
         code_tests_only: bool = False,
+        open_report_in_browser: bool = True,
     ):
         """Initialize a connector context.
 
@@ -372,6 +375,7 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
+            open_report_in_browser=open_report_in_browser,
         )
 
     @property
