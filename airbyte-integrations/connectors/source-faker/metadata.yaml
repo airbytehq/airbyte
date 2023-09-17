@@ -45,5 +45,5 @@ data:
   tags:
     - language:python
   connectorBuildOptions:
-    baseImage: "airbyte-python-connector-base:1.1.0"
+    baseImage: "airbyte-python-connector-base:1.0.0"
 metadataSpecVersion: "1.0"
