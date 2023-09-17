@@ -66,4 +66,6 @@ class GitPushChanges(AutoCommitStep):
             .with_exec(["git", "push", "origin", f"HEAD:{self.context.git_branch}"])
         )
 
-        return StepResult(self, StepStatus.SUCCESS, stdout=f"Changes pushed to {self.git_branch} branch", output_artifact=commit_and_push)
+        return StepResult(
+            self, StepStatus.SUCCESS, stdout=f"Changes pushed to {self.context.git_branch} branch", output_artifact=commit_and_push
+        )
