@@ -31,10 +31,9 @@ from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO
         ({"custom_reports_array": "[{\"name\": \"name\", \"dimensions\": [\"unknown\"], \"metrics\": [\"totalUsers\"]}]"},
          Status.FAILED, "'The custom report name entered contains invalid dimensions: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'"),
         ({"custom_reports_array": "[{\"name\": \"name\", \"dimensions\": [\"date\"], \"metrics\": [\"unknown\"]}]"}, Status.FAILED, "'The custom report name entered contains invalid metrics: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'"),
-        ({"custom_reports_array": "[{\"name\": \"pivot_report\", \"dateRanges\": [{ \"startDate\": \"2020-09-01\", \"endDate\": "
-                            "\"2020-09-15\" }], \"dimensions\": [\"browser\", \"country\", \"language\"], \"metrics\": [\"sessions\"], "
-                            "\"pivots\": {}}]"},
-         Status.FAILED, '"The custom report pivot_report entered contains invalid pivots: {} is not of type \'null\', \'array\'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot)."'),
+        ({"custom_reports_array": "[{\"name\": \"pivot_report\", \"dateRanges\": [{ \"startDate\": \"2020-09-01\", \"endDate\": \"2020-09-15\" }], \"dimensions\": [\"browser\", \"country\", \"language\"], \"metrics\": [\"sessions\"], \"pivots\": {}}]"},
+         Status.FAILED,
+         "\"The custom report pivot_report entered contains invalid pivots: {} is not of type 'null', 'array'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).\""),
     ],
 )
 def test_check(requests_mock, config_gen, config_values, is_successful, message):
