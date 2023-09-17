@@ -50,7 +50,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
-      - name: Pull formatting changes [PULL REQUESTS]
+      - name: Pull autocommit changes [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: actions/checkout@v3
         with:
