@@ -21,6 +21,12 @@
         "$ref": "rich_text.json"
       }
     },
+    "description": {
+      "type": "array",
+      "items": {
+        "$ref": "rich_text.json"
+      }
+    },
     "last_edited_by": {
       "$ref": "user.json"
     },

@@ -12,11 +12,20 @@
     "created_time": {
       "type": "string"
     },
+    "created_by": {
+      "$ref": "user.json"
+    },
     "last_edited_time": {
       "type": "string"
     },
+    "last_edited_by": {
+      "$ref": "user.json"
+    },
     "archived": {
       "type": "boolean"
+    },
+    "icon": {
+      "type": ["null", "string"]
     },
     "cover": {
       "$ref": "file.json"
