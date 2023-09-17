@@ -7,6 +7,7 @@ import json
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
@@ -54,7 +55,6 @@ class TestBackoff:
     def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
         # turn Campaigns into non batch mode to test non batch logic
-        mocker.patch.object(Campaigns, "use_batch", new_callable=mocker.PropertyMock, return_value=False)
         campaign_responses = [
             fb_call_rate_response,
             {
@@ -114,7 +114,10 @@ class TestBackoff:
         stream = AdCreatives(api=api, include_deleted=False)
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
-        assert records == [{"name": "creative 1"}, {"name": "creative 2"}]
+        assert records == [
+            {'id': '123', 'object_type': 'SHARE', 'status': 'ACTIVE'},
+            {'id': '1234', 'object_type': 'SHARE', 'status': 'ACTIVE'}
+        ]
 
     @pytest.mark.parametrize(
         "error_response",
@@ -155,7 +158,7 @@ class TestBackoff:
         stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
-        except FacebookRequestError:
+        except AirbyteTracedException:
             assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
 
     def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
@@ -216,5 +219,5 @@ class TestBackoff:
         stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
-        except FacebookRequestError:
+        except AirbyteTracedException:
             assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6"]

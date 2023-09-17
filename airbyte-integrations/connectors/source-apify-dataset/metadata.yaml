@@ -7,6 +7,7 @@ data:
       enabled: true
     cloud:
       enabled: true
+      dockerImageTag: 0.2.0  # https://github.com/airbytehq/airbyte/issues/30478
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
