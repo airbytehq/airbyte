@@ -44,6 +44,4 @@ data:
   supportLevel: community
   tags:
     - language:python
-  connectorBuildOptions:
-    baseImage: "airbyte-python-connector-base:1.0.0"
 metadataSpecVersion: "1.0"
