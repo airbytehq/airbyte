@@ -679,6 +679,38 @@ class IssueTypeScreenSchemes(JiraStream):
         return "issuetypescreenscheme"
 
 
+class IssueTransitions(StartDateJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
+    """
+
+    primary_key = ["issueId", "id"]
+    extract_field = "transitions"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
+            authenticator=self.authenticator,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"issue/{stream_slice['key']}/transitions"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for issue in read_full_refresh(self.issues_stream):
+            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
+
+
 class IssueVotes(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
