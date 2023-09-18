@@ -27,17 +27,18 @@ from .utils import ShopifyWrongShopNameError
 
 
 class ShopifyStream(HttpStream, ABC):
+
+    # define default logger
+    logger = logging.getLogger("airbyte")
+
     # Latest Stable Release
     api_version = "2023-07"
     # Page size
     limit = 250
-    # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
+
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
-
-    # define default logger
-    logger = logging.getLogger("airbyte")
 
     raise_on_http_errors = True
     max_retries = 5
@@ -46,6 +47,11 @@ class ShopifyStream(HttpStream, ABC):
         super().__init__(authenticator=config["authenticator"])
         self._transformer = DataTypeEnforcer(self.get_json_schema())
         self.config = config
+
+    @property
+    @abstractmethod
+    def data_field(self) -> str:
+        """The name of the field in the response which contains the data"""
 
     @property
     def url_base(self) -> str:
@@ -58,8 +64,7 @@ class ShopifyStream(HttpStream, ABC):
         # by default, we use the user defined `Start Date` as initial value, or 0 for `id`-dependent streams.
         return 0 if self.filter_field == "since_id" else (self.config.get("start_date") or "")
 
-    @staticmethod
-    def next_page_token(response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.links.get("next", None)
         if next_page:
             return dict(parse_qsl(urlparse(next_page.get("url")).query))
@@ -112,10 +117,66 @@ class ShopifyStream(HttpStream, ABC):
         else:
             return super().should_retry(response)
 
+
+class ShopifyDeletedEventsStream(ShopifyStream):
+
+    data_field = "events"
+    primary_key = "id"
+    cursor_field = "deleted_at"
+
     @property
-    @abstractmethod
-    def data_field(self) -> str:
-        """The name of the field in the response which contains the data"""
+    def availability_strategy(self) -> None:
+        """
+        No need to apply the `availability strategy` for this service stream.
+        """
+        return None
+
+    def __init__(self, config: Dict, deleted_events_api_name: str):
+        self.deleted_events_api_name = deleted_events_api_name
+        super().__init__(config)
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+    def get_json_schema(self) -> None:
+        """
+        No need to apply the `schema` for this service stream.
+        """
+        return {}
+
+    def produce_deleted_records_from_events(self, delete_events: Iterable[Mapping[str, Any]] = []) -> None:
+        for event in delete_events:
+            yield {
+                "id": event["subject_id"],
+                self.cursor_field: event["created_at"],
+                "updated_at": event["created_at"],
+                "deleted_message": event["message"],
+                "deleted_description": event["description"],
+                "shop_url": event["shop_url"],
+            }
+
+    def read_records(self, stream_state: Mapping[str, Any] = None, **kwargs):
+        delete_events = super().read_records(stream_state=stream_state, **kwargs)
+        yield from self.produce_deleted_records_from_events(delete_events)
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
+    ) -> Mapping[str, Any]:
+        params = {}
+        if not next_page_token:
+            params.update(**{"filter": self.deleted_events_api_name, "verb": "destroy"})
+        else:
+            # `filter` and `verb` cannot be passed, when `page_info` is present.
+            # See https://shopify.dev/api/usage/pagination-rest
+            params.update(**next_page_token)
+        if stream_state:
+            state = stream_state.get("deleted", {}).get(self.cursor_field)
+            if state:
+                params["created_at_min"] = state
+        return params
 
 
 class IncrementalShopifyStream(ShopifyStream, ABC):
@@ -127,6 +188,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
+    deleted_cursor_field = "deleted_at"
 
     @property
     def default_state_comparison_value(self) -> Union[int, str]:
@@ -176,6 +238,64 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     yield record
         else:
             yield from records_slice
+
+
+class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
+    @property
+    @abstractmethod
+    def deleted_events_api_name(self) -> str:
+        """
+        The string value of the Shopify Events Object to pull:
+
+            articles -> Article
+            blogs -> Blog
+            custom_collections -> Collection
+            orders -> Order
+            pages -> Page
+            price_rules -> PriceRule
+            products -> Product
+
+        """
+
+    @property
+    def deleted_events(self) -> ShopifyDeletedEventsStream:
+        """
+        The Events stream instance to fetch the `destroyed` records for specified `deleted_events_api_name`, like: `Product`.
+        See more in `ShopifyDeletedEventsStream` class.
+        """
+        return ShopifyDeletedEventsStream(self.config, self.deleted_events_api_name)
+
+    @property
+    def default_deleted_state_comparison_value(self) -> Union[int, str]:
+        """
+        Set the default STATE comparison value for cases when the deleted record doesn't have it's value.
+        We expect the `deleted_at` cursor field for destroyed records would be always type of String.
+        """
+        return ""
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State.
+        """
+        state = super().get_updated_state(current_stream_state, latest_record)
+        # add `deleted` property to each stream supports `deleted events`,
+        # to povide the `Incremental` sync mode, for the `Incremental Delete` records.
+        last_deleted_record_value = latest_record.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
+        current_deleted_state_value = current_stream_state.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
+        state["deleted"] = {self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)}
+        return state
+
+    def read_records(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Mapping[str, Any]]:
+        """Override to fetch deleted records for supported streams"""
+        # main records stream
+        yield from super().read_records(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        # fetch deleted events after the Stream data is pulled
+        yield from self.deleted_events.read_records(stream_state=stream_state, **kwargs)
 
 
 class ShopifySubstream(IncrementalShopifyStream):
@@ -283,7 +403,10 @@ class ShopifySubstream(IncrementalShopifyStream):
                         }
                     )
             else:
-                yield {self.slice_key: record[self.nested_record]}
+                # avoid checking `deleted` records for substreams, a.k.a `Metafields` streams,
+                # since `deleted` records are not available, thus we avoid HTTP-400 errors.
+                if self.deleted_cursor_field not in record:
+                    yield {self.slice_key: record[self.nested_record]}
 
         # output slice from sorted list to avoid filtering older records
         if self.nested_substream:
@@ -323,11 +446,12 @@ class MetafieldShopifySubstream(ShopifySubstream):
         return f"{self.parent_stream_class.data_field}/{object_id}/{self.data_field}.json"
 
 
-class Articles(IncrementalShopifyStream):
+class Articles(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "articles"
     cursor_field = "id"
     order_field = "id"
     filter_field = "since_id"
+    deleted_events_api_name = "Article"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -337,11 +461,12 @@ class MetafieldArticles(MetafieldShopifySubstream):
     parent_stream_class: object = Articles
 
 
-class Blogs(IncrementalShopifyStream):
+class Blogs(IncrementalShopifyStreamWithDeletedEvents):
     cursor_field = "id"
     order_field = "id"
     data_field = "blogs"
     filter_field = "since_id"
+    deleted_events_api_name = "Blog"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -362,8 +487,9 @@ class MetafieldCustomers(MetafieldShopifySubstream):
     parent_stream_class: object = Customers
 
 
-class Orders(IncrementalShopifyStream):
+class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
+    deleted_events_api_name = "Order"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -402,9 +528,10 @@ class MetafieldDraftOrders(MetafieldShopifySubstream):
     parent_stream_class: object = DraftOrders
 
 
-class Products(IncrementalShopifyStream):
+class Products(IncrementalShopifyStreamWithDeletedEvents):
     use_cache = True
     data_field = "products"
+    deleted_events_api_name = "Product"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -533,8 +660,9 @@ class AbandonedCheckouts(IncrementalShopifyStream):
         return params
 
 
-class CustomCollections(IncrementalShopifyStream):
+class CustomCollections(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "custom_collections"
+    deleted_events_api_name = "Collection"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -651,8 +779,9 @@ class TenderTransactions(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
-class Pages(IncrementalShopifyStream):
+class Pages(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "pages"
+    deleted_events_api_name = "Page"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
@@ -662,8 +791,9 @@ class MetafieldPages(MetafieldShopifySubstream):
     parent_stream_class: object = Pages
 
 
-class PriceRules(IncrementalShopifyStream):
+class PriceRules(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "price_rules"
+    deleted_events_api_name = "PriceRule"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"
