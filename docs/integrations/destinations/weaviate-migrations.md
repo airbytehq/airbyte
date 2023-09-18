@@ -8,15 +8,11 @@ This version adds several new features like flexible embedding options, overwrit
 
 Due to a change of the configuration structure, it's necessary to reconfigure existing destinations with the same information (e.g. credentials).
 
-### Configurable object class
-
-Instead of creating separate object classes per stream, it's now possible to configure a single object class for all streams. This is configured via the `Class name` field in the configuration. If your downstream processing relies on the old behavior, you can configure the class name to be the same as the stream name. In case you are loading multiple streams via a single destination, you need to configure separate destinations and connections for each object class.
-
 ### Auto-generated ids
 
 It's not possible anymore to configure id fields in the destination. Instead, the destination will generate a UUID for each Weaviate object. The id per record is stored in the `_ab_record_id` property and can be used to identify Weaviate objects by Airbyte record.
 
 ### Vector fields
 
-It's not possible anymore to configure separate vector fields per stream. To load embedding vectors from the records itself, the embedding method `From Field` can be used and configured with a single field name that has to be available in all records. If your records contain multiple vector fields, you need to configure separate destinations and connections to configure separate vector field names.
+It's not possible anymore to configure separate vector fields per stream. To load embedding vectors from the records itself, the embedding method `From Field` can be used and configured with a single field name that has to be available in records from all streams. If your records contain multiple vector fields, you need to configure separate destinations and connections to configure separate vector field names.
 

@@ -6,13 +6,15 @@
 import json
 import logging
 import os
+import re
 import time
 import uuid
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
 import weaviate
-from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, Chunk
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -57,18 +59,6 @@ class WeaviateIndexer(Indexer):
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
-        classes = self.client.schema.get().get("classes", [])
-        schema = next((item for item in classes if item["class"] == self.config.class_name), None)
-        if schema is None:
-            self.client.schema.create_class({"class": self.config.class_name, "vectorizer": "none"})
-
-        self.has_stream_metadata = schema is not None and any(
-            prop.get("name") == METADATA_STREAM_FIELD for prop in schema.get("properties", {})
-        )
-        self.has_record_id_metadata = schema is not None and any(
-            prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
-        )
-
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
         if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_https():
@@ -84,30 +74,48 @@ class WeaviateIndexer(Indexer):
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
+        classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
+        self.has_record_id_metadata = defaultdict(None)
         for stream in catalog.streams:
-            # if stream metadata is not set, this means the field is not created yet and we can skip deleting
-            if stream.destination_sync_mode == DestinationSyncMode.overwrite and self.has_stream_metadata:
-                self._delete_for_filter({"path": [METADATA_STREAM_FIELD], "operator": "Equal", "valueText": stream.stream.name})
-
-    def _has_ab_metadata(self) -> bool:
-        self.schema.get("properties")
-
-    def _delete_for_filter(self, expr: dict) -> None:
-        self.client.batch.delete_objects(class_name=self.config.class_name, where=expr)
+            class_name = self.stream_to_class_name(stream.stream.name)
+            schema = classes[class_name] if class_name in classes else None
+            if stream.destination_sync_mode == DestinationSyncMode.overwrite and schema is not None:
+                self.client.schema.delete_class(class_name=class_name)
+                logging.info(f"Deleted class {class_name}")
+                self.client.schema.create_class(schema)
+                logging.info(f"Recreated class {class_name}")
+            elif class_name not in classes:
+                self.client.schema.create_class({"class": class_name, "vectorizer": self.config.default_vectorizer})
+                logging.info(f"Created class {class_name}")
+            else:
+                self.has_record_id_metadata[class_name] = schema is not None and any(
+                    prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
+                )
 
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
-        # if record id metadata is not set, this means the field is not created yet and we can skip deleting
-        if len(delete_ids) > 0 and self.has_record_id_metadata:
-            self._delete_for_filter({"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids})
+        if len(delete_ids) > 0:
+            # Delete ids in all classes that have the record id metadata
+            for class_name in self.has_record_id_metadata.keys():
+                if self.has_record_id_metadata[class_name]:
+                    self.client.batch.delete_objects(
+                        class_name=class_name,
+                        where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
+                    )
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
             weaviate_object = {**self._normalize(chunk.metadata), self.config.text_field: chunk.page_content}
-            print(weaviate_object)
             object_id = str(uuid.uuid4())
-            self.client.batch.add_data_object(weaviate_object, self.config.class_name, object_id, vector=chunk.embedding)
-            self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, self.config.class_name)
+            class_name = self.stream_to_class_name(chunk.record.stream)
+            self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
+            self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, class_name)
         if len(document_chunks) > 0:
             self._flush()
+
+    def stream_to_class_name(self, stream_name: str) -> str:
+        pattern = "[^0-9A-Za-z_]+"
+        stream_name = re.sub(pattern, "", stream_name)
+        stream_name = stream_name.replace(" ", "")
+        return stream_name[0].upper() + stream_name[1:]
 
     def _normalize(self, metadata: dict) -> dict:
         result = {}

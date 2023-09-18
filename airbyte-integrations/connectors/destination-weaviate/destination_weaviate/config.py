@@ -6,6 +6,7 @@ from typing import List, Literal, Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
+    AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
@@ -58,12 +59,26 @@ class WeaviateIndexingConfigModel(BaseModel):
         description="The public endpoint of the Weaviate cluster.",
         examples=["https://my-cluster.weaviate.network"],
     )
-    class_name: str = Field(..., title="Class name", description="The class to load data into", order=3)
     auth: Union[TokenAuth, UsernamePasswordAuth, NoAuth] = Field(
         ..., title="Authentication", description="Authentication method", discriminator="mode", type="object", order=2
     )
     batch_size: int = Field(title="Batch Size", description="The number of records to send to Weaviate in each batch", default=128)
     text_field: str = Field(title="Text Field", description="The field in the object that contains the embedded text", default="text")
+    default_vectorizer: str = Field(
+        title="Default Vectorizer",
+        description="The vectorizer to use if new classes need to be created",
+        default="none",
+        enum=[
+            "none",
+            "text2vec-cohere",
+            "text2vec-huggingface",
+            "text2vec-openai",
+            "text2vec-palm",
+            "text2vec-contextionary",
+            "text2vec-transformers",
+            "text2vec-gpt4all",
+        ],
+    )
     additional_headers: List[Header] = Field(
         title="Additional headers",
         description="Additional HTTP headers to send with every request.",
@@ -83,19 +98,20 @@ class NoEmbeddingConfigModel(BaseModel):
     mode: Literal["no_embedding"] = Field("no_embedding", const=True)
 
     class Config:
-        title = "No embedding"
+        title = "No external embedding"
         schema_extra = {
-            "description": "Do not calculate embeddings. Suitable for classes with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
+            "description": "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
         }
 
 
 class ConfigModel(BaseModel):
     processing: ProcessingConfigModel
     embedding: Union[
+        NoEmbeddingConfigModel,
+        AzureOpenAIEmbeddingConfigModel,
         OpenAIEmbeddingConfigModel,
         CohereEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
-        NoEmbeddingConfigModel,
         FakeEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: WeaviateIndexingConfigModel

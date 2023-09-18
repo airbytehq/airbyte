@@ -14,11 +14,11 @@ from destination_weaviate.indexer import WeaviateIndexer, WeaviatePartialBatchEr
 class TestWeaviateIndexer(unittest.TestCase):
 
     def setUp(self):
-        self.config = WeaviateIndexingConfigModel(host="https://test-host:12345", class_name="Test", auth=NoAuth())  # Setup your config here
+        self.config = WeaviateIndexingConfigModel(host="https://test-host:12345", auth=NoAuth())  # Setup your config here
         self.indexer = WeaviateIndexer(self.config)
         mock_catalog = Mock()
         mock_stream = Mock()
-        mock_stream.stream.name = "example_stream"
+        mock_stream.stream.name = "test"
         mock_stream.destination_sync_mode = DestinationSyncMode.append
         self.mock_stream = mock_stream
         mock_catalog.streams = [mock_stream]
@@ -54,15 +54,8 @@ class TestWeaviateIndexer(unittest.TestCase):
         MockClient.return_value = mock_client
         self.mock_stream.destination_sync_mode = DestinationSyncMode.overwrite
         self.indexer.pre_sync(self.mock_catalog)
-        mock_client.batch.delete_objects.assert_called_with(class_name="Test", where={"path":["_ab_stream"], "operator": "Equal", "valueText": "example_stream"})
-
-    @patch("destination_weaviate.indexer.weaviate.Client")
-    def test_pre_sync_no_delete_no_metadata_field(self, MockClient):
-        mock_client = Mock()
-        mock_client.schema.get.return_value = {"classes": [{"class": "Test", "properties": []}]}
-        MockClient.return_value = mock_client
-        self.indexer.pre_sync(self.mock_catalog)
-        mock_client.batch.delete_objects.assert_not_called()
+        mock_client.schema.delete_class.assert_called_with(class_name="Test")
+        mock_client.schema.create_class.assert_called_with(mock_client.schema.get.return_value["classes"][0])
 
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_no_delete_no_overwrite_mode(self, MockClient):
@@ -70,12 +63,12 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_client.schema.get.return_value = {"classes": [{"class": "Test", "properties": [{"name": "_ab_stream"}, {"name": "_ab_record_id"}]}]}
         MockClient.return_value = mock_client
         self.indexer.pre_sync(self.mock_catalog)
-        mock_client.batch.delete_objects.assert_not_called()
+        mock_client.schema.delete_class.assert_not_called()
 
     def test_index_deletes_by_record_id(self):
         mock_client = Mock()
         self.indexer.client = mock_client
-        self.indexer.has_record_id_metadata = True
+        self.indexer.has_record_id_metadata = {"Test": True}
         self.indexer.index([], ["some_id", "some_other_id"])
         mock_client.batch.delete_objects.assert_called_with(class_name="Test", where={"path":["_ab_record_id"], "operator": "ContainsAny", "valueStringArray": ["some_id", "some_other_id"]})
 
@@ -83,7 +76,7 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_index_not_delete_no_metadata_field(self, MockClient):
         mock_client = Mock()
         MockClient.return_value = mock_client
-        self.indexer.has_record_id_metadata = False
+        self.indexer.has_record_id_metadata = {"Test": False}
         self.indexer.index([], ["some_id"])
         mock_client.batch.delete_objects.assert_not_called()
 
@@ -91,8 +84,8 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_client = Mock()
         self.indexer.client = mock_client
         mock_client.batch.create_objects.return_value = []
-        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
-        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0))
         self.indexer.index([mock_chunk1, mock_chunk2], [])
         mock_client.batch.create_objects.assert_called()
         chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", ANY, vector=[1, 2, 3])
@@ -106,8 +99,8 @@ class TestWeaviateIndexer(unittest.TestCase):
         self.indexer.client = mock_client
         mock_client.batch.create_objects.return_value = [{'result': {'errors': ['some_error']}, 'id': 'some_id'}]
         MockUUID.side_effect = ['some_id', 'some_id2']
-        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
-        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0))
         with self.assertRaises(WeaviatePartialBatchError):
             self.indexer.index([mock_chunk1, mock_chunk2], [])
         chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", "some_id", vector=[1, 2, 3])
@@ -119,6 +112,6 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_client = Mock()
         self.indexer.client = mock_client
         mock_client.batch.create_objects.return_value = []
-        mock_chunk = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value", "complex": {"a": [1,2,3]}, "UPPERCASE_NAME": "abc"}, record=AirbyteRecordMessage(stream="some_stream", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value", "complex": {"a": [1,2,3]}, "UPPERCASE_NAME": "abc"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0))
         self.indexer.index([mock_chunk], [])
         mock_client.batch.add_data_object.assert_called_with({"someField": "some_value", "complex": '{"a": [1, 2, 3]}', "uPPERCASE_NAME": "abc", "text": "some_content"}, "Test", ANY, vector=[1, 2, 3])

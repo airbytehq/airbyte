@@ -23,7 +23,6 @@ You'll need the following information to configure the destination:
 - **Embedding service API Key** - The API key for your OpenAI or Cohere account
 - **Weaviate cluster URL** - The URL of the Weaviate cluster to load data into. Airbyte Cloud only supports connecting to your Weaviate Instance instance with TLS encryption.
 - **Weaviate credentials** - The credentials for your Weaviate instance (either API token or username/password)
-- **Class name** - The name of the object class to load data into
 
 ## Features
 
@@ -73,10 +72,11 @@ For testing purposes, it's also possible to use the [Fake embeddings](https://py
 
 ### Indexing
 
-If the configured class doesn't exist in the schema of the cluster, it will be created. In this case, dynamic schema has to be enabled on the server. You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons.
+All streams will be indexed into separate classes derived from the stream name. 
+If a class doesn't exist in the schema of the cluster, it will be created using the configure vectorizer configuration. In this case, dynamic schema has to be enabled on the server.
 
+You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
 
-All streams will be indexed into the same class, the `_ab_stream` metadata field is used to distinguish between streams.
 As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process.
 
 ## Changelog
