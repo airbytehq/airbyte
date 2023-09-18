@@ -53,7 +53,7 @@ class Embedder(ABC):
 
 OPEN_AI_VECTOR_SIZE = 1536
 
-OPEN_AI_TOKEN_LIMIT = 1_000_000  # limit of tokens per minute
+OPEN_AI_TOKEN_LIMIT = 150_000  # limit of tokens per minute
 
 
 class BaseOpenAIEmbedder(Embedder):
