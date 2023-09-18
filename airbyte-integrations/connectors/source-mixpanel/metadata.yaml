@@ -27,6 +27,11 @@ data:
       - annotations
       - revenue
       - funnels
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This release update schema of config and change type of few parameters in schema, os you need refresh
+        upgradeDeadline: "2023-10-01"
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   tags:
     - language:python
