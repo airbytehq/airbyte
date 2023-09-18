@@ -355,41 +355,39 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       return MySqlInitialReadUtil.getCdcReadIterators(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString());
     } else {
       if (isAnyStreamIncrementalSyncMode(catalog)) {
-        if (mySqlFeatureFlags.isStandardInitialSyncViaPkEnabled()) {
-          LOGGER.info("Syncing via Primary Key");
-          final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
-          final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
-          final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
-              getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, quoteString);
-          final CursorBasedStreams cursorBasedStreams =
-              new CursorBasedStreams(MySqlInitialReadUtil.identifyStreamsForCursorBased(catalog, initialLoadStreams.streamsForInitialLoad()),
-                  pairToCursorBasedStatus);
+        LOGGER.info("Syncing via Primary Key");
+        final MySqlCursorBasedStateManager cursorBasedStateManager = new MySqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
+        final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
+        final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> pairToCursorBasedStatus =
+            getCursorBasedSyncStatusForStreams(database, initialLoadStreams.streamsForInitialLoad(), stateManager, quoteString);
+        final CursorBasedStreams cursorBasedStreams =
+            new CursorBasedStreams(MySqlInitialReadUtil.identifyStreamsForCursorBased(catalog, initialLoadStreams.streamsForInitialLoad()),
+                pairToCursorBasedStatus);
 
-          logStreamSyncStatus(initialLoadStreams.streamsForInitialLoad(), "Primary Key");
-          logStreamSyncStatus(cursorBasedStreams.streamsForCursorBased(), "Cursor");
+        logStreamSyncStatus(initialLoadStreams.streamsForInitialLoad(), "Primary Key");
+        logStreamSyncStatus(cursorBasedStreams.streamsForCursorBased(), "Cursor");
 
-          final MySqlInitialLoadStreamStateManager mySqlInitialLoadStreamStateManager =
-              new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-                  initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
-          final MySqlInitialLoadHandler initialLoadHandler =
-              new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), mySqlInitialLoadStreamStateManager,
-                  namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
-                  getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
-          final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
-              new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
-              tableNameToTable,
-              emittedAt));
+        final MySqlInitialLoadStreamStateManager mySqlInitialLoadStreamStateManager =
+            new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
+                initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString));
+        final MySqlInitialLoadHandler initialLoadHandler =
+            new MySqlInitialLoadHandler(sourceConfig, database, new MySqlSourceOperations(), getQuoteString(), mySqlInitialLoadStreamStateManager,
+                namespacePair -> Jsons.jsonNode(pairToCursorBasedStatus.get(convertNameNamespacePairFromV0(namespacePair))),
+                getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
+        final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
+            tableNameToTable,
+            emittedAt));
 
-          // Build Cursor based iterator
-          final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
-              new ArrayList<>(super.getIncrementalIterators(database,
-                  new ConfiguredAirbyteCatalog().withStreams(
-                      cursorBasedStreams.streamsForCursorBased()),
-                  tableNameToTable,
-                  cursorBasedStateManager, emittedAt));
+        // Build Cursor based iterator
+        final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
+            new ArrayList<>(super.getIncrementalIterators(database,
+                new ConfiguredAirbyteCatalog().withStreams(
+                    cursorBasedStreams.streamsForCursorBased()),
+                tableNameToTable,
+                cursorBasedStateManager, emittedAt));
 
-          return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
-        }
+        return Stream.of(initialLoadIterator, cursorBasedIterator).flatMap(Collection::stream).collect(Collectors.toList());
       }
     }
 
