@@ -37,7 +37,7 @@ acceptance_tests:
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: yes
+          extra_fields: no
           exact_order: no
           extra_records: yes
       - config_path: secrets/config_oauth_sandbox.json
@@ -48,7 +48,7 @@ acceptance_tests:
         timeout_seconds: 1200
         expect_records:
           path: "integration_tests/expected_records_sandbox.jsonl"
-          extra_fields: yes
+          extra_fields: no
           exact_order: no
           extra_records: yes
         fail_on_extra_columns: false
