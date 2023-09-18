@@ -20,6 +20,13 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - profiles
+      - sponsored_brands_video_report_stream
+      - sponsored_display_report_stream
+      - sponsored_brands_report_stream
+      - sponsored_products_report_stream
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   tags:
     - language:python
