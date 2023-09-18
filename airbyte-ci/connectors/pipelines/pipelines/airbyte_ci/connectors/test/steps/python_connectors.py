@@ -18,7 +18,7 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
-
+from pipelines.airbyte_ci.connectors.test.steps.common import CheckBaseImageIsUsed
 
 class CodeFormatChecks(Step):
     """A step to run the code format checks on a Python connector using Black, Isort and Flake."""
@@ -228,6 +228,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_container),
             task_group.soonify(AcceptanceTests(context).run)(connector_image_tar_file),
+            task_group.soonify(CheckBaseImageIsUsed(context).run)(),
         ]
 
     return step_results + [task.value for task in tasks]
