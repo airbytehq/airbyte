@@ -36,6 +36,7 @@ from .streams import (
     IssueResolutions,
     Issues,
     IssueSecuritySchemes,
+    IssueTransitions,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -122,6 +123,7 @@ class SourceJira(AbstractSource):
         issues_stream = Issues(
             **incremental_args,
             expand_changelog=config.get("expand_issue_changelog", False),
+            expand_transitions=config.get("expand_issue_transition", False),
             render_fields=render_fields,
         )
         issue_fields_stream = IssueFields(**args)
@@ -152,6 +154,7 @@ class SourceJira(AbstractSource):
             IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
+            IssueTransitions(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
