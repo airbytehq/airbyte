@@ -49,7 +49,7 @@ class AvroParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        avro_format = config.format or AvroFormat()
+        avro_format = config.format
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
