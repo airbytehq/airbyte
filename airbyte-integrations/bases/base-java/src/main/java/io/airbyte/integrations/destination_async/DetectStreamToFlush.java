@@ -7,10 +7,8 @@ package io.airbyte.integrations.destination_async;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-
 import java.time.Clock;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +47,10 @@ public class DetectStreamToFlush {
 
   @VisibleForTesting
   DetectStreamToFlush(final BufferDequeue bufferDequeue,
-                             final RunningFlushWorkers runningFlushWorkers,
-                             final AtomicBoolean isClosing,
-                             final DestinationFlushFunction flusher,
-                             final Clock nowProvider) {
+                      final RunningFlushWorkers runningFlushWorkers,
+                      final AtomicBoolean isClosing,
+                      final DestinationFlushFunction flusher,
+                      final Clock nowProvider) {
     this.bufferDequeue = bufferDequeue;
     this.runningFlushWorkers = runningFlushWorkers;
     this.isClosing = isClosing;
@@ -100,8 +98,8 @@ public class DetectStreamToFlush {
    * Return an empty optional if no streams are ready.
    * <p>
    * A stream is ready to flush if it either meets a size threshold or a time threshold. See
-   * {@link #isSizeTriggered(StreamDescriptor, long)} and {@link #isTimeTriggered(long)}
-   * for details on these triggers.
+   * {@link #isSizeTriggered(StreamDescriptor, long)} and {@link #isTimeTriggered(long)} for details
+   * on these triggers.
    *
    * @param queueSizeThresholdBytes - the size threshold to use for determining if a stream is ready
    *        to flush.

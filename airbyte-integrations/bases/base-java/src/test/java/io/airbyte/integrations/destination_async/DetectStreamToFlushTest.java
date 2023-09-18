@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,8 +18,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.LongSupplier;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -85,17 +82,17 @@ class DetectStreamToFlushTest {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
     final DetectStreamToFlush detect =
-            new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, mockedNowProvider);
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, mockedNowProvider);
 
     // initialize flush time
     when(mockedNowProvider.millis())
-            .thenReturn(NOW.toEpochMilli());
+        .thenReturn(NOW.toEpochMilli());
 
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
 
     // check 5 minutes later
     when(mockedNowProvider.millis())
-            .thenReturn(NOW.plus(FIVE_MIN).toEpochMilli());
+        .thenReturn(NOW.plus(FIVE_MIN).toEpochMilli());
 
     assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
 
@@ -104,8 +101,8 @@ class DetectStreamToFlushTest {
 
     // check another 5 minutes later
     when(mockedNowProvider.millis())
-            .thenReturn(NOW.plus(FIVE_MIN).plus(FIVE_MIN).toEpochMilli());
-      assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
+        .thenReturn(NOW.plus(FIVE_MIN).plus(FIVE_MIN).toEpochMilli());
+    assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
   }
 
 }

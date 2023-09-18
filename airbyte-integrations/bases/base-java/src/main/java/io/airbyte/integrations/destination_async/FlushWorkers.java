@@ -12,8 +12,6 @@ import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-
-import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
