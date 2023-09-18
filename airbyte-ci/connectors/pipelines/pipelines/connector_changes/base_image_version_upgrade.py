@@ -1,34 +1,15 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from abc import abstractmethod
-from typing import Dict, Optional
+from typing import Optional
 
 import yaml
 from base_images import python
-from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
+from connector_ops.utils import ConnectorLanguage
 from dagger import Container
 from pipelines.bases import ConnectorReport, StepResult, StepStatus
-from pipelines.connector_changes.common import ConnectorChangeStep
+from pipelines.connector_changes.common import MetadataUpdateStep
 from pipelines.contexts import ConnectorContext
-
-
-class MetadataUpdateStep(ConnectorChangeStep):
-    @property
-    def metadata_path(self) -> str:
-        return str(self.context.connector.code_directory / METADATA_FILE_NAME)
-
-    async def get_current_metadata(self) -> Dict:
-        return yaml.safe_load(await self.container_with_airbyte_repo.file(self.metadata_path).contents())
-
-    @abstractmethod
-    async def get_updated_metadata(self) -> str:
-        raise NotImplementedError()
-
-    async def get_container_with_updated_metadata(self, container_with_airbyte_repo: Container) -> Container:
-        new_metadata = await self.get_updated_metadata()
-        absolute_path_to_new_metadata = f"/airbyte/{self.context.connector.code_directory}/{METADATA_FILE_NAME}"
-        return container_with_airbyte_repo.with_new_file(absolute_path_to_new_metadata, new_metadata)
 
 
 class UpgradeBaseImageMetadata(MetadataUpdateStep):
