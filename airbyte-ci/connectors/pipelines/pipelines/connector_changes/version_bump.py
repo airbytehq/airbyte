@@ -130,6 +130,19 @@ class AddChangelogEntry(ConnectorChangeStep):
         return "\n".join(lines)
 
 
+def get_bumped_version(version: str, bump_type: str) -> str:
+    current_version = semver.VersionInfo.parse(version)
+    if bump_type == "patch":
+        new_version = current_version.bump_patch()
+    elif bump_type == "minor":
+        new_version = current_version.bump_minor()
+    elif bump_type == "major":
+        new_version = current_version.bump_major()
+    else:
+        raise ValueError(f"Unknown bump type: {bump_type}")
+    return str(new_version)
+
+
 async def run_connector_version_bump_pipeline(
     context: ConnectorContext,
     semaphore,
@@ -150,15 +163,7 @@ async def run_connector_version_bump_pipeline(
     async with semaphore:
         steps_results = []
         async with context:
-            current_version = semver.VersionInfo.parse(context.connector.version)
-            if bump_type == "patch":
-                new_version = current_version.bump_patch()
-            elif bump_type == "minor":
-                new_version = current_version.bump_minor()
-            elif bump_type == "major":
-                new_version = current_version.bump_major()
-            new_version = str(new_version)
-
+            new_version = get_bumped_version(context.connector.version, bump_type)
             update_docker_image_tag_in_metadata = BumpDockerImageTagInMetadata(
                 context,
                 new_version,
