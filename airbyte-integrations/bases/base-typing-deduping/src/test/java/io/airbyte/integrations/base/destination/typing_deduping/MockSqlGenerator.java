@@ -20,6 +20,11 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
+  public ColumnId buildColumnId(final String name, final String suffix) {
+    return null;
+  }
+
+  @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     return "CREATE TABLE " + stream.id().finalTableId("", suffix);
   }

@@ -49,8 +49,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public ColumnId buildColumnId(final String name) {
+    return buildColumnId(name, "");
+  }
+
+  @Override
+  public ColumnId buildColumnId(final String name, final String suffix) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(prefixReservedKeyword(escapeSqlIdentifier(name).toUpperCase()), name, name.toUpperCase());
+    final String nameWithSuffix = name + suffix;
+    return new ColumnId(prefixReservedKeyword(escapeSqlIdentifier(name).toUpperCase()) + suffix,
+                        nameWithSuffix,
+                        nameWithSuffix.toUpperCase());
   }
 
   public String toDialectType(final AirbyteType type) {

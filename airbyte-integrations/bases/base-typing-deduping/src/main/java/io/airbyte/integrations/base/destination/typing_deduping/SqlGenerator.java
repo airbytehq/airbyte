@@ -12,6 +12,8 @@ public interface SqlGenerator<DialectTableDefinition> {
 
   ColumnId buildColumnId(String name);
 
+  ColumnId buildColumnId(String name, String suffix);
+
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
