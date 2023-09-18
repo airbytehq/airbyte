@@ -50,6 +50,10 @@ const config = {
     }),
   ],
 
+  clientModules: [
+    require.resolve("./src/scripts/cloudStatus.js"),
+  ],
+
   presets: [
     [
       "classic",
@@ -93,19 +97,13 @@ const config = {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
           srcDark: "img/logo-light.png",
-          width: 140,
           height: 40,
         },
         items: [
           {
             href: "https://airbyte.io/",
             position: "left",
-            label: "Home",
-          },
-          {
-            href: "https://status.airbyte.io/",
-            label: "Status",
-            position: "left",
+            label: "About Airbyte",
           },
           {
             href: "https://airbyte.com/tutorials",
@@ -117,11 +115,25 @@ const config = {
             label: "Support",
             position: "left",
           },
+          // --- Right side ---
+          {
+            href: "https://status.airbyte.com",
+            label: "Cloud Status",
+            id: "cloudStatusLink",
+            position: "right",
+          },
           {
             href: "https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar",
             label: "Try Airbyte Cloud",
-            position: "left",
+            position: "right",
+            className: "header-button",
           },
+          {
+            href: "https://github.com/airbytehq",
+            position: "right",
+            "aria-label": "Airbyte on GitHub",
+            className: "header-github-link",
+          }
         ],
       },
       prism: {
