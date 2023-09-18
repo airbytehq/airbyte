@@ -82,26 +82,41 @@ class UpgradeBaseImageMetadata(MetadataUpdateStep):
         )
 
 
-class DeleteDockerFile(ConnectorChangeStep):
-    title = "Delete Dockerfile"
+class DeleteConnectorFile(ConnectorChangeStep):
+    def __init__(
+        self,
+        context: ConnectorContext,
+        export_changes_to_host: bool,
+        file_to_delete: str,
+        container_with_airbyte_repo: Container | None = None,
+        commit: bool = False,
+        push: bool = False,
+        skip_ci=True,
+    ):
+        super().__init__(context, export_changes_to_host, container_with_airbyte_repo, commit, push, skip_ci)
+        self.file_to_delete = file_to_delete
+
+    @property
+    def title(self):
+        return f"Delete {self.file_to_delete}"
 
     async def make_connector_change(self) -> StepResult:
-        docker_file_path = self.context.connector.code_directory / "Dockerfile"
-        if not docker_file_path.exists():
+        file_to_delete_path = self.context.connector.code_directory / self.file_to_delete
+        if not file_to_delete_path.exists():
             return StepResult(
                 self,
                 StepStatus.SKIPPED,
-                stdout="Connector does not have a Dockerfile",
+                stdout=f"Connector does not have a {self.file_to_delete}",
                 output_artifact=self.container_with_airbyte_repo,
             )
         # As this is a deletion of a file, this has to happen on the host fs
         # Deleting the file in the container would not work because the directory.export method would not export the deleted file from container back to host.
-        docker_file_path.unlink()
-        self.container_with_airbyte_repo = await self.container_with_airbyte_repo.with_exec(["rm", str(docker_file_path)])
+        file_to_delete_path.unlink()
+        self.container_with_airbyte_repo = await self.container_with_airbyte_repo.with_exec(["rm", str(file_to_delete_path)])
         return StepResult(
             self,
             StepStatus.SUCCESS,
-            stdout="Deleted Dockerfile",
+            stdout=f"Deleted {file_to_delete_path}",
             output_artifact=self.container_with_airbyte_repo,
         )
 
@@ -262,16 +277,28 @@ async def run_connector_migration_to_base_image_pipeline(
                 context.report = ConnectorReport(context, steps_results, name="BASE IMAGE UPGRADE RESULTS")
                 return context.report
 
-            delete_docker_file = DeleteDockerFile(
+            delete_docker_file = DeleteConnectorFile(
                 context,
+                export_changes_to_host,
+                "Dockerfile",
                 container_with_airbyte_repo=update_base_image_in_metadata_result.output_artifact,
                 commit=commit_and_push,
                 push=commit_and_push,
-                export_changes_to_host=export_changes_to_host,
             )
             delete_docker_file_result = await delete_docker_file.run()
-
             steps_results.append(delete_docker_file_result)
+
+            if context.connector.language is not ConnectorLanguage.JAVA:
+                delete_gradle_file = DeleteConnectorFile(
+                    context,
+                    export_changes_to_host,
+                    "build.gradle",
+                    container_with_airbyte_repo=delete_docker_file_result.output_artifact,
+                    commit=commit_and_push,
+                    push=commit_and_push,
+                )
+                delete_gradle_file_result = await delete_gradle_file.run()
+                steps_results.append(delete_gradle_file_result)
 
             new_version = get_bumped_version(context.connector.version, "minor")
             bump_version_in_metadata = BumpDockerImageTagInMetadata(
