@@ -30,7 +30,6 @@ public class DetectStreamToFlush {
   private static final double EAGER_FLUSH_THRESHOLD = 0.90;
   private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_FLUSH_MS = 5 * 60 * 1000;
-  private static final long MAX_TIME_BETWEEN_REC_MIN = 5L;
   private final BufferDequeue bufferDequeue;
   private final RunningFlushWorkers runningFlushWorkers;
   private final AtomicBoolean isClosing;
