@@ -51,6 +51,7 @@
         "title": "Action Report Time",
         "description": "Specifies the principle for conversion reporting",
         "examples": ["conversion", "impression"],
+        "default": "conversion",
         "order": 5
       },
       "swipe_up_attribution_window": {
