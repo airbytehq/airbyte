@@ -204,7 +204,7 @@ skip_record_scenario_single_stream = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Skip Record",
                 }
@@ -250,13 +250,13 @@ skip_record_scenario_multi_stream = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a/*.csv"],
                     "validation_policy": "Skip Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b/*.csv"],
                     "validation_policy": "Skip Record",
                 }
@@ -317,7 +317,7 @@ emit_record_scenario_single_stream = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                 }
@@ -359,13 +359,13 @@ emit_record_scenario_multi_stream = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a/*.csv"],
                     "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b/*.csv"],
                     "validation_policy": "Emit Record",
                 }
@@ -418,7 +418,7 @@ wait_for_rediscovery_scenario_single_stream = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Wait for Discover",
                 }
@@ -453,13 +453,13 @@ wait_for_rediscovery_scenario_multi_stream = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a/*.csv"],
                     "validation_policy": "Wait for Discover",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b/*.csv"],
                     "validation_policy": "Wait for Discover",
                 }
