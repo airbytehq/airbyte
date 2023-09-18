@@ -12,8 +12,10 @@ import pendulum
 import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
+from source_jira.type_transfromer import DateTimeTransformer
 
 from .utils import read_full_refresh, read_incremental, safe_max
 
@@ -38,6 +40,7 @@ class JiraStream(HttpStream, ABC):
     config_error_status_codes = [
         requests.codes.UNAUTHORIZED,
     ]
+    transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
