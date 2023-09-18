@@ -22,7 +22,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
+  releaseStage: generally_available
   releases:
     breakingChanges:
       3.0.0:
