@@ -282,3 +282,28 @@ class AcceptanceTests(Step):
             )
 
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
+
+
+class CheckBaseImageIsUsed(Step):
+    title = "Check our base image is used"
+
+    async def _run(self, *args, **kwargs) -> StepResult:
+        is_certified = self.context.connector.metadata.get("supportLevel")
+        if not is_certified:
+            self.skip("Connector is not certified, it does not require the use of our base image.")
+
+        is_using_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage")
+        if not is_using_base_image:
+            return StepResult(
+                self,
+                StepStatus.FAILURE,
+                stdout="Connector is certified but does not use our base image. Please set connectorBuildOptions.baseImage in the connector metadata.",
+            )
+        has_dockerfile = "Dockerfile" in await self.context.get_connector_dir(include="Dockerfile").entries()
+        if has_dockerfile:
+            return StepResult(
+                self,
+                StepStatus.FAILURE,
+                stdout="Connector is certified but is still using a Dockerfile. Please remove the Dockerfile and set connectorBuildOptions.baseImage in the connector metadata.",
+            )
+        return StepResult(self, StepStatus.SUCCESS, stdout="Connector is certified and uses our base image.")
