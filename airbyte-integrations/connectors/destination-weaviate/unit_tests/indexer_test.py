@@ -45,7 +45,7 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_client.schema.get.return_value = {"classes": []}
         MockClient.return_value = mock_client
         self.indexer.pre_sync(self.mock_catalog)
-        mock_client.schema.create_class.assert_called_with({"class": "Test", "vectorizer": "none"})
+        mock_client.schema.create_class.assert_called_with({"class": "Test", "vectorizer": "none", 'properties': [{'name': '_ab_record_id', 'dataType': ['text'], 'description': 'Record ID, used for bookkeeping.', 'indexFilterable': True, 'indexSearchable': False, 'tokenization': 'field'}]})
 
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_that_deletes(self, MockClient):
