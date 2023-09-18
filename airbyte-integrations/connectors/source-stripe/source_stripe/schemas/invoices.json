@@ -209,11 +209,7 @@
       "type": ["null", "integer"]
     },
     "lines": {
-      "type": ["null", "array", "object"],
-      "items": {
-        "type": ["null", "string"]
-      },
-      "properties": {}
+      "type": ["null", "object"]
     },
     "forgiven": {
       "type": ["null", "boolean"]
@@ -597,6 +593,9 @@
     },
     "account_country": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

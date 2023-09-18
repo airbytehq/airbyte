@@ -98,6 +98,9 @@
           }
         }
       }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

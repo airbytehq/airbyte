@@ -14,7 +14,6 @@ dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
@@ -30,8 +29,8 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
+    testImplementation libs.testcontainers.elasticsearch
+    integrationTestJavaImplementation libs.testcontainers.elasticsearch
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-elasticsearch')

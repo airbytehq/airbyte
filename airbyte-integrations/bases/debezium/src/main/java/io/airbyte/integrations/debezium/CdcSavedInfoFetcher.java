@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import java.util.Optional;
 
 /**
@@ -15,6 +16,6 @@ public interface CdcSavedInfoFetcher {
 
   JsonNode getSavedOffset();
 
-  Optional<JsonNode> getSavedSchemaHistory();
+  SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory();
 
 }
