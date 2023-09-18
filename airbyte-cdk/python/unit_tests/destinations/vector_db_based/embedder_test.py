@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
 from airbyte_cdk.destinations.vector_db_based.config import (
@@ -52,7 +52,7 @@ def test_embedder(embedder_class, config_model, config_data, dimensions):
     mock_embedding_instance.embed_documents.return_value = [[0] * dimensions] * 2
 
     chunks = [Chunk(page_content="a", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)),Chunk(page_content="b", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0))]
-    assert embedder.embed_chunks(chunks) == mock_embedding_instance.embed_documents.return_value
+    assert embedder.embed_chunks(chunks, 1000) == mock_embedding_instance.embed_documents.return_value
     mock_embedding_instance.embed_documents.assert_called_with(["a", "b"])
 
 
@@ -72,6 +72,19 @@ def test_from_field_embedder(field_name, dimensions, metadata, expected_embeddin
     chunks = [Chunk(page_content="a", metadata=metadata, record=AirbyteRecordMessage(stream="mystream", data=metadata, emitted_at=0))]
     if expected_error:
         with pytest.raises(AirbyteTracedException):
-            embedder.embed_chunks(chunks)
+            embedder.embed_chunks(chunks, 1000)
     else:
-        assert embedder.embed_chunks(chunks) == [expected_embedding]
+        assert embedder.embed_chunks(chunks, 1000) == [expected_embedding]
+
+
+def test_openai_chunking():
+    config = OpenAIEmbeddingConfigModel(**{"mode": "openai", "openai_key": "abc"})
+    embedder = OpenAIEmbedder(config)
+    mock_embedding_instance = MagicMock()
+    embedder.embeddings = mock_embedding_instance
+
+    mock_embedding_instance.embed_documents.side_effect = lambda texts: [[0] * OPEN_AI_VECTOR_SIZE] * len(texts)
+
+    chunks = [Chunk(page_content="a", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)) for _ in range(1005)]
+    assert embedder.embed_chunks(chunks, 1000) == [[0] * OPEN_AI_VECTOR_SIZE] * 1005
+    mock_embedding_instance.embed_documents.assert_has_calls([call(["a"]*1000), call(["a"]*5)])
