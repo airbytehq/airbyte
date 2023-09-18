@@ -33,8 +33,8 @@ dependencies {
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation libs.connectors.testcontainers.jdbc
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.jdbc
+    testImplementation libs.testcontainers.postgresql
     testImplementation libs.junit.jupiter.system.stubs
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

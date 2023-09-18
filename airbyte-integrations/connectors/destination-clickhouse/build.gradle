@@ -19,14 +19,14 @@ dependencies {
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
-    testImplementation libs.connectors.destination.testcontainers.clickhouse
+    testImplementation libs.testcontainers.clickhouse
     testImplementation project(":airbyte-json-validation")
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-clickhouse')
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
-    integrationTestJavaImplementation libs.connectors.destination.testcontainers.clickhouse
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }
 
 tasks.named("airbyteDocker").configure {

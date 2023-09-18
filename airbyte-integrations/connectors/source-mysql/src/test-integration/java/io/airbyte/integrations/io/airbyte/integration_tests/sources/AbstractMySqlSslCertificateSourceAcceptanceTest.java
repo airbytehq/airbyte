@@ -13,6 +13,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.io.IOException;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -36,8 +37,8 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
         .put("method", "STANDARD")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
