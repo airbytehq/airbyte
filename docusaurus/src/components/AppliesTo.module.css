@@ -8,6 +8,10 @@
   padding: var(--ifm-alert-padding-vertical) var(--ifm-alert-padding-horizontal);
 }
 
+[data-theme="dark"] .appliesTo {
+  background: var(--ifm-background-surface-color);
+}
+
 .header {
   font-weight: var(--ifm-heading-font-weight);
   display: flex;
