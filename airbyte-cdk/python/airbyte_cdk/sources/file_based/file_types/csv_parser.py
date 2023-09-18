@@ -422,7 +422,7 @@ def _no_cast(row: Mapping[str, str]) -> Mapping[str, str]:
 
 
 def _extract_format(config: FileBasedStreamConfig) -> CsvFormat:
-    config_format = config.format or CsvFormat()
+    config_format = config.format
     if not isinstance(config_format, CsvFormat):
         raise ValueError(f"Invalid format config: {config_format}")
     return config_format
