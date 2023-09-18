@@ -2,7 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import importlib
 from pathlib import Path
+from types import ModuleType
+from typing import Optional
 
 from base_images import GLOBAL_REGISTRY
 from dagger import Container, QueryError
@@ -18,8 +21,18 @@ class BuildConnectorImage(BuildConnectorImageBase):
     A spec command is run on the container to validate it was built successfully.
     """
 
-    DEFAULT_ENTRYPOINT = ["python", "/airbyte/integration_code/main.py"]
+    DEFAULT_MAIN_FILE_NAME = "main.py"
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
+
+    @staticmethod
+    def get_main_file_name(build_customization_module: Optional[ModuleType]) -> str:
+        if build_customization_module is not None and hasattr(build_customization_module, "MAIN_FILE_NAME"):
+            return build_customization_module.MAIN_FILE_NAME
+        return BuildConnectorImage.DEFAULT_MAIN_FILE_NAME
+
+    @staticmethod
+    def get_entrypoint(main_file_name) -> str:
+        return ["python", f"/airbyte/integration_code/{main_file_name}"]
 
     @property
     def _build_connector_function(self):
@@ -76,6 +89,24 @@ class BuildConnectorImage(BuildConnectorImageBase):
 
         return builder.with_exec(["pip", "install", "--prefix=/install", "."])
 
+    def _get_build_customization_module(self) -> Optional[ModuleType]:
+        """Import the build_customization.py file from the connector directory if it exists.
+
+        Returns:
+            Optional[ModuleType]: The build_customization.py module if it exists, None otherwise.
+        """
+        build_customization_spec_path = self.context.connector.code_directory / "build_customization.py"
+        if not build_customization_spec_path.exists():
+            return None
+
+        build_customization_spec = importlib.util.spec_from_file_location(
+            f"{self.context.connector.code_directory.name}_build_customization", build_customization_spec_path
+        )
+        build_customization_module = importlib.util.module_from_spec(build_customization_spec)
+        build_customization_spec.loader.exec_module(build_customization_module)
+        self.logger.info("This connector has a build_customization.py file. Using it to customize the build.")
+        return build_customization_module
+
     async def _build_from_base_image(self) -> Container:
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
 
@@ -83,22 +114,33 @@ class BuildConnectorImage(BuildConnectorImageBase):
             Container: The connector container built from the base image.
         """
         base = self._get_base_container()
+        build_customization_module = self._get_build_customization_module()
+        if hasattr(build_customization_module, "pre_connector_install"):
+            self.logger.info("Adding the pre_connector_install hook to the base")
+            base = await build_customization_module.pre_connector_install(base)
+
         builder = await self._provision_builder_container(base)
         connector_snake_case_name = self.context.connector.technical_name.replace("-", "_")
+        main_file_name = self.get_main_file_name(build_customization_module)
+        entrypoint = self.get_entrypoint(main_file_name)
 
         connector_container = (
             base.with_directory("/usr/local", builder.directory("/install"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_file("main.py", (await self.context.get_connector_dir(include="main.py")).file("main.py"))
+            .with_file(main_file_name, (await self.context.get_connector_dir(include=main_file_name)).file(main_file_name))
             .with_directory(
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=connector_snake_case_name)).directory(connector_snake_case_name),
             )
-            .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(self.DEFAULT_ENTRYPOINT))
-            .with_entrypoint(self.DEFAULT_ENTRYPOINT)
+            .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
+            .with_entrypoint(entrypoint)
             .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])
             .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])
         )
+
+        if hasattr(build_customization_module, "post_connector_install"):
+            self.logger.info("Adding the post_connector_install hook to the connector container")
+            connector_container = await build_customization_module.post_connector_install(connector_container)
         return connector_container
 
     async def _build_from_dockerfile(self) -> Container:
