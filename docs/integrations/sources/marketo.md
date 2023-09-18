@@ -110,7 +110,8 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
-| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| `1.2.1`  | 2023-09-18 | [30533](https://github.com/airbytehq/airbyte/pull/30533) | Fix `json_schema` for stream `Leads`                                                             |
 | `1.2.0`  | 2023-06-26 | [27726](https://github.com/airbytehq/airbyte/pull/27726) | License Update: Elv2                                                                             |
 | `1.1.0`  | 2023-04-18 | [23956](https://github.com/airbytehq/airbyte/pull/23956) | Add `Segmentations` Stream                                                                       |
 | `1.0.4`  | 2023-04-25 | [25481](https://github.com/airbytehq/airbyte/pull/25481) | Minor fix for bug caused by `<=` producing additional API call when there is a single date slice |
