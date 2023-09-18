@@ -66,7 +66,7 @@ class SourceMixpanel(AbstractSource):
             config.get("select_properties_by_default", True),
             config.get("region", "US"),
             config.get("date_window_size", 30),
-            config.get("project_id"),
+            config.get("credentials", dict()).get("project_id"),
         )
         try:
             project_timezone = pendulum.timezone(project_timezone)
@@ -86,7 +86,7 @@ class SourceMixpanel(AbstractSource):
 
         auth = self.get_authenticator(config)
         if isinstance(auth, TokenAuthenticatorBase64) and project_id:
-            config.pop("project_id")
+            config.get("credentials").pop("project_id")
         if isinstance(auth, BasicHttpAuthenticator) and not isinstance(project_id, int):
             raise_config_error("Required parameter 'project_id' missing or malformed. Please provide a valid project ID.")
 
@@ -98,6 +98,7 @@ class SourceMixpanel(AbstractSource):
         config["select_properties_by_default"] = select_properties_by_default
         config["region"] = region
         config["date_window_size"] = date_window_size
+        config["project_id"] = project_id
 
         return config
 
