@@ -37,7 +37,6 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "streams": [
                     {
                         "name": "test_data",
-                        "file_type": "avro",
                         "globs": ["**/*.avro"],
                         "legacy_prefix": "a_folder/",
                         "validation_policy": "Emit Record",
@@ -65,7 +64,6 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "streams": [
                     {
                         "name": "test_data",
-                        "file_type": "avro",
                         "globs": ["**/*.avro"],
                         "legacy_prefix": "",
                         "validation_policy": "Emit Record",
@@ -93,7 +91,6 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "streams": [
                     {
                         "name": "test_data",
-                        "file_type": "avro",
                         "globs": ["*.csv", "**/*"],
                         "validation_policy": "Emit Record",
                         "legacy_prefix": "a_prefix/",
@@ -393,7 +390,6 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
         "streams": [
             {
                 "name": "test_data",
-                "file_type": file_type,
                 "globs": [f"**/*.{file_type}"],
                 "legacy_prefix": "",
                 "validation_policy": "Emit Record",
