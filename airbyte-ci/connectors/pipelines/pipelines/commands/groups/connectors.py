@@ -15,8 +15,9 @@ from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, ge
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
+from pipelines.connector_changes.base_image_version_upgrade import run_connector_base_image_upgrade_pipeline
 from pipelines.connector_changes.format import run_connector_format_pipeline
-from pipelines.connector_changes.metadata_update import run_connector_base_image_upgrade_pipeline
+from pipelines.connector_changes.version_bump import run_connector_version_bump_pipeline
 from pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
 from pipelines.github import update_global_commit_status_check_for_tests
 from pipelines.pipelines.connectors import run_connectors_pipelines
@@ -569,6 +570,70 @@ def upgrade_base_image(ctx: click.Context, commit_and_push: bool, export_to_host
         commit_and_push,
         export_to_host,
         set_if_exists,
+    )
+
+    return True
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="Upgrades the base image version used by the selected connectors..")
+@click.argument("bump-type", type=click.Choice(["patch", "minor", "major"]))
+@click.argument("pull-request-number", type=str)
+@click.argument("changelog-entry", type=str)
+@click.option("--commit-and-push", default=False)
+@click.option("--export-to-host", default=True)
+@click.option("--set-if-exists", default=True)
+@click.pass_context
+def bump_version(
+    ctx: click.Context,
+    bump_type: str,
+    pull_request_number: str,
+    changelog_entry: str,
+    commit_and_push: bool,
+    export_to_host: bool,
+    set_if_exists: bool,
+) -> bool:
+    """Upgrades the base image version used by the selected connectors."""
+
+    if ctx.obj["is_local"] and commit_and_push:
+        raise click.UsageError("You can't use the --commit-and-push option in local mode.")
+    if ctx.obj["is_local"] and not export_to_host:
+        main_logger.warning("Not using the --export-to-host option in local mode will not change anything on your local repo.")
+
+    connectors_contexts = [
+        ConnectorContext(
+            pipeline_name=f"Upgrade base image versions of connector {connector.technical_name}",
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            ci_report_bucket=ctx.obj["ci_report_bucket_name"],
+            report_output_prefix=ctx.obj["report_output_prefix"],
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
+            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+            dagger_logs_url=ctx.obj.get("dagger_logs_url"),
+            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+            ci_context=ctx.obj.get("ci_context"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_git_user=ctx.obj["ci_git_user"],
+            ci_github_access_token=ctx.obj["ci_github_access_token"],
+            open_report_in_browser=False,
+        )
+        for connector in ctx.obj["selected_connectors_with_modified_files"]
+    ]
+
+    anyio.run(
+        run_connectors_pipelines,
+        connectors_contexts,
+        run_connector_version_bump_pipeline,
+        "Version bump pipeline pipeline",
+        ctx.obj["concurrency"],
+        ctx.obj["dagger_logs_path"],
+        ctx.obj["execute_timeout"],
+        commit_and_push,
+        export_to_host,
+        bump_type,
+        changelog_entry,
+        pull_request_number,
     )
 
     return True
