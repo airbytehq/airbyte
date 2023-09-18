@@ -2,8 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-Stream `Deleted Tickets` is removed.
-For a smooth migration, schema refresh is needed.
+Stream `Deleted Tickets` is removed. You may need to refresh the connection schema (skipping the reset), and running a sync. Alternatively, you can just run a reset.
 
 ## Upgrading to 1.0.0
 
