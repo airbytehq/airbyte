@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.17
+[ISSUE #30353] File-Based CDK: remove file_type from stream config
+
+## 0.51.16
+Connector Builder: fix datetime format inference for str parsable as int but not isdecimal
+
 ## 0.51.15
 Vector DB CDK: Add Azure OpenAI embedder
 

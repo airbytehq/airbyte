@@ -4,7 +4,7 @@
 
 from abc import abstractmethod
 from functools import cached_property, lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
@@ -42,7 +42,7 @@ class AbstractFileBasedStream(Stream):
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
-        parsers: Dict[str, FileTypeParser],
+        parsers: Dict[Type[Any], FileTypeParser],
         validation_policy: AbstractSchemaValidationPolicy,
     ):
         super().__init__()
@@ -121,11 +121,11 @@ class AbstractFileBasedStream(Stream):
         """
         ...
 
-    def get_parser(self, file_type: str) -> FileTypeParser:
+    def get_parser(self) -> FileTypeParser:
         try:
-            return self._parsers[file_type]
+            return self._parsers[type(self.config.format)]
         except KeyError:
-            raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, file_type=file_type)
+            raise UndefinedParserError(FileBasedSourceError.UNDEFINED_PARSER, stream=self.name, format=type(self.config.format))
 
     def record_passes_validation_policy(self, record: Mapping[str, Any]) -> bool:
         if self.validation_policy:

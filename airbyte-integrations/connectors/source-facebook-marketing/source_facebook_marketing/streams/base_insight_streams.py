@@ -12,9 +12,10 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
-from facebook_business.exceptions import FacebookBadObjectError
+from facebook_business.exceptions import FacebookBadObjectError, FacebookRequestError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
+from source_facebook_marketing.streams.common import traced_exception
 
 from .base_streams import FBMarketingIncrementalStream
 
@@ -25,7 +26,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/insights"""
 
     cursor_field = "date_start"
-    use_batch = False
     enable_deleted = False
 
     ALL_ACTION_ATTRIBUTION_WINDOWS = [
@@ -131,6 +131,8 @@ class AdsInsights(FBMarketingIncrementalStream):
                 f"Please try again later",
                 failure_type=FailureType.system_error,
             ) from e
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
         self._completed_slices.add(job.interval.start)
         if job.interval.start == self._next_cursor_value:
@@ -222,7 +224,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-
         """Slice by date periods and schedule async job for each period, run at most MAX_ASYNC_JOBS jobs at the same time.
         This solution for Async was chosen because:
         1. we should commit state after each successful job
@@ -238,9 +239,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         if stream_state:
             self.state = stream_state
 
-        manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
-        for job in manager.completed_jobs():
-            yield {"insight_job": job}
+        try:
+            manager = InsightAsyncJobManager(api=self._api, jobs=self._generate_async_jobs(params=self.request_params()))
+            for job in manager.completed_jobs():
+                yield {"insight_job": job}
+        except FacebookRequestError as exc:
+            raise traced_exception(exc)
 
     def _get_start_date(self) -> pendulum.Date:
         """Get start date to begin sync with. It is not that trivial as it might seem.
