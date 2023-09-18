@@ -20,13 +20,20 @@ connectionSpecification:
       airbyte_secret: true
     object_types:
       type: array
-      title: Object Types
+      title: Approval Code
       items:
         type: string
       description: The Approval Code of the Feishu you want to sync.
       order: 3
       examples: []
       default: []
+    bit_table_link:
+      type: string
+      title: bittable link
+      description:
+        Enter the link to the Feishu bittable you want to sync, Must include table and view
+      examples:
+        - https://feishu.cn/base/LsCMbKD6NaTs?table=tblqjdeE&view=vewydZI
     tunnel_method:
       type: "object"
       title: "Acquisition Method"

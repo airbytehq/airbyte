@@ -12,7 +12,7 @@ RUN apk --no-cache upgrade \
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+RUN echo "Cython<3" > cython_constraint.txt && PIP_CONSTRAINT=cython_constraint.txt pip install --prefix=/install .
 
 # build a clean environment
 FROM base

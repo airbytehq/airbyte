@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "app_token": {
+      "type": ["null", "string"]
+    },
+    "member_type": {
+      "type": ["null", "string"]
+    },
+    "member_open_id": {
+      "type": ["null", "string"]
+    },
+    "member_user_id": {
+      "type": ["null", "string"]
+    },
+    "perm": {
+      "type": ["null", "string"]
+    }
+  }
+}
