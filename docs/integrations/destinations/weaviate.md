@@ -83,6 +83,6 @@ As properties have to start will a lowercase letter in Weaviate, field names mig
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.0   | 2023-09-17 | [#30151](https://github.com/airbytehq/airbyte/pull/30151) | Add embedding capabilities, overwrite and dedup support and API key auth mode. 🚨 Breaking changes - check migrations guide. |
+| 0.2.0   | 2023-09-22 | [#30151](https://github.com/airbytehq/airbyte/pull/30151) | Add embedding capabilities, overwrite and dedup support and API key auth mode. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
 | 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                         |
