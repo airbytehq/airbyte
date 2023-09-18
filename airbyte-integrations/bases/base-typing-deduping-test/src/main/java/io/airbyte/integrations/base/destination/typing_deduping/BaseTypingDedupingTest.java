@@ -470,29 +470,40 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    // Read the same set of messages for both streams
     final List<AirbyteMessage> messages1 = Stream.concat(
         readMessages("dat/sync1_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("dat/sync1_messages.jsonl", namespace2, streamName).stream()).toList();
+        readMessages("dat/sync1_messages2.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace1, streamName);
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace2, streamName);
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
+        namespace1,
+        streamName);
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
+        namespace2,
+        streamName);
 
     // Second sync
     final List<AirbyteMessage> messages2 = Stream.concat(
         readMessages("dat/sync2_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("dat/sync2_messages.jsonl", namespace2, streamName).stream()).toList();
+        readMessages("dat/sync2_messages2.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace1, streamName);
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace2, streamName);
+    verifySyncResult(
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl"),
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
+        namespace1,
+        streamName);
+    verifySyncResult(
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw2.jsonl"),
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
+        namespace2,
+        streamName);
   }
 
   @Test
