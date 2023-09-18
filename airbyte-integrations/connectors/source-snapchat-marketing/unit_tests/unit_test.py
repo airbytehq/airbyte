@@ -23,6 +23,9 @@ config_mock = {
     "authenticator": NoAuth(),
     "start_date": "2000-01-01",
     "end_date": "2000-02-10",
+    "action_report_time": "impression",
+    "swipe_up_attribution_window": "7_DAY",
+    "view_attribution_window": "1_DAY",
 }
 stats_stream = AdaccountsStatsDaily(**config_mock)
 
