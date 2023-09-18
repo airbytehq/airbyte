@@ -26,6 +26,9 @@ def chunks(iterable, batch_size):
 # large enough to speed up processing, small enough to not hit pinecone request limits
 PINECONE_BATCH_SIZE = 40
 
+# do not flood the server with too many connections in parallel
+PARALLELISM_LIMIT = 4
+
 MAX_METADATA_SIZE = 40_960 - 10_000
 
 
@@ -92,12 +95,14 @@ class PineconeIndexer(Indexer):
             metadata = self._truncate_metadata(chunk.metadata)
             metadata["text"] = chunk.page_content
             pinecone_docs.append((str(uuid.uuid4()), chunk.embedding, metadata))
-        async_results = [
-            self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
-            for ids_vectors_chunk in chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE)
-        ]
-        # Wait for and retrieve responses (this raises in case of error)
-        [async_result.result() for async_result in async_results]
+        serial_batches = chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
+        for batch in serial_batches:
+            async_results = [
+                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+                for ids_vectors_chunk in chunks(batch, batch_size=PINECONE_BATCH_SIZE)
+            ]
+            # Wait for and retrieve responses (this raises in case of error)
+            [async_result.result() for async_result in async_results]
 
     def check(self) -> Optional[str]:
         try:
