@@ -28,7 +28,7 @@ data:
       3.0.0:
         message: Add default cursor for cdc
         upgradeDeadline: "2023-08-17"
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:java
     - language:python
