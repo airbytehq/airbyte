@@ -2413,6 +2413,16 @@
           }
         }
       }
+    },
+    "deleted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted_message": {
+      "type": ["null", "string"]
+    },
+    "deleted_description": {
+      "type": ["null", "string"]
     }
   }
 }
