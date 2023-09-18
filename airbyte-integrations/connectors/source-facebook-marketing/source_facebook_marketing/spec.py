@@ -154,6 +154,7 @@ class ConnectorConfig(BaseConfig):
         title="Maximum size of Batched Requests",
         order=9,
         default=50,
+        maximum=50,
     )
 
     action_breakdowns_allow_empty: bool = Field(
