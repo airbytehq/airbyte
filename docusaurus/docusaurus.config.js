@@ -119,7 +119,7 @@ const config = {
           {
             href: "https://status.airbyte.com",
             label: "Cloud Status",
-            id: "cloudStatusLink",
+            className: "cloudStatusLink",
             position: "right",
           },
           {
