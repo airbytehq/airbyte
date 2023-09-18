@@ -51,6 +51,9 @@
     "is_inline": {
       "type": ["null", "boolean"]
     },
+    "public_url": {
+      "type": ["null", "string"] 
+    },
     "properties": {
       "type": "array",
       "items": {

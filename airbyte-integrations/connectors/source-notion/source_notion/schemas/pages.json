@@ -36,6 +36,9 @@
     "url": {
       "type": "string"
     },
+    "public_url": {
+      "type": ["null", "string"]
+    },
     "properties": {
       "type": "array",
       "items": {
