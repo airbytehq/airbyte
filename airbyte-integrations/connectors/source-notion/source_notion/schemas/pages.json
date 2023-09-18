@@ -25,7 +25,7 @@
       "type": "boolean"
     },
     "icon": {
-      "type": ["null", "string"]
+      "$ref": "icon.json"
     },
     "cover": {
       "$ref": "file.json"
