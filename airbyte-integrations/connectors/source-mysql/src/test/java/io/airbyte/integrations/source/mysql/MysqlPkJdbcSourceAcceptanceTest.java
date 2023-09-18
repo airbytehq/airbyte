@@ -599,4 +599,15 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                    Collectors.toList())
            : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
   }
+
+  @Override
+  protected JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
+    final JsonNode streamState = airbyteMessage.getState().getStream().getStreamState();
+    if (streamState.get("stream_name").asText().equals(streamName)) {
+      return streamState;
+    }
+
+    throw new IllegalArgumentException("Stream not found in state message: " + streamName);
+  }
 }
+
