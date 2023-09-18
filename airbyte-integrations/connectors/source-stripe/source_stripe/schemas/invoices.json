@@ -209,11 +209,7 @@
       "type": ["null", "integer"]
     },
     "lines": {
-      "type": ["null", "array", "object"],
-      "items": {
-        "type": ["null", "string"]
-      },
-      "properties": {}
+      "type": ["null", "object"]
     },
     "forgiven": {
       "type": ["null", "boolean"]
