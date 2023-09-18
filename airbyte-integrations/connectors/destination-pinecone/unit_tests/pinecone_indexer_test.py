@@ -88,6 +88,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         show_progress=False,
     )
 
+
 def test_pinecone_index_delete_1k_limit(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer._pod_type = "starter"
