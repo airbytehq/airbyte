@@ -72,24 +72,24 @@
       "type": "object",
       "properties": {
         "color": { "type": "string" },
-        "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
-        "icon": { "$ref": "icon.json" },
-        "children": { "type": "array", "items": { "type": "object" } }
+        "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
+        "icon": { "$ref": "icon.json" }
       }
     },
     "to_do": {
       "type": "object",
       "properties": {
-        "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
+        "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
         "checked": { "type": ["null", "boolean"] },
+        "color": { "type": "string" },
         "children": { "type": "array", "items": { "type": "object" } }
       }
     },
     "code": {
       "type": "object",
       "properties": {
-        "color": { "type": "string" },
-        "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
+        "caption": { "type": "array", "items": { "$ref": "rich_text.json" } },
+        "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
         "language": {
           "enum": [
             "abap",
@@ -191,6 +191,48 @@
       "type": "object",
       "properties": {
         "expression": { "type": "string" }
+      }
+    },
+    "link_preview": {
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" }
+      }
+    },
+    "table": {
+      "type": "object",
+      "properties": {
+        "table_width": { "type": "integer"},
+        "has_column_header": { "type": "boolean" },
+        "has_row_header": { "type": "boolean" }
+      }
+    },
+    "table_of_contents": {
+      "type": "object",
+      "properties": {
+        "color": { "type": "string" }
+      }
+    },
+    "table_row": {
+      "type": "object",
+      "properties": {
+        "cells": {
+          "type": "array",
+          "items": {
+            "$ref": "rich_text.json"
+          }
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "properties": {
+        "rich_text": {
+          "type": "array",
+          "items": {
+            "$ref": "rich_text.json"
+          }
+        }
       }
     }
   }
