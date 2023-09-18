@@ -4,8 +4,6 @@ data:
     sl: 100
   allowedHosts:
     hosts: []
-  connectorBuildOptions:
-    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
@@ -26,23 +24,24 @@ data:
     breakingChanges:
       4.0.0:
         message: This is a breaking change message
-        upgradeDeadline: '2023-07-19'
+        upgradeDeadline: "2023-07-19"
       5.0.0:
-        message: ID and products.year fields are changing to be integers instead of
+        message:
+          ID and products.year fields are changing to be integers instead of
           floats.
-        upgradeDeadline: '2023-08-31'
+        upgradeDeadline: "2023-08-31"
   resourceRequirements:
     jobSpecific:
-    - jobType: sync
-      resourceRequirements:
-        cpu_limit: '4.0'
-        cpu_request: '1.0'
+      - jobType: sync
+        resourceRequirements:
+          cpu_limit: "4.0"
+          cpu_request: "1.0"
   suggestedStreams:
     streams:
-    - users
-    - products
-    - purchases
+      - users
+      - products
+      - purchases
   supportLevel: community
   tags:
-  - language:python
-metadataSpecVersion: '1.0'
+    - language:python
+metadataSpecVersion: "1.0"
