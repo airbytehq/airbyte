@@ -89,6 +89,39 @@
               }
             },
             "description": "Use a fake embedding made out of random vectors with 1536 embedding dimensions. This is useful for testing the data pipeline without incurring any costs."
+          },
+          {
+            "title": "Azure OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "azure_openai",
+                "const": "azure_openai",
+                "enum": ["azure_openai"],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "Azure OpenAI API key",
+                "description": "The API key for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "api_base": {
+                "title": "Resource base URL",
+                "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "examples": ["https://your-resource-name.openai.azure.com"],
+                "type": "string"
+              },
+              "deployment": {
+                "title": "Deployment",
+                "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "examples": ["your-resource-name"],
+                "type": "string"
+              }
+            },
+            "required": ["openai_key", "api_base", "deployment"],
+            "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
           }
         ]
       },
@@ -115,9 +148,7 @@
             "always_show": true,
             "examples": ["text", "user.name", "users.*.name"],
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           },
           "metadata_fields": {
             "title": "Fields to store as metadata",
@@ -126,9 +157,7 @@
             "always_show": true,
             "examples": ["age", "user", "user.name"],
             "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "items": { "type": "string" }
           }
         },
         "required": ["chunk_size"],
@@ -137,18 +166,9 @@
     },
     "required": ["indexing", "embedding", "processing"],
     "groups": [
-      {
-        "id": "processing",
-        "title": "Processing"
-      },
-      {
-        "id": "embedding",
-        "title": "Embedding"
-      },
-      {
-        "id": "indexing",
-        "title": "Indexing"
-      }
+      { "id": "processing", "title": "Processing" },
+      { "id": "embedding", "title": "Embedding" },
+      { "id": "indexing", "title": "Indexing" }
     ]
   },
   "supportsIncremental": true,

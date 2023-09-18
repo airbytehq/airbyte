@@ -23,7 +23,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    testImplementation libs.connectors.testcontainers.scylla
+    testImplementation libs.testcontainers.scylla
 
 
 

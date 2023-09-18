@@ -739,21 +739,6 @@
       "newUsers",
       "engagedSessions",
       "engagementRate",
-      "conversions",
-      "totalRevenue"
-    ]
-  },
-  {
-    "name" : "tech_platform_report",
-    "dimensions" : [
-      "date",
-      "operatingSystemVersion"
-    ],
-    "metrics" : [
-      "totalUsers",
-      "newUsers",
-      "engagedSessions",
-      "engagementRate",
       "eventCount",
       "conversions",
       "totalRevenue"
