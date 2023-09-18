@@ -84,11 +84,11 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
 
         destination = DestinationWeaviate()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert self.count_objects("Test") == 5
+        assert self.count_objects("Mystream") == 5
 
         second_record_chunk = [self._record("mystream", f"Dogs are number {i}", i + 1000) for i in range(2)]
         list(destination.write(self.config, catalog, [*second_record_chunk, first_state_message]))
-        assert self.count_objects("Test") == 2
+        assert self.count_objects("Mystream") == 2
 
     def test_write_incremental_dedup(self):
         catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
@@ -98,12 +98,12 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         # initial sync
         destination = DestinationWeaviate()
         list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
-        assert self.count_objects("Test") == 5
+        assert self.count_objects("Mystream") == 5
 
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        result = self.client.query.get("Test", ["text"]).with_near_vector({
+        result = self.client.query.get("Mystream", ["text"]).with_near_vector({
                 "vector": [0] * OPEN_AI_VECTOR_SIZE
             }).with_where({
                 "path": ["_ab_record_id"],
@@ -111,9 +111,9 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
                 "valueText": "mystream_2"
             }).do()
 
-        assert len(result["data"]["Get"]["Test"]) == 1
-        assert self.count_objects("Test") == 5
-        assert result["data"]["Get"]["Test"][0]["text"] == "str_col: Cats are nice"
+        assert len(result["data"]["Get"]["Mystream"]) == 1
+        assert self.count_objects("Mystream") == 5
+        assert result["data"]["Get"]["Mystream"][0]["text"] == "str_col: Cats are nice"
 
         # test langchain integration
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
@@ -122,7 +122,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             by_text=False,
             client=self.client,
             text_key="text",
-            index_name="Test",
+            index_name="Mystream",
             attributes=["_ab_record_id"],
         )
 

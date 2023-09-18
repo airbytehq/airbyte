@@ -49,6 +49,53 @@
         "type": "object",
         "oneOf": [
           {
+            "title": "No external embedding",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "no_embedding",
+                "const": "no_embedding",
+                "enum": ["no_embedding"],
+                "type": "string"
+              }
+            },
+            "description": "Do not calculate and pass embeddings to Weaviate. Suitable for clusters with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
+          },
+          {
+            "title": "Azure OpenAI",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "azure_openai",
+                "const": "azure_openai",
+                "enum": ["azure_openai"],
+                "type": "string"
+              },
+              "openai_key": {
+                "title": "Azure OpenAI API key",
+                "description": "The API key for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "api_base": {
+                "title": "Resource base URL",
+                "description": "The base URL for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "examples": ["https://your-resource-name.openai.azure.com"],
+                "type": "string"
+              },
+              "deployment": {
+                "title": "Deployment",
+                "description": "The deployment for your Azure OpenAI resource.  You can find this in the Azure portal under your Azure OpenAI resource",
+                "examples": ["your-resource-name"],
+                "type": "string"
+              }
+            },
+            "required": ["openai_key", "api_base", "deployment"],
+            "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
             "title": "OpenAI",
             "type": "object",
             "properties": {
@@ -116,20 +163,6 @@
             "description": "Use a field in the record as the embedding. This is useful if you already have an embedding for your data and want to store it in the vector store."
           },
           {
-            "title": "No embedding",
-            "type": "object",
-            "properties": {
-              "mode": {
-                "title": "Mode",
-                "default": "no_embedding",
-                "const": "no_embedding",
-                "enum": ["no_embedding"],
-                "type": "string"
-              }
-            },
-            "description": "Do not calculate embeddings. Suitable for classes with configured vectorizers to calculate embeddings within Weaviate or for classes that should only support regular text search."
-          },
-          {
             "title": "Fake",
             "type": "object",
             "properties": {
@@ -154,12 +187,6 @@
             "description": "The public endpoint of the Weaviate cluster.",
             "order": 1,
             "examples": ["https://my-cluster.weaviate.network"],
-            "type": "string"
-          },
-          "class_name": {
-            "title": "Class name",
-            "description": "The class to load data into",
-            "order": 3,
             "type": "string"
           },
           "auth": {
@@ -245,6 +272,22 @@
             "default": "text",
             "type": "string"
           },
+          "default_vectorizer": {
+            "title": "Default Vectorizer",
+            "description": "The vectorizer to use if new classes need to be created",
+            "default": "none",
+            "enum": [
+              "none",
+              "text2vec-cohere",
+              "text2vec-huggingface",
+              "text2vec-openai",
+              "text2vec-palm",
+              "text2vec-contextionary",
+              "text2vec-transformers",
+              "text2vec-gpt4all"
+            ],
+            "type": "string"
+          },
           "additional_headers": {
             "title": "Additional headers",
             "description": "Additional HTTP headers to send with every request.",
@@ -268,7 +311,7 @@
             }
           }
         },
-        "required": ["host", "class_name", "auth"],
+        "required": ["host", "auth"],
         "group": "indexing",
         "description": "Indexing configuration"
       }
