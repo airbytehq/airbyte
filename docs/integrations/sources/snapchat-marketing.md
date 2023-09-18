@@ -17,6 +17,9 @@ This page guides you through the process of setting up the Snapchat Marketing so
 * client_secret
 * refresh_token
 * start_date
+* action_report_time (Optional)
+* swipe_up_attribution_window (Optional)
+* view_attribution_window (Optional)
 <!-- /env:oss -->
 
 ## Setup guide
