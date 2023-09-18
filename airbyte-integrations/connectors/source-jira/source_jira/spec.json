@@ -64,12 +64,19 @@
         "default": false,
         "order": 6
       },
+      "expand_issue_transition": {
+        "type": "boolean",
+        "title": "Expand Issue Transitions",
+        "description": "Expand the transitions when replicating issues.",
+        "default": false,
+        "order": 7
+      },
       "enable_experimental_streams": {
         "type": "boolean",
         "title": "Enable Experimental Streams",
         "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
         "default": false,
-        "order": 7
+        "order": 8
       }
     }
   }

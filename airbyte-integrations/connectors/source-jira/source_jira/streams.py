@@ -347,9 +347,10 @@ class Issues(IncrementalJiraStream):
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
-    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
+    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, expand_transitions: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._expand_changelog = expand_changelog
+        self._expand_transitions = expand_transitions
         self._render_fields = render_fields
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -373,6 +374,8 @@ class Issues(IncrementalJiraStream):
         expand = []
         if self._expand_changelog:
             expand.append("changelog")
+        if self._expand_transitions:
+            expand.append("transitions")
         if self._render_fields:
             expand.append("renderedFields")
         if expand:
@@ -674,6 +677,38 @@ class IssueTypeScreenSchemes(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "issuetypescreenscheme"
+
+
+class IssueTransitions(StartDateJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
+    """
+
+    primary_key = ["issueId", "id"]
+    extract_field = "transitions"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
+            authenticator=self.authenticator,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"issue/{stream_slice['key']}/transitions"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for issue in read_full_refresh(self.issues_stream):
+            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
 
 
 class IssueVotes(StartDateJiraStream):
