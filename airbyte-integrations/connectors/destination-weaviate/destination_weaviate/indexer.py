@@ -85,16 +85,23 @@ class WeaviateIndexer(Indexer):
                 self.client.schema.create_class(schema)
                 logging.info(f"Recreated class {class_name}")
             elif class_name not in classes:
-                self.client.schema.create_class({"class": class_name, "vectorizer": self.config.default_vectorizer, "properties": [{
-                    # Record ID is used for bookkeeping, not for searching
-                    "name": METADATA_RECORD_ID_FIELD,
-                    "dataType": ["text"],
-                    "description": "Record ID, used for bookkeeping.",
-                    "indexFilterable": True,
-                    "indexSearchable": False,
-                    "tokenization": "field"
-
-                }]})
+                self.client.schema.create_class(
+                    {
+                        "class": class_name,
+                        "vectorizer": self.config.default_vectorizer,
+                        "properties": [
+                            {
+                                # Record ID is used for bookkeeping, not for searching
+                                "name": METADATA_RECORD_ID_FIELD,
+                                "dataType": ["text"],
+                                "description": "Record ID, used for bookkeeping.",
+                                "indexFilterable": True,
+                                "indexSearchable": False,
+                                "tokenization": "field",
+                            }
+                        ],
+                    }
+                )
                 logging.info(f"Created class {class_name}")
             else:
                 self.has_record_id_metadata[class_name] = schema is not None and any(
