@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
@@ -449,7 +449,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       final AirbyteDebeziumHandler<Lsn> handler =

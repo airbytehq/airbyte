@@ -135,6 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.10  | 2023-09-15 | [\#30491](https://github.com/airbytehq/airbyte/pull/30491) | Improve error message display                                                                                                                                   |
 | 2.0.9   | 2023-09-14 | [\#30439](https://github.com/airbytehq/airbyte/pull/30439) | Fix a transient error                                                                                                                                           |
 | 2.0.8   | 2023-09-12 | [\#30364](https://github.com/airbytehq/airbyte/pull/30364) | Add log message                                                                                                                                                 |
 | 2.0.7   | 2023-08-29 | [29878](https://github.com/airbytehq/airbyte/pull/29878)   | Internal code changes                                                                                                                                           |

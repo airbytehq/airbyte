@@ -73,7 +73,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         return files
 
     def _check_parse_record(self, stream: "AbstractFileBasedStream", file: RemoteFile, logger: logging.Logger) -> None:
-        parser = stream.get_parser(stream.config.file_type)
+        parser = stream.get_parser()
 
         try:
             record = next(iter(parser.parse_records(stream.config, file, self.stream_reader, logger, discovered_schema=None)))

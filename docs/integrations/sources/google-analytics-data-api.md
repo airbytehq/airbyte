@@ -274,6 +274,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 1.4.1   | 2023-09-17 | [30506](https://github.com/airbytehq/airbyte/pull/30506) | Fix None type error when metrics or dimensions response does not have name      |
 | 1.4.0   | 2023-09-15 | [30417](https://github.com/airbytehq/airbyte/pull/30417) | Change start date to optional; add suggested streams and update errors handling |
 | 1.3.1   | 2023-09-14 | [30424](https://github.com/airbytehq/airbyte/pull/30424) | Fixed duplicated stream issue                                                   |
 | 1.2.0   | 2023-09-11 | [30290](https://github.com/airbytehq/airbyte/pull/30290) | Add new preconfigured reports                                                   |

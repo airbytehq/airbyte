@@ -229,9 +229,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h.get("name").replace(":", "_") for h in r.get("dimensionHeaders", [{}])]
-        metrics = [h.get("name").replace(":", "_") for h in r.get("metricHeaders", [{}])]
-        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}])}
+        dimensions = [h.get("name").replace(":", "_") if "name" in h else None for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name").replace(":", "_") if "name" in h else None for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
 
         for row in r.get("rows", []):
             record = {
