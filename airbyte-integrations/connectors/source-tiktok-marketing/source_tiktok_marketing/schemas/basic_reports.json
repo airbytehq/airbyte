@@ -173,7 +173,19 @@
         },
         "total_complete_payment_rate": {
           "type": ["null", "string"]
-        }
+        },
+        "registration": {
+          "type": ["null", "string"]
+        },
+        "total_registration": {
+          "type": ["null", "string"]
+        },
+        "skan_registration": {
+          "type": ["null", "string"]
+        },
+        "skan_registration_rate": {
+          "type": ["null", "string"]
+        },
       }
     },
     "dimensions": {
