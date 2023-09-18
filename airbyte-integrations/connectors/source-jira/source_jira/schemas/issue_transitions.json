@@ -27,7 +27,7 @@
     "isInitial": {
       "type": ["null", "boolean"]
     },
-    "looped": {
+    "isLooped": {
       "type": ["null", "boolean"]
     },
     "name": {
