@@ -299,7 +299,7 @@ class CheckBaseImageIsUsed(Step):
                 StepStatus.FAILURE,
                 stdout="Connector is certified but does not use our base image. Please set connectorBuildOptions.baseImage in the connector metadata.",
             )
-        has_dockerfile = "Dockerfile" in await self.context.get_connector_dir(include="Dockerfile").entries()
+        has_dockerfile = "Dockerfile" in await (await self.context.get_connector_dir(include="Dockerfile")).entries()
         if has_dockerfile:
             return StepResult(
                 self,
