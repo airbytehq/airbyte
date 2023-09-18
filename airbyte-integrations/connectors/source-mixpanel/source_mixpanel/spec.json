@@ -68,7 +68,7 @@
         "order": 2,
         "title": "Attribution Window",
         "type": "integer",
-        "description": "A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted. Default attribution window is 5 days.",
+        "description": "A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted. Default attribution window is 5 days. (This value should be non-negative integer)",
         "default": 5
       },
       "project_timezone": {
@@ -115,7 +115,7 @@
       "date_window_size": {
         "order": 8,
         "title": "Date slicing window",
-        "description": "Defines window size in days, that used to slice through data. You can reduce it, if amount of data in each window is too big for your environment.",
+        "description": "Defines window size in days, that used to slice through data. You can reduce it, if amount of data in each window is too big for your environment. (This value should be positive integer)",
         "type": "integer",
         "minimum": 1,
         "default": 30
