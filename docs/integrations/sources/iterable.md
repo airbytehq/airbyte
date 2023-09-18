@@ -76,10 +76,65 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 [List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
 
+
+## Build instructions
+### Build your own connector image
+This connector is built using our dynamic built process.
+The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
+The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+It does not rely on a Dockerfile.
+
+If you would like to patch our connector and build your own a simple approach would be:
+
+1. Create your own Dockerfile based on the latest version of the connector image.
+```Dockerfile
+FROM airbyte/source-iterable:latest
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+Please use this as an example. This is not optimized.
+
+2. Build your image:
+```bash
+docker build -t airbyte/source-iterable:dev .
+# Running the spec command against your patched connector
+docker run airbyte/source-iterable:dev spec
+```
+
+### Customizing our build process
+When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+You can customize our build process by adding a `build_customization.py` module to your connector.
+This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+It will be imported at runtime by our build process and the functions will be called if they exist.
+
+Here is an example of a `build_customization.py` module:
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Feel free to check the dagger documentation for more information on the Container object and its methods.
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    from dagger import Container
+
+
+async def pre_connector_install(base_image_container: Container) -> Container:
+    return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+
+async def post_connector_install(connector_container: Container) -> Container:
+    return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+```
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| 0.2.0 | 2023-09-18 | [30528](https://github.com/airbytehq/airbyte/pull/30528) | Use our base image and remove Dockerfile |
 | 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                |
 | 0.1.29  | 2023-05-24 | [26459](https://github.com/airbytehq/airbyte/pull/26459) | Added requests reading timeout 300 seconds                                                                   |
 | 0.1.28  | 2023-05-12 | [26014](https://github.com/airbytehq/airbyte/pull/26014) | Improve 500 handling for Events stream                                                                       |

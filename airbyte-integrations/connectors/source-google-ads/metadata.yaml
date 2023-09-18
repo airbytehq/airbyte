@@ -1,13 +1,19 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - accounts.google.com
       - googleads.googleapis.com
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 0.8.1
+  dockerImageTag: 0.9.0
   dockerRepository: airbyte/source-google-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
@@ -18,11 +24,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

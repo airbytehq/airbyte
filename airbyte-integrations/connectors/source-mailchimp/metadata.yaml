@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - "*.api.mailchimp.com"
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 0.4.1
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-mailchimp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
   license: MIT
@@ -17,11 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

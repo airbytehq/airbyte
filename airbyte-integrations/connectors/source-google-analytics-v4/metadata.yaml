@@ -1,15 +1,21 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - oauth2.googleapis.com
       - www.googleapis.com
       - analyticsdata.googleapis.com
       - analyticsreporting.googleapis.com
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-google-analytics-v4
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   githubIssueLabel: source-google-analytics-v4
   icon: google-analytics.svg
   license: Elv2
@@ -20,11 +26,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

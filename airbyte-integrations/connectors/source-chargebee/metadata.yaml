@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - "*.chargebee.com"
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-chargebee
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   githubIssueLabel: source-chargebee
   icon: chargebee.svg
   license: MIT
@@ -17,12 +23,8 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
+  supportLevel: certified
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

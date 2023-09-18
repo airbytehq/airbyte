@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - api.monday.com
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 1.1.2
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-monday
+  documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   githubIssueLabel: source-monday
   icon: monday.svg
   license: MIT
@@ -17,12 +23,8 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/monday
+  supportLevel: certified
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

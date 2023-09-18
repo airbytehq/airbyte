@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - api.rechargeapps.com
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-recharge
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
   githubIssueLabel: source-recharge
   icon: recharge.svg
   license: MIT
@@ -17,11 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

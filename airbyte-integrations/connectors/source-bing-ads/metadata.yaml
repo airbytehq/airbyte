@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - bingads.microsoft.com
@@ -8,11 +11,14 @@ data:
       - ads.microsoft.com
       - api.ads.microsoft.com
       - clientcenter.api.bingads.microsoft.com
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-bing-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
@@ -23,11 +29,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

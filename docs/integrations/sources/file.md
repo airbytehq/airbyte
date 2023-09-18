@@ -212,10 +212,65 @@ In order to read large files from a remote location, this connector uses the [sm
 - Please make sure that Docker Desktop has access to `/tmp` (and `/private` on a MacOS, as /tmp has a symlink that points to /private. It will not work otherwise). You allow it with "File sharing" in `Settings -> Resources -> File sharing -> add the one or two above folder` and hit the "Apply & restart" button.
 - The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
 
+
+## Build instructions
+### Build your own connector image
+This connector is built using our dynamic built process.
+The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
+The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+It does not rely on a Dockerfile.
+
+If you would like to patch our connector and build your own a simple approach would be:
+
+1. Create your own Dockerfile based on the latest version of the connector image.
+```Dockerfile
+FROM airbyte/source-file:latest
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+Please use this as an example. This is not optimized.
+
+2. Build your image:
+```bash
+docker build -t airbyte/source-file:dev .
+# Running the spec command against your patched connector
+docker run airbyte/source-file:dev spec
+```
+
+### Customizing our build process
+When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+You can customize our build process by adding a `build_customization.py` module to your connector.
+This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+It will be imported at runtime by our build process and the functions will be called if they exist.
+
+Here is an example of a `build_customization.py` module:
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Feel free to check the dagger documentation for more information on the Container object and its methods.
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    from dagger import Container
+
+
+async def pre_connector_install(base_image_container: Container) -> Container:
+    return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+
+async def post_connector_install(connector_container: Container) -> Container:
+    return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+```
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.4.0 | 2023-09-18 | [30528](https://github.com/airbytehq/airbyte/pull/30528) | Use our base image and remove Dockerfile |
 | 0.3.11  | 2023-06-08 | [27157](https://github.com/airbytehq/airbyte/pull/27157)   | Force smart open log level to ERROR                                                                     |
 | 0.3.10  | 2023-06-07 | [27107](https://github.com/airbytehq/airbyte/pull/27107)   | Make source-file testable in our new airbyte-ci pipelines                                               |
 | 0.3.9   | 2023-05-18 | [26275](https://github.com/airbytehq/airbyte/pull/26275)   | Add ParserError handling                                                                                |

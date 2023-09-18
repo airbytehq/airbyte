@@ -1,16 +1,22 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - api.github.com
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.0.4
-  maxSecondsBetweenMessages: 5400
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-github
+  documentationUrl: https://docs.airbyte.com/integrations/sources/github
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: GitHub
   registries:
     cloud:
@@ -30,11 +36,7 @@ data:
       - tags
       - teams
       - users
-  documentationUrl: https://docs.airbyte.com/integrations/sources/github
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

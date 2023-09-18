@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - harvest.greenhouse.io
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 59f1e50a-331f-4f09-b3e8-2e8d4d355f44
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-greenhouse
+  documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
   license: MIT
@@ -17,12 +23,8 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
+  supportLevel: certified
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

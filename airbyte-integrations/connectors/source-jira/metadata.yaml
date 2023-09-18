@@ -1,16 +1,22 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - ${domain}
+  connectorBuildOptions:
+    baseImage: airbyte-python-connector-base:1.1.0
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 0.6.0
-  maxSecondsBetweenMessages: 21600
+  dockerImageTag: 0.7.0
   dockerRepository: airbyte/source-jira
+  documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   githubIssueLabel: source-jira
   icon: jira.svg
   license: MIT
+  maxSecondsBetweenMessages: 21600
   name: Jira
   registries:
     cloud:
@@ -18,11 +24,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/jira
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"
