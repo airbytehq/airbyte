@@ -24,7 +24,7 @@ definitions:
     url_base: "https://api.pipedrive.com/v1"
     http_method: "GET"
     request_parameters:
-      api_token: "{{config['api_token']}}"
+      api_token: "{{ config['authorization']['api_token'] }}"
       limit: "50"
       items: "{{ parameters.path_extractor }}"
   retriever:
@@ -53,7 +53,7 @@ definitions:
     cursor_field: "update_time"
     datetime_format: "%Y-%m-%d %H:%M:%S"
     start_datetime:
-      datetime: "{{ config['replication_start_date'] }}"
+      datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d %H:%M:%S') }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
     start_time_option:
       field_name: "since_timestamp"
@@ -111,9 +111,9 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "lead_labels"
     retriever:
-        $ref: "#/definitions/retriever"
-        paginator:
-          type: NoPagination
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: NoPagination
     $parameters:
       path: "/leadLabels"
 
@@ -151,6 +151,10 @@ definitions:
 # This stream didnt have limit as query_parameter
     $ref: "#/definitions/base_stream"
     name: "activity_types"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: NoPagination
     $parameters:
       path: "/activityTypes"
 
@@ -163,9 +167,13 @@ definitions:
   currencies_stream:
     $ref: "#/definitions/base_stream"
     name: "currencies"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: NoPagination
     $parameters:
       path: "/currencies"
- 
+
   organization_stream:
     $ref: "#/definitions/base_stream"
     name: "organizations"
@@ -182,10 +190,13 @@ definitions:
     $parameters:
       path: "/organizationFields"
 
-
   permission_sets_stream:
     $ref: "#/definitions/base_stream"
     name: "permission_sets"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        type: NoPagination
     $parameters:
       path: "/permissionSets"
 
@@ -268,7 +279,7 @@ definitions:
       cursor_field: "modified"
       datetime_format: "%Y-%m-%d %H:%M:%S"
       start_datetime:
-        datetime: "{{ config['replication_start_date'] }}"
+        datetime: "{{ format_datetime(config['replication_start_date'], '%Y-%m-%d %H:%M:%S') }}"
         datetime_format: "%Y-%m-%d %H:%M:%S"
       start_time_option:
         field_name: "since_timestamp"
@@ -329,20 +340,25 @@ spec:
     title: Pipedrive Spec
     type: object
     required:
-      - api_token
       - replication_start_date
     additionalProperties: true
     properties:
-      api_token:
-        title: API Token
-        type: string
-        description: The Pipedrive API Token.
-        airbyte_secret: true
+      authorization:
+        type: object
+        title: API Key Authentication
+        required:
+          - api_token
+        properties:
+          api_token:
+            title: API Token
+            type: string
+            description: The Pipedrive API Token.
+            airbyte_secret: true
       replication_start_date:
         title: Start Date
         description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
           before this date will not be replicated. When specified and not None, then
           stream will behave as incremental
         examples:
-        - '2017-01-25 00:00:00Z'
+          - '2017-01-25 00:00:00Z'
         type: string
