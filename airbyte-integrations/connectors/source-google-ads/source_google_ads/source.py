@@ -106,12 +106,6 @@ class SourceGoogleAds(AbstractSource):
         )
         return incremental_stream_config
 
-    @staticmethod
-    def get_incremental_events_stream_config(google_api: GoogleAds, customers: List[Customer]):
-        events_stream = ChangeStatus(api=google_api, customers=customers)
-        incremental_events_config = dict(api=google_api, customers=customers, parent_stream=events_stream)
-        return incremental_events_config
-
     def get_account_info(self, google_api: GoogleAds, config: Mapping[str, Any]) -> Iterable[Iterable[Mapping[str, Any]]]:
         dummy_customers = [Customer(id=_id) for _id in config["customer_id"].split(",")]
         accounts_stream = ServiceAccounts(google_api, customers=dummy_customers)
@@ -170,28 +164,28 @@ class SourceGoogleAds(AbstractSource):
         accounts = self.get_account_info(google_api, config)
         customers = Customer.from_accounts(accounts)
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
+        default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
-        incremental_events_config = self.get_incremental_events_stream_config(google_api, customers)
         streams = [
             AdGroupAds(**incremental_config),
-            AdGroupAdLabels(google_api, customers=customers),
+            AdGroupAdLabels(**default_config),
             AdGroups(**incremental_config),
             AdGroupBiddingStrategies(**incremental_config),
-            AdGroupCriterions(**incremental_events_config),
-            AdGroupCriterionLabels(google_api, customers=customers),
-            AdGroupLabels(google_api, customers=customers),
-            AdListingGroupCriterions(**incremental_events_config),
+            AdGroupCriterions(**default_config),
+            AdGroupCriterionLabels(**default_config),
+            AdGroupLabels(**default_config),
+            AdListingGroupCriterions(**default_config),
             Accounts(**incremental_config),
-            AccountLabels(google_api, customers=customers),
-            Audience(google_api, customers=customers),
+            AccountLabels(**default_config),
+            Audience(**default_config),
             CampaignBiddingStrategies(**incremental_config),
-            CampaignCriterion(**incremental_events_config),
+            CampaignCriterion(**default_config),
             CampaignBudget(**incremental_config),
-            CampaignLabels(google_api, customers=customers),
+            CampaignLabels(**default_config),
             ClickView(**incremental_config),
-            Labels(google_api, customers=customers),
-            UserInterest(google_api, customers=customers),
+            Labels(**default_config),
+            UserInterest(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:

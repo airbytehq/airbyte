@@ -102,61 +102,56 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
 
 
 @pytest.mark.parametrize(
-    "stream_schema, report_name, slice_start, slice_end, cursor, expected_sql",
+    "fields, table_name, conditions, order_field, expected_sql",
     (
         (
-            generic_schema,
-            "ad_group_ads",
-            "2020-01-01",
-            "2020-01-10",
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
+            "ad_group_ad",
+            ["segments.date >= '2020-01-01'", "segments.date <= '2020-01-10'"],
             "segments.date",
             "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
         ),
         (
-            generic_schema,
-            "ad_group_ads",
-            "2020-01-01",
-            "2020-01-02",
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
+            "ad_group_ad",
+            ["segments.date >= '2020-01-01'", "segments.date <= '2020-01-02'"],
             "segments.date",
             "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC"
         ),
         (
-            generic_schema,
-            "ad_group_ads",
-            None,
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
+            "ad_group_ad",
             None,
             None,
             "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad"
         ),
         (
-            generic_schema,
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
             "click_view",
-            "2020-01-01",
-            "2020-01-10",
+            ["segments.date >= '2020-01-01'", "segments.date <= '2020-01-10'"],
             "segments.date",
             "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
         ),
         (
-            generic_schema,
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
             "click_view",
-            "2020-01-01",
-            "2020-01-02",
+            ["segments.date >= '2020-01-01'", "segments.date <= '2020-01-02'"],
             "segments.date",
             "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-02' ORDER BY segments.date ASC"
         ),
         (
-            generic_schema,
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
             "click_view",
-            None,
             None,
             None,
             "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view"
         ),
     ),
 )
-def test_convert_schema_into_query(stream_schema, report_name, slice_start, slice_end, cursor, expected_sql):
-    query = GoogleAds.convert_schema_into_query(stream_schema, report_name, slice_start, slice_end, cursor)
+def test_convert_schema_into_query(fields, table_name, conditions, order_field, expected_sql):
+    query = GoogleAds.convert_schema_into_query(fields, table_name, conditions, order_field)
     assert query == expected_sql
+
 
 
 def test_get_field_value():

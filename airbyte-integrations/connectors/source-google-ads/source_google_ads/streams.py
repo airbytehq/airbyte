@@ -10,35 +10,16 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
 from google.ads.googleads.v11.services.services.google_ads_service.pagers import SearchPager
 
-from .google_ads import GoogleAds
+from .google_ads import GoogleAds, logger
 from .models import Customer
-
-
-class cyclic_sieve:
-    """
-    A sieve to cyclically filter out logging messages based on a fraction.
-    """
-
-    def __init__(self, logger: logging.Logger, fraction: int = 10):
-        self._logger = logger
-        self._cycle_counter = 0
-        self._fraction = fraction
-
-    def __getattr__(self, item):
-        if self._cycle_counter % self._fraction == 0:
-            return getattr(self._logger, item)
-        return self.stub
-
-    def stub(self, *args, **kwargs):
-        pass
-
-    def bump(self):
-        self._cycle_counter += 1
+from .utils import REPORT_MAPPING
 
 
 def parse_dates(stream_slice):
@@ -111,15 +92,11 @@ class GoogleAdsStream(Stream, ABC):
     def __init__(self, api: GoogleAds, customers: List[Customer]):
         self.google_ads_client = api
         self.customers = customers
-        self.base_sieve_logger = cyclic_sieve(self.logger, 10)
-
-    @property
-    def mandatory_limit(self) -> Optional[int]:
-        "Set this property if resource have mandatory limit"
-        return None
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
-        query = GoogleAds.convert_schema_into_query(schema=self.get_json_schema(), report_name=self.name, limit=self.mandatory_limit)
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        table_name = REPORT_MAPPING[self.name]
+        query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name)
         return query
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
@@ -131,8 +108,6 @@ class GoogleAdsStream(Stream, ABC):
             yield {"customer_id": customer.id}
 
     def read_records(self, sync_mode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        self.base_sieve_logger.bump()
-        self.base_sieve_logger.info(f"Read records using g-ads client. Stream slice is {stream_slice}")
         if stream_slice is None:
             return []
 
@@ -147,7 +122,7 @@ class GoogleAdsStream(Stream, ABC):
                 raise
             for error in exc.failure.errors:
                 if error.error_code.authorization_error == AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED:
-                    self.base_sieve_logger.error(error.message)
+                    logger.error(error.message)
                     continue
                 # log and ignore only CUSTOMER_NOT_ENABLED error, otherwise - raise further
                 raise
@@ -170,7 +145,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         self._end_date = end_date
         self._state = {}
         super().__init__(**kwargs)
-        self.incremental_sieve_logger = cyclic_sieve(self.logger, 10)
+
+    @property
+    def state_checkpoint_interval(self) -> int:
+        # default page size is 10000, so set to 10% of it
+        return 1000
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -180,13 +159,12 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def state(self, value: MutableMapping[str, Any]):
         self._state.update(value)
 
-    def current_state(self, customer_id, default=None):
+    def get_current_state(self, customer_id, default=None):
         default = default or self.state.get(self.cursor_field)
         return self.state.get(customer_id, {}).get(self.cursor_field) or default
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
-            logger = cyclic_sieve(self.logger, 10)
             stream_state = stream_state or {}
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
@@ -198,7 +176,6 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 start_date = self._start_date
 
             end_date = self._end_date
-            logger.info(f"Generating slices for customer {customer.id}. Start date is {start_date}, end date is {end_date}")
 
             for chunk in chunk_date_range(
                 start_date=start_date,
@@ -212,77 +189,40 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             ):
                 if chunk:
                     chunk["customer_id"] = customer.id
-                logger.info(f"Next slice is {chunk}")
-                logger.bump()
                 yield chunk
 
     def _update_state(self, customer_id: str, record: MutableMapping[str, Any]):
         """Update the state based on the latest record's cursor value."""
-        current_state = self.current_state(customer_id)
+        current_state = self.get_current_state(customer_id)
         if current_state:
             date_in_current_stream = pendulum.parse(current_state)
             date_in_latest_record = pendulum.parse(record[self.cursor_field])
             cursor_value = (max(date_in_current_stream, date_in_latest_record)).format(self.cursor_time_format)
             self.state = {customer_id: {self.cursor_field: cursor_value}}
-            # When large amount of data this log produces so much records so the enire log is not usable
-            # See: https://github.com/airbytehq/oncall/issues/2460
-            # self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
         else:
             self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
-            self.incremental_sieve_logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
 
     def _handle_expired_page_exception(self, exception: GoogleAdsException, stream_slice: MutableMapping[str, Any], customer_id: str):
         """
         Handle GoogleAdsException errors, specifically, the EXPIRED_PAGE_TOKEN error by updating the stream slice.
         """
-        self.incremental_sieve_logger.info(f"Caught a GoogleAdsException: {str(exception)}")
         error = next(iter(exception.failure.errors))
         if error.error_code.request_error == RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN:
             start_date, end_date = parse_dates(stream_slice)
-            current_state = self.current_state(customer_id)
-            self.incremental_sieve_logger.info(f"Start date is {start_date}. End date is {end_date}. Current state is {current_state}")
+            current_state = self.get_current_state(customer_id)
+
             if end_date - start_date <= self.slice_step:
                 # If range days less than slice_step, no need in retry, because it's the minimum date range
-                self.incremental_sieve_logger.error("Page token has expired.")
                 raise exception
             elif current_state == stream_slice["start_date"]:
                 # It couldn't read all the records within one day, it will enter an infinite loop,
                 # so raise the error
-                self.incremental_sieve_logger.error("Page token has expired.")
                 raise exception
             # Retry reading records from where it crushed
-            stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
-            self.incremental_sieve_logger.info(f"Retry reading records from where it crushed with a modified slice: {stream_slice}")
+            stream_slice["start_date"] = self.get_current_state(customer_id, default=stream_slice["start_date"])
         else:
             # raise caught error for other error statuses
             raise exception
-
-    def _handle_records_limit_hit(self, records_count: int, stream_slice: MutableMapping[str, Any], customer_id: str) -> bool:
-        """
-        Handle the scenario when the records limit is hit. Update the stream slice's start date if necessary.
-
-        Args:
-            records_count (int): The number of records fetched.
-            stream_slice (dict): The current stream slice.
-            customer_id (str): The ID of the customer.
-
-        Returns:
-            bool: True if the records limit is hit, otherwise False.
-        """
-        # if records limit is hit - update slice with new start_date to continue reading
-        if self.mandatory_limit and records_count == self.mandatory_limit:
-            # if state was not updated before hitting limit - add step to start_date to avoid infinite loop
-            if stream_slice["start_date"] == self.current_state(customer_id):
-                self.incremental_sieve_logger.warning(
-                    f"More then limit {self.mandatory_limit} records with same cursor field, next records with same cursor will be skipped"
-                )
-                stream_slice["start_date"] = (
-                    pendulum.parse(self.current_state(customer_id, default=stream_slice["start_date"])) + self.slice_step
-                ).format(self.cursor_time_format)
-            else:
-                stream_slice["start_date"] = self.current_state(customer_id, default=stream_slice["start_date"])
-            return True
-        return False
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
@@ -291,32 +231,30 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
         and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
         """
-        self.incremental_sieve_logger.bump()
         while True:
-            self.incremental_sieve_logger.info("Starting a while loop iteration")
-            records_count = 0
             customer_id = stream_slice and stream_slice["customer_id"]
 
             try:
                 # count records to update slice date range with latest record time when limit is hit
-                for records_count, record in enumerate(super().read_records(sync_mode, stream_slice=stream_slice), start=1):
+                records = super().read_records(sync_mode, stream_slice=stream_slice)
+                for record in records:
                     self._update_state(customer_id, record)
                     yield record
             except GoogleAdsException as exception:
+                # stream_slice will be updated in _handle_expired_page_exception if needed
                 self._handle_expired_page_exception(exception, stream_slice, customer_id)
             else:
-                if not self._handle_records_limit_hit(records_count, stream_slice, customer_id):
-                    # return the control if no exception is raised
-                    self.incremental_sieve_logger.info("Current slice has been read. Exiting read_records()")
-                    return
+                return
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        table_name = REPORT_MAPPING[self.name]
+
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
         query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(),
-            report_name=self.name,
-            from_date=stream_slice.get("start_date"),
-            to_date=stream_slice.get("end_date"),
-            cursor_field=self.cursor_field,
+            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
         )
         return query
 
@@ -540,7 +478,6 @@ class ChangeStatus(IncrementalGoogleAdsStream):
     slice_step = pendulum.duration(microseconds=1)
     days_of_data_storage = 90
     cursor_time_format = "YYYY-MM-DD HH:mm:ss.SSSSSS"
-    mandatory_limit = 10000
 
     def __init__(self, **kwargs):
         # date range is not used for these streams, only state is used to sync recent records, otherwise full refresh
@@ -548,34 +485,75 @@ class ChangeStatus(IncrementalGoogleAdsStream):
             kwargs.pop(key, None)
         super().__init__(start_date=None, conversion_window_days=0, end_date=None, **kwargs)
 
-    def get_query(self, stream_slice: Mapping[str, Any]) -> str:
+    @property
+    def query_limit(self) -> Optional[int]:
+        "Queries for ChangeStatus resource have to include limit in it"
+        return 10000
+
+    def read_records(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        This method is overridden to handle GoogleAdsException with EXPIRED_PAGE_TOKEN error code,
+        and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
+        """
+        while True:
+            records_count = 0
+            customer_id = stream_slice and stream_slice["customer_id"]
+
+            try:
+                # count records to update slice date range with latest record time when limit is hit
+                records = super().read_records(sync_mode, stream_slice=stream_slice)
+                for records_count, record in enumerate(records, start=1):
+                    self._update_state(customer_id, record)
+                    yield record
+            except GoogleAdsException as exception:
+                # stream_slice will be updated in _handle_expired_page_exception if needed
+                self._handle_expired_page_exception(exception, stream_slice, customer_id)
+            else:
+                # if records limit is hit - update slice with new start_date to continue reading
+                if self.query_limit and records_count == self.query_limit:
+                    # if state was not updated before hitting limit - add step to start_date to avoid infinite loop
+                    current_state = self.get_current_state(customer_id, default=stream_slice["start_date"])
+                    stream_slice["start_date"] = current_state
+
+                    if stream_slice["start_date"] == self.get_current_state(customer_id):
+                        raise AirbyteTracedException(
+                            message=f"More then limit {self.mandatory_limit} records with same cursor field. Incremental sync is not possible for this stream.",
+                            failure_type=FailureType.system_error,
+                        )
+                return
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        table_name = REPORT_MAPPING[self.name]
+
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        conditions = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
+        resource_type = stream_slice.get("resource_type")
+        conditions.append(f"change_status.resource_type = '{resource_type}'")
+
         query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(),
-            report_name=self.name,
-            from_date=stream_slice.get("start_date"),
-            to_date=stream_slice.get("end_date"),
-            cursor_field=self.cursor_field,
-            # resource type is used for filtering updates only for desirable stream
-            resource_type=stream_slice.get("resource_type"),
-            # limit is mandatory parameter for this stream, also 10k is maximum value
-            limit=self.mandatory_limit,
+            fields=fields, table_name=table_name, conditions=conditions, order_field=self.cursor_field, limit=self.query_limit
         )
         return query
 
 
 class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     """
-    Abstract class used for getting incremental updates based on events returned from ChangeStatus stream
+    Abstract class used for getting incremental updates based on events returned from ChangeStatus stream.
+    Only Ad Group Criterion and Campaign Criterion streams are fetched using this class, for other resources
+    like Campaigns, Ad Groups, Ad Group Ads, and Campaign Budget we already fetch incremental updates based on date.
+    Also, these resources, unlike criterions, can't be deleted, only marked as "Removed".
     """
 
-    def __init__(self, parent_stream: IncrementalGoogleAdsStream, **kwargs):
-        self.parent_stream = parent_stream
+    def __init__(self, **kwargs):
+        self.parent_stream = ChangeStatus(api=kwargs.get("api"), customers=kwargs.get("customers"))
         self.parent_stream_name: str = self.parent_stream.name
         self.parent_cursor_field: str = self.parent_stream.cursor_field
-        self.parent_sync_mode: SyncMode = SyncMode.incremental
 
         super().__init__(**kwargs)
-        self.incremental_sieve_logger = cyclic_sieve(self.logger, 10)
 
         self._state = {self.parent_stream_name: {customer.id: None for customer in self.customers}}
 
@@ -606,19 +584,19 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         self._state.update(value)
         self.parent_stream.state = self._state.get(self.parent_stream_name, {})
 
-    def current_state(self, customer_id, default=None):
-        return self.parent_stream.current_state(customer_id, default)
+    def get_current_state(self, customer_id, default=None):
+        return self.parent_stream.get_current_state(customer_id, default)
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         """
         If state exists read updates from parent stream otherwise return slices with only customer id to sync all records for stream
         """
         if stream_state:
-            slices_generator = self.read_parent_stream(self.parent_sync_mode, self.parent_cursor_field, stream_state)
+            slices_generator = self.read_parent_stream(SyncMode.incremental, self.parent_cursor_field, stream_state)
             yield from slices_generator
         else:
             for customer in self.customers:
-                yield {"customer_id": customer.id, "updated_ids": set(), "deleted_ids": set(), "id_to_time": dict()}
+                yield {"customer_id": customer.id, "updated_ids": set(), "deleted_ids": set(), "record_changed_time_map": dict()}
 
     def _process_parent_record(self, parent_record: MutableMapping[str, Any], child_slice: MutableMapping[str, Any]) -> bool:
         """Process a single parent_record and update the child_slice."""
@@ -627,7 +605,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             return False
 
         # Save time of change
-        child_slice["id_to_time"][substream_id] = parent_record[self.parent_cursor_field]
+        child_slice["record_changed_time_map"][substream_id] = parent_record[self.parent_cursor_field]
 
         # Add record id to list of changed or deleted items depending on status
         slice_id_list = "deleted_ids" if parent_record.get("change_status.resource_status") == "REMOVED" else "updated_ids"
@@ -642,8 +620,8 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state.get(self.parent_stream_name)
         ):
             customer_id = parent_slice.get("customer_id")
-            child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set(), "id_to_time": dict()}
-            if not self.current_state(customer_id):
+            child_slice = {"customer_id": customer_id, "updated_ids": set(), "deleted_ids": set(), "record_changed_time_map": dict()}
+            if not self.get_current_state(customer_id):
                 yield child_slice
                 continue
 
@@ -652,13 +630,18 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 self._process_parent_record(parent_record, child_slice)
 
             # yield child slice if any records where read
-            if child_slice["id_to_time"]:
+            if child_slice["record_changed_time_map"]:
                 yield child_slice
 
     def parse_response(self, response: SearchPager, stream_slice: MutableMapping[str, Any] = None) -> Iterable[Mapping]:
         # update records with time obtained from parent stream
         for record in super().parse_response(response):
-            record[self.cursor_field] = stream_slice.get("id_to_time", dict()).get(record[self.primary_key[0]])
+            primary_key_value = record[self.primary_key[0]]
+
+            # cursor value obtained from parent stream
+            cursor_value = stream_slice.get("record_changed_time_map", dict()).get(primary_key_value)
+
+            record[self.cursor_field] = cursor_value
             yield record
 
     def _update_state(self):
@@ -676,7 +659,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def _read_deleted_records(self, stream_slice: MutableMapping[str, Any] = None):
         # yield deleted records with id and time when record was deleted
         for deleted_record_id in stream_slice.get("deleted_ids", []):
-            yield {self.id_field: deleted_record_id, "deleted_at": stream_slice["id_to_time"].get(deleted_record_id)}
+            yield {self.id_field: deleted_record_id, "deleted_at": stream_slice["record_changed_time_map"].get(deleted_record_id)}
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
@@ -684,9 +667,6 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         """
         This method is overridden to read records using parent stream
         """
-        self.incremental_sieve_logger.bump()
-        self.incremental_sieve_logger.info(f"Started reading records for slice: {stream_slice}")
-
         # if state is present read records by ids from slice otherwise full refresh sync
         yield from super().read_records(sync_mode, stream_slice=stream_slice)
 
@@ -696,9 +676,21 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         self._update_state()
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        query = GoogleAds.convert_schema_into_query(
-            schema=self.get_json_schema(), report_name=self.name, id_field=self.id_field, id_list=stream_slice.get("updated_ids")
-        )
+        table_name = REPORT_MAPPING[self.name]
+
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        # delete fields that are obtained from parent stream and should not be requested from API
+        delete_fields = ["change_status.last_change_date_time", "deleted_at"]
+        fields = [field_name for field_name in fields if field_name not in delete_fields]
+
+        conditions = []
+        # filter by ids obtained from parent stream
+        updated_ids = stream_slice.get("updated_ids")
+        if updated_ids:
+            id_list_str = ", ".join(f"'{str(id_)}'" for id_ in updated_ids)
+            conditions.append(f"{self.id_field} IN ({id_list_str})")
+
+        query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name, conditions=conditions)
         return query
 
 

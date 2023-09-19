@@ -89,7 +89,8 @@ def test_child_incremental_events_read(mock_ads_client, config, customers):
 
     google_api = MockGoogleAds(credentials=config["credentials"])
 
-    parent_stream = ChangeStatus(api=google_api, customers=customers)
+    stream = CampaignCriterion(api=google_api, customers=customers)
+    parent_stream = stream.parent_stream
 
     parent_stream.get_query = Mock()
     parent_stream.get_query.return_value = "query_parent"
@@ -99,25 +100,31 @@ def test_child_incremental_events_read(mock_ads_client, config, customers):
 
     parent_stream.state = {customer_id: {"change_status.last_change_date_time": "2023-05-16 13:20:01.003295"}}
 
-    stream = CampaignCriterion(api=google_api, customers=customers, parent_stream=parent_stream)
     stream.get_query = Mock()
     stream.get_query.return_value = "query_child"
 
     stream_slices = list(stream.stream_slices(stream_state=stream_state))
 
     assert stream_slices == [{'customer_id': '123', 'updated_ids': {'2', '1'}, 'deleted_ids': {'3', '4'},
-                              'id_to_time': {'1': '2023-06-13 12:36:01.772447', '2': '2023-06-13 12:36:02.772447',
+                              'record_changed_time_map': {'1': '2023-06-13 12:36:01.772447', '2': '2023-06-13 12:36:02.772447',
                                              '3': '2023-06-13 12:36:03.772447', '4': '2023-06-13 12:36:04.772447'}}]
 
     result = list(
         stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["change_status.last_change_date_time"],
                             stream_slice=stream_slices[0]))
-    assert len(result) == 4
 
-    deleted_records = [{'campaign_criterion.resource_name': '3', 'deleted_at': '2023-06-13 12:36:03.772447'},
-                       {'campaign_criterion.resource_name': '4', 'deleted_at': '2023-06-13 12:36:04.772447'}]
-
-    assert all([deleted_record in result for deleted_record in deleted_records])
+    assert result ==  [{'campaign.id': 1,
+                      'campaign_criterion.resource_name': '1',
+                      'change_status.last_change_date_time': '2023-06-13 12:36:01.772447',
+                      'customer.id': 123},
+                     {'campaign.id': 1,
+                      'campaign_criterion.resource_name': '2',
+                      'change_status.last_change_date_time': '2023-06-13 12:36:02.772447',
+                      'customer.id': 123},
+                     {'campaign_criterion.resource_name': '3',
+                      'deleted_at': '2023-06-13 12:36:03.772447'},
+                     {'campaign_criterion.resource_name': '4',
+                      'deleted_at': '2023-06-13 12:36:04.772447'}]
 
     assert stream.state == {'change_status': {'123': {'change_status.last_change_date_time': '2023-06-13 12:36:04.772447'}}}
 
