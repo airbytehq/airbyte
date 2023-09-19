@@ -131,15 +131,14 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 ## Changelog
 
-### bigquery
-
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.12  | 2023-09-19 | [\#30319](https://github.com/airbytehq/airbyte/pull/30319) | Improved testing                                                                                                                                                |
 | 2.0.11  | 2023-09-18 | [\#30551](https://github.com/airbytehq/airbyte/pull/30551) | GCS Staging is first loading method option                                                                                                                      |
 | 2.0.10  | 2023-09-15 | [\#30491](https://github.com/airbytehq/airbyte/pull/30491) | Improve error message display                                                                                                                                   |
 | 2.0.9   | 2023-09-14 | [\#30439](https://github.com/airbytehq/airbyte/pull/30439) | Fix a transient error                                                                                                                                           |
 | 2.0.8   | 2023-09-12 | [\#30364](https://github.com/airbytehq/airbyte/pull/30364) | Add log message                                                                                                                                                 |
-| 2.0.7   | 2023-08-29 | [29878](https://github.com/airbytehq/airbyte/pull/29878)   | Internal code changes                                                                                                                                           |
+| 2.0.7   | 2023-08-29 | [\#29878](https://github.com/airbytehq/airbyte/pull/29878) | Internal code changes                                                                                                                                           |
 | 2.0.6   | 2023-09-05 | [\#29917](https://github.com/airbytehq/airbyte/pull/29917) | Improve performance by changing metadata error array construction from ARRAY_CONCAT to ARRAY_AGG                                                                |
 | 2.0.5   | 2023-08-31 | [\#30020](https://github.com/airbytehq/airbyte/pull/30020) | Run typing and deduping tasks in parallel                                                                                                                       |
 | 2.0.4   | 2023-09-05 | [\#30117](https://github.com/airbytehq/airbyte/pull/30117) | Type and Dedupe at sync start and then every 6 hours                                                                                                            |

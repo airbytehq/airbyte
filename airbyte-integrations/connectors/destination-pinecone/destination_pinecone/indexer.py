@@ -28,6 +28,8 @@ PINECONE_BATCH_SIZE = 40
 
 MAX_METADATA_SIZE = 40_960 - 10_000
 
+MAX_IDS_PER_DELETE = 1000
+
 
 class PineconeIndexer(Indexer):
     config: PineconeIndexingModel
@@ -62,7 +64,10 @@ class PineconeIndexer(Indexer):
         query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
         vector_ids = [doc.id for doc in query_result.matches]
         if len(vector_ids) > 0:
-            self.pinecone_index.delete(ids=vector_ids)
+            # split into chunks of 1000 ids to avoid id limit
+            batches = chunks(vector_ids, batch_size=MAX_IDS_PER_DELETE)
+            for batch in batches:
+                self.pinecone_index.delete(ids=list(batch))
 
     def _truncate_metadata(self, metadata: dict) -> dict:
         """

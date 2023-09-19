@@ -97,6 +97,19 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
+#### Incremental events streams
+List of stream:
+- [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
+- [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
+- [campaign_criterion](https://developers.google.com/google-ads/api/fields/v14/campaign_criterion)
+
+These streams support incremental updates, including deletions, leveraging the Change Status stream. However, they only capture updates from the most recent three months.
+
+The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
+
+:::warning
+It's important to note that the Google Ads API resource ChangeStatus has a limit of 10,000 records per request. That's why you cannot sync stream with more than 10,000 updates in a single microsecond. In such cases, it's recommended to use a full refresh sync to ensure all updates are captured.
+:::
 ## Supported Streams
 
 The Google Ads source connector can sync the following tables. It can also sync custom queries using GAQL.
@@ -191,6 +204,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.9.0`  | 2023-09-14 | [28970](https://github.com/airbytehq/airbyte/pull/28970) | Add incremental deletes for Campaign and Ad Group Criterion streams                                                                  |
 | `0.8.1`  | 2023-09-13 | [30376](https://github.com/airbytehq/airbyte/pull/30376) | Revert pagination changes from 0.8.0                                                                                                 |
 | `0.8.0`  | 2023-09-01 | [30071](https://github.com/airbytehq/airbyte/pull/30071) | Delete start_date from required parameters and fix pagination                                                                        |
 | `0.7.4`  | 2023-07-28 | [28832](https://github.com/airbytehq/airbyte/pull/28832) | Update field descriptions                                                                                                            |
