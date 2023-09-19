@@ -11,7 +11,10 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.partitions.legacy import LegacyPartitionGenerator
+from airbyte_cdk.sources.streams.stream_facade import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
@@ -28,6 +31,27 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
 )
+
+
+class ConcurrentStreamAdapter(Stream):
+    @classmethod
+    def create_from_legacy_stream(cls, stream: Stream, max_workers: int) -> Stream:
+        """
+        Create a ConcurrentStream from a legacy Stream.
+        :param stream:
+        :param max_workers:
+        :return:
+        """
+        return StreamFacade(
+            ConcurrentStream(
+                partition_generator=LegacyPartitionGenerator(stream),
+                max_workers=max_workers,
+                name=stream.name,
+                json_schema=stream.get_json_schema(),
+                primary_key=stream.primary_key,
+                cursor_field=stream.cursor_field,
+            )
+        )
 
 
 class SourceStripe(AbstractSource):
@@ -159,7 +183,7 @@ class SourceStripe(AbstractSource):
             ],
             **args,
         )
-        return [
+        legacy_streams = [
             CheckoutSessionsLineItems(**incremental_args),
             CustomerBalanceTransactions(**args),
             Events(**incremental_args),
@@ -415,3 +439,5 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
+        # return legacy_streams
+        return [ConcurrentStreamAdapter.create_from_legacy_stream(stream, 6) for stream in legacy_streams]
