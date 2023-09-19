@@ -97,7 +97,7 @@ public class ClickhouseDestinationTest {
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
     final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,
-            OutputRecordConsumerFactory.getOutputRecordConsumer());
+        OutputRecordConsumerFactory.getOutputRecordConsumer());
     final List<AirbyteMessage> expectedRecords = generateRecords(10);
 
     consumer.start();

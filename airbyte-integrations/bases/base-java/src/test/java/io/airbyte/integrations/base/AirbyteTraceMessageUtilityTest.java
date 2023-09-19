@@ -4,26 +4,23 @@
 
 package io.airbyte.integrations.base;
 
+import static org.mockito.Mockito.mockStatic;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.output.OutputRecordConsumer;
 import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import static org.mockito.Mockito.mockStatic;
 
 public class AirbyteTraceMessageUtilityTest {
 
@@ -40,7 +37,7 @@ public class AirbyteTraceMessageUtilityTest {
   public void setUpOut() {
     final PrintStream printStream = new PrintStream(outContent, true, StandardCharsets.UTF_8);
     outputRecordConsumerFactory.when(OutputRecordConsumerFactory::getOutputRecordConsumer)
-            .thenReturn(new TestOutputRecordConsumer(printStream));
+        .thenReturn(new TestOutputRecordConsumer(printStream));
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
@@ -83,7 +80,6 @@ public class AirbyteTraceMessageUtilityTest {
     Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
   }
 
-
   private class TestOutputRecordConsumer implements OutputRecordConsumer {
 
     private final PrintStream printStream;
@@ -102,5 +98,7 @@ public class AirbyteTraceMessageUtilityTest {
     public void accept(AirbyteMessage airbyteMessage) {
       printStream.println(Jsons.serialize(airbyteMessage));
     }
+
   }
+
 }

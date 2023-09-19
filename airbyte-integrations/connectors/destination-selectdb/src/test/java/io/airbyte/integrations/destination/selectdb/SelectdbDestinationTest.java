@@ -141,7 +141,7 @@ class SelectdbDestinationTest {
     SelectdbDestination destination = getDestination();
     destination.check(config);
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG,
-            OutputRecordConsumerFactory.getOutputRecordConsumer());
+        OutputRecordConsumerFactory.getOutputRecordConsumer());
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);

@@ -35,7 +35,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
     consumer =
         dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(),
             Jsons.object(Jsons.jsonNode(destinationConfig.getCatalog()), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),
-                OutputRecordConsumerFactory.getOutputRecordConsumer());
+            OutputRecordConsumerFactory.getOutputRecordConsumer());
     consumer.start();
   }
 

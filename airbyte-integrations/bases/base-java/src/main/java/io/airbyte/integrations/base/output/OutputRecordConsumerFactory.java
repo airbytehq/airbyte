@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.output;
 
 /**
@@ -5,9 +9,10 @@ package io.airbyte.integrations.base.output;
  */
 public class OutputRecordConsumerFactory {
 
-    private OutputRecordConsumerFactory() {}
+  private OutputRecordConsumerFactory() {}
 
-    public static OutputRecordConsumer getOutputRecordConsumer() {
-        return new PrintWriterOutputRecordConsumer();
-    }
+  public static OutputRecordConsumer getOutputRecordConsumer() {
+    return new PrintWriterOutputRecordConsumer();
+  }
+
 }

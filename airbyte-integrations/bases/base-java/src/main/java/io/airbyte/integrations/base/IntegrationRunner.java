@@ -18,7 +18,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.output.OutputRecordConsumer;
 import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.util.concurrent.ConcurrentStreamConsumer;
@@ -273,7 +272,11 @@ public class IntegrationRunner {
     }
   }
 
-  private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final OutputRecordConsumer outputRecordCollector, final Optional<JsonNode> stateOptional) throws Exception {
+  private void readSerial(final JsonNode config,
+                          ConfiguredAirbyteCatalog catalog,
+                          final OutputRecordConsumer outputRecordCollector,
+                          final Optional<JsonNode> stateOptional)
+      throws Exception {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
     } finally {
