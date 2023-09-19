@@ -38,9 +38,10 @@ public class BufferManager {
   }
 
   /**
-   * @param memoryLimit the amount of estimated memory we allow for all buffers. The GlobalMemoryManager will apply back pressure once this quota is
-   *                    filled. "Memory" can be released back once flushing finishes. This number should be large enough we don't block reading
-   *                    unnecessarily, but small enough we apply back pressure before OOMing.
+   * @param memoryLimit the amount of estimated memory we allow for all buffers. The
+   *        GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
+   *        released back once flushing finishes. This number should be large enough we don't block
+   *        reading unnecessarily, but small enough we apply back pressure before OOMing.
    */
   public BufferManager(final long memoryLimit) {
     maxMemory = memoryLimit;
