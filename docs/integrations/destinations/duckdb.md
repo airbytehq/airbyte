@@ -12,13 +12,13 @@ Local file-based DBs will not work in Airbyte Cloud or Kubernetes. Please use Mo
 
 ## Overview
 
-[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on. This destination writes data to the [MotherDuck](motherduck.com) service, or to a file on the _local_ filesystem on the host running Airbyte. 
+[DuckDB](https://duckdb.org/) is an in-process SQL OLAP database management system and this destination is meant to use locally if you have multiple smaller sources such as GitHub repos, some social media and local CSVs or files you want to run analytics workloads on. This destination writes data to the [MotherDuck](https://motherduck.com) service, or to a file on the _local_ filesystem on the host running Airbyte. 
 
 For file-based DBs, data is written to `/tmp/airbyte_local` by default. To change this location, modify the `LOCAL_ROOT` environment variable for Airbyte.
 
 ## Use with MotherDuck
 
-This DuckDB destination is compatible with [MotherDuck](MotherDuck.com).
+This DuckDB destination is compatible with [MotherDuck](https://motherduck.com).
 
 ### Specifying a MotherDuck Database
 
