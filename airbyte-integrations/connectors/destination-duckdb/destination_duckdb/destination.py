@@ -5,6 +5,7 @@
 import datetime
 import json
 import os
+import re
 import uuid
 from collections import defaultdict
 from logging import getLogger
@@ -17,6 +18,16 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 
 logger = getLogger("airbyte")
 
+
+def validated_sql_name(sql_name: Any) -> str:
+    """Return the input if it is a valid SQL name, otherwise raise an exception."""
+    pattern = r'^[a-zA-Z0-9_]*$'
+    result = str(sql_name)
+    if bool(re.match(pattern, result)):
+        return result
+
+    raise ValueError(f"Invalid SQL name: {sql_name}")
+    
 
 class DestinationDuckdb(Destination):
     @staticmethod
@@ -34,7 +45,8 @@ class DestinationDuckdb(Destination):
         destination_path = os.path.normpath(destination_path)
         if not destination_path.startswith("/local"):
             raise ValueError(
-                f"destination_path={destination_path} is not a valid path." "A valid path shall start with /local or no / prefix"
+                f"destination_path={destination_path} is not a valid path."
+                "A valid path shall start with /local or no / prefix"
             )
 
         return destination_path
@@ -63,6 +75,7 @@ class DestinationDuckdb(Destination):
 
         path = str(config.get("destination_path"))
         path = self._get_destination_path(path)
+        schema_name = validated_sql_name(config.get("destination_path"))
 
         # Get and register auth token if applicable
         motherduck_api_key = str(config.get("motherduck_api_key"))
@@ -79,15 +92,11 @@ class DestinationDuckdb(Destination):
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info(f"Dropping tables for overwrite: {table_name}")
-                query = """
-                DROP TABLE IF EXISTS {}
-                """.format(
-                    table_name
-                )
+                query = f"DROP TABLE IF EXISTS {schema_name}.{table_name}"
                 con.execute(query)
             # create the table if needed
             query = f"""
-            CREATE TABLE IF NOT EXISTS {table_name} (
+            CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
                 _airbyte_ab_id TEXT PRIMARY KEY,
                 _airbyte_emitted_at DATETIME,
                 _airbyte_data JSON
@@ -103,12 +112,12 @@ class DestinationDuckdb(Destination):
                 # flush the buffer
                 for stream_name in buffer.keys():
                     logger.info(f"flushing buffer for state: {message}")
-                    query = """
-                    INSERT INTO {table_name} (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
+                    table_name = f"_airbyte_raw_{stream_name}"
+                    query = f"""
+                    INSERT INTO {schema_name}.{table_name}
+                      (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
                     VALUES (?,?,?)
-                    """.format(
-                        table_name=f"_airbyte_raw_{stream_name}"
-                    )
+                    """
                     con.executemany(query, buffer[stream_name])
 
                 con.commit()
@@ -135,12 +144,11 @@ class DestinationDuckdb(Destination):
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-            query = """
-            INSERT INTO {table_name}
+            table_name = f"_airbyte_raw_{stream_name}"
+            query = f"""
+            INSERT INTO {schema_name}.{table_name}
             VALUES (?,?,?)
-            """.format(
-                table_name=f"_airbyte_raw_{stream_name}"
-            )
+            """
 
             con.executemany(query, buffer[stream_name])
             con.commit()
