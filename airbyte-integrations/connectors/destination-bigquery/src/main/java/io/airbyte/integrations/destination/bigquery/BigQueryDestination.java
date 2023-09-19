@@ -293,13 +293,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         final AirbyteStream stream = configStream.getStream();
         final StreamConfig parsedStream;
 
-        if (randomSuffixMap.containsKey(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream))) {
-          LOGGER.error(
-              "======================== Found random suffix: " + randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream)));
-        } else {
-          LOGGER.error("======================== Not found random suffix!");
-        }
-
         randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
         String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));

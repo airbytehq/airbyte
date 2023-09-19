@@ -23,6 +23,7 @@ public class BigQueryTableWriter implements DestinationWriter {
   private final TableDataWriteChannel writeChannel;
 
   public BigQueryTableWriter(TableDataWriteChannel writeChannel) {
+    LOGGER.error("===================== CREATING WRITER ==========================");
     this.writeChannel = writeChannel;
   }
 
@@ -60,7 +61,7 @@ public class BigQueryTableWriter implements DestinationWriter {
 
   @Override
   public void close(boolean hasFailed) throws IOException {
-    LOGGER.error("Closing table writer, has failed: " + hasFailed);
+    LOGGER.error("===================== REGULAR CLOSING ==========================");
 
     this.writeChannel.close();
   }
