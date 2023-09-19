@@ -125,6 +125,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.6.3   | 2023-09-19 | [\#30515](https://github.com/airbytehq/airbyte/pull/30515) | Add transform for invalid date-time format, add 404 handling for check                                                  |
 | 0.6.2   | 2023-09-19 | [\#30578](https://github.com/airbytehq/airbyte/pull/30578) | Fetch deleted and archived Projects                                                                                     |
 | 0.6.1   | 2023-09-17 | [\#30550](https://github.com/airbytehq/airbyte/pull/30550) | Update `Issues` expand settings                                                                                         |
 | 0.6.0   | 2023-09-17 | [\#30507](https://github.com/airbytehq/airbyte/pull/30507) | Add new stream `IssueTransitions`                                                                                       |
