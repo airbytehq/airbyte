@@ -25,6 +25,9 @@ class DestinationDuckdb(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
+        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
+            return destination_path
+
         if not destination_path.startswith("/local"):
             destination_path = os.path.join("/local", destination_path)
 
@@ -37,9 +40,11 @@ class DestinationDuckdb(Destination):
         return destination_path
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -56,17 +61,19 @@ class DestinationDuckdb(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
-        path = config.get("destination_path")
+        path = str(config.get("destination_path"))
         path = self._get_destination_path(path)
-        # check if file exists
 
-        logger.info(f"Opening DuckDB file at {path}")
+        # Get and register auth token if applicable
+        motherduck_api_key = str(config.get("motherduck_api_key"))
+        if motherduck_api_key:
+            os.environ["motherduck_token"] = motherduck_api_key
+
         con = duckdb.connect(database=path, read_only=False)
 
         # create the tables if needed
         # con.execute("BEGIN TRANSACTION")
         for configured_stream in configured_catalog.streams:
-
             name = configured_stream.stream.name
             table_name = f"_airbyte_raw_{name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
@@ -82,7 +89,7 @@ class DestinationDuckdb(Destination):
             query = f"""
             CREATE TABLE IF NOT EXISTS {table_name} (
                 _airbyte_ab_id TEXT PRIMARY KEY,
-                _airbyte_emitted_at JSON,
+                _airbyte_emitted_at DATETIME,
                 _airbyte_data JSON
             )
             """
@@ -92,20 +99,16 @@ class DestinationDuckdb(Destination):
         buffer = defaultdict(list)
 
         for message in input_messages:
-
             if message.type == Type.STATE:
                 # flush the buffer
                 for stream_name in buffer.keys():
-
                     logger.info(f"flushing buffer for state: {message}")
                     query = """
-                    INSERT INTO {table_name}
+                    INSERT INTO {table_name} (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
                     VALUES (?,?,?)
                     """.format(
                         table_name=f"_airbyte_raw_{stream_name}"
                     )
-                    logger.info(f"query: {query}")
-
                     con.executemany(query, buffer[stream_name])
 
                 con.commit()
@@ -120,13 +123,18 @@ class DestinationDuckdb(Destination):
                     continue
 
                 # add to buffer
-                buffer[stream].append((str(uuid.uuid4()), datetime.datetime.now().isoformat(), json.dumps(data)))
+                buffer[stream].append(
+                    (
+                        str(uuid.uuid4()),
+                        datetime.datetime.now().isoformat(),
+                        json.dumps(data),
+                    )
+                )
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-
             query = """
             INSERT INTO {table_name}
             VALUES (?,?,?)
@@ -150,11 +158,16 @@ class DestinationDuckdb(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # parse the destination path
-            param_path = config.get("destination_path")
-            path = self._get_destination_path(param_path)
+            path = config.get("destination_path")
+            path = self._get_destination_path(path)
 
-            os.makedirs(os.path.dirname(path), exist_ok=True)
+            if path.startswith("/local"):
+                logger.info(f"Using DuckDB file at {path}")
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+
+            if "motherduck_api_key" in config:
+                os.environ["motherduck_token"] = config["motherduck_api_key"]
+
             con = duckdb.connect(database=path, read_only=False)
             con.execute("SELECT 1;")
 
