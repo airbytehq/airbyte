@@ -12,6 +12,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import org.testcontainers.containers.MySQLContainer;
 
 public class CdcMySqlSslRequiredSourceAcceptanceTest extends CdcMySqlSourceAcceptanceTest {
@@ -31,8 +32,8 @@ public class CdcMySqlSslRequiredSourceAcceptanceTest extends CdcMySqlSourceAccep
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())

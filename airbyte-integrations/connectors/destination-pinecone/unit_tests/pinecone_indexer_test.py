@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import ANY, MagicMock, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -87,6 +87,17 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         async_req=True,
         show_progress=False,
     )
+
+
+def test_pinecone_index_delete_1k_limit(mock_describe_index):
+    indexer = create_pinecone_indexer()
+    indexer._pod_type = "starter"
+    indexer.pinecone_index.query.return_value = MagicMock(matches=[MagicMock(id=f"doc_id_{str(i)}") for i in range(1300)])
+    indexer.index(
+        [],
+        ["delete_id1"],
+    )
+    indexer.pinecone_index.delete.assert_has_calls([call(ids=[f"doc_id_{str(i)}" for i in range(1000)]), call(ids=[f"doc_id_{str(i+1000)}" for i in range(300)])])
 
 
 def test_pinecone_index_empty_batch():

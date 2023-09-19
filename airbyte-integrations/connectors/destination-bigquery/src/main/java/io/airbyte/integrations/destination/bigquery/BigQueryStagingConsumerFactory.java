@@ -70,8 +70,18 @@ public class BigQueryStagingConsumerFactory {
         },
         flusher,
         catalog,
-        new BufferManager(),
+        new BufferManager(getBigQueryBufferMemoryLimit()),
         defaultNamespace);
+  }
+
+  /**
+   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely
+   * due to the sdk client we use.
+   *
+   * @return number of bytes to make available for message buffering.
+   */
+  private long getBigQueryBufferMemoryLimit() {
+    return (long) (Runtime.getRuntime().maxMemory() * 0.4);
   }
 
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,

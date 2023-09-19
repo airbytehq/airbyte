@@ -129,12 +129,11 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
                                      final String stream,
                                      final TableId tableId,
                                      final Schema tableSchema,
-                                     final List<String> stagedFiles) {
+                                     final String stagedFileName) {
     LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
-        tableId, datasetId, stagedFiles);
+        tableId, datasetId, stagedFileName);
 
-    stagedFiles.parallelStream().forEach(stagedFile -> {
-      final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFile);
+      final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFileName);
       LOGGER.info("Uploading staged file: {}", fullFilePath);
       final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
           .setFormatOptions(FormatOptions.csv())
@@ -164,7 +163,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
                 tableId, datasetId),
             e);
       }
-    });
   }
 
   @Override

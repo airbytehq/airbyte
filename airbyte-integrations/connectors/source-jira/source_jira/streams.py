@@ -347,10 +347,9 @@ class Issues(IncrementalJiraStream):
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
-    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
+    def __init__(self, expand_fields: list = None, **kwargs):
         super().__init__(**kwargs)
-        self._expand_changelog = expand_changelog
-        self._render_fields = render_fields
+        self._expand_fields = expand_fields
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -370,13 +369,8 @@ class Issues(IncrementalJiraStream):
         if self._project_ids:
             jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
-        expand = []
-        if self._expand_changelog:
-            expand.append("changelog")
-        if self._render_fields:
-            expand.append("renderedFields")
-        if expand:
-            params["expand"] = ",".join(expand)
+        if self._expand_fields:
+            params["expand"] = ",".join(self._expand_fields)
         return params
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
@@ -674,6 +668,38 @@ class IssueTypeScreenSchemes(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "issuetypescreenscheme"
+
+
+class IssueTransitions(StartDateJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
+    """
+
+    primary_key = ["issueId", "id"]
+    extract_field = "transitions"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
+            authenticator=self.authenticator,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"issue/{stream_slice['key']}/transitions"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for issue in read_full_refresh(self.issues_stream):
+            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
 
 
 class IssueVotes(StartDateJiraStream):
@@ -1170,6 +1196,10 @@ class Sprints(JiraStream):
                 board_details = {"name": board["name"], "id": board["id"]}
                 self.logger.info(f"Fetching sprints for board: {board_details}")
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["boardId"] = stream_slice["board_id"]
+        return record
 
 
 class SprintIssues(IncrementalJiraStream):

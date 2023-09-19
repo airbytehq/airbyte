@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -68,10 +69,9 @@ public class GlobalAsyncStateManager {
   private final AtomicLong memoryUsed;
 
   boolean preState = true;
+  private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> descToStateIdQ = new ConcurrentHashMap<>();
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
-  private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> streamToStateIdQ = new ConcurrentHashMap<>();
   private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
-  // empty in the STREAM case.
 
   // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
   // single global id.
@@ -144,7 +144,7 @@ public class GlobalAsyncStateManager {
     final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
     synchronized (this) {
-      for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
+      for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : descToStateIdQ.entrySet()) {
         // Remove all states with 0 counters.
         // Per-stream synchronized is required to make sure the state (at the head of the queue)
         // logic is applied to is the state actually removed.
@@ -157,15 +157,13 @@ public class GlobalAsyncStateManager {
             break;
           }
 
-          final var oldestState = stateIdToState.get(oldestStateId);
-          // technically possible this map hasn't been updated yet since we don't lock
-          if (oldestState == null) {
-            break;
-          }
-
+          // technically possible this map hasn't been updated yet.
           final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
-          // technically possible this map hasn't been updated yet since we don't lock
-          if (oldestStateCounter == null) {
+          Objects.requireNonNull(oldestStateCounter, "Invariant Violation: No record counter found for state message.");
+
+          final var oldestState = stateIdToState.get(oldestStateId);
+          // no state to flush for this stream
+          if (oldestState == null) {
             break;
           }
 
@@ -193,10 +191,10 @@ public class GlobalAsyncStateManager {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
     // As concurrent collections do not guarantee data consistency when iterating, use `get` instead of
     // `containsKey`.
-    if (streamToStateIdQ.get(resolvedDescriptor) == null) {
+    if (descToStateIdQ.get(resolvedDescriptor) == null) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
-    final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast();
+    final Long stateId = descToStateIdQ.get(resolvedDescriptor).peekLast();
     final var update = stateIdToCounter.get(stateId).addAndGet(increment);
     log.trace("State id: {}, count: {}", stateId, update);
     return stateId;
@@ -241,12 +239,12 @@ public class GlobalAsyncStateManager {
       // upon conversion, all previous tracking data structures need to be cleared as we move
       // into the non-STREAM world for correctness.
 
-      aliasIds.addAll(streamToStateIdQ.values().stream().flatMap(Collection::stream).toList());
-      streamToStateIdQ.clear();
+      aliasIds.addAll(descToStateIdQ.values().stream().flatMap(Collection::stream).toList());
+      descToStateIdQ.clear();
       retroactiveGlobalStateId = StateIdProvider.getNextId();
 
-      streamToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
-      streamToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
+      descToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
+      descToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
 
       final long combinedCounter = stateIdToCounter.values()
           .stream()
@@ -300,9 +298,8 @@ public class GlobalAsyncStateManager {
           throw new RuntimeException(e);
         }
       }
+      LOGGER.debug(getMemoryUsageMessage());
     }
-    memoryUsed.addAndGet(sizeInBytes);
-    LOGGER.debug(getMemoryUsageMessage());
   }
 
   public String getMemoryUsageMessage() {
@@ -325,14 +322,14 @@ public class GlobalAsyncStateManager {
   }
 
   private void registerNewStreamDescriptor(final StreamDescriptor resolvedDescriptor) {
-    streamToStateIdQ.put(resolvedDescriptor, new LinkedList<>());
+    descToStateIdQ.put(resolvedDescriptor, new LinkedList<>());
     registerNewStateId(resolvedDescriptor);
   }
 
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
     final long stateId = StateIdProvider.getNextId();
-    streamToStateIdQ.get(resolvedDescriptor).add(stateId);
     stateIdToCounter.put(stateId, new AtomicLong(0));
+    descToStateIdQ.get(resolvedDescriptor).add(stateId);
   }
 
   /**
@@ -340,10 +337,10 @@ public class GlobalAsyncStateManager {
    */
   private static class StateIdProvider {
 
-    private static long pk = 0;
+    private static final AtomicLong pk = new AtomicLong(0);
 
     public static long getNextId() {
-      return pk++;
+      return pk.incrementAndGet();
     }
 
   }

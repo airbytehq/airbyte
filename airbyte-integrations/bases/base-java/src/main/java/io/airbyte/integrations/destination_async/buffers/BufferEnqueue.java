@@ -18,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
  * Represents the minimal interface over the underlying buffer queues required for enqueue
  * operations with the aim of minimizing lower-level queue access.
  */
-@Slf4j
 public class BufferEnqueue {
 
   private final GlobalMemoryManager memoryManager;
