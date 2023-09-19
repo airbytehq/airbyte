@@ -52,18 +52,6 @@ customIntegrationTestPython.configure {
     dependsOn tasks.named('assemble')
 }
 
-static def getDockerfile(String customConnector) {
-    return "${customConnector}.Dockerfile"
-}
-
-static def getDockerImageName(String customConnector) {
-    return "airbyte/normalization-${customConnector}"
-}
-
-static def getImageNameWithTag(String customConnector) {
-    return "${getDockerImageName(customConnector)}:dev"
-}
-
 def customIntegrationTestsCoverage = tasks.named('_customIntegrationTestsCoverage')
 customIntegrationTestsCoverage.configure {
     dependsOn tasks.named('assemble')
@@ -104,10 +92,3 @@ customIntegrationTestsCoverage.configure {
 tasks.named('customIntegrationTests').configure {
     dependsOn customIntegrationTestPython
 }
-
-// TODO fix and use https://github.com/airbytehq/airbyte/issues/3192 instead
-def mypyCheck = tasks.register('mypyCheck', PythonTask) {
-    module = "mypy"
-    command = "normalization --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-}
-tasks.named('check').configure { dependsOn mypyCheck }
