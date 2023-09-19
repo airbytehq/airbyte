@@ -38,10 +38,6 @@ The Jira source connector supports the following [sync modes](https://docs.airby
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Troubleshooting
-
-Check out common troubleshooting issues for the Jira connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
-
 ## Supported Streams
 
 This connector outputs the following full refresh streams:
@@ -125,6 +121,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.6.1   | 2023-09-19 |                                                            | Remove start date from spec                                                                                             |
 | 0.6.0   | 2023-09-17 | [\#30507](https://github.com/airbytehq/airbyte/pull/30507) | Add new stream `IssueTransitions`                                                                                       |
 | 0.5.0   | 2023-09-14 | [\#29960](https://github.com/airbytehq/airbyte/pull/29960) | Add `boardId` to `sprints` stream                                                                                       |
 | 0.3.14  | 2023-09-11 | [\#30297](https://github.com/airbytehq/airbyte/pull/30297) | Remove `requests` and `pendulum` from setup dependencies                                                                |
