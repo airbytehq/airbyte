@@ -26,7 +26,10 @@ class DestinationPinecone(Destination):
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        if config.embedding.mode == "azure_openai" or config.embedding.mode == "openai":
+            self.embedder = embedder_map[config.embedding.mode](config.embedding, config.processing.chunk_size)
+        else:
+            self.embedder = embedder_map[config.embedding.mode](config.embedding)
         self.indexer = PineconeIndexer(config.indexing, self.embedder.embedding_dimensions)
 
     def write(
