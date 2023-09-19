@@ -436,40 +436,6 @@ class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
 
-    primary_key = [
-        "customer.id",
-        "segments.date",
-        "segments.ad_network_type",
-        "segments.device",
-        "segments.product_aggregator_id",
-        "segments.product_brand",
-        "segments.product_bidding_category_level1",
-        "segments.product_bidding_category_level2",
-        "segments.product_bidding_category_level3",
-        "segments.product_bidding_category_level4",
-        "segments.product_bidding_category_level5",
-        "segments.product_channel",
-        "segments.product_channel_exclusivity",
-        "segments.click_type",
-        "segments.product_country",
-        "segments.product_custom_attribute0",
-        "segments.product_custom_attribute1",
-        "segments.product_custom_attribute2",
-        "segments.product_custom_attribute3",
-        "segments.product_custom_attribute4",
-        "segments.product_language",
-        "segments.product_merchant_id",
-        "segments.product_item_id",
-        "segments.product_condition",
-        "segments.product_title",
-        "segments.product_type_l1",
-        "segments.product_type_l2",
-        "segments.product_type_l3",
-        "segments.product_type_l4",
-        "segments.product_type_l5",
-        "segments.product_store_id",
-    ]
-
 
 class UserLocationReport(IncrementalGoogleAdsStream):
     """

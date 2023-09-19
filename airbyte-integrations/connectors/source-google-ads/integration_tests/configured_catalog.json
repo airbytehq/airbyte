@@ -37,13 +37,11 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["ad_group.id"], ["segments.date"]]
+        "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"],
-      "primary_key": [["ad_group.id"], ["segments.date"]]
+      "cursor_field": ["segments.date"]
     },
     {
       "stream": {
@@ -134,12 +132,10 @@
         "name": "shopping_performance_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [["customer.id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"], ["segments.product_aggregator_id"], ["segments.product_brand"], ["segments.product_bidding_category_level1"], ["segments.product_bidding_category_level2"], ["segments.product_bidding_category_level3"], ["segments.product_bidding_category_level4"], ["segments.product_bidding_category_level5"], ["segments.product_channel"], ["segments.product_channel_exclusivity"], ["segments.click_type"], ["segments.product_country"], ["segments.product_custom_attribute0"], ["segments.product_custom_attribute1"], ["segments.product_custom_attribute2"], ["segments.product_custom_attribute3"], ["segments.product_custom_attribute4"], ["segments.product_language"], ["segments.product_merchant_id"], ["segments.product_item_id"], ["segments.product_condition"], ["segments.product_title"], ["segments.product_type_l1"], ["segments.product_type_l2"], ["segments.product_type_l3"], ["segments.product_type_l4"], ["segments.product_type_l5"], ["segments.product_store_id"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
-      "primary_key": [["customer.id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"], ["segments.product_aggregator_id"], ["segments.product_brand"], ["segments.product_bidding_category_level1"], ["segments.product_bidding_category_level2"], ["segments.product_bidding_category_level3"], ["segments.product_bidding_category_level4"], ["segments.product_bidding_category_level5"], ["segments.product_channel"], ["segments.product_channel_exclusivity"], ["segments.click_type"], ["segments.product_country"], ["segments.product_custom_attribute0"], ["segments.product_custom_attribute1"], ["segments.product_custom_attribute2"], ["segments.product_custom_attribute3"], ["segments.product_custom_attribute4"], ["segments.product_language"], ["segments.product_merchant_id"], ["segments.product_item_id"], ["segments.product_condition"], ["segments.product_title"], ["segments.product_type_l1"], ["segments.product_type_l2"], ["segments.product_type_l3"], ["segments.product_type_l4"], ["segments.product_type_l5"], ["segments.product_store_id"]],
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"]
     },
