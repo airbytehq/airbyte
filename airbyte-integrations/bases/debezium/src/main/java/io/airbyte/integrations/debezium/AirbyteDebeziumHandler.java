@@ -151,7 +151,7 @@ public class AirbyteDebeziumHandler<T> {
     return Optional.empty();
   }
 
-  public static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
+  public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
