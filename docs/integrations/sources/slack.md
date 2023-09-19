@@ -136,7 +136,7 @@ It is recommended to sync required channels only, this can be done by specifying
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
-| 0.3.1  | 2023-09-19 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Use default availability strategy               |
+| 0.3.1  | 2023-09-19 | [30570](https://github.com/airbytehq/airbyte/pull/30570) | Use default availability strategy               |
 | 0.2.0  | 2023-05-24 | [26497](https://github.com/airbytehq/airbyte/pull/26497) | Fixed `lookback window` value limitations               |
 | 0.1.26  | 2023-05-17 | [26186](https://github.com/airbytehq/airbyte/pull/26186) | Limited the `lookback window` range for input configuration               |
 | 0.1.25  | 2023-03-20 | [22889](https://github.com/airbytehq/airbyte/pull/22889) | Specified date formatting in specification                  |
