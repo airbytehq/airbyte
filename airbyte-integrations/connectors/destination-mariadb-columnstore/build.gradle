@@ -19,5 +19,5 @@ dependencies {
 
     testImplementation project(":airbyte-json-validation")
 
-    integrationTestJavaImplementation libs.connectors.testcontainers.mariadb
+    integrationTestJavaImplementation libs.testcontainers.mariadb
 }

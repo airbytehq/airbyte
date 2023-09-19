@@ -16,5 +16,5 @@ dependencies {
 
     implementation 'org.apache.pulsar:pulsar-client:2.8.1'
 
-    testImplementation libs.connectors.testcontainers.pulsar
+    testImplementation libs.testcontainers.pulsar
 }

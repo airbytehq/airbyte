@@ -16,10 +16,9 @@ dependencies {
 
     implementation group: 'com.ibm.db2', name: 'jcc', version: '11.5.5.0'
 
-    testImplementation libs.connectors.testcontainers.db2
+    testImplementation libs.testcontainers.db2
     testImplementation project(":airbyte-json-validation")
 
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-db2')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }
 

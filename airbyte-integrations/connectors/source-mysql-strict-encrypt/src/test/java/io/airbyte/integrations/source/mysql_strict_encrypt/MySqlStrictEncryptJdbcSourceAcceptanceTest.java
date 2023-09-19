@@ -27,21 +27,21 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -86,11 +86,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @BeforeEach
   public void setup() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    final var innerContainerAddress = SshHelpers.getInnerContainerAddress(container);
-    final var outerContainerAddress = SshHelpers.getOuterContainerAddress(container);
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, innerContainerAddress.left)
-        .put(JdbcUtils.PORT_KEY, innerContainerAddress.right)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -101,8 +99,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
-            outerContainerAddress.left,
-            outerContainerAddress.right,
+            container.getHost(),
+            container.getFirstMappedPort(),
             String.join("&", SSL_PARAMETERS)),
         SQLDialect.MYSQL);
     database = new Database(dslContext);
@@ -190,63 +188,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
-  @Override
-  protected void incrementalDateCheck() throws Exception {
-    incrementalCursorCheck(
-        COL_UPDATED_AT,
-        "2005-10-18",
-        "2006-10-19",
-        List.of(getTestMessages().get(1), getTestMessages().get(2)));
-  }
-
-  @Override
-  protected List<AirbyteMessage> getTestMessages() {
-    return List.of(
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
-                        COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
-                        COL_NAME, "crusher",
-                        COL_UPDATED_AT,
-                        "2005-10-19")))),
-        new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
-                        COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19")))));
-  }
-
-  @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
-    final List<AirbyteMessage> expectedMessages = new ArrayList<>();
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19")))));
-    final DbStreamState state = new DbStreamState()
-        .withStreamName(streamName)
-        .withStreamNamespace(namespace)
-        .withCursorField(List.of(COL_ID))
-        .withCursor("5")
-        .withCursorRecordCount(1L);
-    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
-    return expectedMessages;
-  }
 
   @Test
   void testStrictSSLUnsecuredNoTunnel() throws Exception {

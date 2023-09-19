@@ -23,6 +23,5 @@ dependencies {
     testImplementation project(":airbyte-json-validation")
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.source.testcontainers.oracle.xe
+    testImplementation libs.testcontainers.oracle.xe
 }
-

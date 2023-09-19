@@ -13,7 +13,7 @@ application {
 dependencies {
     implementation libs.airbyte.protocol
 
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.postgresql
 
-    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
+    integrationTestJavaImplementation libs.testcontainers.postgresql
 }

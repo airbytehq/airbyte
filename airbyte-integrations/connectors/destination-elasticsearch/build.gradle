@@ -28,8 +28,8 @@ dependencies {
 
     // MIT
     // https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
+    testImplementation libs.testcontainers.elasticsearch
+    integrationTestJavaImplementation libs.testcontainers.elasticsearch
 }
 
 repositories {

@@ -16,5 +16,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
     implementation 'com.jcraft:jsch:0.1.55'
 
-    testImplementation libs.connectors.testcontainers
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-sftp')
+    testImplementation libs.testcontainers
 }

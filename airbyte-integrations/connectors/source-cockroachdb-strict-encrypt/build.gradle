@@ -13,11 +13,14 @@ application {
 dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-cockroachdb')
-
-    implementation libs.connectors.testcontainers
-    implementation libs.connectors.testcontainers.jdbc
-    implementation libs.connectors.testcontainers.cockroachdb
     implementation libs.postgresql
 
+    testImplementation libs.testcontainers
+    testImplementation libs.testcontainers.jdbc
+    testImplementation libs.testcontainers.cockroachdb
+
+    integrationTestJavaImplementation libs.testcontainers
+    integrationTestJavaImplementation libs.testcontainers.jdbc
+    integrationTestJavaImplementation libs.testcontainers.cockroachdb
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')
 }

@@ -14,5 +14,5 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-postgres')
     implementation libs.airbyte.protocol
 
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.postgresql
 }

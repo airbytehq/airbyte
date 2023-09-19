@@ -17,6 +17,5 @@ dependencies {
     implementation group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.3.2-patch9'
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse-strict-encrypt')
-    integrationTestJavaImplementation libs.connectors.source.testcontainers.clickhouse
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }

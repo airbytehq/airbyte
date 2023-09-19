@@ -15,5 +15,5 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-postgres-strict-encrypt')
     implementation libs.airbyte.protocol
 
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.postgresql
 }

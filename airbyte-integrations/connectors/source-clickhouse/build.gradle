@@ -16,5 +16,5 @@ dependencies {
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
-    integrationTestJavaImplementation libs.connectors.source.testcontainers.clickhouse
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }

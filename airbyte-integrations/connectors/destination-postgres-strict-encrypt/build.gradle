@@ -14,7 +14,7 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-postgres')
 
-    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
+    integrationTestJavaImplementation libs.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-config-oss:config-models-oss')
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')

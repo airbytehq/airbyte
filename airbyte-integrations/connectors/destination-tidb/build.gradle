@@ -13,7 +13,7 @@ dependencies {
     implementation libs.airbyte.protocol
 
     implementation 'mysql:mysql-connector-java:8.0.30'
-    implementation libs.connectors.testcontainers.tidb
+    testImplementation libs.testcontainers.tidb
 
-    integrationTestJavaImplementation libs.connectors.testcontainers.tidb
+    integrationTestJavaImplementation libs.testcontainers.tidb
 }

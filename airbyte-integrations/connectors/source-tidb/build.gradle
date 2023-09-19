@@ -18,9 +18,13 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.22'
 
     // Add testcontainers and use GenericContainer for TiDB
-    implementation libs.connectors.testcontainers.tidb
+    testImplementation libs.testcontainers.tidb
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
-    integrationTestJavaImplementation libs.connectors.testcontainers.tidb
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-tidb')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+
+    integrationTestJavaImplementation libs.testcontainers.tidb
+
 }

@@ -16,6 +16,5 @@ dependencies {
 
     testImplementation libs.junit.jupiter.system.stubs
 
-    testImplementation libs.connectors.testcontainers.mysql
+    testImplementation libs.testcontainers.mysql
 }
-

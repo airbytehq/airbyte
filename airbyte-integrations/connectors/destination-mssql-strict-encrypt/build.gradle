@@ -18,6 +18,6 @@ dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.testcontainers.mssqlserver
+    testImplementation libs.testcontainers.mssqlserver
 
 }

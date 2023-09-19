@@ -15,5 +15,5 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-mssql')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.testcontainers.mssqlserver
+    testImplementation libs.testcontainers.mssqlserver
 }
