@@ -709,7 +709,9 @@ class AdGroupCriterions(IncrementalEventsStream):
 
 class AdListingGroupCriterions(AdGroupCriterions):
     """
-    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    Ad Listing Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    While this stream utilizes the same resource as the AdGroupCriterions,
+    it specifically targets the listing group and has distinct schemas.
     """
 
 
