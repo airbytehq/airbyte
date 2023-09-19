@@ -128,6 +128,21 @@
     },
     "userCount": {
       "type": "integer"
+    },
+    "isUnhandled": {
+      "type" : ["null", "boolean"]
+    },
+    "issueCategory": {
+      "type" : ["null", "string"]
+    },
+    "issueType": {
+      "type" : ["null", "string"]
+    },
+    "platform": {
+      "type" : ["null", "string"]
+    },
+    "substatus": {
+      "type" : ["null", "string"]
     }
   }
 }
