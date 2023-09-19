@@ -177,11 +177,18 @@ class AbstractSource(Source, ABC):
             },
         )
 
-        use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
+        use_incremental = (
+            configured_stream.sync_mode == SyncMode.incremental
+            and stream_instance.supports_incremental
+            and isinstance(stream_instance, Stream)
+        )
+        # The AbstractStream interface does not really support incremental syncs yet.
+        # This will be updated as part of https://github.com/airbytehq/airbyte/issues/29954
+        # In the meantime, only streams inheriting from Stream support incremental syncs since they implement read_records and either state or get_updated_state
         if use_incremental:
             record_iterator = self._read_incremental(
                 logger,
-                stream_instance,  # type: ignore # stream_instance is a Stream if it is not a ConcurrentStream
+                stream_instance,  # type: ignore # We already checked that stream_instance is a Stream
                 configured_stream,
                 state_manager,
                 internal_config,
