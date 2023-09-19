@@ -22,14 +22,23 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
         "source_defined_primary_key": [
-          ["campaign_budget.id"],
-          ["segments.date"]
+            ["customer.id"],
+            ["campaign_budget.id"],
+            ["segments.date"],
+            ["segments.budget_campaign_association_status.campaign"],
+            ["segments.budget_campaign_association_status.status"]
         ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [["campaign_budget.id"], ["segments.date"]]
+      "primary_key": [
+            ["customer.id"],
+            ["campaign_budget.id"],
+            ["segments.date"],
+            ["segments.budget_campaign_association_status.campaign"],
+            ["segments.budget_campaign_association_status.status"]
+        ]
     },
     {
       "stream": {
