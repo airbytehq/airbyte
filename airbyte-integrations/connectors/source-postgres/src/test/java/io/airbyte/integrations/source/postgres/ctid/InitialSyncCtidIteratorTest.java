@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -47,6 +48,10 @@ public class InitialSyncCtidIteratorTest {
     chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.ZERO, 4096L, 8192L, 45, GIGABYTE);
     expected = List.of(
         Pair.of(Ctid.ZERO, null));
+    assertEquals(expected, chunks);
+
+    chunks = InitialSyncCtidIterator.ctidQueryPlan(Ctid.of(8,1), 819200L, 81920L, 50, EIGHT_KB);
+    expected = List.of(Pair.of(Ctid.of(8,1), Ctid.of(9,0)), Pair.of(Ctid.of(9,0), Ctid.of(10,0)));
     assertEquals(expected, chunks);
   }
 
@@ -104,6 +109,9 @@ public class InitialSyncCtidIteratorTest {
     expected = List.of(Pair.of(Ctid.of(0,1), Ctid.of(5000000,1)));
     assertEquals(expected, chunks);
 
+    chunks = InitialSyncCtidIterator.ctidLegacyQueryPlan(Ctid.of(8,1), 819200L, 81920L, 50, EIGHT_KB, 1);
+    expected = List.of(Pair.of(Ctid.of(9,1), Ctid.of(10,1)), Pair.of(Ctid.of(11,1), Ctid.of(11,1)));
+    assertEquals(expected, chunks);
   }
 
 }

@@ -213,7 +213,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       long lowerBound = startCtid.page;
       long upperBound;
       final double pages = dataSize / blockSize;
-      final long eachStep = (long) pages * chunkSize;
+      final long eachStep = Math.max((long) pages * chunkSize, 1);
       LOGGER.info("Will read {} pages to get {}GB", eachStep, chunkSize);
       final long theoreticalLastPage = relationSize / blockSize;
       LOGGER.debug("Theoretical last page {}", theoreticalLastPage);
@@ -250,8 +250,8 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       long upperBound;
       final double pages = dataSize / blockSize;
       // cap each chunk at no more than 5m tuples
-      final long eachStep = Math.min((long) pages * chunkSize,
-          MAX_TUPLES_IN_QUERY / tuplesInPage);
+      final long eachStep = Math.max(
+          Math.min((long) pages * chunkSize, MAX_TUPLES_IN_QUERY / tuplesInPage), 1);
       LOGGER.info("Will read {} pages on each query", eachStep);
       final long theoreticalLastPage = relationSize / blockSize;
       final long lastPage = (long) ((double) theoreticalLastPage * 1.1);
