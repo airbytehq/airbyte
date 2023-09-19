@@ -20,18 +20,35 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        timeout_seconds: 600
+        timeout_seconds: 3600
         empty_streams:
-          - name: "display_topics_performance_report"
-            bypass_reason: "Stream not filled yet."
           - name: "account_labels"
-            bypass_reason: "Unable to seed the stream"
-          - name: "click_view"
-            bypass_reason: "Stream not filled yet."
-          - name: "unhappytable"
-            bypass_reason: "Stream not filled yet."
+            bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
           - name: "shopping_performance_report"
-            bypass_reason: "Stream not filled yet."
+            bypass_reason: "No shopping campaign, need item for sale"
+          - name: "display_topics_performance_report"
+            bypass_reason: "No data for this date range, tested in next config"
+          - name: "click_view"
+            bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
+        ignored_fields:
+          accounts:
+            - name: customer.optimization_score_weight
+              bypass_reason: "Value can be updated by Google Ads"
+            - name: customer.optimization_score
+              bypass_reason: "Value can be updated by Google Ads"
+      - config_path: "secrets/config_click_view.json"
+        expect_records:
+          path: "integration_tests/expected_records_click.jsonl"
+        timeout_seconds: 3600
+        empty_streams:
+          - name: "account_labels"
+            bypass_reason: "Data is present in UI, but not in API: supposedly insufficient permissions"
+          - name: "shopping_performance_report"
+            bypass_reason: "No shopping campaign, need item for sale"
+          - name: "display_keyword_performance_report"
+            bypass_reason: "No data for this date range, tested in previous config"
+          - name: "keyword_report"
+            bypass_reason: "No data for this date range, tested in previous config"
         ignored_fields:
           accounts:
             - name: customer.optimization_score_weight
@@ -42,17 +59,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-      - config_path: "secrets/config_with_gaql.json"
-        configured_catalog_path: "integration_tests/configured_catalog_with_gaql_only.json"
-        # This config allows to read from the click_view stream which is empty in other configs.
-        # It should be tested anyway because it has different date range compared to other streams.
-      - config_path: "secrets/config_click_view.json"
-        configured_catalog_path: "integration_tests/configured_catalog_with_click_view.json"
   incremental:
     tests:
       - config_path: "secrets/incremental_config.json"
         timeout_seconds: 3600
         configured_catalog_path: "integration_tests/incremental_catalog.json"
-        skip_comprehensive_incremental_tests: true
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

@@ -17,5 +17,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-sftp')
-    testImplementation libs.connectors.testcontainers
+    testImplementation libs.testcontainers
 }

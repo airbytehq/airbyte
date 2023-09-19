@@ -10,7 +10,6 @@ from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, 
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig
-from source_facebook_marketing.streams.common import AccountTypeException
 
 from .utils import command_check
 
@@ -23,7 +22,8 @@ def config_fixture(requests_mock):
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", {})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users", json={"data": []})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",  json={"account": 123})
     return config
 
 
@@ -75,7 +75,7 @@ class TestSourceFacebookMarketing:
         config["end_date"] = "2019-10-09T00:00:00"
         assert fb_marketing.check_connection(logger_mock, config=config) == (
             False,
-            "end_date must be equal or after start_date.",
+            "End date must be equal or after start date.",
         )
 
     def test_check_connection_empty_config(self, api, logger_mock, fb_marketing):
@@ -95,8 +95,10 @@ class TestSourceFacebookMarketing:
     def test_check_connection_exception(self, api, config, logger_mock, fb_marketing):
         api.side_effect = RuntimeError("Something went wrong!")
 
-        with pytest.raises(RuntimeError, match="Something went wrong!"):
-            fb_marketing.check_connection(logger_mock, config=config)
+        ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+        assert not ok
+        assert error_msg == "Unexpected error: RuntimeError('Something went wrong!')"
 
     def test_streams(self, config, api, fb_marketing):
         streams = fb_marketing.streams(config)
@@ -144,19 +146,26 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
     status = command_check(fb_marketing, config_gen(end_date="2019-99-10T00:00:00Z"))
     assert status.status == Status.FAILED
 
-    with pytest.raises(Exception):
-        assert command_check(fb_marketing, config_gen(start_date=...))
+    status = command_check(fb_marketing, config_gen(start_date=...))
+    assert status.status == Status.SUCCEEDED
 
     assert command_check(fb_marketing, config_gen(end_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
     assert command_check(fb_marketing, config_gen(end_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
 
 
-def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock):
-    api_mock = mocker.Mock()
-    api_mock.account.api_get.return_value = {"account": 123, "is_personal": 1}
-    mocker.patch('source_facebook_marketing.source.API', return_value=api_mock)
+def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock, requests_mock):
+    account_id = '123'
+    ad_account_response = {
+        "json": {
+            "account_id": account_id,
+            "id": f"act_{account_id}",
+            'is_personal': 1
+        }
+    }
+    requests_mock.reset_mock()
+    requests_mock.register_uri("GET", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_123/", [ad_account_response])
 
     result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
 
     assert not result
-    assert isinstance(error, AccountTypeException)
+    assert error == "The personal ad account you're currently using is not eligible for this operation. Please switch to a business ad account."
