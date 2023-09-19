@@ -404,7 +404,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             }
           });
           try {
+            typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
+            typerDeduper.cleanup();
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
