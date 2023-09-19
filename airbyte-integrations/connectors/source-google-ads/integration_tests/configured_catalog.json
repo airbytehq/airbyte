@@ -14,6 +14,23 @@
     },
     {
       "stream": {
+        "name": "campaign_budget",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date"],
+        "source_defined_primary_key": [
+          ["campaign_budget.id"],
+          ["segments.date"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["segments.date"],
+      "primary_key": [["campaign_budget.id"], ["segments.date"]]
+    },
+    {
+      "stream": {
         "name": "ad_group_custom",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -323,29 +340,23 @@
       "stream": {
         "name": "ad_group_criterions",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["ad_group.id"],
-          ["ad_group_criterion.criterion_id"]
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ad_group_criterion.resource_name"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+      "primary_key": [["ad_group_criterion.resource_name"]]
     },
     {
       "stream": {
         "name": "ad_listing_group_criterions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["ad_group.id"],
-          ["ad_group_criterion.criterion_id"]
-        ]
+        "source_defined_primary_key": [["ad_group_criterion.resource_name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+      "primary_key": [["ad_group_criterion.resource_name"]]
     },
     {
       "stream": {
@@ -362,20 +373,14 @@
     },
     {
       "stream": {
-        "name": "campaign_budget",
+        "name": "campaign_criterion",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [
-          ["campaign_budget.id"],
-          ["segments.date"]
-        ]
+        "source_defined_primary_key": [["campaign_criterion.resource_name"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["segments.date"],
-      "primary_key": [["campaign_budget.id"], ["segments.date"]]
+      "primary_key": [["campaign_criterion.resource_name"]]
     }
   ]
 }

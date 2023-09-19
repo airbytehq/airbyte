@@ -101,6 +101,11 @@ class Events(HttpStream):
         return record
 
     def get_most_recent_cursor(self, stream_state: Mapping[str, Any] = None) -> datetime.datetime:
+        """
+        Use `start_time` instead of `cursor` in the case of more recent.
+        This can happen whenever a user simply finds that they are syncing to much data and would like to change `start_time` to be more recent.
+        See: https://github.com/airbytehq/airbyte/issues/25367 for more details
+        """
         cursor_date = (
             pendulum.parse(stream_state[self.cursor_field])
             if stream_state and self.cursor_field in stream_state
