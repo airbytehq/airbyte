@@ -614,5 +614,16 @@
         "date": "20990101"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "weekly_events_report"
+      },
+      "stream_state": {
+        "yearWeek": "209915"
+      }
+    }
   }
 ]
