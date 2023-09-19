@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.18
+Vector DB CDK adjustments: Prevent failures with big records and OpenAI embedder
+
 ## 0.51.17
 [ISSUE #30353] File-Based CDK: remove file_type from stream config
 
