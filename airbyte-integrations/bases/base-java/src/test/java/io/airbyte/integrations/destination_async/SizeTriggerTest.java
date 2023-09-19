@@ -44,7 +44,7 @@ public class SizeTriggerTest {
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     final DetectStreamToFlush detect =
-        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, () -> System.currentTimeMillis());
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     assertEquals(false, detect.isSizeTriggered(DESC1, SIZE_10MB).getLeft());
   }
 
@@ -55,7 +55,7 @@ public class SizeTriggerTest {
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     final DetectStreamToFlush detect =
-        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, () -> System.currentTimeMillis());
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     // if above threshold, triggers
     assertEquals(true, detect.isSizeTriggered(DESC1, 0).getLeft());
     // if below threshold, no trigger
@@ -72,7 +72,7 @@ public class SizeTriggerTest {
         .thenReturn(Collections.emptyList())
         .thenReturn(List.of(Optional.of(SIZE_10MB)));
     final DetectStreamToFlush detect =
-        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, () -> System.currentTimeMillis());
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     assertEquals(true, detect.isSizeTriggered(DESC1, 0).getLeft());
     assertEquals(false, detect.isSizeTriggered(DESC1, 0).getLeft());
   }

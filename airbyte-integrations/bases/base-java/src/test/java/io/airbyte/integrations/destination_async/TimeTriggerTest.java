@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
-import java.util.function.LongSupplier;
+import java.time.Clock;
 import org.junit.jupiter.api.Test;
 
 public class TimeTriggerTest {
@@ -22,8 +22,8 @@ public class TimeTriggerTest {
   void testTimeTrigger() {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
 
-    final LongSupplier mockedNowProvider = mock(LongSupplier.class);
-    when(mockedNowProvider.getAsLong())
+    final Clock mockedNowProvider = mock(Clock.class);
+    when(mockedNowProvider.millis())
         .thenReturn(NOW_MS);
 
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, null, null, null, mockedNowProvider);

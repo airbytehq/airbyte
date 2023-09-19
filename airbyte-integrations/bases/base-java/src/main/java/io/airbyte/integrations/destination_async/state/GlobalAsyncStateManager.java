@@ -157,14 +157,15 @@ public class GlobalAsyncStateManager {
             break;
           }
 
+          // technically possible this map hasn't been updated yet.
+          final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
+          Objects.requireNonNull(oldestStateCounter, "Invariant Violation: No record counter found for state message.");
+
           final var oldestState = stateIdToState.get(oldestStateId);
           // no state to flush for this stream
           if (oldestState == null) {
             break;
           }
-
-          final var oldestStateCounter = stateIdToCounter.get(oldestStateId);
-          Objects.requireNonNull(oldestStateCounter, "Invariant Violation: No record counter found for state message.");
 
           final var allRecordsCommitted = oldestStateCounter.get() == 0;
           if (allRecordsCommitted) {
@@ -297,9 +298,8 @@ public class GlobalAsyncStateManager {
           throw new RuntimeException(e);
         }
       }
+      LOGGER.debug(getMemoryUsageMessage());
     }
-    memoryUsed.addAndGet(sizeInBytes);
-    LOGGER.debug(getMemoryUsageMessage());
   }
 
   public String getMemoryUsageMessage() {
@@ -328,8 +328,8 @@ public class GlobalAsyncStateManager {
 
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
     final long stateId = StateIdProvider.getNextId();
-    descToStateIdQ.get(resolvedDescriptor).add(stateId);
     stateIdToCounter.put(stateId, new AtomicLong(0));
+    descToStateIdQ.get(resolvedDescriptor).add(stateId);
   }
 
   /**
