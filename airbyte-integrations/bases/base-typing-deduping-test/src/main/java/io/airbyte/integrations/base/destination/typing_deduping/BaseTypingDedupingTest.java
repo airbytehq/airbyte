@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -511,7 +510,7 @@ public abstract class BaseTypingDedupingTest {
         namespace2,
         streamName);
   }@Test
-  public void incrementalDedupIdenticalNameSimultaneousSyncs() throws Exception {
+  public void identicalNameSimultaneousSync() throws Exception {
     final String namespace1 = streamNamespace + "_1";
     final ConfiguredAirbyteCatalog catalog1 = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
@@ -524,60 +523,46 @@ public abstract class BaseTypingDedupingTest {
                 .withName(streamName)
                 .withJsonSchema(SCHEMA))));
 
-    final int numStreams = 1;
     final String namespace2 = streamNamespace + "_2";
-    final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(IntStream.range(0, numStreams)
-        .mapToObj(n -> new ConfiguredAirbyteStream()
+    final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(List.of("updated_at"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
             .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
-                .withNamespace(namespace2 + "_" + n)
+                .withNamespace(namespace2)
                 .withName(streamName)
-                .withJsonSchema(SCHEMA)))
-        .toList());
+                .withJsonSchema(SCHEMA))));
 
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl", namespace1, streamName);
-    final List<AirbyteMessage> messages2 = Collections.nCopies(
-        100_000,
-        Streams.concat(IntStream.range(0, numStreams)
-            .mapToObj(n -> {
-              try {
-                return readMessages("dat/sync1_messages2.jsonl", namespace2 + "_" + n, streamName);
-              } catch (final IOException e) {
-                throw new RuntimeException(e);
-              }
-            })
-        ).flatMap(Collection::stream).toList()
-    ).stream().flatMap(Collection::stream).toList();
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync1_messages2.jsonl", namespace2, streamName);
 
-    // Run two syncs in parallel
-    final ExecutorService executor = Executors.newFixedThreadPool(2);
-    final Future<Void> sync1Future = executor.submit(() -> {
-      runSync(catalog1, messages1);
-      return null;
-    });
-    final Future<Void> sync2Future = executor.submit(() -> {
-      runSync(catalog2, messages2);
-      return null;
-    });
-    executor.shutdown();
-    sync1Future.get();
-    sync2Future.get();
+    // Start two concurrent syncs
+    final DestinationProcess sync1 = startSync(catalog1);
+    final DestinationProcess sync2 = startSync(catalog2);
+    // Write some messages to both syncs. Write a lot of data to sync 2 to try and force a flush.
+    messages1.forEach(sync1::accept);
+    for (int i = 0; i < 100_000; i++) {
+      messages2.forEach(sync2::accept);
+    }
+    sync1.close();
+    // Write some more messages to the second sync. It should not be affected by the first sync's shutdown.
+    for (int i = 0; i < 100_000; i++) {
+      messages2.forEach(sync2::accept);
+    }
+    sync2.close();
 
     verifySyncResult(
         readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
         readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
         namespace1,
         streamName);
-    for (int i = 0; i < numStreams; i++) {
-      verifySyncResult(
-          readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
-          readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
-          namespace2 + "_" + i,
-          streamName);
-    }
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
+        namespace2,
+        streamName);
   }
 
   @Test
@@ -707,6 +692,16 @@ public abstract class BaseTypingDedupingTest {
   }
 
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
+    try (final DestinationProcess process = startSync(catalog, imageName)) {
+      messages.forEach(process::accept);
+    }
+  }
+
+  protected DestinationProcess startSync(final ConfiguredAirbyteCatalog catalog) throws Exception {
+    return startSync(catalog, getImageName());
+  }
+
+  protected DestinationProcess startSync(final ConfiguredAirbyteCatalog catalog, final String imageName) throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
     }
@@ -739,18 +734,11 @@ public abstract class BaseTypingDedupingTest {
         new EnvVariableFeatureFlags()));
 
     destination.start(destinationConfig, jobRoot, Collections.emptyMap());
-    messages.forEach(
-        message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
-    destination.notifyEndOfInput();
 
-    while (!destination.isFinished()) {
-      destination.attemptRead();
-    }
-
-    destination.close();
+    return new DestinationProcess(destination);
   }
 
-  private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
+  static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
 
