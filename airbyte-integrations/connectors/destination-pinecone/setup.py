@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[vector-db-based]==0.51.12",
+    "airbyte-cdk[vector-db-based]==0.51.15",
     "pinecone-client[grpc]",
 ]
 

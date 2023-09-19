@@ -86,7 +86,9 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        connector_under_test_with_secrets = connector_under_test.with_(environments.mounted_connector_secrets(self.context))
+        connector_under_test_with_secrets = connector_under_test.with_(
+            await environments.mounted_connector_secrets(self.context, "secrets")
+        )
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
 
 
@@ -106,7 +108,7 @@ class IntegrationTests(PytestStep):
         """
 
         connector_under_test = connector_under_test.with_(environments.bound_docker_host(self.context)).with_(
-            environments.mounted_connector_secrets(self.context)
+            await environments.mounted_connector_secrets(self.context, "secrets")
         )
         return await self._run_tests_in_directory(connector_under_test, "integration_tests")
 

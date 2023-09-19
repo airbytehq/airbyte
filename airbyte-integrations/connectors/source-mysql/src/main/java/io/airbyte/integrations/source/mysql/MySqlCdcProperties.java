@@ -69,7 +69,11 @@ public class MySqlCdcProperties {
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
       final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();
       if (!serverTimeZone.isEmpty()) {
-        props.setProperty("database.serverTimezone", serverTimeZone);
+        /** Per Debezium docs, https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
+        * this property is now connectionTimeZone
+        * {@link com.mysql.cj.conf.PropertyKey#connectionTimeZone}
+        **/
+        props.setProperty("database.connectionTimeZone", serverTimeZone);
       }
     }
 
