@@ -7,6 +7,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
@@ -28,9 +29,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -504,6 +510,74 @@ public abstract class BaseTypingDedupingTest {
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
         namespace2,
         streamName);
+  }@Test
+  public void incrementalDedupIdenticalNameSimultaneousSyncs() throws Exception {
+    final String namespace1 = streamNamespace + "_1";
+    final ConfiguredAirbyteCatalog catalog1 = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(namespace1)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    final int numStreams = 1;
+    final String namespace2 = streamNamespace + "_2";
+    final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(IntStream.range(0, numStreams)
+        .mapToObj(n -> new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(namespace2 + "_" + n)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA)))
+        .toList());
+
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl", namespace1, streamName);
+    final List<AirbyteMessage> messages2 = Collections.nCopies(
+        100_000,
+        Streams.concat(IntStream.range(0, numStreams)
+            .mapToObj(n -> {
+              try {
+                return readMessages("dat/sync1_messages2.jsonl", namespace2 + "_" + n, streamName);
+              } catch (final IOException e) {
+                throw new RuntimeException(e);
+              }
+            })
+        ).flatMap(Collection::stream).toList()
+    ).stream().flatMap(Collection::stream).toList();
+
+    // Run two syncs in parallel
+    final ExecutorService executor = Executors.newFixedThreadPool(2);
+    final Future<Void> sync1Future = executor.submit(() -> {
+      runSync(catalog1, messages1);
+      return null;
+    });
+    final Future<Void> sync2Future = executor.submit(() -> {
+      runSync(catalog2, messages2);
+      return null;
+    });
+    executor.shutdown();
+    sync1Future.get();
+    sync2Future.get();
+
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
+        namespace1,
+        streamName);
+    for (int i = 0; i < numStreams; i++) {
+      verifySyncResult(
+          readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+          readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
+          namespace2 + "_" + i,
+          streamName);
+    }
   }
 
   @Test
@@ -628,31 +702,26 @@ public abstract class BaseTypingDedupingTest {
    * make edits here, you probably want to also edit there.
    */
 
-  // These contain some state, so they are instanced per test (i.e. cannot be static)
-  private Path jobRoot;
-  private ProcessFactory processFactory;
-
-  @BeforeEach
-  public void setupProcessFactory() throws IOException {
-    final Path testDir = Path.of("/tmp/airbyte_tests/");
-    Files.createDirectories(testDir);
-    final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
-    jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
-    final Path localRoot = Files.createTempDirectory(testDir, "output");
-    processFactory = new DockerProcessFactory(
-        workspaceRoot,
-        workspaceRoot.toString(),
-        localRoot.toString(),
-        "host",
-        Collections.emptyMap());
-  }
-
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages) throws Exception {
     runSync(catalog, messages, getImageName());
   }
 
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
-    catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
+    synchronized (this) {
+      catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
+    }
+
+    final Path testDir = Path.of("/tmp/airbyte_tests/");
+    Files.createDirectories(testDir);
+    final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
+    final Path jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
+    final Path localRoot = Files.createTempDirectory(testDir, "output");
+    final ProcessFactory processFactory = new DockerProcessFactory(
+        workspaceRoot,
+        workspaceRoot.toString(),
+        localRoot.toString(),
+        "host",
+        Collections.emptyMap());
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
