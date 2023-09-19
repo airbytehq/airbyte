@@ -12,7 +12,6 @@ dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(path: ':airbyte-db:db-lib')
     implementation project(path: ':airbyte-integrations:bases:base-java-s3')

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.51.18
+Vector DB CDK adjustments: Prevent failures with big records and OpenAI embedder
+
+## 0.51.17
+[ISSUE #30353] File-Based CDK: remove file_type from stream config
+
+## 0.51.16
+Connector Builder: fix datetime format inference for str parsable as int but not isdecimal
+
+## 0.51.15
+Vector DB CDK: Add Azure OpenAI embedder
+
+## 0.51.14
+File-based CDK: improve error message for CSV parsing error
+
 ## 0.51.13
 File-based CDK: migrated parsing error to config error to avoid sentry alerts
 

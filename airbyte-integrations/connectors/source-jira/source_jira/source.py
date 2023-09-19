@@ -34,6 +34,7 @@ from .streams import (
     IssueResolutions,
     Issues,
     IssueSecuritySchemes,
+    IssueTransitions,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -96,20 +97,18 @@ class SourceJira(AbstractSource):
             if unknown_projects:
                 return False, "unknown project(s): " + ", ".join(unknown_projects)
             return True, None
-        except (requests.exceptions.RequestException, ValidationError) as e:
-            return False, e
+        except ValidationError as validation_error:
+            return False, validation_error
+        except requests.exceptions.RequestException as request_error:
+            message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
+            return False, f"{message} {request_error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config.get("start_date")}
-        render_fields = config.get("render_fields", False)
-        issues_stream = Issues(
-            **incremental_args,
-            expand_changelog=config.get("expand_issue_changelog", False),
-            render_fields=render_fields,
-        )
+        issues_stream = Issues(**incremental_args, expand_fields=config.get("issues_stream_expand_with", []))
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
@@ -138,6 +137,7 @@ class SourceJira(AbstractSource):
             IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
+            IssueTransitions(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
