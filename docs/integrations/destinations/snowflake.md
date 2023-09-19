@@ -270,7 +270,8 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :-------------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.8           | 2023-09-18 | [\#30479](https://github.com/airbytehq/airbyte/pull/30479) | Fix async memory management                                                                                                                                     |
 | 3.1.7           | 2023-09-15 | [\#30491](https://github.com/airbytehq/airbyte/pull/30491) | Improve error message display                                                                                                                                   |
 | 3.1.6           | 2023-09-14 | [\#30439](https://github.com/airbytehq/airbyte/pull/30439) | Fix a transient error                                                                                                                                           |
 | 3.1.5           | 2023-09-13 | [\#30416](https://github.com/airbytehq/airbyte/pull/30416) | Support `${` in stream name/namespace, and in column names                                                                                                      |
