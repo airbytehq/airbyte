@@ -56,7 +56,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
-          type: DpathExtractor
+          class_name: source_apify_dataset.wrapping_dpath_extractor.WrappingDpathExtractor
           field_path: ["data", "items"]
 
   datasets_partition_router:
