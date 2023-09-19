@@ -133,6 +133,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.13  | 2023-09-19 | [\#30592](https://github.com/airbytehq/airbyte/pull/30592) | Internal code changes                                                                                                                                           |
 | 2.0.12  | 2023-09-19 | [\#30319](https://github.com/airbytehq/airbyte/pull/30319) | Improved testing                                                                                                                                                |
 | 2.0.11  | 2023-09-18 | [\#30551](https://github.com/airbytehq/airbyte/pull/30551) | GCS Staging is first loading method option                                                                                                                      |
 | 2.0.10  | 2023-09-15 | [\#30491](https://github.com/airbytehq/airbyte/pull/30491) | Improve error message display                                                                                                                                   |
