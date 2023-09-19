@@ -28,7 +28,7 @@ MAIN_REQUIREMENTS = [
     "lxml==4.9.1",
     "html5lib==1.1",
     "beautifulsoup4==4.11.1",
-    "pyarrow==9.0.0",
+    "pyarrow==13.0.0",
     "xlrd==2.0.1",
     "openpyxl==3.0.10",
     "pyxlsb==1.0.9",
