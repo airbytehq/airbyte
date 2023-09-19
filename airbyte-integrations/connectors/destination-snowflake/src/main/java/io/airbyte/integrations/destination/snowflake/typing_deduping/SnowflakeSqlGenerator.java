@@ -19,6 +19,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct;
 import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigratedException;
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
+import io.airbyte.integrations.destination.snowflake.SnowflakeReservedKeywords;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -47,9 +48,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public ColumnId buildColumnId(final String name) {
+  public ColumnId buildColumnId(final String name, final String suffix) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
-    return new ColumnId(escapeSqlIdentifier(name).toUpperCase(), name, name.toUpperCase());
+    final String nameWithSuffix = name + suffix;
+    return new ColumnId(prefixReservedColumnName(escapeSqlIdentifier(name).toUpperCase()) + suffix,
+                        nameWithSuffix,
+                        nameWithSuffix.toUpperCase());
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -575,6 +579,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     }
 
     return escapeJsonIdentifier(identifier);
+  }
+
+  private static String prefixReservedColumnName(final String columnName) {
+    return SnowflakeReservedKeywords.RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ?
+        "_" + columnName : columnName;
   }
 
   public static String escapeSingleQuotedString(final String str) {
