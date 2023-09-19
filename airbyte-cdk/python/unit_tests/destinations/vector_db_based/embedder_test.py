@@ -27,17 +27,16 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 @pytest.mark.parametrize(
-    "embedder_class, config_model, config_data, dimensions",
+    "embedder_class, args, dimensions",
     (
-        (OpenAIEmbedder, OpenAIEmbeddingConfigModel, {"mode": "openai", "openai_key": "abc"}, OPEN_AI_VECTOR_SIZE),
-        (CohereEmbedder, CohereEmbeddingConfigModel, {"mode": "cohere", "cohere_key": "abc"}, COHERE_VECTOR_SIZE),
-        (FakeEmbedder, FakeEmbeddingConfigModel, {"mode": "fake"}, OPEN_AI_VECTOR_SIZE),
-        (AzureOpenAIEmbedder, AzureOpenAIEmbeddingConfigModel, {"mode": "azure_openai", "openai_key": "abc", "api_base": "https://my-resource.openai.azure.com", "deployment": "my-deployment"}, OPEN_AI_VECTOR_SIZE),
+        (OpenAIEmbedder, [OpenAIEmbeddingConfigModel(**{"mode": "openai", "openai_key": "abc"}), 1000], OPEN_AI_VECTOR_SIZE),
+        (CohereEmbedder, [CohereEmbeddingConfigModel(**{"mode": "cohere", "cohere_key": "abc"})], COHERE_VECTOR_SIZE),
+        (FakeEmbedder, [FakeEmbeddingConfigModel(**{"mode": "fake"})], OPEN_AI_VECTOR_SIZE),
+        (AzureOpenAIEmbedder, [AzureOpenAIEmbeddingConfigModel(**{"mode": "azure_openai", "openai_key": "abc", "api_base": "https://my-resource.openai.azure.com", "deployment": "my-deployment"}), 1000], OPEN_AI_VECTOR_SIZE),
     )
 )
-def test_embedder(embedder_class, config_model, config_data, dimensions):
-    config = config_model(**config_data)
-    embedder = embedder_class(config)
+def test_embedder(embedder_class, args, dimensions):
+    embedder = embedder_class(*args)
     mock_embedding_instance = MagicMock()
     embedder.embeddings = mock_embedding_instance
 
@@ -74,17 +73,17 @@ def test_from_field_embedder(field_name, dimensions, metadata, expected_embeddin
         with pytest.raises(AirbyteTracedException):
             embedder.embed_chunks(chunks, 1000)
     else:
-        assert embedder.embed_chunks(chunks, 1000) == [expected_embedding]
+        assert embedder.embed_chunks(chunks) == [expected_embedding]
 
 
 def test_openai_chunking():
     config = OpenAIEmbeddingConfigModel(**{"mode": "openai", "openai_key": "abc"})
-    embedder = OpenAIEmbedder(config)
+    embedder = OpenAIEmbedder(config, 150)
     mock_embedding_instance = MagicMock()
     embedder.embeddings = mock_embedding_instance
 
     mock_embedding_instance.embed_documents.side_effect = lambda texts: [[0] * OPEN_AI_VECTOR_SIZE] * len(texts)
 
     chunks = [Chunk(page_content="a", metadata={}, record=AirbyteRecordMessage(stream="mystream", data={}, emitted_at=0)) for _ in range(1005)]
-    assert embedder.embed_chunks(chunks, 1000) == [[0] * OPEN_AI_VECTOR_SIZE] * 1005
+    assert embedder.embed_chunks(chunks) == [[0] * OPEN_AI_VECTOR_SIZE] * 1005
     mock_embedding_instance.embed_documents.assert_has_calls([call(["a"]*1000), call(["a"]*5)])

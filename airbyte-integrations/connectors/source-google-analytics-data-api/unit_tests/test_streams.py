@@ -277,9 +277,9 @@ def test_read_incremental(requests_mock):
     config = {
         "property_ids": [123],
         "property_id": 123,
-        "date_ranges_start_date": datetime.date(2022, 12, 29),
+        "date_ranges_start_date": datetime.date(2022, 1, 6),
         "window_in_days": 1,
-        "dimensions": ["date"],
+        "dimensions": ["yearWeek"],
         "metrics": ["totalUsers"],
     }
 
@@ -288,52 +288,52 @@ def test_read_incremental(requests_mock):
 
     responses = [
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "100"}]}],
+            "rows": [{"dimensionValues": [{"value": "202201"}], "metricValues": [{"value": "100"}]}],
             "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "110"}]}],
+            "rows": [{"dimensionValues": [{"value": "202201"}], "metricValues": [{"value": "110"}]}],
             "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "120"}]}],
+            "rows": [{"dimensionValues": [{"value": "202201"}], "metricValues": [{"value": "120"}]}],
             "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "130"}]}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "130"}]}],
             "rowCount": 1,
         },
         # 2-nd incremental read
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "112"}]}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "112"}]}],
             "rowCount": 1
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "125"}]}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "125"}]}],
             "rowCount": 1
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "140"}]}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "140"}]}],
             "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20230102"}], "metricValues": [{"value": "150"}]}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "150"}]}],
             "rowCount": 1,
         },
     ]
@@ -344,24 +344,23 @@ def test_read_incremental(requests_mock):
         json=lambda request, context: responses.pop(0),
     )
 
-    with freeze_time("2023-01-01 12:00:00"):
+    with freeze_time("2022-01-09 12:00:00"):
         records = list(read_incremental(stream, stream_state))
-
+    print(records)
     assert records == [
-        {"date": "20221229", "totalUsers": 100, "property_id": 123},
-        {"date": "20221230", "totalUsers": 110, "property_id": 123},
-        {"date": "20221231", "totalUsers": 120, "property_id": 123},
-        {"date": "20230101", "totalUsers": 130, "property_id": 123},
+        {"property_id": 123, "yearWeek": "202201", "totalUsers": 100, "startDate": "2022-01-06", "endDate": "2022-01-06"},
+        {"property_id": 123, "yearWeek": "202201", "totalUsers": 110, "startDate": "2022-01-07", "endDate": "2022-01-07"},
+        {"property_id": 123, "yearWeek": "202201", "totalUsers": 120, "startDate": "2022-01-08", "endDate": "2022-01-08"},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 130, "startDate": "2022-01-09", "endDate": "2022-01-09"},
     ]
 
-    assert stream_state == {"date": "20230101"}
+    assert stream_state == {"yearWeek": "202202"}
 
-    with freeze_time("2023-01-02 12:00:00"):
+    with freeze_time("2022-01-10 12:00:00"):
         records = list(read_incremental(stream, stream_state))
 
     assert records == [
-        {"date": "20221230", "totalUsers": 112, "property_id": 123},
-        {"date": "20221231", "totalUsers": 125, "property_id": 123},
-        {"date": "20230101", "totalUsers": 140, "property_id": 123},
-        {"date": "20230102", "totalUsers": 150, "property_id": 123},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 112, "startDate": "2022-01-08", "endDate": "2022-01-08"},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 125, "startDate": "2022-01-09", "endDate": "2022-01-09"},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 140, "startDate": "2022-01-10", "endDate": "2022-01-10"},
     ]
