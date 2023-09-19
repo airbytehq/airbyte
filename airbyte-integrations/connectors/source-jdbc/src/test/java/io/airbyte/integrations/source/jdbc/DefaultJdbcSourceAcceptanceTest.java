@@ -19,12 +19,8 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
 import java.util.List;
@@ -159,22 +155,6 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     @Override
     public Set<String> getExcludedInternalNameSpaces() {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
-    }
-
-    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
-    // state
-    @Override
-    protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-      if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
-        final AirbyteGlobalState globalState = new AirbyteGlobalState()
-            .withSharedState(Jsons.jsonNode(new CdcState()))
-            .withStreamStates(List.of());
-        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
-      } else {
-        return List.of(new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState()));
-      }
     }
 
     @Override
