@@ -3,7 +3,6 @@ import ru.vyarus.gradle.plugin.python.task.PythonTask
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-connector-acceptance-test'
 }
 
 airbytePython {
