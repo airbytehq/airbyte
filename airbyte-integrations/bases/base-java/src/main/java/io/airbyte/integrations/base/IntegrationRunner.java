@@ -173,7 +173,7 @@ public class IntegrationRunner {
               LOGGER.info("Concurrent source stream read enabled.");
               readConcurrent(config, catalog, stateOptional);
             } else {
-              readSerial(config, catalog, stateOptional);
+              readSerial(config, catalog, outputRecordCollector, stateOptional);
             }
           } finally {
             if (source instanceof AutoCloseable) {
@@ -273,9 +273,8 @@ public class IntegrationRunner {
     }
   }
 
-  private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    try (final OutputRecordConsumer outputRecordCollector = outputRecordCollectorSupplier.get();
-        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+  private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final OutputRecordConsumer outputRecordCollector, final Optional<JsonNode> stateOptional) throws Exception {
+    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
