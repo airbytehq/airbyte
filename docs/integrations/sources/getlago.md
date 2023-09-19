@@ -1,8 +1,8 @@
-# getLago API
+# Lago API
 
 ## Sync overview
 
-This source can sync data from the [getLago API](https://doc.getlago.com/docs/guide/intro/welcome). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide/intro/welcome). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -25,8 +25,8 @@ This source can sync data from the [getLago API](https://doc.getlago.com/docs/gu
 ## Getting started
 
 ### Requirements
-
-* getLago API KEY
+* Lago API URL
+* Lago API KEY
 
 ## Changelog
 
