@@ -859,6 +859,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
           {
             put(generator.buildColumnId("current_date"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("join"), AirbyteProtocolType.STRING);
           }
 
         });

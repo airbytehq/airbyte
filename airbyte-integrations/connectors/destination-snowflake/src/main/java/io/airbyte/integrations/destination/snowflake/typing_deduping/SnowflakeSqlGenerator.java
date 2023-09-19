@@ -48,15 +48,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public ColumnId buildColumnId(final String name) {
-    return buildColumnId(name, "");
-  }
-
-  @Override
   public ColumnId buildColumnId(final String name, final String suffix) {
     // No escaping needed, as far as I can tell. We quote all our identifier names.
     final String nameWithSuffix = name + suffix;
-    return new ColumnId(prefixReservedKeyword(escapeSqlIdentifier(name).toUpperCase()) + suffix,
+    return new ColumnId(prefixReservedColumnName(escapeSqlIdentifier(name).toUpperCase()) + suffix,
                         nameWithSuffix,
                         nameWithSuffix.toUpperCase());
   }
@@ -586,8 +581,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return escapeJsonIdentifier(identifier);
   }
 
-  private static String prefixReservedKeyword(final String columnName) {
-    return SnowflakeReservedKeywords.RESERVED_KEYWORDS.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ?
+  private static String prefixReservedColumnName(final String columnName) {
+    return SnowflakeReservedKeywords.RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ?
         "_" + columnName : columnName;
   }
 

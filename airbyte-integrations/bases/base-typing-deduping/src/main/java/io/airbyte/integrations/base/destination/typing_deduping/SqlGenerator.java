@@ -10,7 +10,9 @@ public interface SqlGenerator<DialectTableDefinition> {
 
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
-  ColumnId buildColumnId(String name);
+  default ColumnId buildColumnId(final String name) {
+    return buildColumnId(name, "");
+  }
 
   ColumnId buildColumnId(String name, String suffix);
 

@@ -3,9 +3,12 @@ package io.airbyte.integrations.destination.snowflake;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 
+/**
+ * See https://docs.snowflake.com/en/sql-reference/reserved-keywords.html
+ * Copied from https://github.com/airbytehq/airbyte/blob/f226503bd1d4cd9c7412b04d47de584523988443/airbyte-integrations/bases/base-normalization/normalization/transform_catalog/reserved_keywords.py
+ */
 public class SnowflakeReservedKeywords {
 
-  // https://docs.snowflake.com/en/sql-reference/reserved-keywords.html
   public static final List<String> RESERVED_KEYWORDS = ImmutableList.of(
       "ALL",
       "ALTER",
@@ -98,5 +101,13 @@ public class SnowflakeReservedKeywords {
       "WHENEVER",
       "WHERE",
       "WITH");
+
+  public static final List<String> RESERVED_COLUMN_NAMES = ImmutableList.of(
+      "CURRENT_DATE",
+      "CURRENT_TIME",
+      "CURRENT_TIMESTAMP",
+      "CURRENT_USER",
+      "LOCALTIME",
+      "LOCALTIMESTAMP");
 
 }

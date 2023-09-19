@@ -3,9 +3,13 @@ package io.airbyte.integrations.destination.bigquery;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 
+/**
+ * NOTE: This class is not used, but is created for completeness.
+ * See https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords
+ * Copied from https://github.com/airbytehq/airbyte/blob/f226503bd1d4cd9c7412b04d47de584523988443/airbyte-integrations/bases/base-normalization/normalization/transform_catalog/reserved_keywords.py
+ */
 public class BigQueryReservedKeywords {
 
-  // https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical#reserved_keywords
   public static final List<String> RESERVED_KEYWORDS = ImmutableList.of(
       "ALL",
       "AND",

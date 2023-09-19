@@ -75,11 +75,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public ColumnId buildColumnId(final String name) {
-    return buildColumnId(name, "");
-  }
-
-  @Override
   public ColumnId buildColumnId(final String name, final String suffix) {
     // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
     final String nameWithSuffix = name + suffix;
