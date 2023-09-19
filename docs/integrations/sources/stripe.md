@@ -163,18 +163,18 @@ On the other hand, the following streams use the `updated` field value as a curs
 
 :::note
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
-- Bank Accounts
-- Coupons
-- Customers
-- External Account Bank Accounts
-- External Account Cards
-- Invoices
-- Invoice Items
-- Persons
-- Plans
-- Prices
-- Products
-- Subscriptions
+- `Bank Accounts`
+- `Coupons`
+- `Customers`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoices`
+- `Invoice Items`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Subscriptions`
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
 
