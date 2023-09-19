@@ -30,8 +30,5 @@ dependencies {
 
     testImplementation libs.testcontainers.kafka
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-kafka')
     integrationTestJavaImplementation libs.testcontainers.kafka
-
 }

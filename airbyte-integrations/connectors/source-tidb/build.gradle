@@ -22,9 +22,5 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-tidb')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
     integrationTestJavaImplementation libs.testcontainers.tidb
-
 }
