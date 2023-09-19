@@ -222,14 +222,6 @@ subprojects { subproj ->
         }
     }
 
-    // make tag accessible in submodules.
-    ext {
-        cloudStorageTestTagName = 'cloud-storage'
-        numberThreads = project.hasProperty('numberThreads')
-                ? project.getProperty('numberThreads') as int
-                : Runtime.runtime.availableProcessors() ?: 1
-    }
-
     spotbugs {
         ignoreFailures = false
         effort = 'max'
@@ -240,15 +232,27 @@ subprojects { subproj ->
     }
 
     test {
-        //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
-        //Specially useful for connectors that shares resources (like Redshift or Snowflake).
-        maxParallelForks = numberThreads
+        maxHeapSize = '3g'
+        maxParallelForks = Runtime.runtime.availableProcessors()
+        // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
+        // This is especially useful for connectors that share resources, like Redshift or Snowflake.
+        if (subproj.hasProperty('numberThreads')) {
+            int numberThreads = 0
+            String numberThreadsString = subproj.property('numberThreads').toString()
+            if (numberThreadsString.isInteger()) {
+                numberThreads = numberThreadsString as int
+            }
+            if (numberThreads > 0 && numberThreads < maxParallelForks) {
+                maxParallelForks = numberThreads
+            }
+        }
+
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']
         }
         useJUnitPlatform {
-            excludeTags(cloudStorageTestTagName)
+            excludeTags('cloud-storage')
         }
         testLogging() {
             events "passed", "skipped", "failed"
