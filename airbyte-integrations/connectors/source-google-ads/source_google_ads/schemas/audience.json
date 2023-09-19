@@ -9,7 +9,10 @@
       "type": ["null", "string"]
     },
     "audience.dimensions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "audience.exclusion_dimension": {
       "type": ["null", "string"]

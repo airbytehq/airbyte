@@ -118,7 +118,10 @@
       "type": ["null", "number"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]
