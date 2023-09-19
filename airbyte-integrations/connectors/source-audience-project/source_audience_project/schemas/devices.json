@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "deviceCounts": {
+      "type": "object",
+      "properties": {
+        "desktop": {
+          "type": "integer"
+        },
+        "mobile": {
+          "type": "integer"
+        },
+        "other": {
+          "type": "integer"
+        },
+        "tablet": {
+          "type": "integer"
+        },
+        "tv": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "desktop",
+        "mobile",
+        "other",
+        "tablet",
+        "tv"
+      ]
+    },
+    "subdeviceCounts": {
+      "type": "object",
+      "properties": {
+        "desktop": {
+          "type": "object",
+          "properties": {
+            "windows": {
+              "type": "integer"
+            },
+            "macosx": {
+              "type": "integer"
+            },
+            "linux": {
+              "type": "integer"
+            },
+            "chromeos": {
+
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "chromeos",
+            "linux",
+            "macosx",
+            "other",
+            "windows"
+          ]
+        },
+        "mobile": {
+          "type": "object",
+          "properties": {
+            "android": {
+              "type": "integer"
+            },
+            "iphone": {
+              "type": "integer"
+            },
+            "windowsPhone": {
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "android",
+            "iphone",
+            "other",
+            "windowsPhone"
+          ]
+        },
+        "other": {
+          "type": "object",
+          "properties": {
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "other"
+          ]
+        },
+        "tablet": {
+          "type": "object",
+          "properties": {
+            "windows": {
+              "type": "integer"
+            },
+            "android": {
+              "type": "integer"
+            },
+            "iPad": {
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "android",
+            "iPad",
+            "other",
+            "windows"
+          ]
+        },
+        "tv": {
+          "type": "object",
+          "properties": {
+            "appleTV": {
+              "type": "integer"
+            },
+            "roku": {
+              "type": "integer"
+            },
+            "chromecast": {
+              "type": "integer"
+            },
+            "console": {
+              "type": "integer"
+            },
+            "smartTV": {
+              "type": "integer"
+            },
+            "webTV": {
+              "type": "integer"
+            },
+            "hbbTV": {
+              "type": "integer"
+            },
+            "YouView": {
+              "type": "integer"
+            },
+            "AmazonFireTV": {
+              "type": "integer"
+            },
+            "SmartHub": {
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "AmazonFireTV",
+            "SmartHub",
+            "YouView",
+            "appleTV",
+            "chromecast",
+            "console",
+            "hbbTV",
+            "other",
+            "roku",
+            "smartTV",
+            "webTV"
+          ]
+        }
+      },
+      "required": [
+        "desktop",
+        "mobile",
+        "other",
+        "tablet",
+        "tv"
+      ]
+    },
+    "campaign_id":{
+      "type":"string"
+    }
+  },
+  "required": [
+    "deviceCounts",
+    "subdeviceCounts",
+    "campaign_id"
+  ]
+}

@@ -5,14 +5,18 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [ "data" ]
+      field_path: ["data"]
+
   requester:
     type: HttpRequester
     url_base: "https://campaign-api.audiencereport.com"
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['credentials']['access_token'] }}"
+      class_name: source_audience_project.streams.ShortLivedTokenAuthenticator
+      url: "https://oauth.audiencereport.com/oauth/access_token"
+      client_id: "{{ config['credentials']['client_id'] }}"
+      secret_key: "{{ config['credentials']['client_secret'] }}"
+      lifetime: ""
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -21,6 +25,7 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
+
   base_stream:
     type: DeclarativeStream
     retriever:
@@ -38,12 +43,6 @@ definitions:
       type: "CustomPaginationStrategy"
       page_size: 100
 
-  custom_requester:
-    $ref: "#/definitions/requester"
-    class_name: "source_audience_project.streams.CampaignsParamRequester"
-    type: CustomRequester
-
-
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     name: "campaigns"
@@ -54,7 +53,7 @@ definitions:
         $ref: "#/definitions/selector"
       requester:
         path: "campaigns"
-        $ref: "#/definitions/custom_requester"
+        $ref: "#/definitions/requester"
       paginator:
         $ref: "#/definitions/double_paginator"
         page_size_option:
@@ -66,12 +65,110 @@ definitions:
           inject_into: "request_parameter"
           field_name: "start"
 
+  records_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/campaigns_stream"
+        parent_key: "id"
+        partition_field: "parent_id"
+
+  devices_stream:
+    $ref: "#/definitions/base_stream"
+    name: "devices"
+    primary_key: ""
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/records_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "reports/{{ stream_partition.parent_id }}/delivery/devices"
+        error_handler:
+          response_filters:
+            - http_codes: [ 409 ]
+              action: IGNORE
+
+  profile_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "profile"
+      primary_key: ""
+      path: "reports/{{ stream_partition.parent_id }}/profile"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/records_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          response_filters:
+            - http_codes: [ 409 ]
+              action: IGNORE
+            - http_codes: [ 500 ]
+              action: IGNORE
+
+  reach_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "reach"
+      primary_key: ""
+      path: "reports/{{ stream_partition.parent_id }}/reach"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/records_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          response_filters:
+            - http_codes: [ 409 ]
+              action: IGNORE
+
+  report_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "report"
+      primary_key: ""
+      path: "reports/{{ stream_partition.parent_id }}"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/records_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          response_filters:
+            - http_codes: [ 409 ]
+              action: IGNORE
+
 streams:
   - "#/definitions/campaigns_stream"
+  - "#/definitions/devices_stream"
+  - "#/definitions/profile_stream"
+  - "#/definitions/reach_stream"
+  - "#/definitions/report_stream"
 
 check:
   type: CheckStream
-  stream_names: ["campaigns"]
+  stream_names: [
+    "campaigns"
+  ]
 
 
 spec:

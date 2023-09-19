@@ -1,0 +1,205 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "profileAffinities": {
+      "type": "object",
+      "properties": {
+        "gender": {
+          "type": "object",
+          "properties": {
+            "male": {
+              "type": "integer"
+            },
+            "female": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "female",
+            "male"
+          ]
+        },
+        "age": {
+          "type": "object",
+          "properties": {
+            "young": {
+              "type": "integer"
+            },
+            "old": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "old",
+            "young"
+          ]
+        },
+        "reportItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "fusionId": {
+                "type": "string"
+              },
+              "providerId": {
+                "type": "string"
+              },
+              "sourceId": {
+                "type": "string"
+              },
+              "profileAffinities": {
+                "type": "object",
+                "properties": {
+                  "gender": {
+                    "type": "object",
+                    "properties": {
+                      "male": {
+                        "type": "integer"
+                      },
+                      "female": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "female",
+                      "male"
+                    ]
+                  },
+                  "age": {
+                    "type": "object",
+                    "properties": {
+                      "young": {
+                        "type": "integer"
+                      },
+                      "old": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "old",
+                      "young"
+                    ]
+                  }
+                },
+                "required": [
+                  "age",
+                  "gender"
+                ]
+              }
+            },
+            "required": [
+              "fusionId",
+              "name",
+              "profileAffinities",
+              "providerId",
+              "sourceId"
+            ]
+          }
+        }
+      },
+      "required": [
+        "age",
+        "gender",
+        "reportItems"
+      ]
+    },
+    "defaultSegments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "valueLabels": {
+            "type": "object",
+            "properties": {
+              "gender": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "age": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "age",
+              "gender"
+            ]
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "percents": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "percents"
+            ]
+          },
+          "reportItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "percents": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "fusionId": {
+                  "type": "string"
+                },
+                "providerId": {
+                  "type": "string"
+                },
+                "sourceId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fusionId",
+                "name",
+                "percents",
+                "providerId",
+                "sourceId"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "reportItems",
+          "totals",
+          "valueLabels"
+        ]
+      }
+    },
+    "campaign_id":{
+      "type":"string"
+    }
+  },
+  "required": [
+    "defaultSegments",
+    "profileAffinities",
+    "campaign_id"
+  ]
+}

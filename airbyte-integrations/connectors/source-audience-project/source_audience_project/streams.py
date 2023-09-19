@@ -1,18 +1,25 @@
 import logging
 import pendulum
 import requests
+import datetime
+import time
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from datetime import datetime, timezone
 from airbyte_cdk.sources.declarative.types import Config, Record
 from typing import Any, Iterable, Mapping, Optional, Union, List, Tuple, MutableMapping
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
+from json.decoder import JSONDecodeError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
+from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
@@ -25,101 +32,76 @@ DEFAULT_CAMPAIGN_STATUS = "deleted,active,archived,dirty"
 DEFAULT_DATE_FLAG = False
 
 
-class AudienceProjectStream(HttpStream, ABC):
-
-    url_base = "https://campaign-api.audiencereport.com/"
-    oauth_url_base = "https://oauth.audiencereport.com/"
-    primary_key = ""
-
-    def __init__(self, config: Mapping[str, Any], parent):
-        super().__init__(parent)
-        self.config = config
-        print("self.config", self.config)
-        # self._authenticator = authenticator
-        self._session = requests.sessions.Session()
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            **kwargs
-    ) -> Iterable[Mapping]:
-        if response.status_code == 200:
-            data = response.json().get("data")
-            print("response", data)
-            if data:
-                data["campaign_id"] = stream_slice["campaign_id"]
-                yield data
-
-    def stream_slices(
-            self,
-            sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None,
-            **kwargs
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent = self.parent(self._authenticator, self.config, **kwargs)
-        parent_stream_slices = parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-        for stream_slice in parent_stream_slices:
-            parent_records = parent.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for record in parent_records:
-                yield {"campaign_id": record.get("id")}
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 409:
-            # self.logger.error(f"Skipping stream {self.name}. Full error message: {response.text}")
-            self.logger.error(f"Skipping stream. Full error message: {response.text}")
-            setattr(self, "raise_on_http_errors", False)
-            return False
-
-    def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return ""
-
-
-class CampaignsStreamPagination(PageIncrement):
-    max_records = 100
-    start = 0
+@dataclass
+class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
+    client_id: Union[InterpolatedString, str]
+    secret_key: Union[InterpolatedString, str]
+    url: Union[InterpolatedString, str]
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    token_key: Union[InterpolatedString, str] = "access_token"
+    lifetime: Union[InterpolatedString, str] = ""
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        self.param = parameters
-        self.start_from_page = self.start
+        print("parameters", parameters)
+        self._client_id = InterpolatedString.create(self.client_id, parameters=parameters)
+        self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
+        self._url = InterpolatedString.create(self.url, parameters=parameters)
+        self._token_key = InterpolatedString.create(self.token_key, parameters=parameters)
+        print("TOKEN", self.url, parameters)
+        self._token = None
+        self._session = requests.Session()
 
-    def next_page_token(
-            self,
-            response: requests.Response,
-            last_records: List[Mapping[str, Any]]
-    ) -> Optional[Tuple[Optional[int], Optional[int]]]:
-        print("page size", self.page_size)
-        print("start", self.start)
-        print("start_from_page", self.start_from_page)
-        print("max_records", self.max_records)
-        # print("Continuous condition", self.path)
-        print("len(last_records)", len(last_records))
-        self.start_from_page += self.max_records
-        record_len = len(last_records)
-        if record_len < self.max_records or record_len == 0:
-            return None
-        return self.page_size, self.start_from_page
+    def check_token(self):
+        if self.config.get("credentials").get("type") == "access_token":
+            print("Access-Token", self._token)
+            self._token = self.config.get("credentials").get("access_token")
+            if not self.validate_token(self._token):
+                raise ConnectionError("Unauthorized token.")
+        if self.config.get("credentials").get("type") == "OAuth":
+            print("Token present or not", self._token)
+            if not self._token or not self.validate_token(self._token):
+                print("Not present  || GENERATE ||", self._token)
+                try:
+                    response = requests.post(
+                        url=self._url.default,
+                        params={
+                            "client_id": self.config.get("credentials").get("client_id"),
+                            "client_secret": self.config.get("credentials").get("client_secret"),
+                            "grant_type": "client_credentials"
+                        }
+                    )
+                    response.raise_for_status()
+                    self._token = response.json().get("access_token")
+                except JSONDecodeError:
+                    raise ConnectionError(response.text)
 
+    def validate_token(self, access_token: str) -> bool:
+        print("Validate Token")
+        validate_url_auth = "https://oauth.audiencereport.com/oauth/validate_token"
+        response = requests.post(
+            url=validate_url_auth,
+            params={
+                "access_token": access_token
+            }
+        )
+        if response.status_code == 200:
+            authorization = response.json().get("authorized")
+            if not authorization:
+                return False
+            return True
+        else:
+            return False
 
-@dataclass
-class CampaignsParamRequester(HttpRequester):
+    @property
+    def auth_header(self) -> str:
+        return "Authorization"
+
+    @property
+    def token(self) -> str:
+        self.check_token()
+        print("NEW TOKEN:", self._token)
+        return f"Bearer {self._token}"
 
     @staticmethod
     def _get_time_interval(
@@ -135,18 +117,17 @@ class CampaignsParamRequester(HttpRequester):
         if end_date < start_date:
             raise ValueError(
                 f"""Provided start date has to be before end_date.
-                            Start date: {start_date} -> end date: {end_date}"""
+                                Start date: {start_date} -> end date: {end_date}"""
             )
         return start_date, end_date
 
     def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+            self,
+            *,
+            stream_state: Optional[StreamState] = None,
+            stream_slice: Optional[StreamSlice] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        print("Params", self.config)
         params = {"type": "all", "sortDirection": "asc"}
         params.update({"status": DEFAULT_CAMPAIGN_STATUS})
         date_required = self.config.get("date_flag") if self.config.get("date_flag") else DEFAULT_DATE_FLAG
@@ -155,39 +136,24 @@ class CampaignsParamRequester(HttpRequester):
             params.update({"creationDate": stream_start, "reportEnd": stream_end})
         if next_page_token:
             params.update(**next_page_token)
-        print("Params", params)
         return params
 
 
-class Campaigns(AudienceProjectStream):
-    parent = ""
-    config: Config
+class CampaignsStreamPagination(PageIncrement):
+    max_records = 100
+    start = 0
 
-    def __init__(self, **kwargs):
-        super().__init__(config=kwargs['config'], parent=self.parent)
-        self.page_size = 100
-        print("kwargs", kwargs)
-        self.fetched_record_length = 0
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.param = parameters
+        self.start_from_page = self.start
 
-    def get_page_size(self) -> Optional[int]:
-        return self.page_size
-
-    def reset(self):
-        pass
-
-    @property
-    def use_cache(self) -> bool:
-        return True
-
-    @property
-    def cache_filename(self):
-        return "campaigns.yml"
-
-    def stream_slices(
-        self,
-        sync_mode: SyncMode.incremental,
-        cursor_field: List[str] = None,
-        stream_state: Mapping[str, Any] = None,
-        **kwargs
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield {}
+    def next_page_token(
+            self,
+            response: requests.Response,
+            last_records: List[Mapping[str, Any]]
+    ) -> Optional[Tuple[Optional[int], Optional[int]]]:
+        self.start_from_page += self.max_records
+        record_len = len(last_records)
+        if record_len < self.max_records or record_len == 0:
+            return None
+        return self.page_size, self.start_from_page
