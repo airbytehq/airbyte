@@ -23,7 +23,6 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -180,10 +179,6 @@ class AbstractSource(Source, ABC):
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
-            if isinstance(stream_instance, ConcurrentStream):
-                raise ValueError(
-                    f"ConcurrentStream do not support incremental sync yet. Please use a different stream type for {stream_instance.name}"
-                )
             record_iterator = self._read_incremental(
                 logger,
                 stream_instance,  # type: ignore # stream_instance is a Stream if it is not a ConcurrentStream

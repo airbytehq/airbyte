@@ -45,3 +45,11 @@ class ConcurrentStream(AbstractStream):
     @property
     def source_defined_cursor(self) -> bool:
         raise NotImplementedError
+
+    @property
+    def supports_incremental(self) -> bool:
+        """
+        :return: True if this stream supports incrementally reading data
+        """
+        # Incremental reads are not supported yet. This override should be deleted when incremental reads are supported.
+        return False
