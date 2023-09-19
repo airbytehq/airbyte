@@ -28,7 +28,6 @@ buildscript {
 
 plugins {
     id 'base'
-    id 'pmd'
     id 'com.diffplug.spotless' version '6.20.0'
     id 'com.github.node-gradle.node' version '3.5.1'
     id 'com.github.hierynomus.license' version '0.16.1'
@@ -155,7 +154,6 @@ subprojects { subproj ->
     apply plugin: 'java'
     apply plugin: 'jacoco'
     apply plugin: 'com.github.spotbugs'
-    apply plugin: 'pmd'
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -188,15 +186,6 @@ subprojects { subproj ->
             url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
         mavenLocal()
-    }
-
-    pmd {
-        consoleOutput = true
-        ignoreFailures = false
-        rulesMinimumPriority = 5
-        ruleSets = []
-        ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
-        toolVersion = '6.51.0'
     }
 
     jacoco {
@@ -328,11 +317,6 @@ subprojects { subproj ->
             xml.required = false
             html.required = true
         }
-    }
-
-    tasks.withType(Pmd).configureEach {
-        exclude '**/generated/**'
-        exclude '**/jooq/**'
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
