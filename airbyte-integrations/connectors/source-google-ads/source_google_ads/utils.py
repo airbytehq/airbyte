@@ -6,6 +6,40 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
+# maps stream name to name of resource in Google Ads
+REPORT_MAPPING = {
+    "accounts": "customer",
+    "account_labels": "customer_label",
+    "account_performance_report": "customer",
+    "ad_group_ads": "ad_group_ad",
+    "ad_group_ad_labels": "ad_group_ad_label",
+    "ad_group_ad_report": "ad_group_ad",
+    "ad_groups": "ad_group",
+    "ad_group_bidding_strategies": "ad_group",
+    "ad_group_criterions": "ad_group_criterion",
+    "ad_group_criterion_labels": "ad_group_criterion_label",
+    "ad_group_labels": "ad_group_label",
+    "ad_listing_group_criterions": "ad_group_criterion",
+    "audience": "audience",
+    "campaigns": "campaign",
+    "campaign_real_time_bidding_settings": "campaign",
+    "campaign_criterion": "campaign_criterion",
+    "campaign_bidding_strategies": "campaign",
+    "campaign_budget": "campaign_budget",
+    "campaign_labels": "campaign_label",
+    "change_status": "change_status",
+    "click_view": "click_view",
+    "display_keyword_performance_report": "display_keyword_view",
+    "display_topics_performance_report": "topic_view",
+    "geographic_report": "geographic_view",
+    "keyword_report": "keyword_view",
+    "labels": "label",
+    "service_accounts": "customer",
+    "shopping_performance_report": "shopping_performance_view",
+    "user_interest": "user_interest",
+    "user_location_report": "user_location_view",
+}
+
 
 @dataclass(repr=False, eq=False, frozen=True)
 class GAQL:

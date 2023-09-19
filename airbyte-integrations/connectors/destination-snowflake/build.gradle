@@ -16,7 +16,7 @@ application {
 //            '-Dcom.sun.management.jmxremote=true',
 //            '-Dcom.sun.management.jmxremote.port=6000',
 //            '-Dcom.sun.management.jmxremote.rmi.port=6000',
-//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.local.only=false'
 //            '-Dcom.sun.management.jmxremote.authenticate=false',
 //            '-Dcom.sun.management.jmxremote.ssl=false',
 //            '-agentpath:/usr/local/YourKit-JavaProfiler-2021.3/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all'

@@ -74,6 +74,7 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.9   | 2023-09-18 | [#30510](https://github.com/airbytehq/airbyte/pull/30510)     | Fix bug with overwrite mode on starter pods | 
 | 0.0.8   | 2023-09-14 | [#30296](https://github.com/airbytehq/airbyte/pull/30296)     | Add Azure embedder | 
 | 0.0.7   | 2023-09-13 | [#30382](https://github.com/airbytehq/airbyte/pull/30382)     | Promote to certified/beta | 
 | 0.0.6   | 2023-09-09 | [#30193](https://github.com/airbytehq/airbyte/pull/30193)     | Improve documentation | 
