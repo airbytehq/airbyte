@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-from base_images import GLOBAL_REGISTRY
+from base_images.registries import GLOBAL_REGISTRY
 from dagger import Container, QueryError
 from pipelines.actions.environments import find_local_python_dependencies
 from pipelines.bases import StepResult, StepStatus
@@ -40,9 +40,9 @@ class BuildConnectorImage(BuildConnectorImageBase):
 
     def _get_base_container(self) -> Container:
         base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
-        BaseImageVersion = GLOBAL_REGISTRY.get_version(base_image_name)
-        self.logger.info(f"Building connector from base image {base_image_name}")
-        return BaseImageVersion(self.dagger_client, self.build_platform).container
+        image_address = GLOBAL_REGISTRY.get_image_address_from_image_name(base_image_name)
+        self.logger.info(f"Building connector from base image {image_address}")
+        return self.dagger_client.container(platform=self.build_platform).from_(image_address)
 
     async def _provision_builder_container(self, base_container: Container) -> Container:
         """Pre install the connector dependencies in a builder container.
