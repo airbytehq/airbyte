@@ -11,6 +11,8 @@ acceptance_tests:
               bypass_reason: "Order access return randomly"
             - name: features
               bypass_reason: "Order features return randomly"
+            - name: options
+              bypass_reason: "Order options return randomly"
             - name: organization/features
               bypass_reason: "Order features return randomly"
             - name: plugins/*/features
