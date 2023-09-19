@@ -753,7 +753,7 @@ class IssueVotes(StartDateJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
-    
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["issueId"] = stream_slice["key"]
         return record
@@ -788,7 +788,7 @@ class IssueWatchers(StartDateJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
-    
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["issueId"] = stream_slice["key"]
         return record
@@ -1003,7 +1003,7 @@ class ProjectPermissionSchemes(JiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in read_full_refresh(self.projects_stream):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
-    
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["key"]
         return record
@@ -1152,7 +1152,7 @@ class ScreenTabs(JiraStream):
                 self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
                 return
             yield screen_tab
-    
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["screenId"] = stream_slice["screen_id"]
         return record
@@ -1176,8 +1176,7 @@ class ScreenTabFields(JiraStream):
             for tab in self.screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
                 if "id" in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
                     yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
-    
-    
+
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["screenId"] = stream_slice["screen_id"]
         record["tabId"] = stream_slice["tab_id"]
