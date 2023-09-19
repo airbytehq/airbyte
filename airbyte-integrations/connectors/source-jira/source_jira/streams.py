@@ -125,13 +125,7 @@ class JiraStream(HttpStream, ABC):
             return super().should_retry(response)
 
 
-class StartDateJiraStream(JiraStream, ABC):
-    def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
-        super().__init__(**kwargs)
-        self._start_date = start_date
-
-
-class IncrementalJiraStream(StartDateJiraStream, ABC):
+class IncrementalJiraStream(JiraStream, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._starting_point_cache = {}
@@ -160,8 +154,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
             stream_state_value = stream_state.get(self.cursor_field)
             if stream_state_value:
                 stream_state_value = pendulum.parse(stream_state_value)
-                return safe_max(stream_state_value, self._start_date)
-        return self._start_date
+                return stream_state_value
 
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -433,8 +426,7 @@ class IssueComments(IncrementalJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -572,7 +564,7 @@ class IssuePropertyKeys(JiraStream):
         yield from super().read_records(stream_slice={"key": issue_key}, **kwargs)
 
 
-class IssueProperties(StartDateJiraStream):
+class IssueProperties(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
@@ -584,8 +576,7 @@ class IssueProperties(StartDateJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
         self.issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
@@ -598,7 +589,7 @@ class IssueProperties(StartDateJiraStream):
                 yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
 
 
-class IssueRemoteLinks(StartDateJiraStream):
+class IssueRemoteLinks(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
     """
@@ -608,8 +599,7 @@ class IssueRemoteLinks(StartDateJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -679,7 +669,7 @@ class IssueTypeScreenSchemes(JiraStream):
         return "issuetypescreenscheme"
 
 
-class IssueTransitions(StartDateJiraStream):
+class IssueTransitions(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
     """
@@ -692,8 +682,7 @@ class IssueTransitions(StartDateJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -711,7 +700,7 @@ class IssueTransitions(StartDateJiraStream):
         return record
 
 
-class IssueVotes(StartDateJiraStream):
+class IssueVotes(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
 
@@ -729,8 +718,7 @@ class IssueVotes(StartDateJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -741,7 +729,7 @@ class IssueVotes(StartDateJiraStream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
-class IssueWatchers(StartDateJiraStream):
+class IssueWatchers(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
 
@@ -760,8 +748,7 @@ class IssueWatchers(StartDateJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -785,8 +772,7 @@ class IssueWorklogs(IncrementalJiraStream):
         self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
+            projects=self._projects
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:

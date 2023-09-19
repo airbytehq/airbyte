@@ -72,10 +72,6 @@ from .utils import read_full_refresh
 
 class SourceJira(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
-        start_date = config.get("start_date")
-        if start_date:
-            config["start_date"] = pendulum.parse(start_date)
-
         config["projects"] = config.get("projects", [])
         return config
 
@@ -107,10 +103,9 @@ class SourceJira(AbstractSource):
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-        incremental_args = {**args, "start_date": config.get("start_date")}
         render_fields = config.get("render_fields", False)
         issues_stream = Issues(
-            **incremental_args,
+            **args,
             expand_changelog=config.get("expand_issue_changelog", False),
             expand_transitions=config.get("expand_issue_transition", False),
             render_fields=render_fields,
@@ -119,19 +114,19 @@ class SourceJira(AbstractSource):
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
-                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **args)
             )
         return [
             ApplicationRoles(**args),
             Avatars(**args),
             Boards(**args),
-            BoardIssues(**incremental_args),
+            BoardIssues(**args),
             Dashboards(**args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
             issues_stream,
-            IssueComments(**incremental_args),
+            IssueComments(**args),
             issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
@@ -139,16 +134,16 @@ class SourceJira(AbstractSource):
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
             IssuePriorities(**args),
-            IssueProperties(**incremental_args),
-            IssueRemoteLinks(**incremental_args),
+            IssueProperties(**args),
+            IssueRemoteLinks(**args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
             IssueTransitions(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
-            IssueVotes(**incremental_args),
-            IssueWatchers(**incremental_args),
-            IssueWorklogs(**incremental_args),
+            IssueVotes(**args),
+            IssueWatchers(**args),
+            IssueWorklogs(**args),
             JiraSettings(**args),
             Labels(**args),
             Permissions(**args),
@@ -166,7 +161,7 @@ class SourceJira(AbstractSource):
             ScreenTabFields(**args),
             ScreenSchemes(**args),
             Sprints(**args),
-            SprintIssues(**incremental_args),
+            SprintIssues(**args),
             TimeTracking(**args),
             Users(**args),
             UsersGroupsDetailed(**args),
