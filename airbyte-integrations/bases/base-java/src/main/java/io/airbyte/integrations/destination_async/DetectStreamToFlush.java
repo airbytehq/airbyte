@@ -138,10 +138,7 @@ public class DetectStreamToFlush {
    * This method also returns debug string with info that about the computation. We do it this way, so
    * that the debug info that is printed is exactly what is used in the computation.
    *
-<<<<<<< HEAD
-=======
    * @param latestFlushTimeMs latestFlushTimeMs
->>>>>>> 12fb75331bf81c003a4b745ca21a5998b45bfeab
    * @return is time triggered and a debug string
    */
   @VisibleForTesting
