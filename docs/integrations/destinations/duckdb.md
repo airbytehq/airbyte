@@ -1,10 +1,14 @@
 # DuckDB
 
+<!-- env:cloud -->
+
 :::caution
 
-This destination is meant to be used on a local workstation or with the MotherDuck service as the destination. Local file-based DBs will not work on Kubernetes or in Airbyte Cloud.
+Local file-based DBs will not work in Airbyte Cloud or Kubernetes. Please use MotherDuck when running in Airbyte Cloud.
 
 :::
+
+<!-- /env:cloud -->
 
 ## Overview
 
@@ -20,6 +24,12 @@ This DuckDB destination is compatible with [MotherDuck](MotherDuck.com).
 
 To specify a MotherDuck-hosted database as your destination, simply provide your database uri with the normal `md:` database prefix in the `destination_path` configuration option.
 
+:::caution
+
+We do not recommend providing your API token in the `md:` connection string, as this may cause your token to be printed to execution logs. Please use the `MotherDuck API Key`` setting instead.
+
+:::
+
 ### Authenticating to MotherDuck
 
 For authentication, you can can provide your [MotherDuck Service Credential](https://motherduck.com/docs/authenticating-to-motherduck/#syntax) as the `motherduck_api_key` configuration option. 
@@ -28,13 +38,15 @@ For authentication, you can can provide your [MotherDuck Service Credential](htt
 
 #### Output schema
 
-If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
-
 Each table will contain 3 columns:
 
 - `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
 - `_airbyte_data`: a json blob representing with the event data.
+
+### Normalization
+
+If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
 
 #### Features
 
@@ -49,7 +61,9 @@ Each table will contain 3 columns:
 
 This integration will be constrained by the speed at which your filesystem accepts writes.
 
-## Getting Started
+<!-- env:oss -->
+
+## Getting Started with Local Database Files
 
 The `destination_path` will always start with `/local` whether it is specified by the user or not. Any directory nesting within local will be mapped onto the local mount.
 
@@ -85,6 +99,8 @@ docker cp airbyte-server:/tmp/airbyte_local/{destination_path} .
 ```
 
 Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../../operator-guides/locating-files-local-destination.md) for an alternative approach.
+
+<!-- /env:oss -->
 
 ## Changelog
 
