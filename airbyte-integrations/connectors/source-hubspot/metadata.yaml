@@ -20,7 +20,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "Version 4.0.0 changes the schema for most of the Hubspot streams. This is done to unnest deeply nested data so it is available as a column in the new Destinations V2 regarding normalization is no more supported. A schema refresh of all the streams is required as well as resetting the data to use the new version."
+        message: "Version 2.0.0 changes the schema for most of the Hubspot streams. This is done to unnest deeply nested data so it is available as a column in the new Destinations V2 regarding normalization is no more supported. A schema refresh of all the streams is required as well as resetting the data to use the new version."
         upgradeDeadline: "2023-10-01"
   suggestedStreams:
     streams:
