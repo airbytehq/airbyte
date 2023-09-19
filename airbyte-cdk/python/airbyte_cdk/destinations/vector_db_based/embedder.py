@@ -71,11 +71,12 @@ class BaseOpenAIEmbedder(Embedder):
     def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         """
         Embed the text of each chunk and return the resulting embedding vectors.
+
         As the OpenAI API will fail if more than the per-minute limit worth of tokens is sent at once, we split the request into batches and embed each batch separately.
         It's still possible to run into the rate limit between each embed call because the available token budget hasn't recovered between the calls,
         but the built-in retry mechanism of the OpenAI client handles that.
         """
-        # Each chunk can hold at mak self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
+        # Each chunk can hold at most self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
         embedding_batch_size = OPEN_AI_TOKEN_LIMIT // self.chunk_size
         batches = create_chunks(chunks, batch_size=embedding_batch_size)
         embeddings = []
