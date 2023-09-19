@@ -16,6 +16,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.output.OutputRecordConsumer;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.util.concurrent.ConcurrentStreamConsumer;
@@ -37,6 +39,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -75,7 +78,7 @@ public class IntegrationRunner {
   private static final Runnable EXIT_HOOK = () -> System.exit(FORCED_EXIT_CODE);
 
   private final IntegrationCliParser cliParser;
-  private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final Supplier<OutputRecordConsumer> outputRecordCollectorSupplier;
   private final Integration integration;
   private final Destination destination;
   private final Source source;
@@ -83,21 +86,21 @@ public class IntegrationRunner {
   private static JsonSchemaValidator validator;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
+    this(new IntegrationCliParser(), () -> new PrintWriterOutputRecordConsumer(), destination, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
+    this(new IntegrationCliParser(), () -> new PrintWriterOutputRecordConsumer(), null, source);
   }
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Supplier<OutputRecordConsumer> outputRecordCollectorSupplier,
                     final Destination destination,
                     final Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
-    this.outputRecordCollector = outputRecordCollector;
+    this.outputRecordCollectorSupplier = outputRecordCollectorSupplier;
     // integration iface covers the commands that are the same for both source and destination.
     integration = source != null ? source : destination;
     this.source = source;
@@ -110,11 +113,11 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
+                    final Supplier<OutputRecordConsumer> outputRecordCollectorSupplier,
                     final Destination destination,
                     final Source source,
                     final JsonSchemaValidator jsonSchemaValidator) {
-    this(cliParser, outputRecordCollector, destination, source);
+    this(cliParser, outputRecordCollectorSupplier, destination, source);
     validator = jsonSchemaValidator;
   }
 
@@ -133,7 +136,9 @@ public class IntegrationRunner {
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
 
-    try {
+    final OutputRecordConsumer outputRecordCollector = outputRecordCollectorSupplier.get();
+
+    try (outputRecordCollector) {
       switch (parsed.getCommand()) {
         // common
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
@@ -268,7 +273,8 @@ public class IntegrationRunner {
   }
 
   private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
-    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+    try (final OutputRecordConsumer outputRecordCollector = outputRecordCollectorSupplier.get();
+        final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
     } finally {
       stopOrphanedThreads(EXIT_HOOK,
@@ -280,7 +286,9 @@ public class IntegrationRunner {
   }
 
   private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
-    try {
+    final OutputRecordConsumer outputRecordCollector = outputRecordCollectorSupplier.get();
+
+    try (outputRecordCollector) {
       final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
           outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
       produceMessages(stream, streamStatusTrackingRecordConsumer);
