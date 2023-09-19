@@ -53,7 +53,7 @@ DB_DESTINATIONS_FEATURE = "db-destinations-feature"
 
 MAIN_PACKAGES = {
     CORE_FEATURE: [
-        # "airbyte-db/db-lib",  # Jooq is fragile and reliant on manual code generation steps
+        "airbyte-db/db-lib",  # Jooq is fragile and reliant on manual code generation steps
         "airbyte-integrations/bases/base-java",
         "airbyte-integrations/bases/base-java-s3",
     ],
@@ -83,14 +83,15 @@ TEST_FIXTURE_PACKAGES = {
 }
 TEST_CMDS = [
     # These should pass:
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:test",
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:assemble",
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:assemble",
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
 
     # Working on:
 
@@ -273,6 +274,11 @@ def update_cdk_package_defs() -> None:
 
 def refactor_cdk_package_refs() -> None:
     for text_pattern, text_replacement, within_dir in [
+        (
+            r"(?<!package )io\.airbyte\.(db)",
+            r"io.airbyte.cdk.\1",
+            REPO_ROOT,
+        ),
         (
             r"(?<!package )io\.airbyte\.(integrations\.base|integrations\.debezium|integrations\.standardtest|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
             r"io.airbyte.cdk.\1",

@@ -1,5 +1,6 @@
 /*
-This class also facilitates importing and working with the Java CDK.
+Gradle plugin for Java-based Airbyte connectors.
+Also facilitates importing and working with the Java CDK.
 */
 
 import org.gradle.api.Plugin
@@ -18,27 +19,49 @@ class AirbyteJavaConnectorExtension {
     }
 
     void addCdkDependencies() {
-        project.dependencies {
-            integrationTestJavaImplementation project
+        // Create a list of CDK submodules to import
+        def submoduleNames = ['core']
+        features.each { feature ->
+            submoduleNames.add("${feature}-feature")
         }
         if (useCdkProjectRef) {
             project.dependencies {
-                implementation project.project(":airbyte-cdk:java:airbyte-cdk:core")
-                features.each { feature ->
-                    implementation project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature")
-                    testImplementation testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature"))
-                    integrationTestJavaImplementation testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature"))
-                    performanceTestJavaImplementation testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${feature}-feature"))
+                submoduleNames.each { submoduleName ->
+                    // Add the CDK module to the dependencies
+                    def cdkModule = project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}")
+                    implementation cdkModule
+                    testImplementation cdkModule
+                    integrationTestJavaImplementation cdkModule
+                    performanceTestJavaImplementation cdkModule
+
+                    // Add the test fixtures cdkModule to the dependencies.
+                    // Exclude 'core', which has no test fixtures.
+                    if (cdkModule != 'core') {
+                        def testFixturesRef = testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}"))
+                        testImplementation testFixturesRef
+                        integrationTestJavaImplementation testFixturesRef
+                        performanceTestJavaImplementation testFixturesRef
+                    }
                 }
             }
         } else {
             project.dependencies {
-                implementation "io.airbyte:airbyte-cdk-core:${cdkVersionRequired}"
-                features.each { feature ->
-                    implementation ":airbyte-cdk:java:airbyte-cdk-${feature}:${cdkVersionRequired}"
-                    testImplementation ":airbyte-cdk-${feature}-test-fixtures:${cdkVersionRequired}"
-                    integrationTestJavaImplementation ":airbyte-cdk-${feature}-test-fixtures:${cdkVersionRequired}"
-                    performanceTestJavaImplementation ":airbyte-cdk-${feature}-test-fixtures:${cdkVersionRequired}"
+                submoduleNames.each { submoduleName ->
+                    // Add the cdkModule to the dependencies
+                    def cdkModule = "io.airbyte:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
+                    implementation cdkModule
+                    testImplementation cdkModule
+                    integrationTestJavaImplementation cdkModule
+                    performanceTestJavaImplementation cdkModule
+
+                    // Add the test fixtures cdkModule to the dependencies.
+                    // Exclude 'core', which has no test fixtures.
+                    if (cdkModule != 'core') {
+                        def testFixturesRef = "io.airbyte:airbyte-cdk-${submoduleName}-test-fixtures:${cdkVersionRequired}"
+                        testImplementation testFixturesRef
+                        integrationTestJavaImplementation testFixturesRef
+                        performanceTestJavaImplementation testFixturesRef
+                    }
                 }
             }
         }

@@ -1,16 +1,16 @@
 
 dependencies {
     // Exported dependencies from upstream projects
-    api project(':airbyte-db:db-lib')
+    api libs.airbyte.protocol
+    api libs.jooq
+    api project(':airbyte-json-validation')
 
     // First party main dependencies
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-config-oss:init-oss')
-    implementation project(':airbyte-json-validation')
 
-    implementation libs.airbyte.protocol
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     // First party test dependencies
@@ -18,18 +18,18 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources-feature'))
     
     // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
-    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    // implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
 
-    implementation libs.bundles.junit
-    // implementation libs.junit.jupiter.api
-    implementation libs.junit.jupiter.params
-    implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
-    implementation libs.jooq
+    testImplementation libs.bundles.junit
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.params
+    testImplementation 'org.junit.platform:junit-platform-launcher:1.7.0'
     testImplementation libs.junit.jupiter.engine
+    implementation libs.jooq
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
     implementation "io.aesy:datasize:1.0.0"
     implementation libs.apache.commons
