@@ -16,7 +16,6 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation project(':airbyte-integrations:connectors:source-clickhouse')
     implementation libs.airbyte.protocol
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation group: 'com.clickhouse', name: 'clickhouse-jdbc', version: '0.3.2-patch9'
 
@@ -24,5 +23,5 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse-strict-encrypt')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    integrationTestJavaImplementation libs.connectors.source.testcontainers.clickhouse
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }

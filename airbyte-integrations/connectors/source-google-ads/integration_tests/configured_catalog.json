@@ -21,12 +21,15 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["customer.id"], ["campaign_budget.id"], ["segments.date"], ["segments.budget_campaign_association_status.campaign"], ["segments.budget_campaign_association_status.status"]]
+        "source_defined_primary_key": [
+          ["campaign_budget.id"],
+          ["segments.date"]
+        ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [["customer.id"], ["campaign_budget.id"], ["segments.date"], ["segments.budget_campaign_association_status.campaign"], ["segments.budget_campaign_association_status.status"]]
+      "primary_key": [["campaign_budget.id"], ["segments.date"]]
     },
     {
       "stream": {
@@ -340,10 +343,10 @@
       "stream": {
         "name": "ad_group_criterions",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [["ad_group_criterion.resource_name"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["ad_group_criterion.resource_name"]]
     },
@@ -352,11 +355,11 @@
         "name": "ad_listing_group_criterions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+        "source_defined_primary_key": [["ad_group_criterion.resource_name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"]]
+      "primary_key": [["ad_group_criterion.resource_name"]]
     },
     {
       "stream": {
@@ -368,6 +371,17 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "primary_key": [["ad_group_criterion_label.resource_name"]]
+    },
+    {
+      "stream": {
+        "name": "campaign_criterion",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["campaign_criterion.resource_name"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["campaign_criterion.resource_name"]]
     }
   ]
 }

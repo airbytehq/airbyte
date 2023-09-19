@@ -29,11 +29,6 @@
               "description": "The name of the stream.",
               "type": "string"
             },
-            "file_type": {
-              "title": "File Type",
-              "description": "The data file type that is being extracted for a stream.",
-              "type": "string"
-            },
             "globs": {
               "title": "Globs",
               "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
@@ -283,7 +278,7 @@
               "type": "boolean"
             }
           },
-          "required": ["name", "file_type"]
+          "required": ["name", "format"]
         }
       },
       "bucket": {
@@ -537,6 +532,7 @@
             "title": "AWS Access Key ID",
             "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
             "airbyte_secret": true,
+            "always_show": true,
             "order": 1,
             "type": "string"
           },
@@ -544,6 +540,7 @@
             "title": "AWS Secret Access Key",
             "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
             "airbyte_secret": true,
+            "always_show": true,
             "order": 2,
             "type": "string"
           },

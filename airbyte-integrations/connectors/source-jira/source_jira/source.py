@@ -34,6 +34,7 @@ from .streams import (
     IssueResolutions,
     Issues,
     IssueSecuritySchemes,
+    IssueTransitions,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -96,8 +97,11 @@ class SourceJira(AbstractSource):
             if unknown_projects:
                 return False, "unknown project(s): " + ", ".join(unknown_projects)
             return True, None
-        except (requests.exceptions.RequestException, ValidationError) as e:
-            return False, e
+        except ValidationError as validation_error:
+            return False, validation_error
+        except requests.exceptions.RequestException as request_error:
+            message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
+            return False, f"{message} {request_error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
@@ -108,6 +112,7 @@ class SourceJira(AbstractSource):
         issues_stream = Issues(
             **incremental_args,
             expand_changelog=config.get("expand_issue_changelog", False),
+            expand_transitions=config.get("expand_issue_transition", False),
             render_fields=render_fields,
         )
         issue_fields_stream = IssueFields(**args)
@@ -138,6 +143,7 @@ class SourceJira(AbstractSource):
             IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
+            IssueTransitions(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),

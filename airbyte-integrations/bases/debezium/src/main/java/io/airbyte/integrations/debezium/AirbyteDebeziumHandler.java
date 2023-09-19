@@ -4,12 +4,18 @@
 
 package io.airbyte.integrations.debezium;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS;
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.*;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -72,7 +78,7 @@ public class AirbyteDebeziumHandler<T> {
         config,
         catalogContainingStreamsToSnapshot,
         offsetManager,
-        schemaHistoryManager(new EmptySavedInfo()),
+        schemaHistoryManager(new SchemaHistory<>(Optional.empty(), false), cdcStateHandler.compressSchemaHistoryForState()),
         debeziumConnectorType);
     tableSnapshotPublisher.start(queue);
 
@@ -103,7 +109,9 @@ public class AirbyteDebeziumHandler<T> {
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
-    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
+    final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager =
+        trackSchemaHistory ? schemaHistoryManager(cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState())
+            : Optional.empty();
     final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
         schemaHistoryManager, debeziumConnectorType);
     publisher.start(queue);
@@ -117,10 +125,10 @@ public class AirbyteDebeziumHandler<T> {
         firstRecordWaitTime);
 
     final Duration syncCheckpointDuration =
-        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
-            : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_DURATION;
-    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
-        : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
+        config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
+            : SYNC_CHECKPOINT_DURATION;
+    final Long syncCheckpointRecords = config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY) != null ? config.get(SYNC_CHECKPOINT_RECORDS_PROPERTY).asLong()
+        : SYNC_CHECKPOINT_RECORDS;
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator<>(
         eventIterator,
         cdcStateHandler,
@@ -134,31 +142,18 @@ public class AirbyteDebeziumHandler<T> {
         syncCheckpointRecords));
   }
 
-  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
+  private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final SchemaHistory<Optional<JsonNode>> schemaHistory,
+                                                                     final boolean compressSchemaHistoryForState) {
     if (trackSchemaHistory) {
-      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
+      return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(schemaHistory, compressSchemaHistoryForState));
     }
 
     return Optional.empty();
   }
 
-  public static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
+  public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
-  }
-
-  private static class EmptySavedInfo implements CdcSavedInfoFetcher {
-
-    @Override
-    public JsonNode getSavedOffset() {
-      return null;
-    }
-
-    @Override
-    public Optional<JsonNode> getSavedSchemaHistory() {
-      return Optional.empty();
-    }
-
   }
 
 }

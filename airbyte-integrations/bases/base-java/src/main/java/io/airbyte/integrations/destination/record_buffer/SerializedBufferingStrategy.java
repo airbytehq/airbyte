@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -60,7 +60,6 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @param stream stream associated with record
    * @param message {@link AirbyteMessage} to buffer
    * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty)
-   * @throws Exception
    */
   @Override
   public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
@@ -163,9 +162,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
         LOGGER.error("Exception while closing stream buffer", e);
       }
     }
-    if (!exceptionsThrown.isEmpty()) {
-      throw new RuntimeException(String.format("Exceptions thrown while closing buffers: %s", Strings.join(exceptionsThrown, "\n")));
-    }
+
+    ConnectorExceptionUtil.logAllAndThrowFirst("Exceptions thrown while closing buffers: ", exceptionsThrown);
   }
 
 }
