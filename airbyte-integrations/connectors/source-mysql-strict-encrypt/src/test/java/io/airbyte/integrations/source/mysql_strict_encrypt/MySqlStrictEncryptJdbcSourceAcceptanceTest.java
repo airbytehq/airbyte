@@ -28,6 +28,7 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -86,11 +87,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @BeforeEach
   public void setup() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    final var innerContainerAddress = SshHelpers.getInnerContainerAddress(container);
-    final var outerContainerAddress = SshHelpers.getOuterContainerAddress(container);
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, innerContainerAddress.left)
-        .put(JdbcUtils.PORT_KEY, innerContainerAddress.right)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -101,8 +100,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
-            outerContainerAddress.left,
-            outerContainerAddress.right,
+            container.getHost(),
+            container.getFirstMappedPort(),
             String.join("&", SSL_PARAMETERS)),
         SQLDialect.MYSQL);
     database = new Database(dslContext);
