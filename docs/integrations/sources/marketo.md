@@ -81,13 +81,19 @@ The Marketo source connector supports the following[ sync modes](https://docs.ai
 
 This connector can be used to sync the following tables from Marketo:
 
-- **activities_X** where X is an activity type contains information about lead activities of the type X. For example, activities_send_email contains information about lead activities related to the activity type `send_email`. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET) for a detailed explanation of what each column means.
-- **activity_types.** Contains metadata about activity types. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET) for a detailed explanation of columns.
-- **campaigns.** Contains info about your Marketo campaigns. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET).
-- **leads.** Contains info about your Marketo leads. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET).
-- **lists.** Contains info about your Marketo static lists. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET).
-- **programs.** Contains info about your Marketo programs. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET).
-- **segmentations.** Contains info about your Marketo programs. [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET).
+- **Activities_X** where X is an activity type contains information about lead activities of the type X. For example, activities_send_email contains information about lead activities related to the activity type `send_email`. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getLeadActivitiesUsingGET) for a detailed explanation of what each column means.
+- **Activity types** Contains metadata about activity types. See the [Marketo docs](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET) for a detailed explanation of columns.
+- **[Campaigns](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET)**: Contains info about your Marketo campaigns.
+- **[Leads](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Leads/getLeadByIdUsingGET)**: Contains info about your Marketo leads.
+
+:::caution
+
+Available fields are limited by what is presented in the static schema.
+
+:::
+- **[Lists](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListByIdUsingGET)**: Contains info about your Marketo static lists.
+- **[Programs](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Programs/browseProgramsUsingGET)**: Contains info about your Marketo programs.
+- **[Segmentations](https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET)**: Contains info about your Marketo programs.
 
 ## Performance considerations
 
@@ -100,7 +106,7 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes                                                                           |
-| :--------------- | :----------- | :------------------------------------------------------------------------------ |
+|:-----------------|:-------------|:--------------------------------------------------------------------------------|
 | `array`          | `array`      | primitive arrays are converted into arrays of the types described in this table |
 | `int`, `long`    | `number`     |                                                                                 |
 | `object`         | `object`     |                                                                                 |
