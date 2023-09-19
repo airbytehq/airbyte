@@ -7,7 +7,6 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Streams;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -28,14 +27,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -509,7 +503,14 @@ public abstract class BaseTypingDedupingTest {
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
         namespace2,
         streamName);
-  }@Test
+  }
+
+  /**
+   * Run two syncs at the same time. They each have one stream, which has the same name for both syncs
+   * but different namespace. This should work fine. This test is similar to {@link #incrementalDedupIdenticalName()},
+   * but uses two separate syncs instead of one sync with two streams.
+   */
+  @Test
   public void identicalNameSimultaneousSync() throws Exception {
     final String namespace1 = streamNamespace + "_1";
     final ConfiguredAirbyteCatalog catalog1 = new ConfiguredAirbyteCatalog().withStreams(List.of(
