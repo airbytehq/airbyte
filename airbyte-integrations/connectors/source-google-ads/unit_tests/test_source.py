@@ -6,6 +6,7 @@ import re
 from collections import namedtuple
 from unittest.mock import Mock
 
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from google.ads.googleads.errors import GoogleAdsException
@@ -108,7 +109,8 @@ def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    slices = list(chunk_date_range(start_date, conversion_window, end_date, range_days=10, time_zone="UTC"))
+    slices = list(chunk_date_range(start_date=start_date, end_date=end_date, conversion_window=conversion_window,
+                                   slice_duration=pendulum.Duration(days=9), time_zone="UTC"))
     assert [
         {"start_date": "2021-02-18", "end_date": "2021-02-27"},
         {"start_date": "2021-02-28", "end_date": "2021-03-09"},
@@ -124,7 +126,7 @@ def test_chunk_date_range():
 def test_streams_count(config, mock_account_info):
     source = SourceGoogleAds()
     streams = source.streams(config)
-    expected_streams_number = 29
+    expected_streams_number = 30
     assert len(streams) == expected_streams_number
 
 
