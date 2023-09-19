@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.concurrent.NotThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
  * publish serialized {@link AirbyteMessage} objects. This implementation is not thread safe and it
  * is recommended to create a consumer per thread if used in a multithreaded way.
  */
+@NotThreadSafe
 public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PrintWriterOutputRecordConsumer.class);
