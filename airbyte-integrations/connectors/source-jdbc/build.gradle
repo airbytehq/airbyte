@@ -30,12 +30,12 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 
     testImplementation libs.postgresql
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.postgresql
 
     testImplementation libs.junit.jupiter.system.stubs
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
+    integrationTestJavaImplementation libs.testcontainers.postgresql
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
     testFixturesImplementation libs.airbyte.protocol
