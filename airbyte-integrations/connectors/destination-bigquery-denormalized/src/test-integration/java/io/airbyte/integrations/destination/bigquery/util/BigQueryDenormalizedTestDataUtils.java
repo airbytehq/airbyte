@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants;
@@ -163,7 +163,7 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static void runDestinationWrite(ConfiguredAirbyteCatalog catalog, JsonNode config, AirbyteMessage... messages) throws Exception {
     final BigQueryDestination destination = new BigQueryDenormalizedDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, new PrintWriterOutputRecordConsumer());
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, OutputRecordConsumerFactory.getOutputRecordConsumer());
 
     consumer.start();
     for (AirbyteMessage message : messages) {

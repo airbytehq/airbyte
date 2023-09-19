@@ -6,24 +6,41 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.output.OutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import static org.mockito.Mockito.mockStatic;
 
 public class AirbyteTraceMessageUtilityTest {
 
-  PrintStream originalOut = System.out;
+  private static MockedStatic<OutputRecordConsumerFactory> outputRecordConsumerFactory;
+
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+
+  @BeforeAll
+  public static void setup() {
+    outputRecordConsumerFactory = mockStatic(OutputRecordConsumerFactory.class);
+  }
 
   @BeforeEach
   public void setUpOut() {
-    System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+    final PrintStream printStream = new PrintStream(outContent, true, StandardCharsets.UTF_8);
+    outputRecordConsumerFactory.when(OutputRecordConsumerFactory::getOutputRecordConsumer)
+            .thenReturn(new TestOutputRecordConsumer(printStream));
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
@@ -66,9 +83,24 @@ public class AirbyteTraceMessageUtilityTest {
     Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
   }
 
-  @AfterEach
-  public void revertOut() {
-    System.setOut(originalOut);
-  }
 
+  private class TestOutputRecordConsumer implements OutputRecordConsumer {
+
+    private final PrintStream printStream;
+
+    TestOutputRecordConsumer(final PrintStream printStream) {
+      this.printStream = printStream;
+    }
+
+    @Override
+    public void close() throws Exception {
+      printStream.flush();
+      printStream.close();
+    }
+
+    @Override
+    public void accept(AirbyteMessage airbyteMessage) {
+      printStream.println(Jsons.serialize(airbyteMessage));
+    }
+  }
 }

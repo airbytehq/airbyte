@@ -17,6 +17,7 @@ import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.output.OutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
@@ -86,11 +87,11 @@ public class IntegrationRunner {
   private static JsonSchemaValidator validator;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), () -> new PrintWriterOutputRecordConsumer(), destination, null);
+    this(new IntegrationCliParser(), OutputRecordConsumerFactory::getOutputRecordConsumer, destination, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), () -> new PrintWriterOutputRecordConsumer(), null, source);
+    this(new IntegrationCliParser(), OutputRecordConsumerFactory::getOutputRecordConsumer, null, source);
   }
 
   @VisibleForTesting

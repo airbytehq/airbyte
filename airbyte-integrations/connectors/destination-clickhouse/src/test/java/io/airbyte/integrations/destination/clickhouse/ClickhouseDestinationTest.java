@@ -17,7 +17,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -97,7 +97,7 @@ public class ClickhouseDestinationTest {
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
     final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,
-            new PrintWriterOutputRecordConsumer());
+            OutputRecordConsumerFactory.getOutputRecordConsumer());
     final List<AirbyteMessage> expectedRecords = generateRecords(10);
 
     consumer.start();

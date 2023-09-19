@@ -29,7 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.ContextQueryFunction;
 import io.airbyte.db.Database;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
@@ -232,7 +232,7 @@ public abstract class StarburstGalaxyDestinationAcceptanceTest extends Destinati
   private static void runDestinationWrite(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final AirbyteMessage... messages)
       throws Exception {
     final StarburstGalaxyDestination destination = new StarburstGalaxyDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, new PrintWriterOutputRecordConsumer());
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, OutputRecordConsumerFactory.getOutputRecordConsumer());
     consumer.start();
     for (final AirbyteMessage message : messages) {
       consumer.accept(message);

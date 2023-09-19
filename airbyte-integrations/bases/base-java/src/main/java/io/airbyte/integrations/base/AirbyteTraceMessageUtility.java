@@ -5,6 +5,8 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.integrations.base.output.OutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
@@ -58,8 +60,11 @@ public final class AirbyteTraceMessageUtility {
   // public void emitMetricTrace() {}
 
   private static void emitMessage(final AirbyteMessage message) {
-    final Consumer<AirbyteMessage> outputRecordCollector = new PrintWriterOutputRecordConsumer();
-    outputRecordCollector.accept(message);
+    try (final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer()) {
+      outputRecordCollector.accept(message);
+    } catch (final Exception e) {
+
+    }
   }
 
   private static AirbyteMessage makeErrorTraceAirbyteMessage(

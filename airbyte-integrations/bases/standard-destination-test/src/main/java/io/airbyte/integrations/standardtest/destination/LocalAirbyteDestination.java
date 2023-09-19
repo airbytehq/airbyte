@@ -8,7 +8,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;
@@ -35,7 +35,7 @@ public class LocalAirbyteDestination implements AirbyteDestination {
     consumer =
         dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(),
             Jsons.object(Jsons.jsonNode(destinationConfig.getCatalog()), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),
-            new PrintWriterOutputRecordConsumer());
+                OutputRecordConsumerFactory.getOutputRecordConsumer());
     consumer.start();
   }
 

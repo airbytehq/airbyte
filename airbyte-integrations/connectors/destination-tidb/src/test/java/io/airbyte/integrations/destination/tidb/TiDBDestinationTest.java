@@ -17,7 +17,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
+import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -75,7 +75,7 @@ public class TiDBDestinationTest {
             Field.of("id", JsonSchemaType.NUMBER),
             Field.of("name", JsonSchemaType.STRING))));
     JsonNode config = getConfig();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, new PrintWriterOutputRecordConsumer());
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, OutputRecordConsumerFactory.getOutputRecordConsumer());
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
     consumer.start();
     expectedRecords.forEach(m -> {
