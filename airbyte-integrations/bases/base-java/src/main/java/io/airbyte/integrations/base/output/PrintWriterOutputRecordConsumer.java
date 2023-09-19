@@ -12,6 +12,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link OutputRecordConsumer} interface that uses a {@link PrintWriter} to
@@ -20,9 +22,12 @@ import java.nio.charset.StandardCharsets;
  */
 public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(PrintWriterOutputRecordConsumer.class);
+
   private final PrintWriter writer;
 
   public PrintWriterOutputRecordConsumer() {
+    LOGGER.info("Using PrintWriter for output record collection.");
     writer = new PrintWriter(
         new BufferedWriter(
             new OutputStreamWriter(
