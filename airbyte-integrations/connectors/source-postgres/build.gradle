@@ -32,7 +32,7 @@ configurations.all {
 }
 
 dependencies {
-    migrations libs.platform.testcontainers.postgresql
+    migrations libs.testcontainers.postgresql
     migrations sourceSets.main.output
 
     // Lombok

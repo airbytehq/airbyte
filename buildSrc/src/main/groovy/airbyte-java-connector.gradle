@@ -80,5 +80,12 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
         project.plugins.apply(AirbyteIntegrationTestJavaPlugin)
         project.plugins.apply(AirbytePerformanceTestJavaPlugin)
         project.plugins.apply(AirbyteConnectorAcceptanceTestPlugin)
+
+        project.dependencies {
+            // Integration and performance tests should automatically
+            // have access to the project's own main source sets.
+            integrationTestJavaImplementation project
+            performanceTestJavaImplementation project
+        }
     }
 }

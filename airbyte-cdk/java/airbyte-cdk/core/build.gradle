@@ -54,13 +54,13 @@ dependencies {
     // implementation 'com.datadoghq:dd-trace-api'
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
 
-    implementation libs.connectors.testcontainers
-    implementation libs.connectors.testcontainers.mysql
-    implementation libs.connectors.testcontainers.jdbc
-    implementation libs.connectors.testcontainers.postgresql
-    testImplementation libs.connectors.testcontainers.jdbc
-    testImplementation libs.connectors.testcontainers.mysql
-    testImplementation libs.connectors.testcontainers.postgresql
+    implementation libs.testcontainers
+    implementation libs.testcontainers.mysql
+    implementation libs.testcontainers.jdbc
+    implementation libs.testcontainers.postgresql
+    testImplementation libs.testcontainers.jdbc
+    testImplementation libs.testcontainers.mysql
+    testImplementation libs.testcontainers.postgresql
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
     implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
