@@ -15,7 +15,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public ColumnId buildColumnId(final String name) {
+  public ColumnId buildColumnId(final String name, final String suffix) {
     return null;
   }
 
