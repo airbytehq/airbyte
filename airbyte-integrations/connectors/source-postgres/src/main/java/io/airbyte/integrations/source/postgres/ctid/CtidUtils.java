@@ -61,15 +61,15 @@ public class CtidUtils {
   }
 
   /**
-   * Postgres servers version 14 and above are capable of running a tid scan.
+   * Postgres servers version 14 and above are capable of running a tid range scan.
    * Used by ctid queries
    * @param database database
    * @return true for Tid scan capable server
    */
-  public static boolean isTidScanCapableDBServer(final JdbcDatabase database) {
+  public static boolean isTidRangeScanCapableDBServer(final JdbcDatabase database) {
     try {
       return database.getMetaData().getDatabaseMajorVersion() >= POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE;
-    } catch (final SQLException e) {
+    } catch (final Exception e) {
       LOGGER.warn("Failed to get db server version", e);
     }
     return true;

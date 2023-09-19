@@ -162,13 +162,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private PreparedStatement getCtidStatement(final Connection connection,
                                              final Ctid lowerBound,
                                              final Ctid upperBound) {
-    final PreparedStatement ctidStatement = CtidUtils.isTidScanCapableDBServer(database) ? createCtidQueryStatement(connection, lowerBound, upperBound)
+    final PreparedStatement ctidStatement = CtidUtils.isTidRangeScanCapableDBServer(database) ? createCtidQueryStatement(connection, lowerBound, upperBound)
         : createCtidLegacyQueryStatement(connection, lowerBound, upperBound);
     return ctidStatement;
   }
 
   private List<Pair<Ctid, Ctid>> getQueryPlan(final CtidStatus currentCtidStatus) {
-    final List<Pair<Ctid, Ctid>> queryPlan = CtidUtils.isTidScanCapableDBServer(database)
+    final List<Pair<Ctid, Ctid>> queryPlan = CtidUtils.isTidRangeScanCapableDBServer(database)
         ? ctidQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
             tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE)
         : ctidLegacyQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),

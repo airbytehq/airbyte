@@ -143,7 +143,7 @@ public class PostgresCdcCtidInitializer {
                 quoteString);
 
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
-            CtidUtils.isTidScanCapableDBServer(database) ? null :
+            CtidUtils.isTidRangeScanCapableDBServer(database) ? null :
                 PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, quoteString);
 
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
