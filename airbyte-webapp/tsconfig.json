@@ -26,6 +26,7 @@
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
     "useUnknownInCatchVariables": false
+    
   },
   "include": ["src"]
 }
