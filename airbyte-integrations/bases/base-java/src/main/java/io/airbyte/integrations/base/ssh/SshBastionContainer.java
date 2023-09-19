@@ -12,6 +12,7 @@ import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PASSWO
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -63,12 +64,10 @@ public class SshBastionContainer {
 
   public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db, final String schemaName) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .entrySet().stream().findFirst().get().getValue().getIpAddress()))
+        .put("host", Objects.requireNonNull(HostPortResolver.resolveHost(db)))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("database", schemaName)
         .put("ssl", false);
   }

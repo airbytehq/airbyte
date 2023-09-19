@@ -327,7 +327,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     final String sql = generator.updateTable(incrementalDedupStream, "");
     final Exception exception = assertThrows(
-        SnowflakeSQLException.class,
+        RuntimeException.class,
         () -> destinationHandler.execute(sql));
 
     assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));

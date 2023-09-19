@@ -32,18 +32,19 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
 8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see the list below.
 
-    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
-    - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
-    - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
+   - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
+   - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
+   - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
 
 9. (Optional) For **Data Request Window**, you may specify the time window in days used by the connector when requesting data from the Stripe API. This window defines the span of time covered in each request, with larger values encompassing more days in a single request. Generally speaking, the lack of overhead from making fewer requests means a larger window is faster to sync. However, this also means the state of the sync will persist less frequently. If an issue occurs or the sync is interrupted, a larger window means more data will need to be resynced, potentially causing a delay in the overall process.
 
-    For example, if you are replicating three years worth of data:
+   For example, if you are replicating three years worth of data:
 
-    - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is generally faster but risks needing to resync up to a year's data if the sync is interrupted.
-    - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower but minimizes the amount of data that needs to be resynced if an issue occurs.
+   - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is generally faster but risks needing to resync up to a year's data if the sync is interrupted.
+   - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower but minimizes the amount of data that needs to be resynced if an issue occurs.
 
-    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
+   If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
+
 10. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -54,16 +55,17 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 - Incremental
 
 :::note
-Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date. 
+Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field to query for new data in your Stripe account. These are the entities synced based on the date of creation:
- - `CheckoutSessionLineItems`
- - `Events`
- - `SetupAttempts`
- - `ShippingRates`
- - `BalanceTransactions`
- - `Files`
- - `FileLinks`
-:::
+
+- `CheckoutSessionLineItems`
+- `Events`
+- `SetupAttempts`
+- `ShippingRates`
+- `BalanceTransactions`
+- `Files`
+- `FileLinks`
+  :::
 
 ## Supported streams
 
@@ -138,7 +140,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1.1   | 2023-09-15 | [30494](https://github.com/airbytehq/airbyte/pull/30494) | Fix datatype of invoices.lines property                                                                                                              |
 | 4.1.0   | 2023-08-29 | [29950](https://github.com/airbytehq/airbyte/pull/29950) | Implement incremental deletes, add suggested streams                                                                                                 |
 | 4.0.1   | 2023-09-07 | [30254](https://github.com/airbytehq/airbyte/pull/30254) | Fix cursorless incremental streams                                                                                                                   |
 | 4.0.0   | 2023-08-15 | [29330](https://github.com/airbytehq/airbyte/pull/29330) | Implement incremental syncs based on date of update                                                                                                  |
