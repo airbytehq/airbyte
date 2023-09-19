@@ -81,14 +81,14 @@ class CatalogParserTest {
       return new ColumnId(quotedName, originalName, quotedName);
     });
     final JsonNode schema = Jsons.deserialize("""
-                                        {
-                                          "type": "object",
-                                          "properties": {
-                                            "foobarfoo": {"type": "string"},
-                                            "foofoo": {"type": "string"}
-                                          }
-                                        }
-                                        """);
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "foobarfoo": {"type": "string"},
+                                                  "foofoo": {"type": "string"}
+                                                }
+                                              }
+                                              """);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)));
 
     final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);

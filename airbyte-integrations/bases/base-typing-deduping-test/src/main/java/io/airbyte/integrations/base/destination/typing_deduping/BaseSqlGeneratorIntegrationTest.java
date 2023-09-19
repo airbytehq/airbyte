@@ -840,8 +840,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify column names that are reserved keywords are handled successfully. Each destination
-   * should always have at least 1 column in the record data that is a reserved keyword.
+   * Verify column names that are reserved keywords are handled successfully. Each destination should
+   * always have at least 1 column in the record data that is a reserved keyword.
    */
   @Test
   public void testReservedKeywords() throws Exception {
