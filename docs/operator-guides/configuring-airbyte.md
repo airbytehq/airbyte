@@ -42,14 +42,6 @@ The following variables are relevant to both Docker and Kubernetes.
 4. `CONFIG_ROOT` - Defines the configs directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 5. `WORKSPACE_ROOT` - Defines the Airbyte workspace directory. Applies only to Docker, and is present in Kubernetes for backward compatibility.
 
-#### Access
-
-Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
-
-1. BASIC_AUTH_USERNAME=airbyte
-2. BASIC_AUTH_PASSWORD=password
-3. BASIC_AUTH_PROXY_TIMEOUT=600 - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
-
 #### Secrets
 
 1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to AWS_SECRET_MANAGER to use AWS Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
@@ -125,6 +117,14 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
 2. `DOCKER_NETWORK` - Defines the docker network the new Scheduler launches jobs on.
 3. `LOCAL_DOCKER_MOUNT` - Defines the name of the docker mount that is used for local file handling. On Docker, this allows connector pods to interact with a volume for "local file" operations.
+
+#### Access
+
+Set to empty values, e.g. "" to disable basic auth. **Be sure to change these values**.
+
+1. `BASIC_AUTH_USERNAME=airbyte`
+2. `BASIC_AUTH_PASSWORD=password`
+3. `BASIC_AUTH_PROXY_TIMEOUT=600` - Defines the proxy timeout time for requests to Airbyte Server. Main use should be for dynamic discover when creating a connection (S3, JDBC, etc) that takes a long time.
 
 ### Kubernetes-Only
 

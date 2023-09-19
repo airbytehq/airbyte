@@ -1,8 +1,14 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
+const yaml = require('js-yaml');
+const fs = require("node:fs");
+const path = require("node:path");
+
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
+
+const redirects = yaml.load(fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8"));
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -24,81 +30,7 @@ const config = {
       "@docusaurus/plugin-client-redirects",
       {
         fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
-        redirects: [
-          // /docs/oldDoc -> /docs/newDoc
-          {
-            from: "/airbyte-pro",
-            to: "/airbyte-enterprise"
-          },
-          {
-            from: "/upgrading-airbyte",
-            to: "/operator-guides/upgrading-airbyte",
-          },
-          {
-            from: "/catalog",
-            to: "/understanding-airbyte/airbyte-protocol",
-          },
-          {
-            from: "/integrations/sources/google-analytics-data-api",
-            to: "/integrations/sources/google-analytics-v4",
-          },
-          {
-            from: "/integrations/sources/appstore",
-            to: "/integrations/sources/appstore-singer",
-          },
-          {
-            from: "/project-overview/security",
-            to: "/operator-guides/security",
-          },
-          {
-            from: "/operator-guides/securing-airbyte",
-            to: "/operator-guides/security",
-          },
-          {
-            from: "/connector-development/config-based/",
-            to: "/connector-development/config-based/low-code-cdk-overview",
-          },
-          {
-            from: "/project-overview/changelog",
-            to: "/category/release-notes",
-          },
-          {
-            from: "/connector-development/config-based/understanding-the-yaml-file/stream-slicers/",
-            to: "/connector-development/config-based/understanding-the-yaml-file/partition-router",
-          },
-          {
-            from: "/cloud/managing-airbyte-cloud",
-            to: "/category/using-airbyte-cloud",
-          },
-          {
-            from: "/category/managing-airbyte-cloud",
-            to: "/category/using-airbyte-cloud",
-          },
-          {
-            from: "/category/airbyte-open-source-quick-start",
-            to: "/category/getting-started"
-          },
-          {
-            from: "/cloud/dbt-cloud-integration",
-            to: "/cloud/managing-airbyte-cloud/dbt-cloud-integration",
-          },
-          {
-            from: "/cloud/managing-airbyte-cloud/review-sync-summary",
-            to: "/cloud/managing-airbyte-cloud/review-sync-history",
-          },
-          {
-            from: "/cloud/managing-airbyte-cloud/review-connection-state",
-            to: "/cloud/managing-airbyte-cloud/manage-connection-state",
-          },
-          {
-            from: "/cloud/managing-airbyte-cloud/edit-stream-configuration",
-            to: "/cloud/managing-airbyte-cloud/configuring-connections", 
-          },
-          //                        {
-          //                         from: '/some-lame-path',
-          //                         to: '/a-much-cooler-uri',
-          //                        },
-        ],
+        redirects: redirects,
       },
     ],
     () => ({
@@ -118,6 +50,10 @@ const config = {
     }),
   ],
 
+  clientModules: [
+    require.resolve("./src/scripts/cloudStatus.js"),
+  ],
+
   presets: [
     [
       "classic",
@@ -134,10 +70,6 @@ const config = {
         blog: false,
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
-        },
-        gtag: {
-          trackingID: "UA-156258629-2",
-          anonymizeIP: true,
         },
       }),
     ],
@@ -165,19 +97,13 @@ const config = {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
           srcDark: "img/logo-light.png",
-          width: 140,
           height: 40,
         },
         items: [
           {
             href: "https://airbyte.io/",
             position: "left",
-            label: "Home",
-          },
-          {
-            href: "https://status.airbyte.io/",
-            label: "Status",
-            position: "left",
+            label: "About Airbyte",
           },
           {
             href: "https://airbyte.com/tutorials",
@@ -189,11 +115,25 @@ const config = {
             label: "Support",
             position: "left",
           },
+          // --- Right side ---
+          {
+            href: "https://status.airbyte.com",
+            label: "Cloud Status",
+            id: "cloudStatusLink",
+            position: "right",
+          },
           {
             href: "https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar",
             label: "Try Airbyte Cloud",
-            position: "left",
+            position: "right",
+            className: "header-button",
           },
+          {
+            href: "https://github.com/airbytehq",
+            position: "right",
+            "aria-label": "Airbyte on GitHub",
+            className: "header-github-link",
+          }
         ],
       },
       prism: {

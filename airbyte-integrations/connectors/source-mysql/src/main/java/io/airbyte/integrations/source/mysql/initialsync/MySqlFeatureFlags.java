@@ -9,15 +9,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 // Feature flags to gate new primary key load features.
 public class MySqlFeatureFlags {
 
-  public static final String CDC_VIA_PK = "cdc_via_pk";
+  public static final String STANDARD_VIA_PK = "standard_via_pk";
   private final JsonNode sourceConfig;
 
   public MySqlFeatureFlags(final JsonNode sourceConfig) {
     this.sourceConfig = sourceConfig;
   }
 
-  public boolean isCdcInitialSyncViaPkEnabled() {
-    return getFlagValue(CDC_VIA_PK);
+  public boolean isStandardInitialSyncViaPkEnabled() {
+    return getFlagValue(STANDARD_VIA_PK);
   }
 
   private boolean getFlagValue(final String flag) {

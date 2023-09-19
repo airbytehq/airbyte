@@ -16,7 +16,6 @@ dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation "com.scylladb:scylla-driver-core:${scyllaDriver}"
 
@@ -24,7 +23,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    testImplementation libs.connectors.testcontainers.scylla
+    testImplementation libs.testcontainers.scylla
 
 
 

@@ -6,10 +6,10 @@ import json
 import logging
 
 import pinecone
+from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
+from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_pinecone.destination import DestinationPinecone
-from destination_pinecone.embedder import OPEN_AI_VECTOR_SIZE
-from integration_tests.base_integration_test import BaseIntegrationTest
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
 
@@ -63,14 +63,16 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
         result = self.pinecone_index.query(
-            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_ab_record_id": "2"}, include_metadata=True
+            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_ab_record_id": "mystream_2"}, include_metadata=True
         )
         assert len(result.matches) == 1
-        assert result.matches[0].metadata["text"] == "str_col: Cats are nice"
+        assert (
+            result.matches[0].metadata["text"] == "str_col: Cats are nice"
+        ), 'Ensure that "str_col" is included in the "text_fields" array under the "processing" section of /secrets/config.json.'
 
         # test langchain integration
         embeddings = OpenAIEmbeddings(openai_api_key=self.config["embedding"]["openai_key"])
         self._init_pinecone()
         vector_store = Pinecone(self.pinecone_index, embeddings.embed_query, "text")
         result = vector_store.similarity_search("feline animals", 1)
-        assert result[0].metadata["_ab_record_id"] == "2"
+        assert result[0].metadata["_ab_record_id"] == "mystream_2"
