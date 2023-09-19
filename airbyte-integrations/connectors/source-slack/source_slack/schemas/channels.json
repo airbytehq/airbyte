@@ -103,7 +103,10 @@
       }
     },
     "shared_team_ids": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "previous_names": {
       "type": "array",
@@ -118,7 +121,10 @@
       "type": ["null", "string"]
     },
     "pending_connected_team_ids": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "locale": {
       "type": "string"
