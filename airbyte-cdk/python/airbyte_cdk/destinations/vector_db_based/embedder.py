@@ -37,11 +37,10 @@ class Embedder(ABC):
         pass
 
     @abstractmethod
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[Optional[List[float]]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
         """
         Embed the text of each chunk and return the resulting embedding vectors.
         If a chunk cannot be embedded or is configured to not be embedded, return None for that chunk.
-        The max_token_length denotes the maximum number of tokens in a single chunk.
         """
         pass
 
@@ -57,10 +56,10 @@ OPEN_AI_TOKEN_LIMIT = 150_000  # limit of tokens per minute
 
 
 class BaseOpenAIEmbedder(Embedder):
-    def __init__(self, embeddings: OpenAIEmbeddings):
+    def __init__(self, embeddings: OpenAIEmbeddings, chunk_size: int):
         super().__init__()
-        # Client is set internally
         self.embeddings = embeddings
+        self.chunk_size = chunk_size
 
     def check(self) -> Optional[str]:
         try:
@@ -69,8 +68,15 @@ class BaseOpenAIEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
-        embedding_batch_size = OPEN_AI_TOKEN_LIMIT // max_token_length
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        """
+        Embed the text of each chunk and return the resulting embedding vectors.
+        As the OpenAI API will fail if more than the per-minute limit worth of tokens is sent at once, we split the request into batches and embed each batch separately.
+        It's still possible to run into the rate limit between each embed call because the available token budget hasn't recovered between the calls,
+        but the built-in retry mechanism of the OpenAI client handles that.
+        """
+        # Each chunk can hold at mak self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
+        embedding_batch_size = OPEN_AI_TOKEN_LIMIT // self.chunk_size
         batches = create_chunks(chunks, batch_size=embedding_batch_size)
         embeddings = []
         for batch in batches:
@@ -84,8 +90,13 @@ class BaseOpenAIEmbedder(Embedder):
 
 
 class OpenAIEmbedder(BaseOpenAIEmbedder):
-    def __init__(self, config: OpenAIEmbeddingConfigModel):
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15))  # type: ignore
+    def __init__(self, config: OpenAIEmbeddingConfigModel, chunk_size: int):
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15), chunk_size)  # type: ignore
+
+
+class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
+    def __init__(self, config: AzureOpenAIEmbeddingConfigModel, chunk_size: int):
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment), chunk_size)  # type: ignore
 
 
 COHERE_VECTOR_SIZE = 1024
@@ -104,7 +115,7 @@ class CohereEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
@@ -125,18 +136,13 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
     def embedding_dimensions(self) -> int:
         # use same vector size as for OpenAI embeddings to keep it realistic
         return OPEN_AI_VECTOR_SIZE
-
-
-class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
-    def __init__(self, config: AzureOpenAIEmbeddingConfigModel):
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment))  # type: ignore
 
 
 class FromFieldEmbedder(Embedder):
@@ -147,7 +153,7 @@ class FromFieldEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         """
         From each chunk, pull the embedding from the field specified in the config.
         Check that the field exists, is a list of numbers and is the correct size. If not, raise an AirbyteTracedException explaining the problem.
