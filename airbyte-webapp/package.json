@@ -121,7 +121,7 @@
     "lint-staged": "^12.3.7",
     "mini-css-extract-plugin": "^2.6.1",
     "node-fetch": "^2.6.7",
-    "orval": "^6.7.1",
+    "orval": "^6.17.0",
     "prettier": "^2.6.2",
     "react-scripts": "^5.0.1",
     "react-select-event": "^5.5.0",
