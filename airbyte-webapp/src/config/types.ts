@@ -1,3 +1,4 @@
+/// <reference types="@types/segment-analytics" />
 import { OutboundLinks } from "./links";
 
 declare global {
