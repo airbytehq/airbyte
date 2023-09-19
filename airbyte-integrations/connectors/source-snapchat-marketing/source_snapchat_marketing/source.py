@@ -165,13 +165,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
     primary_key = "id"
     raise_on_http_errors = True
 
-    def __init__(self, start_date, end_date, action_report_time, swipe_up_attribution_window, view_attribution_window, **kwargs):
+    def __init__(self, start_date, end_date, **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.end_date = end_date
-        self.action_report_time = action_report_time
-        self.swipe_up_attribution_window = swipe_up_attribution_window
-        self.view_attribution_window = view_attribution_window
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page_cursor = response.json().get("paging", False)
@@ -249,7 +246,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
         self.max_state = self.initial_state
 
-        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date, action_report_time=self.action_report_time, swipe_up_attribution_window=self.swipe_up_attribution_window, view_attribution_window=self.view_attribution_window)
+        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date)
         stream_slices = get_parent_ids(parent_stream)
 
         if stream_slices:
@@ -371,7 +368,7 @@ class Stats(SnapchatMarketingStream, ABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice represents each entity id from parent stream"""
 
-        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date, action_report_time=self.action_report_time, swipe_up_attribution_window=self.swipe_up_attribution_window, view_attribution_window=self.view_attribution_window)
+        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date)
         self.parent_name = parent_stream.name
         stream_slices = get_parent_ids(parent_stream)
 
@@ -811,9 +808,6 @@ class SourceSnapchatMarketing(AbstractSource):
             ),
             "start_date": config["start_date"],
             "end_date": config.get("end_date", default_end_date),
-            "action_report_time": config.get("action_report_time", "impression"),
-            "swipe_up_attribution_window": config.get("swipe_up_attribution_window", "28_DAY"),
-            "view_attribution_window": config.get("view_attribution_window", "7_DAY"),
         }
 
         return [
