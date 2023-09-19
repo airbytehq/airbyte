@@ -339,7 +339,7 @@
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
       "type": ["null", "string"]
     },
-    "ad_grarrayoup_ad.ad.responsive_display_ad.main_color": {
+    "ad_group_ad.ad.responsive_display_ad.main_color": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.marketing_images": {
