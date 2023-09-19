@@ -109,7 +109,6 @@ def upload_file_if_changed(
     print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
 
     if local_file_md5_hash != remote_blob_md5_hash:
-        print(f"~~~~ Uploading {local_file_path} to {blob_path}...")
         uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
         return uploaded, remote_blob.id
 

@@ -49,7 +49,7 @@ def validate(metadata_file_path: pathlib.Path, doc_path: pathlib.Path):
 @click.option("--prerelease", type=click.STRING, required=False, default=None, help="The prerelease tag of the connector.")
 def upload(metadata_file_path: pathlib.Path, doc_path: pathlib.Path, bucket_name: str, prerelease: str):
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
-    validator_opts = ValidatorOptions(doc_path=doc_path, prerelease_tag=prerelease)
+    validator_opts = ValidatorOptions(doc_path=str(doc_path), prerelease_tag=prerelease)
     try:
         upload_info = upload_metadata_to_gcs(bucket_name, metadata_file_path, validator_opts)
         log_metadata_upload_info(upload_info)

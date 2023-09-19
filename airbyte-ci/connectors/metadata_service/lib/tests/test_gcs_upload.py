@@ -65,9 +65,9 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
 
     # Mock md5 hash
     def side_effect_compute_gcs_md5(file_path):
-        if file_path == metadata_file_path:
+        if str(file_path) == str(metadata_file_path):
             return local_file_md5_hash
-        elif file_path == doc_file_path:
+        elif str(file_path) == str(doc_file_path):
             return doc_local_file_md5_hash
         else:
             raise ValueError(f"Unexpected path: {file_path}")
@@ -165,6 +165,8 @@ def test_upload_metadata_to_gcs_valid_metadata(
         metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
 
+        doc_file_path = Path(valid_doc_file)
+
         mocks = setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash, local_doc_file_md5_hash, doc_version_blob_md5_hash, doc_latest_blob_md5_hash, metadata_file_path, valid_doc_file)
 
         expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
@@ -216,11 +218,11 @@ def test_upload_metadata_to_gcs_valid_metadata(
             assert upload_info.metadata_uploaded
         
         if not doc_version_blob_exists:
-            mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(valid_doc_file)
+            mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(doc_file_path)
             assert doc_version_uploaded_file.uploaded
 
         if not doc_latest_blob_exists:
-            mocks["mock_doc_latest_blob"].upload_from_filename.assert_called_with(valid_doc_file)
+            mocks["mock_doc_latest_blob"].upload_from_filename.assert_called_with(doc_file_path)
             assert doc_latest_uploaded_file.uploaded
 
         if version_blob_md5_hash != local_file_md5_hash:
@@ -232,11 +234,11 @@ def test_upload_metadata_to_gcs_valid_metadata(
             assert upload_info.metadata_uploaded
 
         if doc_version_blob_md5_hash != local_doc_file_md5_hash:
-            mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(valid_doc_file)
+            mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(doc_file_path)
             assert doc_version_uploaded_file.uploaded
 
         if doc_latest_blob_md5_hash != local_doc_file_md5_hash:
-            mocks["mock_doc_latest_blob"].upload_from_filename.assert_called_with(valid_doc_file)
+            mocks["mock_doc_latest_blob"].upload_from_filename.assert_called_with(doc_file_path)
             assert doc_latest_uploaded_file.uploaded
 
         # clear the call count
