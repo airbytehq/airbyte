@@ -5,8 +5,16 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from airbyte_cdk.destinations.vector_db_based.config import CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, OpenAIEmbeddingConfigModel
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.config import (
+    AzureOpenAIEmbeddingConfigModel,
+    CohereEmbeddingConfigModel,
+    FakeEmbeddingConfigModel,
+    FromFieldEmbeddingConfigModel,
+    OpenAIEmbeddingConfigModel,
+)
+from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
+from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -17,7 +25,7 @@ class Embedder(ABC):
     Embedder is an abstract class that defines the interface for embedding text.
 
     The Indexer class uses the Embedder class to internally embed text - each indexer is responsible to pass the text of all documents to the embedder and store the resulting embeddings in the destination.
-    The destination connector is responsible to create an embedder instance and pass it to the indexer.
+    The destination connector is responsible to create an embedder instance and pass it to the writer.
     The CDK defines basic embedders that should be supported in each destination. It is possible to implement custom embedders for special destinations if needed.
     """
 
@@ -29,7 +37,11 @@ class Embedder(ABC):
         pass
 
     @abstractmethod
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
+        """
+        Embed the text of each chunk and return the resulting embedding vectors.
+        If a chunk cannot be embedded or is configured to not be embedded, return None for that chunk.
+        """
         pass
 
     @property
@@ -40,12 +52,14 @@ class Embedder(ABC):
 
 OPEN_AI_VECTOR_SIZE = 1536
 
+OPEN_AI_TOKEN_LIMIT = 150_000  # limit of tokens per minute
 
-class OpenAIEmbedder(Embedder):
-    def __init__(self, config: OpenAIEmbeddingConfigModel):
+
+class BaseOpenAIEmbedder(Embedder):
+    def __init__(self, embeddings: OpenAIEmbeddings, chunk_size: int):
         super().__init__()
-        # Client is set internally
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15)  # type: ignore
+        self.embeddings = embeddings
+        self.chunk_size = chunk_size
 
     def check(self) -> Optional[str]:
         try:
@@ -54,13 +68,36 @@ class OpenAIEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        """
+        Embed the text of each chunk and return the resulting embedding vectors.
+
+        As the OpenAI API will fail if more than the per-minute limit worth of tokens is sent at once, we split the request into batches and embed each batch separately.
+        It's still possible to run into the rate limit between each embed call because the available token budget hasn't recovered between the calls,
+        but the built-in retry mechanism of the OpenAI client handles that.
+        """
+        # Each chunk can hold at most self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
+        embedding_batch_size = OPEN_AI_TOKEN_LIMIT // self.chunk_size
+        batches = create_chunks(chunks, batch_size=embedding_batch_size)
+        embeddings = []
+        for batch in batches:
+            embeddings.extend(self.embeddings.embed_documents([chunk.page_content for chunk in batch]))
+        return embeddings
 
     @property
     def embedding_dimensions(self) -> int:
         # vector size produced by text-embedding-ada-002 model
         return OPEN_AI_VECTOR_SIZE
+
+
+class OpenAIEmbedder(BaseOpenAIEmbedder):
+    def __init__(self, config: OpenAIEmbeddingConfigModel, chunk_size: int):
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15), chunk_size)  # type: ignore
+
+
+class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
+    def __init__(self, config: AzureOpenAIEmbeddingConfigModel, chunk_size: int):
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment), chunk_size)  # type: ignore
 
 
 COHERE_VECTOR_SIZE = 1024
@@ -79,8 +116,8 @@ class CohereEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
     def embedding_dimensions(self) -> int:
@@ -100,10 +137,54 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
     def embedding_dimensions(self) -> int:
         # use same vector size as for OpenAI embeddings to keep it realistic
         return OPEN_AI_VECTOR_SIZE
+
+
+class FromFieldEmbedder(Embedder):
+    def __init__(self, config: FromFieldEmbeddingConfigModel):
+        super().__init__()
+        self.config = config
+
+    def check(self) -> Optional[str]:
+        return None
+
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        """
+        From each chunk, pull the embedding from the field specified in the config.
+        Check that the field exists, is a list of numbers and is the correct size. If not, raise an AirbyteTracedException explaining the problem.
+        """
+        embeddings = []
+        for chunk in chunks:
+            data = chunk.record.data
+            if self.config.field_name not in data:
+                raise AirbyteTracedException(
+                    internal_message="Embedding vector field not found",
+                    failure_type=FailureType.config_error,
+                    message=f"Record {str(data)[:250]}... in stream {chunk.record.stream}  does not contain embedding vector field {self.config.field_name}. Please check your embedding configuration, the embedding vector field has to be set correctly on every record.",
+                )
+            field = data[self.config.field_name]
+            if not isinstance(field, list) or not all(isinstance(x, (int, float)) for x in field):
+                raise AirbyteTracedException(
+                    internal_message="Embedding vector field not a list of numbers",
+                    failure_type=FailureType.config_error,
+                    message=f"Record {str(data)[:250]}...  in stream {chunk.record.stream} does contain embedding vector field {self.config.field_name}, but it is not a list of numbers. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
+                )
+            if len(field) != self.config.dimensions:
+                raise AirbyteTracedException(
+                    internal_message="Embedding vector field has wrong length",
+                    failure_type=FailureType.config_error,
+                    message=f"Record {str(data)[:250]}...  in stream {chunk.record.stream} does contain embedding vector field {self.config.field_name}, but it has length {len(field)} instead of the configured {self.config.dimensions}. Please check your embedding configuration, the embedding vector field has to be a list of numbers of length {self.config.dimensions} on every record.",
+                )
+            embeddings.append(field)
+
+        return embeddings
+
+    @property
+    def embedding_dimensions(self) -> int:
+        return self.config.dimensions

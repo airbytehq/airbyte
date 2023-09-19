@@ -54,12 +54,16 @@ def test_write():
     # messages are also flushed once the input messages are exhausted, so this will trigger another batch
     input_messages.extend([_generate_record_message(i) for i in range(5)])
 
+    mock_embedder = MagicMock()
+    mock_embedder.embed_chunks.return_value = [[0] * 1536] * (BATCH_SIZE + 5 + 5)
+    mock_embedder.embed_chunks.side_effect = lambda chunks: [[0] * 1536] * len(chunks)
+
     mock_indexer = MagicMock()
     post_sync_log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="post sync"))
     mock_indexer.post_sync.return_value = [post_sync_log_message]
 
     # Create the DestinationLangchain instance
-    writer = Writer(config_model, mock_indexer, BATCH_SIZE)
+    writer = Writer(config_model, mock_indexer, mock_embedder, BATCH_SIZE)
 
     output_messages = writer.write(configured_catalog, input_messages)
     output_message = next(output_messages)
@@ -70,6 +74,7 @@ def test_write():
 
     # 1 batches due to max batch size reached and 1 batch due to state message
     assert mock_indexer.index.call_count == 2
+    assert mock_embedder.embed_chunks.call_count == 2
 
     output_message = next(output_messages)
     assert output_message == post_sync_log_message
@@ -82,5 +87,6 @@ def test_write():
 
     # 1 batch due to end of message stream
     assert mock_indexer.index.call_count == 3
+    assert mock_embedder.embed_chunks.call_count == 3
 
     mock_indexer.post_sync.assert_called()

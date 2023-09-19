@@ -10,7 +10,9 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 
 from .utils import read_full_refresh, read_incremental, safe_max
@@ -29,6 +31,13 @@ class JiraStream(HttpStream, ABC):
     api_v1 = False
     skip_http_status_codes = []
     raise_on_http_errors = True
+    error_messages = {
+        requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",
+        requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
+    }
+    config_error_status_codes = [
+        requests.codes.UNAUTHORIZED,
+    ]
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -90,6 +99,15 @@ class JiraStream(HttpStream, ABC):
         try:
             yield from super().read_records(**kwargs)
         except HTTPError as e:
+            user_error_message = self.error_messages.get(e.response.status_code)
+            if user_error_message:
+                self.logger.error(user_error_message)
+            if e.response.status_code in self.config_error_status_codes:
+                raise AirbyteTracedException(
+                    message="Config validation error: " + user_error_message,
+                    internal_message=str(e),
+                    failure_type=FailureType.config_error,
+                ) from e
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
 
@@ -194,6 +212,11 @@ class Boards(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     extract_field = "values"
     use_cache = True
@@ -320,12 +343,13 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = False  # disable caching due to OOM errors in kubernetes
+    use_cache = True
 
-    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
+    skip_http_status_codes = [requests.codes.FORBIDDEN]
+
+    def __init__(self, expand_fields: list = None, **kwargs):
         super().__init__(**kwargs)
-        self._expand_changelog = expand_changelog
-        self._render_fields = render_fields
+        self._expand_fields = expand_fields
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -345,13 +369,8 @@ class Issues(IncrementalJiraStream):
         if self._project_ids:
             jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
-        expand = []
-        if self._expand_changelog:
-            expand.append("changelog")
-        if self._render_fields:
-            expand.append("renderedFields")
-        if expand:
-            params["expand"] = ",".join(expand)
+        if self._expand_fields:
+            params["expand"] = ",".join(self._expand_fields)
         return params
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
@@ -382,7 +401,9 @@ class Issues(IncrementalJiraStream):
             # we should skip the slice with wrong permissions on project level
             errors = response.json().get("errorMessages")
             self.logger.error(
-                f"Stream `{self.name}`. An error occurred, details: {errors}." f"Check permissions for this project. Skipping for now."
+                f"Stream `{self.name}`. An error occurred, details: {errors}."
+                f"Check permissions for this project. Skipping for now. "
+                f"The user doesn't have permission to the project. Please grant the user to the project."
             )
             setattr(self, "raise_on_http_errors", False)
             return False
@@ -649,6 +670,38 @@ class IssueTypeScreenSchemes(JiraStream):
         return "issuetypescreenscheme"
 
 
+class IssueTransitions(StartDateJiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
+    """
+
+    primary_key = ["issueId", "id"]
+    extract_field = "transitions"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
+            authenticator=self.authenticator,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"issue/{stream_slice['key']}/transitions"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for issue in read_full_refresh(self.issues_stream):
+            yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
+
+
 class IssueVotes(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
@@ -688,6 +741,10 @@ class IssueWatchers(StartDateJiraStream):
 
     # extract_field = "watchers"
     primary_key = None
+    skip_http_status_codes = [
+        # Issue is not found or the user does not have permission to view it.
+        requests.codes.NOT_FOUND
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -809,6 +866,7 @@ class Projects(JiraStream):
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)
         params["expand"] = "description,lead"
+        params["status"] = ["live", "archived", "deleted"]
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -1106,6 +1164,29 @@ class Sprints(JiraStream):
         super().__init__(**kwargs)
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
+    def get_user_message_from_error_message(self, errors: List[str]) -> str:
+        for error_message in errors:
+            if "The board does not support sprints" in error_message:
+                return (
+                    "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+                    "does it have sprints enabled under project settings? If it's a company-managed one,"
+                    " check that it has at least one Scrum board associated with it."
+                )
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            errors = response.json().get("errorMessages")
+            message = self.get_user_message_from_error_message(errors)
+            if message:
+                self.logger.error(
+                    f"Stream `{self.name}`. An error occurred, details: {errors}."
+                    f"Skipping for now. {self.get_user_message_from_error_message(errors)}"
+                )
+                setattr(self, "raise_on_http_errors", False)
+                return False
+        else:
+            return super().should_retry(response)
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"board/{stream_slice['board_id']}/sprint"
 
@@ -1116,6 +1197,10 @@ class Sprints(JiraStream):
                 board_details = {"name": board["name"], "id": board["id"]}
                 self.logger.info(f"Fetching sprints for board: {board_details}")
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["boardId"] = stream_slice["board_id"]
+        return record
 
 
 class SprintIssues(IncrementalJiraStream):
@@ -1262,6 +1347,11 @@ class WorkflowStatuses(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
     """
+
+    skip_http_status_codes = [
+        # for user that have no valid license
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "status"

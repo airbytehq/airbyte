@@ -22,8 +22,6 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -54,7 +52,7 @@ class AbstractSource(Source, ABC):
         """
 
     @abstractmethod
-    def streams(self, config: Mapping[str, Any]) -> List[AbstractStream]:
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
@@ -62,7 +60,7 @@ class AbstractSource(Source, ABC):
         """
 
     # Stream name to instance map for applying output object transformation
-    _stream_to_instance_map: Dict[str, AbstractStream] = {}
+    _stream_to_instance_map: Dict[str, Stream] = {}
     _slice_logger: SliceLogger = DebugSliceLogger()
 
     @property
@@ -153,7 +151,7 @@ class AbstractSource(Source, ABC):
     def _read_stream(
         self,
         logger: logging.Logger,
-        stream_instance: AbstractStream,
+        stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
@@ -180,13 +178,9 @@ class AbstractSource(Source, ABC):
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
-            if isinstance(stream_instance, ConcurrentStream):
-                raise ValueError(
-                    f"ConcurrentStream do not support incremental sync yet. Please use a different stream type for {stream_instance.name}"
-                )
             record_iterator = self._read_incremental(
                 logger,
-                stream_instance,  # type: ignore # stream_instance is a Stream if it is not a ConcurrentStream
+                stream_instance,
                 configured_stream,
                 state_manager,
                 internal_config,
@@ -290,12 +284,30 @@ class AbstractSource(Source, ABC):
     def _read_full_refresh(
         self,
         logger: logging.Logger,
-        stream_instance: AbstractStream,
+        stream_instance: Stream,
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        for data_or_message in stream_instance.read(configured_stream.cursor_field, logger, self._slice_logger, internal_config):
-            yield self._get_message(data_or_message, stream_instance)
+        slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
+        logger.debug(
+            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
+        )
+        total_records_counter = 0
+        for _slice in slices:
+            if self._slice_logger.should_log_slice_message(logger):
+                yield self._slice_logger.create_slice_log_message(_slice)
+            record_data_or_messages = stream_instance.read_records(
+                stream_slice=_slice,
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=configured_stream.cursor_field,
+            )
+            for record_data_or_message in record_data_or_messages:
+                message = self._get_message(record_data_or_message, stream_instance)
+                yield message
+                if message.type == MessageType.RECORD:
+                    total_records_counter += 1
+                    if internal_config.is_limit_reached(total_records_counter):
+                        return
 
     def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
@@ -309,7 +321,7 @@ class AbstractSource(Source, ABC):
         return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @staticmethod
-    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: AbstractStream) -> None:
+    def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream) -> None:
         """
         Necessary because we use different loggers at the source and stream levels. We must
         apply the source's log level to each stream's logger.
@@ -317,7 +329,7 @@ class AbstractSource(Source, ABC):
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
 
-    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: AbstractStream) -> AirbyteMessage:
+    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream) -> AirbyteMessage:
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
