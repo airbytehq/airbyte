@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from unittest.mock import Mock
 
 import pytest
