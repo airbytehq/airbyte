@@ -14,7 +14,7 @@ public class MySqlFeatureFlags {
   public MySqlFeatureFlags(final JsonNode sourceConfig) {
     this.sourceConfig = sourceConfig;
   }
-  
+
   private boolean getFlagValue(final String flag) {
     return sourceConfig.has(flag) && sourceConfig.get(flag).asBoolean();
   }
