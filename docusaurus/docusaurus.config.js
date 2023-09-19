@@ -71,6 +71,10 @@ const config = {
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
+        gtag: {
+          trackingID: "G-HDBMVFQGBH",
+          anonymizeIP: true,
+        },
       }),
     ],
   ],
@@ -97,6 +101,7 @@ const config = {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
           srcDark: "img/logo-light.png",
+          width: 140,
           height: 40,
         },
         items: [

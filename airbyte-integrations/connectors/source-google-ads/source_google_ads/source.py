@@ -35,6 +35,7 @@ from .streams import (
     Audience,
     CampaignBiddingStrategies,
     CampaignBudget,
+    CampaignCriterion,
     CampaignLabels,
     Campaigns,
     ClickView,
@@ -50,7 +51,14 @@ from .streams import (
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
+FULL_REFRESH_CUSTOM_TABLE = [
+    "asset",
+    "asset_group_listing_group_filter",
+    "custom_audience",
+    "geo_target_constant",
+    "change_event",
+    "change_status",
+]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -155,26 +163,28 @@ class SourceGoogleAds(AbstractSource):
         accounts = self.get_account_info(google_api, config)
         customers = Customer.from_accounts(accounts)
         non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
+        default_config = dict(api=google_api, customers=customers)
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
         streams = [
             AdGroupAds(**incremental_config),
-            AdGroupAdLabels(google_api, customers=customers),
+            AdGroupAdLabels(**default_config),
             AdGroups(**incremental_config),
             AdGroupBiddingStrategies(**incremental_config),
-            AdGroupCriterions(google_api, customers=customers),
-            AdGroupCriterionLabels(google_api, customers=customers),
-            AdGroupLabels(google_api, customers=customers),
-            AdListingGroupCriterions(google_api, customers=customers),
+            AdGroupCriterions(**default_config),
+            AdGroupCriterionLabels(**default_config),
+            AdGroupLabels(**default_config),
+            AdListingGroupCriterions(**default_config),
             Accounts(**incremental_config),
-            AccountLabels(google_api, customers=customers),
-            Audience(google_api, customers=customers),
+            AccountLabels(**default_config),
+            Audience(**default_config),
             CampaignBiddingStrategies(**incremental_config),
+            CampaignCriterion(**default_config),
             CampaignBudget(**incremental_config),
-            CampaignLabels(google_api, customers=customers),
+            CampaignLabels(**default_config),
             ClickView(**incremental_config),
-            Labels(google_api, customers=customers),
-            UserInterest(google_api, customers=customers),
+            Labels(**default_config),
+            UserInterest(**default_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:

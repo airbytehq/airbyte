@@ -4,5 +4,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'destination_duckdb'
+    moduleDirectory 'destination_qdrant'
 }

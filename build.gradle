@@ -120,8 +120,8 @@ def checkCDKJarExists(requiredSnapshotVersion) {
 static def getCDKSnapshotRequirement(dependenciesList) {
     def cdkSnapshotRequirement = dependenciesList.find {
         it.requested instanceof ModuleComponentSelector &&
-        it.requested.group == 'io.airbyte' && 
-        it.requested.module == 'airbyte-cdk' && 
+        it.requested.group == 'io.airbyte' &&
+        it.requested.module == 'airbyte-cdk' &&
         it.requested.version.endsWith('-SNAPSHOT')
     }
     if (cdkSnapshotRequirement == null) {
@@ -544,7 +544,6 @@ allprojects {
             [
                     'integrationTestJava',
                     'customIntegrationTests', // python integration tests
-                    'connectorAcceptanceTest',
                     'standardSourceTestFile',
             ].contains(it.name)
         }

@@ -690,7 +690,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     projects_response['values'].append({"id": "3", "key": "Project1"})
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
     responses.add(
