@@ -73,6 +73,9 @@
         "caption": { "type": "array", "items": { "$ref": "rich_text.json" } }
       }
     },
+    "breadcrumb": {
+      "type": "object"
+    },
     "bulleted_list_item": { "$ref": "text_element.json" },
     "callout": {
       "type": "object",

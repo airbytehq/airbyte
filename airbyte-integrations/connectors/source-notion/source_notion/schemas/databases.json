@@ -110,6 +110,159 @@
                     "type": "string"
                   },
                   "type": {
+                    "enum": ["checkbox"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "checkbox": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["created_by"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "created_by": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["created_time"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "created_time": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["date"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "date": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["email"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["files"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "files": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["formula"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "expression": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["last_edited_by"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "last_edited_by": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["last_edited_time"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "last_edited_time": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
                     "enum": ["number"]
                   },
                   "name": {
@@ -188,13 +341,30 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": ["formula"]
+                    "enum": ["people"]
                   },
                   "name": {
                     "type": "string"
                   },
-                  "expression": {
+                  "people": {
                     "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["phone_number"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone_number": {
+                    "type": "object"
                   }
                 }
               },
@@ -218,6 +388,23 @@
                   },
                   "synced_property_id": {
                     "type": ["null", "string"]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["rich_text"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "rich_text": {
+                    "type": "object"
                   }
                 }
               },
@@ -272,6 +459,88 @@
                       "show_unique",
                       "sum"
                     ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["status"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "object",
+                    "properties": {
+                      "options": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "options.json"
+                        }
+                      },
+                      "groups": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "color": {
+                              "type": "string"
+                            },
+                            "option_ids": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["title"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "object"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["url"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "object"
                   }
                 }
               }
