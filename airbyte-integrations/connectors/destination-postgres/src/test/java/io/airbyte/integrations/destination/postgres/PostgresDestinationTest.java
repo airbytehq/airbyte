@@ -20,6 +20,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -240,7 +241,7 @@ public class PostgresDestinationTest {
   @Test
   void sanityTest() throws Exception {
     final Destination destination = new PostgresDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG, new PrintWriterOutputRecordConsumer());
     final List<AirbyteMessage> expectedRecords = getNRecords(10);
 
     consumer.start();

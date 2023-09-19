@@ -29,10 +29,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
@@ -297,7 +297,7 @@ class BigQueryDestinationTest {
     initBigQuery(config);
     final JsonNode testConfig = configs.get(configName);
     final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, new PrintWriterOutputRecordConsumer());
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -357,7 +357,7 @@ class BigQueryDestinationTest {
     final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
       final AirbyteMessageConsumer consumer =
-          spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+          spy(new BigQueryDestination().getConsumer(testConfig, catalog, new PrintWriterOutputRecordConsumer()));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);
@@ -429,7 +429,7 @@ class BigQueryDestinationTest {
     createUnpartitionedTable(bigquery, dataset, streamId.rawName());
     assertFalse(isTablePartitioned(bigquery, dataset, streamId.rawName()));
     final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, new PrintWriterOutputRecordConsumer());
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);

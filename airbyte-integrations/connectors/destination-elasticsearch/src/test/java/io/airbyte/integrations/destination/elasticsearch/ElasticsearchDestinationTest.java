@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -129,7 +129,7 @@ public class ElasticsearchDestinationTest {
     final var check = destination.check(config);
     log.info("check status: {}", check);
 
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, new PrintWriterOutputRecordConsumer());
 
     consumer.start();
     testMessages.forEach(m -> {

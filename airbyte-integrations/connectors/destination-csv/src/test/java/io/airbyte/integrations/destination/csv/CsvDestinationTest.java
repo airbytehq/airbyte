@@ -20,8 +20,8 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -155,7 +155,7 @@ class CsvDestinationTest {
 
   @Test
   void testWriteSuccess() throws Exception {
-    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = getDestination().getConsumer(config, CATALOG, new PrintWriterOutputRecordConsumer());
 
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
@@ -200,7 +200,7 @@ class CsvDestinationTest {
     final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
     doThrow(new RuntimeException()).when(spiedMessage).getRecord();
 
-    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
+    final AirbyteMessageConsumer consumer = spy(getDestination().getConsumer(config, CATALOG, new PrintWriterOutputRecordConsumer()));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

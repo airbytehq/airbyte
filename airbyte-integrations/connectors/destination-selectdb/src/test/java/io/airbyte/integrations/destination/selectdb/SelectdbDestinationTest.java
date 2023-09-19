@@ -15,7 +15,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -141,7 +141,7 @@ class SelectdbDestinationTest {
     SelectdbDestination destination = getDestination();
     destination.check(config);
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, CATALOG,
-        Destination::defaultOutputRecordCollector);
+            new PrintWriterOutputRecordConsumer());
     consumer.accept(MESSAGE_USERS1);
     consumer.accept(MESSAGE_TASKS1);
     consumer.accept(MESSAGE_USERS2);
@@ -160,7 +160,7 @@ class SelectdbDestinationTest {
     SelectdbDestination destination = getDestination();
     destination.check(config);
     final AirbyteMessageConsumer consumer = spy(
-        destination.getConsumer(config, CATALOG, Destination::defaultOutputRecordCollector));
+        destination.getConsumer(config, CATALOG, new PrintWriterOutputRecordConsumer()));
 
     assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
     consumer.accept(MESSAGE_USERS2);

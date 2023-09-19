@@ -54,10 +54,6 @@ public interface Destination extends Integration {
     return new ShimToSerializedAirbyteMessageConsumer(getConsumer(config, catalog, outputRecordCollector));
   }
 
-  static void defaultOutputRecordCollector(final AirbyteMessage message) {
-    System.out.println(Jsons.serialize(message));
-  }
-
   /**
    * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes argument
    * away from the .accept call.
