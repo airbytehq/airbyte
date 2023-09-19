@@ -69,12 +69,6 @@ def get_doc_remote_file_path(dockerRepository: str, version: str, inapp: bool) -
     """
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{DOC_INAPP_FILE_NAME if inapp else DOC_FILE_NAME}"
 
-def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, metadata_file_path: Path, inapp:bool) -> str:
-    connector_type = metadata.data.connectorType
-    doc_file_name = metadata.data.documentationUrl.split('/')[-1]
-    docs_folder_path = metadata_file_path.parents[3] / DOCS_FOLDER_PATH / f"{connector_type}s"
-    return docs_folder_path / f"{doc_file_name}{'.inapp' if inapp else ''}.md"
-
 def compute_gcs_md5(file_name: str) -> str:
     hash_md5 = hashlib.md5()
     with open(file_name, "rb") as f:
@@ -115,6 +109,7 @@ def upload_file_if_changed(
     print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
 
     if local_file_md5_hash != remote_blob_md5_hash:
+        print(f"~~~~ Uploading {local_file_path} to {blob_path}...")
         uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
         return uploaded, remote_blob.id
 
@@ -138,8 +133,8 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
         return False, f"No Icon found at {local_icon_path}"
     return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
-def _doc_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path, latest: bool, inapp: bool) -> Tuple[bool, str]:
-    local_doc_path = get_doc_local_file_path(metadata, metadata_file_path, inapp)
+def _doc_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, doc_path: Path, latest: bool, inapp: bool) -> Tuple[bool, str]:
+    local_doc_path = doc_path if not inapp else Path(str(doc_path).replace('.md', '.inapp.md'))
     remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, inapp)
     
     if local_doc_path.exists():
@@ -176,7 +171,7 @@ def create_prerelease_metadata_file(metadata_file_path: Path, validator_opts: Va
 
 
 def upload_metadata_to_gcs(
-    bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions = ValidatorOptions()
+    bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions
 ) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
 
@@ -203,18 +198,19 @@ def upload_metadata_to_gcs(
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
+    doc_path = Path(validator_opts.doc_path)
 
     icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
 
-    doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, metadata_file_path, False, False)
-    doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, metadata_file_path, False, True)
+    doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, doc_path, False, False)
+    doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, doc_path, False, True)
     
     if not validator_opts.prerelease_tag:
         latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
-        doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, metadata_file_path, True, False)
-        doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, metadata_file_path, True, True)
+        doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, doc_path, True, False)
+        doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, doc_path, True, True)
     else:
         latest_uploaded, latest_blob_id = False, None
         doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
