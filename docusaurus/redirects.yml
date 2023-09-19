@@ -7,7 +7,7 @@
   to: /understanding-airbyte/airbyte-protocol
 - from: /integrations/sources/appstore
   to: /integrations/sources/appstore-singer
-- from: 
+- from:
     - /project-overview/security
     - /operator-guides/securing-airbyte
   to: /operator-guides/security
@@ -31,3 +31,5 @@
   to: /cloud/managing-airbyte-cloud/manage-connection-state
 - from: /cloud/managing-airbyte-cloud/edit-stream-configuration
   to: /cloud/managing-airbyte-cloud/configuring-connections
+- from: /project-overview/product-release-stages
+  to: /project-overview/product-support-levels
