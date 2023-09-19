@@ -28,10 +28,6 @@ class SlackStream(HttpStream, ABC):
         # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
         return 20
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
         Extract the cursor from the response if it exists and return it in a format
