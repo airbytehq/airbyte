@@ -99,4 +99,3 @@ class TestDestinationQdrant(unittest.TestCase):
         result = destination.spec()
 
         self.assertIsInstance(result, ConnectorSpecification)
-        

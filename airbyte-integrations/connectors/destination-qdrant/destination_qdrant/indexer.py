@@ -34,7 +34,7 @@ class QdrantIndexer(Indexer):
         auth_method_mode = self.config.auth_method.mode
         if auth_method_mode == "api_key_auth" and not self.config.url.startswith("https://"):
             return "Host must start with https://"
-        
+
         try:
             self._create_client()
 

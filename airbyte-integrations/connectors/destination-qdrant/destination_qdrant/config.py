@@ -5,7 +5,6 @@
 
 import json
 import re
-from enum import Enum
 from typing import Literal, Union
 
 import dpath.util

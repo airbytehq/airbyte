@@ -117,7 +117,7 @@ class TestQdrantIndexer(unittest.TestCase):
             points_selector=models.FilterSelector(
                 filter=models.Filter(
                     should=[
-                        models.FieldCondition(key="_ab_stream", match=models.MatchValue(value="some_stream")), 
+                        models.FieldCondition(key="_ab_stream", match=models.MatchValue(value="some_stream")),
                         models.FieldCondition(key="_ab_stream", match=models.MatchValue(value="another_stream"))
                         ]
                     )
@@ -129,12 +129,12 @@ class TestQdrantIndexer(unittest.TestCase):
         )
 
         self.qdrant_indexer._client.delete.assert_not_called()
-    
+
     def test_pre_sync_calls_create_payload_index(self):
         self.qdrant_indexer.pre_sync(Mock(streams=[]))
 
         calls = [
-            call(collection_name=self.mock_config.collection, field_name="_ab_record_id", field_schema="keyword"), 
+            call(collection_name=self.mock_config.collection, field_name="_ab_record_id", field_schema="keyword"),
             call(collection_name=self.mock_config.collection, field_name="_ab_stream", field_schema="keyword")
             ]
 
@@ -142,9 +142,9 @@ class TestQdrantIndexer(unittest.TestCase):
 
     def test_index_calls_insert(self):
         self.qdrant_indexer.index([
-            Mock(metadata={"key": "value1"}, page_content="some content", embedding=[1.,2.,3.]), 
+            Mock(metadata={"key": "value1"}, page_content="some content", embedding=[1.,2.,3.]),
             Mock(metadata={"key": "value2"}, page_content="some other content", embedding=[4.,5.,6.])
-            ], 
+            ],
             []
             )
 
@@ -158,7 +158,7 @@ class TestQdrantIndexer(unittest.TestCase):
             points_selector=models.FilterSelector(
                 filter=models.Filter(
                     should=[
-                        models.FieldCondition(key="_ab_record_id", match=models.MatchValue(value="some_id")), 
+                        models.FieldCondition(key="_ab_record_id", match=models.MatchValue(value="some_id")),
                         models.FieldCondition(key="_ab_record_id", match=models.MatchValue(value="another_id"))
                         ]
                     )
@@ -175,4 +175,4 @@ class TestQdrantIndexer(unittest.TestCase):
         result = self.qdrant_indexer.post_sync()
 
         self.qdrant_indexer._client.close.assert_called_once()
-        self.assertEqual(result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(exception)))] )
+        self.assertEqual(result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(exception)))])
