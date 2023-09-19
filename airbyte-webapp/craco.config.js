@@ -4,20 +4,11 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 module.exports = {
   webpack: {
     configure: (webpackConfig) => {
-      webpackConfig = {
-        ...webpackConfig,
-        plugins: [
-          ...webpackConfig.plugins.filter((element) => {
-            if (element.options) {
-              return !element.options.hasOwnProperty("ignoreOrder");
-            }
-            return true;
-          }),
-          new MiniCssExtractPlugin({
-            ignoreOrder: true,
-          }),
-        ],
-      };
+      const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(
+        ({ constructor }) => constructor && constructor.name === "ModuleScopePlugin"
+      );
+
+      webpackConfig.resolve.plugins.splice(scopePluginIndex, 1);
       return webpackConfig;
     },
   },
