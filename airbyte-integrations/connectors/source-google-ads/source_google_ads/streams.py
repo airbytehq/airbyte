@@ -513,16 +513,17 @@ class ChangeStatus(IncrementalGoogleAdsStream):
             else:
                 # if records limit is hit - update slice with new start_date to continue reading
                 if self.query_limit and records_count == self.query_limit:
-                    # if state was not updated before hitting limit - add step to start_date to avoid infinite loop
-                    current_state = self.get_current_state(customer_id, default=stream_slice["start_date"])
-                    stream_slice["start_date"] = current_state
-
+                    # if state was not updated before hitting limit - raise error to avoid infinite loop
                     if stream_slice["start_date"] == self.get_current_state(customer_id):
                         raise AirbyteTracedException(
-                            message=f"More then limit {self.mandatory_limit} records with same cursor field. Incremental sync is not possible for this stream.",
+                            message=f"More then limit {self.query_limit} records with same cursor field. Incremental sync is not possible for this stream.",
                             failure_type=FailureType.system_error,
                         )
-                return
+
+                    current_state = self.get_current_state(customer_id, default=stream_slice["start_date"])
+                    stream_slice["start_date"] = current_state
+                else:
+                    return
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())

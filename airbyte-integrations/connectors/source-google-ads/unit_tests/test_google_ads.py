@@ -93,8 +93,11 @@ def test_interval_chunking():
         {"start_date": "2021-07-27", "end_date": "2021-08-05"},
         {"start_date": "2021-08-06", "end_date": "2021-08-10"},
     ]
-    intervals = list(chunk_date_range(start_date="2021-07-01", end_date="2021-08-10", conversion_window=14,
-                                      slice_duration=pendulum.Duration(days=9), time_zone="UTC"))
+    intervals = list(
+        chunk_date_range(
+            start_date="2021-07-01", end_date="2021-08-10", conversion_window=14, slice_duration=pendulum.Duration(days=9), time_zone="UTC"
+        )
+    )
     assert mock_intervals == intervals
 
 
@@ -111,7 +114,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             ["segments.date >= '2020-01-01'", "segments.date <= '2020-01-10'"],
             "segments.date",
             None,
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC",
         ),
         # Test with no conditions
         (
@@ -120,7 +123,7 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             None,
             None,
             None,
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad",
         ),
         # Test order with limit
         (
@@ -129,14 +132,13 @@ generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campai
             None,
             "ad_group_id",
             5,
-            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view ORDER BY ad_group_id ASC LIMIT 5"
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view ORDER BY ad_group_id ASC LIMIT 5",
         ),
     ),
 )
 def test_convert_schema_into_query(fields, table_name, conditions, order_field, limit, expected_sql):
     query = GoogleAds.convert_schema_into_query(fields, table_name, conditions, order_field, limit)
     assert query == expected_sql
-
 
 
 def test_get_field_value():
