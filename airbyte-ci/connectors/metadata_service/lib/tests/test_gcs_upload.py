@@ -22,22 +22,6 @@ def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
     return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
 
 
-# @pytest.fixture(autouse=True)
-# def mock_local_doc_path_exists(monkeypatch):
-#     original_exists = Path.exists
-#     test_file_directory = Path(__file__).parent
-#     mocked_relative_doc_path = test_file_directory / MOCK_LOCAL_DOC_PATH
-#     mocked_tmp_doc_path = Path("/tmp") / MOCK_LOCAL_DOC_PATH
-
-#     def fake_exists(self):
-#         if self == mocked_relative_doc_path:
-#             return True
-#         if self == mocked_tmp_doc_path:
-#             return True
-#         return original_exists(self)
-#     monkeypatch.setattr(Path, 'exists', fake_exists)
-
-
 def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash, doc_local_file_md5_hash, doc_version_blob_md5_hash, doc_latest_blob_md5_hash, metadata_file_path, doc_file_path):
     # Mock dockerhub
     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
