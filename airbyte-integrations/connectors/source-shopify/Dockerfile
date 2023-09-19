@@ -21,6 +21,9 @@ COPY --from=builder /install /usr/local
 # Bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
+# Include socat binary in the connector image
+RUN apk --no-cache add socat
+
 # copy payload code only
 COPY main.py ./
 COPY source_shopify ./source_shopify
@@ -28,5 +31,5 @@ COPY source_shopify ./source_shopify
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=1.1.0
+LABEL io.airbyte.version=1.1.1
 LABEL io.airbyte.name=airbyte/source-shopify
