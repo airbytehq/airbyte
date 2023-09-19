@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from .common import CatalogModel
 from typing import Optional
+
+from .common import CatalogModel
 
 
 class AttributionReportModel(CatalogModel):

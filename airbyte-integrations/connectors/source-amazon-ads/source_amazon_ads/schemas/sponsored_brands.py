@@ -8,12 +8,12 @@ from typing import Dict, List, Optional
 from .common import CatalogModel
 
 
-class LandingPage:
+class LandingPage(CatalogModel):
     pageType: str
     url: str
 
 
-class BidAdjustment:
+class BidAdjustment(CatalogModel):
     bidAdjustmentPredicate: str
     bidAdjustmentPercent: int
 
