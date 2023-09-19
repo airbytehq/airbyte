@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> implements AutoCloseableIterator<RowDataWithCtid> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSyncCtidIterator.class);
+  public static final int MAX_TUPLES_IN_QUERY = 5_000_000;
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final long blockSize;
   private final List<String> columnNames;
@@ -250,7 +251,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       final double pages = dataSize / blockSize;
       // cap each chunk at no more than 5m tuples
       final long eachStep = Math.min((long) pages * chunkSize,
-          5_000_000 / tuplesInPage);
+          MAX_TUPLES_IN_QUERY / tuplesInPage);
       LOGGER.info("Will read {} pages on each query", eachStep);
       final long theoreticalLastPage = relationSize / blockSize;
       final long lastPage = (long) ((double) theoreticalLastPage * 1.1);

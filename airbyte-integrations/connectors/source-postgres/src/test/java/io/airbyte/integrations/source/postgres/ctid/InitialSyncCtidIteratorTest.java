@@ -100,8 +100,8 @@ public class InitialSyncCtidIteratorTest {
     assertEquals(expected, chunks);
 
     // Simulate an empty table - expected to generate an empty query plan
-    chunks = InitialSyncCtidIterator.ctidLegacyQueryPlan(Ctid.ZERO, 4096L, 8192L, 45, GIGABYTE, 0);
-    expected = List.of();
+    chunks = InitialSyncCtidIterator.ctidLegacyQueryPlan(Ctid.ZERO, 4096L, 8192L, 45, GIGABYTE, 1);
+    expected = List.of(Pair.of(Ctid.of(0,1), Ctid.of(5000000,1)));
     assertEquals(expected, chunks);
 
   }
