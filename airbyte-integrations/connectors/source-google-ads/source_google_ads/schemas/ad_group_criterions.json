@@ -8,9 +8,6 @@
     "change_status.last_change_date_time": {
       "type": ["null", "string"]
     },
-    "customer.id": {
-      "type": ["null", "integer"]
-    },
     "ad_group.id": {
       "type": ["null", "integer"]
     },
