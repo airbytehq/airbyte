@@ -7,17 +7,19 @@ package io.airbyte.integrations.base;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.integrations.base.output.OutputRecordConsumer;
 import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
-import java.util.function.Consumer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class AirbyteTraceMessageUtility {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTraceMessageUtility.class);
 
   private AirbyteTraceMessageUtility() {}
 
@@ -63,7 +65,7 @@ public final class AirbyteTraceMessageUtility {
     try (final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer()) {
       outputRecordCollector.accept(message);
     } catch (final Exception e) {
-
+      LOGGER.error("Unable to close output record collector.", e);
     }
   }
 
