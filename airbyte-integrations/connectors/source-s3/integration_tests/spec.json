@@ -29,11 +29,6 @@
               "description": "The name of the stream.",
               "type": "string"
             },
-            "file_type": {
-              "title": "File Type",
-              "description": "The data file type that is being extracted for a stream.",
-              "type": "string"
-            },
             "globs": {
               "title": "Globs",
               "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
@@ -283,7 +278,7 @@
               "type": "boolean"
             }
           },
-          "required": ["name", "file_type"]
+          "required": ["name", "format"]
         }
       },
       "bucket": {

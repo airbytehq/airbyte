@@ -511,7 +511,7 @@ module.exports = {
           label: "Roadmap",
           href: "https://go.airbyte.com/roadmap",
         },
-        "project-overview/product-release-stages",
+        "project-overview/product-support-levels",
         "project-overview/slack-code-of-conduct",
         "project-overview/code-of-conduct",
         {
