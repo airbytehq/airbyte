@@ -33,8 +33,8 @@ from .utils import (
     get_metrics_type,
     get_source_defined_primary_key,
     metrics_type_to_python,
-    transform_json,
     serialize_to_date_string,
+    transform_json,
 )
 
 # set the quota handler globaly since limitations are the same for all streams
@@ -292,7 +292,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "offset": str(0),
             "limit": str(self.page_size),
         }
-
 
         dimension_filter = self.config.get("dimensionFilter")
         if dimension_filter:
