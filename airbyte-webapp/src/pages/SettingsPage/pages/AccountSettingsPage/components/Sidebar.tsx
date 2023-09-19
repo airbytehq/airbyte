@@ -107,6 +107,7 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
   const toggleSignOutConfirmModal = () => {
+    debugger;
     openConfirmationModal({
       title: "settings.logout.modal.title",
       text: "settings.logout.modal.content",
@@ -115,6 +116,7 @@ export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
         if (removeUser) {
           removeUser();
         }
+        localStorage.clear();
         onLogOut();
         closeConfirmationModal();
         push(`/${RoutePaths.LoginNew}`);
