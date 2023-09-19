@@ -22,7 +22,7 @@ def test_streams(config):
 def test_check_connection(config, projects_response, labels_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
     responses.add(
@@ -40,7 +40,7 @@ def test_check_connection(config, projects_response, labels_response):
 def test_check_connection_config_error(config, caplog):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         status=401
     )
     responses.add(
@@ -60,7 +60,7 @@ def test_check_connection_config_error(config, caplog):
 def test_check_connection_404_error(config):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         status=404,
         json={'errorMessages': ['Not Found project.']}
     )
