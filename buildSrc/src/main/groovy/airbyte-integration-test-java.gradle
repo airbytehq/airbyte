@@ -15,7 +15,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             }
         }
         project.tasks.named('check').configure {
-            dependsOn project.tasks.named('compileIntegrationTestJavaJava')
+            dependsOn project.tasks.matching { it.name == 'compileIntegrationTestJavaJava' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsIntegrationTestJava' }
         }
 
         project.configurations {
@@ -50,9 +51,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             ]
         }
         integrationTestJava.configure {
-            mustRunAfter project.tasks.named('test')
+            mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
-            dependsOn project.tasks.matching { it.name == 'spotbugsMain' }
         }
     }
 }
