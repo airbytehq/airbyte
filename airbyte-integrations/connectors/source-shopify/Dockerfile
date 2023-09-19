@@ -21,6 +21,9 @@ COPY --from=builder /install /usr/local
 # Bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
 
+# Include socat binary in the connector image
+RUN apk --no-cache add socat
+
 # copy payload code only
 COPY main.py ./
 COPY source_shopify ./source_shopify
