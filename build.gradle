@@ -120,8 +120,8 @@ def checkCDKJarExists(requiredSnapshotVersion) {
 static def getCDKSnapshotRequirement(dependenciesList) {
     def cdkSnapshotRequirement = dependenciesList.find {
         it.requested instanceof ModuleComponentSelector &&
-        it.requested.group == 'io.airbyte' && 
-        it.requested.module == 'airbyte-cdk' && 
+        it.requested.group == 'io.airbyte' &&
+        it.requested.module == 'airbyte-cdk' &&
         it.requested.version.endsWith('-SNAPSHOT')
     }
     if (cdkSnapshotRequirement == null) {
@@ -479,23 +479,8 @@ python {
 
 // code and config generation is required for 'format'
 def generateGlobal = tasks.register('generateGlobal')
-allprojects {
-    def generate = tasks.register('generate') {
-        dependsOn tasks.matching {
-            [
-                    'generateApiClient',
-                    'generateApiServerLegacy',
-                    'generateApiServer',
-                    'generateApiDocs',
-                    'generateComponentManifestClassFiles',
-                    'generateJsonSchema2Pojo',
-                    'generateSourceTestDocs',
-            ].contains(it.name)
-        }
-    }
-    generateGlobal.configure {
-        dependsOn generate
-    }
+generateGlobal.configure {
+    dependsOn allprojects.collect { tasks.matching { it.name == 'generate' } }
 }
 
 // python license header generation is part of 'format'
@@ -559,7 +544,6 @@ allprojects {
             [
                     'integrationTestJava',
                     'customIntegrationTests', // python integration tests
-                    'connectorAcceptanceTest',
                     'standardSourceTestFile',
             ].contains(it.name)
         }

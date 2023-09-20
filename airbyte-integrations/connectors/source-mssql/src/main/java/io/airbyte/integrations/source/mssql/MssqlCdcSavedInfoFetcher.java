@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
-
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
@@ -29,8 +29,8 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
   }
 
   @Override
-  public Optional<JsonNode> getSavedSchemaHistory() {
-    return Optional.ofNullable(savedSchemaHistory);
+  public SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
+    return new SchemaHistory<>(Optional.ofNullable(savedSchemaHistory), false);
   }
 
 }
