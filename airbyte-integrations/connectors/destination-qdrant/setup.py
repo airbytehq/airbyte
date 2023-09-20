@@ -5,14 +5,14 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "duckdb"]  # duckdb added manually to dockerfile due to lots of errors
+MAIN_REQUIREMENTS = ["airbyte-cdk[vector-db-based]", "qdrant-client", "fastembed"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = ["pytest~=6.2"]
 
 setup(
-    name="destination_duckdb",
-    description="Destination implementation for Duckdb.",
-    author="Simon Späti",
+    name="destination_qdrant",
+    description="Destination implementation for Qdrant.",
+    author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
