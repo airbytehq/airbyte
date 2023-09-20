@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.azure_service_bus.AzureServiceBusDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-config-oss:config-models-oss')
+    implementation libs.airbyte.protocol
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+
+    // Lombok
+    implementation("org.projectlombok:lombok:1.18.20")
+    annotationProcessor("org.projectlombok:lombok:1.18.20")
+
+    // required to support message id semantics for publish msg dedupe
+    implementation("commons-codec:commons-codec:1.15")
+    implementation("com.google.guava:guava")
+
+    def okhttpVersion = "4.11.0"
+    implementation("com.squareup.okhttp3:okhttp:$okhttpVersion")
+    testImplementation("com.squareup.okhttp3:mockwebserver:$okhttpVersion")
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-azure-service-bus')
+}

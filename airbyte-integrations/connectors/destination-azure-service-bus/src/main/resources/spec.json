@@ -1,0 +1,34 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/azure-service-bus",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Azure Service Bus Spec",
+    "type": "object",
+    "required": [
+      "service_bus_connection_string"
+    ],
+    "properties": {
+      "service_bus_connection_string": {
+        "title": "Service Bus Connection String",
+        "type": "string",
+        "description": "The connection URL for the service bus.  Check out <a href=\"https://learn.microsoft.com/en-us/java/api/com.azure.messaging.servicebus.servicebusconnectionstringproperties\">docs</a> for more info.",
+        "examples" : ["Endpoint=sb://foo.servicebus.windows.net/;SharedAccessKeyName=someKeyName;SharedAccessKey=someKeyValue;EntityPath=bar-queue-name"]
+      },
+      "queue_name": {
+        "type": "string",
+        "description": "The queue name (a value provided here will override the entity name in the connection string",
+        "title": "Service Bus Queue Name"
+      },
+      "header_map": {
+        "type": "string",
+        "description": "Additional queue message headers",
+        "title": "A semi-column delimited key=value map",
+        "examples" : [ "foo=bar;domain=\"galactic data\""]
+      }
+    }
+  }
+}
