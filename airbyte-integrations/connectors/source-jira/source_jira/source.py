@@ -4,7 +4,6 @@
 
 from typing import Any, List, Mapping, Optional, Tuple
 
-import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
@@ -118,9 +117,7 @@ class SourceJira(AbstractSource):
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
-            experimental_streams.append(
-                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **args)
-            )
+            experimental_streams.append(PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **args))
         return [
             ApplicationRoles(**args),
             Avatars(**args),

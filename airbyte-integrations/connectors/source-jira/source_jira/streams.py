@@ -17,7 +17,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
 
-from .utils import read_full_refresh, read_incremental, safe_max
+from .utils import read_full_refresh, read_incremental
 
 API_VERSION = 3
 
@@ -421,11 +421,7 @@ class IssueComments(IncrementalJiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"issue/{stream_slice['key']}/comment"
@@ -579,11 +575,7 @@ class IssueProperties(JiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -606,11 +598,7 @@ class IssueRemoteLinks(JiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"issue/{stream_slice['key']}/remotelink"
@@ -693,11 +681,7 @@ class IssueTransitions(JiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"issue/{stream_slice['key']}/transitions"
@@ -729,11 +713,7 @@ class IssueVotes(JiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"issue/{stream_slice['key']}/votes"
@@ -763,11 +743,7 @@ class IssueWatchers(JiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"issue/{stream_slice['key']}/watchers"
@@ -791,11 +767,7 @@ class IssueWorklogs(IncrementalJiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issues_stream = Issues(
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects
-        )
+        self.issues_stream = Issues(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         return f"issue/{stream_slice['key']}/worklog"
