@@ -3,7 +3,7 @@
 #
 import logging
 from abc import ABC, abstractmethod
-from typing import Iterable, Optional, Tuple
+from typing import Iterable
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
@@ -11,36 +11,11 @@ from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.types import StreamData
 
 
-class AbstractAvailabilityStrategy(ABC):
-    """
-    Abstract base class for checking stream availability.
-    """
-
-    @abstractmethod
-    def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
-        """
-        Checks stream availability.
-
-        :param logger: source logger
-        :return: A tuple of (boolean, str). If boolean is true, then the stream
-          is available, and no str is required. Otherwise, the stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
-        """
-
-
 class AbstractStream(ABC):
     @abstractmethod
-    def read(
-        self,
-    ) -> Iterable[StreamData]:
+    def read(self) -> Iterable[StreamData]:
         """
         Read a stream in full refresh mode
-        :param stream: The stream to read data from
-        :param cursor_field:
-        :param logger:
-        :param slice_logger:
-        :param internal_config:
         :return: The stream's records
         """
 

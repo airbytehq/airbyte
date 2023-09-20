@@ -8,7 +8,8 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.abstract_stream import AbstractAvailabilityStrategy, AbstractStream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
@@ -37,9 +38,7 @@ class ConcurrentStream(AbstractStream):
         self._availability_strategy = availability_strategy
 
     def read(self) -> Iterable[StreamData]:
-        # FIXME
         internal_config = InternalConfig()
-        self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         futures = []
         partition_generator = ConcurrentPartitionGenerator()

@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import logging
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import stripe
@@ -10,11 +9,10 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.abstract_stream import AbstractAvailabilityStrategy
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import LegacyAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.partitions.legacy import LegacyAvailabilityStrategy, LegacyPartitionGenerator
+from airbyte_cdk.sources.streams.partitions.partition_generator import LegacyPartitionGenerator
 from airbyte_cdk.sources.streams.stream_facade import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
@@ -34,19 +32,12 @@ from source_stripe.streams import (
 )
 
 
-class ConcurrentAvailabilityStrategyAdapter(AvailabilityStrategy):
-    def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
-        self._abstract_availability_strategy = abstract_availability_strategy
-
-    def check_availability(self, stream: Stream, logger: logging.Logger, source) -> Tuple[bool, Optional[str]]:
-        return self._abstract_availability_strategy.check_availability(logger)
-
-
 class ConcurrentStreamAdapter(Stream):
     @classmethod
     def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int) -> Stream:
         """
         Create a ConcurrentStream from a legacy Stream.
+        :param source:
         :param stream:
         :param max_workers:
         :return:
