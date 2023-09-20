@@ -86,6 +86,9 @@ class AbstractStream(ABC):
 class StreamFacade(Stream):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
+
+    All methods either delegate to the wrapped AbstractStream or provide a default implementation.
+    The default implementations define restrictions imposed on Streams migrated to the new interface. For instance, only source-defined cursors are supported.
     """
 
     def __init__(self, stream: AbstractStream):
