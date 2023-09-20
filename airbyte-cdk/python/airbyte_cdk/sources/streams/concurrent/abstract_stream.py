@@ -47,11 +47,11 @@ class AbstractStream(ABC):
         """
 
     @property
+    @abstractmethod
     def name(self) -> str:
         """
         :return: Stream name. By default, this is the implementing class name, but it can be overridden as needed.
         """
-        return casing.camel_to_snake(self.__class__.__name__)
 
     @property
     def logger(self) -> logging.Logger:
