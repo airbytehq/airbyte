@@ -568,6 +568,10 @@ class IssuePropertyKeys(JiraStream):
 
     extract_field = "keys"
     use_cache = True
+    skip_http_status_codes = [
+        # Issue does not exist or you do not have permission to see it.
+        requests.codes.NOT_FOUND
+    ]
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
