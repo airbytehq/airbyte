@@ -41,6 +41,7 @@
       ],
       "settings": {
         "extensions.ignoreRecommendations": true,
+        "git.autofetch": true,
         "git.openRepositoryInParentFolders": "always",
         "python.defaultInterpreterPath": ".venv/bin/python",
         "python.interpreter.infoVisibility": "always",
@@ -50,7 +51,10 @@
         "python.testing.pytestArgs": [
           "--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/destination-duckdb",
           "."
-        ]
+        ],
+        "[python]": {
+            "editor.defaultFormatter": "ms-python.black-formatter"
+        }    
       }
     }
   },
