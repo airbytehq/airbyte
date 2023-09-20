@@ -195,7 +195,6 @@ class TiktokStream(HttpStream, ABC):
         }
         """
         data = response.json()
-        print(data)
         if data["code"]:
             raise TiktokException(data)
         data = data["data"]
@@ -492,8 +491,9 @@ class Ads(IncrementalTiktokStream):
 
 
 class Images(IncrementalTiktokStream):
-    """Docs: """
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740052016789506"""
 
+    page_size = 100
     primary_key = "image_id"
 
     def path(self, *args, **kwargs) -> str:
@@ -501,13 +501,12 @@ class Images(IncrementalTiktokStream):
 
 
 class Videos(IncrementalTiktokStream):
-    """Docs: """
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740052016789506"""
 
+    page_size = 100
     primary_key = "video_id"
 
     def path(self, *args, **kwargs) -> str:
-        print(f"DALES_LOG: {args}")
-        print(f"DALES_LOG: {kwargs}")
         return "file/video/ad/search/"
 
 

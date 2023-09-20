@@ -2,10 +2,10 @@
   "type" : "object",
   "properties" : {
     "image_id" : {
-      "type" : ["null", "string"]
+      "type" : "string"
     },
     "material_id" : {
-      "type" : ["null", "string"]
+      "type" : "string"
     },
     "is_carousel_usable" : {
       "type" : "boolean"
@@ -14,28 +14,28 @@
       "type" : "integer"
     },
     "format" : {
-      "type" : ["null", "string"]
+      "type" : "string"
     },
     "image_url" : {
-      "type" : ["null", "string"]
+      "type" : "string"
     },
     "height" : {
       "type" : "integer"
     },
     "signature" : {
-      "type" : ["null", "string"]
+      "type" : "string"
     },
     "size" : {
       "type" : "integer"
     },
     "file_name" : {
-      "type" : ["null", "string"]
+      "type" : "string"
     },
     "create_time" : {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "modify_time" : {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "displayable" : {
       "type" : "boolean"

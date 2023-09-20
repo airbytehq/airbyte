@@ -102,7 +102,6 @@ class SourceTiktokMarketing(AbstractSource):
 
         if advertiser_id:
             stream_args.update(**{"advertiser_id": advertiser_id})
-
         return stream_args
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -119,8 +118,6 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-        print(f'DALES_LOG: {args["is_sandbox"]}')
-        print(f'DALES_LOG: {args}')
         is_production = not (args["is_sandbox"])
 
         report_granularity = config.get("report_granularity")

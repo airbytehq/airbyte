@@ -69,7 +69,8 @@ To access the Sandbox environment:
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
 | Campaigns                                 | Prod,Sandbox | campaign_id                                | Yes         |
-| Images                                    | Prod,Sandbox | image_id                                   | No          |
+| Images                                    | Prod,Sandbox | image_id                                   | Yes          |
+| Videos                                    | Prod,Sandbox | video_id                                   | Yes          |
 | AdsReportsHourly                          | Prod,Sandbox | ad_id, stat_time_hour                      | Yes         |
 | AdsReportsDaily                           | Prod,Sandbox | ad_id, stat_time_day                       | Yes         |
 | AdsReportsLifetime                        | Prod,Sandbox | ad_id                                      | No          |
@@ -300,7 +301,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**[Images](https://ads.tiktok.com/marketing_api/docs?id=) Stream**
+**[Images](https://business-api.tiktok.com/portal/docs?id=1740052016789506) Stream**
 
 ```
 {
@@ -320,7 +321,36 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 ```
 
-**[Videos](https://ads.tiktok.com/marketing_api/docs?id=) Stream**
+**[Videos](https://business-api.tiktok.com/portal/docs?id=1740052016789506) Stream**
+
+```
+{
+    "height": 1280,
+    "video_id": "v10033g50000ch361vrc77xxxx",
+    "material_id": "7225569289976619999",
+    "duration": 5.024,
+    "bit_rate": 1018810,
+    "allow_download": true,
+    "allowed_placements": [
+        "PLACEMENT_TOPBUZZ",
+        "PLACEMENT_TIKTOK",
+        "PLACEMENT_HELO",
+        "PLACEMENT_PANGLE",
+        "PLACEMENT_GLOBAL_APP_BUNDLE"
+    ],
+    "signature": "9e21e9746e448ebb9eb853cd2f9xxxxx",
+    "preview_url_expire_time": "2022-09-01 18:20:32",
+    "format": "mp4",
+    "video_cover_url": "http://p16-sign-sg.tiktokcdn.com/v0201/o8WD9HIWAwbrDfIGeMAaTIQnMAfgXXXXXXXX~tplv-noop.image?x-expires=1695234032&x-signature=cvRXXXXXXX",
+    "create_time": "2023-04-24T10:59:13Z",
+    "preview_url": "http://v16m-default.akamaized.net/xxxxxxxxxxxxxxxxxx/650b37f0/video/tos/alisg/tos-alisg-v-0000/xxxxxxHRnRe1VfjYGq4bWnAC3GIKeIEgDbAIxxxxx/?a=0&ch=0&cr=0&dr=0&lr=ad&cd=0%7C0%7C0%7C0&br=784&bt=392&bti=Njs0Zi8tOg%3D%3D&cs=0&ds=3&ft=dl9~j-xxxxxxxxx&mime_type=video_mp4&qs=0&rc=xxxxxxxxw%3D%3D&l=2022090112202662B34ABA5BAA9F5XXXX0&btag=000000000",
+    "displayable": true,
+    "width": 720,
+    "modify_time": "2023-04-24T10:59:13Z",
+    "size": 639813,
+    "file_name": "Optimized Version 1_202304241159"
+}
+```
 
 **AdsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 

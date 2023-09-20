@@ -2,13 +2,13 @@
   "type" : "object",
   "properties" : {
     "duration": {
-      "type": "float"
+      "type": "number"
     },
     "allow_download": {
       "type": "boolean"
     },
     "preview_url_expire_time": {
-      "type": "timestamp_without_timezone"
+      "type": "string"
     },
     "bit_rate": {
       "type": "integer"
@@ -23,7 +23,7 @@
       }
     },
     "create_time" : {
-      "type" : "timestamp_with_timezone"
+      "type" : "string"
     },
     "displayable" : {
       "type" : "boolean"
@@ -50,7 +50,7 @@
       "type" : "integer"
     },
     "modify_time" : {
-      "type" : "timestamp_with_timezone"
+      "type" : "string"
     },
     "width" : {
       "type" : "integer"
