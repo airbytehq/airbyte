@@ -52,14 +52,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   private final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGenerator.class);
+
+  private final String projectId;
   private final String datasetLocation;
 
   /**
+   * @param projectId
    * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler}
-   *        setting the query execution location, but let's be explicit since this is typically a
-   *        compliance requirement.
+   *                        setting the query execution location, but let's be explicit since this is typically a
+   *                        compliance requirement.
    */
-  public BigQuerySqlGenerator(final String datasetLocation) {
+  public BigQuerySqlGenerator(String projectId, final String datasetLocation) {
+    this.projectId = projectId;
     this.datasetLocation = datasetLocation;
   }
 
@@ -450,6 +454,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     return new StringSubstitutor(Map.of(
+        "project_id", projectId,
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
@@ -470,7 +475,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               ${column_errors} AS column_errors,
               _airbyte_raw_id,
               _airbyte_extracted_at
-              FROM ${raw_table_id}
+              FROM ${project_id}.${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
                 ${cdcConditionalOrIncludeStatement}
@@ -494,6 +499,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .orElse("");
 
     return new StringSubstitutor(Map.of(
+        "project_id", projectId,
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
         "cursor_order_clause", cursorOrderClause)).replace(
@@ -504,7 +510,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
                     PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
-                  ) as row_number FROM ${final_table_id}
+                  ) as row_number FROM ${project_id}.${final_table_id}
                 )
                 WHERE row_number != 1
               )
