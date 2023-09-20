@@ -36,7 +36,7 @@ public class AirbyteExceptionHandlerTest {
   public void setUpOut() {
     final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent, true);
     outputRecordConsumerFactory.when(() -> OutputRecordConsumerFactory.getOutputRecordConsumer(anyBoolean()))
-            .thenReturn(printWriterOutputRecordConsumer);
+        .thenReturn(printWriterOutputRecordConsumer);
   }
 
   @Test

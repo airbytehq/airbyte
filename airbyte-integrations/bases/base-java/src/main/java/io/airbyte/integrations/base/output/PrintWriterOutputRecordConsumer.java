@@ -45,9 +45,10 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
   @Override
   public void close() throws Exception {
     /*
-     * We need to make sure that the last instance of this consumer that is used is the one that ultimately
-     * closes the stream, especially if the underlying stream uses the FileDescriptor.out file descriptor.
-     * Otherwise, the first close will close the file descriptor, impacting all other streams.
+     * We need to make sure that the last instance of this consumer that is used is the one that
+     * ultimately closes the stream, especially if the underlying stream uses the FileDescriptor.out
+     * file descriptor. Otherwise, the first close will close the file descriptor, impacting all other
+     * streams.
      */
     if (shouldClose) {
       LOGGER.info("Closing PrintWriter...");
