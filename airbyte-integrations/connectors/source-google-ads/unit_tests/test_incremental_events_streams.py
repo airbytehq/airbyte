@@ -22,18 +22,30 @@ def mock_ads_client(mocker, config):
 
 def mock_response_parent():
     yield [
-        {"change_status.last_change_date_time": "2023-06-13 12:36:01.772447",
-         "change_status.resource_type": "CAMPAIGN_CRITERION", "change_status.resource_status": "ADDED",
-         "change_status.campaign_criterion": "1"},
-        {"change_status.last_change_date_time": "2023-06-13 12:36:02.772447",
-         "change_status.resource_type": "CAMPAIGN_CRITERION", "change_status.resource_status": "ADDED",
-         "change_status.campaign_criterion": "2"},
-        {"change_status.last_change_date_time": "2023-06-13 12:36:03.772447",
-         "change_status.resource_type": "CAMPAIGN_CRITERION", "change_status.resource_status": "REMOVED",
-         "change_status.campaign_criterion": "3"},
-        {"change_status.last_change_date_time": "2023-06-13 12:36:04.772447",
-         "change_status.resource_type": "CAMPAIGN_CRITERION", "change_status.resource_status": "REMOVED",
-         "change_status.campaign_criterion": "4"},
+        {
+            "change_status.last_change_date_time": "2023-06-13 12:36:01.772447",
+            "change_status.resource_type": "CAMPAIGN_CRITERION",
+            "change_status.resource_status": "ADDED",
+            "change_status.campaign_criterion": "1",
+        },
+        {
+            "change_status.last_change_date_time": "2023-06-13 12:36:02.772447",
+            "change_status.resource_type": "CAMPAIGN_CRITERION",
+            "change_status.resource_status": "ADDED",
+            "change_status.campaign_criterion": "2",
+        },
+        {
+            "change_status.last_change_date_time": "2023-06-13 12:36:03.772447",
+            "change_status.resource_type": "CAMPAIGN_CRITERION",
+            "change_status.resource_status": "REMOVED",
+            "change_status.campaign_criterion": "3",
+        },
+        {
+            "change_status.last_change_date_time": "2023-06-13 12:36:04.772447",
+            "change_status.resource_type": "CAMPAIGN_CRITERION",
+            "change_status.resource_status": "REMOVED",
+            "change_status.campaign_criterion": "4",
+        },
     ]
 
 
@@ -56,8 +68,7 @@ class MockGoogleAds(GoogleAds):
 
 
 def test_change_status_stream(mock_ads_client, config, customers):
-    """
-    """
+    """ """
     customer_id = next(iter(customers)).id
     stream_slice = {"customer_id": customer_id}
 
@@ -69,8 +80,8 @@ def test_change_status_stream(mock_ads_client, config, customers):
     stream.get_query.return_value = "query_parent"
 
     result = list(
-        stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["change_status.last_change_date_time"],
-                            stream_slice=stream_slice))
+        stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["change_status.last_change_date_time"], stream_slice=stream_slice)
+    )
     assert len(result) == 4
     assert stream.get_query.call_count == 1
     stream.get_query.assert_called_with({"customer_id": customer_id})
@@ -85,8 +96,7 @@ def test_child_incremental_events_read(mock_ads_client, config, customers):
     """
     customer_id = next(iter(customers)).id
     parent_stream_slice = {"customer_id": customer_id, "resource_type": "CAMPAIGN_CRITERION"}
-    stream_state = {
-        "change_status": {customer_id: {"change_status.last_change_date_time": "2023-08-16 13:20:01.003295"}}}
+    stream_state = {"change_status": {customer_id: {"change_status.last_change_date_time": "2023-08-16 13:20:01.003295"}}}
 
     google_api = MockGoogleAds(credentials=config["credentials"])
 
@@ -106,29 +116,45 @@ def test_child_incremental_events_read(mock_ads_client, config, customers):
 
     stream_slices = list(stream.stream_slices(stream_state=stream_state))
 
-    assert stream_slices == [{'customer_id': '123', 'updated_ids': {'2', '1'}, 'deleted_ids': {'3', '4'},
-                              'record_changed_time_map': {'1': '2023-06-13 12:36:01.772447', '2': '2023-06-13 12:36:02.772447',
-                                                          '3': '2023-06-13 12:36:03.772447', '4': '2023-06-13 12:36:04.772447'}}]
+    assert stream_slices == [
+        {
+            "customer_id": "123",
+            "updated_ids": {"2", "1"},
+            "deleted_ids": {"3", "4"},
+            "record_changed_time_map": {
+                "1": "2023-06-13 12:36:01.772447",
+                "2": "2023-06-13 12:36:02.772447",
+                "3": "2023-06-13 12:36:03.772447",
+                "4": "2023-06-13 12:36:04.772447",
+            },
+        }
+    ]
 
     result = list(
-        stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["change_status.last_change_date_time"],
-                            stream_slice=stream_slices[0]))
-    expected_result = [{'campaign.id': 1,
-                        'campaign_criterion.resource_name': '1',
-                        'change_status.last_change_date_time': '2023-06-13 12:36:01.772447',
-                        'customer.id': 123},
-                       {'campaign.id': 1,
-                        'campaign_criterion.resource_name': '2',
-                        'change_status.last_change_date_time': '2023-06-13 12:36:02.772447',
-                        'customer.id': 123},
-                       {'campaign_criterion.resource_name': '3',
-                        'deleted_at': '2023-06-13 12:36:03.772447'},
-                       {'campaign_criterion.resource_name': '4',
-                        'deleted_at': '2023-06-13 12:36:04.772447'}]
+        stream.read_records(
+            sync_mode=SyncMode.incremental, cursor_field=["change_status.last_change_date_time"], stream_slice=stream_slices[0]
+        )
+    )
+    expected_result = [
+        {
+            "campaign.id": 1,
+            "campaign_criterion.resource_name": "1",
+            "change_status.last_change_date_time": "2023-06-13 12:36:01.772447",
+            "customer.id": 123,
+        },
+        {
+            "campaign.id": 1,
+            "campaign_criterion.resource_name": "2",
+            "change_status.last_change_date_time": "2023-06-13 12:36:02.772447",
+            "customer.id": 123,
+        },
+        {"campaign_criterion.resource_name": "3", "deleted_at": "2023-06-13 12:36:03.772447"},
+        {"campaign_criterion.resource_name": "4", "deleted_at": "2023-06-13 12:36:04.772447"},
+    ]
 
     assert all([expected_row in result for expected_row in expected_result])
 
-    assert stream.state == {'change_status': {'123': {'change_status.last_change_date_time': '2023-06-13 12:36:04.772447'}}}
+    assert stream.state == {"change_status": {"123": {"change_status.last_change_date_time": "2023-06-13 12:36:04.772447"}}}
 
     assert stream.get_query.call_count == 1
 
@@ -302,3 +328,100 @@ def test_query_limit_hit_exception(mock_ads_client, config, customers):
 
     expected_message = "More then limit 2 records with same cursor field. Incremental sync is not possible for this stream."
     assert e.value.message == expected_message
+
+
+def test_change_status_get_query(mocker, mock_ads_client, config, customers):
+    """
+    Test the get_query method of ChangeStatus stream.
+
+    Given a sample stream_slice, it verifies that the returned query is as expected.
+    """
+    # Setup an instance of the ChangeStatus stream
+    google_api = MockGoogleAds(credentials=config["credentials"])
+    stream = ChangeStatus(api=google_api, customers=customers)
+
+    # Mock get_json_schema method of the stream to return a predefined schema
+    mocker.patch.object(stream, "get_json_schema", return_value={"properties": {"change_status.resource_type": {"type": "str"}}})
+
+    # Define a sample stream_slice for the test
+    stream_slice = {
+        "start_date": "2023-01-01 00:00:00.000000",
+        "end_date": "2023-09-19 00:00:00.000000",
+        "resource_type": "SOME_RESOURCE_TYPE",
+    }
+
+    # Call the get_query method with the stream_slice
+    query = stream.get_query(stream_slice=stream_slice)
+
+    # Expected result based on the provided sample
+    expected_query = """SELECT change_status.resource_type FROM change_status WHERE change_status.last_change_date_time >= '2023-01-01 00:00:00.000000' AND change_status.last_change_date_time <= '2023-09-19 00:00:00.000000' AND change_status.resource_type = 'SOME_RESOURCE_TYPE' ORDER BY change_status.last_change_date_time ASC LIMIT 2"""
+
+    # Check that the result from the get_query method matches the expected query
+    assert query == expected_query
+
+
+def are_queries_equivalent(query1, query2):
+    # Split the queries to extract the list of criteria
+    criteria1 = query1.split("IN (")[1].rstrip(")").split(", ")
+    criteria2 = query2.split("IN (")[1].rstrip(")").split(", ")
+
+    # Sort the criteria for comparison
+    criteria1_sorted = sorted(criteria1)
+    criteria2_sorted = sorted(criteria2)
+
+    # Replace the original criteria with the sorted version in the queries
+    query1_sorted = query1.replace(", ".join(criteria1), ", ".join(criteria1_sorted))
+    query2_sorted = query2.replace(", ".join(criteria2), ", ".join(criteria2_sorted))
+
+    return query1_sorted == query2_sorted
+
+
+def test_incremental_events_stream_get_query(mocker, mock_ads_client, config, customers):
+    """
+    Test the get_query method of the IncrementalEventsStream class.
+
+    Given a sample stream_slice, this test will verify that the returned query string is as expected.
+    """
+    # Setup an instance of the CampaignCriterion stream
+    google_api = MockGoogleAds(credentials=config["credentials"])
+    stream = CampaignCriterion(api=google_api, customers=customers)
+
+    # Mock get_json_schema method of the stream to return a predefined schema
+    mocker.patch.object(stream, "get_json_schema", return_value={"properties": {"campaign_criterion.resource_name": {"type": "str"}}})
+
+    # Define a sample stream_slice for the test
+    stream_slice = {
+        "customer_id": "1234567890",
+        "updated_ids": {
+            "customers/1234567890/adGroupCriteria/111111111111~1",
+            "customers/1234567890/adGroupCriteria/111111111111~2",
+            "customers/1234567890/adGroupCriteria/111111111111~3",
+        },
+        "deleted_ids": {
+            "customers/1234567890/adGroupCriteria/111111111111~4",
+            "customers/1234567890/adGroupCriteria/111111111111~5",
+        },
+        "record_changed_time_map": {
+            "customers/1234567890/adGroupCriteria/111111111111~1": "2023-09-18 08:56:53.413023",
+            "customers/1234567890/adGroupCriteria/111111111111~2": "2023-09-18 08:56:59.165599",
+            "customers/1234567890/adGroupCriteria/111111111111~3": "2023-09-18 08:56:59.165599",
+            "customers/1234567890/adGroupCriteria/111111111111~4": "2023-09-18 08:56:59.165599",
+            "customers/1234567890/adGroupCriteria/111111111111~5": "2023-09-18 08:56:59.165599",
+        },
+    }
+
+    # Call the get_query method with the stream_slice
+    query = stream.get_query(stream_slice=stream_slice)
+
+    # Assuming the generated query should look like:
+    expected_query = (
+        "SELECT campaign_criterion.resource_name "
+        "FROM campaign_criterion "
+        "WHERE campaign_criterion.resource_name IN ("
+        "'customers/1234567890/adGroupCriteria/111111111111~1', "
+        "'customers/1234567890/adGroupCriteria/111111111111~2', "
+        "'customers/1234567890/adGroupCriteria/111111111111~3')"
+    )
+
+    # Check if the query generated by the get_query method matches the expected query
+    assert are_queries_equivalent(query, expected_query)
