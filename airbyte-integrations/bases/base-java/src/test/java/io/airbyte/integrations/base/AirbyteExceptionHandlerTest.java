@@ -10,11 +10,10 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-
 import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +35,7 @@ public class AirbyteExceptionHandlerTest {
   public void setUpOut() {
     final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent);
     outputRecordConsumerFactory.when(OutputRecordConsumerFactory::getOutputRecordConsumer)
-            .thenReturn(printWriterOutputRecordConsumer);
+        .thenReturn(printWriterOutputRecordConsumer);
   }
 
   @Test

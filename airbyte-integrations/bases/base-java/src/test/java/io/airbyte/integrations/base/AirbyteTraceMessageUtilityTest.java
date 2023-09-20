@@ -35,7 +35,7 @@ public class AirbyteTraceMessageUtilityTest {
   public void setUpOut() {
     final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent);
     outputRecordConsumerFactory.when(OutputRecordConsumerFactory::getOutputRecordConsumer)
-            .thenReturn(printWriterOutputRecordConsumer);
+        .thenReturn(printWriterOutputRecordConsumer);
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {

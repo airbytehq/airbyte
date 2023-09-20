@@ -36,7 +36,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   // See https://docs.snowflake.com/en/sql-reference/reserved-keywords.html
-  // and https://github.com/airbytehq/airbyte/blob/f226503bd1d4cd9c7412b04d47de584523988443/airbyte-integrations/bases/base-normalization/normalization/transform_catalog/reserved_keywords.py
+  // and
+  // https://github.com/airbytehq/airbyte/blob/f226503bd1d4cd9c7412b04d47de584523988443/airbyte-integrations/bases/base-normalization/normalization/transform_catalog/reserved_keywords.py
   private static final List<String> RESERVED_COLUMN_NAMES = ImmutableList.of(
       "CURRENT_DATE",
       "CURRENT_TIME",
@@ -596,8 +597,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private static String prefixReservedColumnName(final String columnName) {
-    return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ?
-        "_" + columnName : columnName;
+    return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ? "_" + columnName : columnName;
   }
 
   public static String escapeSingleQuotedString(final String str) {
