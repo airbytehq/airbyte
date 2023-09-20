@@ -5,7 +5,7 @@
 from pathlib import Path
 
 from dagger import Container, QueryError
-from pipelines.actions.environments import find_local_python_dependencies
+from pipelines.actions.environments import apply_python_development_overrides, find_local_python_dependencies
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
@@ -32,6 +32,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
 
     async def _run(self) -> StepResult:
         connector: Container = await self._build_connector_function()
+        connector = await apply_python_development_overrides(self.context, connector)
         try:
             return await self.get_step_result(connector.with_exec(["spec"]))
         except QueryError as e:

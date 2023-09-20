@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -921,32 +921,6 @@ async def get_cdk_version_from_python_connector(python_connector: Container) -> 
     return cdk_version
 
 
-async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
-    if context.connector.technical_name == "source-file-secure":
-        return await with_airbyte_python_connector_full_dagger(context, build_platform)
-
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    connector_container = (
-        context.dagger_client.container(platform=build_platform)
-        .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .build(await context.get_connector_dir())
-        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
-    )
-
-    connector_container = await apply_python_development_overrides(context, connector_container)
-
-    cdk_version = await get_cdk_version_from_python_connector(connector_container)
-    if cdk_version:
-        context.logger.info(f"Connector has a cdk dependency, using cdk version {cdk_version}")
-        connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
-        context.cdk_version = cdk_version
-    if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:
-        raise DaggerError(
-            "Abusive caching might be happening. The connector container should have been built with the correct version as defined in metadata.yaml"
-        )
-    return await finalize_build(context, connector_container)
-
-
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
     """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
     connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
@@ -985,60 +959,6 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
         )
 
     return connector_container.with_entrypoint(original_entrypoint)
-
-
-async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
-    setup_dependencies_to_mount = await find_local_python_dependencies(
-        context, str(context.connector.code_directory), search_dependencies_in_setup_py=True, search_dependencies_in_requirements_txt=False
-    )
-
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    base = context.dagger_client.container(platform=build_platform).from_("python:3.9-slim")
-    snake_case_name = context.connector.technical_name.replace("-", "_")
-    entrypoint = ["python", "/airbyte/integration_code/main.py"]
-    builder = (
-        base.with_workdir("/airbyte/integration_code")
-        .with_env_variable("DAGGER_BUILD", "1")
-        .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y tzdata",
-                    "pip install --upgrade pip",
-                ]
-            )
-        )
-        .with_file("setup.py", (await context.get_connector_dir(include="setup.py")).file("setup.py"))
-    )
-
-    for dependency_path in setup_dependencies_to_mount:
-        in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
-        builder = builder.with_mounted_directory(in_container_dependency_path, context.get_repo_dir(dependency_path))
-
-    builder = builder.with_exec(["pip", "install", "--prefix=/install", "."])
-
-    connector_container = (
-        base.with_workdir("/airbyte/integration_code")
-        .with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y bash",
-                ]
-            )
-        )
-        .with_directory("/usr/local", builder.directory("/install"))
-        .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
-        .with_new_file("/etc/timezone", contents="Etc/UTC")
-        .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
-        .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
-        .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
-        .with_entrypoint(entrypoint)
-        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
-        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
-    )
-    return await finalize_build(context, connector_container)
 
 
 def with_crane(
