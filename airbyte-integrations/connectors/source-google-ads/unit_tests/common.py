@@ -31,14 +31,36 @@ class MockGoogleAdsClient:
         return MockSearchRequest()
 
     def get_service(self, service):
+        if service == "GoogleAdsFieldService":
+            return MockGoogleAdsFieldService()
         return MockGoogleAdsService()
 
     @staticmethod
-    def load_from_dict(config):
+    def load_from_dict(config, version=None):
         return MockGoogleAdsClient(config)
 
     def send_request(self, query, customer_id):
         yield from ()
+
+
+class MockGoogleAdsFieldService:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(MockGoogleAdsFieldService, cls).__new__(cls)
+            cls._instance.request_query = None
+        return cls._instance
+
+    def search_google_ads_fields(self, request):
+        self.request_query = request.query
+
+        class MockResponse:
+            def __init__(self, name):
+                self.name = name
+
+        fields = [name.strip("'") for name in request.query.split("WHERE name in (")[1].split(")")[0].split(",")]
+        return [MockResponse(name) for name in fields]
 
 
 class MockErroringGoogleAdsService:

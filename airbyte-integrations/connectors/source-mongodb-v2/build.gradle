@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
 }
 
 application {
@@ -18,7 +17,7 @@ dependencies {
 
     implementation 'org.mongodb:mongodb-driver-sync:4.4.0'
 
-    testImplementation libs.connectors.testcontainers.mongodb
+    testImplementation libs.testcontainers.mongodb
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
