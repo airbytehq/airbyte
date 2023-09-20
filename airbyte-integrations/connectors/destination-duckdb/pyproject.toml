@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "destination-duckdb"
-version = "0.2.2"
+version = "0.2.1"
 description = "Destination implementation for Duckdb."
 authors = ["Simon Späti, Airbyte"]
 license = "MIT"
