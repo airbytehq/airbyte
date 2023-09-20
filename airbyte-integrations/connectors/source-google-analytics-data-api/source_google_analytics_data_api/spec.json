@@ -130,17 +130,7 @@
               "description" : "A list of dimensions.",
               "type" : "array",
               "items" : {
-                "title" : "ValidEnums",
-                "description" : "An enumeration of dimensions.",
-                "enum" : [
-                  "cohort",
-                  "cohortNthDay",
-                  "browser",
-                  "country",
-                  "language",
-                  "date",
-                  "operatingSystem"
-                ]
+                "type" : "string"
               },
               "minItems" : 1,
               "order" : 1
@@ -150,16 +140,7 @@
               "description" : "A list of metrics.",
               "type" : "array",
               "items" : {
-                "title" : "ValidEnums",
-                "description" : "An enumeration of metrics.",
-                "enum" : [
-                  "cohortActiveUsers",
-                  "browser",
-                  "sessions",
-                  "totalUsers",
-                  "language",
-                  "query"
-                ]
+                "type" : "string"
               },
               "minItems" : 1,
               "order" : 2
