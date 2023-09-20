@@ -19,7 +19,7 @@ from deprecated.classic import deprecated
 @deprecated("This class is experimental. Use at your own risk.")
 class AbstractStream(ABC):
     """
-    AbstractStream is an experimental interface for Streams developed as part of the Concurrent CDK.
+    AbstractStream is an experimental interface for streams developed as part of the Concurrent CDK.
     This interface is not yet stable and may change in the future. Use at your own risk.
 
     Why create a new interface instead of adding concurrency capabilities the existing Stream?
