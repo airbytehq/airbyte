@@ -14,22 +14,30 @@ from typing import Any, Iterable, Mapping
 import duckdb
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
 
 logger = getLogger("airbyte")
 
 CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
 CONFIG_DEFAULT_SCHEMA = "main"
 
+
 def validated_sql_name(sql_name: Any) -> str:
     """Return the input if it is a valid SQL name, otherwise raise an exception."""
-    pattern = r'^[a-zA-Z0-9_]*$'
+    pattern = r"^[a-zA-Z0-9_]*$"
     result = str(sql_name)
     if bool(re.match(pattern, result)):
         return result
 
     raise ValueError(f"Invalid SQL name: {sql_name}")
-    
+
 
 class DestinationDuckdb(Destination):
     @staticmethod
@@ -38,7 +46,9 @@ class DestinationDuckdb(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
-        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
+        if destination_path.startswith("md:") or destination_path.startswith(
+            "motherduck:"
+        ):
             return destination_path
 
         if not destination_path.startswith("/local"):
@@ -86,10 +96,7 @@ class DestinationDuckdb(Destination):
 
         con = duckdb.connect(database=path, read_only=False)
 
-        # create the tables if needed
-        # con.execute("BEGIN TRANSACTION")
         con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
-        con.execute(f"USE {schema_name}")
 
         for configured_stream in configured_catalog.streams:
             name = configured_stream.stream.name
@@ -133,7 +140,9 @@ class DestinationDuckdb(Destination):
                 data = message.record.data
                 stream = message.record.stream
                 if stream not in streams:
-                    logger.debug(f"Stream {stream} was not present in configured streams, skipping")
+                    logger.debug(
+                        f"Stream {stream} was not present in configured streams, skipping"
+                    )
                     continue
 
                 # add to buffer
@@ -158,7 +167,9 @@ class DestinationDuckdb(Destination):
             con.executemany(query, buffer[stream_name])
             con.commit()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -187,4 +198,6 @@ class DestinationDuckdb(Destination):
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"An exception occurred: {repr(e)}"
+            )

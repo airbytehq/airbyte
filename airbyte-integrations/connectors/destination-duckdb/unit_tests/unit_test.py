@@ -13,6 +13,7 @@ def test_read_invalid_path():
 
     assert True
 
+
 @pytest.mark.parametrize(
     "input, expected",
     [
@@ -25,7 +26,7 @@ def test_read_invalid_path():
         ("test.123", None),
         ("test,123", None),
         ("test!123", None),
-    ]
+    ],
 )
 def test_validated_sql_name(input, expected):
     if expected is None:

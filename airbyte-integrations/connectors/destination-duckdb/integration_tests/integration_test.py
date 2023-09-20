@@ -31,7 +31,10 @@ from airbyte_cdk.models import (
 from destination_duckdb import DestinationDuckdb
 
 CONFIG_PATH = "integration_tests/config.json"
-SECRETS_CONFIG_PATH = "secrets/config.json" # Should contain a valid MotherDuck API token
+SECRETS_CONFIG_PATH = (
+    "secrets/config.json"  # Should contain a valid MotherDuck API token
+)
+
 
 def pytest_generate_tests(metafunc):
     if "config" not in metafunc.fixturenames:
