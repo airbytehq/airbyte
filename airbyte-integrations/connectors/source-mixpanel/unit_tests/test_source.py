@@ -145,7 +145,7 @@ def test_streams_disabled_402(requests_mock, config_raw):
         ({"credentials": {"username": "user", "secret": "secret"}}, False, "Required parameter 'project_id' missing or malformed. Please provide a valid project ID."),
         ({"credentials": {"api_secret": "secret"}}, True, None),
         ({
-            "credentials": {"username": "user", "secret": "secret"},
+            "credentials": {"username": "user", "secret": "secret", "project_id": 2397709},
             "project_timezone": "US/Pacific",
             "start_date": "2021-02-01T00:00:00Z",
             "end_date": "2023-02-01T00:00:00Z",
@@ -153,7 +153,6 @@ def test_streams_disabled_402(requests_mock, config_raw):
             "select_properties_by_default": True,
             "region": "EU",
             "date_window_size": 10,
-            "project_id": 2397709
          },
          True,
          None),
