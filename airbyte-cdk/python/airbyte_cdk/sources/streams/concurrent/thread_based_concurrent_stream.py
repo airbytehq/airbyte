@@ -7,19 +7,35 @@ from concurrent.futures import Future
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteMessage, SyncMode
-from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.sources.utils.types import StreamData
 
 
-class ConcurrentStream(AbstractStream):
+class ThreadBasedConcurrentStream(AbstractStream):
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self._cursor_field
+
+    @lru_cache(maxsize=None)
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._json_schema
+
+    @property
+    def name(self) -> str:
+        """
+        :return: Stream name. By default, this is the implementing class name, but it can be overridden as needed.
+        """
+        return self._name
+
     def __init__(
         self,
         partition_generator: PartitionGenerator,
@@ -39,9 +55,14 @@ class ConcurrentStream(AbstractStream):
         self._cursor_field = cursor_field
         self._availability_strategy = availability_strategy
 
+    def check_availability(self) -> Tuple[bool, Optional[str]]:
+        if self._availability_strategy:
+            return self._availability_strategy.check_availability(self.logger)
+        else:
+            return True, None
+        raise NotImplementedError
+
     def read(self) -> Iterable[StreamData]:
-        internal_config = InternalConfig()
-        total_records_counter = 0
         futures = []
         partition_generator = ConcurrentPartitionGenerator()
         partition_reader = PartitionReader()
@@ -60,11 +81,6 @@ class ConcurrentStream(AbstractStream):
                 record = partition_reader.get_next()
                 if record is not None:
                     yield record.stream_data
-                    # FIXME: I think this is moved back to AbstractSource
-                    if self.is_record(record.stream_data):
-                        total_records_counter += 1
-                        if internal_config and internal_config.is_limit_reached(total_records_counter):
-                            return
             while partition_generator.has_partition_ready():
                 partition = partition_generator.get_next()
                 if partition is not None:
@@ -78,39 +94,3 @@ class ConcurrentStream(AbstractStream):
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
         if exceptions_from_futures:
             raise RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def check_availability(self) -> Tuple[bool, Optional[str]]:
-        if self._availability_strategy:
-            return self._availability_strategy.check_availability(self.logger)
-        else:
-            return True, None
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
-
-    @property
-    def cursor_field(self) -> Union[str, List[str]]:
-        return self._cursor_field
-
-    @lru_cache(maxsize=None)
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return self._json_schema
-
-    @staticmethod
-    # FIXME: need to move this!
-    def is_record(record_data_or_message: StreamData) -> bool:
-        if isinstance(record_data_or_message, dict):
-            return True
-        elif isinstance(record_data_or_message, AirbyteMessage):
-            return bool(record_data_or_message.type == MessageType.RECORD)
-        else:
-            return False
-
-    @property
-    def transformer(self) -> TypeTransformer:
-        return TypeTransformer(TransformConfig.NoTransform)

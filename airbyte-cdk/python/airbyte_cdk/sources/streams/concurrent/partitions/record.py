@@ -2,13 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any
-
-from airbyte_cdk.sources.streams.core import StreamData
+from typing import Any, Mapping
 
 
 class Record:
-    def __init__(self, stream_data: StreamData):
+    """
+    Represents a record read from a stream.
+    """
+
+    def __init__(self, stream_data: Mapping[str, Any]):
         self.stream_data = stream_data
 
     def __eq__(self, other: Any) -> bool:

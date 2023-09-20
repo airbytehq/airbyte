@@ -1,25 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils import casing
-from airbyte_cdk.sources.utils.transform import TypeTransformer
-from airbyte_cdk.sources.utils.types import StreamData
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
 
 @deprecated("This class is experimental. Use at your own risk.")
 class AbstractStream(ABC):
     """
-    AbstractStream is an experimental interface for Streams developed as part of the Concurrent CDK.
+    AbstractStream is an experimental interface for streams developed as part of the Concurrent CDK.
     This interface is not yet stable and may change in the future. Use at your own risk.
-
 
     Why create a new interface instead of adding concurrency capabilities the existing Stream?
     We learnt a lot since the initial design of the Stream interface, and we wanted to take the opportunity to improve.
@@ -36,6 +35,7 @@ class AbstractStream(ABC):
     - The read method does not accept a cursor_field. Streams must be internally aware of the cursor field to use. User-defined cursor fields can be implemented by modifying the connector's main method to instantiate the streams with the configured cursor field.
     - Streams cannot return user-friendly messages by overriding Stream.get_error_display_message. This will be addressed in the future.
     - The Stream's behavior cannot depend on a namespace
+    - TypeTransformer is not supported. This will be addressed in the future.
     """
 
     @abstractmethod
@@ -46,11 +46,11 @@ class AbstractStream(ABC):
         """
 
     @property
+    @abstractmethod
     def name(self) -> str:
         """
         :return: Stream name. By default, this is the implementing class name, but it can be overridden as needed.
         """
-        return casing.camel_to_snake(self.__class__.__name__)
 
     @property
     def logger(self) -> logging.Logger:
@@ -73,12 +73,21 @@ class AbstractStream(ABC):
           If the stream has no primary keys, return None.
         """
 
-    @property
     @abstractmethod
-    def transformer(self) -> TypeTransformer:
+    def check_availability(self) -> Tuple[bool, Optional[str]]:
+        """
+        Checks whether this stream is available.
+
+        :return: A tuple of (boolean, str). If boolean is true, then this stream
+          is available, and no str is required. Otherwise, this stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
         """
 
-        :return:
+    @abstractmethod
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
         """
 
 
@@ -94,9 +103,13 @@ class StreamFacade(Stream):
     def __init__(self, stream: AbstractStream):
         self._stream = stream
 
-    @property
-    def name(self) -> str:
-        return self._stream.name
+    def read_full_refresh(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+    ) -> Iterable[StreamData]:
+        return self._stream.read()
 
     def read_records(
         self,
@@ -105,7 +118,15 @@ class StreamFacade(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        return self._stream.read()
+        if sync_mode == SyncMode.full_refresh:
+            return self._stream.read()
+        else:
+            # Incremental reads are not supported
+            raise NotImplementedError
+
+    @property
+    def name(self) -> str:
+        return self._stream.name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -119,10 +140,6 @@ class StreamFacade(Stream):
     def source_defined_cursor(self) -> bool:
         # Streams must be aware of their cursor at instantiation time
         return True
-
-    @property
-    def transformer(self) -> TypeTransformer:
-        return self._stream.transformer
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:

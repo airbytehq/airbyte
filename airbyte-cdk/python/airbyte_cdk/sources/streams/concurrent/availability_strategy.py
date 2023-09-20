@@ -8,11 +8,17 @@ from typing import Optional, Tuple
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from deprecated.classic import deprecated
 
 
+@deprecated("This class is experimental. Use at your own risk.")
 class AbstractAvailabilityStrategy(ABC):
     """
-    Abstract base class for checking stream availability.
+    AbstractAvailabilityStrategy is an experimental interface developed as part of the Concurrent CDK.
+    This interface is not yet stable and may change in the future. Use at your own risk.
+
+    Why create a new interface instead of using the existing AvailabilityStrategy?
+    The existing AvailabilityStrategy is tightly coupled with Stream and Source, which yields to circular dependencies and makes it difficult to move away from the Stream interface to AbstractStream.
     """
 
     @abstractmethod
@@ -28,6 +34,7 @@ class AbstractAvailabilityStrategy(ABC):
         """
 
 
+@deprecated("This class is experimental. Use at your own risk.")
 class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
     def __init__(self, stream: Stream, source: Source):
         self._stream = stream
@@ -37,9 +44,20 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
         return self._stream.availability_strategy.check_availability(self._stream, logger, self._source)
 
 
-class ConcurrentAvailabilityStrategyAdapter(AvailabilityStrategy):
+@deprecated("This class is experimental. Use at your own risk.")
+class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+        """
+        Checks stream availability.
+
+        Important to note that the stream and source parameters are not used by the underlying AbstractAvailabilityStrategy.
+
+        :param stream:
+        :param logger:
+        :param source:
+        :return:
+        """
         return self._abstract_availability_strategy.check_availability(logger)
