@@ -135,6 +135,12 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
   align-items: center;
 }
 
+@media (max-width: 996px) {
+  .cloudStatusLink {
+    display: none;
+  }
+}
+
 .cloudStatusLink::before {
   content: "";
   display: inline-block;
