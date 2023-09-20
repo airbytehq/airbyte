@@ -4,7 +4,7 @@
 import logging
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -78,6 +78,16 @@ class AbstractStream(ABC):
         """
 
         :return:
+        """
+
+    def check_availability(self) -> Tuple[bool, Optional[str]]:
+        """
+        Checks whether this stream is available.
+
+        :return: A tuple of (boolean, str). If boolean is true, then this stream
+          is available, and no str is required. Otherwise, this stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
         """
 
 
