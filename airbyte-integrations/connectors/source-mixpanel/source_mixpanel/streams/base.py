@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from pendulum import Date
+from source_mixpanel.utils import fix_date_time
 
 
 class MixpanelStream(HttpStream, ABC):
@@ -91,6 +92,7 @@ class MixpanelStream(HttpStream, ABC):
             data = [json_response]
 
         for record in data:
+            fix_date_time(record)
             yield record
 
     def parse_response(

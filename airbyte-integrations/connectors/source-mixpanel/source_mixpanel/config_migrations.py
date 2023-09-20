@@ -3,6 +3,7 @@
 #
 import logging
 from typing import Any, List, Mapping
+
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
@@ -30,10 +31,10 @@ class MigrateProjectId:
         """
         return "project_id" in config
 
-    @classmethod
-    def move_project_id(cls, config: Mapping[str, Any], source: Source = None) -> Mapping[str, Any]:
+    @staticmethod
+    def move_project_id(config: Mapping[str, Any]) -> Mapping[str, Any]:
         # assign old values to new property that will be used within the new version
-        if isinstance(config.get("credentials")):
+        if isinstance(config.get("credentials", 0), dict):
             config["credentials"]["project_id"] = config["project_id"]
         else:
             config["credentials"] = {"project_id": config["project_id"]}
@@ -43,7 +44,7 @@ class MigrateProjectId:
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         # modify the config
-        migrated_config = cls.move_project_id(config, source)
+        migrated_config = cls.move_project_id(config)
         # save the config
         source.write_config(migrated_config, config_path)
         # return modified config
