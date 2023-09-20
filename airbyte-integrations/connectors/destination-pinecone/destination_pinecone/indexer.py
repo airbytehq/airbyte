@@ -2,29 +2,21 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import itertools
 import uuid
 from typing import Optional
 
 import pinecone
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_pinecone.config import PineconeIndexingModel
 
-
-def chunks(iterable, batch_size):
-    """A helper function to break an iterable into chunks of size batch_size."""
-    it = iter(iterable)
-    chunk = tuple(itertools.islice(it, batch_size))
-    while chunk:
-        yield chunk
-        chunk = tuple(itertools.islice(it, batch_size))
-
-
 # large enough to speed up processing, small enough to not hit pinecone request limits
 PINECONE_BATCH_SIZE = 40
+
+# do not flood the server with too many connections in parallel
+PARALLELISM_LIMIT = 4
 
 MAX_METADATA_SIZE = 40_960 - 10_000
 
@@ -65,7 +57,7 @@ class PineconeIndexer(Indexer):
         vector_ids = [doc.id for doc in query_result.matches]
         if len(vector_ids) > 0:
             # split into chunks of 1000 ids to avoid id limit
-            batches = chunks(vector_ids, batch_size=MAX_IDS_PER_DELETE)
+            batches = create_chunks(vector_ids, batch_size=MAX_IDS_PER_DELETE)
             for batch in batches:
                 self.pinecone_index.delete(ids=list(batch))
 
@@ -97,12 +89,14 @@ class PineconeIndexer(Indexer):
             metadata = self._truncate_metadata(chunk.metadata)
             metadata["text"] = chunk.page_content
             pinecone_docs.append((str(uuid.uuid4()), chunk.embedding, metadata))
-        async_results = [
-            self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
-            for ids_vectors_chunk in chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE)
-        ]
-        # Wait for and retrieve responses (this raises in case of error)
-        [async_result.result() for async_result in async_results]
+        serial_batches = create_chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
+        for batch in serial_batches:
+            async_results = [
+                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+                for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE)
+            ]
+            # Wait for and retrieve responses (this raises in case of error)
+            [async_result.result() for async_result in async_results]
 
     def check(self) -> Optional[str]:
         try:
