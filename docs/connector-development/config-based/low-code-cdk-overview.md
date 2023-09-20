@@ -7,7 +7,7 @@ Developer updates will be announced via our #help-connector-development Slack ch
 :::
 
 :::note
-The low-code framework is in [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta), which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+The low-code framework is in **beta**, which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
 
 ## Why low-code?
@@ -138,7 +138,7 @@ For a deep dive into each of the components, refer to [Understanding the YAML fi
 
 ## Tutorial
 
-This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+This section is a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
 
 0. [Getting started](tutorial/0-getting-started.md)
 1. [Creating a source](tutorial/1-create-source.md)

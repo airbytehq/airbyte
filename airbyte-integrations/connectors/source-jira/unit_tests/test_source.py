@@ -14,7 +14,7 @@ from source_jira.source import SourceJira
 def test_streams(config):
     source = SourceJira()
     streams = source.streams(config)
-    expected_streams_number = 51
+    expected_streams_number = 52
     assert len(streams) == expected_streams_number
 
 
@@ -22,7 +22,7 @@ def test_streams(config):
 def test_check_connection(config, projects_response, labels_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
     responses.add(
@@ -40,7 +40,7 @@ def test_check_connection(config, projects_response, labels_response):
 def test_check_connection_config_error(config, caplog):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         status=401
     )
     responses.add(
@@ -60,21 +60,20 @@ def test_check_connection_config_error(config, caplog):
 def test_check_connection_404_error(config):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
-        status=404,
-        json={'errorMessages': ['Not Found project.']}
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        status=404
     )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/label?maxResults=50",
-        status=404,
-        json={'errorMessages': ['Not Found Labels.']}
+        status=404
     )
     source = SourceJira()
     logger_mock = MagicMock()
-    is_connected, reason = source.check_connection(logger=logger_mock, config=config)
-    assert is_connected is False
-    assert "Not Found Labels. 404 Client Error: Not Found for url" in reason
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check_connection(logger=logger_mock, config=config)
+
+    assert e.value.message == "Config validation error: please validate your domain."
 
 
 def test_get_authenticator(config):

@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
 }
 
 application {
@@ -29,8 +28,8 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
+    testImplementation libs.testcontainers.elasticsearch
+    integrationTestJavaImplementation libs.testcontainers.elasticsearch
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-elasticsearch')

@@ -3,7 +3,6 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
-    id 'airbyte-connector-acceptance-test'
 }
 
 application {
@@ -29,7 +28,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.testcontainers.mssqlserver
+    testImplementation libs.testcontainers.mssqlserver
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
