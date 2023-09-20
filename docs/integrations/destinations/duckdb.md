@@ -26,7 +26,7 @@ To specify a MotherDuck-hosted database as your destination, simply provide your
 
 :::caution
 
-We do not recommend providing your API token in the `md:` connection string, as this may cause your token to be printed to execution logs. Please use the `MotherDuck API Key`` setting instead.
+We do not recommend providing your API token in the `md:` connection string, as this may cause your token to be printed to execution logs. Please use the `MotherDuck API Key` setting instead.
 
 :::
 
