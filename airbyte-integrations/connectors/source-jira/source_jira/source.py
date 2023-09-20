@@ -4,6 +4,7 @@
 
 from typing import Any, List, Mapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
@@ -73,6 +74,10 @@ from .utils import read_full_refresh
 
 class SourceJira(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.parse(start_date)
+
         config["projects"] = config.get("projects", [])
         return config
 
@@ -113,22 +118,25 @@ class SourceJira(AbstractSource):
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-        issues_stream = Issues(**args, expand_fields=config.get("issues_stream_expand_with", []))
+        incremental_args = {**args, "start_date": config.get("start_date")}
+        issues_stream = Issues(**incremental_args, expand_fields=config.get("issues_stream_expand_with", []))
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
-            experimental_streams.append(PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **args))
+            experimental_streams.append(
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+            )
         return [
             ApplicationRoles(**args),
             Avatars(**args),
             Boards(**args),
-            BoardIssues(**args),
+            BoardIssues(**incremental_args),
             Dashboards(**args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
             issues_stream,
-            IssueComments(**args),
+            IssueComments(**incremental_args),
             issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
@@ -136,16 +144,16 @@ class SourceJira(AbstractSource):
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
             IssuePriorities(**args),
-            IssueProperties(**args),
-            IssueRemoteLinks(**args),
+            IssueProperties(**incremental_args),
+            IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
             IssueTransitions(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
-            IssueVotes(**args),
-            IssueWatchers(**args),
-            IssueWorklogs(**args),
+            IssueVotes(**incremental_args),
+            IssueWatchers(**incremental_args),
+            IssueWorklogs(**incremental_args),
             JiraSettings(**args),
             Labels(**args),
             Permissions(**args),
@@ -163,7 +171,7 @@ class SourceJira(AbstractSource):
             ScreenTabFields(**args),
             ScreenSchemes(**args),
             Sprints(**args),
-            SprintIssues(**args),
+            SprintIssues(**incremental_args),
             TimeTracking(**args),
             Users(**args),
             UsersGroupsDetailed(**args),

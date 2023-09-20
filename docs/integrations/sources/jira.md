@@ -120,7 +120,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.8.0   | 2023-09-19 | [\#30585](https://github.com/airbytehq/airbyte/pull/30585) | Remove start date from spec                                                                                             |
+| 0.7.1   | 2023-09-19 | [\#30585](https://github.com/airbytehq/airbyte/pull/30585) | Add skip for 404 error in issue properties steam                                                                        |
 | 0.7.0   | 2023-09-17 | [\#30532](https://github.com/airbytehq/airbyte/pull/30532) | Add foreign key to stream record where it misseing                                                                      |
 | 0.6.3   | 2023-09-19 | [\#30515](https://github.com/airbytehq/airbyte/pull/30515) | Add transform for invalid date-time format, add 404 handling for check                                                  |
 | 0.6.2   | 2023-09-19 | [\#30578](https://github.com/airbytehq/airbyte/pull/30578) | Fetch deleted and archived Projects                                                                                     |
