@@ -12,8 +12,10 @@ import pendulum
 import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import HTTPError
+from source_jira.type_transfromer import DateTimeTransformer
 
 from .utils import read_full_refresh, read_incremental, safe_max
 
@@ -38,6 +40,7 @@ class JiraStream(HttpStream, ABC):
     config_error_status_codes = [
         requests.codes.UNAUTHORIZED,
     ]
+    transformer: TypeTransformer = DateTimeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -347,11 +350,9 @@ class Issues(IncrementalJiraStream):
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
-    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, expand_transitions: bool = False, **kwargs):
+    def __init__(self, expand_fields: list = None, **kwargs):
         super().__init__(**kwargs)
-        self._expand_changelog = expand_changelog
-        self._expand_transitions = expand_transitions
-        self._render_fields = render_fields
+        self._expand_fields = expand_fields
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -371,15 +372,8 @@ class Issues(IncrementalJiraStream):
         if self._project_ids:
             jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
-        expand = []
-        if self._expand_changelog:
-            expand.append("changelog")
-        if self._expand_transitions:
-            expand.append("transitions")
-        if self._render_fields:
-            expand.append("renderedFields")
-        if expand:
-            params["expand"] = ",".join(expand)
+        if self._expand_fields:
+            params["expand"] = ",".join(self._expand_fields)
         return params
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
@@ -875,6 +869,7 @@ class Projects(JiraStream):
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)
         params["expand"] = "description,lead"
+        params["status"] = ["live", "archived", "deleted"]
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
