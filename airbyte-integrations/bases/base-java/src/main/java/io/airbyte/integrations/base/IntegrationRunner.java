@@ -86,11 +86,11 @@ public class IntegrationRunner {
   private static JsonSchemaValidator validator;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), OutputRecordConsumerFactory::getOutputRecordConsumer, destination, null);
+    this(new IntegrationCliParser(), () -> OutputRecordConsumerFactory.getOutputRecordConsumer(true), destination, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), OutputRecordConsumerFactory::getOutputRecordConsumer, null, source);
+    this(new IntegrationCliParser(), () -> OutputRecordConsumerFactory.getOutputRecordConsumer(true), null, source);
   }
 
   @VisibleForTesting
@@ -289,7 +289,7 @@ public class IntegrationRunner {
   }
 
   private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
-    final OutputRecordConsumer outputRecordCollector = outputRecordCollectorSupplier.get();
+    final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer(false);
 
     try (outputRecordCollector) {
       final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,

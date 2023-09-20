@@ -167,22 +167,23 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
     final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
     final ByteArrayOutputStream boas = new ByteArrayOutputStream();
-    final PrintWriterOutputRecordConsumer outputRecordConsumer = new PrintWriterOutputRecordConsumer(boas);
-    final AirbyteMessage expected = new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output);
+    try (final PrintWriterOutputRecordConsumer outputRecordConsumer = new PrintWriterOutputRecordConsumer(boas, true)) {
+      final AirbyteMessage expected = new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output);
 
-    when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(source.check(CONFIG)).thenReturn(output);
+      when(cliParser.parse(ARGS)).thenReturn(intConfig);
+      when(source.check(CONFIG)).thenReturn(output);
 
-    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
-    when(source.spec()).thenReturn(expectedConnSpec);
-    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
-    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
-    new IntegrationRunner(cliParser, () -> outputRecordConsumer, null, source, jsonSchemaValidator).run(ARGS);
+      final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+      when(source.spec()).thenReturn(expectedConnSpec);
+      when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+      final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+      new IntegrationRunner(cliParser, () -> outputRecordConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
-    final AirbyteMessage result = Jsons.deserialize(boas.toString(StandardCharsets.UTF_8), AirbyteMessage.class);
-    assertEquals(expected, result);
-    verify(source).check(CONFIG);
-    verify(jsonSchemaValidator).validate(any(), any());
+      final AirbyteMessage result = Jsons.deserialize(boas.toString(StandardCharsets.UTF_8), AirbyteMessage.class);
+      assertEquals(expected, result);
+      verify(source).check(CONFIG);
+      verify(jsonSchemaValidator).validate(any(), any());
+    }
   }
 
   @Test

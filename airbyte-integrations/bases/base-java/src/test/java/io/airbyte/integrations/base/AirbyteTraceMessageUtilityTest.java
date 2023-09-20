@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mockStatic;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -33,9 +34,9 @@ public class AirbyteTraceMessageUtilityTest {
 
   @BeforeEach
   public void setUpOut() {
-    final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent);
-    outputRecordConsumerFactory.when(OutputRecordConsumerFactory::getOutputRecordConsumer)
-        .thenReturn(printWriterOutputRecordConsumer);
+    final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent, true);
+    outputRecordConsumerFactory.when(() -> OutputRecordConsumerFactory.getOutputRecordConsumer(anyBoolean()))
+            .thenReturn(printWriterOutputRecordConsumer);
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {

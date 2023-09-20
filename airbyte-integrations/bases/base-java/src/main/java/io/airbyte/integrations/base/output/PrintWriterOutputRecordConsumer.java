@@ -28,23 +28,32 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PrintWriterOutputRecordConsumer.class);
 
+  private final boolean shouldClose;
   private final PrintWriter writer;
 
-  public PrintWriterOutputRecordConsumer() {
-    this(new FileOutputStream(FileDescriptor.out));
+  public PrintWriterOutputRecordConsumer(final boolean shouldClose) {
+    this(new FileOutputStream(FileDescriptor.out), shouldClose);
   }
 
   @VisibleForTesting
-  public PrintWriterOutputRecordConsumer(final OutputStream outputStream) {
+  public PrintWriterOutputRecordConsumer(final OutputStream outputStream, final boolean shouldClose) {
     LOGGER.info("Using PrintWriter for output record collection without output stream of type '{}'.", outputStream.getClass().getName());
+    this.shouldClose = shouldClose;
     writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)), true);
   }
 
   @Override
   public void close() throws Exception {
-    LOGGER.info("Closing PrintWriter...");
-    writer.close();
-    LOGGER.info("PrintWriter closed.");
+    /*
+     * We need to make sure that the last instance of this consumer that is used is the one that ultimately
+     * closes the stream, especially if the underlying stream uses the FileDescriptor.out file descriptor.
+     * Otherwise, the first close will close the file descriptor, impacting all other streams.
+     */
+    if (shouldClose) {
+      LOGGER.info("Closing PrintWriter...");
+      writer.close();
+      LOGGER.info("PrintWriter closed.");
+    }
   }
 
   @Override

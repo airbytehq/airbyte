@@ -63,7 +63,7 @@ public final class AirbyteTraceMessageUtility {
   // public void emitMetricTrace() {}
 
   private static void emitMessage(final AirbyteMessage message) {
-    try (final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer()) {
+    try (final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer(false)) {
       LOGGER.info("Emitting airbyte message '{}'...", message);
       outputRecordCollector.accept(message);
     } catch (final Exception e) {
