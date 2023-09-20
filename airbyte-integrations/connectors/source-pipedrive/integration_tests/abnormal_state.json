@@ -1,112 +1,134 @@
 [
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "deals"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "files"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "filters"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "notes"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "activities"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "activity_types"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "persons"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "pipelines"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "products"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "stages"
-      },
-      "stream_state": {
-        "update_time": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
   },
   {
+    "type": "STREAM",
     "stream": {
+      "stream_state": {
+        "modified": "2217-06-26 21:20:07"
+      },
       "stream_descriptor": {
         "name": "users"
-      },
-      "stream_state": {
-        "modified": "2200-06-01 10:10:10"
       }
-    },
-    "type": "STREAM"
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "organizations"
+      }
+    }
   }
 ]

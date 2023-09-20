@@ -24,7 +24,7 @@ definitions:
     url_base: "https://api.pipedrive.com/v1"
     http_method: "GET"
     request_parameters:
-      api_token: "{{ config['authorization']['api_token'] }}"
+      api_token: "{{ config['api_token'] }}"
       limit: "50"
       items: "{{ parameters.path_extractor }}"
   retriever:
@@ -343,17 +343,11 @@ spec:
       - replication_start_date
     additionalProperties: true
     properties:
-      authorization:
-        type: object
-        title: API Key Authentication
-        required:
-          - api_token
-        properties:
-          api_token:
-            title: API Token
-            type: string
-            description: The Pipedrive API Token.
-            airbyte_secret: true
+      api_token:
+        title: API Token
+        type: string
+        description: The Pipedrive API Token.
+        airbyte_secret: true
       replication_start_date:
         title: Start Date
         description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
