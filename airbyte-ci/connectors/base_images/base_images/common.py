@@ -15,7 +15,7 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 
 
 @dataclass
-class PublishedDockerImage:
+class PublishedImage:
     registry: str
     image_name: str
     tag: str
@@ -25,13 +25,13 @@ class PublishedDockerImage:
     def address(self) -> str:
         return f"{self.registry}/{self.image_name}:{self.tag}@sha256:{self.sha}"
 
-    @staticmethod
-    def from_address(address: str):
+    @classmethod
+    def from_address(cls, address: str):
         parts = address.split("/")
         repository = parts.pop(0)
         without_repository = "/".join(parts)
         image_name, tag, sha = without_repository.replace("@sha256", "").split(":")
-        return PublishedDockerImage(repository, image_name, tag, sha)
+        return cls(repository, image_name, tag, sha)
 
     @property
     def name_with_tag(self) -> str:
@@ -69,7 +69,7 @@ class AirbyteConnectorBaseImage(ABC):
 
     @property
     @abstractmethod
-    def compatible_languages(cls) -> Tuple[ConnectorLanguage, ...]:
+    def compatible_languages(self) -> Tuple[ConnectorLanguage, ...]:
         """Returns connector languages compatible with this base image.
 
         Raises:
@@ -82,20 +82,20 @@ class AirbyteConnectorBaseImage(ABC):
 
     @property
     @abstractmethod
-    def base_base_image(cls) -> PublishedDockerImage:
+    def base_base_image(self) -> PublishedImage:
         """Returns the base image used to build the Airbyte base image.
 
         Raises:
             NotImplementedError: Raised if a subclass does not define a 'base_base_image' attribute.
 
         Returns:
-            PublishedDockerImage: The base image used to build the Airbyte base image.
+            PublishedImage: The base image used to build the Airbyte base image.
         """
         raise NotImplementedError("Subclasses must define a 'base_base_image' attribute.")
 
     @property
     @abstractmethod
-    def image_name(cls) -> str:
+    def image_name(self) -> str:
         """This is the name of the final base image. By name we mean image repository name (without the tag).
 
         Raises:

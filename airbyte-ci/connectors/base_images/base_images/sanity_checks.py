@@ -7,29 +7,6 @@ import dagger
 from base_images import errors
 
 
-async def check_env_var_defined_with_dagger(
-    container: dagger.Container, expected_env_var_name: str, expected_env_var_value: Optional[str] = None
-):
-    """This checks if an environment variable is correctly defined with dagger.
-    This is a better check than the one using printenv in some contexts were we have no guarantee that the printenv command is available.
-
-    Args:
-        container (dagger.Container): The container on which the sanity checks should run.
-        expected_env_var_name (str): The name of the environment variable to check.
-        expected_env_var_value (Optional[str], optional): The expected value of the environment variable. Defaults to None.
-
-    Raises:
-        errors.SanityCheckError: Raised if the environment variable is not defined or if it has an unexpected value.
-    """
-    env_var_value = await container.env_variable(expected_env_var_name)
-    if env_var_value is None:
-        raise errors.SanityCheckError(f"the {expected_env_var_name} environment variable is not defined.")
-    if expected_env_var_value is not None and env_var_value != expected_env_var_value:
-        raise errors.SanityCheckError(
-            f"the {expected_env_var_name} environment variable is defined but has an unexpected value: {env_var_value}."
-        )
-
-
 async def check_env_var_with_printenv(
     container: dagger.Container, expected_env_var_name: str, expected_env_var_value: Optional[str] = None
 ):
@@ -54,24 +31,6 @@ async def check_env_var_with_printenv(
         raise errors.SanityCheckError(
             f"the {expected_env_var_name} environment variable is defined but has an unexpected value: {env_vars[expected_env_var_name]}."
         )
-
-
-async def check_label_defined_with_dagger(container: dagger.Container, expected_label: str, expected_label_value: Optional[str] = None):
-    """This checks if a label is correctly defined with dagger.
-
-    Args:
-        container (dagger.Container): The container on which the sanity checks should run.
-        expected_env_var_name (str): The name of the label to check.
-        expected_env_var_value (Optional[str], optional): The expected value of the label. Defaults to None.
-
-    Raises:
-        errors.SanityCheckError: Raised if the environment variable is not defined or if it has an unexpected value.
-    """
-    label_value = await container.label(expected_label)
-    if label_value is None:
-        raise errors.SanityCheckError(f"the {expected_label_value} label is not defined.")
-    if expected_label_value is not None and label_value != expected_label_value:
-        raise errors.SanityCheckError(f"the {expected_label_value} label is defined but has an unexpected value: {label_value}.")
 
 
 async def check_timezone_is_utc(container: dagger.Container):

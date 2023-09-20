@@ -5,12 +5,6 @@
 """
 
 
-class BaseImageVersionNotFoundError(ValueError):
-    """Raised when the version of a base image is not found."""
-
-    pass
-
-
 class SanityCheckError(Exception):
     """Raised when a sanity check fails."""
 

@@ -4,7 +4,7 @@
 
 from base_images import common
 
-PYTHON_3_9_18 = common.PublishedDockerImage(
+PYTHON_3_9_18 = common.PublishedImage(
     registry="docker.io",
     image_name="python",
     tag="3.9.18-slim-bookworm",

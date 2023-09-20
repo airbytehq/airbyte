@@ -15,7 +15,7 @@ from .base_bases import PYTHON_3_9_18
 class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage):
 
     compatible_languages = (ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE)
-    base_base_image: Final[common.PublishedDockerImage] = PYTHON_3_9_18
+    base_base_image: Final[common.PublishedImage] = PYTHON_3_9_18
     image_name: Final[str] = "airbyte/python-connector-base"
 
     pip_cache_name: Final[str] = "pip-cache"
