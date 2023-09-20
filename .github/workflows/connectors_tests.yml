@@ -23,13 +23,13 @@ jobs:
     timeout-minutes: 1440 # 24 hours
     runs-on: ${{ inputs.runner || 'conn-prod-xlarge-runner'}}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
             ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
