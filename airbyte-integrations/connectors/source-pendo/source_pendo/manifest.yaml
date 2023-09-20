@@ -2959,6 +2959,64 @@ streams:
           field_path: []
       paginator:
         type: NoPagination
+  - type: DeclarativeStream
+    name: Visitors
+    primary_key:
+      - visitorId
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          metadata:
+            type: object
+            properties:
+              auto:
+                type: object
+              agent:
+                type: object
+              custom:
+                type: object
+            additionalProperties: true
+          visitorId:
+            type: string
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://app.pendo.io/api/v1/
+        path: aggregation
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_json:
+          request:
+            name: all-visitors
+            sort:
+              - visitorId
+            pipeline:
+              - source:
+                  visitors:
+                    identified: "{{ config.identified_visitors_only }}"
+            requestId: all-visitors
+          response:
+            mimeType: application/json
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: x-pendo-integration-key
+          api_token: "{{ config['api_key'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: NoPagination
+metadata:
+  autoImportSchema:
+    Visitors: true
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -2968,8 +3026,15 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
+      identified_visitors_only:
+        type: boolean
+        order: 1
+        title: Identified Visitors Only
+        default: true
+        description: Do you want to only sync identified visitors?
     additionalProperties: true
   documentation_url: https://docs.airbyte.com/integrations/sources/pendo
   type: Spec
