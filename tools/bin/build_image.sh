@@ -23,7 +23,7 @@ args=(
     --iidfile "$ID_FILE"
 )
 
-JDK_VERSION="${JDK_VERSION:-17.0.4}"
+JDK_VERSION="${JDK_VERSION:-17.0.8}"
 if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
   docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" . "${args[@]}"
 else
