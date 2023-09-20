@@ -6,28 +6,42 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
+                                 '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
+                                 '-XX:GCLockerRetryAllocationCount=100',
+//            '-Djava.rmi.server.hostname=localhost',
+//            '-Dcom.sun.management.jmxremote=true',
+//            '-Dcom.sun.management.jmxremote.port=6000',
+//            '-Dcom.sun.management.jmxremote.rmi.port=6000',
+//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.authenticate=false',
+//            '-Dcom.sun.management.jmxremote.ssl=false'
+    ]
 }
 
 dependencies {
-    implementation 'io.airbyte:airbyte-cdk:0.0.1'
+    implementation project(':airbyte-commons')
+    implementation ('io.airbyte:airbyte-cdk:0.0.1') {
+        exclude group: 'io.airbyte', module: 'airbyte-commons'
+    }
 
-    implementation 'com.google.cloud:google-cloud-bigquery:2.27.0'
+    implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
 
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation libs.airbyte.protocol
+    implementation (libs.airbyte.protocol) {
+        exclude group: 'io.airbyte', module: 'airbyte-commons'
+    }
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
@@ -35,7 +49,7 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
-
+    integrationTestJavaImplementation project(':airbyte-commons')
 }
 
 configurations.all {
