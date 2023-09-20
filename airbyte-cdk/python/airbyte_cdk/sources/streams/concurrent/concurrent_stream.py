@@ -3,66 +3,27 @@
 #
 
 import concurrent
-import logging
 from concurrent.futures import Future
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.source import Source
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.abstract_stream import AbstractAvailabilityStrategy, AbstractStream
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.streams.partitions.legacy import LegacyPartitionGenerator
 from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.types import StreamData
 
 
-class AvailabilityStrategyLegacyAdapter(AvailabilityStrategy):
-    """
-    This class is used to adapt the legacy Stream's Availability so it can be used from a ConcurrentStream.
-    """
-
-    def __init__(self, stream: Stream, availability_strategy: AvailabilityStrategy):
-        self._stream = stream
-        self._availability_strategy = availability_strategy
-
-    def check_availability(self, stream: AbstractStream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
-        if stream.name != self._stream.name:
-            raise ValueError(
-                f"AvailabilityStrategyLegacyAdapter can only be used with the stream it was initialized with. Expected {self._stream.name}, got {stream.name}"
-            )
-
-        return self._availability_strategy.check_availability(self._stream, logger, source)
-
-
 class ConcurrentStream(AbstractStream):
-    @classmethod
-    def create_from_legacy_stream(cls, stream: Stream, max_workers: int) -> "ConcurrentStream":
-        """
-        Create a ConcurrentStream from a legacy Stream.
-        :param stream:
-        :param max_workers:
-        :return:
-        """
-        return ConcurrentStream(
-            partition_generator=LegacyPartitionGenerator(stream),
-            max_workers=max_workers,
-            name=stream.name,
-            json_schema=stream.get_json_schema(),
-            primary_key=stream.primary_key,
-            cursor_field=stream.cursor_field,
-        )
-
     def __init__(
         self,
         partition_generator: PartitionGenerator,
         max_workers: int,
         name: str,
         json_schema: Mapping[str, Any],
+        availability_strategy: AbstractAvailabilityStrategy,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         cursor_field: Union[str, List[str]],
     ):
@@ -73,6 +34,7 @@ class ConcurrentStream(AbstractStream):
         self._json_schema = json_schema
         self._primary_key = primary_key
         self._cursor_field = cursor_field
+        self._availability_strategy = availability_strategy
 
     def read(self) -> Iterable[StreamData]:
         # FIXME
@@ -119,9 +81,9 @@ class ConcurrentStream(AbstractStream):
     def name(self) -> str:
         return self._name
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(self) -> Tuple[bool, Optional[str]]:
         if self._availability_strategy:
-            return self._availability_strategy.check_availability(self, logger, source)
+            return self._availability_strategy.check_availability(self.logger)
         else:
             return True, None
 

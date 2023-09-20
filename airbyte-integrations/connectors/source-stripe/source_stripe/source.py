@@ -1,9 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
-from typing import Any, List, Mapping, MutableMapping, Tuple
+import logging
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
@@ -11,9 +10,11 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractAvailabilityStrategy
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.partitions.legacy import LegacyPartitionGenerator
+from airbyte_cdk.sources.streams.partitions.legacy import LegacyAvailabilityStrategy, LegacyPartitionGenerator
 from airbyte_cdk.sources.streams.stream_facade import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
@@ -33,9 +34,17 @@ from source_stripe.streams import (
 )
 
 
+class ConcurrentAvailabilityStrategyAdapter(AvailabilityStrategy):
+    def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
+        self._abstract_availability_strategy = abstract_availability_strategy
+
+    def check_availability(self, stream: Stream, logger: logging.Logger, source) -> Tuple[bool, Optional[str]]:
+        return self._abstract_availability_strategy.check_availability(logger)
+
+
 class ConcurrentStreamAdapter(Stream):
     @classmethod
-    def create_from_legacy_stream(cls, stream: Stream, max_workers: int) -> Stream:
+    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int) -> Stream:
         """
         Create a ConcurrentStream from a legacy Stream.
         :param stream:
@@ -48,6 +57,7 @@ class ConcurrentStreamAdapter(Stream):
                 max_workers=max_workers,
                 name=stream.name,
                 json_schema=stream.get_json_schema(),
+                availability_strategy=LegacyAvailabilityStrategy(stream, source),
                 primary_key=stream.primary_key,
                 cursor_field=stream.cursor_field,
             )
@@ -440,4 +450,4 @@ class SourceStripe(AbstractSource):
             ),
         ]
         # return legacy_streams
-        return [ConcurrentStreamAdapter.create_from_legacy_stream(stream, 6) for stream in legacy_streams]
+        return [ConcurrentStreamAdapter.create_from_legacy_stream(stream, self, 6) for stream in legacy_streams]

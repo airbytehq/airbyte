@@ -1,14 +1,26 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-from typing import Any, Iterable, Mapping, Optional
+import logging
+from typing import Any, Iterable, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.abstract_stream import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.partitions.partition import Partition
 from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.record import Record
+
+
+# FIXME this belongs in a separate module
+class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
+    def __init__(self, stream: Stream, source: Source):
+        self._stream = stream
+        self._source = source
+
+    def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
+        return self._stream.availability_strategy.check_availability(self._stream, logger, self._source)
 
 
 class LegacyPartitionGenerator(PartitionGenerator):
