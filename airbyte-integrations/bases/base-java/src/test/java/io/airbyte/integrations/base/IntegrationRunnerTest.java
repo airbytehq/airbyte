@@ -30,6 +30,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.Destination.ShimToSerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.output.OutputRecordConsumer;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -43,6 +44,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -157,6 +159,29 @@ class IntegrationRunnerTest {
 
     verify(source).check(CONFIG);
     verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
+  void testCheckSourceWithActualOutputCollector() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
+    final ByteArrayOutputStream boas = new ByteArrayOutputStream();
+    final PrintWriterOutputRecordConsumer outputRecordConsumer = new PrintWriterOutputRecordConsumer(boas);
+    final AirbyteMessage expected = new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output);
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.check(CONFIG)).thenReturn(output);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, () -> outputRecordConsumer, null, source, jsonSchemaValidator).run(ARGS);
+
+    final AirbyteMessage result = Jsons.deserialize(boas.toString(StandardCharsets.UTF_8), AirbyteMessage.class);
+    assertEquals(expected, result);
+    verify(source).check(CONFIG);
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
