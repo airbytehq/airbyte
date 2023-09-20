@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from abc import ABC, abstractmethod
 from functools import lru_cache
@@ -11,7 +12,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils import casing
-from airbyte_cdk.sources.utils.transform import TypeTransformer
 from deprecated.classic import deprecated
 
 
@@ -36,6 +36,7 @@ class AbstractStream(ABC):
     - The read method does not accept a cursor_field. Streams must be internally aware of the cursor field to use. User-defined cursor fields can be implemented by modifying the connector's main method to instantiate the streams with the configured cursor field.
     - Streams cannot return user-friendly messages by overriding Stream.get_error_display_message. This will be addressed in the future.
     - The Stream's behavior cannot depend on a namespace
+    - TypeTransformer is not supported. This will be addressed in the future.
     """
 
     @abstractmethod
@@ -47,6 +48,10 @@ class AbstractStream(ABC):
 
     @abstractmethod
     def generate_partitions(self) -> Iterable[Partition]:
+        """
+        Generate partitions for this stream.
+        :return: Iterable of partitions
+        """
         pass
 
     @property
@@ -77,14 +82,7 @@ class AbstractStream(ABC):
           If the stream has no primary keys, return None.
         """
 
-    @property
     @abstractmethod
-    def transformer(self) -> TypeTransformer:
-        """
-
-        :return:
-        """
-
     def check_availability(self) -> Tuple[bool, Optional[str]]:
         """
         Checks whether this stream is available.
@@ -93,6 +91,12 @@ class AbstractStream(ABC):
           is available, and no str is required. Otherwise, this stream is unavailable
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
+        """
+
+    @abstractmethod
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        :return: A dict of the JSON schema representing this stream.
         """
 
 
@@ -133,10 +137,6 @@ class StreamFacade(Stream):
     def source_defined_cursor(self) -> bool:
         # Streams must be aware of their cursor at instantiation time
         return True
-
-    @property
-    def transformer(self) -> TypeTransformer:
-        return self._stream.transformer
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
