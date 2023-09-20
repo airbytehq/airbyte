@@ -32,9 +32,9 @@ class NotionStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
 
-    # @property
-    # def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-    #     return None
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
