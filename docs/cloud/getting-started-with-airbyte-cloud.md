@@ -71,7 +71,6 @@ Setting up a connection involves configuring the following parameters:
 | Destination Namespace and stream prefix                                                                                                   | Where should the replicated data be written?                                                            |
 | Catalog selection                                                                                                                        | Which streams and fields should be replicated from the source to the destination?                       |
 | Sync mode                                                                                                                                | How should the streams be replicated (read and written)?                                                |
-| 
 
 For more information, see [Connections and Sync Modes](../understanding-airbyte/connections/README.md) and [Namespaces](../understanding-airbyte/namespaces.md)
 
