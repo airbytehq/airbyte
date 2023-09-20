@@ -39,13 +39,16 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
   @Override
   public void close() throws Exception {
+    LOGGER.info("Flushing and closing PrintWriter...");
     writer.flush();
     writer.close();
   }
 
   @Override
   public void accept(final AirbyteMessage airbyteMessage) {
-    writer.println(Jsons.serialize(airbyteMessage));
+    final String json = Jsons.serialize(airbyteMessage);
+    LOGGER.info("Accepted message '{}' for output.", json);
+    writer.println(json);
   }
 
 }
