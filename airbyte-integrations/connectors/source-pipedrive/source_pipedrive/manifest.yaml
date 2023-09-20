@@ -242,7 +242,7 @@ definitions:
       path_extractor: "product"
       path: "/recents"
 
-  products_fields_stream:
+  product_fields_stream:
     $ref: "#/definitions/base_stream"
     name: "products_fields"
     $parameters:
@@ -322,7 +322,7 @@ streams:
   - "#/definitions/person_fields_stream"
   - "#/definitions/pipelines_stream"
   - "#/definitions/products_stream"
-  - "#/definitions/products_fields_stream"
+  - "#/definitions/product_fields_stream"
   - "#/definitions/roles_stream"
   - "#/definitions/stages_stream"
   - "#/definitions/users_stream"
@@ -341,6 +341,7 @@ spec:
     type: object
     required:
       - replication_start_date
+      - api_token
     additionalProperties: true
     properties:
       api_token:
