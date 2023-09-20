@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +24,7 @@ import org.junit.jupiter.api.Test;
 class DetectStreamToFlushTest {
 
   public static final Instant NOW = Instant.now();
-  public static final Instant FIVE_MIN_AGO = NOW.minusSeconds(60 * 5);
+  public static final Duration FIVE_MIN = Duration.ofMinutes(5);
   private static final long SIZE_10MB = 10 * 1024 * 1024;
   private static final long SIZE_200MB = 200 * 1024 * 1024;
 
@@ -75,21 +77,31 @@ class DetectStreamToFlushTest {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
-    when(bufferDequeue.getTimeOfLastRecord(DESC1))
-        // because we eagerly load values and later access them again
-        // double the mocks for correctness; two calls here equals one test case.
-        .thenReturn(Optional.empty())
-        .thenReturn(Optional.empty())
-        .thenReturn(Optional.of(NOW))
-        .thenReturn(Optional.of(NOW))
-        .thenReturn(Optional.of(FIVE_MIN_AGO))
-        .thenReturn(Optional.of(FIVE_MIN_AGO));
+    final Clock mockedNowProvider = mock(Clock.class);
 
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher, mockedNowProvider);
+
+    // initialize flush time
+    when(mockedNowProvider.millis())
+        .thenReturn(NOW.toEpochMilli());
+
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
+
+    // check 5 minutes later
+    when(mockedNowProvider.millis())
+        .thenReturn(NOW.plus(FIVE_MIN).toEpochMilli());
+
+    assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
+
+    // just flush once
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
+
+    // check another 5 minutes later
+    when(mockedNowProvider.millis())
+        .thenReturn(NOW.plus(FIVE_MIN).plus(FIVE_MIN).toEpochMilli());
     assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
   }
 

@@ -1,8 +1,6 @@
 plugins {
     id 'airbyte-python'
     id 'airbyte-docker'
-    // TODO
-//    id 'airbyte-connector-acceptance-test'
 }
 
 airbytePython {

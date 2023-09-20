@@ -158,18 +158,18 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 34, [], None),
         (
                 '{"error": "Not sufficient permissions"}',
                 403,
-                32,
+                31,
                 ["Skipping stream ticket_forms, error message: Not sufficient permissions. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."],
                 None
         ),
         (
                 '',
                 404,
-                32,
+                31,
                 ["Skipping stream ticket_forms, error message: {'title': 'Not Found', 'message': 'Received empty JSON response'}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."],
                 'Not Found'
         ),

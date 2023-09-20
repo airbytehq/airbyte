@@ -27,13 +27,13 @@ class CatalogParserTest {
     sqlGenerator = mock(SqlGenerator.class);
     // noop quoting logic
     when(sqlGenerator.buildColumnId(any())).thenAnswer(invocation -> {
-      String fieldName = invocation.getArgument(0);
+      final String fieldName = invocation.getArgument(0);
       return new ColumnId(fieldName, fieldName, fieldName);
     });
     when(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer(invocation -> {
-      String namespace = invocation.getArgument(0);
-      String name = invocation.getArgument(1);
-      String rawNamespace = invocation.getArgument(1);
+      final String namespace = invocation.getArgument(0);
+      final String name = invocation.getArgument(1);
+      final String rawNamespace = invocation.getArgument(1);
       return new StreamId(namespace, name, rawNamespace, namespace + "_abab_" + name, namespace, name);
     });
 
@@ -47,12 +47,12 @@ class CatalogParserTest {
   @Test
   public void finalNameCollision() {
     when(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer(invocation -> {
-      String originalNamespace = invocation.getArgument(0);
-      String originalName = (invocation.getArgument(1));
-      String originalRawNamespace = (invocation.getArgument(1));
+      final String originalNamespace = invocation.getArgument(0);
+      final String originalName = (invocation.getArgument(1));
+      final String originalRawNamespace = (invocation.getArgument(1));
 
       // emulate quoting logic that causes a name collision
-      String quotedName = originalName.replaceAll("bar", "");
+      final String quotedName = originalName.replaceAll("bar", "");
       return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_abab_" + quotedName, originalNamespace,
           originalName);
     });
@@ -73,22 +73,22 @@ class CatalogParserTest {
    */
   @Test
   public void columnNameCollision() {
-    when(sqlGenerator.buildColumnId(any())).thenAnswer(invocation -> {
-      String originalName = invocation.getArgument(0);
+    when(sqlGenerator.buildColumnId(any(), any())).thenAnswer(invocation -> {
+      final String originalName = invocation.getArgument(0);
 
       // emulate quoting logic that causes a name collision
-      String quotedName = originalName.replaceAll("bar", "");
+      final String quotedName = originalName.replaceAll("bar", "");
       return new ColumnId(quotedName, originalName, quotedName);
     });
-    JsonNode schema = Jsons.deserialize("""
-                                        {
-                                          "type": "object",
-                                          "properties": {
-                                            "foobarfoo": {"type": "string"},
-                                            "foofoo": {"type": "string"}
-                                          }
-                                        }
-                                        """);
+    final JsonNode schema = Jsons.deserialize("""
+                                              {
+                                                "type": "object",
+                                                "properties": {
+                                                  "foobarfoo": {"type": "string"},
+                                                  "foofoo": {"type": "string"}
+                                                }
+                                              }
+                                              """);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)));
 
     final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
@@ -96,7 +96,7 @@ class CatalogParserTest {
     assertEquals(2, parsedCatalog.streams().get(0).columns().size());
   }
 
-  private static ConfiguredAirbyteStream stream(String namespace, String name) {
+  private static ConfiguredAirbyteStream stream(final String namespace, final String name) {
     return stream(
         namespace,
         name,
@@ -110,7 +110,7 @@ class CatalogParserTest {
                           """));
   }
 
-  private static ConfiguredAirbyteStream stream(String namespace, String name, JsonNode schema) {
+  private static ConfiguredAirbyteStream stream(final String namespace, final String name, final JsonNode schema) {
     return new ConfiguredAirbyteStream().withStream(
         new AirbyteStream()
             .withNamespace(namespace)
