@@ -286,3 +286,91 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             ),
         ],
     )
+
+def upload_all_docs_to_gcs(connectors_dir: Path, docs_dir: Path, bucket_name: str):
+    service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+    storage_client = storage.Client(credentials=credentials)
+    bucket = storage_client.bucket(bucket_name)
+
+    # A function to extract type and name from the folder name
+    def parse_folder_name(folder_name: str) -> (str, str):
+        if "scaffol" in folder_name:
+            return None, None
+        elif folder_name.startswith('source-'):
+            return 'source', folder_name[len('source-'):]
+        elif folder_name.startswith('destination-'):
+            return 'destination', folder_name[len('destination-'):]
+        else:
+            return None, None
+
+    def read_metadata_yaml(path: Path) -> ConnectorMetadataDefinitionV0:
+        return ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(path.read_text()))
+
+    def get_doc_paths(metadata: ConnectorMetadataDefinitionV0, connector_name: str) -> (str, str):
+        sub_dir = f"{metadata.data.connectorType}s"
+        doc_file_name = metadata.data.documentationUrl.split('/')[-1]
+        doc_path = docs_dir / sub_dir / f"{doc_file_name}.md"
+        inapp_doc_path = docs_dir / sub_dir / f"{doc_file_name}.inapp.md"
+
+        # some connectors like source-appstore-singer have an old documentationUrl, so we need to check with the connector name too
+        alt_doc_path = docs_dir / sub_dir / f"{connector_name}.md"
+        alt_inapp_doc_path = docs_dir / sub_dir / f"{connector_name}.inapp.md"
+
+        if (doc_path.exists()):
+            return doc_path, inapp_doc_path if inapp_doc_path.exists() else None
+        elif (alt_doc_path.exists()):
+            return alt_doc_path, alt_inapp_doc_path if alt_inapp_doc_path.exists() else None
+        else:
+            return None, None
+
+    excluded_connectors = []
+    connector_infos = []
+    
+    for connector_dir in connectors_dir.iterdir():
+        if connector_dir.is_dir():
+            connector_type, connector_name = parse_folder_name(connector_dir.name)
+            if connector_type and connector_name:  # Skip folders that don't match the pattern
+                metadata_file_path = connector_dir / METADATA_FILE_NAME
+                if metadata_file_path.exists():
+                    metadata = read_metadata_yaml(metadata_file_path)
+                    doc_path, inapp_doc_path = get_doc_paths(metadata, connector_name)  # 'source' becomes 'sources', 'destination' becomes 'destinations'
+                    
+                    if not doc_path:
+                        raise FileNotFoundError(f"Expected to find connector doc file at {doc_path} for metadata file at {metadata_file_path}, but none was found.")
+
+                    directory_info = {
+                        'type': connector_type,
+                        'name': connector_name,
+                        'path': connector_dir,
+                        'metadata': metadata,
+                        'doc_path': doc_path
+                    }
+                    if inapp_doc_path:
+                        directory_info['inapp_doc_path'] = inapp_doc_path
+
+                    connector_infos.append(directory_info)
+                else:
+                    excluded_connectors.append(connector_dir.name)
+
+    print("excluded_connectors: ", excluded_connectors)
+    print(f"Found docs for {len(connector_infos)} connectors")
+
+    # Example to show uploading the docs for a single connector. Comment these lines out when uploading all docs.
+    github_connector_info = [connector_info for connector_info in connector_infos if connector_info['name'] == "github"][0]
+    # versioned uploads
+    _doc_upload(github_connector_info['metadata'], bucket, github_connector_info['doc_path'], False, False)
+    _doc_upload(github_connector_info['metadata'], bucket, github_connector_info['doc_path'], False, True)
+    # latest uploads
+    _doc_upload(github_connector_info['metadata'], bucket, github_connector_info['doc_path'], True, False)
+    _doc_upload(github_connector_info['metadata'], bucket, github_connector_info['doc_path'], True, True)
+
+    # Uncomment these lines to upload all docs
+    # for connector_info in connector_infos:
+    #     print(f"Uploading docs for connector {connector_info['name']}")
+    #     # versioned uploads
+    #     _doc_upload(connector_info['metadata'], bucket, connector_info['doc_path'], False, False)
+    #     _doc_upload(connector_info['metadata'], bucket, connector_info['doc_path'], False, True)
+    #     # latest uploads
+    #     _doc_upload(connector_info['metadata'], bucket, connector_info['doc_path'], True, False)
+    #     _doc_upload(connector_info['metadata'], bucket, connector_info['doc_path'], True, True)

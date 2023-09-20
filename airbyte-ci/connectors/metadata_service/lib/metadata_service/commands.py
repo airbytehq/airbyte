@@ -6,7 +6,7 @@ import pathlib
 
 import click
 from metadata_service.constants import METADATA_FILE_NAME
-from metadata_service.gcs_upload import MetadataUploadInfo, upload_metadata_to_gcs
+from metadata_service.gcs_upload import MetadataUploadInfo, upload_metadata_to_gcs, upload_all_docs_to_gcs
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 from pydantic import ValidationError
 
@@ -60,3 +60,14 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
     else:
         click.secho(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
         exit(5)
+
+@metadata_service.command(help="Upload docs for all connectors to a GCS bucket.")
+@click.argument("connectors-dir", type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument("docs-dir", type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument("bucket-name", type=click.STRING)
+def upload_all_docs(connectors_dir: pathlib.Path, docs_dir: pathlib.Path, bucket_name: str):
+    print("connectors_dir: ", connectors_dir)
+    print("docs_dir: ", docs_dir)
+    print("bucket_name: ", bucket_name)
+    upload_all_docs_to_gcs(connectors_dir, docs_dir, bucket_name)
+    exit(0)
