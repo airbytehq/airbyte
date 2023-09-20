@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class AirbyteExceptionHandlerTest {
 
   private static MockedStatic<OutputRecordConsumerFactory> outputRecordConsumerFactory;
-  private volatile ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
   @BeforeAll
   public static void setup() {
