@@ -32,9 +32,9 @@ class NotionStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    # @property
+    # def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+    #     return None
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
@@ -70,9 +70,9 @@ class NotionStream(HttpStream, ABC):
             "has_more": true,
             "results": [ ... ]
         }
-        Doc: https://developers.notion.com/reference/pagination
+        Doc: https://developers.notion.com/reference/intro#pagination
         """
-        next_cursor = response.json()["next_cursor"]
+        next_cursor = response.json().get("next_cursor")
         if next_cursor:
             return {"next_cursor": next_cursor}
 
