@@ -64,9 +64,22 @@ rootProject.name = 'airbyte'
 // definition for dependency resolution
 dependencyResolutionManagement {
     repositories {
-        maven {
-            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-        }
+        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
+
+        // Start with the local filesystem.
+        mavenLocal()
+
+        // ## Look into repos controlled by Airbyte.
+
+        // This repo hosts our public artifacts and can be referenced by anyone.
+        maven { url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/' }
+
+        // TODO: We might want to add a private proxy repo for maven central at some point.
+
+        // ## Look into other, public repos.
+
+        // Maven Central has most of everything.
+        mavenCentral()
     }
     versionCatalogs {
         libs {

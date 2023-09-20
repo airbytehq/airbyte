@@ -36,12 +36,6 @@ plugins {
     id 'ru.vyarus.use-python'
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-    }
-}
 
 Properties env = new Properties()
 rootProject.file('gradle.properties').withInputStream { env.load(it) }
@@ -175,17 +169,6 @@ subprojects { subproj ->
                 checkCDKJarExists(cdkVersionNeeded)
             }
         }
-    }
-
-    repositories {
-        mavenCentral()
-        maven {
-            url 'https://jitpack.io'
-        }
-        maven {
-            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-        }
-        mavenLocal()
     }
 
     jacoco {
