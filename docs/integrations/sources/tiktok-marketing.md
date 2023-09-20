@@ -64,11 +64,12 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | ------------ | ------------------------------------------ | :---------- |
+|:------------------------------------------| ------------ |--------------------------------------------|:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
 | Campaigns                                 | Prod,Sandbox | campaign_id                                | Yes         |
+| Images                                    | Prod,Sandbox | image_id                                   | No          |
 | AdsReportsHourly                          | Prod,Sandbox | ad_id, stat_time_hour                      | Yes         |
 | AdsReportsDaily                           | Prod,Sandbox | ad_id, stat_time_day                       | Yes         |
 | AdsReportsLifetime                        | Prod,Sandbox | ad_id                                      | No          |
@@ -298,6 +299,28 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "objective": "LANDING_PAGE"
 }
 ```
+
+**[Images](https://ads.tiktok.com/marketing_api/docs?id=) Stream**
+
+```
+{
+    "create_time": "2023-04-26T13:35:27Z",
+    "displayable": true,
+    "image_url": "https://p21-ad-sg.ibyteimg.com/large/ad-site-i18n-sg/1234567890",
+    "file_name": "Frame 19.png",
+    "signature": "8e6ba863250903166c7af7a34c5ab8b3",
+    "image_id": "ad-site-i18n-sg/202304265d0defc41ac578104cf7a5d4",
+    "height": 500,
+    "format": "jpeg",
+    "size": 3471,
+    "modify_time": "2023-04-26T13:35:27Z",
+    "width": 500,
+    "material_id": "7226351730437914620",
+    "is_carousel_usable": true
+}
+```
+
+**[Videos](https://ads.tiktok.com/marketing_api/docs?id=) Stream**
 
 **AdsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 

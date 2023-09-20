@@ -195,6 +195,7 @@ class TiktokStream(HttpStream, ABC):
         }
         """
         data = response.json()
+        print(data)
         if data["code"]:
             raise TiktokException(data)
         data = data["data"]
@@ -467,6 +468,8 @@ class Campaigns(IncrementalTiktokStream):
     primary_key = "campaign_id"
 
     def path(self, *args, **kwargs) -> str:
+        print(f"DALES_LOG CAMPAIGNS: {args}")
+        print(f"DALES_LOG CAMPAIGNS: {kwargs}")
         return "campaign/get/"
 
 
@@ -486,6 +489,26 @@ class Ads(IncrementalTiktokStream):
 
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
+
+
+class Images(IncrementalTiktokStream):
+    """Docs: """
+
+    primary_key = "image_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/image/ad/search/"
+
+
+class Videos(IncrementalTiktokStream):
+    """Docs: """
+
+    primary_key = "video_id"
+
+    def path(self, *args, **kwargs) -> str:
+        print(f"DALES_LOG: {args}")
+        print(f"DALES_LOG: {kwargs}")
+        return "file/video/ad/search/"
 
 
 class BasicReports(IncrementalTiktokStream, ABC):

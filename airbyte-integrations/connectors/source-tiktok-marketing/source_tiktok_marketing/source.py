@@ -37,8 +37,10 @@ from .streams import (
     CampaignsReports,
     Daily,
     Hourly,
+    Images,
     Lifetime,
     ReportGranularity,
+    Videos,
 )
 
 DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -117,7 +119,8 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-
+        print(f'DALES_LOG: {args["is_sandbox"]}')
+        print(f'DALES_LOG: {args}')
         is_production = not (args["is_sandbox"])
 
         report_granularity = config.get("report_granularity")
@@ -128,6 +131,8 @@ class SourceTiktokMarketing(AbstractSource):
             Ads(**args),
             AdGroups(**args),
             Campaigns(**args),
+            Images(**args),
+            Videos(**args),
         ]
 
         if is_production:
