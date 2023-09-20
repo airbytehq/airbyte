@@ -26,8 +26,8 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.junit.jupiter.system.stubs
 
-    testImplementation libs.connectors.testcontainers.jdbc
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.jdbc
+    testImplementation libs.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
 

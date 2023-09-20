@@ -38,8 +38,8 @@ dependencies {
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
 
-    testImplementation libs.connectors.testcontainers.postgresql
-    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.postgresql
+    integrationTestJavaImplementation libs.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-iceberg')

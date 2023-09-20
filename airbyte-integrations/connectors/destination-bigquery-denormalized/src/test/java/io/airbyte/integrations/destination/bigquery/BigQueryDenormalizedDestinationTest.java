@@ -102,15 +102,6 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
-  void getRecordFormatterCreator() {
-    final BigQuerySQLNameTransformer nameTransformerMock = mock(BigQuerySQLNameTransformer.class);
-    final BigQueryRecordFormatter resultFormatter = bqdd.getRecordFormatterCreator(nameTransformerMock)
-        .apply(mapper.createObjectNode());
-
-    assertThat(resultFormatter, instanceOf(GcsBigQueryDenormalizedRecordFormatter.class));
-  }
-
-  @Test
   void putStreamIntoUploaderMap_compareSchemas_expectedIsNotNullExistingIsNull() throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     final String streamName = "stream_name";

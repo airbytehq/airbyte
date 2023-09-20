@@ -7,9 +7,11 @@ from typing import Any, List, Mapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic.error_wrappers import ValidationError
 
 from .streams import (
@@ -34,6 +36,7 @@ from .streams import (
     IssueResolutions,
     Issues,
     IssueSecuritySchemes,
+    IssueTransitions,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -99,7 +102,16 @@ class SourceJira(AbstractSource):
         except ValidationError as validation_error:
             return False, validation_error
         except requests.exceptions.RequestException as request_error:
-            message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
+            if request_error.response.status_code == requests.codes.not_found:
+                raise AirbyteTracedException(
+                    message="Config validation error: please validate your domain.",
+                    internal_message=str(request_error),
+                    failure_type=FailureType.config_error,
+                ) from None
+            # sometimes jira returns non json response
+            message = ""
+            if request_error.response.headers.get("content-type") == "application/json":
+                message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
             return False, f"{message} {request_error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -107,12 +119,7 @@ class SourceJira(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config.get("start_date")}
-        render_fields = config.get("render_fields", False)
-        issues_stream = Issues(
-            **incremental_args,
-            expand_changelog=config.get("expand_issue_changelog", False),
-            render_fields=render_fields,
-        )
+        issues_stream = Issues(**incremental_args, expand_fields=config.get("issues_stream_expand_with", []))
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
@@ -141,6 +148,7 @@ class SourceJira(AbstractSource):
             IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
+            IssueTransitions(**args),
             IssueTypeSchemes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
