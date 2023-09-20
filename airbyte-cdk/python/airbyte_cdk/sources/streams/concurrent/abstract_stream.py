@@ -110,6 +110,9 @@ class StreamFacade(Stream):
     The default implementations define restrictions imposed on Streams migrated to the new interface. For instance, only source-defined cursors are supported.
     """
 
+    def __init__(self, stream: AbstractStream):
+        self._stream = stream
+
     def read_full_refresh(
         self,
         cursor_field: Optional[List[str]],
@@ -125,13 +128,11 @@ class StreamFacade(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        # This method is not implemented because it should not be called directly
-        # When reading in full refresh, read_full_refresh should be called instead
-        # Incremental reads are not supported
-        raise NotImplementedError
-
-    def __init__(self, stream: AbstractStream):
-        self._stream = stream
+        if sync_mode == SyncMode.full_refresh:
+            return self._stream.read()
+        else:
+            # Incremental reads are not supported
+            raise NotImplementedError
 
     @property
     def name(self) -> str:
