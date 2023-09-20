@@ -31,18 +31,18 @@ from airbyte_cdk.models import (
 from destination_duckdb import DestinationDuckdb
 
 CONFIG_PATH = "integration_tests/config.json"
-
+SECRETS_CONFIG_PATH = "secrets/config.json" # Should contain a valid MotherDuck API token
 
 def pytest_generate_tests(metafunc):
     if "config" not in metafunc.fixturenames:
         return
 
     configs: list[str] = ["local_file_config"]
-    if Path(CONFIG_PATH).is_file():
+    if Path(SECRETS_CONFIG_PATH).is_file():
         configs.append("motherduck_config")
     else:
         print(
-            f"Skipping MotherDuck tests because config file not found at: {CONFIG_PATH}"
+            f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}"
         )
 
     # for test_name in ["test_check_succeeds", "test_write"]:
@@ -58,14 +58,13 @@ def test_schema_name() -> str:
 
 @pytest.fixture
 def config(request, test_schema_name: str) -> Dict[str, str]:
-    # create a file "myfile" in "mydir" in temp directory
     if request.param == "local_file_config":
         tmp_dir = tempfile.TemporaryDirectory()
         test = os.path.join(str(tmp_dir.name), "test.duckdb")
-        yield {"destination_path": test, "schema:": test_schema_name}
+        yield {"destination_path": test, "schema": test_schema_name}
 
     elif request.param == "motherduck_config":
-        config_dict = json.loads(Path(CONFIG_PATH).read_text())
+        config_dict = json.loads(Path(SECRETS_CONFIG_PATH).read_text())
         config_dict["schema"] = test_schema_name
         yield config_dict
 

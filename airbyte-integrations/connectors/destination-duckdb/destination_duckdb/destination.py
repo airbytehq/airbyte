@@ -18,6 +18,8 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 
 logger = getLogger("airbyte")
 
+CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
+CONFIG_DEFAULT_SCHEMA = "main"
 
 def validated_sql_name(sql_name: Any) -> str:
     """Return the input if it is a valid SQL name, otherwise raise an exception."""
@@ -75,10 +77,10 @@ class DestinationDuckdb(Destination):
 
         path = str(config.get("destination_path"))
         path = self._get_destination_path(path)
-        schema_name = validated_sql_name(config.get("destination_path"))
+        schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
 
         # Get and register auth token if applicable
-        motherduck_api_key = str(config.get("motherduck_api_key"))
+        motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
         if motherduck_api_key:
             os.environ["motherduck_token"] = motherduck_api_key
 
@@ -86,6 +88,9 @@ class DestinationDuckdb(Destination):
 
         # create the tables if needed
         # con.execute("BEGIN TRANSACTION")
+        con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
+        con.execute(f"USE {schema_name}")
+
         for configured_stream in configured_catalog.streams:
             name = configured_stream.stream.name
             table_name = f"_airbyte_raw_{name}"
@@ -173,8 +178,8 @@ class DestinationDuckdb(Destination):
                 logger.info(f"Using DuckDB file at {path}")
                 os.makedirs(os.path.dirname(path), exist_ok=True)
 
-            if "motherduck_api_key" in config:
-                os.environ["motherduck_token"] = config["motherduck_api_key"]
+            if CONFIG_MOTHERDUCK_API_KEY in config:
+                os.environ["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
 
             con = duckdb.connect(database=path, read_only=False)
             con.execute("SELECT 1;")
