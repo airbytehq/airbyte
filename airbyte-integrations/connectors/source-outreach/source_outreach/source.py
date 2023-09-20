@@ -207,6 +207,14 @@ class Calls(IncrementalOutreachStream):
     def path(self, **kwargs) -> str:
         return "calls"
 
+class CallPurposes(IncrementalOutreachStream):
+    """
+    Call Purposes stream. Yields data from the GET /callPurposes endpoint.
+    See https://developers.outreach.io/api/reference/tag/Call-Purpose/ 
+    """
+
+    def path(self, **kwargs) -> str:
+        return "callPurposes"
 
 class Users(IncrementalOutreachStream):
     """
@@ -296,6 +304,7 @@ class SourceOutreach(AbstractSource):
             Mailboxes(authenticator=auth, **config),
             Stages(authenticator=auth, **config),
             Calls(authenticator=auth, **config),
+            CallPurposes(authenticator=auth, **config),
             Users(authenticator=auth, **config),
             Tasks(authenticator=auth, **config),
             Templates(authenticator=auth, **config),
