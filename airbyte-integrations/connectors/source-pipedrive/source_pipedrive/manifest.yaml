@@ -103,7 +103,7 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_base"
     $parameters:
-      path_extractor: "file"
+      path_extractor: "filter"
       path: "/recents"
 
   lead_labels_stream:
