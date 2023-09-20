@@ -25,7 +25,12 @@
     "noImplicitThis": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "types": [
+      "jest",
+      "node"
+    ]
+    
   },
   "include": ["src"]
 }
