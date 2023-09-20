@@ -9,7 +9,6 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -46,14 +45,6 @@ class AbstractStream(ABC):
         Read a stream in full refresh mode
         :return: The stream's records
         """
-
-    @abstractmethod
-    def generate_partitions(self) -> Iterable[Partition]:
-        """
-        Generate partitions for this stream.
-        :return: Iterable of partitions
-        """
-        pass
 
     @property
     def name(self) -> str:
