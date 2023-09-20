@@ -13,7 +13,8 @@
       "type": "string"
     },
     "created_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "created_by": {
       "$ref": "user.json"
@@ -22,7 +23,8 @@
       "$ref": "user.json"
     },
     "last_edited_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "archived": {
       "type": "boolean"

@@ -10,10 +10,12 @@
       "type": "string"
     },
     "created_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "last_edited_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "title": {
       "type": "array",
