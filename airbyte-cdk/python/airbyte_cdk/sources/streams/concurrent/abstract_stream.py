@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils import casing
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
 
@@ -109,12 +110,13 @@ class StreamFacade(Stream):
     The default implementations define restrictions imposed on Streams migrated to the new interface. For instance, only source-defined cursors are supported.
     """
 
-    def __init__(self, stream: AbstractStream):
-        self._stream = stream
-
-    @property
-    def name(self) -> str:
-        return self._stream.name
+    def read_full_refresh(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+    ) -> Iterable[StreamData]:
+        return self._stream.read()
 
     def read_records(
         self,
@@ -123,7 +125,17 @@ class StreamFacade(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        return self._stream.read()
+        # This method is not implemented because it should not be called directly
+        # When reading in full refresh, read_full_refresh should be called instead
+        # Incremental reads are not supported
+        raise NotImplementedError
+
+    def __init__(self, stream: AbstractStream):
+        self._stream = stream
+
+    @property
+    def name(self) -> str:
+        return self._stream.name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -146,9 +158,3 @@ class StreamFacade(Stream):
     def supports_incremental(self) -> bool:
         # Only full refresh is supported
         return False
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for partition in self._stream.generate_partitions():
-            yield partition.to_slice()
