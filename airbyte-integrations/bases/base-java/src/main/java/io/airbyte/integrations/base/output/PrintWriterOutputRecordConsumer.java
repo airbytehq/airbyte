@@ -34,13 +34,12 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
         new BufferedWriter(
             new OutputStreamWriter(
                 new FileOutputStream(FileDescriptor.out),
-                StandardCharsets.UTF_8)));
+                StandardCharsets.UTF_8)), true);
   }
 
   @Override
   public void close() throws Exception {
-    LOGGER.info("Flushing and closing PrintWriter...");
-    writer.flush();
+    LOGGER.info("Closing PrintWriter...");
     writer.close();
   }
 
