@@ -1,12 +1,6 @@
 version: "0.29.0"
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data"]
-
   requester:
     type: HttpRequester
     url_base: "https://campaign-api.audiencereport.com"
@@ -18,18 +12,17 @@ definitions:
       secret_key: "{{ config['credentials']['client_secret'] }}"
       lifetime: ""
   retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
     requester:
       $ref: "#/definitions/requester"
 
   base_stream:
-    type: DeclarativeStream
+    selector:
+      extractor:
+        field_path: [ "data" ]
     retriever:
       $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/base_stream/selector"
 
   default_paginator:
     type: "DefaultPaginator"
@@ -49,11 +42,9 @@ definitions:
     primary_key: ""
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
       requester:
+        $ref: "#/definitions/retriever/requester"
         path: "campaigns"
-        $ref: "#/definitions/requester"
       paginator:
         $ref: "#/definitions/double_paginator"
         page_size_option:
@@ -78,14 +69,12 @@ definitions:
     primary_key: ""
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       partition_router:
         $ref: "#/definitions/records_partition_router"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "#/definitions/retriever/requester"
         path: "reports/{{ stream_partition.parent_id }}/delivery/devices"
         error_handler:
           response_filters:
@@ -94,20 +83,17 @@ definitions:
 
   profile_stream:
     $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "profile"
-      primary_key: ""
-      path: "reports/{{ stream_partition.parent_id }}/profile"
+    name: "profile"
+    primary_key: ""
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       partition_router:
         $ref: "#/definitions/records_partition_router"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "#/definitions/retriever/requester"
+        path: "reports/{{ stream_partition.parent_id }}/profile"
         error_handler:
           response_filters:
             - http_codes: [ 409 ]
@@ -117,20 +103,17 @@ definitions:
 
   reach_stream:
     $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "reach"
-      primary_key: ""
-      path: "reports/{{ stream_partition.parent_id }}/reach"
+    name: "reach"
+    primary_key: ""
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       partition_router:
         $ref: "#/definitions/records_partition_router"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "#/definitions/retriever/requester"
+        path: "reports/{{ stream_partition.parent_id }}/reach"
         error_handler:
           response_filters:
             - http_codes: [ 409 ]
@@ -138,20 +121,17 @@ definitions:
 
   report_stream:
     $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "report"
-      primary_key: ""
-      path: "reports/{{ stream_partition.parent_id }}"
+    name: "report"
+    primary_key: ""
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      record_selector:
-        $ref: "#/definitions/selector"
       paginator:
         type: NoPagination
       partition_router:
         $ref: "#/definitions/records_partition_router"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "#/definitions/retriever/requester"
+        path: "reports/{{ stream_partition.parent_id }}"
         error_handler:
           response_filters:
             - http_codes: [ 409 ]
