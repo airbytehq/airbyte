@@ -6,10 +6,12 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["segments.date"], ["segments.ad_network_type"]],
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["segments.date"], ["segments.ad_network_type"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -20,14 +22,23 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
         "source_defined_primary_key": [
-          ["campaign_budget.id"],
-          ["segments.date"]
+            ["customer.id"],
+            ["campaign_budget.id"],
+            ["segments.date"],
+            ["segments.budget_campaign_association_status.campaign"],
+            ["segments.budget_campaign_association_status.status"]
         ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [["campaign_budget.id"], ["segments.date"]]
+      "primary_key": [
+            ["customer.id"],
+            ["campaign_budget.id"],
+            ["segments.date"],
+            ["segments.budget_campaign_association_status.campaign"],
+            ["segments.budget_campaign_association_status.status"]
+        ]
     },
     {
       "stream": {
@@ -46,11 +57,13 @@
         "name": "account_performance_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["customer.id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
+      "primary_key": [["customer.id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -59,24 +72,26 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "source_defined_primary_key": [["click_view.gclid"], ["segments.date"]],
+        "source_defined_primary_key": [["click_view.gclid"], ["segments.date"], ["segments.ad_network_type"]],
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [["click_view.gclid"], ["segments.date"]]
+      "primary_key": [["click_view.gclid"], ["segments.date"], ["segments.ad_network_type"]]
     },
     {
       "stream": {
         "name": "geographic_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["customer.id"], ["geographic_view.country_criterion_id"], ["geographic_view.location_type"], ["segments.date"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
+      "primary_key": [["customer.id"], ["geographic_view.country_criterion_id"], ["geographic_view.location_type"], ["segments.date"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -84,11 +99,13 @@
         "name": "keyword_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ad_group_criterion.criterion_id"], ["ad_group.id"], ["segments.date"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group_criterion.criterion_id"], ["ad_group.id"], ["segments.date"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -96,11 +113,13 @@
         "name": "display_keyword_performance_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
+      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -108,10 +127,12 @@
         "name": "display_topics_performance_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
+      "primary_key": [["ad_group.id"], ["ad_group_criterion.criterion_id"], ["segments.date"], ["segments.ad_network_type"], ["segments.device"]],
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"]
     },
@@ -133,16 +154,13 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "source_defined_primary_key": [
-          ["ad_group_ad.ad.id"],
-          ["segments.date"]
-        ],
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["segments.date"]],
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [["ad_group_ad.ad.id"], ["segments.date"]]
+      "primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["segments.date"]]
     },
     {
       "stream": {
@@ -179,45 +197,45 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"],
-        "source_defined_primary_key": [["campaign.id"], ["segments.date"]]
+        "source_defined_primary_key": [["campaign.id"], ["segments.date"], ["segments.hour"], ["segments.ad_network_type"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["segments.date"],
-      "primary_key": [["campaign.id"], ["segments.date"]]
+      "primary_key": [["campaign.id"], ["segments.date"], ["segments.hour"], ["segments.ad_network_type"]]
     },
     {
       "stream": {
         "name": "campaign_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["campaign_label.resource_name"]]
+        "source_defined_primary_key": [["campaign.id"], ["label.id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["campaign_label.resource_name"]]
+      "primary_key": [["campaign.id"], ["label.id"]]
     },
     {
       "stream": {
         "name": "ad_group_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["ad_group_label.resource_name"]]
+        "source_defined_primary_key": [["ad_group.id"], ["label.id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["ad_group_label.resource_name"]]
+      "primary_key": [["ad_group.id"], ["label.id"]]
     },
     {
       "stream": {
         "name": "ad_group_ad_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["ad_group_ad_label.resource_name"]]
+        "source_defined_primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["label.id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["ad_group_ad_label.resource_name"]]
+      "primary_key": [["ad_group.id"], ["ad_group_ad.ad.id"], ["label.id"]]
     },
     {
       "stream": {
@@ -225,10 +243,12 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
+        "source_defined_primary_key": [["customer.id"], ["user_location_view.country_criterion_id"], ["user_location_view.targeting_location"], ["segments.date"], ["segments.ad_network_type"]],
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
+      "primary_key": [["customer.id"], ["user_location_view.country_criterion_id"], ["user_location_view.targeting_location"], ["segments.date"], ["segments.ad_network_type"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -256,18 +276,22 @@
       "stream": {
         "name": "audience",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["customer.id"], ["audience.id"]]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["customer.id"], ["audience.id"]],
       "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "user_interest",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["user_interest.user_interest_id"]]
       },
       "sync_mode": "full_refresh",
+      "primary_key": [["user_interest.user_interest_id"]],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -297,21 +321,13 @@
         "name": "campaign_bidding_strategies",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [
-          ["campaign.id"],
-          ["bidding_strategy.id"],
-          ["segments.date"]
-        ],
+        "source_defined_primary_key": [["campaign.id"], ["bidding_strategy.id"], ["segments.date"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        ["campaign.id"],
-        ["bidding_strategy.id"],
-        ["segments.date"]
-      ],
+      "primary_key": [["campaign.id"], ["bidding_strategy.id"], ["segments.date"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -319,21 +335,13 @@
         "name": "ad_group_bidding_strategies",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [
-          ["ad_group.id"],
-          ["bidding_strategy.id"],
-          ["segments.date"]
-        ],
+        "source_defined_primary_key": [["ad_group.id"], ["bidding_strategy.id"], ["segments.date"]],
         "source_defined_cursor": true,
         "default_cursor_field": ["segments.date"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [
-        ["ad_group.id"],
-        ["bidding_strategy.id"],
-        ["segments.date"]
-      ],
+      "primary_key": [["ad_group.id"], ["bidding_strategy.id"], ["segments.date"]],
       "cursor_field": ["segments.date"]
     },
     {
@@ -363,9 +371,7 @@
         "name": "ad_group_criterion_labels",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["ad_group_criterion_label.resource_name"]
-        ]
+        "source_defined_primary_key": [["ad_group_criterion_label.resource_name"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
