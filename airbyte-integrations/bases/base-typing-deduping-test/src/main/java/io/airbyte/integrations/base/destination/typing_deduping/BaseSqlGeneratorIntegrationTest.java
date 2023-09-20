@@ -797,9 +797,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * primary key, or cursor.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"$", "\"", "'", "`", ".", "$$", "\\"})
+  @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
-    final String str = namespace + "_" + specialChars;
+    final String str = specialChars + "_" + namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
     final StreamId modifiedStreamId = buildStreamId(
         originalStreamId.finalNamespace(),
@@ -837,6 +837,41 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     } finally {
       teardownNamespace(modifiedStreamId.finalNamespace());
     }
+  }
+
+  /**
+   * Verify column names that are reserved keywords are handled successfully. Each destination should
+   * always have at least 1 column in the record data that is a reserved keyword.
+   */
+  @Test
+  public void testReservedKeywords() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_inputrecords_raw.jsonl"));
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND,
+        null,
+        Optional.empty(),
+        new LinkedHashMap<>() {
+
+          {
+            put(generator.buildColumnId("current_date"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("join"), AirbyteProtocolType.STRING);
+          }
+
+        });
+
+    final String createTable = generator.createTable(stream, "", false);
+    destinationHandler.execute(createTable);
+    final String updateTable = generator.updateTable(stream, "");
+    destinationHandler.execute(updateTable);
+
+    DIFFER.diffFinalTableRecords(
+        BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_expectedrecords_final.jsonl"),
+        dumpFinalTableRecords(streamId, ""));
   }
 
   /**

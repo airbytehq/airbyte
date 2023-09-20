@@ -1,6 +1,6 @@
 # Airbyte Support
 
-Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there! 
+Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there!
 
 ## Airbyte Open Source Support
 
@@ -26,7 +26,7 @@ If you have questions about connector setup, error resolution, or want to report
 
 If you couldn't find the information you need in our docs or Help Center, open a ticket within the Airbyte Cloud platform by selecting the "Support" icon in the lower left navigation bar. Alternatively, you can submit a ticket through our [Help Center](https://support.airbyte.com/hc/en-us) by completing an Airbyte Cloud Support Request.
 
-If you're unsure about the supported connectors, refer to our [connector catalog](https://docs.airbyte.com/integrations/) & [release phases](https://docs.airbyte.com/project-overview/product-release-stages/).
+If you're unsure about the supported connectors, refer to our [Connector Catalog](https://docs.airbyte.com/integrations/) & [Connector Support Levels](https://docs.airbyte.com/project-overview/product-support-levels/).
 
 For account or credit-related inquiries, contact our [sales team](https://airbyte.com/talk-to-sales).
 
@@ -48,7 +48,7 @@ Submitting a Pull Request for review?
 * If you are submitting a Platform PR we accept Platform PRs in the areas below:
   * Helm
   * Environment variable configurations
-  * Bug Fixes 
+  * Bug Fixes
   * Security version bumps
   * **If outside these areas, please open up an issue to help the team understand the need and if we are able to consider a PR**
 

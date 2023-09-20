@@ -7,13 +7,15 @@ package io.airbyte.integrations.destination_async;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Clock;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -27,20 +29,32 @@ public class DetectStreamToFlush {
 
   private static final double EAGER_FLUSH_THRESHOLD = 0.90;
   private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
-  private static final long MAX_TIME_BETWEEN_REC_MIN = 5L;
+  private static final long MAX_TIME_BETWEEN_FLUSH_MS = 5 * 60 * 1000;
   private final BufferDequeue bufferDequeue;
   private final RunningFlushWorkers runningFlushWorkers;
   private final AtomicBoolean isClosing;
   private final DestinationFlushFunction flusher;
+  private final Clock nowProvider;
+  private final ConcurrentMap<StreamDescriptor, Long> latestFlushTimeMsPerStream = new ConcurrentHashMap<>();
 
   public DetectStreamToFlush(final BufferDequeue bufferDequeue,
                              final RunningFlushWorkers runningFlushWorkers,
                              final AtomicBoolean isClosing,
                              final DestinationFlushFunction flusher) {
+    this(bufferDequeue, runningFlushWorkers, isClosing, flusher, Clock.systemUTC());
+  }
+
+  @VisibleForTesting
+  DetectStreamToFlush(final BufferDequeue bufferDequeue,
+                      final RunningFlushWorkers runningFlushWorkers,
+                      final AtomicBoolean isClosing,
+                      final DestinationFlushFunction flusher,
+                      final Clock nowProvider) {
     this.bufferDequeue = bufferDequeue;
     this.runningFlushWorkers = runningFlushWorkers;
     this.isClosing = isClosing;
     this.flusher = flusher;
+    this.nowProvider = nowProvider;
   }
 
   /**
@@ -83,8 +97,8 @@ public class DetectStreamToFlush {
    * Return an empty optional if no streams are ready.
    * <p>
    * A stream is ready to flush if it either meets a size threshold or a time threshold. See
-   * {@link #isSizeTriggered(StreamDescriptor, long)} and {@link #isTimeTriggered(StreamDescriptor)}
-   * for details on these triggers.
+   * {@link #isSizeTriggered(StreamDescriptor, long)} and {@link #isTimeTriggered(long)} for details
+   * on these triggers.
    *
    * @param queueSizeThresholdBytes - the size threshold to use for determining if a stream is ready
    *        to flush.
@@ -93,7 +107,8 @@ public class DetectStreamToFlush {
   @VisibleForTesting
   Optional<StreamDescriptor> getNextStreamToFlush(final long queueSizeThresholdBytes) {
     for (final StreamDescriptor stream : orderStreamsByPriority(bufferDequeue.getBufferedStreams())) {
-      final ImmutablePair<Boolean, String> isTimeTriggeredResult = isTimeTriggered(stream);
+      final long latestFlushTimeMs = latestFlushTimeMsPerStream.computeIfAbsent(stream, _k -> nowProvider.millis());
+      final ImmutablePair<Boolean, String> isTimeTriggeredResult = isTimeTriggered(latestFlushTimeMs);
       final ImmutablePair<Boolean, String> isSizeTriggeredResult = isSizeTriggered(stream, queueSizeThresholdBytes);
 
       final String debugString = String.format(
@@ -106,7 +121,7 @@ public class DetectStreamToFlush {
 
       if (isSizeTriggeredResult.getLeft() || isTimeTriggeredResult.getLeft()) {
         log.info("flushing: {}", debugString);
-
+        latestFlushTimeMsPerStream.put(stream, nowProvider.millis());
         return Optional.of(stream);
       }
     }
@@ -122,15 +137,13 @@ public class DetectStreamToFlush {
    * This method also returns debug string with info that about the computation. We do it this way, so
    * that the debug info that is printed is exactly what is used in the computation.
    *
-   * @param stream stream
+   * @param latestFlushTimeMs latestFlushTimeMs
    * @return is time triggered and a debug string
    */
   @VisibleForTesting
-  ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
-    final Boolean isTimeTriggered = bufferDequeue.getTimeOfLastRecord(stream)
-        .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MIN, ChronoUnit.MINUTES)))
-        .orElse(false);
-
+  ImmutablePair<Boolean, String> isTimeTriggered(final long latestFlushTimeMs) {
+    final long timeSinceLastFlushMs = nowProvider.millis() - latestFlushTimeMs;
+    final Boolean isTimeTriggered = timeSinceLastFlushMs >= MAX_TIME_BETWEEN_FLUSH_MS;
     final String debugString = String.format("time trigger: %s", isTimeTriggered);
 
     return ImmutablePair.of(isTimeTriggered, debugString);

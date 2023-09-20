@@ -6,6 +6,7 @@ from typing import Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
+    AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
@@ -16,9 +17,16 @@ from pydantic import BaseModel, Field
 
 
 class PineconeIndexingModel(BaseModel):
-    pinecone_key: str = Field(..., title="Pinecone API key", airbyte_secret=True)
-    pinecone_environment: str = Field(..., title="Pinecone environment", description="Pinecone environment to use")
-    index: str = Field(..., title="Index", description="Pinecone index to use")
+    pinecone_key: str = Field(
+        ...,
+        title="Pinecone API key",
+        airbyte_secret=True,
+        description="The Pinecone API key to use matching the environment (copy from Pinecone console)",
+    )
+    pinecone_environment: str = Field(
+        ..., title="Pinecone Environment", description="Pinecone Cloud environment to use", examples=["us-west1-gcp", "gcp-starter"]
+    )
+    index: str = Field(..., title="Index", description="Pinecone index in your project to load data into")
 
     class Config:
         title = "Indexing"
@@ -31,9 +39,9 @@ class PineconeIndexingModel(BaseModel):
 class ConfigModel(BaseModel):
     indexing: PineconeIndexingModel
 
-    embedding: Union[OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel] = Field(
-        ..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object"
-    )
+    embedding: Union[
+        OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, AzureOpenAIEmbeddingConfigModel
+    ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     processing: ProcessingConfigModel
 
     class Config:

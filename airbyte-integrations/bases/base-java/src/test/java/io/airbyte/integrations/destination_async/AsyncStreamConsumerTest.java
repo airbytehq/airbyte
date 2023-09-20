@@ -39,7 +39,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -236,8 +235,8 @@ class AsyncStreamConsumerTest {
             .withData(PAYLOAD));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
     final String airbyteRecordString = Jsons.serialize(PAYLOAD);
-    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
-    assertEquals(airbyteRecordString, partial.get().getSerialized());
+    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(airbyteRecordString, partial.getSerialized());
   }
 
   @Test
@@ -250,8 +249,8 @@ class AsyncStreamConsumerTest {
             .withNamespace(SCHEMA_NAME)
             .withData(Jsons.jsonNode(emptyMap)));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
-    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
-    assertEquals(emptyMap.toString(), partial.get().getSerialized());
+    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(emptyMap.toString(), partial.getSerialized());
   }
 
   @Test
@@ -266,8 +265,8 @@ class AsyncStreamConsumerTest {
   @Test
   void deserializeAirbyteMessageWithAirbyteState() {
     final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
-    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
-    assertEquals(serializedAirbyteMessage, partial.get().getSerialized());
+    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(serializedAirbyteMessage, partial.getSerialized());
   }
 
   @Test
