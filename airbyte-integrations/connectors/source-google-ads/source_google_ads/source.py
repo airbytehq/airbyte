@@ -99,7 +99,7 @@ class SourceGoogleAds(AbstractSource):
         incremental_stream_config = dict(
             api=google_api,
             customers=customers,
-            conversion_window_days=config["conversion_window_days"],
+            conversion_window_days=config.get("conversion_window_days", 0),
             start_date=start_date,
             end_date=end_date,
         )
@@ -153,6 +153,12 @@ class SourceGoogleAds(AbstractSource):
             ):
                 message = f"Failed to access the customer '{exception.customer_id}'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."
                 raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+            query_errors = [x for x in exception.failure.errors if x.error_code.query_error]
+            if query_errors:
+                message = f"Incorrect queries :{[x.message for x in query_errors]}"
+                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
             error_messages = ", ".join([error.message for error in exception.failure.errors])
             logger.error(traceback.format_exc())
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
@@ -180,8 +186,7 @@ class SourceGoogleAds(AbstractSource):
             Audience(**default_config),
             CampaignBiddingStrategies(**incremental_config),
             CampaignCriterion(**default_config),
-            CampaignBudget(**incremental_config),
-            CampaignLabels(**default_config),
+            CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
             Labels(**default_config),
             UserInterest(**default_config),
@@ -191,6 +196,7 @@ class SourceGoogleAds(AbstractSource):
             streams.extend(
                 [
                     Campaigns(**non_manager_incremental_config),
+                    CampaignBudget(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     DisplayTopicsPerformanceReport(**non_manager_incremental_config),

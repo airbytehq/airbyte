@@ -85,17 +85,13 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     no-repeat;
 }
 
-.navbar .header-button.navbar__link {
+.navbar__item.header-button.navbar__link {
   background: var(--ifm-color-primary);
   color: white !important;
   border-radius: 1.5em;
 }
 
-.navbar .header-button svg {
-  display: none;
-}
-
-.navbar .header-button:hover {
+.navbar__item.header-button:hover {
   background: var(--ifm-color-primary-dark);
 }
 
@@ -133,13 +129,19 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
   background-color: var(--ifm-hover-overlay);
 }
 
-#cloudStatusLink {
+.cloudStatusLink {
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
-#cloudStatusLink::before {
+@media (max-width: 996px) {
+  .cloudStatusLink {
+    display: none;
+  }
+}
+
+.cloudStatusLink::before {
   content: "";
   display: inline-block;
   height: 10px;
@@ -149,12 +151,16 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
   transition: background 0.3s ease;
 }
 
-#cloudStatusLink.status-up::before,
-#cloudStatusLink.status-undermaintenance::before {
+.navbar-sidebar .cloudStatusLink::before {
+  display: none;
+}
+
+.cloudStatusLink.status-up::before,
+.cloudStatusLink.status-undermaintenance::before {
   background: #00B093;
 }
 
-#cloudStatusLink.status-hasissues::before {
+.cloudStatusLink.status-hasissues::before {
   background: #ED8936;
 }
 

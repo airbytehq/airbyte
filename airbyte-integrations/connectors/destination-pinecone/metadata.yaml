@@ -9,10 +9,17 @@ data:
       enabled: true
     oss:
       enabled: true
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   connectorSubtype: database
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.0.9
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/destination-pinecone
   githubIssueLabel: destination-pinecone
   icon: pinecone.svg
