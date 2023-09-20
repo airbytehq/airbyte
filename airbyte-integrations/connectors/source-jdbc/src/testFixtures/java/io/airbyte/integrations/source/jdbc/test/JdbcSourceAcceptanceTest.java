@@ -512,12 +512,12 @@ public abstract class JdbcSourceAcceptanceTest {
     assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
-  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
+  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
         .peek(m -> {
-          m.getRecord().setStream(streamName2);
+          m.getRecord().setStream(streamName);
           m.getRecord().setNamespace(getDefaultNamespace());
           ((ObjectNode) m.getRecord().getData()).remove(COL_UPDATED_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
@@ -857,6 +857,7 @@ public abstract class JdbcSourceAcceptanceTest {
                 namespace,
                 Field.of(COL_NAME, JsonSchemaType.STRING),
                 Field.of(COL_TIMESTAMP, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
+
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(List.of(COL_TIMESTAMP));
@@ -1272,6 +1273,35 @@ public abstract class JdbcSourceAcceptanceTest {
       return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
     }
+  }
+
+  protected List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,
+                                                                  final String streamName,
+                                                                  final String field) {
+    return extractStateMessage(messages).stream()
+        .filter(s -> s.getStream().getStreamDescriptor().getName().equals(streamName))
+        .map(s -> s.getStream().getStreamState().get(field) != null ? s.getStream().getStreamState().get(field).asText() : "").toList();
+  }
+
+  protected List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.RECORD)
+        .collect(Collectors.toList());
+  }
+
+  protected List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  protected List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages, final String streamName) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE &&
+        r.getState().getStream().getStreamDescriptor().getName().equals(streamName)).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  protected AirbyteMessage createRecord(final String stream, final String namespace, final Map<Object, Object> data) {
+    return new AirbyteMessage().withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage().withData(Jsons.jsonNode(data)).withStream(stream).withNamespace(namespace));
   }
 
 }

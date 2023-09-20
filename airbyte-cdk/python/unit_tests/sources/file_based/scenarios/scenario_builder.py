@@ -163,7 +163,7 @@ class TestScenarioBuilder:
         self._expected_records = expected_records
         return self
 
-    def set_parsers(self, parsers: Mapping[str, FileTypeParser]) -> "TestScenarioBuilder":
+    def set_parsers(self, parsers: Mapping[Type[Any], FileTypeParser]) -> "TestScenarioBuilder":
         self._parsers = parsers
         return self
 
