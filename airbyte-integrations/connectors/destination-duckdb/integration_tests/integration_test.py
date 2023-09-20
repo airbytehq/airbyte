@@ -31,6 +31,9 @@ from airbyte_cdk.models import (
 from destination_duckdb import DestinationDuckdb
 
 CONFIG_PATH = "integration_tests/config.json"
+SECRETS_CONFIG_PATH = (
+    "secrets/config.json"  # Should contain a valid MotherDuck API token
+)
 
 
 def pytest_generate_tests(metafunc):
@@ -38,27 +41,35 @@ def pytest_generate_tests(metafunc):
         return
 
     configs: list[str] = ["local_file_config"]
-    if Path(CONFIG_PATH).is_file():
+    if Path(SECRETS_CONFIG_PATH).is_file():
         configs.append("motherduck_config")
     else:
         print(
-            f"Skipping MotherDuck tests because config file not found at: {CONFIG_PATH}"
+            f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}"
         )
 
     # for test_name in ["test_check_succeeds", "test_write"]:
     metafunc.parametrize("config", configs, indirect=True)
 
 
+@pytest.fixture(scope="module")
+def test_schema_name() -> str:
+    letters = string.ascii_lowercase
+    rand_string = "".join(random.choice(letters) for _ in range(6))
+    return f"test_schema_{rand_string}"
+
+
 @pytest.fixture
-def config(request) -> Dict[str, str]:
-    # create a file "myfile" in "mydir" in temp directory
+def config(request, test_schema_name: str) -> Dict[str, str]:
     if request.param == "local_file_config":
         tmp_dir = tempfile.TemporaryDirectory()
         test = os.path.join(str(tmp_dir.name), "test.duckdb")
-        yield {"destination_path": test}
+        yield {"destination_path": test, "schema": test_schema_name}
 
     elif request.param == "motherduck_config":
-        yield json.loads(Path(CONFIG_PATH).read_text())
+        config_dict = json.loads(Path(SECRETS_CONFIG_PATH).read_text())
+        config_dict["schema"] = test_schema_name
+        yield config_dict
 
     else:
         raise ValueError(f"Unknown config type: {request.param}")
@@ -165,6 +176,7 @@ def test_write(
     airbyte_message2: AirbyteMessage,
     airbyte_message3: AirbyteMessage,
     test_table_name: str,
+    test_schema_name: str,
 ):
     destination = DestinationDuckdb()
     generator = destination.write(
@@ -179,7 +191,8 @@ def test_write(
     con = duckdb.connect(database=config.get("destination_path"), read_only=False)
     with con:
         cursor = con.execute(
-            f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
+            "SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data "
+            f"FROM {test_schema_name}._airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
         )
         result = cursor.fetchall()
 

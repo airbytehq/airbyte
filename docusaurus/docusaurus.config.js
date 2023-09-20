@@ -71,10 +71,6 @@ const config = {
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
-        gtag: {
-          trackingID: "G-HDBMVFQGBH",
-          anonymizeIP: true,
-        },
       }),
     ],
   ],
@@ -123,7 +119,7 @@ const config = {
           {
             href: "https://status.airbyte.com",
             label: "Cloud Status",
-            id: "cloudStatusLink",
+            className: "cloudStatusLink",
             position: "right",
           },
           {

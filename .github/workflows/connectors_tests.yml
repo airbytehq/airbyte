@@ -25,6 +25,11 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
@@ -67,7 +72,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ env.PAT }}
           subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
@@ -80,5 +85,5 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ env.PAT }}
           subcommand: "connectors --modified test"
