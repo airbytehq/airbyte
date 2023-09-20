@@ -15,7 +15,7 @@ from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.indexer import PineconeIndexer
 
-BATCH_SIZE = 128
+BATCH_SIZE = 32
 
 
 embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder, "azure_openai": AzureOpenAIEmbedder}
