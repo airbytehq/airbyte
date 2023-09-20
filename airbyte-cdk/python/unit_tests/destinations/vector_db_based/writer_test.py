@@ -56,7 +56,7 @@ def test_write():
 
     mock_embedder = MagicMock()
     mock_embedder.embed_chunks.return_value = [[0] * 1536] * (BATCH_SIZE + 5 + 5)
-    mock_embedder.embed_chunks.side_effect = lambda chunks, _size: [[0] * 1536] * len(chunks)
+    mock_embedder.embed_chunks.side_effect = lambda chunks: [[0] * 1536] * len(chunks)
 
     mock_indexer = MagicMock()
     post_sync_log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="post sync"))

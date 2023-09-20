@@ -37,11 +37,10 @@ class Embedder(ABC):
         pass
 
     @abstractmethod
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[Optional[List[float]]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[Optional[List[float]]]:
         """
         Embed the text of each chunk and return the resulting embedding vectors.
         If a chunk cannot be embedded or is configured to not be embedded, return None for that chunk.
-        The max_token_length denotes the maximum number of tokens in a single chunk.
         """
         pass
 
@@ -117,7 +116,7 @@ class CohereEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
@@ -138,7 +137,7 @@ class FakeEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
@@ -155,7 +154,7 @@ class FromFieldEmbedder(Embedder):
     def check(self) -> Optional[str]:
         return None
 
-    def embed_chunks(self, chunks: List[Chunk], max_token_length: int) -> List[List[float]]:
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
         """
         From each chunk, pull the embedding from the field specified in the config.
         Check that the field exists, is a list of numbers and is the correct size. If not, raise an AirbyteTracedException explaining the problem.
