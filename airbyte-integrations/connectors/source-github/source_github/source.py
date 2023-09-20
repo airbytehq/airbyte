@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Mapping, Set, Tuple
+from typing import Any, Dict, List, Mapping, Set, Tuple, MutableMapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
@@ -137,6 +137,11 @@ class SourceGithub(AbstractSource):
                 requests_per_hour=requests_per_hour,
             )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
+
+    @staticmethod
+    def _ensure_default_values(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config["api_url"] = config.get("api_url", "gitlab.com")
+        return config
 
     @staticmethod
     def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
