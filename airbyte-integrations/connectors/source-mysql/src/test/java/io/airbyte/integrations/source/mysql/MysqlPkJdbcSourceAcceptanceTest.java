@@ -90,7 +90,6 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected Database database;
   protected DSLContext dslContext;
 
-
   @BeforeAll
   static void init() throws Exception {
     container = new MySQLContainer<>("mysql:8.0")
@@ -107,21 +106,21 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public void setup() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     config = Jsons.jsonNode(ImmutableMap.builder()
-                                .put(JdbcUtils.HOST_KEY, container.getHost())
-                                .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-                                .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
-                                .put(JdbcUtils.USERNAME_KEY, TEST_USER)
-                                .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
-                                .put("standard_via_pk", true)
-                                .build());
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
+        .put("standard_via_pk", true)
+        .build());
 
     dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
-                      config.get(JdbcUtils.HOST_KEY).asText(),
-                      config.get(JdbcUtils.PORT_KEY).asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
     database = new Database(dslContext);
 
@@ -174,10 +173,10 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     database.query(connection -> {
       connection.fetch(String.format("USE %s;", getDefaultNamespace()));
       connection.fetch(String.format("CREATE TABLE %s (\n"
-                                         + "    id int PRIMARY KEY,\n"
-                                         + "    name VARCHAR(200) NOT NULL,\n"
-                                         + "    updated_at VARCHAR(200) NOT NULL\n"
-                                         + ");", streamOneName));
+          + "    id int PRIMARY KEY,\n"
+          + "    name VARCHAR(200) NOT NULL,\n"
+          + "    updated_at VARCHAR(200) NOT NULL\n"
+          + ");", streamOneName));
       connection.execute(
           String.format(
               "INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
@@ -199,22 +198,22 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // Insert records into second table
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE TABLE %s (\n"
-                                  + "    id int PRIMARY KEY,\n"
-                                  + "    name VARCHAR(200) NOT NULL,\n"
-                                  + "    updated_at DATE NOT NULL\n"
-                                  + ");", streamTwoName));
+          + "    id int PRIMARY KEY,\n"
+          + "    name VARCHAR(200) NOT NULL,\n"
+          + "    updated_at DATE NOT NULL\n"
+          + ");", streamTwoName));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (40,'Jean Luc','2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (40,'Jean Luc','2006-10-19')",
+              streamTwoFullyQualifiedName));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (41, 'Groot', '2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (41, 'Groot', '2006-10-19')",
+              streamTwoFullyQualifiedName));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (42, 'Thanos','2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (42, 'Thanos','2006-10-19')",
+              streamTwoFullyQualifiedName));
       return null;
     });
     // Create records list that we expect to see in the state message
@@ -255,7 +254,7 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // All records in the 2 configured streams should be present
     assertThat(filterRecords(recordsFromFirstSync)).containsExactlyElementsOf(
         Stream.concat(getTestMessages(streamOneName).stream().parallel(),
-                      streamTwoExpectedRecords.stream().parallel()).collect(toList()));
+            streamTwoExpectedRecords.stream().parallel()).collect(toList()));
 
     final List<AirbyteStateMessage> actualFirstSyncState = extractStateMessage(messagesFromFirstSync);
     // Since we are emitting a state message after each record, we should have 1 state for each record -
@@ -293,12 +292,12 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // Extract the incremental states of each stream's first and second state message
     final List<JsonNode> streamOneIncrementalStatesFromFirstSync =
         List.of(streamOneStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
-                streamOneStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
+            streamOneStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
     final JsonNode streamOneFinalStreamStateFromFirstSync = streamOneStateMessagesFromFirstSync.get(2).getStream().getStreamState();
 
     final List<JsonNode> streamTwoIncrementalStatesFromFirstSync =
         List.of(streamTwoStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
-                streamTwoStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
+            streamTwoStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
     final JsonNode streamTwoFinalStreamStateFromFirstSync = streamTwoStateMessagesFromFirstSync.get(2).getStream().getStreamState();
 
     // The incremental_state of each stream's first and second incremental states is expected
@@ -311,11 +310,12 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // Sync should work with a primaryKey state AND a cursor-based state from each stream
     // Forcing a sync with
     // - stream one state still being the first record read via Primary Key.
-    // - stream two state being the Primary Key state before the final emitted state before the cursor switch
+    // - stream two state being the Primary Key state before the final emitted state before the cursor
+    // switch
     final List<AirbyteMessage> messagesFromSecondSyncWithMixedStates = MoreIterators
         .toList(source.read(config, configuredCatalog,
-                            Jsons.jsonNode(List.of(streamOneStateMessagesFromFirstSync.get(0),
-                                                   streamTwoStateMessagesFromFirstSync.get(1)))));
+            Jsons.jsonNode(List.of(streamOneStateMessagesFromFirstSync.get(0),
+                streamTwoStateMessagesFromFirstSync.get(1)))));
 
     // Extract only state messages for each stream after second sync
     final List<AirbyteStateMessage> streamOneStateMessagesFromSecondSync =
@@ -344,19 +344,19 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     database.query(ctx -> {
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (4,'Hooper','2006-10-19')",
-                        getFullyQualifiedTableName(streamOneName)));
+              + "VALUES (4,'Hooper','2006-10-19')",
+              getFullyQualifiedTableName(streamOneName)));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (43, 'Iron Man', '2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (43, 'Iron Man', '2006-10-19')",
+              streamTwoFullyQualifiedName));
       return null;
     });
 
     final List<AirbyteMessage> messagesFromThirdSync = MoreIterators
         .toList(source.read(config, configuredCatalog,
-                            Jsons.jsonNode(List.of(streamOneStateMessagesFromSecondSync.get(1),
-                                                   streamTwoStateMessagesFromSecondSync.get(0)))));
+            Jsons.jsonNode(List.of(streamOneStateMessagesFromSecondSync.get(1),
+                streamTwoStateMessagesFromSecondSync.get(0)))));
 
     // Extract only state messages, state type, and cursor for each stream after second sync
     final List<AirbyteStateMessage> streamOneStateMessagesFromThirdSync =
@@ -471,17 +471,17 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-                             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-                                             .withData(Jsons.jsonNode(ImmutableMap
-                                                                          .of(COL_ID, ID_VALUE_4,
-                                                                              COL_NAME, "riker",
-                                                                              COL_UPDATED_AT, "2006-10-19")))));
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(ImmutableMap
+                .of(COL_ID, ID_VALUE_4,
+                    COL_NAME, "riker",
+                    COL_UPDATED_AT, "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-                             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-                                             .withData(Jsons.jsonNode(ImmutableMap
-                                                                          .of(COL_ID, ID_VALUE_5,
-                                                                              COL_NAME, "data",
-                                                                              COL_UPDATED_AT, "2006-10-19")))));
+        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+            .withData(Jsons.jsonNode(ImmutableMap
+                .of(COL_ID, ID_VALUE_5,
+                    COL_NAME, "data",
+                    COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new CursorBasedStatus()
         .withStateType(StateType.CURSOR_BASED)
         .withVersion(2L)
@@ -509,34 +509,32 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return List.of(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                            .withData(Jsons.jsonNode(Map
-                                                         .of(COL_ID, ID_VALUE_1,
-                                                             COL_NAME, "picard",
-                                                             COL_UPDATED_AT, "2004-10-19")))),
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_1,
+                        COL_NAME, "picard",
+                        COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                            .withData(Jsons.jsonNode(Map
-                                                         .of(COL_ID, ID_VALUE_2,
-                                                             COL_NAME, "crusher",
-                                                             COL_UPDATED_AT,
-                                                             "2005-10-19")))),
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_2,
+                        COL_NAME, "crusher",
+                        COL_UPDATED_AT,
+                        "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                            .withData(Jsons.jsonNode(Map
-                                                         .of(COL_ID, ID_VALUE_3,
-                                                             COL_NAME, "vash",
-                                                             COL_UPDATED_AT, "2006-10-19")))));
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_3,
+                        COL_NAME, "vash",
+                        COL_UPDATED_AT, "2006-10-19")))));
   }
-
-
 
   private AirbyteStream getAirbyteStream(final String tableName, final String namespace) {
     return CatalogHelpers.createAirbyteStream(
-            tableName,
-            namespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+        tableName,
+        namespace,
+        Field.of(COL_ID, JsonSchemaType.INTEGER),
+        Field.of(COL_NAME, JsonSchemaType.STRING),
+        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)));
   }
@@ -545,27 +543,27 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_WITHOUT_PK,
-                defaultNamespace,
-                Field.of(COL_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME_WITHOUT_PK,
+            defaultNamespace,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
-                TABLE_NAME_COMPOSITE_PK,
-                defaultNamespace,
-                Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-                Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+            TABLE_NAME_COMPOSITE_PK,
+            defaultNamespace,
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
@@ -575,29 +573,29 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
     return supportsPerStream()
-           ? states.stream()
-               .map(s -> new AirbyteMessage().withType(Type.STATE)
-                   .withState(
-                       new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                           .withStream(new AirbyteStreamState()
-                                           .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                                           .withStreamState(Jsons.jsonNode(s)))))
-               .collect(
-                   Collectors.toList())
-           : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)));
+        ? states.stream()
+            .map(s -> new AirbyteMessage().withType(Type.STATE)
+                .withState(
+                    new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                        .withStream(new AirbyteStreamState()
+                            .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                            .withStreamState(Jsons.jsonNode(s)))))
+            .collect(
+                Collectors.toList())
+        : List.of(new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)));
   }
 
   @Override
   protected List<AirbyteStateMessage> createState(final List<DbStreamState> states) {
     return supportsPerStream()
-           ? states.stream()
-               .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-                   .withStream(new AirbyteStreamState()
-                                   .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
-                                   .withStreamState(Jsons.jsonNode(s))))
-               .collect(
-                   Collectors.toList())
-           : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
+        ? states.stream()
+            .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
+                .withStream(new AirbyteStreamState()
+                    .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
+                    .withStreamState(Jsons.jsonNode(s))))
+            .collect(
+                Collectors.toList())
+        : List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY));
   }
 
   @Override
@@ -609,5 +607,5 @@ class MySqlPkJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     throw new IllegalArgumentException("Stream not found in state message: " + streamName);
   }
-}
 
+}

@@ -85,7 +85,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       database.execute(sql);
     } catch (final SnowflakeSQLException e) {
       LOGGER.error("Sql {} failed", queryId, e);
-      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant part of the message.
+      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
+      // part of the message.
       final String trimmedMessage;
       if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
         // The first line is a pretty generic message, so just remove it
