@@ -19,7 +19,7 @@ from airbyte_cdk.models import (
     TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 
 
 @pytest.mark.parametrize(

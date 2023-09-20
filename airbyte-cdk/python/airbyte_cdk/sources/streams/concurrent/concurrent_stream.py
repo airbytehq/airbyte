@@ -7,13 +7,15 @@ from concurrent.futures import Future
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.utils.types import StreamData
 
 
@@ -58,7 +60,8 @@ class ConcurrentStream(AbstractStream):
                 record = partition_reader.get_next()
                 if record is not None:
                     yield record.stream_data
-                    if AbstractStream.is_record(record.stream_data):
+                    # FIXME: I think this is moved back to AbstractSource
+                    if self.is_record(record.stream_data):
                         total_records_counter += 1
                         if internal_config and internal_config.is_limit_reached(total_records_counter):
                             return
@@ -98,14 +101,16 @@ class ConcurrentStream(AbstractStream):
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema
 
-    @property
-    def source_defined_cursor(self) -> bool:
-        return True
+    @staticmethod
+    # FIXME: need to move this!
+    def is_record(record_data_or_message: StreamData) -> bool:
+        if isinstance(record_data_or_message, dict):
+            return True
+        elif isinstance(record_data_or_message, AirbyteMessage):
+            return bool(record_data_or_message.type == MessageType.RECORD)
+        else:
+            return False
 
     @property
-    def supports_incremental(self) -> bool:
-        """
-        :return: True if this stream supports incrementally reading data
-        """
-        # Incremental reads are not supported yet. This override should be deleted when incremental reads are supported.
-        return False
+    def transformer(self) -> TypeTransformer:
+        return TypeTransformer(TransformConfig.NoTransform)

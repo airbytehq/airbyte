@@ -9,11 +9,11 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import LegacyAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.partitions.partition_generator import LegacyPartitionGenerator
-from airbyte_cdk.sources.streams.stream_facade import StreamFacade
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
