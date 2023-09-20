@@ -326,6 +326,10 @@ class FilterSharing(JiraStream):
         for filters in read_full_refresh(self.filters_stream):
             yield from super().read_records(stream_slice={"filter_id": filters["id"]}, **kwargs)
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["filterId"] = stream_slice["filter_id"]
+        return record
+
 
 class Groups(JiraStream):
     """
@@ -441,6 +445,10 @@ class IssueComments(IncrementalJiraStream):
             stream_slice = {"key": issue["key"]}
             yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
+
 
 class IssueFields(JiraStream):
     """
@@ -499,6 +507,10 @@ class IssueCustomFieldContexts(JiraStream):
         for field in read_full_refresh(self.issue_fields_stream):
             if field.get("custom", False):
                 yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["fieldId"] = stream_slice["field_id"]
+        return record
 
 
 class IssueLinkTypes(JiraStream):
@@ -591,6 +603,10 @@ class IssueProperties(StartDateJiraStream):
             for property_key in self.issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
                 yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["issue_key"]
+        return record
+
 
 class IssueRemoteLinks(StartDateJiraStream):
     """
@@ -615,6 +631,10 @@ class IssueRemoteLinks(StartDateJiraStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
 
 
 class IssueResolutions(JiraStream):
@@ -734,6 +754,10 @@ class IssueVotes(StartDateJiraStream):
         for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
+
 
 class IssueWatchers(StartDateJiraStream):
     """
@@ -764,6 +788,10 @@ class IssueWatchers(StartDateJiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["issueId"] = stream_slice["key"]
+        return record
 
 
 class IssueWorklogs(IncrementalJiraStream):
@@ -892,8 +920,11 @@ class ProjectAvatars(JiraStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
+        stream_slice = kwargs["stream_slice"]
         for records in response_json.values():
-            yield from records
+            for record in records:
+                record["projectId"] = stream_slice["key"]
+                yield record
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in read_full_refresh(self.projects_stream):
@@ -972,6 +1003,10 @@ class ProjectPermissionSchemes(JiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in read_full_refresh(self.projects_stream):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = stream_slice["key"]
+        return record
 
 
 class ProjectTypes(JiraStream):
@@ -1118,6 +1153,10 @@ class ScreenTabs(JiraStream):
                 return
             yield screen_tab
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["screenId"] = stream_slice["screen_id"]
+        return record
+
 
 class ScreenTabFields(JiraStream):
     """
@@ -1137,6 +1176,11 @@ class ScreenTabFields(JiraStream):
             for tab in self.screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
                 if "id" in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
                     yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["screenId"] = stream_slice["screen_id"]
+        record["tabId"] = stream_slice["tab_id"]
+        return record
 
 
 class ScreenSchemes(JiraStream):
