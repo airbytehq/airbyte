@@ -1553,7 +1553,10 @@ class ContributorActivity(GithubStream):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
-        params.update({"X-GitHub-Api-Version": "2022-11-28"})
+        params.update({
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28"
+        })
         return params
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
