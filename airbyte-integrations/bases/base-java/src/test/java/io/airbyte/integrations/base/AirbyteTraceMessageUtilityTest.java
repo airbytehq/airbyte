@@ -8,12 +8,10 @@ import static org.mockito.Mockito.mockStatic;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.output.OutputRecordConsumer;
 import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
+import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,9 +33,9 @@ public class AirbyteTraceMessageUtilityTest {
 
   @BeforeEach
   public void setUpOut() {
-    final PrintStream printStream = new PrintStream(outContent, true, StandardCharsets.UTF_8);
+    final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent);
     outputRecordConsumerFactory.when(OutputRecordConsumerFactory::getOutputRecordConsumer)
-        .thenReturn(new TestOutputRecordConsumer(printStream));
+            .thenReturn(printWriterOutputRecordConsumer);
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
@@ -72,30 +70,12 @@ public class AirbyteTraceMessageUtilityTest {
   @Test
   void testCorrectStacktraceFormat() {
     try {
-      int x = 1 / 0;
+      throw new RuntimeException();
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "you exploded the universe");
     }
     JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
-  }
-
-  private class TestOutputRecordConsumer implements OutputRecordConsumer {
-
-    private final PrintStream printStream;
-
-    TestOutputRecordConsumer(final PrintStream printStream) {
-      this.printStream = printStream;
-    }
-
-    @Override
-    public void close() throws Exception {}
-
-    @Override
-    public void accept(AirbyteMessage airbyteMessage) {
-      printStream.println(Jsons.serialize(airbyteMessage));
-    }
-
   }
 
 }

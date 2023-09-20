@@ -4,11 +4,13 @@
 
 package io.airbyte.integrations.base.output;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.io.BufferedWriter;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -29,18 +31,19 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
   private final PrintWriter writer;
 
   public PrintWriterOutputRecordConsumer() {
+    this(new FileOutputStream(FileDescriptor.out));
+  }
+
+  @VisibleForTesting
+  public PrintWriterOutputRecordConsumer(final OutputStream outputStream) {
     LOGGER.info("Using PrintWriter for output record collection.");
-    writer = new PrintWriter(
-        new BufferedWriter(
-            new OutputStreamWriter(
-                new FileOutputStream(FileDescriptor.out),
-                StandardCharsets.UTF_8)), true);
+    writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)), true);
   }
 
   @Override
   public void close() throws Exception {
     LOGGER.info("Closing PrintWriter...");
-//    writer.close();
+    writer.close();
     LOGGER.info("PrintWriter closed.");
   }
 
