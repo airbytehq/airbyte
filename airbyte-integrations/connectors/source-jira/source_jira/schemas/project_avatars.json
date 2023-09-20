@@ -6,6 +6,10 @@
       "type": "string",
       "description": "The ID of the avatar."
     },
+    "projectId": {
+      "type" : ["null", "string"],
+      "description" : "Id of the related project."
+    },
     "owner": {
       "type": "string",
       "description": "The owner of the avatar. For a system avatar the owner is null (and nothing is returned). For non-system avatars this is the appropriate identifier, such as the ID for a project or the account ID for a user.",

@@ -7,6 +7,11 @@
       "description": "The URL of these issue vote details.",
       "readOnly": true
     },
+    "issueId": {
+      "type" : ["null", "string"],
+      "description": "Id of the related issue.",
+      "readOnly": true
+    },
     "votes": {
       "type": "integer",
       "description": "The number of votes on the issue.",
