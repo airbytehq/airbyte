@@ -31,7 +31,7 @@ class AbstractStream(ABC):
     To allow us to iterate fast while ensuring backwards compatibility, we are creating a new interface with a facade object that will bridge the old and the new interfaces.
     Source connectors that which to leverage concurrency need to implement this new interface. An example will be available shortly
 
-    Current restrictions on sources that implement this interface. Not all of these restrictions will be lifted in the future
+    Current restrictions on sources that implement this interface. Not all of these restrictions will be lifted in the future, but most will as we iterate on the design.
     - Only full refresh is supported. This will be addressed in the future.
     - The read method does not accept a cursor_field. Streams must be internally aware of the cursor field to use. User-defined cursor fields can be implemented by modifying the connector's main method to instantiate the streams with the configured cursor field.
     - Streams cannot return user-friendly messages by overriding Stream.get_error_display_message. This will be addressed in the future.
@@ -48,7 +48,7 @@ class AbstractStream(ABC):
     @property
     def name(self) -> str:
         """
-        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        :return: Stream name. By default, this is the implementing class name, but it can be overridden as needed.
         """
         return casing.camel_to_snake(self.__class__.__name__)
 
