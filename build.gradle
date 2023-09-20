@@ -444,7 +444,11 @@ subprojects { subproj ->
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    if (subproj.name.startsWith("source-") || subproj.name.startsWith("destination-")) {
+    def skipSlowTests = System.getProperty('skipSlowTests', 'false') != 'false'
+    def isConnectorProject = subproj.parent.name == ':airbyte-integrations:connectors' &&
+            (subproj.name.startsWith("source-") || subproj.name.startsWith("destination-"))
+
+    if (isConnectorProject) {
         // This is a Java connector project.
 
         // Evaluate CDK project before evaluating the connector.
@@ -502,6 +506,9 @@ subprojects { subproj ->
         reportLevel = 'high'
         showProgress = false
         toolVersion = '4.7.3'
+        if (skipSlowTests && isConnectorProject) {
+            effort = 'min'
+        }
     }
 
     test {
@@ -520,8 +527,14 @@ subprojects { subproj ->
             }
         }
 
+        if (skipSlowTests) {
+            // Exclude all connector unit tests
+            exclude '**/io/airbyte/integrations/source/**'
+            exclude '**/io/airbyte/integrations/destination/**'
+        }
+
         jacoco {
-            enabled = true
+            enabled = !skipSlowTests
             excludes = ['**/*Test*', '**/generated*']
         }
         useJUnitPlatform {
