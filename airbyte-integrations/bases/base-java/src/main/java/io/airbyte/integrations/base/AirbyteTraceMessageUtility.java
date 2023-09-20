@@ -24,6 +24,7 @@ public final class AirbyteTraceMessageUtility {
   private AirbyteTraceMessageUtility() {}
 
   public static void emitSystemErrorTrace(final Throwable e, final String displayMessage) {
+    LOGGER.info("Emitting error trace...");
     emitErrorTrace(e, displayMessage, FailureType.SYSTEM_ERROR);
   }
 
@@ -63,6 +64,7 @@ public final class AirbyteTraceMessageUtility {
 
   private static void emitMessage(final AirbyteMessage message) {
     try (final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer()) {
+      LOGGER.info("Emitting airbyte message '{}'...", message);
       outputRecordCollector.accept(message);
     } catch (final Exception e) {
       LOGGER.error("Unable to close output record collector.", e);

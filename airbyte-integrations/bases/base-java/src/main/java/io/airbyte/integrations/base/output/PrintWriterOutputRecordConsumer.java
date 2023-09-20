@@ -36,7 +36,7 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
   @VisibleForTesting
   public PrintWriterOutputRecordConsumer(final OutputStream outputStream) {
-    LOGGER.info("Using PrintWriter for output record collection.");
+    LOGGER.info("Using PrintWriter for output record collection without output stream of type '{}'.", outputStream.getClass().getName());
     writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)), true);
   }
 
@@ -50,8 +50,9 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
   @Override
   public void accept(final AirbyteMessage airbyteMessage) {
     final String json = Jsons.serialize(airbyteMessage);
-    LOGGER.debug("Accepted message '{}' for output.", json);
+    LOGGER.info("Accepted message '{}' for output...", json);
     writer.println(json);
+    LOGGER.info("Message '{}' sent to output.", json);
   }
 
 }
