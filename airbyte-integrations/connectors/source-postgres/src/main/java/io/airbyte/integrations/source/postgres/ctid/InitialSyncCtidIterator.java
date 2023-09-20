@@ -65,7 +65,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private Long lastKnownFileNode;
   private int numberOfTimesReSynced = 0;
   private boolean subQueriesInitialized = false;
-
+  private final boolean tidRangeScanCapableDBServer;
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
                                  final JdbcDatabase database,
                                  final CtidPostgresSourceOperations sourceOperations,
@@ -77,6 +77,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                  final long blockSize,
                                  final int maxTuple,
                                  final FileNodeHandler fileNodeHandler,
+                                 final boolean tidRangeScanCapableDBServer,
                                  final boolean useTestPageSize) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
@@ -91,6 +92,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     this.subQueriesPlan = new LinkedList<>();
     this.tableName = tableName;
     this.tableSize = tableSize;
+    this.tidRangeScanCapableDBServer = tidRangeScanCapableDBServer;
     this.useTestPageSize = useTestPageSize;
   }
 
@@ -163,13 +165,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private PreparedStatement getCtidStatement(final Connection connection,
                                              final Ctid lowerBound,
                                              final Ctid upperBound) {
-    final PreparedStatement ctidStatement = CtidUtils.isTidRangeScanCapableDBServer(database) ? createCtidQueryStatement(connection, lowerBound, upperBound)
+    final PreparedStatement ctidStatement = tidRangeScanCapableDBServer ? createCtidQueryStatement(connection, lowerBound, upperBound)
         : createCtidLegacyQueryStatement(connection, lowerBound, upperBound);
     return ctidStatement;
   }
 
   private List<Pair<Ctid, Ctid>> getQueryPlan(final CtidStatus currentCtidStatus) {
-    final List<Pair<Ctid, Ctid>> queryPlan = CtidUtils.isTidRangeScanCapableDBServer(database)
+    final List<Pair<Ctid, Ctid>> queryPlan = tidRangeScanCapableDBServer
         ? ctidQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),
             tableSize, blockSize, QUERY_TARGET_SIZE_GB, useTestPageSize ? EIGHT_KB : GIGABYTE)
         : ctidLegacyQueryPlan((currentCtidStatus == null) ? Ctid.ZERO : Ctid.of(currentCtidStatus.getCtid()),

@@ -53,6 +53,7 @@ public class PostgresCtidHandler {
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
   final Optional<Map<AirbyteStreamNameNamespacePair, Integer>> tablesMaxTuple;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final boolean tidRangeScanCapableDBServer;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
@@ -72,6 +73,7 @@ public class PostgresCtidHandler {
     this.tablesMaxTuple = Optional.ofNullable(tablesMaxTuple);
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.tidRangeScanCapableDBServer = CtidUtils.isTidRangeScanCapableDBServer(database);
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
@@ -126,7 +128,7 @@ public class PostgresCtidHandler {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
-        blockSize, maxTuple, fileNodeHandler,
+        blockSize, maxTuple, fileNodeHandler, tidRangeScanCapableDBServer,
         config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean());
   }
 
