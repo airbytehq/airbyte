@@ -4,6 +4,11 @@
   color: var(--ifm-toc-link-color);
 }
 
+:global(.theme-doc-toc-mobile) .pageRate {
+  /* Hide rating in mobile collapsed TOC */
+  display: none;
+}
+
 .buttonWrapper {
   display: flex;
   gap: 0.5em;
