@@ -8,9 +8,10 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils import casing
 from airbyte_cdk.sources.utils.transform import TypeTransformer
-from airbyte_cdk.sources.utils.types import StreamData
 from deprecated.classic import deprecated
 
 
@@ -43,6 +44,10 @@ class AbstractStream(ABC):
         Read a stream in full refresh mode
         :return: The stream's records
         """
+
+    @abstractmethod
+    def generate_partitions(self) -> Iterable[Partition]:
+        pass
 
     @property
     def name(self) -> str:
@@ -141,3 +146,9 @@ class StreamFacade(Stream):
     def supports_incremental(self) -> bool:
         # Only full refresh is supported
         return False
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for partition in self._stream.generate_partitions():
+            yield partition.to_slice()
