@@ -60,9 +60,9 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
   @Override
   public void accept(final AirbyteMessage airbyteMessage) {
     final String json = Jsons.serialize(airbyteMessage);
-    LOGGER.info("Accepted message '{}' for output...", json);
+    LOGGER.debug("Accepted message '{}' for output...", json);
     writer.println(json);
-    LOGGER.info("Message '{}' sent to output.", json);
+    LOGGER.debug("Message '{}' sent to output.", json);
   }
 
 }
