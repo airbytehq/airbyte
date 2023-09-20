@@ -217,6 +217,14 @@
     },
     "addresses": {
       "type": "array"
+    },
+    "custom_fields": {
+      "properties": {}, 
+      "type": "object"
+    },
+    "keyed_custom_fields": {
+      "properties": {},
+      "type": "object"
     }
   }
 }
