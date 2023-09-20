@@ -21,8 +21,6 @@ from .utils import getter
 
 
 class GithubStream(HttpStream, ABC):
-    url_base = "https://api.github.com/"
-
     primary_key = "id"
 
     # Detect streams with high API load
@@ -30,8 +28,9 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], page_size_for_large_streams: int, access_token_type: str = "", **kwargs):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, api_url: str, access_token_type: str = "", **kwargs):
         super().__init__(**kwargs)
+        self.api_url = api_url
         self.repositories = repositories
         self.access_token_type = access_token_type
 
@@ -42,6 +41,10 @@ class GithubStream(HttpStream, ABC):
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
+
+    @property
+    def url_base(self) -> str:
+        return f"https://{self.api_url}/"
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:

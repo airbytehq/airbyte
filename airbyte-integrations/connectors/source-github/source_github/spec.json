@@ -89,13 +89,12 @@
       "api_url": {
         "type": "string",
         "examples": [
-          "github.com",
           "https://github.com",
           "https://github.company.org"
         ],
         "title": "API URL",
-        "default": "gitlab.com",
-        "description": "Please enter your basic URL from GitLab instance.",
+        "default": "https://api.github.com/",
+        "description": "Please enter your basic URL from self-hosted GitHub instance or leave it empty to use GitHub.",
         "order": 2
       },
       "branch": {
