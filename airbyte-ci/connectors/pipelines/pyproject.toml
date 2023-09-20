@@ -23,7 +23,6 @@ requests = "^2.28.2"
 connector-ops = {path = "../connector_ops", develop = true}
 toml = "^0.10.2"
 sentry-sdk = "^1.28.1"
-airbyte-connectors-base-images = {path = "../base_images", develop = true}
 
 [tool.poetry.group.test.dependencies]
 pytest = "^6.2.5"
