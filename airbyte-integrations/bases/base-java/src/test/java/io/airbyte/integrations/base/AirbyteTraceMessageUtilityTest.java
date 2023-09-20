@@ -89,10 +89,7 @@ public class AirbyteTraceMessageUtilityTest {
     }
 
     @Override
-    public void close() throws Exception {
-      printStream.flush();
-      printStream.close();
-    }
+    public void close() throws Exception {}
 
     @Override
     public void accept(AirbyteMessage airbyteMessage) {

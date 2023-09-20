@@ -40,13 +40,14 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
   @Override
   public void close() throws Exception {
     LOGGER.info("Closing PrintWriter...");
-    writer.close();
+//    writer.close();
+    LOGGER.info("PrintWriter closed.");
   }
 
   @Override
   public void accept(final AirbyteMessage airbyteMessage) {
     final String json = Jsons.serialize(airbyteMessage);
-    LOGGER.info("Accepted message '{}' for output.", json);
+    LOGGER.debug("Accepted message '{}' for output.", json);
     writer.println(json);
   }
 
