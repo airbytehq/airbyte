@@ -67,7 +67,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
+    container = new PostgreSQLContainer<>(getServerImageName())
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
@@ -222,4 +222,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
+  protected String getServerImageName() {
+    return "postgres:15-alpine";
+  }
 }
