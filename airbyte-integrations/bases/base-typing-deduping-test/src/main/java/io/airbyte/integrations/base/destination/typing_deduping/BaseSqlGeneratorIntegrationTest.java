@@ -392,13 +392,13 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     insertRawTableRecords(
         streamId,
         List.of(Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {"id1": 1, "id2": 100}
-                }
-                """)));
+            """
+            {
+              "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {"id1": 1, "id2": 100}
+            }
+            """)));
 
     final String sql = generator.updateTable(stream, "");
     destinationHandler.execute(sql);
