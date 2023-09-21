@@ -31,8 +31,12 @@ poetry run pytest
 ```
 
 ## Validating Metadata Files
+To be considered valid, a connector must have a metadata.yaml file which must be confirm to the ConnectorMetadataDefinitionV0 schema, and a documentation file. 
+
+The paths to both files must be passed to the validate command.
+
 ```bash
-poetry run metadata_service validate tests/fixtures/valid/metadata_registry_override.yaml
+poetry run metadata_service validate tests/fixtures/valid/metadata_registry_override.yaml tests/fixtures/doc.md
 ```
 
 ## Useful Commands
