@@ -8,6 +8,12 @@
 #    /publish-java-cdk force=true     # Force-publish if needing to replace an already published version
 name: Publish Java CDK
 on:
+  # Temporarily run on commits to the 'java-cdk/publish-workflow' branch.
+  # TODO: Remove this 'push' trigger before merging to master.
+  push:
+    branches:
+      - java-cdk/publish-workflow
+
   workflow_dispatch:
     inputs:
       repo:
