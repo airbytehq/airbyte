@@ -39,12 +39,13 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
   @VisibleForTesting
   public PrintWriterOutputRecordConsumer(final OutputStream outputStream) {
     LOGGER.info("Using PrintWriter for output record collection without output stream of type '{}'.", outputStream.getClass().getName());
-    writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)), true);
+    writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), 512));
   }
 
   @Override
   public void close() throws Exception {
       LOGGER.info("Closing PrintWriter...");
+      writer.flush();
       writer.close();
       LOGGER.info("PrintWriter closed.");
   }
