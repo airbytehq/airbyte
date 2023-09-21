@@ -1,28 +1,43 @@
+# Usage: This workflow can be invoked manually or by a slash command.
+#
+# To invoke via GitHub UI, go to Actions tab, select the workflow, and click "Run workflow".
+#
+# To invoke via slash command, use the following syntax in a comment on a PR:
+#    /publish-java-cdk                # Run with the defaults (dry-run=false, force=false)
+#    /publish-java-cdk dry-run=true   # Run in dry-run mode (no-op)
+#    /publish-java-cdk force=true     # Force-publish if needing to replace an already published version
 name: Publish Java CDK
 on:
   workflow_dispatch:
     inputs:
       repo:
-        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
-        required: false
-        default: "airbytehq/airbyte"
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        # TODO: If publishing from forks is needed, we'll need to revert type to `string` of `choice`.
+        type: choice
+        required: true
+        default: airbytehq/airbyte
+        options:
+        - airbytehq/airbyte
+      dry-run:
+        description: "Dry run (no-op)"
+        required: true
+        type: boolean
+        default: false
+      force:
+        description: "Force release (ignore existing)"
+        required: true
+        type: boolean
+        default: false
       gitref:
         description: "The git ref to check out from the specified repository."
-        required: false
-        default: master
-      release-type:
-        type: choice
-        description: "Choose the type of version upgrade : major|minor|patch"
-        options:
-          - none
-          - major
-          - minor
-          - patch
         required: true
-      changelog-message:
-        description: "Changelog message to be added to CHANGELOG.md"
+      comment-id:
+        description: "Optional comment-id of the slash command. Ignore if not applicable."
         required: false
-
+      # uuid:
+      #   description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
+      #   required: false
+  
 concurrency:
   group: publish-airbyte-cdk
   cancel-in-progress: false
@@ -57,115 +72,8 @@ jobs:
           github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
 
-  build-cdk:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-      - name: Build CDK Package
-        run: SUB_BUILD=CDK ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `build-cdk` while publishing Airbyte CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-  bump-version:
-    needs: build-cdk
-    if: github.event.inputs.release-type != 'none'
-    runs-on: ubuntu-latest
-    outputs:
-      new_cdk_version: ${{ steps.bumpversion.outputs.NEW_VERSION }}
-    steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
-      - name: "Publish Airbyte CDK: bump version"
-        id: bumpversion
-        run: |
-          pip install bumpversion
-          cd airbyte-cdk/python
-          bumpversion ${{ github.event.inputs.release-type }}
-          new_version="$(grep -i 'current_version = ' .bumpversion.cfg | sed -e 's/.* = //')"
-          awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
-          echo NEW_VERSION=$new_version >> $GITHUB_OUTPUT
-      - name: Commit and Push Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md airbyte-cdk/python/Dockerfile
-          commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Airbyte CDK
-          commit_user_name: Octavia Squidington III
-          commit_user_email: octavia-squidington-iii@users.noreply.github.com
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `bump-version` while publishing Airbyte CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
   publish-cdk:
-    needs: bump-version
+    needs: start-publish-docker-image-runner-0
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -173,165 +81,52 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Publish Python Package
-        uses: mariamrf/py-package-publish-action@v1.1.0
-        with:
-          # specify the same version as in ~/.python-version
-          python_version: "3.9.11"
-          pip_version: "21.1"
-          subdir: "airbyte-cdk/python/"
-        env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `publish-cdk` while publishing Airbyte CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-  publish-docker-image:
-    timeout-minutes: 240
-    needs:
-      - start-publish-docker-image-runner-0
-      - publish-cdk
-    runs-on: runner-pool-${{ github.run_id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: airbytehq/airbyte
-          ref: master
-      - name: Install Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - name: Publish source-declarative-manifest
-        id: publish
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
-          TZ: UTC
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: |
-            docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-cdk/python false
-          attempt_limit: 3
-          attempt_delay: 5000 in # ms
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `publish-docker-image` while publishing Airbyte CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Docker image following Airbyte CDK release!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-  update-connector-builder:
-    needs:
-      - bump-version
-      - publish-docker-image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - name: Checkout Airbyte Platform Internal
-        uses: actions/checkout@v3
-        with:
-          repository: airbytehq/airbyte-platform-internal
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-      - name: Update CDK version
+      - name: Read Target Java CDK version
+        id: read-target-java-cdk-version
         run: |
-          PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" airbyte-connector-builder-server-wrapped/Dockerfile
-          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
-          echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-builder-server
-          pip install pip-tools
-          pip-compile --upgrade
-      - name: Create Pull Request
-        id: create-pull-request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          commit-message: Updating CDK version following release
-          title: Updating CDK version following release
-          body: This is an automatically generated PR triggered by a CDK release
-          branch: automatic-cdk-release
-          base: master
-          delete-branch: true
-      - name: Post success to Slack channel dev-connectors-extensibility
+          cdk_version=$(cat ./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | tr -d '\n')
+          echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
+      - name: Check for already-published version
+        if: ${{ !github.event.inputs.force }}
+        run: |
+          GROUP_ID="io.airbyte"
+          ARTIFACT_ID="airbyte-cdk"
+          VERSION=${CDK_VERSION}
+          REPO_URL="https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars"
+          GROUP_ID_URL=$(echo $GROUP_ID | tr '.' '/')
+          URL="${REPO_URL}/${GROUP_ID_URL}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.pom"
+          echo "Checking if URL exists: ${URL}"
+          if curl --output /dev/null --silent --head --fail "$URL"; then
+            echo "Version ${VERSION} of ${ARTIFACT_ID} has already been published. Aborting."
+              exit 1
+          else
+              echo "Version ${VERSION} of ${ARTIFACT_ID} has not been published. Proceeding..."
+          fi
+      - name: Build Java CDK
+        run: ./gradlew --no-daemon :airbyte-cdk:java:java-cdk:build
+      - name: Publish Java Modules to LocalMaven (Dry-Run)
+        run: ./gradlew --no-daemon :airbyte-cdk:java:java-cdk:publishToLocalMaven
+      - name: Publish Java Modules to CloudRepo
+        if: ${{ !github.event.inputs.dry-run }}
+        run: ./gradlew --no-daemon :airbyte-cdk:java:java-cdk:publish
+        env:
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+      - name: "Post failure to Slack channel `#dev-connectors-extensibility`"
+        if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "A new version of Airbyte CDK has been released!",
+                "text": "Error during `publish-cdk` while publishing Java CDK!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Airbyte CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "A PR has also been created for the <${{ steps.create-pull-request.outputs.pull-request-url }}|Connector Builder>\n"
+                            "text": "Error while publishing Java CDK!"
                         }
                     },
                     {
@@ -345,7 +140,7 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-      - name: Post failure to Slack channel dev-connectors-extensibility
+      - name: "Post success to Slack channel `#dev-connectors-extensibility`"
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
@@ -353,20 +148,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": ":warning: A new version of Airbyte CDK has been released but Connector Builder hasn't been automatically updated",
+                "text": "New version of Java CDK was successfully published!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Airbyte CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
+                            "text": "Java CDK published successfully!"
                         }
                     },
                     {
@@ -386,8 +174,8 @@ jobs:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     name: Stop Build EC2 Runner
     needs:
-      - start-publish-docker-image-runner-0 # required to get output from the start-runner job
-      - publish-docker-image # required to wait when the main job is done
+      - start-publish-docker-image-runner-0  # required to get output from the start-runner job
+      - publish-cdk  # required to wait when the main job is done
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
