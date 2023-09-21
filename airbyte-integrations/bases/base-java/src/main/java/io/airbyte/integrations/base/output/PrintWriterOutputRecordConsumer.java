@@ -15,46 +15,38 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.concurrent.NotThreadSafe;
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link OutputRecordConsumer} interface that uses a {@link PrintWriter} to
- * publish serialized {@link AirbyteMessage} objects. This implementation is not thread safe and it
- * is recommended to create a consumer per thread if used in a multithreaded way.
+ * publish serialized {@link AirbyteMessage} objects. This implementation is thread safe, as calls to
+ * {@link PrintWriter#println(String)} uses a lock to ensure
  */
-@NotThreadSafe
+@ThreadSafe
 public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PrintWriterOutputRecordConsumer.class);
 
-  private final boolean shouldClose;
   private final PrintWriter writer;
 
-  public PrintWriterOutputRecordConsumer(final boolean shouldClose) {
-    this(new FileOutputStream(FileDescriptor.out), shouldClose);
+  public PrintWriterOutputRecordConsumer() {
+    this(new FileOutputStream(FileDescriptor.out));
   }
 
   @VisibleForTesting
-  public PrintWriterOutputRecordConsumer(final OutputStream outputStream, final boolean shouldClose) {
+  public PrintWriterOutputRecordConsumer(final OutputStream outputStream) {
     LOGGER.info("Using PrintWriter for output record collection without output stream of type '{}'.", outputStream.getClass().getName());
-    this.shouldClose = shouldClose;
     writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)), true);
   }
 
   @Override
   public void close() throws Exception {
-    /*
-     * We need to make sure that the last instance of this consumer that is used is the one that
-     * ultimately closes the stream, especially if the underlying stream uses the FileDescriptor.out
-     * file descriptor. Otherwise, the first close will close the file descriptor, impacting all other
-     * streams.
-     */
-    if (shouldClose) {
       LOGGER.info("Closing PrintWriter...");
       writer.close();
       LOGGER.info("PrintWriter closed.");
-    }
   }
 
   @Override

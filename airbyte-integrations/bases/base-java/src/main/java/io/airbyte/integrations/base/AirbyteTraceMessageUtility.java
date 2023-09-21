@@ -4,9 +4,8 @@
 
 package io.airbyte.integrations.base;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
-import io.airbyte.integrations.base.output.OutputRecordConsumer;
-import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
@@ -63,12 +62,9 @@ public final class AirbyteTraceMessageUtility {
   // public void emitMetricTrace() {}
 
   private static void emitMessage(final AirbyteMessage message) {
-    try (final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer(false)) {
-      LOGGER.info("Emitting airbyte message '{}'...", message);
-      outputRecordCollector.accept(message);
-    } catch (final Exception e) {
-      LOGGER.error("Unable to close output record collector.", e);
-    }
+    // Explicitly use System.out.println here instead of the OutputRecordConsumer
+    // This is to avoid having multiple PrintWriter instances pointing at the standard out file descriptor
+    System.out.println(Jsons.serialize(message));
   }
 
   private static AirbyteMessage makeErrorTraceAirbyteMessage(

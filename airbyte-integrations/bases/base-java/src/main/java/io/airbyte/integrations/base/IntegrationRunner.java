@@ -86,11 +86,11 @@ public class IntegrationRunner {
   private static JsonSchemaValidator validator;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), () -> OutputRecordConsumerFactory.getOutputRecordConsumer(true), destination, null);
+    this(new IntegrationCliParser(), OutputRecordConsumerFactory::getOutputRecordConsumer, destination, null);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), () -> OutputRecordConsumerFactory.getOutputRecordConsumer(true), null, source);
+    this(new IntegrationCliParser(), OutputRecordConsumerFactory::getOutputRecordConsumer, null, source);
   }
 
   @VisibleForTesting
@@ -170,7 +170,7 @@ public class IntegrationRunner {
           try {
             if (featureFlags.concurrentSourceStreamRead()) {
               LOGGER.info("Concurrent source stream read enabled.");
-              readConcurrent(config, catalog, stateOptional);
+              readConcurrent(config, catalog, stateOptional, outputRecordCollector);
             } else {
               readSerial(config, catalog, outputRecordCollector, stateOptional);
             }
@@ -239,10 +239,10 @@ public class IntegrationRunner {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
-  private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
+  private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional, final Consumer<AirbyteMessage> recordCollector) throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
 
-    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
+    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer((stream) -> consumeFromStream(stream, recordCollector), streams.size())) {
       /*
        * Break the streams into partitions equal to the number of concurrent streams supported by the
        * stream consumer.
@@ -274,7 +274,7 @@ public class IntegrationRunner {
 
   private void readSerial(final JsonNode config,
                           ConfiguredAirbyteCatalog catalog,
-                          final OutputRecordConsumer outputRecordCollector,
+                          final Consumer<AirbyteMessage> outputRecordCollector,
                           final Optional<JsonNode> stateOptional)
       throws Exception {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
@@ -288,10 +288,8 @@ public class IntegrationRunner {
     }
   }
 
-  private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
-    final OutputRecordConsumer outputRecordCollector = OutputRecordConsumerFactory.getOutputRecordConsumer(false);
-
-    try (outputRecordCollector) {
+  private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream, final Consumer<AirbyteMessage> outputRecordCollector) {
+    try {
       final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
           outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
       produceMessages(stream, streamStatusTrackingRecordConsumer);

@@ -4,58 +4,70 @@
 
 package io.airbyte.integrations.base;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import lombok.SneakyThrows;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 public class AirbyteExceptionHandlerTest {
 
-  private static MockedStatic<OutputRecordConsumerFactory> outputRecordConsumerFactory;
-  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+  PrintStream originalOut = System.out;
+  private volatile ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
-  @BeforeAll
-  public static void setup() {
-    outputRecordConsumerFactory = mockStatic(OutputRecordConsumerFactory.class);
-  }
-
-  @BeforeEach
+  @Before
   public void setUpOut() {
-    final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent, true);
-    outputRecordConsumerFactory.when(() -> OutputRecordConsumerFactory.getOutputRecordConsumer(anyBoolean()))
-        .thenReturn(printWriterOutputRecordConsumer);
+    System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
   }
 
   @Test
   void testTraceMessageEmission() throws Exception {
-    final AirbyteExceptionHandler airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
-    final Thread thread = new Thread();
-    final Exception exception = new RuntimeException("error");
-
+    // mocking terminate() method in AirbyteExceptionHandler, so we don't kill the JVM
+    AirbyteExceptionHandler airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
     doNothing().when(airbyteExceptionHandler).terminate();
 
-    airbyteExceptionHandler.uncaughtException(thread, exception);
+    // have to spawn a new thread to test the uncaught exception handling,
+    // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
+    Thread thread = new Thread() {
+
+      @SneakyThrows
+      public void run() {
+        setUpOut();
+        final IntegrationRunner runner = Mockito.mock(IntegrationRunner.class);
+        doThrow(new RuntimeException("error")).when(runner).run(new String[] {"write"});
+        runner.run(new String[] {"write"});
+      }
+
+    };
+    thread.setUncaughtExceptionHandler(airbyteExceptionHandler);
+    thread.start();
+    thread.join();
+    System.out.flush();
+    revertOut();
 
     // now we turn the std out from the thread into json and check it's the expected TRACE message
     JsonNode traceMsgJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
-    LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).info(traceMsgJson.toString());
+    LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).debug(traceMsgJson.toString());
     Assertions.assertEquals("TRACE", traceMsgJson.get("type").asText());
     Assertions.assertEquals("ERROR", traceMsgJson.get("trace").get("type").asText());
     Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMsgJson.get("trace").get("error").get("message").asText());
     Assertions.assertEquals("system_error", traceMsgJson.get("trace").get("error").get("failure_type").asText());
+  }
+
+  @After
+  public void revertOut() {
+    System.setOut(originalOut);
   }
 
 }

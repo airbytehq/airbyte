@@ -167,7 +167,7 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
     final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("it failed");
     final ByteArrayOutputStream boas = new ByteArrayOutputStream();
-    try (final PrintWriterOutputRecordConsumer outputRecordConsumer = new PrintWriterOutputRecordConsumer(boas, true)) {
+    try (final PrintWriterOutputRecordConsumer outputRecordConsumer = new PrintWriterOutputRecordConsumer(boas)) {
       final AirbyteMessage expected = new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output);
 
       when(cliParser.parse(ARGS)).thenReturn(intConfig);

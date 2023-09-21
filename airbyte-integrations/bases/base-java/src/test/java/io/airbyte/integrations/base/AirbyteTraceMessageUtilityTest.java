@@ -4,39 +4,26 @@
 
 package io.airbyte.integrations.base;
 
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.mockStatic;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.output.OutputRecordConsumerFactory;
-import io.airbyte.integrations.base.output.PrintWriterOutputRecordConsumer;
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
 import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 public class AirbyteTraceMessageUtilityTest {
 
-  private static MockedStatic<OutputRecordConsumerFactory> outputRecordConsumerFactory;
-
+  PrintStream originalOut = System.out;
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-
-  @BeforeAll
-  public static void setup() {
-    outputRecordConsumerFactory = mockStatic(OutputRecordConsumerFactory.class);
-  }
 
   @BeforeEach
   public void setUpOut() {
-    final PrintWriterOutputRecordConsumer printWriterOutputRecordConsumer = new PrintWriterOutputRecordConsumer(outContent, true);
-    outputRecordConsumerFactory.when(() -> OutputRecordConsumerFactory.getOutputRecordConsumer(anyBoolean()))
-        .thenReturn(printWriterOutputRecordConsumer);
+    System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
   }
 
   private void assertJsonNodeIsTraceMessage(JsonNode jsonNode) {
@@ -71,12 +58,17 @@ public class AirbyteTraceMessageUtilityTest {
   @Test
   void testCorrectStacktraceFormat() {
     try {
-      throw new RuntimeException();
+      int x = 1 / 0;
     } catch (Exception e) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "you exploded the universe");
     }
     JsonNode outJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
     Assertions.assertTrue(outJson.get("trace").get("error").get("stack_trace").asText().contains("\n\tat"));
+  }
+
+  @AfterEach
+  public void revertOut() {
+    System.setOut(originalOut);
   }
 
 }
