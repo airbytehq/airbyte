@@ -444,22 +444,30 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = "[" + streamColumns.entrySet().stream().map(
-        col -> new StringSubstitutor(Map.of(
-            "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
-            "col_type", toDialectType(col.getValue()).name(),
-            "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
-                // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
-                // and necessary because json_query
-                """
-                CASE
-                  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
-                    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
-                    AND (${json_extract} IS NULL)
-                    THEN 'Problem with `${raw_col_name}`'
-                  ELSE NULL
-                END"""))
-        .collect(joining(",\n")) + "]";
+    final String columnErrors;
+    if (forceSafeCasting) {
+      columnErrors =         "[" + streamColumns.entrySet().stream().map(
+                                                    col -> new StringSubstitutor(Map.of(
+                                                        "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
+                                                        "col_type", toDialectType(col.getValue()).name(),
+                                                        "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
+                                                        // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                                                        // and necessary because json_query
+                                                        """
+                                                        CASE
+                                                          WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                                                            AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
+                                                            AND (${json_extract} IS NULL)
+                                                            THEN 'Problem with `${raw_col_name}`'
+                                                          ELSE NULL
+                                                        END"""))
+                                                .collect(joining(",\n")) + "]";
+    } else {
+      // We're not safe casting, so any error should throw an exception and trigger the safe cast logic
+      columnErrors = "[]";
+    }
+
+
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
