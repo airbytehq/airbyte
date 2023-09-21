@@ -66,5 +66,4 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
   public boolean compressSchemaHistoryForState() {
     return COMPRESSION_ENABLED;
   }
-
 }

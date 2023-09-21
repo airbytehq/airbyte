@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -23,15 +19,20 @@ public class SnowflakeSqlGeneratorTest {
             new ColumnId(
                 "__FOO_",
                 "${foo}",
-                "${FOO}"),
-            generator.buildColumnId("${foo}")),
+                "${FOO}"
+            ),
+            generator.buildColumnId("${foo}")
+        ),
         // But normally, we should leave those characters untouched.
         () -> assertEquals(
             new ColumnId(
                 "{FO$O}",
                 "{fo$o}",
-                "{FO$O}"),
-            generator.buildColumnId("{fo$o}")));
+                "{FO$O}"
+            ),
+            generator.buildColumnId("{fo$o}")
+        )
+    );
   }
 
   /**
@@ -47,8 +48,10 @@ public class SnowflakeSqlGeneratorTest {
                 "airbyte_internal",
                 "__foo__raw__stream___bar_",
                 "${foo}",
-                "${bar}"),
-            generator.buildStreamId("${foo}", "${bar}", "airbyte_internal")),
+                "${bar}"
+            ),
+            generator.buildStreamId("${foo}", "${bar}", "airbyte_internal")
+        ),
         () -> assertEquals(
             new StreamId(
                 "{FO$O}",
@@ -56,8 +59,10 @@ public class SnowflakeSqlGeneratorTest {
                 "airbyte_internal",
                 "{fo$o}_raw__stream_{ba$r}",
                 "{fo$o}",
-                "{ba$r}"),
-            generator.buildStreamId("{fo$o}", "{ba$r}", "airbyte_internal")));
+                "{ba$r}"
+            ),
+            generator.buildStreamId("{fo$o}", "{ba$r}", "airbyte_internal")
+        )
+    );
   }
-
 }
