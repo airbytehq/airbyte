@@ -1,16 +1,16 @@
 {
   "properties": {
     "api_token": {
-      "description": "Jira API Token. See the docs for more information on how to generate this key. API Token is used for Authorization to your account by BasicAuth: https://go.estuary.dev/cVlN5P"
+      "description": "Jira API Token. See the docs for more information on how to generate this key. API Token is used for Authorization to your account: https://go.estuary.dev/Bk7fII"
     },
     "domain": {
       "description": "The Domain for your Jira account, e.g. estuary.atlassian.net, estuary.jira.com, jira.your-domain.com"
     },
     "enable_experimental_streams": {
-      "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See the docs for more info: https://go.estuary.dev/cVlN5P"
+      "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See the docs for more info: https://go.estuary.dev/Bk7fII"
     },
     "start_date": {
-      "description": "The date from which you want to replicate data from Jira, use the format YYYY-MM-DDT00:00:00Z. Note that this field only applies to certain streams, and only data generated on or after the start date will be replicated. Or leave it empty if you want to replicate all data. For more information, refer to the documentation: https://go.estuary.dev/cVlN5P"
+      "description": "The date from which you want to replicate data from Jira, use the format YYYY-MM-DDT00:00:00Z. Note that this field only applies to certain streams, and only data generated on or after the start date will be replicated. Or leave it empty if you want to replicate all data. For more information, refer to the documentation: https://go.estuary.dev/Bk7fII"
     }
  }
 }
