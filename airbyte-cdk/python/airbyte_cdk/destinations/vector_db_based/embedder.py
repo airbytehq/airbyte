@@ -13,7 +13,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     OpenAIEmbeddingConfigModel,
 )
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
@@ -52,12 +52,14 @@ class Embedder(ABC):
 
 OPEN_AI_VECTOR_SIZE = 1536
 
+OPEN_AI_TOKEN_LIMIT = 150_000  # limit of tokens per minute
 
-class OpenAIEmbedder(Embedder):
-    def __init__(self, config: OpenAIEmbeddingConfigModel):
+
+class BaseOpenAIEmbedder(Embedder):
+    def __init__(self, embeddings: OpenAIEmbeddings, chunk_size: int):
         super().__init__()
-        # Client is set internally
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15)  # type: ignore
+        self.embeddings = embeddings
+        self.chunk_size = chunk_size
 
     def check(self) -> Optional[str]:
         try:
@@ -67,12 +69,35 @@ class OpenAIEmbedder(Embedder):
         return None
 
     def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
-        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
+        """
+        Embed the text of each chunk and return the resulting embedding vectors.
+
+        As the OpenAI API will fail if more than the per-minute limit worth of tokens is sent at once, we split the request into batches and embed each batch separately.
+        It's still possible to run into the rate limit between each embed call because the available token budget hasn't recovered between the calls,
+        but the built-in retry mechanism of the OpenAI client handles that.
+        """
+        # Each chunk can hold at most self.chunk_size tokens, so tokens-per-minute by maximum tokens per chunk is the number of chunks that can be embedded at once without exhausting the limit in a single request
+        embedding_batch_size = OPEN_AI_TOKEN_LIMIT // self.chunk_size
+        batches = create_chunks(chunks, batch_size=embedding_batch_size)
+        embeddings = []
+        for batch in batches:
+            embeddings.extend(self.embeddings.embed_documents([chunk.page_content for chunk in batch]))
+        return embeddings
 
     @property
     def embedding_dimensions(self) -> int:
         # vector size produced by text-embedding-ada-002 model
         return OPEN_AI_VECTOR_SIZE
+
+
+class OpenAIEmbedder(BaseOpenAIEmbedder):
+    def __init__(self, config: OpenAIEmbeddingConfigModel, chunk_size: int):
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15), chunk_size)  # type: ignore
+
+
+class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
+    def __init__(self, config: AzureOpenAIEmbeddingConfigModel, chunk_size: int):
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment), chunk_size)  # type: ignore
 
 
 COHERE_VECTOR_SIZE = 1024
@@ -118,33 +143,6 @@ class FakeEmbedder(Embedder):
     @property
     def embedding_dimensions(self) -> int:
         # use same vector size as for OpenAI embeddings to keep it realistic
-        return OPEN_AI_VECTOR_SIZE
-
-
-class AzureOpenAIEmbedder(Embedder):
-    def __init__(self, config: AzureOpenAIEmbeddingConfigModel):
-        super().__init__()
-        # Client is set internally
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment)  # type: ignore
-
-    def check(self) -> Optional[str]:
-        old_retries = self.embeddings.max_retries
-        try:
-            # Set retries to once to fail quickly in case the base URL is wrong as it will enter a backoff loop otherwise
-            self.embeddings.max_retries = 1
-            self.embeddings.embed_query("test")
-        except Exception as e:
-            return format_exception(e)
-        finally:
-            self.embeddings.max_retries = old_retries
-        return None
-
-    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
-        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
-
-    @property
-    def embedding_dimensions(self) -> int:
-        # vector size produced by text-embedding-ada-002 model
         return OPEN_AI_VECTOR_SIZE
 
 

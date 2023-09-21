@@ -24,31 +24,31 @@ access to the database.
 1. Log in to the MongoDB Atlas dashboard.
 2. From the dashboard, click on "Database Access" under "Security"
 
-![Security Database Access](mongodb/assets/mongodb_atlas_database_user_step_2.png)
+![Security Database Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_2.png)
 
 3. Click on the "+ ADD NEW DATABASE USER" button.
 
-![Add New Database User](mongodb/assets/mongodb_atlas_database_user_step_3.png)
+![Add New Database User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_3.png)
 
 4. On the "Add new Database User" modal dialog, choose "Password" for the "Authentication Method".
 
-![Authentication Method](mongodb/assets/mongodb_atlas_database_user_step_4.png)
+![Authentication Method](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_4.png)
 
 5. In the "Password Authentication" section, set the username to `READ_ONLY_USER` in the first text box and set a password in the second text box.
 
-![Username and Password](mongodb/assets/mongodb_atlas_database_user_step_5.png)
+![Username and Password](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
 6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
 
-![Database User Privileges](mongodb/assets/mongodb_atlas_database_user_step_6.png)
+![Database User Privileges](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
 7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
-![Restrict Access](mongodb/assets/mongodb_atlas_database_user_step_7.png)
+![Restrict Access](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
 8. Click on "Add User" at the bottom to save the user.
 
-![Add User](mongodb/assets/mongodb_atlas_database_user_step_8.png)
+![Add User](../../.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
 ##### Self Hosted
 
@@ -56,16 +56,16 @@ These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/
 
 1. From a terminal window, launch the MongoDB shell:
 ```shell
-> mongosh <connection string to cluster> --username <user with admin permissions>
+&gt; mongosh &lt;connection string to cluster&gt; --username &lt;user with admin permissions&gt;
 ```  
 2. Switch to the `admin` database:
 ```shell
-test> use admin
+test&gt; use admin
 switched to db admin
 ```
 3. Create the `READ_ONLY_USER` user with the `read` role:
-```javascript
-admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
+```shell
+admin&gt; db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
 :::note Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. :::
 4. Next, enable authentication, if not already enabled.  Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
@@ -90,15 +90,15 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 1. Log in to the [MongoDB Atlas dashboard](https://cloud.mongodb.com/).
 2. From the dashboard, click on the "Connect" button of the source cluster.
 
-![Connect to Source Cluster](mongodb/assets/mongodb_atlas_connection_string_step_2.png)
+![Connect to Source Cluster](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
-3. On the "Connect to <cluster name>" modal dialog, select "Shell" under the "Access your data through tools" section.
+3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
-![Shell Connect](mongodb/assets/mongodb_atlas_connection_string_step_3.png)
+![Shell Connect](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
 4. Copy the connection string from the entry labeled "2. Run your connection string in your command line" on the modal dialog, removing/avoiding the quotation marks.
 
-![Copy Connection String](mongodb/assets/mongodb_atlas_connection_string_step_4.png)
+![Copy Connection String](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_4.png)
 
 ##### Self Hosted Cluster
 
