@@ -6,7 +6,7 @@ This page guides you through the process of setting up the Facebook Marketing so
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
 <!-- env:oss -->
-- (For Airbyte Open Source) A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
+- (For Airbyte Open Source) A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled. The credentials of your Facebook account with permission to access your ads account.
 <!-- /env:oss -->
 
 ## Setup guide
