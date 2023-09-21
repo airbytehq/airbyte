@@ -9,10 +9,6 @@ import semver
 from base_images import version_registry
 from base_images.python.bases import AirbytePythonConnectorBaseImage
 
-# Sample data for testing
-sample_entry1 = version_registry.VersionRegistryEntry(published_docker_image=None, changelog_entry=None, version="1.0.0")
-sample_entry2 = version_registry.VersionRegistryEntry(published_docker_image=None, changelog_entry=None, version="2.0.0")
-
 
 class TestChangelogEntry:
     def test_to_serializable_dict(self):
