@@ -21,7 +21,6 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +39,12 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
   // have completed the snapshot.
   private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
 
-  MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
-                                     final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
-                                     final CdcState cdcState,
-                                     final ConfiguredAirbyteCatalog catalog) {
+  public MySqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
+                                            final Map<AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPrimaryKeyInfo,
+                                            final CdcState cdcState,
+                                            final ConfiguredAirbyteCatalog catalog) {
     this.cdcState = cdcState;
-    this.pairToPrimaryKeyLoadStatus = initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
+    this.pairToPrimaryKeyLoadStatus = MySqlInitialLoadStateManager.initPairToPrimaryKeyLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToPrimaryKeyInfo = pairToPrimaryKeyInfo;
     this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
   }
@@ -63,16 +62,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     return streamsThatHaveCompletedSnapshot;
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> initPairToPrimaryKeyLoadStatusMap(
-                                                                                                             final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> pairToPkStatus) {
-    final Map<AirbyteStreamNameNamespacePair, PrimaryKeyLoadStatus> map = new HashMap<>();
-    pairToPkStatus.forEach((pair, pkStatus) -> {
-      final AirbyteStreamNameNamespacePair updatedPair = new AirbyteStreamNameNamespacePair(pair.getName(), pair.getNamespace());
-      map.put(updatedPair, pkStatus);
-    });
-    return map;
-  }
-
+  @Override
   public AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
@@ -95,6 +85,7 @@ public class MySqlInitialLoadGlobalStateManager implements MySqlInitialLoadState
     pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
   }
 
+  @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     streamsThatHaveCompletedSnapshot.add(pair);
     final List<AirbyteStreamState> streamStates = new ArrayList<>();

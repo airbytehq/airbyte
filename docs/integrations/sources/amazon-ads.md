@@ -109,6 +109,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |
 | 3.1.2   | 2023-08-16 | [29233](https://github.com/airbytehq/airbyte/pull/29233) | Add filter for Marketplace IDs                                                                                  |
 | 3.1.1   | 2023-08-28 | [29900](https://github.com/airbytehq/airbyte/pull/29900) | Add 404 handling for no assotiated with bid ad groups                                                           |
 | 3.1.0   | 2023-08-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `T00030` tactic support for `sponsored_display_report_stream`                                               |

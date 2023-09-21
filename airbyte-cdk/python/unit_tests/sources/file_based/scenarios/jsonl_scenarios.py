@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.helpers import LowInferenceBytesJsonlParser, LowInferenceLimitDiscoveryPolicy
@@ -15,7 +16,7 @@ single_jsonl_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -82,7 +83,7 @@ multi_jsonl_with_different_keys_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -163,7 +164,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -241,7 +242,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -307,7 +308,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                       "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
         ]
     )
-    .set_parsers({"jsonl": LowInferenceBytesJsonlParser()})
+    .set_parsers({JsonlFormat: LowInferenceBytesJsonlParser()})
 ).build()
 
 
@@ -319,7 +320,7 @@ invalid_jsonl_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -390,13 +391,13 @@ jsonl_multi_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*.jsonl"],
                     "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["b.jsonl"],
                     "validation_policy": "Emit Record",
                 }
@@ -501,7 +502,7 @@ schemaless_jsonl_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
@@ -577,14 +578,14 @@ schemaless_jsonl_multi_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["a.jsonl"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
                 },
                 {
                     "name": "stream2",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["b.jsonl"],
                     "validation_policy": "Skip Record",
                 }
@@ -678,7 +679,7 @@ jsonl_user_input_schema_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "integer", "col2": "string"}'

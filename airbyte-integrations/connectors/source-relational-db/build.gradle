@@ -19,7 +19,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
 
     testImplementation libs.postgresql
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation libs.testcontainers.postgresql
 
     testImplementation libs.junit.jupiter.system.stubs
 
