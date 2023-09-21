@@ -225,4 +225,5 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   protected String getServerImageName() {
     return "postgres:15-alpine";
   }
+
 }

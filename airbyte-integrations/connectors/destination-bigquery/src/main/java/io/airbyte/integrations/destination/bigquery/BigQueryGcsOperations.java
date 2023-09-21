@@ -133,29 +133,29 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
     LOGGER.info("Uploading records from staging files to target table {} (dataset {}): {}",
         tableId, datasetId, stagedFileName);
 
-      final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFileName);
-      LOGGER.info("Uploading staged file: {}", fullFilePath);
-      final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
-          .setFormatOptions(FormatOptions.csv())
-          .setSchema(tableSchema)
-          .setWriteDisposition(WriteDisposition.WRITE_APPEND)
-          .setJobTimeoutMs(60000L)
-          .build();
+    final String fullFilePath = String.format("gs://%s/%s%s", gcsConfig.getBucketName(), getStagingFullPath(datasetId, stream), stagedFileName);
+    LOGGER.info("Uploading staged file: {}", fullFilePath);
+    final LoadJobConfiguration configuration = LoadJobConfiguration.builder(tableId, fullFilePath)
+        .setFormatOptions(FormatOptions.csv())
+        .setSchema(tableSchema)
+        .setWriteDisposition(WriteDisposition.WRITE_APPEND)
+        .setJobTimeoutMs(60000L)
+        .build();
 
-      final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
-      LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
-          tableId, datasetId, loadJob);
+    final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
+    LOGGER.info("[{}] Created a new job to upload record(s) to target table {} (dataset {}): {}", loadJob.getJobId(),
+        tableId, datasetId, loadJob);
 
-      try {
-        BigQueryUtils.waitForJobFinish(loadJob);
-        LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
-            tableId, datasetId);
-      } catch (final BigQueryException | InterruptedException e) {
-        throw new RuntimeException(
-            String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
-                tableId, datasetId),
-            e);
-      }
+    try {
+      BigQueryUtils.waitForJobFinish(loadJob);
+      LOGGER.info("[{}] Target table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(),
+          tableId, datasetId);
+    } catch (final BigQueryException | InterruptedException e) {
+      throw new RuntimeException(
+          String.format("[%s] Failed to upload staging files to destination table %s (%s)", loadJob.getJobId(),
+              tableId, datasetId),
+          e);
+    }
   }
 
   @Override
