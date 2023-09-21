@@ -220,11 +220,13 @@
     },
     "custom_fields": {
       "properties": {}, 
-      "type": "object"
+      "additionalProperties": true,
+      "type": ["null", "object"]
     },
     "keyed_custom_fields": {
       "properties": {},
-      "type": "object"
+      "additionalProperties": true,
+      "type": ["null", "object"]
     }
   }
 }
