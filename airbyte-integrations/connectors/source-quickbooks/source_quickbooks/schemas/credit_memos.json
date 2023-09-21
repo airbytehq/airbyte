@@ -81,7 +81,7 @@
                 "type": ["null", "object"]
               },
               "UnitPrice": {
-                "type": ["null", "integer"]
+                "type": ["null", "number"]
               },
               "TaxCodeRef": {
                 "properties": {
