@@ -357,17 +357,6 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-      # This is helpful in the case that we change a previously commited generated file to be ignored by git.
-      - name: Remove any files that have been gitignored
-        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
-
-      - name: Commit Changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: Automated Commit - Format and Process Resources Changes
-          commit_user_name: Octavia Squidington III
-          commit_user_email: octavia-squidington-iii@users.noreply.github.com
-
       - name: Publish Connectors Base Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         id: connectors-test-results
