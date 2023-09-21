@@ -163,7 +163,7 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.5   | 2023-09-21 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Rewrite source connection error messages  |
+| 1.0.5   | 2023-09-21 | [30654](https://github.com/airbytehq/airbyte/pull/30654) | Rewrite source connection error messages  |
 | 1.0.4   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes  |
 | 1.0.3   | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references  |
 | 1.0.2   | 2023-07-11 | [28144](https://github.com/airbytehq/airbyte/pull/28144)                                                          | Add `archived_at` property to `Organizations` schema parameter                                                                                                                               |
