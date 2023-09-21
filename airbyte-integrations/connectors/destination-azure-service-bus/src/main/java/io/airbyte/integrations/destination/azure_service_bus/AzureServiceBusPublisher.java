@@ -25,16 +25,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Cache;
-import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.ConnectionPool;
-import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -42,6 +38,7 @@ import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +56,6 @@ public class AzureServiceBusPublisher extends FailureTrackingAirbyteMessageConsu
 
   private final OkHttpClient client;
 
-  private final CacheControl cacheControl = new CacheControl.Builder().noCache().build();
   private final Map<AirbyteStreamNameNamespacePair, StreamProperties> streamValueMap = Maps.newHashMap();
 
   private AirbyteMessage lastMessage = null;
@@ -171,7 +167,6 @@ public class AzureServiceBusPublisher extends FailureTrackingAirbyteMessageConsu
 
     Builder requestBuilder = new Builder()
         .url(postMsgUrl)
-        .cacheControl(cacheControl)
         .post(RequestBody.create(Jsons.serialize(data).getBytes(StandardCharsets.UTF_8),
             MediaType.parse("text/plain")));
 
@@ -181,7 +176,7 @@ public class AzureServiceBusPublisher extends FailureTrackingAirbyteMessageConsu
     addHeader(requestBuilder, AzureServiceBusDestination.STREAM, streamValues.getStreamName());
     addHeader(requestBuilder, AzureServiceBusDestination.NAMESPACE, streamValues.getStreamNamespace());
     addHeader(requestBuilder, AzureServiceBusDestination.KEYS, streamValues.getPrimaryKeys());
-    addHeader(requestBuilder, "BrokerProperties", Jsons.serialize(brokerPropsMap));
+    requestBuilder.addHeader("BrokerProperties", Jsons.serialize(brokerPropsMap));
 
     requestBuilder.addHeader("Authorization",
         Objects.requireNonNull(sasGenerator.getToken(queueUrl.toString()), "require token").getToken());
@@ -191,8 +186,10 @@ public class AzureServiceBusPublisher extends FailureTrackingAirbyteMessageConsu
     Call call = client.newCall(request);
     try (Response response = call.execute()) {
       if (response.code() != 201) {
+        ResponseBody body = response.body();
+        String bodyStr = body == null ? "<empty>" : body.string();
         String errorMsg = "send message failed code=%d body=%s"
-            .formatted(response.code(), response.body());
+            .formatted(response.code(), bodyStr);
         throw new IllegalStateException(errorMsg);
       }
     }
