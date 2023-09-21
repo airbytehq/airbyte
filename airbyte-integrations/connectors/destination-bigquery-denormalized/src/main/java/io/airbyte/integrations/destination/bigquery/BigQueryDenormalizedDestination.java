@@ -55,18 +55,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   }
 
   @Override
-  protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {
-    // the json schema needs to be processed by the record former to denormalize
-    return (formatter, pair) -> new JsonToAvroSchemaConverter().getAvroSchema(formatter.getJsonSchema(), pair.getName(),
-        pair.getNamespace(), true, false, false, true);
-  }
-
-  @Override
-  protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
-    return streamSchema -> new GcsBigQueryDenormalizedRecordFormatter(streamSchema, namingResolver);
-  }
-
-  @Override
   protected void putStreamIntoUploaderMap(final AirbyteStream stream,
                                           final UploaderConfig uploaderConfig,
                                           final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
