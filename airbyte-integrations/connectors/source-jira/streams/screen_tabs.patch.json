@@ -1,8 +1,20 @@
 {
     "properties": {
-        "name": {
-            "type": ["string", "null"]
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": 
+                ["string", "null"]
+          },
+          "screenId": {
+            "type" : ["null", "integer"],
+            "description" : "Id of the related screen."
+          }
         },
+        "additionalProperties": true,
         "required": ["id"]
     }
 }
