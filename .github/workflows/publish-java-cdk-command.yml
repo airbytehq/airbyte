@@ -13,9 +13,6 @@ on:
   push:
     branches:
       - java-cdk/publish-workflow
-    inputs:
-      repo:
-        description: "Repo to check out code from. Defaults to the main airbyte repo."
 
   workflow_dispatch:
     inputs:
