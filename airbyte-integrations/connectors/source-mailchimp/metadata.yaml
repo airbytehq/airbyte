@@ -10,7 +10,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 0.5.0
+  dockerImageTag: 1.0.0
+  releases:
+    breakingChanges:
+      2.0.0:
+        upgradeDeadline: 2023-10-10
+        message: "Migration to Lowcode states aren't compatible. Need to reset data."
   dockerRepository: airbyte/source-mailchimp
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
