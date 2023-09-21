@@ -21,7 +21,7 @@ jobs:
           ref: ${{ github.head_ref }}
           # Important that this is set so that CI checks are triggered again
           # Without this we would be be forever waiting on required checks to pass
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
       - uses: actions/setup-java@v3
         with:
