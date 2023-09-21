@@ -2,7 +2,6 @@ name: Format Code (Python + Java)
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 on:
   workflow_dispatch:
@@ -20,6 +19,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
+          # Important that this is set so that CI checks are triggered again
+          # Without this we would be be forever waiting on required checks to pass
+          token: ${{ secrets.PAT }}
 
       - uses: actions/setup-java@v3
         with:
