@@ -1,4 +1,4 @@
-name: Publish Python CDK Manually
+name: Publish Java CDK
 on:
   workflow_dispatch:
     inputs:
