@@ -85,6 +85,42 @@ class VersionRegistry:
         return self.get_changelog_dump_path(self.ConnectorBaseImageClass)
 
     @staticmethod
+    def get_changelog_entries(ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]) -> List[ChangelogEntry]:
+        """Returns the changelog entries for a given base image version class.
+        The changelog entries are loaded from the checked in changelog dump JSON file.
+
+        Args:
+            ConnectorBaseImageClass (Type[AirbyteConnectorBaseImage]): The base image version class bound to the registry.
+
+        Returns:
+            List[ChangelogEntry]: The changelog entries for a given base image version class.
+        """
+        change_log_dump_path = VersionRegistry.get_changelog_dump_path(ConnectorBaseImageClass)
+        if not change_log_dump_path.exists():
+            changelog_entries = []
+        else:
+            changelog_entries = [ChangelogEntry.from_dict(raw_entry) for raw_entry in json.loads(change_log_dump_path.read_text())]
+        return changelog_entries
+
+    @staticmethod
+    async def get_all_published_base_images(
+        dagger_client: dagger.Client, docker_credentials: Tuple[str, str], ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]
+    ) -> List[published_image.PublishedImage]:
+        """Returns all the published base images for a given base image version class.
+
+        Args:
+            dagger_client (dagger.Client): The dagger client used to build the registry.
+            docker_credentials (Tuple[str, str]): The docker credentials used to fetch published images from DockerHub.
+            ConnectorBaseImageClass (Type[AirbyteConnectorBaseImage]): The base image version class bound to the registry.
+
+        Returns:
+            List[published_image.PublishedImage]: The published base images for a given base image version class.
+        """
+        crane_client = docker.CraneClient(dagger_client, docker_credentials)
+        remote_registry = docker.RemoteRepository(crane_client, consts.REMOTE_REGISTRY, ConnectorBaseImageClass.repository)  # type: ignore
+        return await remote_registry.get_all_images()
+
+    @staticmethod
     async def load(
         ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage], dagger_client: dagger.Client, docker_credentials: Tuple[str, str]
     ) -> VersionRegistry:
@@ -97,19 +133,15 @@ class VersionRegistry:
             VersionRegistry: The registry.
         """
         # Loading the local structured changelog file which is stored as a json file.
-        change_log_dump_path = VersionRegistry.get_changelog_dump_path(ConnectorBaseImageClass)
-        if not change_log_dump_path.exists():
-            changelog_entries = []
-        else:
-            changelog_entries = [ChangelogEntry.from_dict(raw_entry) for raw_entry in json.loads(change_log_dump_path.read_text())]
+        changelog_entries = VersionRegistry.get_changelog_entries(ConnectorBaseImageClass)
 
         # Build a dict of changelog entries by version number for easier lookup
         changelog_entries_by_version = {entry.version: entry for entry in changelog_entries}
 
         # Instantiate a crane client and a remote registry to fetch published images from DockerHub
-        crane_client = docker.CraneClient(dagger_client, docker_credentials)
-        remote_registry = docker.RemoteRepository(crane_client, consts.REMOTE_REGISTRY, ConnectorBaseImageClass.repository)  # type: ignore
-        published_docker_images = await remote_registry.get_all_images()
+        published_docker_images = await VersionRegistry.get_all_published_base_images(
+            dagger_client, docker_credentials, ConnectorBaseImageClass
+        )
 
         # Build a dict of published images by version number for easier lookup
         published_docker_images_by_version = {image.version: image for image in published_docker_images}
