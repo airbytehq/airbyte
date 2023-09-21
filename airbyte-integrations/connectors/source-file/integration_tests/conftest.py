@@ -7,33 +7,27 @@ import json
 import os
 import random
 import shutil
-import socket
 import string
 import tempfile
+import time
 import uuid
 from pathlib import Path
 from typing import Mapping
 
 import boto3
+import docker
 import pandas
 import pytest
 from azure.storage.blob import BlobServiceClient
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
-from paramiko.client import AutoAddPolicy, SSHClient
-from paramiko.ssh_exception import SSHException
 
 HERE = Path(__file__).parent.absolute()
 
 
 def random_char(length):
     return "".join(random.choice(string.ascii_letters) for x in range(length))
-
-
-@pytest.fixture(scope="session")
-def docker_compose_file() -> Path:
-    return HERE / "docker-compose.yml"
 
 
 @pytest.fixture(scope="session")
@@ -66,21 +60,6 @@ def azblob_credentials() -> Mapping:
         return json.load(json_file)
 
 
-def is_ssh_ready(ip, port):
-    try:
-        with SSHClient() as ssh:
-            ssh.set_missing_host_key_policy(AutoAddPolicy)
-            ssh.connect(
-                ip,
-                port=port,
-                username="user1",
-                password="abc123@456#",
-            )
-        return True
-    except (SSHException, socket.error):
-        return False
-
-
 @pytest.fixture(scope="session")
 def move_sample_files_to_tmp():
     """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
@@ -92,12 +71,30 @@ def move_sample_files_to_tmp():
 
 
 @pytest.fixture(scope="session")
-def ssh_service(move_sample_files_to_tmp, docker_ip, docker_services):
+def docker_client():
+    return docker.from_env()
+
+
+@pytest.fixture(scope="session")
+def ssh_service(move_sample_files_to_tmp, docker_client):
     """Ensure that SSH service is up and responsive."""
-    # `port_for` takes a container port and returns the corresponding host port
-    port = docker_services.port_for("ssh", 22)
-    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port))
-    return docker_ip
+
+    container = docker_client.containers.run(
+        "atmoz/sftp",
+        "user1:abc123@456#:1001",
+        name="ssh",
+        ports={22: 2222},
+        volumes={
+            "/tmp/s3_sample_files": {"bind": "/home/user1/files", "mode": "rw"},
+        },
+        detach=True,
+    )
+
+    time.sleep(5)
+    yield "localhost"
+
+    container.kill()
+    container.remove()
 
 
 @pytest.fixture

@@ -28,7 +28,7 @@ MAIN_REQUIREMENTS = [
     "lxml==4.9.1",
     "html5lib==1.1",
     "beautifulsoup4==4.11.1",
-    "pyarrow==13.0.0",
+    "pyarrow==9.0.0",
     "xlrd==2.0.1",
     "openpyxl==3.0.10",
     "pyxlsb==1.0.9",
@@ -37,7 +37,7 @@ MAIN_REQUIREMENTS = [
 if not os.environ.get("DOCKER_BUILD"):
     MAIN_REQUIREMENTS.append(local_dependency("source-file"))
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "boto3==1.21.21", "pytest==7.1.2", "pytest-docker==1.0.0", "pytest-mock~=3.8.2"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest==7.1.2", "docker==6.1.3", "pytest-mock~=3.8.2"]
 
 setup(
     name="source_file_secure",
