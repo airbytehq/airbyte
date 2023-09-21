@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.staging;
 
+import static io.airbyte.integrations.destination_async.buffers.BufferManager.MEMORY_LIMIT_RATIO;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -129,7 +130,7 @@ public class StagingConsumerFactory {
                                                       final ParsedCatalog parsedCatalog,
                                                       final String defaultNamespace,
                                                       final boolean useDestinationsV2Columns,
-                                                      Optional<Long> BufferMemoryLimit) {
+                                                      final Optional<Long> bufferMemoryLimit) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher =
@@ -141,8 +142,12 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
-        BufferMemoryLimit.map(memoryLimit -> new BufferManager(memoryLimit)).orElse(new BufferManager()),
+        new BufferManager(getMemoryLimit(bufferMemoryLimit)),
         defaultNamespace);
+  }
+
+  private static long getMemoryLimit(Optional<Long> bufferMemoryLimit) {
+    return bufferMemoryLimit.orElse((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO));
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
