@@ -1,6 +1,6 @@
 # Amplitude
 
-This page guides you through setting up the Amplitude source connector to sync data for the [Amplitude API](https://developers.amplitude.com/docs/http-api-v2).
+This page guides you through setting up the Amplitude source connector to sync data for the [Amplitude API](https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/).
 
 ## Prerequisite
 
@@ -20,11 +20,11 @@ To set up the Amplitude source connector, you'll need your Amplitude [`API Key` 
 
 The Amplitude source connector supports the following streams:
 
-* [Active Users Counts](https://developers.amplitude.com/docs/dashboard-rest-api#active-and-new-user-counts) \(Incremental sync\)
-* [Annotations](https://developers.amplitude.com/docs/chart-annotations-api#get-all-annotations)
-* [Average Session Length](https://developers.amplitude.com/docs/dashboard-rest-api#average-session-length) \(Incremental sync\)
-* [Cohorts](https://developers.amplitude.com/docs/behavioral-cohorts-api#listing-all-cohorts)
-* [Events](https://developers.amplitude.com/docs/export-api#export-api---export-your-projects-event-data) \(Incremental sync\)
+* [Active Users Counts](https://www.docs.developers.amplitude.com/analytics/apis/dashboard-rest-api/#get-active-and-new-user-counts) \(Incremental sync\)
+* [Annotations](https://www.docs.developers.amplitude.com/analytics/apis/chart-annotations-api/#get-all-chart-annotations)
+* [Average Session Length](https://www.docs.developers.amplitude.com/analytics/apis/dashboard-rest-api/#get-average-session-length) \(Incremental sync\)
+* [Cohorts](https://www.docs.developers.amplitude.com/analytics/apis/behavioral-cohorts-api/#get-all-cohorts-response)
+* [Events](https://www.docs.developers.amplitude.com/analytics/apis/export-api/#response-schema) \(Incremental sync\)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 <!-- env:oss -->
