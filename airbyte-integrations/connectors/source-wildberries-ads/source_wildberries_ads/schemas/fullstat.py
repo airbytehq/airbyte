@@ -46,7 +46,7 @@ class AdsDayAppStat(BaseModel):
 class AdsDayStat(BaseModel):
     # fmt: off
     date: Optional[datetime] = Field(description="Дата генерации блока данных. В блоке отображаются статистические данные за эту дату.")
-    apps: Optional[List[AdsDayAppStat]] = Field(description="Блок информации о платформе")
+    # apps: Optional[List[AdsDayAppStat]] = Field(description="Блок информации о платформе")
     views: Optional[int] = Field(description="Количество просмотров. За день, по всем артикулам WB и платформам.")
     clicks: Optional[int] = Field(description="Количество кликов. За день, по всем артикулам WB и платформам.")
     frq: Optional[float] = Field(description="Частота (отношение количества просмотров к количеству уникальных пользователей). За день, по всем артикулам WB и платформам.")
