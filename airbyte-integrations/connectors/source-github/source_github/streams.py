@@ -1560,3 +1560,14 @@ class ContributorActivity(GithubStream):
         record["repository"] = stream_slice["repository"]
         record.update(record.pop("author"))
         return record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """
+        If the data hasn't been cached when you query a repository's statistics, you'll receive a 202 response, need to retry to get results
+        see for more info https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#a-word-about-caching
+        """
+        if super().should_retry(response) or response.status_code == requests.codes.ACCEPTED:
+            return True
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return 10 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
