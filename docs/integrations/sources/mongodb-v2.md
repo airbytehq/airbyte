@@ -56,16 +56,16 @@ These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/
 
 1. From a terminal window, launch the MongoDB shell:
 ```shell
-> mongosh <connection string to cluster> --username <user with admin permissions>
+&gt; mongosh &lt;connection string to cluster&gt; --username &lt;user with admin permissions&gt;
 ```  
 2. Switch to the `admin` database:
 ```shell
-test> use admin
+test&gt; use admin
 switched to db admin
 ```
 3. Create the `READ_ONLY_USER` user with the `read` role:
-```javascript
-admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
+```shell
+admin&gt; db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
 :::note Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. :::
 4. Next, enable authentication, if not already enabled.  Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
@@ -92,7 +92,7 @@ the connection configuration for a MongoDB Atlas-hosted replica set cluster:
 
 ![Connect to Source Cluster](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_2.png)
 
-3. On the "Connect to <cluster name>" modal dialog, select "Shell" under the "Access your data through tools" section.
+3. On the "Connect to &lt;cluster name&gt;" modal dialog, select "Shell" under the "Access your data through tools" section.
 
 ![Shell Connect](../../.gitbook/assets/source/mongodb/mongodb_atlas_connection_string_step_3.png)
 
