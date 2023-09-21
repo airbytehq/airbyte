@@ -213,13 +213,13 @@ def _init_internal_request_filter() -> None:
         parsed_url = urlparse(request.url)
 
         if parsed_url.scheme not in VALID_URL_SCHEMES:
-            raise ValueError(
+            raise requests.exceptions.InvalidSchema(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
                 + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
             )
 
         if not parsed_url.hostname:
-            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+            raise requests.exceptions.InvalidURL("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
