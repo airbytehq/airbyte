@@ -57,15 +57,13 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
         for record in records:
             if self.cursor_field in record:
                 yield record
-                continue
-            if self.legacy_cursor_field:
-                record[self.cursor_field] = record[self.legacy_cursor_field]
-                yield record
-                continue
-            # this is done for the initial incremental sync to emit valid state message as
-            # some streams do not have cursor values when running initial incremental or full refresh sync.
-            record[self.cursor_field] = pendulum.now().int_timestamp
-            yield record
+                continue  # Skip the rest of the loop iteration
+
+            # fetch legacy_cursor_field from record; default to current timestamp for initial syncs without an any cursor.
+            current_cursor_value = record.get(self.legacy_cursor_field, pendulum.now().int_timestamp)
+        
+            # yield the record with the added cursor_field
+            yield record | {self.cursor_field: current_cursor_value} 
 
 
 class FilteringRecordExtractor(UpdatedCursorIncrementalRecordExtractor):
