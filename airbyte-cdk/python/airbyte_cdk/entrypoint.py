@@ -7,7 +7,6 @@ import importlib
 import ipaddress
 import logging
 import os.path
-import requests
 import socket
 import sys
 import tempfile
@@ -15,6 +14,7 @@ from functools import wraps
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
+import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
