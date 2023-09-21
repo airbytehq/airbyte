@@ -30,7 +30,6 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
 public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
-
   @SystemStub
   private EnvironmentVariables environmentVariables;
 
