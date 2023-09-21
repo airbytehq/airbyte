@@ -76,7 +76,7 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_credentials(config: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        credentials = config["credentials"]
+        credentials = config.get("credentials", {})
         # use_proto_plus is set to True, because setting to False returned wrong value types, which breakes the backward compatibility.
         # For more info read the related PR's description: https://github.com/airbytehq/airbyte/pull/9996
         credentials.update(use_proto_plus=True)
