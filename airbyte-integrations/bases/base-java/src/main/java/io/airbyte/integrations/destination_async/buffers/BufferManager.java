@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
@@ -35,13 +34,18 @@ public class BufferManager {
   private final ScheduledExecutorService debugLoop;
 
   public BufferManager() {
-    this((long) (Runtime.getRuntime().maxMemory() * 0.8));
+    this((long) (Runtime.getRuntime().maxMemory() * 0.7));
   }
 
-  @VisibleForTesting
+  /**
+   * @param memoryLimit the amount of estimated memory we allow for all buffers. The
+   *        GlobalMemoryManager will apply back pressure once this quota is filled. "Memory" can be
+   *        released back once flushing finishes. This number should be large enough we don't block
+   *        reading unnecessarily, but small enough we apply back pressure before OOMing.
+   */
   public BufferManager(final long memoryLimit) {
     maxMemory = memoryLimit;
-    LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(maxMemory));
+    LOGGER.info("Max 'memory' available for buffer allocation {}", FileUtils.byteCountToDisplaySize(maxMemory));
     memoryManager = new GlobalMemoryManager(maxMemory);
     this.stateManager = new GlobalAsyncStateManager(memoryManager);
     buffers = new ConcurrentHashMap<>();

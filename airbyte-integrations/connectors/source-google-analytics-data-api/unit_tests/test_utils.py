@@ -1,17 +1,23 @@
-import sys
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
+import sys
+from unittest.mock import Mock, mock_open, patch
+
 import pytest
-from unittest.mock import patch, Mock, mock_open
 from source_google_analytics_data_api.utils import (
+    get_source_defined_primary_key,
     serialize_to_date_string,
-    transform_string_filter,
-    transform_in_list_filter,
-    transform_numeric_filter,
     transform_between_filter,
     transform_expression,
-    get_source_defined_primary_key,
-    transform_json
+    transform_in_list_filter,
+    transform_json,
+    transform_numeric_filter,
+    transform_string_filter,
 )
+
 
 class TestSerializeToDateString:
 

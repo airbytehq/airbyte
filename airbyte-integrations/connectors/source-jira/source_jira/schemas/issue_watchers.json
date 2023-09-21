@@ -7,6 +7,10 @@
       "description": "The URL of these issue watcher details.",
       "readOnly": true
     },
+    "issueId": {
+      "type" : ["null", "string"],
+      "description": "Id of the related issue."
+    },
     "isWatching": {
       "type": "boolean",
       "description": "Whether the calling user is watching this issue.",
