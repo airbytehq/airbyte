@@ -17,6 +17,7 @@ connectionSpecification:
         for more information.
       order: 1
       type: string
+      airbyte_secret: true
     client_secret:
       title: Client Secret
       description:
