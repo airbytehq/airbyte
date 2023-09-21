@@ -46,5 +46,4 @@ public record BigQueryWriteConfig(
         tableSchema,
         syncMode);
   }
-
 }
