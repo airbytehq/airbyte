@@ -9,11 +9,14 @@
     "name": {
       "type": ["null", "string"]
     },
+    "defaultForOutboundVoicemail": {
+      "type": ["null", "boolean"]
+    },
+    "outcome": {
+      "type": ["null", "string"]
+    },
     "order": {
       "type": ["null", "integer"]
-    },
-    "color": {
-      "type": ["null", "string"]
     },
     "createdAt": {
       "type": ["null", "string"],
@@ -29,13 +32,7 @@
         "type": ["null", "integer"]
       }
     },
-    "prospects": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "integer"]
-      }
-    },
-    "updater": {
+    "calls": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
