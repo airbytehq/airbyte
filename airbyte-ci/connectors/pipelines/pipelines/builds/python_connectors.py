@@ -21,7 +21,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
     @property
-    def _build_connector_function(self):
+    def _build_connector(self):
         if (
             "connectorBuildOptions" in self.context.connector.metadata
             and "baseImage" in self.context.connector.metadata["connectorBuildOptions"]
@@ -31,7 +31,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
             return self._build_from_dockerfile
 
     async def _run(self) -> StepResult:
-        connector: Container = await self._build_connector_function()
+        connector: Container = await self._build_connector()
         connector = await apply_python_development_overrides(self.context, connector)
         try:
             return await self.get_step_result(connector.with_exec(["spec"]))
@@ -43,7 +43,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
         self.logger.info(f"Building connector from base image {base_image_name}")
         return self.dagger_client.container(platform=self.build_platform).from_(base_image_name)
 
-    async def _provision_builder_container(self, base_container: Container) -> Container:
+    async def _create_builder_container(self, base_container: Container) -> Container:
         """Pre install the connector dependencies in a builder container.
         If a python connectors depends on another local python connector, we need to mount its source in the container
         This occurs for the source-file-secure connector for example, which depends on source-file
@@ -82,7 +82,9 @@ class BuildConnectorImage(BuildConnectorImageBase):
             Container: The connector container built from the base image.
         """
         base = self._get_base_container()
-        builder = await self._provision_builder_container(base)
+        builder = await self._create_builder_container(base)
+        # The snake case name of the connector corresponds to the python package name of the connector
+        # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
         connector_snake_case_name = self.context.connector.technical_name.replace("-", "_")
 
         connector_container = (
