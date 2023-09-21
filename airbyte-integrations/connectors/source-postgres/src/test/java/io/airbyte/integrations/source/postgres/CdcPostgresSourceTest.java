@@ -74,7 +74,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -116,7 +115,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final DockerImageName myImage = DockerImageName.parse(getServerImageName()).asCompatibleSubstituteFor("postgres");
     container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
@@ -1003,4 +1002,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
   }
 
+  protected String getServerImageName() {
+    return "debezium/postgres:15-alpine";
+  }
 }
