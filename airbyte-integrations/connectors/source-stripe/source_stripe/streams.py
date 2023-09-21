@@ -61,9 +61,9 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
 
             # fetch legacy_cursor_field from record; default to current timestamp for initial syncs without an any cursor.
             current_cursor_value = record.get(self.legacy_cursor_field, pendulum.now().int_timestamp)
-        
+
             # yield the record with the added cursor_field
-            yield record | {self.cursor_field: current_cursor_value} 
+            yield record | {self.cursor_field: current_cursor_value}
 
 
 class FilteringRecordExtractor(UpdatedCursorIncrementalRecordExtractor):
