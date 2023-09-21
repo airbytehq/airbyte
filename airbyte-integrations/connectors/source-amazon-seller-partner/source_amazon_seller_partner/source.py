@@ -72,16 +72,20 @@ from source_amazon_seller_partner.streams import (
 class SourceAmazonSellerPartner(AbstractSource):
     def _get_stream_kwargs(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         endpoint, marketplace_id, region = get_marketplaces(config.get("aws_environment"))[config.get("region")]
+        aws_signature = None
 
-        sts_credentials = self.get_sts_credentials(config)
-        role_creds = sts_credentials["Credentials"]
-        aws_signature = AWSSignature(
-            service="execute-api",
-            aws_access_key_id=role_creds.get("AccessKeyId"),
-            aws_secret_access_key=role_creds.get("SecretAccessKey"),
-            aws_session_token=role_creds.get("SessionToken"),
-            region=region,
-        )
+        # Request STS credentials and aws signature ONLY if user set optional "aws_access_key" and "aws_secret_key" fields
+        if config.get("aws_access_key") and config.get("aws_secret_key"):
+            sts_credentials = self.get_sts_credentials(config)
+            role_creds = sts_credentials["Credentials"]
+            aws_signature = AWSSignature(
+                service="execute-api",
+                aws_access_key_id=role_creds.get("AccessKeyId"),
+                aws_secret_access_key=role_creds.get("SecretAccessKey"),
+                aws_session_token=role_creds.get("SessionToken"),
+                region=region,
+            )
+
         auth = AWSAuthenticator(
             token_refresh_endpoint="https://api.amazon.com/auth/o2/token",
             client_id=config.get("lwa_app_id"),
