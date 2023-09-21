@@ -192,7 +192,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.2   | 2023-09-21 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix updated state for the incremental syncs                                                                                                          |
+| 4.1.2   | 2023-09-21 | [30660](https://github.com/airbytehq/airbyte/pull/30660) | Fix updated state for the incremental syncs                                                                                                          |
 | 4.1.1   | 2023-09-15 | [30494](https://github.com/airbytehq/airbyte/pull/30494) | Fix datatype of invoices.lines property                                                                                                              |
 | 4.1.0   | 2023-08-29 | [29950](https://github.com/airbytehq/airbyte/pull/29950) | Implement incremental deletes, add suggested streams                                                                                                 |
 | 4.0.1   | 2023-09-07 | [30254](https://github.com/airbytehq/airbyte/pull/30254) | Fix cursorless incremental streams                                                                                                                   |
