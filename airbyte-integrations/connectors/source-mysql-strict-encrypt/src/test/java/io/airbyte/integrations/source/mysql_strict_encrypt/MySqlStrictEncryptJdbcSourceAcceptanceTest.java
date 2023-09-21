@@ -120,7 +120,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("standard_via_pk", true)
         .build());
 
     dslContext = DSLContextFactory.create(

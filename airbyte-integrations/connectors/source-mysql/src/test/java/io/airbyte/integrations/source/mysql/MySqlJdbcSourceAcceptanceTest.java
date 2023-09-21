@@ -112,7 +112,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                                 .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
                                 .put(JdbcUtils.USERNAME_KEY, TEST_USER)
                                 .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
-                                .put("standard_via_pk", true)
                                 .build());
 
     dslContext = DSLContextFactory.create(
