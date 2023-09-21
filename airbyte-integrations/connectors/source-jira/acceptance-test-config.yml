@@ -22,7 +22,7 @@ acceptance_tests:
         path: "integration_tests/expected_records.jsonl"
       empty_streams:
       - name: "project_permission_schemes"
-        bypass_reason: "unable to populate"
+        bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
       ignored_fields:
         sprint_issues:
           - name: updated

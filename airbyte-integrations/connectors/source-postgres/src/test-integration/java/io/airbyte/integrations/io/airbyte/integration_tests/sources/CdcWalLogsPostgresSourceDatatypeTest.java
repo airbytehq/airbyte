@@ -86,7 +86,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   @Override
   protected Database setupDatabase() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    container = new PostgreSQLContainer<>("postgres:14-alpine")
+    container = new PostgreSQLContainer<>("postgres:15-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");

@@ -56,21 +56,6 @@ abstract class AirbyteDockerTask extends AirbyteDockerBaseTask {
     }
 }
 
-abstract class AirbyteDockerWithLocalCDKLegacyTask extends AirbyteDockerBaseTask {
-
-    @InputFile
-    File buildScript = project.rootProject.file('airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh')
-
-    @TaskAction
-    def dockerTask() {
-        project.exec {
-            environment "CONNECTOR_TAG", DockerHelpers.getDevTaggedImage(project.projectDir, dockerFile.name)
-            environment "CONNECTOR_NAME", project.findProperty('connectorAcceptanceTest.connectorName')
-            commandLine buildScript.absolutePath
-        }
-    }
-}
-
 /**
  * AirbyteDockerTaskFactory is a convenience object to avoid passing the current project around.
  */
@@ -214,11 +199,6 @@ class AirbyteDockerTaskFactory {
             }
         }
         Class<? extends AirbyteDockerBaseTask> taskClass = AirbyteDockerTask
-        if (project.hasProperty('connectorAcceptanceTest.useLocalCdk') && project.parent.project.name == "connectors") {
-            // This is only used by the legacy test slash command, for connectors for which
-            // airbyte-ci isn't supported yet.
-            taskClass = AirbyteDockerWithLocalCDKLegacyTask
-        }
 
         // Tagged name of the image to be built by this task.
         def taggedImage = DockerHelpers.getDevTaggedImage(project.projectDir, dockerFileName)
