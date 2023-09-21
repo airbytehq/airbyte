@@ -66,6 +66,8 @@ publish {
     dependsOn subprojects*.publish
 }
 
+publishToMavenLocal.dependsOn subprojects*.publishToMavenLocal
+
 // This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
 task publishSnapshotIfNeeded {}
 

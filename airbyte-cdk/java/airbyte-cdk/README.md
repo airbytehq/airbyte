@@ -82,11 +82,11 @@ Note:
 MavenLocal debugging steps:
 
 1. Confirm local publish status by running:
-   `ls -la ~/.m2/repository/io/airbyte/airbyte-cdk\*`
+   `ls -la ~/.m2/repository/io/airbyte/airbyte-cdk/*`
 2. Confirm jar contents by running:
    `jar tf ~/.m2/repository/io/airbyte/airbyte-cdk/0.0.2-SNAPSHOT/airbyte-cdk-0.0.2-SNAPSHOT.jar`
 3. Remove CDK artifacts from MavenLocal by running:
-   `rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk\*`
+   `rm -rf ~/.m2/repository/io/airbyte/airbyte-cdk/*`
 4. Rebuid CDK artifacts by running:
    `./gradlew :airbyte-cdk:java:airbyte-cdk:build`
    or
