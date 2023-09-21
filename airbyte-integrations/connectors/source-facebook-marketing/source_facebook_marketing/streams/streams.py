@@ -135,6 +135,8 @@ class Activities(FBMarketingIncrementalStream):
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
         since = self._start_date if not state_value else pendulum.parse(state_value)
+        if not since:
+            return {}
 
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
