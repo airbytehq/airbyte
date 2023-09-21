@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -159,7 +160,13 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true);
+        true,
+        Optional.of(getSnowflakeBufferMemoryLimit())
+    );
+  }
+
+  private static long getSnowflakeBufferMemoryLimit() {
+    return (long) (Runtime.getRuntime().maxMemory() * 0.5);
   }
 
 }
