@@ -320,6 +320,7 @@ class ConnectorContext(PipelineContext):
         fail_fast: bool = False,
         fast_tests_only: bool = False,
         code_tests_only: bool = False,
+        use_local_cdk: bool = False,
     ):
         """Initialize a connector context.
 
@@ -355,6 +356,7 @@ class ConnectorContext(PipelineContext):
         self.fail_fast = fail_fast
         self.fast_tests_only = fast_tests_only
         self.code_tests_only = code_tests_only
+        self.use_local_cdk = use_local_cdk
 
         super().__init__(
             pipeline_name=pipeline_name,

@@ -2,6 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "topic_view.resource_name": {
+      "type": ["null", "string"]
+    },
     "customer.currency_code": {
       "type": ["null", "string"]
     },
@@ -157,10 +160,16 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.final_mobile_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_criterion.final_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.gmail_forwards": {
       "type": ["null", "integer"]
