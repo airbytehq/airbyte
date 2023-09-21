@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.staging;
 
+import static io.airbyte.integrations.destination_async.buffers.BufferManager.MEMORY_LIMIT_RATIO;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -101,6 +103,34 @@ public class StagingConsumerFactory {
                                                       final ParsedCatalog parsedCatalog,
                                                       final String defaultNamespace,
                                                       final boolean useDestinationsV2Columns) {
+    return createAsync(outputRecordCollector,
+            database,
+            stagingOperations,
+            namingResolver,
+            config,
+            catalog,
+            purgeStagingData,
+            typerDeduperValve,
+            typerDeduper,
+            parsedCatalog,
+            defaultNamespace,
+            useDestinationsV2Columns,
+            Optional.empty());
+  }
+
+  public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                      final JdbcDatabase database,
+                                                      final StagingOperations stagingOperations,
+                                                      final NamingConventionTransformer namingResolver,
+                                                      final JsonNode config,
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final boolean purgeStagingData,
+                                                      final TypeAndDedupeOperationValve typerDeduperValve,
+                                                      final TyperDeduper typerDeduper,
+                                                      final ParsedCatalog parsedCatalog,
+                                                      final String defaultNamespace,
+                                                      final boolean useDestinationsV2Columns,
+                                                      final Optional<Long> bufferMemoryLimit) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher =
@@ -112,8 +142,12 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
-        new BufferManager(),
+        new BufferManager(getMemoryLimit(bufferMemoryLimit)),
         defaultNamespace);
+  }
+
+  private static long getMemoryLimit(Optional<Long> bufferMemoryLimit) {
+    return bufferMemoryLimit.orElse((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO));
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
