@@ -19,7 +19,15 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams:
+          - name: "sequence_states"
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "sequence_steps"
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "snippets"
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: "templates"
+            bypass_reason: "Sandbox account cannot seed the stream"
   incremental:
     tests:
       - config_path: "secrets/config.json"

@@ -9,6 +9,9 @@
     "name": {
       "type": ["null", "string"]
     },
+    "defaultForOutboundVoicemail": {
+      "type": ["null", "boolean"]
+    },
     "outcome": {
       "type": ["null", "string"]
     },

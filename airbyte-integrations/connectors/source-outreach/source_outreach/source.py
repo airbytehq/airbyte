@@ -207,23 +207,26 @@ class Calls(IncrementalOutreachStream):
     def path(self, **kwargs) -> str:
         return "calls"
 
+
 class CallPurposes(IncrementalOutreachStream):
     """
     Call Purposes stream. Yields data from the GET /callPurposes endpoint.
-    See https://developers.outreach.io/api/reference/tag/Call-Purpose/ 
+    See https://developers.outreach.io/api/reference/tag/Call-Purpose/
     """
 
     def path(self, **kwargs) -> str:
         return "callPurposes"
 
+
 class CallDispositions(IncrementalOutreachStream):
     """
     Call Dispositions stream. Yields data from the GET /callDispositions endpoint.
-    See https://developers.outreach.io/api/reference/tag/Call-Dispositions/ 
+    See https://developers.outreach.io/api/reference/tag/Call-Dispositions/
     """
 
     def path(self, **kwargs) -> str:
         return "callDispositions"
+
 
 class Users(IncrementalOutreachStream):
     """
