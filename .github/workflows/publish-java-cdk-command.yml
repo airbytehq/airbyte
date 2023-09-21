@@ -13,6 +13,9 @@ on:
   push:
     branches:
       - java-cdk/publish-workflow
+    inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
 
   workflow_dispatch:
     inputs:
@@ -47,6 +50,13 @@ on:
 concurrency:
   group: publish-airbyte-cdk
   cancel-in-progress: false
+
+env:
+  # Use the provided GITREF or default to the branch triggering the workflow.
+  REPO: ${{ github.event.inputs.repo }}
+  GITREF: ${{ github.event.inputs.gitref || github.ref }}
+  FORCE: "${{ github.event.inputs.force == null && true || github.event.inputs.force }}"
+  DRY_RUN: "${{ github.event.inputs.dry-run == null && true || github.event.inputs.dry-run }}"
 
 jobs:
   # We are using these runners because they are the same as the one for `publish-command.yml`
@@ -85,15 +95,15 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
+          repository: ${{ env.REPO }}
+          ref: ${{ env.GITREF }}
       - name: Read Target Java CDK version
         id: read-target-java-cdk-version
         run: |
           cdk_version=$(cat ./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties | tr -d '\n')
           echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
-      - name: Check for already-published version
-        if: ${{ !github.event.inputs.force }}
+      - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
+        if: ${{ !(env.FORCE == 'true') }}
         run: |
           GROUP_ID="io.airbyte"
           ARTIFACT_ID="airbyte-cdk"
@@ -113,7 +123,7 @@ jobs:
       - name: Publish Java Modules to LocalMaven (Dry-Run)
         run: ./gradlew --no-daemon :airbyte-cdk:java:java-cdk:publishToLocalMaven
       - name: Publish Java Modules to CloudRepo
-        if: ${{ !github.event.inputs.dry-run }}
+        if: ${{ env.DRY_RUN == 'false' }}
         run: ./gradlew --no-daemon :airbyte-cdk:java:java-cdk:publish
         env:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
