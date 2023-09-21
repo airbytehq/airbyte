@@ -6,7 +6,7 @@ This page guides you through the process of setting up the Facebook Marketing so
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
 <!-- env:oss -->
-- (For Airbyte Open Source) A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled. The credentials of your Facebook account with permission to access your ads account.
+- (For Airbyte Open Source) A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
 <!-- /env:oss -->
 
 ## Setup guide
@@ -178,7 +178,8 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.1.10  | 2023-09-15 | [30485](https://github.com/airbytehq/airbyte/pull/30485) | added 'status' and 'configured_status' fields for campaigns stream schema                                                                                                                                                                                                                               |
+| 1.1.11  | 2023-09-21 | [30650](https://github.com/airbytehq/airbyte/pull/30650) | Fix None issue since start_date is optional                                                                                                                                                                                                                                                       |
+| 1.1.10  | 2023-09-15 | [30485](https://github.com/airbytehq/airbyte/pull/30485) | added 'status' and 'configured_status' fields for campaigns stream schema                                                                                                                                                                                                                         |
 | 1.1.9   | 2023-08-31 | [29994](https://github.com/airbytehq/airbyte/pull/29994) | Removed batch processing, updated description in specs, added user-friendly error message, removed start_date from required attributes                                                                                                                                                            |
 | 1.1.8   | 2023-09-04 | [29666](https://github.com/airbytehq/airbyte/pull/29666) | Adding custom field `boosted_object_id` to a streams schema in `campaigns` catalog `CustomAudiences`                                                                                                                                                                                              |
 | 1.1.7   | 2023-08-21 | [29674](https://github.com/airbytehq/airbyte/pull/29674) | Exclude `rule` from stream `CustomAudiences`                                                                                                                                                                                                                                                      |
