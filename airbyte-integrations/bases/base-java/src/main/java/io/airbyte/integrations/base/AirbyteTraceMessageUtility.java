@@ -63,7 +63,8 @@ public final class AirbyteTraceMessageUtility {
 
   private static void emitMessage(final AirbyteMessage message) {
     // Explicitly use System.out.println here instead of the OutputRecordConsumer
-    // This is to avoid having multiple PrintWriter instances pointing at the standard out file descriptor
+    // This is to avoid having multiple PrintWriter instances pointing at the standard out file
+    // descriptor
     System.out.println(Jsons.serialize(message));
   }
 

@@ -15,14 +15,13 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.concurrent.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link OutputRecordConsumer} interface that uses a {@link PrintWriter} to
- * publish serialized {@link AirbyteMessage} objects. This implementation is thread safe, as calls to
- * {@link PrintWriter#println(String)} uses a lock to ensure
+ * publish serialized {@link AirbyteMessage} objects. This implementation is thread safe, as calls
+ * to {@link PrintWriter#println(String)} uses a lock to ensure
  */
 @ThreadSafe
 public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
@@ -43,10 +42,10 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
 
   @Override
   public void close() throws Exception {
-      LOGGER.info("Closing PrintWriter...");
-      writer.flush();
-      writer.close();
-      LOGGER.info("PrintWriter closed.");
+    LOGGER.info("Closing PrintWriter...");
+    writer.flush();
+    writer.close();
+    LOGGER.info("PrintWriter closed.");
   }
 
   @Override

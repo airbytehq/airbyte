@@ -239,10 +239,15 @@ public class IntegrationRunner {
     messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Finished producing messages for stream {}..."));
   }
 
-  private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional, final Consumer<AirbyteMessage> recordCollector) throws Exception {
+  private void readConcurrent(final JsonNode config,
+                              ConfiguredAirbyteCatalog catalog,
+                              final Optional<JsonNode> stateOptional,
+                              final Consumer<AirbyteMessage> recordCollector)
+      throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
 
-    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer((stream) -> consumeFromStream(stream, recordCollector), streams.size())) {
+    try (final ConcurrentStreamConsumer streamConsumer =
+        new ConcurrentStreamConsumer((stream) -> consumeFromStream(stream, recordCollector), streams.size())) {
       /*
        * Break the streams into partitions equal to the number of concurrent streams supported by the
        * stream consumer.
