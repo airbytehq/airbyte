@@ -26,6 +26,7 @@ import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -140,11 +141,17 @@ public class PostgresCdcCtidInitializer {
                 database,
                 finalListOfStreamsToBeSyncedViaCtid,
                 quoteString);
+
+        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
+            CtidUtils.isTidRangeScanCapableDBServer(database) ? null :
+                PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, quoteString);
+
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
             ctidPostgresSourceOperations,
             quoteString,
             fileNodeHandler,
             tableBlockSizes,
+            tablesMaxTuple,
             ctidStateManager,
             namespacePair -> Jsons.emptyObject());
 

@@ -61,7 +61,7 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
 
-    container = new PostgreSQLContainer<>("postgres:13-alpine");
+    container = new PostgreSQLContainer<>(getServerImageName());
     container.start();
 
     final String username = container.getUsername();
@@ -229,6 +229,10 @@ public class PostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptan
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+  }
+
+  protected String getServerImageName() {
+    return "postgres:15-alpine";
   }
 
 }
