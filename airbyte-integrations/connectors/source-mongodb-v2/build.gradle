@@ -1,5 +1,7 @@
 plugins {
-    id 'airbyte-connector-acceptance-test'
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
     alias(libs.plugins.kotlin.jvm)
 }
 
