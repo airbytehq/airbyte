@@ -26,8 +26,8 @@ def metadata_service():
 
 
 @metadata_service.command(help="Validate a given metadata YAML file.")
-@click.argument("metadata_file_path", type=click.Path(exists=True, path_type=pathlib.Path))
-@click.argument("doc_path", type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument("metadata_file_path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
+@click.argument("doc_path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
 def validate(metadata_file_path: pathlib.Path, doc_path: pathlib.Path):
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
 
@@ -43,9 +43,9 @@ def validate(metadata_file_path: pathlib.Path, doc_path: pathlib.Path):
 
 
 @metadata_service.command(help="Upload a metadata YAML file to a GCS bucket.")
-@click.argument("metadata-file-path", type=click.Path(exists=True, path_type=pathlib.Path))
-@click.argument("doc-path", type=click.Path(exists=True, path_type=pathlib.Path))
-@click.argument("bucket-name", type=click.STRING)
+@click.argument("metadata-file-path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
+@click.argument("doc-path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
+@click.argument("bucket-name", type=click.STRING, required=True)
 @click.option("--prerelease", type=click.STRING, required=False, default=None, help="The prerelease tag of the connector.")
 def upload(metadata_file_path: pathlib.Path, doc_path: pathlib.Path, bucket_name: str, prerelease: str):
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
