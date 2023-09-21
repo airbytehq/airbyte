@@ -7,7 +7,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple, Union
-
+import dpath.util
 import pendulum
 import pytest
 from airbyte_protocol.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, SyncMode, Type
@@ -170,7 +170,7 @@ class TestIncremental(BaseTest):
         states_1 = filter_output(output_1, type_=Type.STATE)
 
         # We sometimes have duplicate identical state messages in a stream which we can filter out to speed things up
-        unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index]]
+        unique_state_messages = [message for index, message in enumerate(states_1) if message not in states_1[:index] and not dpath.util.search(message.state.data, "**", afilter=lambda x: not x)]
 
         # Important!
 
