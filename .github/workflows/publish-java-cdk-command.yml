@@ -135,7 +135,7 @@ jobs:
         env:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
-      - name: "Post failure to Slack channel `#dev-connectors-extensibility`"
+      - name: "Post failure to Slack channel `#dev-connectors-extensibility-releases`"
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
@@ -163,7 +163,7 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-      - name: "Post success to Slack channel `#dev-connectors-extensibility`"
+      - name: "Post success to Slack channel `#dev-connectors-extensibility-releases`"
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
