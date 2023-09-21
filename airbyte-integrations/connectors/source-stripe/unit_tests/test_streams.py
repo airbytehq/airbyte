@@ -51,7 +51,7 @@ def customers(stream_args):
         return IncrementalStripeStream(
             name="customers",
             path="customers",
-            use_cache=True,
+            use_cache=False,
             event_types=["customer.created", "customer.updated"],
             **args,
         )
@@ -549,3 +549,18 @@ def test_cursorless_incremental_substream(requests_mock, bank_accounts, sync_mod
     for slice_ in stream.stream_slices(sync_mode=sync_mode, stream_state=stream_state):
         for record in stream.read_records(sync_mode=sync_mode, stream_state=stream_state, stream_slice=slice_):
             stream.get_updated_state(stream_state, record)
+
+
+@pytest.mark.parametrize("stream", ("bank_accounts",))
+def test_get_updated_state(stream, request, requests_mock):
+    stream = request.getfixturevalue(stream)()
+    response = {"data": [{"id": 1, stream.cursor_field: 1695292083}]}
+    requests_mock.get("/v1/credit_notes", json=response)
+    requests_mock.get("/v1/balance_transactions", json=response)
+    requests_mock.get("/v1/invoices", json=response)
+    requests_mock.get("/v1/customers", json={"data": [{"id": 1, "created": 1695292083, "sources": {"data": [{"id": 1, "object": "bank_account"}], "has_more": False}}]})
+    state = {}
+    for slice_ in stream.stream_slices(sync_mode="incremental", stream_state=state):
+        for record in stream.read_records(sync_mode="incremental", stream_slice=slice_, stream_state=state):
+            state = stream.get_updated_state(state, record)
+            assert state
