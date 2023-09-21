@@ -271,10 +271,6 @@ subprojects { subproj ->
     }
 
     dependencies {
-        if (subproj.name != 'airbyte-commons') {
-            implementation project(':airbyte-commons')
-        }
-
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 

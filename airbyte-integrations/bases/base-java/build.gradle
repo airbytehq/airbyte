@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation libs.airbyte.protocol
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
@@ -24,6 +25,5 @@ dependencies {
     implementation libs.bundles.datadog
 
     testImplementation 'commons-lang:commons-lang:2.6'
-    testImplementation 'org.mockito:mockito-inline:4.6.1'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
 }

@@ -7,6 +7,7 @@ project.configurations {
 }
 dependencies {
     implementation libs.airbyte.protocol
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-db:db-lib')
 
     implementation libs.bundles.debezium.bundle

@@ -10,6 +10,7 @@ application {
 }
 
 dependencies {
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-db:db-lib')
     implementation libs.airbyte.protocol
 

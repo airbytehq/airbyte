@@ -13,6 +13,7 @@ dependencies {
     api libs.postgresql
 
     implementation libs.airbyte.protocol
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.flyway.core
