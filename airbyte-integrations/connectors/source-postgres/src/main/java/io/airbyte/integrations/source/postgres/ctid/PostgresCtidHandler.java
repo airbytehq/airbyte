@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import org.slf4j.Logger;
@@ -50,7 +51,9 @@ public class PostgresCtidHandler {
   private final CtidStateManager ctidStateManager;
   private final FileNodeHandler fileNodeHandler;
   final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes;
+  final Optional<Map<AirbyteStreamNameNamespacePair, Integer>> tablesMaxTuple;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final boolean tidRangeScanCapableDBServer;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
@@ -58,6 +61,7 @@ public class PostgresCtidHandler {
                              final String quoteString,
                              final FileNodeHandler fileNodeHandler,
                              final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes,
+                             final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple,
                              final CtidStateManager ctidStateManager,
                              final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.config = config;
@@ -66,8 +70,10 @@ public class PostgresCtidHandler {
     this.quoteString = quoteString;
     this.fileNodeHandler = fileNodeHandler;
     this.tableBlockSizes = tableBlockSizes;
+    this.tablesMaxTuple = Optional.ofNullable(tablesMaxTuple);
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.tidRangeScanCapableDBServer = CtidUtils.isTidRangeScanCapableDBServer(database);
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getInitialSyncCtidIterator(
@@ -99,7 +105,8 @@ public class PostgresCtidHandler {
             table.getNameSpace(),
             table.getName(),
             tableBlockSizes.get(pair).tableSize(),
-            tableBlockSizes.get(pair).blockSize());
+            tableBlockSizes.get(pair).blockSize(),
+            tablesMaxTuple.orElseGet(() -> Map.of(pair, -1)).get(pair));
         final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
             getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
@@ -116,11 +123,12 @@ public class PostgresCtidHandler {
                                                                 final String schemaName,
                                                                 final String tableName,
                                                                 final long tableSize,
-                                                                final long blockSize) {
+                                                                final long blockSize,
+                                                                final int maxTuple) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
-        blockSize, fileNodeHandler,
+        blockSize, maxTuple, fileNodeHandler, tidRangeScanCapableDBServer,
         config.has(USE_TEST_CHUNK_SIZE) && config.get(USE_TEST_CHUNK_SIZE).asBoolean());
   }
 
