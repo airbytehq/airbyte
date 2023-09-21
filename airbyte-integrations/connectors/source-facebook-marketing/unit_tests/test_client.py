@@ -212,7 +212,7 @@ class TestBackoff:
             "status_code": 200,
         }
 
-        res = requests_mock.register_uri(
+        requests_mock.register_uri(
             "GET",
             FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities",
             [success],
