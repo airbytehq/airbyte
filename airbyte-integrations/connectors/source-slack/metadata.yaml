@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   dockerRepository: airbyte/source-slack
   githubIssueLabel: source-slack
   icon: slack.svg

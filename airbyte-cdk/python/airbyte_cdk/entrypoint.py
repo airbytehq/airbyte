@@ -7,6 +7,7 @@ import importlib
 import ipaddress
 import logging
 import os.path
+import requests
 import socket
 import sys
 import tempfile
@@ -212,13 +213,13 @@ def _init_internal_request_filter() -> None:
         parsed_url = urlparse(request.url)
 
         if parsed_url.scheme not in VALID_URL_SCHEMES:
-            raise ValueError(
+            raise requests.exceptions.InvalidSchema(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
                 + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
             )
 
         if not parsed_url.hostname:
-            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+            raise requests.exceptions.InvalidURL("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
@@ -227,10 +228,11 @@ def _init_internal_request_filter() -> None:
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
                     + "connectors only support requesting data from public API endpoints."
                 )
-        except socket.gaierror:
+        except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
             # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
-            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified.")
+            # Knowing that this is a request using the requests library, we will mock the exception without calling the lib
+            raise requests.exceptions.InvalidURL(f"Invalid URL {parsed_url}: {exception}")
 
         return wrapped_fn(self, request, **kwargs)
 
