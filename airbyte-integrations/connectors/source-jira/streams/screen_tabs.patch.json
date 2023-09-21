@@ -10,11 +10,8 @@
                 ["string", "null"]
           },
           "screenId": {
-            "type" : ["null", "integer"],
-            "description" : "Id of the related screen."
+            "type" : ["null", "integer"]
           }
-        },
-        "additionalProperties": true,
-        "required": ["id"]
+        }
     }
 }
