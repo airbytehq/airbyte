@@ -5,14 +5,6 @@ It is intended to be used as a python library.
 Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1)) **will** use this library to build the connector images.
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
-## Base images
-
-
-### `airbyte/python-connector-base`
-
-| Version | Published | Docker Image | Changelog | 
-|---------|-----------|--------------|-----------|
-|  1.0.0 | ✅| docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27 | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
 
 
 ## Where are the Dockerfiles?
@@ -36,6 +28,16 @@ RUN pip install poetry==1.6.1
 
 
 
+## Base images
+
+
+### `airbyte/python-connector-base`
+
+| Version | Published | Docker Image Address | Changelog | 
+|---------|-----------|--------------|-----------|
+|  1.0.0 | ✅| docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27 | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
+
+
 ## How to release a new base image version (example for Python)
 
 ### Requirements
@@ -48,8 +50,8 @@ RUN pip install poetry==1.6.1
 2. Open  `base_images/python/bases.py`.
 3. Make changes to the `AirbytePythonConnectorBaseImage`, you're likely going to change the `get_container` method to change the base image.
 4. Implement the `container` property which must return a `dagger.Container` object.
-5. *Recommended*: Add new sanity checks to `run_sanity_check` to confirm that the new version is working as expected.
-6. Cut a new base image version by running `poetry run cut-new-version`. You'll need your DockerHub credentials.
+5. **Recommended**: Add new sanity checks to `run_sanity_check` to confirm that the new version is working as expected.
+6. Cut a new base image version by running `poetry run generate-release`. You'll need your DockerHub credentials.
 
 It will:
   - Prompt you to pick which base image you'd like to publish.
@@ -61,7 +63,7 @@ It will:
 7. Commit and push your changes.
 8. Create a PR and ask for a review from the Connector Operations team.
 
-**Please note that if you don't publish your image while cutting the new version you can publish it later with `poetry run publish <image_name> <version>`.**
+**Please note that if you don't publish your image while cutting the new version you can publish it later with `poetry run publish <repository> <version>`.**
 No connector will use the new base image version until its metadata is updated to use it.
 If you're not fully confident with the new base image version please:
   - please publish it as a pre-release version

@@ -3,37 +3,21 @@
 #
 from __future__ import annotations
 
-from typing import Final, Set
+from typing import Final
 
 import dagger
-from base_images import common, sanity_checks
-from connector_ops.utils import ConnectorLanguage  # type: ignore
+from base_images import bases, published_image
+from base_images import sanity_checks as base_sanity_checks
+from base_images.python import sanity_checks as python_sanity_checks
+from base_images.root_images import PYTHON_3_9_18
 
-from .base_bases import PYTHON_3_9_18
 
+class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
-class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage):
-
-    compatible_languages = (ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE)
-    base_base_image: Final[common.PublishedImage] = PYTHON_3_9_18
-    image_name: Final[str] = "airbyte/python-connector-base"
+    root_image: Final[published_image.PublishedImage] = PYTHON_3_9_18
+    repository: Final[str] = "airbyte/python-connector-base"
 
     pip_cache_name: Final[str] = "pip-cache"
-    expected_env_vars: Set[str] = {
-        "PYTHON_VERSION",
-        "PYTHON_PIP_VERSION",
-        "PYTHON_GET_PIP_SHA256",
-        "PYTHON_GET_PIP_URL",
-        "HOME",
-        "PATH",
-        "LANG",
-        "GPG_KEY",
-        "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
-        "PYTHON_SETUPTOOLS_VERSION",
-        "OTEL_TRACES_EXPORTER",
-        "OTEL_TRACE_PARENT",
-        "TRACEPARENT",
-    }
 
     def get_container(self, platform: dagger.Platform) -> dagger.Container:
         """Returns the container used to build the base image.
@@ -72,11 +56,10 @@ class AirbytePythonConnectorBaseImage(common.AirbyteConnectorBaseImage):
             platform (dagger.Platform): The platform on which the sanity checks should run.
         """
         container = self.get_container(platform)
-        for expected_env_var in self.expected_env_vars:
-            await sanity_checks.check_env_var_with_printenv(container, expected_env_var)
 
-        await sanity_checks.check_timezone_is_utc(container)
-        await sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
-        await sanity_checks.check_python_version(container, "3.9.18")
-        await sanity_checks.check_pip_version(container, "23.2.1")
-        await sanity_checks.check_poetry_version(container, "1.6.1")
+        await base_sanity_checks.check_timezone_is_utc(container)
+        await base_sanity_checks.check_a_command_is_available_using_version_option(container, "bash")
+        await python_sanity_checks.check_python_version(container, "3.9.18")
+        await python_sanity_checks.check_pip_version(container, "23.2.1")
+        await python_sanity_checks.check_poetry_version(container, "1.6.1")
+        await python_sanity_checks.check_python_image_has_expected_env_vars(container)

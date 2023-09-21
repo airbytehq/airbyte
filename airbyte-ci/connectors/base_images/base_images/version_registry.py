@@ -4,26 +4,19 @@
 from __future__ import annotations
 
 import json
-import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Type
 
 import dagger
 import semver
-from base_images import consts
-from base_images.common import AirbyteConnectorBaseImage, PublishedImage
+from base_images import consts, published_image
+from base_images.bases import AirbyteConnectorBaseImage
 from base_images.python.bases import AirbytePythonConnectorBaseImage
+from base_images.utils import docker
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 
 MANAGED_BASE_IMAGES = [AirbytePythonConnectorBaseImage]
-
-
-@dataclass
-class PublishedBaseImage(PublishedImage):
-    @property
-    def version(self) -> semver.VersionInfo:
-        return semver.VersionInfo.parse(self.tag)
 
 
 @dataclass
@@ -49,8 +42,8 @@ class ChangelogEntry:
 
 
 @dataclass
-class RegistryEntry:
-    published_docker_image: Optional[PublishedBaseImage]
+class VersionRegistryEntry:
+    published_docker_image: Optional[published_image.PublishedImage]
     changelog_entry: Optional[ChangelogEntry]
     version: semver.VersionInfo
 
@@ -63,10 +56,10 @@ class VersionRegistry:
     def __init__(
         self,
         ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage],
-        entries: List[RegistryEntry],
+        entries: List[VersionRegistryEntry],
     ) -> None:
         self.ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage] = ConnectorBaseImageClass
-        self._entries: List[RegistryEntry] = entries
+        self._entries: List[VersionRegistryEntry] = entries
 
     @staticmethod
     def get_changelog_dump_path(ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage]) -> Path:
@@ -80,7 +73,7 @@ class VersionRegistry:
         """
         registries_dir = Path("generated/changelogs")
         registries_dir.mkdir(exist_ok=True, parents=True)
-        return registries_dir / f'{ConnectorBaseImageClass.image_name.replace("-", "_").replace("/", "_")}.json'  # type: ignore
+        return registries_dir / f'{ConnectorBaseImageClass.repository.replace("-", "_").replace("/", "_")}.json'  # type: ignore
 
     @property
     def changelog_dump_path(self) -> Path:
@@ -90,37 +83,6 @@ class VersionRegistry:
             Path: The path where the changelog JSON is dumped to disk.
         """
         return self.get_changelog_dump_path(self.ConnectorBaseImageClass)
-
-    @staticmethod
-    async def get_published_base_images(
-        ConnectorBaseImageClass: Type[AirbyteConnectorBaseImage], dagger_client: dagger.Client, docker_credentials: Tuple[str, str]
-    ) -> List[PublishedBaseImage]:
-        repository_address = f"{consts.REMOTE_REGISTRY}/{ConnectorBaseImageClass.image_name}"
-        dockerhub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", docker_credentials[0])
-        dockerhub_username_password = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_credentials[1])
-        crane_container = (
-            dagger_client.container()
-            .from_(consts.CRANE_IMAGE_ADDRESS)
-            .with_secret_variable("DOCKER_HUB_USERNAME", dockerhub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", dockerhub_username_password)
-            .with_exec(
-                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
-            )
-            .with_env_variable("CACHE_BUSTER", str(uuid.uuid4()))
-        )
-        try:
-            ls_output = await crane_container.with_exec(["ls", repository_address]).stdout()
-        except dagger.ExecError as exec_error:
-            if "NAME_UNKNOWN" in exec_error.stderr:
-                ls_output = ""
-            else:
-                raise exec_error
-        available_addresses_without_digest = [f"{repository_address}:{tag}" for tag in ls_output.splitlines()]
-        available_addresses_with_digest = []
-        for address in available_addresses_without_digest:
-            digest = (await crane_container.with_exec(["digest", address]).stdout()).strip()
-            available_addresses_with_digest.append(f"{address}@{digest}")
-        return [PublishedBaseImage.from_address(address) for address in available_addresses_with_digest]
 
     @staticmethod
     async def load(
@@ -134,22 +96,36 @@ class VersionRegistry:
         Returns:
             VersionRegistry: The registry.
         """
+        # Loading the local structured changelog file which is stored as a json file.
         change_log_dump_path = VersionRegistry.get_changelog_dump_path(ConnectorBaseImageClass)
         if not change_log_dump_path.exists():
             changelog_entries = []
         else:
             changelog_entries = [ChangelogEntry.from_dict(raw_entry) for raw_entry in json.loads(change_log_dump_path.read_text())]
+
+        # Build a dict of changelog entries by version number for easier lookup
         changelog_entries_by_version = {entry.version: entry for entry in changelog_entries}
-        published_docker_images = await VersionRegistry.get_published_base_images(
-            ConnectorBaseImageClass, dagger_client, docker_credentials
-        )
+
+        # Instantiate a crane client and a remote registry to fetch published images from DockerHub
+        crane_client = docker.CraneClient(dagger_client, docker_credentials)
+        remote_registry = docker.RemoteRepository(crane_client, consts.REMOTE_REGISTRY, ConnectorBaseImageClass.repository)  # type: ignore
+        published_docker_images = await remote_registry.get_all_images()
+
+        # Build a dict of published images by version number for easier lookup
         published_docker_images_by_version = {image.version: image for image in published_docker_images}
+
+        # We union the set of versions from the changelog and the published images to get all the versions we have to consider
         all_versions = set(changelog_entries_by_version.keys()) | set(published_docker_images_by_version.keys())
+
         registry_entries = []
+        # Iterate over all the versions we have to consider and build a registry entry for each of them
+        # The registry entry will contain the published image if available, and the changelog entry if available
+        # If the version is not published, the published image will be None
+        # If the version is not in the changelog, the changelog entry will be None
         for version in all_versions:
             published_docker_image = published_docker_images_by_version.get(version)
             changelog_entry = changelog_entries_by_version.get(version)
-            registry_entries.append(RegistryEntry(published_docker_image, changelog_entry, version))
+            registry_entries.append(VersionRegistryEntry(published_docker_image, changelog_entry, version))
         return VersionRegistry(ConnectorBaseImageClass, registry_entries)
 
     def save_changelog(self):
@@ -157,46 +133,46 @@ class VersionRegistry:
         as_json = json.dumps([entry.changelog_entry.to_serializable_dict() for entry in self.entries if entry.changelog_entry])
         self.changelog_dump_path.write_text(as_json)
 
-    def add_entry(self, new_entry: RegistryEntry) -> List[RegistryEntry]:
-        """Registers a new entry in the registry.
+    def add_entry(self, new_entry: VersionRegistryEntry) -> List[VersionRegistryEntry]:
+        """Registers a new entry in the registry and saves the changelog locally.
 
         Args:
-            new_entry (RegistryEntry): The new entry to register.
+            new_entry (VersionRegistryEntry): The new entry to register.
 
         Returns:
-            List[RegistryEntry]: All the entries sorted by version number in descending order.
+            List[VersionRegistryEntry]: All the entries sorted by version number in descending order.
         """
         self._entries.append(new_entry)
         self.save_changelog()
         return self.entries
 
     @property
-    def entries(self) -> List[RegistryEntry]:
+    def entries(self) -> List[VersionRegistryEntry]:
         """Returns all the base image versions sorted by version number in descending order.
 
         Returns:
-            List[Type[RegistryEntry]]: All the published versions sorted by version number in descending order.
+            List[Type[VersionRegistryEntry]]: All the published versions sorted by version number in descending order.
         """
         return sorted(self._entries, key=lambda entry: entry.version, reverse=True)
 
     @property
-    def latest_entry(self) -> Optional[RegistryEntry]:
+    def latest_entry(self) -> Optional[VersionRegistryEntry]:
         """Returns the latest entry this registry.
         The latest entry is the one with the highest version number.
         If no entry is available, returns None.
         Returns:
-            Optional[RegistryEntry]: The latest registry entry, or None if no entry is available.
+            Optional[VersionRegistryEntry]: The latest registry entry, or None if no entry is available.
         """
         try:
             return self.entries[0]
         except IndexError:
             return None
 
-    def get_entry_for_version(self, version: semver.VersionInfo) -> Optional[RegistryEntry]:
+    def get_entry_for_version(self, version: semver.VersionInfo) -> Optional[VersionRegistryEntry]:
         """Returns the entry for a given version.
         If no entry is available, returns None.
         Returns:
-            Optional[RegistryEntry]: The registry entry for the given version, or None if no entry is available.
+            Optional[VersionRegistryEntry]: The registry entry for the given version, or None if no entry is available.
         """
         for entry in self.entries:
             if entry.version == version:
@@ -204,11 +180,12 @@ class VersionRegistry:
         return None
 
     @property
-    def latest_not_pre_released_entry(self) -> Optional[RegistryEntry]:
+    def latest_not_pre_released_entry(self) -> Optional[VersionRegistryEntry]:
         """Returns the latest entry with a not pre-released version in this registry.
         If no entry is available, returns None.
+        It is meant to be used externally to get the latest published version.
         Returns:
-            Optional[RegistryEntry]: The latest registry entry with a not pre-released version, or None if no entry is available.
+            Optional[VersionRegistryEntry]: The latest registry entry with a not pre-released version, or None if no entry is available.
         """
         try:
             not_pre_release_published_entries = [entry for entry in self.entries if not entry.version.prerelease and entry.published]
@@ -224,6 +201,20 @@ async def get_python_registry(dagger_client: dagger.Client, docker_credentials: 
 async def get_registry_for_language(
     dagger_client: dagger.Client, language: ConnectorLanguage, docker_credentials: Tuple[str, str]
 ) -> VersionRegistry:
+    """Returns the registry for a given language.
+    It is meant to be used externally to get the registry for a given connector language.
+
+    Args:
+        dagger_client (dagger.Client): The dagger client used to build the registry.
+        language (ConnectorLanguage): The connector language.
+        docker_credentials (Tuple[str, str]): The docker credentials used to fetch published images from DockerHub.
+
+    Raises:
+        NotImplementedError: Raised if the registry for the given language is not implemented yet.
+
+    Returns:
+        VersionRegistry: The registry for the given language.
+    """
     if language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
         return await get_python_registry(dagger_client, docker_credentials)
     else:

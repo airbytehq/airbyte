@@ -3,6 +3,14 @@
 #
 import dagger
 
+# If we perform addition dagger operations on the container, we need to make sure that a mapping exists for the new field name.
+DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION = {
+    "from": lambda field: f'FROM {field.args.get("address")}',
+    "withExec": lambda field: f'RUN {" ".join(field.args.get("args"))}',
+    "withEnvVariable": lambda field: f'ENV {field.args.get("name")}={field.args.get("value")}',
+    "withLabel": lambda field: f'LABEL {field.args.get("name")}={field.args.get("value")}',
+}
+
 
 def get_container_dockerfile(container) -> str:
     """Returns the Dockerfile of the base image container.
@@ -11,17 +19,18 @@ def get_container_dockerfile(container) -> str:
     Returns:
         str: The Dockerfile of the base image container.
     """
+
     lineage = [
         field for field in list(container._ctx.selections) if isinstance(field, dagger.api.base.Field) and field.type_name == "Container"
     ]
     dockerfile = []
+
     for field in lineage:
-        if field.name == "from":
-            dockerfile.append(f'FROM {field.args.get("address")}')
-        if field.name == "withExec":
-            dockerfile.append(f'RUN {" ".join(field.args.get("args"))}')  # type: ignore
-        if field.name == "withEnvVariable":
-            dockerfile.append(f'ENV {field.args.get("name")}={field.args.get("value")}')
-        if field.name == "withLabel":
-            dockerfile.append(f'LABEL {field.args.get("name")}={field.args.get("value")}')
+        if field.name in DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION:
+            try:
+                dockerfile.append(DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION[field.name](field))
+            except KeyError:
+                raise KeyError(
+                    f"Unknown field name: {field.name}, please add it to the DAGGER_FIELD_NAME_TO_DOCKERFILE_INSTRUCTION mapping."
+                )
     return "\n".join(dockerfile)

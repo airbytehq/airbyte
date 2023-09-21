@@ -6,36 +6,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Tuple, final
+from typing import final
 
 import dagger
 import semver
-from connector_ops.utils import ConnectorLanguage  # type: ignore
 
-
-@dataclass
-class PublishedImage:
-    registry: str
-    image_name: str
-    tag: str
-    sha: str
-
-    @property
-    def address(self) -> str:
-        return f"{self.registry}/{self.image_name}:{self.tag}@sha256:{self.sha}"
-
-    @classmethod
-    def from_address(cls, address: str):
-        parts = address.split("/")
-        repository = parts.pop(0)
-        without_repository = "/".join(parts)
-        image_name, tag, sha = without_repository.replace("@sha256", "").split(":")
-        return cls(repository, image_name, tag, sha)
-
-    @property
-    def name_with_tag(self) -> str:
-        return f"{self.image_name}:{self.tag}"
+from .published_image import PublishedImage
 
 
 class AirbyteConnectorBaseImage(ABC):
@@ -63,48 +39,36 @@ class AirbyteConnectorBaseImage(ABC):
         Returns:
             str: The full name of the Airbyte base image, with its tag.
         """
-        return f"{self.image_name}:{self.version}"
+        return f"{self.repository}:{self.version}"
 
     # MANDATORY SUBCLASSES ATTRIBUTES / PROPERTIES:
 
     @property
     @abstractmethod
-    def compatible_languages(self) -> Tuple[ConnectorLanguage, ...]:
-        """Returns connector languages compatible with this base image.
-
-        Raises:
-            NotImplementedError: Raised if a subclass does not define a 'compatible_languages' attribute.
-
-        Returns:
-            List[ConnectorLanguage]: The connector languages compatible with this base image.
-        """
-        raise NotImplementedError("Subclasses must define a 'compatible_languages' attribute.")
-
-    @property
-    @abstractmethod
-    def base_base_image(self) -> PublishedImage:
+    def root_image(self) -> PublishedImage:
         """Returns the base image used to build the Airbyte base image.
 
         Raises:
-            NotImplementedError: Raised if a subclass does not define a 'base_base_image' attribute.
+            NotImplementedError: Raised if a subclass does not define a 'root_image' attribute.
 
         Returns:
             PublishedImage: The base image used to build the Airbyte base image.
         """
-        raise NotImplementedError("Subclasses must define a 'base_base_image' attribute.")
+        raise NotImplementedError("Subclasses must define a 'root_image' attribute.")
 
     @property
     @abstractmethod
-    def image_name(self) -> str:
-        """This is the name of the final base image. By name we mean image repository name (without the tag).
+    def repository(self) -> str:
+        """This is the name of the repository where the image will be hosted.
+        e.g: airbyte/python-connector-base
 
         Raises:
-            NotImplementedError: Raised if a subclass does not define an 'image_name' attribute.
+            NotImplementedError: Raised if a subclass does not define an 'repository' attribute.
 
         Returns:
-            str: The name of the final base image.
+            str: The repository name where the image will be hosted.
         """
-        raise NotImplementedError("Subclasses must define an 'image_name' attribute.")
+        raise NotImplementedError("Subclasses must define an 'repository' attribute.")
 
     # MANDATORY SUBCLASSES METHODS:
 
@@ -134,4 +98,4 @@ class AirbyteConnectorBaseImage(ABC):
         Returns:
             dagger.Container: The container using the base python image.
         """
-        return self.dagger_client.pipeline(self.name_with_tag).container(platform=platform).from_(self.base_base_image.address)
+        return self.dagger_client.pipeline(self.name_with_tag).container(platform=platform).from_(self.root_image.address)
