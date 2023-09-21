@@ -70,6 +70,7 @@ import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
@@ -492,6 +493,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
 
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
+          CtidUtils.isTidRangeScanCapableDBServer(database) ? null :
+          PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
         LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
@@ -511,7 +515,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       final PostgresCtidHandler ctidHandler =
           new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
-              fileNodeHandler, tableBlockSizes, ctidStateManager,
+              fileNodeHandler, tableBlockSizes, tablesMaxTuple, ctidStateManager,
               namespacePair -> Jsons.jsonNode(xminStatus));
 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(ctidHandler.getInitialSyncCtidIterator(
@@ -557,6 +561,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
+
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
+          CtidUtils.isTidRangeScanCapableDBServer(database) ? null :
+              PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
+
       if (finalListOfStreamsToBeSyncedViaCtid.isEmpty()) {
         LOGGER.info("No Streams will be synced via ctid.");
       } else {
@@ -581,6 +590,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               getQuoteString(),
               fileNodeHandler,
               tableBlockSizes,
+              tablesMaxTuple,
               ctidStateManager,
               namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
 

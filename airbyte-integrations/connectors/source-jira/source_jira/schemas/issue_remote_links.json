@@ -6,6 +6,10 @@
       "type": "integer",
       "description": "The ID of the link."
     },
+    "issueId": {
+      "type" : ["null", "string"],
+      "description": "Id of the related issue."
+    },
     "self": {
       "type": "string",
       "description": "The URL of the link."
