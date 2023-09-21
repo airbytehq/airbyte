@@ -50,20 +50,18 @@ definitions:
       page_size: 1000
   incremental_sync:
     type: DatetimeBasedCursor
-    step: "P15D"
-    cursor_granularity: "P15D"
     cursor_field: "{{ parameters.cursor_field }}"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S+00:00"
     datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ day_delta(-365, '%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime: "{{ day_delta(-1200, '%Y-%m-%dT%H:%M:%S+00:00') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_time_option:
       type: RequestOption
       field_name: since_{{ parameters.cursor_field }}
       inject_into: request_parameter
+
   base_stream:
     type: DeclarativeStream
     primary_key: id
@@ -77,6 +75,7 @@ definitions:
         $ref: "#/definitions/paginator"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+
   lists_stream:
     $ref: "#/definitions/base_stream"
     name: lists
@@ -98,6 +97,7 @@ definitions:
       path: automations
       field_path: automations
       cursor_field: create_time
+
   reports_stream:
     $ref: "#/definitions/base_stream"
     name: reports
@@ -105,24 +105,22 @@ definitions:
       path: reports
       field_path: reports
       cursor_field: send_time
+
   email_activity_stream:
     type: DeclarativeStream
     name: email_activity
-    primary_key:
-      - timestamp
-      - email_id
-      - action
+    $parameters:
+      primary_key: ["email_id", "timestamp", "action"]
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
+        path: "reports/{{ stream_slice.campaign_id }}/email-activity"
       record_selector:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
           class_name: source_mailchimp.components.EmailActivityRecordExtractor
-          field_path:
-            - emails
       paginator:
         $ref: "#/definitions/paginator"
       partition_router:
@@ -134,18 +132,16 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/campaigns_stream"
+
     incremental_sync:
       type: DatetimeBasedCursor
-      step: "P15D"
-      cursor_granularity: "P15D"
       cursor_field: timestamp
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%SZ"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S+00:00"
+      datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ day_delta(-365, '%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime: "{{ day_delta(-1200, '%Y-%m-%dT%H:%M:%S') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_time_option:
         type: RequestOption
         field_name: since

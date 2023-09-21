@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
@@ -32,7 +32,6 @@ class CampaignIdPartitionRouter(SubstreamPartitionRouter):
         - parent_record: mapping representing the parent record
         - parent_stream_name: string representing the parent stream name
         """
-
         campaign_stream = self.parent_stream_configs[0].stream
         if self.config.get("campaign_id"):
             # this is a workaround to speed up SATs and enable incremental tests
@@ -45,16 +44,23 @@ class CampaignIdPartitionRouter(SubstreamPartitionRouter):
             yield slice_
 
 @dataclass
-class EmailActivityRecordExtractor(DpathExtractor):
+class EmailActivityRecordExtractor(RecordExtractor):
     
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
-        extracted_records = super().extract_records(response)
+        try:
+            response_json = response.json()
+        except requests.exceptions.JSONDecodeError:
+            self.logger.error(f"Response returned with {response.status_code=}, {response.content=}")
+            response_json = {}
         # transform before save
         # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
-        for item in extracted_records:
+        data = response_json.get("emails", [])
+        records = []
+        for item in data:
             for activity_item in item.pop("activity", []):
-                yield {**item, **activity_item}
+                records.append({**item, **activity_item})
+        return records
 
 
 @dataclass
