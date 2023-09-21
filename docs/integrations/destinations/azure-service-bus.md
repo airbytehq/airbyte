@@ -66,3 +66,9 @@ For each major cloud provider we support, also add a follow-along guide for sett
 Follow the [seting up Service Bus tutorial step 2](https://learn.microsoft.com/en-us/azure/connectors/connectors-create-api-servicebus?tabs=consumption#step-2-get-connection-authentication-requirements) guide create/access your connection string. 
 
 Once you've successfully configured Service Bus as a destination in Airbyte, delete this connection string from your computer.
+
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject         |
+|:--------|:-----------|:---------------------------------------------------------|:----------------|
+| 0.8.0   | 2022-09-21 | [30659](https://github.com/airbytehq/airbyte/pull/30659) | Initial version |
