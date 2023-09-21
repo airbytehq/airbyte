@@ -33,4 +33,5 @@ data:
   ab_internal:
     sl: 200
     ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
