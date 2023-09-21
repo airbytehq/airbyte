@@ -44,7 +44,7 @@ definitions:
     lookback_window: P{{ config.get('lookback_window_days', 0) }}D
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ config['start_date'] }}"
@@ -223,14 +223,14 @@ definitions:
       - subscription_id
       - billable_metric_id
       - timeframe_start
-      - "{{ config['subscription_usage_grouping_key'] }}"
+      - grouping_key
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester"
         path: subscriptions/{{ stream_partition.subscription_id }}/usage
         request_parameters:
-          group_by: "{{ config['subscription_usage_grouping_key'] }}"
+          group_by: "{{ config.get('subscription_usage_grouping_key', '') }}"
           granularity: day
           billable_metric_id: "{{ stream_partition.billable_metric_id }}"
       record_selector:
@@ -249,6 +249,11 @@ definitions:
       - type: CustomTransformation
         class_name: source_orb.components.SubscriptionUsageTransformation
         subscription_id: "{{ stream_partition.subscription_id }}"
+      - type: AddFields
+        fields:
+          - path:
+              - grouping_key
+            value: "{{ config.get('subscription_usage_grouping_key', '') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timeframe_start

@@ -115,12 +115,12 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
 
         # if using a group_by key, populate prices_by_plan_id so that each
         # billable metric will get its own slice
-        if self.config.subscription_usage_grouping_key:
+        if self.config.get("subscription_usage_grouping_key"):
             metric_ids_by_plan_id = {}
 
             for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
                 # if a plan_id filter is specified, skip any plan that doesn't match
-                if self.config.plan_id and plan["id"] != self.config.plan_id:
+                if self.config.get("plan_id") and plan["id"] != self.config.get("plan_id"):
                     continue
 
                 prices = plan.get("prices", [])
@@ -131,7 +131,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
             subscription_plan_id = subscription["plan_id"]
 
             # if filtering subscription usage by plan ID, skip any subscription that doesn't match the plan_id
-            if self.config.plan_id and subscription_plan_id != self.config.plan_id:
+            if self.config.get("plan_id") and subscription_plan_id != self.config.get("plan_id"):
                 continue
 
             slice = {
@@ -142,7 +142,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
             # otherwise, yield slices without a billable_metric_id because
             # each API call will return usage broken down by billable metric
             # when grouping isn't used.
-            if self.config.subscription_usage_grouping_key:
+            if self.config.get("subscription_usage_grouping_key"):
                 metric_ids = metric_ids_by_plan_id.get(subscription_plan_id)
                 if metric_ids is not None:
                     for metric_id in metric_ids:

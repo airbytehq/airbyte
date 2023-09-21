@@ -21,6 +21,9 @@
     },
     "subscription_id": {
       "type": "string"
+    },
+    "grouping_key": {
+      "type": "string"
     }
   },
   "required": [
