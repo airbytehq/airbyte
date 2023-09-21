@@ -53,6 +53,7 @@ public class PrintWriterOutputRecordConsumer implements OutputRecordConsumer {
     final String json = Jsons.serialize(airbyteMessage);
     LOGGER.debug("Accepted message '{}' for output...", json);
     writer.println(json);
+    writer.flush();
     LOGGER.debug("Message '{}' sent to output.", json);
   }
 
