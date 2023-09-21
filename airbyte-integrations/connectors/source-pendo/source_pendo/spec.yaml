@@ -7,6 +7,13 @@ connectionSpecification:
   properties:
     api_key:
       type: string
+      order: 0
       title: API Key
       airbyte_secret: true
+    identified_visitors_only:
+      type: boolean
+      order: 1
+      title: Identified Visitors Only
+      default: true
+      description: Do you want to only sync identified visitors?
   additionalProperties: true
