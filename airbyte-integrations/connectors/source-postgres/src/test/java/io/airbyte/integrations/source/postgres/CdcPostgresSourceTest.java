@@ -1010,4 +1010,5 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   protected String getServerImageName() {
     return "debezium/postgres:15-alpine";
   }
+
 }

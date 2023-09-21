@@ -63,6 +63,7 @@ First, make sure you build the latest Docker image:
 docker build . -t airbyte/source-scaffold-source-http:dev
 ```
 
+
 You can also build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:source-scaffold-source-http:airbyteDocker

@@ -104,18 +104,18 @@ public class StagingConsumerFactory {
                                                       final String defaultNamespace,
                                                       final boolean useDestinationsV2Columns) {
     return createAsync(outputRecordCollector,
-            database,
-            stagingOperations,
-            namingResolver,
-            config,
-            catalog,
-            purgeStagingData,
-            typerDeduperValve,
-            typerDeduper,
-            parsedCatalog,
-            defaultNamespace,
-            useDestinationsV2Columns,
-            Optional.empty());
+        database,
+        stagingOperations,
+        namingResolver,
+        config,
+        catalog,
+        purgeStagingData,
+        typerDeduperValve,
+        typerDeduper,
+        parsedCatalog,
+        defaultNamespace,
+        useDestinationsV2Columns,
+        Optional.empty());
   }
 
   public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
