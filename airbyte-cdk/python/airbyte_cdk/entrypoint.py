@@ -7,6 +7,7 @@ import importlib
 import ipaddress
 import logging
 import os.path
+import requests
 import socket
 import sys
 import tempfile
@@ -227,10 +228,11 @@ def _init_internal_request_filter() -> None:
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
                     + "connectors only support requesting data from public API endpoints."
                 )
-        except socket.gaierror:
+        except socket.gaierror as exception:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
             # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
-            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified.")
+            # Knowing that this is a request using the requests library, we will mock the exception without calling the lib
+            raise requests.exceptions.InvalidURL(f"Invalid URL {parsed_url}: {exception}")
 
         return wrapped_fn(self, request, **kwargs)
 
