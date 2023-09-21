@@ -145,7 +145,11 @@ class Activities(FBMarketingIncrementalStream):
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-            since = self._start_date
+            if self._start_date:
+                since = self._start_date
+            else:
+                # if start_date is not specified then do not use date filters
+                return {}
 
         return {"since": since.int_timestamp}
 
