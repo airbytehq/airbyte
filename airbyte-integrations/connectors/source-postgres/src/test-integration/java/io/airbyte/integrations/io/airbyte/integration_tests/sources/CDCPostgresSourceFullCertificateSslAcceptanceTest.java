@@ -23,4 +23,5 @@ public class CDCPostgresSourceFullCertificateSslAcceptanceTest extends AbstractC
   protected String getServerImageName() {
     return "postgres:15-bullseye";
   }
+
 }

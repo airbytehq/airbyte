@@ -16,7 +16,7 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/reporting/' 
+    url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/reporting/'
     path: "{{ parameters.path }}"
     http_method: GET
     request_headers:
@@ -24,11 +24,11 @@ definitions:
     authenticator:
       type: CustomAuthenticator
       class_name: source_paypal_transaction.components.PayPalOauth2Authenticator
-      client_id: '{{ config[''client_id''] }}'
-      client_secret: '{{ config[''client_secret''] }}'
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
       refresh_request_body:
         Content-Type: application/x-www-form-urlencoded
-      token_refresh_endpoint: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/oauth2/token' 
+      token_refresh_endpoint: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/v1/oauth2/token'
       grant_type: client_credentials
       expires_in_name: expires_in
       access_token_name: access_token
@@ -78,18 +78,18 @@ definitions:
         fields:
           - path:
               - transaction_id
-            value: '{{ record[''transaction_info''][''transaction_id''] }}'
+            value: "{{ record['transaction_info']['transaction_id'] }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: transaction_updated_date
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
           {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: start_date
@@ -100,8 +100,8 @@ definitions:
         inject_into: request_parameter
       end_datetime:
         type: MinMaxDatetime
-        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       step: P15D
       cursor_granularity: PT1S
     $parameters:
@@ -132,18 +132,18 @@ definitions:
         fields:
           - path:
               - as_of_time
-            value: '{{ format_datetime(record[''as_of_time''], ''%Y-%m-%dT%H:%M:%SZ'') }}'
+            value: "{{ format_datetime(record['as_of_time'], '%Y-%m-%dT%H:%M:%SZ') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: as_of_time
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%SZ'
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
         datetime: >-
           {{ max( format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%SZ'), day_delta(-1095, format='%Y-%m-%dT%H:%M:%SZ') ) }}
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         type: RequestOption
         field_name: as_of_time

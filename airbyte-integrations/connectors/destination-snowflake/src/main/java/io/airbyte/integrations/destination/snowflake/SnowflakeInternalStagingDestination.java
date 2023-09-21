@@ -161,8 +161,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         parsedCatalog,
         defaultNamespace,
         true,
-        Optional.of(getSnowflakeBufferMemoryLimit())
-    );
+        Optional.of(getSnowflakeBufferMemoryLimit()));
   }
 
   private static long getSnowflakeBufferMemoryLimit() {

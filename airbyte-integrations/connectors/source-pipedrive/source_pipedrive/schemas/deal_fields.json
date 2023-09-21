@@ -102,7 +102,7 @@
       }
     },
     "mandatory_flag": {
-      "type": ["null", "object","boolean","integer"]
+      "type": ["null", "object", "boolean", "integer"]
     }
   }
 }

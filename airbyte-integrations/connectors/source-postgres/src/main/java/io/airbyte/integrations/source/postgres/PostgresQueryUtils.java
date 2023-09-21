@@ -321,8 +321,8 @@ public class PostgresQueryUtils {
   }
 
   public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleForStreams(final JdbcDatabase database,
-                                                                                                final List<ConfiguredAirbyteStream> streams,
-                                                                                                final String quoteString) {
+                                                                                        final List<ConfiguredAirbyteStream> streams,
+                                                                                        final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
     streams.forEach(stream -> {
       final AirbyteStreamNameNamespacePair namespacePair =
@@ -334,8 +334,8 @@ public class PostgresQueryUtils {
   }
 
   public static int getTableMaxTupleForStream(final JdbcDatabase database,
-                                                      final AirbyteStreamNameNamespacePair stream,
-                                                      final String quoteString) {
+                                              final AirbyteStreamNameNamespacePair stream,
+                                              final String quoteString) {
     try {
       final String streamName = stream.getName();
       final String schemaName = stream.getNamespace();

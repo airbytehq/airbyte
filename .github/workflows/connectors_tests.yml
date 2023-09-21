@@ -1,7 +1,15 @@
 name: Connector Ops CI - Connectors Acceptance Tests
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
+  #
+  # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
+  #  ensuring that only one run per pull request is active at a time.
+  #
+  # - github.run_id is defined on all runs, it makes sure that the concurrency group is unique for workflow dispatches.
+  # This allows us to run multiple workflow dispatches in parallel.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 on:
   workflow_dispatch:
