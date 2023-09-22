@@ -168,7 +168,7 @@ public class AzureServiceBusPublisher extends FailureTrackingAirbyteMessageConsu
     Builder requestBuilder = new Builder()
         .url(postMsgUrl)
         .post(RequestBody.create(Jsons.serialize(data).getBytes(StandardCharsets.UTF_8),
-            MediaType.parse("text/plain")));
+            MediaType.parse("application/json")));
 
     // add any additional properties from config
     serviceBusConfig.getAdditionalHeaders().forEach(requestBuilder::addHeader);
