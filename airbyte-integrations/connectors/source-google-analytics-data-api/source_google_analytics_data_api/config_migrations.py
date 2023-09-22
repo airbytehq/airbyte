@@ -104,25 +104,22 @@ class MigrateCustomReports:
     @classmethod
     def _should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        This method determines wether or not the config should be migrated to have the new structure for the `custom_reports`,
+        This method determines whether or not the config should be migrated to have the new structure for the `custom_reports`,
         based on the source spec.
         Returns:
-            > True, if the transformation is neccessary
+            > True, if the transformation is necessary
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-        # If the config was already migrated, there is no need to do this again.
-        # but if the customer has already switched to the new version,
-        # corrected the old config and switches back to the new version,
-        # we should try to migrate the modified old custom reports.
-        if cls.migrate_to_key in config:
-            return not len(config[cls.migrate_to_key]) > 0
 
-        if cls.migrate_from_key in config:
-            custom_reports = config[cls.migrate_from_key]
-            # check the old structure vs new spec
-            if isinstance(custom_reports, str):
-                return True
+        # If the config has been migrated and has entries, no need to migrate again.
+        if config.get(cls.migrate_to_key, []):
+            return False
+
+        # If the old config key is present and its value is a string, migration is needed.
+        if config.get(cls.migrate_from_key, None) is not None and isinstance(config[cls.migrate_from_key], str):
+            return True
+
         return False
 
     @classmethod
