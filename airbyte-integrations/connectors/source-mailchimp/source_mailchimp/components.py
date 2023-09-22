@@ -1,22 +1,22 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import requests
+
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping
 
+import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @dataclass
 class CampaignIdPartitionRouter(SubstreamPartitionRouter):
-
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Iterate over each parent stream's record and create a StreamSlice for each record.
@@ -35,14 +35,14 @@ class CampaignIdPartitionRouter(SubstreamPartitionRouter):
             campaigns = [{"id": self.config.get("campaign_id")}]
         else:
             campaigns = campaign_stream.read_records(sync_mode=SyncMode.full_refresh)
-        
+
         for campaign in campaigns:
             slice_ = {"campaign_id": campaign["id"]}
             yield slice_
 
+
 @dataclass
 class EmailActivityRecordExtractor(RecordExtractor):
-    
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         try:
             response_json = response.json()
@@ -79,7 +79,6 @@ class MailchimpAuthenticator(DeclarativeAuthenticator):
 
 @dataclass
 class MailchimpRequester(HttpRequester):
-
     @staticmethod
     def get_server_prefix(access_token: str) -> str:
         try:
@@ -89,9 +88,9 @@ class MailchimpRequester(HttpRequester):
             return response.json()["dc"]
         except Exception as e:
             raise Exception(f"Cannot retrieve server_prefix for you account. \n {repr(e)}")
-    
+
     def get_url_base(self) -> str:
-        credentials= self.config.get("credentials", {})
+        credentials = self.config.get("credentials", {})
         auth_type = credentials.get("auth_type")
         if auth_type == "apikey":
             data_center = credentials.get("apikey", "").split("-").pop()
@@ -101,4 +100,3 @@ class MailchimpRequester(HttpRequester):
             raise Exception(f"Invalid auth type: {auth_type}")
 
         return f"https://{data_center}.api.mailchimp.com/3.0/"
-    
