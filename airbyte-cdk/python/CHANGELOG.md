@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.19
+Ensuring invalid user-provided urls does not generate sentry issues
+
 ## 0.51.18
 Vector DB CDK adjustments: Prevent failures with big records and OpenAI embedder
 

@@ -12,12 +12,12 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["data", "*", "data"]
-      
+
   selector_users:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["data", "*", "data","*"]
+      field_path: ["data", "*", "data", "*"]
 
   requester:
     type: HttpRequester
@@ -107,7 +107,7 @@ definitions:
       path: "/recents"
 
   lead_labels_stream:
-  # Does not support pagination
+    # Does not support pagination
     $ref: "#/definitions/base_stream"
     name: "lead_labels"
     retriever:
@@ -148,7 +148,7 @@ definitions:
       path: "/recents"
 
   activity_types_stream:
-# This stream didnt have limit as query_parameter
+    # This stream didnt have limit as query_parameter
     $ref: "#/definitions/base_stream"
     name: "activity_types"
     retriever:
@@ -302,7 +302,6 @@ definitions:
             parent_key: "id"
             partition_field: "parent_id"
 
-
 streams:
   - "#/definitions/deals_stream"
   - "#/definitions/deal_fields_stream"
@@ -351,9 +350,10 @@ spec:
         airbyte_secret: true
       replication_start_date:
         title: Start Date
-        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
           before this date will not be replicated. When specified and not None, then
           stream will behave as incremental
         examples:
-          - '2017-01-25 00:00:00Z'
+          - "2017-01-25 00:00:00Z"
         type: string

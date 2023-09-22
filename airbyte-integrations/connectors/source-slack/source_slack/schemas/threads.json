@@ -23,7 +23,7 @@
     "float_ts": {
       "type": ["null", "number"]
     },
-    "subtype": { 
+    "subtype": {
       "type": ["null", "string"]
     },
     "is_locked": {
