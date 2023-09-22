@@ -91,9 +91,11 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     )
 
     time.sleep(20)
-    container = docker_client.containers.get(container.name)
+    # container = docker_client.containers.get(container.name)
+    container.reload()
     print(container.attrs.get("Status"))
     print(container.attrs.get("State"))
+    print(container.ports)
     ip_address = container.attrs["NetworkSettings"]["IPAddress"]
     import paramiko
     ssh = paramiko.SSHClient()
