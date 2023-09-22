@@ -60,7 +60,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         # do not commit if master branch
         with:
-          commit_message: Automated Commit - Formatting Changes
+          commit_message: [skip ci] Automated Commit - Formatting Changes
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
