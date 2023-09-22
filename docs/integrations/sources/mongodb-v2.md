@@ -56,16 +56,16 @@ These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/
 
 1. From a terminal window, launch the MongoDB shell:
 ```shell
-&gt; mongosh &lt;connection string to cluster&gt; --username &lt;user with admin permissions&gt;
+> mongosh <connection string to cluster> --username <user with admin permissions>;
 ```  
 2. Switch to the `admin` database:
 ```shell
-test&gt; use admin
+test> use admin
 switched to db admin
 ```
 3. Create the `READ_ONLY_USER` user with the `read` role:
 ```shell
-admin&gt; db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
+admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
 :::note Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. :::
 4. Next, enable authentication, if not already enabled.  Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
