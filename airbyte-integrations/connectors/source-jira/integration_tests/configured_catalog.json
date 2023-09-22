@@ -215,7 +215,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     },
-        {
+    {
       "stream": {
         "name": "issue_transitions",
         "json_schema": {},

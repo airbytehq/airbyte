@@ -57,7 +57,7 @@
       "type": ["null", "boolean"]
     },
     "json_column_flag": {
-        "type": ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "parent_id": {
       "type": ["null", "integer"]

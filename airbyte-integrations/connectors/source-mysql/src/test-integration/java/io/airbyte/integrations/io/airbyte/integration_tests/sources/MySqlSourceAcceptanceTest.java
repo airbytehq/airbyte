@@ -38,8 +38,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @SystemStub
-  private EnvironmentVariables environmentVariables;
-
+  public EnvironmentVariables environmentVariables;
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
