@@ -442,7 +442,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             try:
                 config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
             except ValueError:
-                raise ConfigurationError("credentials.credentials_json is not valid JSON")
+                raise ConfigurationError(f"credentials.credentials_json is not valid JSON. got {config['credentials']['credentials_json']}")
 
         config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
 
