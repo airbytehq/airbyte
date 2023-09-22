@@ -4,7 +4,8 @@
 
 import logging
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+from dataclasses import field
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union, Dict
 
 import backoff
 import pendulum
@@ -103,7 +104,16 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
         response_json = self._get_refresh_access_token_response()
-        return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
+        return response_json[self.get_access_token_name()], self.parse_token_lifespan(response_json)
+
+    def parse_token_lifespan(self, response_json: Dict[str, Any]) -> int:
+        """
+        Return the lifespan of refresh token
+
+        :return: lifespan in seconds
+        """
+
+        return int(response_json[self.get_expires_in_name()])
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
