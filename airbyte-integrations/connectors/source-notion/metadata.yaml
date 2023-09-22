@@ -20,8 +20,8 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "Version 2.0.0 introduces connector-wide schema changes. These changes were introduced to more accurately reflect the data returned by the Notion API. A full schema refresh and data reset are required to upgrade to this version."
-        upgradeDeadline: "2023-10-04"
+        message: "Version 2.0.0 introduces connector-wide schema changes. These changes were introduced to reflect updates to the Notion API. A full schema refresh and data reset are required to upgrade to this version."
+        upgradeDeadline: "2023-10-09"
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   tags:
     - language:python
