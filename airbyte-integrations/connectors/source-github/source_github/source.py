@@ -143,20 +143,19 @@ class SourceGithub(AbstractSource):
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        if not config.get("api_url"):
-            config["api_url"] = "https://api.github.com"
-        api_url_parsed = urlparse(config.get("api_url"))
+        config.setdefault("api_url", "https://api.github.com")
+        api_url_parsed = urlparse(config["api_url"])
+
         if not api_url_parsed.scheme.startswith("http"):
-            message = "Please enter full url starting from http..."
+            message = "Please enter a full URL starting with http..."
         elif api_url_parsed.scheme == "http" and not self._is_http_allowed():
-            message = "HTTP connection is insecure an is not allowed in this environment. Please use `https` instead."
+            message = "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."
         elif not api_url_parsed.netloc:
-            message = "Please provide correct URL"
+            message = "Please provide a correct URL"
         else:
-            message = None
-        if message:
-            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-        return config
+            return config
+
+        raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
     @staticmethod
     def _is_http_allowed() -> bool:
