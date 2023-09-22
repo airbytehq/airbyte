@@ -63,7 +63,7 @@ definitions:
         request_headers:
           X-Recharge-Version: 2021-01
 
-# this stream does not support cursor pagination
+  # this stream does not support cursor pagination
   old_stream_without_extractor:
     type: DeclarativeStream
     retriever:
