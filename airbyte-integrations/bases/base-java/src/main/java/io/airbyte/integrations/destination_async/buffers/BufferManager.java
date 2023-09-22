@@ -33,8 +33,10 @@ public class BufferManager {
   private final GlobalAsyncStateManager stateManager;
   private final ScheduledExecutorService debugLoop;
 
+  public static final double MEMORY_LIMIT_RATIO = 0.7;
+
   public BufferManager() {
-    this((long) (Runtime.getRuntime().maxMemory() * 0.7));
+    this((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO));
   }
 
   /**
