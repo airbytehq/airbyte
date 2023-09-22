@@ -143,8 +143,9 @@ class SourceGithub(AbstractSource):
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        api_url_parsed = urlparse(config.get("api_url", "https://api.github.com"))
-
+        if not config.get("api_url"):
+            config["api_url"] = "https://api.github.com"
+        api_url_parsed = urlparse(config.get("api_url"))
         if not api_url_parsed.scheme.startswith("http"):
             message = "Please enter full url starting from http..."
         elif api_url_parsed.scheme == "http" and not self._is_http_allowed():
@@ -155,7 +156,6 @@ class SourceGithub(AbstractSource):
             message = None
         if message:
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
-        config["api_url"] = api_url_parsed.netloc
         return config
 
     @staticmethod

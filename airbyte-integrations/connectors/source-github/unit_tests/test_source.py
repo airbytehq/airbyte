@@ -129,9 +129,6 @@ def test_get_branches_data():
 
 @responses.activate
 def test_get_org_repositories():
-
-    source = SourceGithub()
-
     responses.add(
         "GET",
         "https://api.github.com/repos/airbytehq/integration-test",
@@ -148,6 +145,8 @@ def test_get_org_repositories():
     )
 
     config = {"repository": "airbytehq/integration-test docker/*"}
+    source = SourceGithub()
+    config = source._ensure_default_values(config)
     organisations, repositories = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
