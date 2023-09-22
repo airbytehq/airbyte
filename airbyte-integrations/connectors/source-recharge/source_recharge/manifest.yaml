@@ -27,12 +27,14 @@ definitions:
         inject_into: "request_parameter"
         field_name: "limit"
       pagination_strategy:
-        type: "PageIncrement"
-        page_size: 50
+        type: "CursorPagination"
+        cursor_value: "{{ response['next_cursor'] }}"
+        page_size: 250
+        stop_condition: "{{ not response['next_cursor'] }}"
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
-        field_name: "page"
+        field_name: "cursor"
     requester:
       $ref: "#/definitions/requester"
 
@@ -46,18 +48,37 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
-        type: "NoPagination"
+        type: "DefaultPaginator"
+        page_size_option:
+          $ref: "#/definitions/retriever/paginator/page_size_option"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ headers['link']['next']['url'] }}"
+          page_size: 250
+          stop_condition: "{{ 'next' not in headers['link'] }}"
+        page_token_option:
+          type: RequestPath
       requester:
         $ref: "#/definitions/requester"
         request_headers:
           X-Recharge-Version: 2021-01
 
+# this stream does not support cursor pagination
   old_stream_without_extractor:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
-        type: "NoPagination"
+        type: "DefaultPaginator"
+        page_size_option:
+          $ref: "#/definitions/retriever/paginator/page_size_option"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 250
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
