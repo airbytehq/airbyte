@@ -1,11 +1,13 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
 import operator
-import pytest
-
 from pathlib import Path
 
+import pytest
 from airbyte_cdk.models import SyncMode
-
 from source_amplitude.source import SourceAmplitude
 
 
