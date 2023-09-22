@@ -144,7 +144,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     time.sleep(5)
     import socket
     s = socket.socket()
-    print(s.connect_ex(("localhost", 2222)))
+    print(s.connect_ex((ip_address, 22)))
     # resp = container.exec_run("ls")
     # print("RESPONSE")
     # print(resp.output)
