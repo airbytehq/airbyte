@@ -43,6 +43,11 @@ If you are using Airbyte Open Source, you will need to obtain the following OAut
 
 Please refer to [Google's documentation](https://developers.google.com/identity/protocols/oauth2) for detailed instructions on how to obtain these credentials.
 
+A single access token can grant varying degrees of access to multiple APIs. A variable parameter called scope controls the set of resources and operations that an access token permits. During the access token request, your app sends one or more values in the scope parameter.
+
+The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
+
+Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
 ### Step 3: Set up the Google Ads connector in Airbyte
 
 <!-- /env:oss -->
@@ -183,6 +188,23 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
 :::
 
+
+## Difference between manager and client accounts
+
+A manager account isn't an "upgrade" of your Google Ads account. Instead, it's an entirely new Google Ads account you create. Think of a manager account as an umbrella Google Ads account with several individual Google Ads accounts linked to it. You can link new and existing Google Ads accounts, as well as other manager accounts.
+
+You can then monitor ad performance, update campaigns, and manage other account tasks for those client accounts. Your manager account can also be given ownership of a client account. This allows you to manage user access for the client account.
+
+[Link](https://support.google.com/google-ads/answer/6139186?hl=en#) for more details on how it works and how you can create it. 
+
+**Manager Accounts (MCC)** primarily focus on account management and oversight. They can access and manage multiple client accounts, view shared resources, and handle invitations to link with client accounts.
+
+**Client Accounts** are more operationally focused. They deal with campaign management, bidding, keywords, targeting, extensions, metrics, reporting, billing, and other ad-specific functionalities.
+
+While both types of accounts can access a wide range of resources in the API, the difference lies in their scope and purpose. Manager accounts have a broader oversight, while client accounts delve into the specifics of advertising operations.
+
+For detailed information, refer to the [official documentation.](https://developers.google.com/google-ads/api/fields/v14/overview)
+
 ## Note on Conversion Windows
 
 In digital advertising, a 'conversion' typically refers to a user undertaking a desired action after viewing or interacting with an ad. This could be anything from clicking through to the advertiser's website, signing up for a newsletter, making a purchase, and so on. The conversion window is the period of time after a user sees or clicks on an ad during which their actions can still be credited to that ad.
@@ -204,6 +226,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.10.0` | 2023-09-19 | [30091](https://github.com/airbytehq/airbyte/pull/30091) | Fix schemas for correct primary and foreign keys                                                                                     |
 | `0.9.0`  | 2023-09-14 | [28970](https://github.com/airbytehq/airbyte/pull/28970) | Add incremental deletes for Campaign and Ad Group Criterion streams                                                                  |
 | `0.8.1`  | 2023-09-13 | [30376](https://github.com/airbytehq/airbyte/pull/30376) | Revert pagination changes from 0.8.0                                                                                                 |
 | `0.8.0`  | 2023-09-01 | [30071](https://github.com/airbytehq/airbyte/pull/30071) | Delete start_date from required parameters and fix pagination                                                                        |

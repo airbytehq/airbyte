@@ -37,10 +37,6 @@ The Jira source connector supports the following [sync modes](https://docs.airby
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-## Troubleshooting
-
-Check out common troubleshooting issues for the Jira connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
-
 ## Supported Streams
 
 This connector outputs the following full refresh streams:
@@ -125,6 +121,11 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.7.2   | 2023-09-19 | [\#30675](https://github.com/airbytehq/airbyte/pull/30675) | Ensure invalid URL does not trigger Sentry alert                                                                        |
+| 0.7.1   | 2023-09-19 | [\#30585](https://github.com/airbytehq/airbyte/pull/30585) | Add skip for 404 error in issue properties steam                                                                        |
+| 0.7.0   | 2023-09-17 | [\#30532](https://github.com/airbytehq/airbyte/pull/30532) | Add foreign key to stream record where it misseing                                                                      |
+| 0.6.3   | 2023-09-19 | [\#30515](https://github.com/airbytehq/airbyte/pull/30515) | Add transform for invalid date-time format, add 404 handling for check                                                  |
+| 0.6.2   | 2023-09-19 | [\#30578](https://github.com/airbytehq/airbyte/pull/30578) | Fetch deleted and archived Projects                                                                                     |
 | 0.6.1   | 2023-09-17 | [\#30550](https://github.com/airbytehq/airbyte/pull/30550) | Update `Issues` expand settings                                                                                         |
 | 0.6.0   | 2023-09-17 | [\#30507](https://github.com/airbytehq/airbyte/pull/30507) | Add new stream `IssueTransitions`                                                                                       |
 | 0.5.0   | 2023-09-14 | [\#29960](https://github.com/airbytehq/airbyte/pull/29960) | Add `boardId` to `sprints` stream                                                                                       |
