@@ -8,6 +8,7 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -149,3 +150,6 @@ class StreamFacade(Stream):
     def supports_incremental(self) -> bool:
         # Only full refresh is supported
         return False
+
+    def check_availability(self, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
+        return self._stream.check_availability()
