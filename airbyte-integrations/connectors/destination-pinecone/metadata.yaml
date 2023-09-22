@@ -19,7 +19,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
-  dockerImageTag: 0.0.10
+  dockerImageTag: 0.0.11
   dockerRepository: airbyte/destination-pinecone
   githubIssueLabel: destination-pinecone
   icon: pinecone.svg
@@ -33,4 +33,5 @@ data:
   ab_internal:
     sl: 200
     ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"
