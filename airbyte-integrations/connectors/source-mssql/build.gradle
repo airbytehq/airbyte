@@ -1,9 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-java-cdk'
-    id 'airbyte-performance-test-java'
+    id 'airbyte-java-connector'
 }
 
 application {

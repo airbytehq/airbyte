@@ -3,9 +3,7 @@ import org.jsonschema2pojo.SourceType
 plugins {
     id 'application'
     id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-java-cdk'
-    id 'airbyte-performance-test-java'
+    id 'airbyte-java-connector'
     id 'org.jsonschema2pojo' version '1.2.1'
 }
 

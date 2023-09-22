@@ -15,8 +15,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-java-cdk'
+    id 'airbyte-java-connector'
     id "de.undercouch.download" version "5.0.1"
 }
 

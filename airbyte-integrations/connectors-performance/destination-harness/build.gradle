@@ -1,8 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-java-cdk'
+    id 'airbyte-java-connector'
 }
 
 repositories {
