@@ -1,4 +1,7 @@
 dependencies {
+    // TODO: Merge into the CDK when possible, to avoid potential of conflicting versions:
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
+
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
 
     // First party main dependencies
