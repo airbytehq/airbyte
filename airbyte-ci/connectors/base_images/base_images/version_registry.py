@@ -200,6 +200,19 @@ class VersionRegistry:
         except IndexError:
             return None
 
+    @property
+    def latest_published_entry(self) -> Optional[VersionRegistryEntry]:
+        """Returns the latest published entry this registry.
+        The latest published entry is the one with the highest version number among the published entries.
+        If no entry is available, returns None.
+        Returns:
+            Optional[VersionRegistryEntry]: The latest published registry entry, or None if no entry is available.
+        """
+        try:
+            return [entry for entry in self.entries if entry.published][0]
+        except IndexError:
+            return None
+
     def get_entry_for_version(self, version: semver.VersionInfo) -> Optional[VersionRegistryEntry]:
         """Returns the entry for a given version.
         If no entry is available, returns None.
@@ -212,8 +225,8 @@ class VersionRegistry:
         return None
 
     @property
-    def latest_not_pre_released_entry(self) -> Optional[VersionRegistryEntry]:
-        """Returns the latest entry with a not pre-released version in this registry.
+    def latest_not_pre_released_published_entry(self) -> Optional[VersionRegistryEntry]:
+        """Returns the latest entry with a not pre-released version in this registry which is published.
         If no entry is available, returns None.
         It is meant to be used externally to get the latest published version.
         Returns:
