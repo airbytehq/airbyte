@@ -109,7 +109,7 @@ class SimpleCIStep(Step):
     async def _run(self, command=None) -> StepResult:
         command_to_run = command or self.command
         if not command_to_run:
-            raise ValueError(f"No command given to the {self.title} step}")
+            raise ValueError(f"No command given to the {self.title} step")
 
         container_to_run = await self.init_container()
         return await self.get_step_result(container_to_run.with_exec(command_to_run))
