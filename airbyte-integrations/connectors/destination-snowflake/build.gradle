@@ -4,6 +4,14 @@ plugins {
     id 'airbyte-java-connector'
 }
 
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    useCdkProjectRef = true
+    features = ['db-destinations']
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
 // enable when profiling
@@ -42,6 +50,10 @@ dependencies {
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
+
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
+    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
 
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
