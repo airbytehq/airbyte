@@ -66,8 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
@@ -705,9 +705,11 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   /**
-   * This test creates lots of tables increasing the schema history size above the limit of {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB}
-   * forcing the {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of the state message
-   * which allows us to test that the next sync is able to work fine when provided with a compressed blob in the state.
+   * This test creates lots of tables increasing the schema history size above the limit of
+   * {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB} forcing the
+   * {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of
+   * the state message which allows us to test that the next sync is able to work fine when provided
+   * with a compressed blob in the state.
    */
   @Test
   public void testCompressedSchemaHistory() throws Exception {
@@ -785,4 +787,5 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     return randomString.toString();
   }
+
 }
