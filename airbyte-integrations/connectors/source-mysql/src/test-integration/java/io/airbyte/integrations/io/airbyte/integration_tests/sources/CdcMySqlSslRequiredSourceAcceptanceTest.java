@@ -51,4 +51,5 @@ public class CdcMySqlSslRequiredSourceAcceptanceTest extends CdcMySqlSourceAccep
   private void alterUserRequireSsl() {
     executeQuery("ALTER USER " + container.getUsername() + " REQUIRE SSL;");
   }
+
 }

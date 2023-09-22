@@ -218,7 +218,7 @@
     "table": {
       "type": "object",
       "properties": {
-        "table_width": { "type": "integer"},
+        "table_width": { "type": "integer" },
         "has_column_header": { "type": "boolean" },
         "has_row_header": { "type": "boolean" }
       }
