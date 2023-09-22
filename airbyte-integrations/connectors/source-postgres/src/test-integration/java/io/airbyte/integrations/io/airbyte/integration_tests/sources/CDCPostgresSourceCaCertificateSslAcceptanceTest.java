@@ -21,5 +21,4 @@ public class CDCPostgresSourceCaCertificateSslAcceptanceTest extends AbstractCdc
     return "postgres:15-bullseye";
   }
 
-
 }

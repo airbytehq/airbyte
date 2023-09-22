@@ -66,6 +66,7 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private int numberOfTimesReSynced = 0;
   private boolean subQueriesInitialized = false;
   private final boolean tidRangeScanCapableDBServer;
+
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
                                  final JdbcDatabase database,
                                  final CtidPostgresSourceOperations sourceOperations,
