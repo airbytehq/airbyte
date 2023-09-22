@@ -151,5 +151,5 @@ class StreamFacade(Stream):
         # Only full refresh is supported
         return False
 
-    def check_availability(self, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         return self._stream.check_availability()

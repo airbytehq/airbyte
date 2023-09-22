@@ -11,9 +11,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import LegacyAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.partitions.partition_generator import LegacyPartitionGenerator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
