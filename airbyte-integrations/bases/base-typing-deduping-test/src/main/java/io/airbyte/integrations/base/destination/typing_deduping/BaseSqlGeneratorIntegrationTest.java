@@ -961,14 +961,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Sometimes, a sync doesn't delete its soft reset temp table. (it's not entirely clear why this happens.)
-   * In these cases, the next sync should not crash.
+   * Sometimes, a sync doesn't delete its soft reset temp table. (it's not entirely clear why this
+   * happens.) In these cases, the next sync should not crash.
    */
   @Test
   public void softResetIgnoresPreexistingTempTable() throws Exception {
     createRawTable(incrementalDedupStream.id());
 
-    // Create a soft reset table. Use incremental append mode, in case the destination connector uses different
+    // Create a soft reset table. Use incremental append mode, in case the destination connector uses
+    // different
     // indexing/partitioning/etc.
     final String createOldTempTable = generator.createTable(incrementalAppendStream, SqlGenerator.SOFT_RESET_SUFFIX, false);
     destinationHandler.execute(createOldTempTable);

@@ -59,8 +59,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   /**
    * @param projectId
    * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler}
-   *                        setting the query execution location, but let's be explicit since this is typically a
-   *                        compliance requirement.
+   *        setting the query execution location, but let's be explicit since this is typically a
+   *        compliance requirement.
    */
   public BigQuerySqlGenerator(final String projectId, final String datasetLocation) {
     this.projectId = projectId;
@@ -327,8 +327,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String softReset(final StreamConfig stream) {
     // If a previous sync failed to delete the soft reset temp table (unclear why this happens),
-    // AND this sync is trying to change the clustering config, then we need to manually drop the soft reset temp table.
-    // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the clustering config being changed.
+    // AND this sync is trying to change the clustering config, then we need to manually drop the soft
+    // reset temp table.
+    // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the
+    // clustering config being changed.
     // So we explicitly drop the soft reset temp table first.
     final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
@@ -342,18 +344,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "table_id", stream.id().finalTableId(QUOTE, suffix)))
-        .replace("""
-                 DROP TABLE IF EXISTS ${project_id}.${table_id};
-                 """);
+            .replace("""
+                     DROP TABLE IF EXISTS ${project_id}.${table_id};
+                     """);
   }
 
   private String clearLoadedAt(final StreamId streamId) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "raw_table_id", streamId.rawTableId(QUOTE)))
-        .replace("""
-                 UPDATE ${project_id}.${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
-                 """);
+            .replace("""
+                     UPDATE ${project_id}.${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
+                     """);
   }
 
   @Override
