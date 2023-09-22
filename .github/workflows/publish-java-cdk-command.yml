@@ -145,7 +145,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: mavenlocal-jars
-          path: ~/.m2/io/airbyte
+          path: ~/.m2/repository/io/airbyte/
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publish
