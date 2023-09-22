@@ -19,7 +19,8 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
     :::
-7. Click **Set up source**.
+7. Set the start date, if not configured it will read 1 year of data as default.
+8. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -230,7 +231,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
-| 1.0.0   | 2023-08-31 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Migrate to Low Code Framework |
+| 1.0.0   | 2023-09-22 | [29961](https://github.com/airbytehq/airbyte/pull/29961) | Migrate to Low Code Framework + add start date parameter |
 | 0.4.1   | 2023-05-02 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Handle unknown error in EmailActivity                                      |
 | 0.4.0   | 2023-04-11 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream                                                     |
 | 0.3.5   | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream                                                         |
