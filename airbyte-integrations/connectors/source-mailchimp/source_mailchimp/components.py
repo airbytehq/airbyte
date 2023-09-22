@@ -14,7 +14,6 @@ from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, Basi
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 
 
-
 @dataclass
 class CampaignIdPartitionRouter(SubstreamPartitionRouter):
 
@@ -76,6 +75,7 @@ class MailchimpAuthenticator(DeclarativeAuthenticator):
             return oauth
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
+
 
 @dataclass
 class MailchimpRequester(HttpRequester):

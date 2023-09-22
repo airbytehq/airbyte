@@ -13,7 +13,7 @@ data:
   dockerImageTag: 1.0.0
   releases:
     breakingChanges:
-      2.0.0:
+      1.0.0:
         upgradeDeadline: 2023-10-10
         message: "Migration to Lowcode states aren't compatible. Need to reset data."
   dockerRepository: airbyte/source-mailchimp
