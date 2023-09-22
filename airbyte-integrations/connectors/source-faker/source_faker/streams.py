@@ -7,6 +7,7 @@ import os
 from functools import lru_cache
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
+from sys import getsizeof
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
@@ -191,7 +192,7 @@ class WideColumns(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, wide_data_set_columns:int, instance_count: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, wide_data_set_columns:int, generate_errors_in_wide_columns:int, instance_count: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
@@ -199,6 +200,7 @@ class WideColumns(Stream, IncrementalMixin):
         self.parallelism = parallelism
         self.always_updated = always_updated
         self.wide_data_set_columns = wide_data_set_columns
+        self.generate_errors_in_wide_columns = generate_errors_in_wide_columns
         # self.instance_count has to be initialized before self.name is called
         self.instance_count = instance_count
 
@@ -238,19 +240,17 @@ class WideColumns(Stream, IncrementalMixin):
 
         updated_at = ""
 
-        # no idea
-        median_record_byte_size = 230
-        yield generate_estimate(self.name, (self.count) * 1.3, median_record_byte_size)
-
         loop_offset = 0
         # Double check we have the schema
         self.get_json_schema()
-        generator = WideColumnGenerator(self.name, self.seed, self.record_keys)
+        generator = WideColumnGenerator(self.name, self.seed, self.record_keys, self.generate_errors_in_wide_columns)
         with Pool(initializer=generator.prepare, processes=self.parallelism) as pool:
             while loop_offset < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
                 wide_rows = pool.map(generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
                 for row in wide_rows:
+                    if loop_offset == 0:
+                        yield generate_estimate(self.name, self.count, getsizeof(row))
                     updated_at = row.record.data["updated_at"]
                     loop_offset += 1
                     yield row

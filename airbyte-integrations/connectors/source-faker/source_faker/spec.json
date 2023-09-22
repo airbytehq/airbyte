@@ -59,6 +59,14 @@
         "minimum" : 1,
         "default" : 1,
         "order" : 6
+      },
+      "generate_errors_in_wide_columns": {
+        "title": "Generate Typing Errors in Wide Column Tables",
+        "description": "How many incorrectly typed rows to generate",
+        "type": "integer",
+        "default": 0,
+        "minimum": 0,
+        "order": 10
       }
     }
   }

@@ -6,6 +6,7 @@ import datetime
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 from mimesis import Datetime, Numeric, Text
 from multiprocessing import current_process
+from threading import Lock
 from typing import Any, Dict, List, Mapping, Set
 from random import choice
 
@@ -14,10 +15,17 @@ from .utils import format_airbyte_time, now_millis
 
 
 class WideColumnGenerator:
-    def __init__(self, stream_name: str, seed: int, record_keys: List[str]) -> None:
+    def __init__(self, stream_name: str, seed: int, record_keys: List[str], generate_errors_in_wide_columns: int) -> None:
         self.stream_name = stream_name
         self.seed = seed
         self.record_keys = record_keys
+        self.generate_errors_in_wide_columns = generate_errors_in_wide_columns
+        self.generated_errors = 0
+        
+    
+    def increment_error_count(self):
+        with Lock():
+            self.generated_errors += 1
 
     def new_record(self) -> Mapping[str, Any]:
         def next_value(of_type: str):
@@ -39,6 +47,9 @@ class WideColumnGenerator:
                 # for whatever reason random timezones aren't working
                 return dt.formatted_time(fmt="%H:%M:%S.%f-08:00")
             elif of_type == "integer":
+                if self.generated_errors < self.generate_errors_in_wide_columns:
+                    self.increment_error_count()
+                    return text.word()
                 return numeric.integer_number()
             elif of_type == "number":
                 return numeric.decimal_number()
