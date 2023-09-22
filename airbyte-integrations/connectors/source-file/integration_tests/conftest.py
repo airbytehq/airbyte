@@ -17,11 +17,15 @@ from typing import Mapping
 import boto3
 import docker
 import pandas
+import socket
 import pytest
 from azure.storage.blob import BlobServiceClient
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
+from paramiko.client import AutoAddPolicy, SSHClient
+from paramiko.ssh_exception import SSHException, BadHostKeyException
+
 
 HERE = Path(__file__).parent.absolute()
 
@@ -116,6 +120,21 @@ def wait_net_service(server, port, timeout=None):
             return True
 
 
+def is_ssh_ready(ip, port):
+    try:
+        with SSHClient() as ssh:
+            ssh.set_missing_host_key_policy(AutoAddPolicy)
+            ssh.connect(
+                ip,
+                port=port,
+                username="user1",
+                password="abc123@456#",
+            )
+        return True
+    except (SSHException, socket.error, EOFError) as e:
+        return False
+
+
 @pytest.fixture(scope="session")
 def ssh_service(move_sample_files_to_tmp, docker_client):
     """Ensure that SSH service is up and responsive."""
@@ -141,10 +160,14 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     # import paramiko
     print(container.attrs["NetworkSettings"])
     print(container.attrs["NetworkSettings"]["Networks"])
-    time.sleep(5)
-    import socket
-    s = socket.socket()
-    print(s.connect_ex((ip_address, 22)))
+    while not is_ssh_ready("localhost", 2222):
+        print('sleep')
+        time.sleep(1)
+    # time.sleep(5)
+    # import socket
+    # s = socket.socket()
+    # print(s.connect_ex((ip_address, 22)))
+    # s.close()
     # resp = container.exec_run("ls")
     # print("RESPONSE")
     # print(resp.output)
