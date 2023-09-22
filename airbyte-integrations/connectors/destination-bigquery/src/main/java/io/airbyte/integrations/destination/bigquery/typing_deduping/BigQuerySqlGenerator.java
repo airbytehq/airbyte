@@ -326,11 +326,27 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String softReset(final StreamConfig stream) {
+    // If a previous sync failed to delete the soft reset temp table (unclear why this happens),
+    // AND this sync is trying to change the clustering config, then we need to manually drop the soft
+    // reset temp table.
+    // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the
+    // clustering config being changed.
+    // So we explicitly drop the soft reset temp table first.
+    final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
-    return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+    return String.join("\n", dropTempTable, createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
+  }
+
+  public String dropTableIfExists(final StreamConfig stream, final String suffix) {
+    return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
+        "table_id", stream.id().finalTableId(QUOTE, suffix)))
+            .replace("""
+                     DROP TABLE IF EXISTS ${project_id}.${table_id};
+                     """);
   }
 
   private String clearLoadedAt(final StreamId streamId) {
