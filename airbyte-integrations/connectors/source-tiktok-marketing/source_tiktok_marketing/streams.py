@@ -488,6 +488,26 @@ class Ads(IncrementalTiktokStream):
         return "ad/get/"
 
 
+class Images(IncrementalTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740052016789506"""
+
+    page_size = 100
+    primary_key = "image_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/image/ad/search/"
+
+
+class Videos(IncrementalTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740052016789506"""
+
+    page_size = 100
+    primary_key = "video_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/video/ad/search/"
+
+
 class BasicReports(IncrementalTiktokStream, ABC):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864915188737"""
 

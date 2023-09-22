@@ -64,11 +64,13 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | ------------ | ------------------------------------------ | :---------- |
+|:------------------------------------------| ------------ |--------------------------------------------|:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
 | Campaigns                                 | Prod,Sandbox | campaign_id                                | Yes         |
+| Images                                    | Prod,Sandbox | image_id                                   | Yes          |
+| Videos                                    | Prod,Sandbox | video_id                                   | Yes          |
 | AdsReportsHourly                          | Prod,Sandbox | ad_id, stat_time_hour                      | Yes         |
 | AdsReportsDaily                           | Prod,Sandbox | ad_id, stat_time_day                       | Yes         |
 | AdsReportsLifetime                        | Prod,Sandbox | ad_id                                      | No          |
@@ -296,6 +298,57 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "campaign_name": "Website Traffic20211019110444",
   "budget_mode": "BUDGET_MODE_DAY",
   "objective": "LANDING_PAGE"
+}
+```
+
+**[Images](https://business-api.tiktok.com/portal/docs?id=1740052016789506) Stream**
+
+```
+{
+    "create_time": "2023-04-26T13:35:27Z",
+    "displayable": true,
+    "image_url": "https://p21-ad-sg.ibyteimg.com/large/ad-site-i18n-sg/1234567890",
+    "file_name": "Frame 19.png",
+    "signature": "8e6ba863250903166c7af7a34c5ab8b3",
+    "image_id": "ad-site-i18n-sg/202304265d0defc41ac578104cf7a5d4",
+    "height": 500,
+    "format": "jpeg",
+    "size": 3471,
+    "modify_time": "2023-04-26T13:35:27Z",
+    "width": 500,
+    "material_id": "7226351730437914620",
+    "is_carousel_usable": true
+}
+```
+
+**[Videos](https://business-api.tiktok.com/portal/docs?id=1740052016789506) Stream**
+
+```
+{
+    "height": 1280,
+    "video_id": "v10033g50000ch361vrc77xxxx",
+    "material_id": "7225569289976619999",
+    "duration": 5.024,
+    "bit_rate": 1018810,
+    "allow_download": true,
+    "allowed_placements": [
+        "PLACEMENT_TOPBUZZ",
+        "PLACEMENT_TIKTOK",
+        "PLACEMENT_HELO",
+        "PLACEMENT_PANGLE",
+        "PLACEMENT_GLOBAL_APP_BUNDLE"
+    ],
+    "signature": "9e21e9746e448ebb9eb853cd2f9xxxxx",
+    "preview_url_expire_time": "2022-09-01 18:20:32",
+    "format": "mp4",
+    "video_cover_url": "http://p16-sign-sg.tiktokcdn.com/v0201/o8WD9HIWAwbrDfIGeMAaTIQnMAfgXXXXXXXX~tplv-noop.image?x-expires=1695234032&x-signature=cvRXXXXXXX",
+    "create_time": "2023-04-24T10:59:13Z",
+    "preview_url": "http://v16m-default.akamaized.net/xxxxxxxxxxxxxxxxxx/650b37f0/video/tos/alisg/tos-alisg-v-0000/xxxxxxHRnRe1VfjYGq4bWnAC3GIKeIEgDbAIxxxxx/?a=0&ch=0&cr=0&dr=0&lr=ad&cd=0%7C0%7C0%7C0&br=784&bt=392&bti=Njs0Zi8tOg%3D%3D&cs=0&ds=3&ft=dl9~j-xxxxxxxxx&mime_type=video_mp4&qs=0&rc=xxxxxxxxw%3D%3D&l=2022090112202662B34ABA5BAA9F5XXXX0&btag=000000000",
+    "displayable": true,
+    "width": 720,
+    "modify_time": "2023-04-24T10:59:13Z",
+    "size": 639813,
+    "file_name": "Optimized Version 1_202304241159"
 }
 ```
 
@@ -579,41 +632,42 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                       |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 3.4.1   | 2023-08-04 | [29083](https://github.com/airbytehq/airbyte/pull/29083) | Added new `is_smart_performance_campaign` property to `ad groups` stream schema |
+| Version | Date       | Pull Request                                             | Subject                                                                                          |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 3.5.1   | 2023-09-20 | [29083](https://github.com/airbytehq/airbyte/pull/30609) | Added `images` and `videos` streams                                                              |
+| 3.4.1   | 2023-08-04 | [29083](https://github.com/airbytehq/airbyte/pull/29083) | Added new `is_smart_performance_campaign` property to `ad groups` stream schema                  |
 | 3.4.0   | 2023-07-13 | [27910](https://github.com/airbytehq/airbyte/pull/27910) | Added `include_deleted` config param - include deleted `ad_groups`, `ad`, `campaigns` to reports |
-| 3.3.1   | 2023-07-06 | [25423](https://github.com/airbytehq/airbyte/pull/25423) | add new fields to ad reports streams                                                          |
-| 3.3.0   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/27988) | Add `category_exclusion_ids` field to `ad_groups` schema. |
-| 3.2.1   | 2023-05-26 | [26569](https://github.com/airbytehq/airbyte/pull/26569) | Fixed syncs with `advertiser_id` provided in input configuration                              |
-| 3.2.0   | 2023-05-25 | [26565](https://github.com/airbytehq/airbyte/pull/26565) | Change default value for `attribution window` to 3 days; add min/max validation               |
-| 3.1.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Updated the `Ads` stream schema                                                               |
-| 3.0.1   | 2023-04-07 | [24712](https://github.com/airbytehq/airbyte/pull/24712) | Added `attribution window` for \*-reports streams                                             |
-| 3.0.0   | 2023-03-29 | [24630](https://github.com/airbytehq/airbyte/pull/24630) | Migrate to v1.3 API                                                                           |
-| 2.0.6   | 2023-03-30 | [22134](https://github.com/airbytehq/airbyte/pull/22134) | Add `country_code` and `platform` audience reports.                                           |
-| 2.0.5   | 2023-03-29 | [22863](https://github.com/airbytehq/airbyte/pull/22863) | Specified date formatting in specification                                                    |
-| 2.0.4   | 2023-02-23 | [22309](https://github.com/airbytehq/airbyte/pull/22309) | Add Advertiser ID to filter reports and streams                                               |
-| 2.0.3   | 2023-02-15 | [23091](https://github.com/airbytehq/airbyte/pull/23091) | Add more clear log message for 504 error                                                      |
-| 2.0.2   | 2023-02-02 | [22309](https://github.com/airbytehq/airbyte/pull/22309) | Chunk Advertiser IDs                                                                          |
-| 2.0.1   | 2023-01-27 | [22044](https://github.com/airbytehq/airbyte/pull/22044) | Set `AvailabilityStrategy` for streams explicitly to `None`                                   |
-| 2.0.0   | 2022-12-20 | [20415](https://github.com/airbytehq/airbyte/pull/20415) | Update schema types for `AudienceReports` and `BasicReports` streams.                         |
-| 1.0.1   | 2022-12-16 | [20598](https://github.com/airbytehq/airbyte/pull/20598) | Remove Audience Reports with Hourly granularity due to deprecated dimension.                  |
-| 1.0.0   | 2022-12-05 | [19758](https://github.com/airbytehq/airbyte/pull/19758) | Convert `mobile_app_id` from integer to string in AudienceReport streams.                     |
-| 0.1.17  | 2022-10-04 | [17557](https://github.com/airbytehq/airbyte/pull/17557) | Retry error 50002                                                                             |
-| 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                   |
-| 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                        |
-| 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |
-| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                         |
-| 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                                        |
-| 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                       |
-| 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                   |
-| 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                              |
-| 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                     |
-| 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                     |
-| 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests |
-| 0.1.5   | 2022-02-17 | [10398](https://github.com/airbytehq/airbyte/pull/10398) | Add Audience reports                                                                          |
-| 0.1.4   | 2021-12-30 | [7636](https://github.com/airbytehq/airbyte/pull/7636)   | Add OAuth support                                                                             |
-| 0.1.3   | 2021-12-10 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                      |
-| 0.1.2   | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292)   | Support reports                                                                               |
-| 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                               |
-| 0.1.0   | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887)   | Release TikTok Marketing CDK Connector                                                        |
+| 3.3.1   | 2023-07-06 | [25423](https://github.com/airbytehq/airbyte/pull/25423) | add new fields to ad reports streams                                                             |
+| 3.3.0   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/27988) | Add `category_exclusion_ids` field to `ad_groups` schema.                                        |
+| 3.2.1   | 2023-05-26 | [26569](https://github.com/airbytehq/airbyte/pull/26569) | Fixed syncs with `advertiser_id` provided in input configuration                                 |
+| 3.2.0   | 2023-05-25 | [26565](https://github.com/airbytehq/airbyte/pull/26565) | Change default value for `attribution window` to 3 days; add min/max validation                  |
+| 3.1.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Updated the `Ads` stream schema                                                                  |
+| 3.0.1   | 2023-04-07 | [24712](https://github.com/airbytehq/airbyte/pull/24712) | Added `attribution window` for \*-reports streams                                                |
+| 3.0.0   | 2023-03-29 | [24630](https://github.com/airbytehq/airbyte/pull/24630) | Migrate to v1.3 API                                                                              |
+| 2.0.6   | 2023-03-30 | [22134](https://github.com/airbytehq/airbyte/pull/22134) | Add `country_code` and `platform` audience reports.                                              |
+| 2.0.5   | 2023-03-29 | [22863](https://github.com/airbytehq/airbyte/pull/22863) | Specified date formatting in specification                                                       |
+| 2.0.4   | 2023-02-23 | [22309](https://github.com/airbytehq/airbyte/pull/22309) | Add Advertiser ID to filter reports and streams                                                  |
+| 2.0.3   | 2023-02-15 | [23091](https://github.com/airbytehq/airbyte/pull/23091) | Add more clear log message for 504 error                                                         |
+| 2.0.2   | 2023-02-02 | [22309](https://github.com/airbytehq/airbyte/pull/22309) | Chunk Advertiser IDs                                                                             |
+| 2.0.1   | 2023-01-27 | [22044](https://github.com/airbytehq/airbyte/pull/22044) | Set `AvailabilityStrategy` for streams explicitly to `None`                                      |
+| 2.0.0   | 2022-12-20 | [20415](https://github.com/airbytehq/airbyte/pull/20415) | Update schema types for `AudienceReports` and `BasicReports` streams.                            |
+| 1.0.1   | 2022-12-16 | [20598](https://github.com/airbytehq/airbyte/pull/20598) | Remove Audience Reports with Hourly granularity due to deprecated dimension.                     |
+| 1.0.0   | 2022-12-05 | [19758](https://github.com/airbytehq/airbyte/pull/19758) | Convert `mobile_app_id` from integer to string in AudienceReport streams.                        |
+| 0.1.17  | 2022-10-04 | [17557](https://github.com/airbytehq/airbyte/pull/17557) | Retry error 50002                                                                                |
+| 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                      |
+| 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                           |
+| 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                                |
+| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                            |
+| 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                                           |
+| 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                          |
+| 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                      |
+| 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                                 |
+| 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                        |
+| 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                        |
+| 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests    |
+| 0.1.5   | 2022-02-17 | [10398](https://github.com/airbytehq/airbyte/pull/10398) | Add Audience reports                                                                             |
+| 0.1.4   | 2021-12-30 | [7636](https://github.com/airbytehq/airbyte/pull/7636)   | Add OAuth support                                                                                |
+| 0.1.3   | 2021-12-10 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                         |
+| 0.1.2   | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292)   | Support reports                                                                                  |
+| 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                  |
+| 0.1.0   | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887)   | Release TikTok Marketing CDK Connector                                                           |

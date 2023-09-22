@@ -1,0 +1,62 @@
+{
+  "type" : "object",
+  "properties" : {
+    "duration": {
+      "type": "number"
+    },
+    "allow_download": {
+      "type": "boolean"
+    },
+    "preview_url_expire_time": {
+      "type": "string"
+    },
+    "bit_rate": {
+      "type": "integer"
+    },
+    "video_cover_url": {
+      "type": "string"
+    },
+    "allowed_placements": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "create_time" : {
+      "type" : "string"
+    },
+    "displayable" : {
+      "type" : "boolean"
+    },
+    "preview_url" : {
+      "type" : "string"
+    },
+    "file_name" : {
+      "type" : "string"
+    },
+    "signature" : {
+      "type" : "string"
+    },
+    "video_id" : {
+      "type" : "string"
+    },
+    "height" : {
+      "type" : "integer"
+    },
+    "format" : {
+      "type" : "string"
+    },
+    "size" : {
+      "type" : "integer"
+    },
+    "modify_time" : {
+      "type" : "string"
+    },
+    "width" : {
+      "type" : "integer"
+    },
+    "material_id" : {
+      "type" : "string"
+    }
+  }
+}
