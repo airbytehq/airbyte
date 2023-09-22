@@ -8,7 +8,7 @@
       "readOnly": true
     },
     "issueId": {
-      "type" : ["null", "string"],
+      "type": ["null", "string"],
       "description": "Id of the related issue."
     },
     "isWatching": {

@@ -37,7 +37,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
-import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
