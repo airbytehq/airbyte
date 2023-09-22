@@ -92,6 +92,13 @@ jobs:
     needs: start-publish-docker-image-runner-0
     runs-on: ubuntu-latest
     steps:
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -137,6 +144,22 @@ jobs:
         env:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+      - name: Add Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > :white_check_mark: Successfully published Java CDK ${{ env.CDK_VERSION }}!
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && failure()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > :x: Publish Java CDK ${{ env.CDK_VERSION }} failed!
       - name: "Post failure to Slack channel `#dev-connectors-extensibility-releases`"
         if: ${{ env.DRY_RUN == 'false' && failure() }}
         uses: slackapi/slack-github-action@v1.23.0
