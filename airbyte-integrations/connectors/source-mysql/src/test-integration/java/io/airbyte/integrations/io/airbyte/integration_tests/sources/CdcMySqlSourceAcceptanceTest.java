@@ -218,10 +218,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s", STREAM_NAME),
-                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                    Field.of("id", JsonSchemaType.NUMBER)
-                    /* no name field */)
+                String.format("%s", STREAM_NAME),
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                Field.of("id", JsonSchemaType.NUMBER)
+            /* no name field */)
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -230,10 +230,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s", STREAM_NAME2),
-                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                    /* no name field */
-                    Field.of("id", JsonSchemaType.NUMBER))
+                String.format("%s", STREAM_NAME2),
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                /* no name field */
+                Field.of("id", JsonSchemaType.NUMBER))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
