@@ -395,7 +395,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         migrator,
         v2RawTableMigrator,
-            8);
+        8);
 
   }
 
