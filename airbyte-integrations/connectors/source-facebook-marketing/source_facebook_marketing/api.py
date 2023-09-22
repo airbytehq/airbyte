@@ -9,6 +9,7 @@ from time import sleep
 
 import backoff
 import pendulum
+import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
@@ -168,7 +169,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
         except FacebookRequestError as exc:
             MyFacebookAdsApi.reset_session()
             raise exc
-        except ConnectionResetError as exc:
+        except requests.exceptions.ConnectionError as exc:
             MyFacebookAdsApi.reset_session()
             body = {
                 "error": {
