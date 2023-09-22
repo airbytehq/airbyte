@@ -90,8 +90,11 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
         detach=True,
     )
 
-    time.sleep(20)
-    yield "localhost"
+    time.sleep(5)
+    container = docker_client.containers.get(container.name)
+    ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+
+    yield ip_address
 
     container.kill()
     container.remove()
