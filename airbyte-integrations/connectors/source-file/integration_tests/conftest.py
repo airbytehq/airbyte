@@ -90,7 +90,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
         detach=True,
     )
 
-    time.sleep(5)
+    time.sleep(20)
     yield "localhost"
 
     container.kill()
