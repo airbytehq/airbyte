@@ -89,6 +89,7 @@ jobs:
           label: ${{ github.run_id }}-publisher
 
   publish-cdk:
+    name: Publish Java CDK
     needs: start-publish-docker-image-runner-0
     runs-on: ubuntu-latest
     steps:
