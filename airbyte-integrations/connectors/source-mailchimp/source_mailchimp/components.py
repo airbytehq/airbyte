@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import requests
 from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping
 
@@ -12,8 +12,6 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-
-import requests
 
 
 
