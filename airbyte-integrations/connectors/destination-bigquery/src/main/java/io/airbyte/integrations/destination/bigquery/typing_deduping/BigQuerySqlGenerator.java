@@ -53,14 +53,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   private final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGenerator.class);
+
+  private final String projectId;
   private final String datasetLocation;
 
   /**
+   * @param projectId
    * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler}
-   *        setting the query execution location, but let's be explicit since this is typically a
-   *        compliance requirement.
+   *                        setting the query execution location, but let's be explicit since this is typically a
+   *                        compliance requirement.
    */
-  public BigQuerySqlGenerator(final String datasetLocation) {
+  public BigQuerySqlGenerator(final String projectId, final String datasetLocation) {
+    this.projectId = projectId;
     this.datasetLocation = datasetLocation;
   }
 
@@ -187,6 +191,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "dataset_location", datasetLocation,
         "force_create_table", forceCreateTable,
@@ -194,10 +199,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig)).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${final_namespace}
+            CREATE SCHEMA IF NOT EXISTS ${project_id}.${final_namespace}
             OPTIONS(location="${dataset_location}");
 
-            CREATE ${force_create_table} TABLE ${final_table_id} (
+            CREATE ${force_create_table} TABLE ${project_id}.${final_table_id} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,
@@ -330,9 +335,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String clearLoadedAt(final StreamId streamId) {
-    return new StringSubstitutor(Map.of("raw_table_id", streamId.rawTableId(QUOTE)))
+    return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
+        "raw_table_id", streamId.rawTableId(QUOTE)))
         .replace("""
-                 UPDATE ${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
+                 UPDATE ${project_id}.${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
                  """);
   }
 
@@ -423,12 +430,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         }).collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "raw_table_id", id.rawTableId(QUOTE),
         "pk_null_checks", pkNullChecks)).replace(
             """
             SET missing_pk_count = (
               SELECT COUNT(1)
-              FROM ${raw_table_id}
+              FROM ${project_id}.${raw_table_id}
               WHERE
                 `_airbyte_loaded_at` IS NULL
                 ${pk_null_checks}
@@ -484,6 +492,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "column_casts", columnCasts,
@@ -491,7 +500,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
         "column_list", columnList)).replace(
             """
-            INSERT INTO ${final_table_id}
+            INSERT INTO ${project_id}.${final_table_id}
             (
             ${column_list}
               _airbyte_meta,
@@ -504,7 +513,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               ${column_errors} AS column_errors,
               _airbyte_raw_id,
               _airbyte_extracted_at
-              FROM ${raw_table_id}
+              FROM ${project_id}.${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
                 ${cdcConditionalOrIncludeStatement}
@@ -528,17 +537,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .orElse("");
 
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "final_table_id", id.finalTableId(QUOTE, finalSuffix),
         "pk_list", pkList,
         "cursor_order_clause", cursorOrderClause)).replace(
             """
-            DELETE FROM ${final_table_id}
+            DELETE FROM ${project_id}.${final_table_id}
             WHERE
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
                     PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
-                  ) as row_number FROM ${final_table_id}
+                  ) as row_number FROM ${project_id}.${final_table_id}
                 )
                 WHERE row_number != 1
               )
@@ -566,19 +576,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "pk_list", pkList,
         "pk_extracts", pkCasts,
         "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)).replace(
             """
-            DELETE FROM ${final_table_id}
+            DELETE FROM ${project_id}.${final_table_id}
             WHERE
               (${pk_list}) IN (
                 SELECT (
                     ${pk_extracts}
                   )
-                FROM  ${raw_table_id}
+                FROM  ${project_id}.${raw_table_id}
                 WHERE JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at'), wide_number_mode=>'round')) != 'null'
               )
             ;""");
@@ -587,6 +598,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @VisibleForTesting
   String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
             // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
@@ -594,10 +606,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             // and it only matters in a few edge cases.
             """
             DELETE FROM
-              ${raw_table_id}
+              ${project_id}.${raw_table_id}
             WHERE
               `_airbyte_raw_id` NOT IN (
-                SELECT `_airbyte_raw_id` FROM ${final_table_id}
+                SELECT `_airbyte_raw_id` FROM ${project_id}.${final_table_id}
               )
             ;""");
   }
@@ -605,9 +617,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @VisibleForTesting
   String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "raw_table_id", id.rawTableId(QUOTE))).replace(
             """
-            UPDATE ${raw_table_id}
+            UPDATE ${project_id}.${raw_table_id}
             SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
             WHERE `_airbyte_loaded_at` IS NULL
             ;""");
@@ -616,12 +629,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String overwriteFinalTable(final StreamId streamId, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "final_table_id", streamId.finalTableId(QUOTE),
         "tmp_final_table", streamId.finalTableId(QUOTE, finalSuffix),
         "real_final_table", streamId.finalName(QUOTE))).replace(
             """
-            DROP TABLE IF EXISTS ${final_table_id};
-            ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+            DROP TABLE IF EXISTS ${project_id}.${final_table_id};
+            ALTER TABLE ${project_id}.${tmp_final_table} RENAME TO ${real_final_table};
             """);
   }
 
@@ -634,15 +648,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String migrateFromV1toV2(final StreamId streamId, final String namespace, final String tableName) {
     return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
         "raw_namespace", StringUtils.wrap(streamId.rawNamespace(), QUOTE),
         "dataset_location", datasetLocation,
         "v2_raw_table", streamId.rawTableId(QUOTE),
         "v1_raw_table", wrapAndQuote(namespace, tableName))).replace(
             """
-            CREATE SCHEMA IF NOT EXISTS ${raw_namespace}
+            CREATE SCHEMA IF NOT EXISTS ${project_id}.${raw_namespace}
             OPTIONS(location="${dataset_location}");
 
-            CREATE OR REPLACE TABLE ${v2_raw_table} (
+            CREATE OR REPLACE TABLE ${project_id}.${v2_raw_table} (
               _airbyte_raw_id STRING,
               _airbyte_data STRING,
               _airbyte_extracted_at TIMESTAMP,
@@ -656,7 +671,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                     _airbyte_data AS _airbyte_data,
                     _airbyte_emitted_at AS _airbyte_extracted_at,
                     CAST(NULL AS TIMESTAMP) AS _airbyte_loaded_at
-                FROM ${v1_raw_table}
+                FROM ${project_id}.${v1_raw_table}
             );
             """);
   }
