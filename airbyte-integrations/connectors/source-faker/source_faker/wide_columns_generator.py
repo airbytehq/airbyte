@@ -14,7 +14,10 @@ from mimesis import Datetime, Numeric, Text
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
 
-
+"""The Wide Column Generator is not meant to mimic any datasets in particular, but is purely for stress testing
+Users configure their desired number of columns and this will generate a row with random values matching the given schema.
+This is tightly coupled to wide_column_schema_generator.py which defines the schema 
+"""
 class WideColumnGenerator:
     def __init__(self, stream_name: str, seed: int, record_keys: List[str], generate_errors_in_wide_columns: int) -> None:
         self.stream_name = stream_name

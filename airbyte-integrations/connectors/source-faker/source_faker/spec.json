@@ -48,8 +48,8 @@
         "title": "Wide Data Set Columns",
         "description": "How many columns should be in a simulated wide data set? i.e. A value of 10 will produce a 10 column table.",
         "type": "integer",
-        "minimum": 1,
-        "default": 10,
+        "minimum": 2,
+        "default": 14,
         "order": 5
       },
       "wide_data_set_tables": {
@@ -61,8 +61,8 @@
         "order": 6
       },
       "generate_errors_in_wide_columns": {
-        "title": "Generate Typing Errors in Wide Column Tables",
-        "description": "How many incorrectly typed rows to generate",
+        "title": "Typing Errors Upper Bound in Wide Column Stream",
+        "description": "The source will return the wrong type in integer columns up to this limit",
         "type": "integer",
         "default": 0,
         "minimum": 0,

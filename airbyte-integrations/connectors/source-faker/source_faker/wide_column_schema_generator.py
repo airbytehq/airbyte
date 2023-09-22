@@ -57,6 +57,15 @@ all_supported_column_type_property_generators = [
 
 
 def generate_wide_schema(columns: int) -> Mapping[str, Any]:
+    """Generate a schema for the WideColumn stream. Uses a round robin approach to the supported Airbyte types
+    defined in all_supported_column_type_property_generators above
+
+    Args:
+        columns (int): How many columns should be in this schema
+
+    Returns:
+        Mapping[str, Any]: A Schema compatible with Airbyte's Streams
+    """
     full_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object"}
     properties = dict()
     # special case id and updated_at column

@@ -26,9 +26,7 @@ class SourceFaker(AbstractSource):
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
         wide_data_set_columns: int = config["wide_data_set_columns"] if "wide_data_set_columns" in config else 10
         wide_data_set_tables: int = config["wide_data_set_tables"] if "wide_data_set_tables" in config else 1
-        generate_errors_in_wide_columns: bool = (
-            config["generate_errors_in_wide_columns"] if "generate_errors_in_wide_columns" in config else False
-        )
+        generate_errors_in_wide_columns: int = config["generate_errors_in_wide_columns"] if "generate_errors_in_wide_columns" in config else False
 
         return [
             Products(count, seed, parallelism, records_per_slice, always_updated),
