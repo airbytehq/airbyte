@@ -40,17 +40,14 @@ dependencies {
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
     implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation (libs.airbyte.protocol) {
         exclude group: 'io.airbyte', module: 'airbyte-commons'
     }
     implementation project(':airbyte-integrations:bases:base-typing-deduping')
     // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
 }
 
