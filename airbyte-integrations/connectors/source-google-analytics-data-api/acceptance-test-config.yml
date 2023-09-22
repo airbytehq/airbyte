@@ -9,7 +9,7 @@ acceptance_tests:
         backward_compatibility_tests_config:
           # changed the structure of `custom_reports`
           # from `json string` to `list[reports]`
-          disable_for_version: 1.5.0
+          disable_for_version: 1.5.1
   connection:
     tests:
       - config_path: "secrets/config.json"
