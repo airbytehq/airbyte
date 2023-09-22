@@ -226,7 +226,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| `0.11.0` | 2023-09-23 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update error handling                                                                                                                |
+| `0.11.0` | 2023-09-23 | [30704](https://github.com/airbytehq/airbyte/pull/30704) | Update error handling                                                                                                                |
 | `0.10.0` | 2023-09-19 | [30091](https://github.com/airbytehq/airbyte/pull/30091) | Fix schemas for correct primary and foreign keys                                                                                     |
 | `0.9.0`  | 2023-09-14 | [28970](https://github.com/airbytehq/airbyte/pull/28970) | Add incremental deletes for Campaign and Ad Group Criterion streams                                                                  |
 | `0.8.1`  | 2023-09-13 | [30376](https://github.com/airbytehq/airbyte/pull/30376) | Revert pagination changes from 0.8.0                                                                                                 |
