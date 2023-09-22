@@ -205,9 +205,7 @@ class GithubStream(HttpStream, ABC):
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         # Without sending `User-Agent` header we will be getting `403 Client Error: Forbidden for url` error.
-        return {
-            "User-Agent": "PostmanRuntime/7.28.0",
-        }
+        return {"User-Agent": "PostmanRuntime/7.28.0"}
 
     def parse_response(
         self,
@@ -1543,3 +1541,33 @@ class TeamMemberships(GithubStream):
         record["team_slug"] = stream_slice["team_slug"]
         record["username"] = stream_slice["username"]
         return record
+
+
+class ContributorActivity(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/stats/contributors"
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        params = super().request_headers(**kwargs)
+        params.update({"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"})
+        return params
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["repository"] = stream_slice["repository"]
+        record.update(record.pop("author"))
+        return record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        """
+        If the data hasn't been cached when you query a repository's statistics, you'll receive a 202 response, need to retry to get results
+        see for more info https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#a-word-about-caching
+        """
+        if super().should_retry(response) or response.status_code == requests.codes.ACCEPTED:
+            return True
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        return 10 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)

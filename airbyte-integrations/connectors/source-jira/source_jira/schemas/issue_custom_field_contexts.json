@@ -7,8 +7,8 @@
       "description": "The ID of the context."
     },
     "fieldId": {
-      "type" : ["null", "string"],
-      "description" : "Id of the related field"
+      "type": ["null", "string"],
+      "description": "Id of the related field"
     },
     "name": {
       "type": "string",
