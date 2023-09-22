@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Tuple, Union, Dict
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
