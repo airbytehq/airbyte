@@ -1,39 +1,451 @@
 [
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "create_time": "2220-11-23T05:42:11+00:00" },
-      "stream_descriptor": { "name": "campaigns" }
+    "streamDescriptor": {
+      "name": "automations"
+    },
+    "streamState": {
+      "create_time": "3000-09-22T19:01:40+00:00"
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "date_created": "2220-09-25T04:47:31+00:00" },
-      "stream_descriptor": { "name": "lists" }
+    "streamDescriptor": {
+      "name": "campaigns"
+    },
+    "streamState": {
+      "create_time": "3000-09-22T19:01:41+00:00"
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "create_time": "2220-11-23T05:42:11+00:00" },
-      "stream_descriptor": { "name": "automations" }
+    "streamDescriptor": {
+      "name": "email_activity"
+    },
+    "streamState": {
+      "states": [
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:01:44"
+          },
+          "partition": {
+            "campaign_id": "00f14fbfd8"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:01:47"
+          },
+          "partition": {
+            "campaign_id": "0129123786"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:02:15"
+          },
+          "partition": {
+            "campaign_id": "033065bf94"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:02:15"
+          },
+          "partition": {
+            "campaign_id": "03919ddec6"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:02:24"
+          },
+          "partition": {
+            "campaign_id": "0aba4e6fa7"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:03:11"
+          },
+          "partition": {
+            "campaign_id": "1321260cdc"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:03:20"
+          },
+          "partition": {
+            "campaign_id": "14d29b88c9"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:03:30"
+          },
+          "partition": {
+            "campaign_id": "19ce2619a6"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:03:40"
+          },
+          "partition": {
+            "campaign_id": "1f0698b3e7"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:03:53"
+          },
+          "partition": {
+            "campaign_id": "1f0e179d6a"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:04:03"
+          },
+          "partition": {
+            "campaign_id": "215c2f69cd"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:04:14"
+          },
+          "partition": {
+            "campaign_id": "22d937222e"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:04:17"
+          },
+          "partition": {
+            "campaign_id": "2643c7f6d1"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:04:49"
+          },
+          "partition": {
+            "campaign_id": "2d009eb5b7"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:05:05"
+          },
+          "partition": {
+            "campaign_id": "32e82a99c8"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:05:06"
+          },
+          "partition": {
+            "campaign_id": "32f1a0de14"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:05:22"
+          },
+          "partition": {
+            "campaign_id": "37b3ebf391"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:05:26"
+          },
+          "partition": {
+            "campaign_id": "3a474b044e"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:06:24"
+          },
+          "partition": {
+            "campaign_id": "3bb95d0fd0"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:06:42"
+          },
+          "partition": {
+            "campaign_id": "3df743daa9"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:06:43"
+          },
+          "partition": {
+            "campaign_id": "407986280e"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:07:04"
+          },
+          "partition": {
+            "campaign_id": "481de2e311"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:07:05"
+          },
+          "partition": {
+            "campaign_id": "484fc458f8"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:07:26"
+          },
+          "partition": {
+            "campaign_id": "49d68626f3"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:07:29"
+          },
+          "partition": {
+            "campaign_id": "4ad6a62214"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:07:47"
+          },
+          "partition": {
+            "campaign_id": "5af16c6ece"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:08:03"
+          },
+          "partition": {
+            "campaign_id": "5f903335dd"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:08:30"
+          },
+          "partition": {
+            "campaign_id": "680ce8e6ba"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:08:31"
+          },
+          "partition": {
+            "campaign_id": "75b7dcce54"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:08:54"
+          },
+          "partition": {
+            "campaign_id": "78f2e00e69"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:08:57"
+          },
+          "partition": {
+            "campaign_id": "7dffcad82c"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:09:11"
+          },
+          "partition": {
+            "campaign_id": "8358b9474e"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:10:28"
+          },
+          "partition": {
+            "campaign_id": "84450b4751"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:10:49"
+          },
+          "partition": {
+            "campaign_id": "961b1df807"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:11:06"
+          },
+          "partition": {
+            "campaign_id": "a24dd3cfa6"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:11:07"
+          },
+          "partition": {
+            "campaign_id": "ab92ebe4dc"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:11:42"
+          },
+          "partition": {
+            "campaign_id": "ad7e1a17d0"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:12:29"
+          },
+          "partition": {
+            "campaign_id": "b47d2fa5bf"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:12:32"
+          },
+          "partition": {
+            "campaign_id": "b5631c5aeb"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:13:03"
+          },
+          "partition": {
+            "campaign_id": "ca052e2d75"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:13:32"
+          },
+          "partition": {
+            "campaign_id": "d5c4bcaa0e"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:14:01"
+          },
+          "partition": {
+            "campaign_id": "da0a6ca083"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:14:26"
+          },
+          "partition": {
+            "campaign_id": "da5a38473e"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:14:52"
+          },
+          "partition": {
+            "campaign_id": "db1d2638ca"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:15:38"
+          },
+          "partition": {
+            "campaign_id": "e017d87bad"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:16:14"
+          },
+          "partition": {
+            "campaign_id": "eab984f976"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:16:41"
+          },
+          "partition": {
+            "campaign_id": "eb53c8e914"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:17:21"
+          },
+          "partition": {
+            "campaign_id": "f3386ffc90"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:17:24"
+          },
+          "partition": {
+            "campaign_id": "f4b5f9feff"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:17:36"
+          },
+          "partition": {
+            "campaign_id": "f89f6512fb"
+          }
+        },
+        {
+          "cursor": {
+            "timestamp": "3000-09-22T19:18:07"
+          },
+          "partition": {
+            "campaign_id": "f93dbfb0ab"
+          }
+        }
+      ]
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "49d68626f3": { "timestamp": "2220-11-23T05:42:10+00:00" }
-      },
-      "stream_descriptor": { "name": "email_activity" }
+    "streamDescriptor": {
+      "name": "lists"
+    },
+    "streamState": {
+      "date_created": "3000-09-22T19:18:47+00:00"
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "send_time": "2230-02-26T05:42:10+00:00" },
-      "stream_descriptor": { "name": "reports" }
+    "streamDescriptor": {
+      "name": "reports"
+    },
+    "streamState": {
+      "send_time": "3000-09-22T19:18:47+00:00"
     }
   }
 ]
