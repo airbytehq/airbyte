@@ -33,12 +33,10 @@ dependencies {
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
     testImplementation 'org.mockito:mockito-inline:4.7.0'
     testImplementation libs.postgresql
-    testImplementation libs.platform.testcontainers
-    testImplementation libs.platform.testcontainers.postgresql
+    testImplementation libs.testcontainers
+    testImplementation libs.testcontainers.postgresql
     testImplementation libs.jmh.core
     testImplementation libs.jmh.annotations
     testImplementation 'com.github.docker-java:docker-java:3.2.8'
     testImplementation 'com.github.docker-java:docker-java-transport-httpclient5:3.2.8'
 }
-
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

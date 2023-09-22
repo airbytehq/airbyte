@@ -36,8 +36,7 @@ For detailed instructions on how to generate a service account key or OAuth cred
 
 3. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
 4. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
-5. (Optional) For **Row Batch Size**, you may specify the number of records you want to fetch per request to the Google API. By adjusting this value, you can balance the efficiency of the data retrieval process with [Google's request quotas](#performance-consideration). The default value of 200 should suffice for most use cases.
-6. Click **Set up source** and wait for the tests to complete.
+5. Click **Set up source** and wait for the tests to complete.
 
 ### Output schema
 

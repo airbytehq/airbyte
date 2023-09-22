@@ -13,8 +13,7 @@ Please browse the sections below for more details on each option and how to set 
 
 ![Datadog's Airbyte Integration Dashboard](assets/DatadogAirbyteIntegration_OutOfTheBox_Dashboard.png)
 
-_This integration is available for **Airbyte Enterprise users**. Airbyte Enterprise includes premium support with SLAs for your critical pipelines, security features including SSO, RBAC and audit logging, in addition to reliability, scalability and compliance features.
-Please reach out to [our team](https://airbyte.com/talk-to-sales) if you want to learn more._
+<AppliesTo selfManagedEnterprise />
 
 Airbyte's new integration with Datadog brings the convenience of monitoring and analyzing your Airbyte data pipelines directly within your Datadog dashboards. 
 This integration brings forth new `airbyte.*` metrics along with new dashboards. The list of metrics is found [here](https://docs.datadoghq.com/integrations/airbyte/#data-collected).

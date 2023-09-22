@@ -19,7 +19,6 @@ data:
   name: Dockerhub
   releaseDate: 2022-05-20
   releaseStage: alpha
-  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   tags:
     - language:lowcode

@@ -53,8 +53,8 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
    - **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
    <!-- /env:oss -->
 
-6. For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-7. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
+6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
+7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
 8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -78,22 +78,28 @@ There are two types of incremental sync:
 The Zendesk Support source connector supports the following streams:
 
 - [Account Attributes](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-account-attributes)
+- [Articles](https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/#list-articles) \(Incremental\) 
+- [Article Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\) 
+- [Article Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/article_comments/#list-comments) \(Incremental\) 
+- [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\) 
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
-- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
+- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
+- [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-deleted-tickets) \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
 - [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+- [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields) \(Incremental\)
 - [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
 - [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
-- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments)
-- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
-- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes)
+- [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments) \(Incremental\)
+- [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
+- [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
-- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
-- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
+- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
+- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
 - [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
@@ -105,6 +111,7 @@ The Zendesk Support source connector supports the following streams:
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
+- [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ## Performance considerations
 
@@ -116,6 +123,18 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.0.0`  | 2023-09-15 | [30440](https://github.com/airbytehq/airbyte/pull/30440) | Remove stream `Deleted Tickets`                                                                                                                                                                                                    |
+| `1.7.0`  | 2023-09-11 | [30259](https://github.com/airbytehq/airbyte/pull/30259) | Add stream `Deleted Tickets`                                                                                                                                                                                                       |
+| `1.6.0`  | 2023-09-09 | [30168](https://github.com/airbytehq/airbyte/pull/30168) | Make `start_date` field optional                                                                                                                                                                                                   |
+| `1.5.1`  | 2023-09-05 | [30142](https://github.com/airbytehq/airbyte/pull/30142) | Handle non-JSON Response                                                                                                                                                                                                           |
+| `1.5.0`  | 2023-09-04 | [30138](https://github.com/airbytehq/airbyte/pull/30138) | Add new Streams: `Article Votes`, `Article Comments`, `Article Comment Votes`                                                                                                                                                      |
+| `1.4.0`  | 2023-09-04 | [30134](https://github.com/airbytehq/airbyte/pull/30134) | Add incremental support for streams: `custom Roles`, `Schedules`, `SLA Policies`                                                                                                                                                   |
+| `1.3.0`  | 2023-08-30 | [30031](https://github.com/airbytehq/airbyte/pull/30031) | Add new streams: `Articles`, `Organization Fields`                                                                                                                                                                                 |
+| `1.2.2`  | 2023-08-30 | [29998](https://github.com/airbytehq/airbyte/pull/29998) | Fix typo in stream `AttributeDefinitions`: field condition                                                                                                                                                                         |
+| `1.2.1`  | 2023-08-30 | [29991](https://github.com/airbytehq/airbyte/pull/29991) | Remove Custom availability strategy                                                                                                                                                                                                |
+| `1.2.0`  | 2023-08-29 | [29940](https://github.com/airbytehq/airbyte/pull/29940) | Add undeclared fields to schemas                                                                                                                                                                                                   |
+| `1.1.1`  | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | make `Organizations` stream incremental                                                                                                                                                                                            |
+| `1.1.0`  | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields`                                                                                                                                                                                                            |
 | `1.0.0`  | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
 | `0.11.0` | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics`                                                                                                                                                                                                                |
 | `0.10.7` | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec                                                                                                                                                                                                |

@@ -7,7 +7,6 @@ import re
 
 import pandas as pd
 import pytest
-
 from qa_engine import enrichments
 
 

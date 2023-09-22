@@ -12,12 +12,7 @@ from pipelines.pipelines.metadata import (
     run_metadata_upload_pipeline,
     run_metadata_validation_pipeline,
 )
-from pipelines.utils import (
-    DaggerPipelineCommand,
-    get_all_metadata_files,
-    get_expected_metadata_files,
-    get_modified_metadata_files,
-)
+from pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_expected_metadata_files, get_modified_metadata_files
 
 # MAIN GROUP
 
@@ -49,6 +44,7 @@ def validate(ctx: click.Context, modified_only: bool) -> bool:
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
         ctx.obj.get("gha_workflow_run_url"),
+        ctx.obj.get("dagger_logs_url"),
         ctx.obj.get("pipeline_start_timestamp"),
         ctx.obj.get("ci_context"),
         metadata_to_validate,
