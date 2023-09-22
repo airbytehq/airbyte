@@ -16,7 +16,7 @@ PyYAML = "^6.0"
 GitPython = "^3.1.29"
 pydantic = "^1.9"
 PyGithub = "^1.58.0"
-rich = "^11.0.1"
+rich = "^13.0.0"
 pydash = "^7.0.4"
 google-cloud-storage = "^2.8.0"
 ci-credentials = {path = "../ci_credentials"}
