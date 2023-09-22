@@ -75,6 +75,47 @@ def docker_client():
     return docker.from_env()
 
 
+def wait_net_service(server, port, timeout=None):
+    """ Wait for network service to appear
+        @param timeout: in seconds, if None or 0 wait forever
+        @return: True of False, if timeout is None may return only True or
+                 throw unhandled network exception
+    """
+    import socket
+    import errno
+
+    s = socket.socket()
+    if timeout:
+        from time import time as now
+        # time module is needed to calc timeout shared between two exceptions
+        end = now() + timeout
+
+    while True:
+        try:
+            if timeout:
+                next_timeout = end - now()
+                if next_timeout < 0:
+                    return False
+                else:
+                    s.settimeout(next_timeout)
+
+            s.connect((server, port))
+
+        except socket.timeout as err:
+            # this exception occurs only if timeout is set
+            if timeout:
+                return False
+
+        except socket.error as err:
+            # catch timeout exception from underlying network library
+            # this one is different from socket.timeout
+            if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
+                raise
+        else:
+            s.close()
+            return True
+
+
 @pytest.fixture(scope="session")
 def ssh_service(move_sample_files_to_tmp, docker_client):
     """Ensure that SSH service is up and responsive."""
@@ -90,7 +131,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
         detach=True,
     )
 
-    time.sleep(20)
+    wait_net_service("localhost", 2222, 10)
     # container = docker_client.containers.get(container.name)
     container.reload()
     print(container.attrs.get("Status"))
