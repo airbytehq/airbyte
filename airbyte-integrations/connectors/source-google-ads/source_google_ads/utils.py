@@ -70,8 +70,9 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
     for error in ga_exception.failure.errors:
         authorization_error = error.error_code.authorization_error
         authentication_error = error.error_code.authentication_error
-        if (is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED) or
-                is_error_type(authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND)):
+        if is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED) or is_error_type(
+            authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND
+        ):
             message = f"Failed to access the customer '{customer_id}'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."
             raise AirbyteTracedException(
                 message=message, failure_type=FailureType.config_error, exception=ga_exception, internal_message=message
