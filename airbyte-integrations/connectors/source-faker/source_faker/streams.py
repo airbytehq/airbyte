@@ -6,16 +6,16 @@ import datetime
 import os
 from functools import lru_cache
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, List, Mapping, Optional
 from sys import getsizeof
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
-from .wide_columns_generator import WideColumnGenerator
-from .wide_column_schema_generator import generate_wide_schema
 from .utils import format_airbyte_time, generate_estimate, read_json
+from .wide_column_schema_generator import generate_wide_schema
+from .wide_columns_generator import WideColumnGenerator
 
 
 class Products(Stream, IncrementalMixin):
@@ -188,11 +188,23 @@ class Purchases(Stream, IncrementalMixin):
 
         self.state = {"seed": self.seed, "updated_at": updated_at}
 
+
 class WideColumns(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "updated_at"
 
-    def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, wide_data_set_columns:int, generate_errors_in_wide_columns:int, instance_count: int, **kwargs):
+    def __init__(
+        self,
+        count: int,
+        seed: int,
+        parallelism: int,
+        records_per_slice: int,
+        always_updated: bool,
+        wide_data_set_columns: int,
+        generate_errors_in_wide_columns: int,
+        instance_count: int,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed

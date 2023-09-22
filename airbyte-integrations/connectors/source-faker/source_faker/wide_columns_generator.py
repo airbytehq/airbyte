@@ -3,12 +3,13 @@
 #
 
 import datetime
-from airbyte_cdk.models import AirbyteRecordMessage, Type
-from mimesis import Datetime, Numeric, Text
 from multiprocessing import current_process
+from random import choice
 from threading import Lock
 from typing import Any, Dict, List, Mapping, Set
-from random import choice
+
+from airbyte_cdk.models import AirbyteRecordMessage, Type
+from mimesis import Datetime, Numeric, Text
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
@@ -21,8 +22,7 @@ class WideColumnGenerator:
         self.record_keys = record_keys
         self.generate_errors_in_wide_columns = generate_errors_in_wide_columns
         self.generated_errors = 0
-        
-    
+
     def increment_error_count(self):
         with Lock():
             self.generated_errors += 1
@@ -56,10 +56,10 @@ class WideColumnGenerator:
             elif of_type == "array":
                 return [text.word() for _ in range(3)]
             elif of_type == "object":
-                return {text.word() : text.word() for _ in range(3)}
+                return {text.word(): text.word() for _ in range(3)}
             elif of_type == "union":
-                return choice([lambda : text.word(), lambda : numeric.decimal_number()])()
-        
+                return choice([lambda: text.word(), lambda: numeric.decimal_number()])()
+
         record = dict()
         for key in self.record_keys:
             if key == "id":
@@ -67,9 +67,9 @@ class WideColumnGenerator:
             elif key == "updated_at":
                 record["updated_at"] = format_airbyte_time(datetime.datetime.now())
             else:
-              last_underscore = key.rfind('_')
-              if last_underscore > 0:
-                  record[key] = next_value(key[:last_underscore])
+                last_underscore = key.rfind("_")
+                if last_underscore > 0:
+                    record[key] = next_value(key[:last_underscore])
         return record
 
     def prepare(self):
@@ -91,7 +91,6 @@ class WideColumnGenerator:
         dt = Datetime(seed=seed_with_offset)
         numeric = Numeric(seed=seed_with_offset)
         text = Text(seed=seed_with_offset)
-
 
     def generate(self, user_id: int) -> List[Dict]:
         row = self.new_record()

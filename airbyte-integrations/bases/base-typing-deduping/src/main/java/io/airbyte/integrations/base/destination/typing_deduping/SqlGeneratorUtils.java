@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 public class SqlGeneratorUtils {
@@ -14,6 +18,5 @@ public class SqlGeneratorUtils {
   public static String cast(final String content, final String asType) {
     return cast(content, asType, false);
   }
-
 
 }

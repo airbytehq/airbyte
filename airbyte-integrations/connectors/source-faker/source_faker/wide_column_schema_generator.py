@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 """
 https://docs.airbyte.com/understanding-airbyte/supported-data-types/
 - String	{"type": "string"}	"foo bar"
@@ -16,63 +20,60 @@ https://docs.airbyte.com/understanding-airbyte/supported-data-types/
 
 from typing import Any, List, Mapping, Tuple, Union
 
+
 def simple_property(name: str, type: Union[str, List[str]]) -> Tuple[str, Mapping[str, Any]]:
-  return name, { "type": type }
+    return name, {"type": type}
+
 
 def date_property(name: str, format: str, airbyte_type: str) -> Tuple[str, Mapping[str, Any]]:
-  definition = {
-    "type": ["null", "string"],
-    "format": format,
-  }
-  if airbyte_type is not None:
-    definition["airbyte_type"] = airbyte_type
-  return name, definition
+    definition = {
+        "type": ["null", "string"],
+        "format": format,
+    }
+    if airbyte_type is not None:
+        definition["airbyte_type"] = airbyte_type
+    return name, definition
+
 
 def union_property(name: str) -> Tuple[str, Mapping[str, Any]]:
-  # Keeping this simple for now
-  return name, {"oneOf": ["string", "number"]}
+    # Keeping this simple for now
+    return name, {"oneOf": ["string", "number"]}
+
 
 all_supported_column_type_property_generators = [
-  lambda i: simple_property(f"string_{i}", "string"),
-  lambda i: simple_property(f"boolean_{i}", "boolean"),
-  lambda i: date_property(f"date_{i}", "date", None),
-  lambda i: date_property(f"timestamp_wo_tz_{i}", "date-time", "timestamp_without_timezone"),
-  lambda i: date_property(f"timestamp_w_tz_{i}", "date-time", "timestamp_with_timezone"),
-  lambda i: date_property(f"time_wo_tz_{i}", "time", "time_without_timezone"),
-  lambda i: date_property(f"time_w_tz_{i}", "time", "time_with_timezone"),
-  lambda i: simple_property(f"integer_{i}", "integer"),
-  lambda i: simple_property(f"number_{i}", "number"),
-  lambda i: simple_property(f"array_{i}", "array"),
-  lambda i: simple_property(f"object_{i}", "object"),
-  lambda i: union_property(f"union_{i}")
+    lambda i: simple_property(f"string_{i}", "string"),
+    lambda i: simple_property(f"boolean_{i}", "boolean"),
+    lambda i: date_property(f"date_{i}", "date", None),
+    lambda i: date_property(f"timestamp_wo_tz_{i}", "date-time", "timestamp_without_timezone"),
+    lambda i: date_property(f"timestamp_w_tz_{i}", "date-time", "timestamp_with_timezone"),
+    lambda i: date_property(f"time_wo_tz_{i}", "time", "time_without_timezone"),
+    lambda i: date_property(f"time_w_tz_{i}", "time", "time_with_timezone"),
+    lambda i: simple_property(f"integer_{i}", "integer"),
+    lambda i: simple_property(f"number_{i}", "number"),
+    lambda i: simple_property(f"array_{i}", "array"),
+    lambda i: simple_property(f"object_{i}", "object"),
+    lambda i: union_property(f"union_{i}"),
 ]
 
+
 def generate_wide_schema(columns: int) -> Mapping[str, Any]:
-  full_schema = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object"
-  }
-  properties = dict()
-  # special case id and updated_at column
-  id = simple_property("id", "integer")
-  properties[id[0]] = id[1]
-  properties["updated_at"] = {
-      "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone"
-    }
-  column_count = 2
-  property_generator_index = 0
-  while column_count < columns:
-    property_info = all_supported_column_type_property_generators[property_generator_index](column_count)
-    properties[property_info[0]] = property_info[1]
-    
-    property_generator_index += 1
-    if property_generator_index == len(all_supported_column_type_property_generators):
-      property_generator_index = 0
-    column_count += 1
+    full_schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object"}
+    properties = dict()
+    # special case id and updated_at column
+    id = simple_property("id", "integer")
+    properties[id[0]] = id[1]
+    properties["updated_at"] = {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}
+    column_count = 2
+    property_generator_index = 0
+    while column_count < columns:
+        property_info = all_supported_column_type_property_generators[property_generator_index](column_count)
+        properties[property_info[0]] = property_info[1]
 
+        property_generator_index += 1
+        if property_generator_index == len(all_supported_column_type_property_generators):
+            property_generator_index = 0
+        column_count += 1
 
-  full_schema["properties"] = properties
+    full_schema["properties"] = properties
 
-  return full_schema, list(properties.keys())
+    return full_schema, list(properties.keys())

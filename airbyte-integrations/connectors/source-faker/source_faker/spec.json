@@ -46,19 +46,19 @@
       },
       "wide_data_set_columns": {
         "title": "Wide Data Set Columns",
-        "description" : "How many columns should be in a simulated wide data set? i.e. A value of 10 will produce a 10 column table.",
+        "description": "How many columns should be in a simulated wide data set? i.e. A value of 10 will produce a 10 column table.",
         "type": "integer",
-        "minimum" : 1,
-        "default" : 10,
-        "order" : 5
+        "minimum": 1,
+        "default": 10,
+        "order": 5
       },
       "wide_data_set_tables": {
         "title": "Wide Data Set Tables",
-        "description" : "How many copies of the Wide Dataset column should be created?",
+        "description": "How many copies of the Wide Dataset column should be created?",
         "type": "integer",
-        "minimum" : 1,
-        "default" : 1,
-        "order" : 6
+        "minimum": 1,
+        "default": 1,
+        "order": 6
       },
       "generate_errors_in_wide_columns": {
         "title": "Generate Typing Errors in Wide Column Tables",

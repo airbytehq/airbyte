@@ -341,7 +341,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return updateTable(stream, finalSuffix, true);
   }
 
-  private String updateTableQueryBuilder(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys, final boolean forceSafeCasting) {
+  private String updateTableQueryBuilder(final StreamConfig stream,
+                                         final String finalSuffix,
+                                         final boolean verifyPrimaryKeys,
+                                         final boolean forceSafeCasting) {
     String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
@@ -368,25 +371,25 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
-        """
-        ${pk_var_declaration}
+            """
+            ${pk_var_declaration}
 
-        BEGIN TRANSACTION;
+            BEGIN TRANSACTION;
 
-        ${validate_primary_keys}
+            ${validate_primary_keys}
 
-        ${insert_new_records}
+            ${insert_new_records}
 
-        ${dedup_final_table}
+            ${dedup_final_table}
 
-        ${dedupe_raw_table}
+            ${dedupe_raw_table}
 
-        ${cdc_deletes}
+            ${cdc_deletes}
 
-        ${commit_raw_table}
+            ${commit_raw_table}
 
-        COMMIT TRANSACTION;
-        """);
+            COMMIT TRANSACTION;
+            """);
   }
 
   private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
@@ -394,19 +397,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, true);
     return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate)).replace(
         """
-            BEGIN
-            
-            ${unsafe_update}
-            
-            EXCEPTION WHEN ERROR THEN
-            ROLLBACK TRANSACTION;
-            
-            ${safe_update}
-            
-            END;
-            
-            """
-    );
+        BEGIN
+
+        ${unsafe_update}
+
+        EXCEPTION WHEN ERROR THEN
+        ROLLBACK TRANSACTION;
+
+        ${safe_update}
+
+        END;
+
+        """);
   }
 
   @VisibleForTesting
@@ -439,34 +441,35 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+  String insertNewRecords(final StreamConfig stream,
+                          final String finalSuffix,
+                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
                           final boolean forceSafeCasting) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors;
     if (forceSafeCasting) {
-      columnErrors =         "[" + streamColumns.entrySet().stream().map(
-                                                    col -> new StringSubstitutor(Map.of(
-                                                        "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
-                                                        "col_type", toDialectType(col.getValue()).name(),
-                                                        "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
-                                                        // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
-                                                        // and necessary because json_query
-                                                        """
-                                                        CASE
-                                                          WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
-                                                            AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
-                                                            AND (${json_extract} IS NULL)
-                                                            THEN 'Problem with `${raw_col_name}`'
-                                                          ELSE NULL
-                                                        END"""))
-                                                .collect(joining(",\n")) + "]";
+      columnErrors = "[" + streamColumns.entrySet().stream().map(
+          col -> new StringSubstitutor(Map.of(
+              "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
+              "col_type", toDialectType(col.getValue()).name(),
+              "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
+                  // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                  // and necessary because json_query
+                  """
+                  CASE
+                    WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                      AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
+                      AND (${json_extract} IS NULL)
+                      THEN 'Problem with `${raw_col_name}`'
+                    ELSE NULL
+                  END"""))
+          .collect(joining(",\n")) + "]";
     } else {
       // We're not safe casting, so any error should throw an exception and trigger the safe cast logic
       columnErrors = "[]";
     }
-
 
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
@@ -557,7 +560,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk), forceSafeCasting)).collect(joining(",\n"));
+    final String pkCasts =
+        stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk), forceSafeCasting)).collect(joining(",\n"));
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
