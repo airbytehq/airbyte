@@ -15,11 +15,16 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.10.0"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: yes
+          extra_records: yes
         timeout_seconds: 3600
         empty_streams:
           - name: "account_labels"
